@@ -12,7 +12,7 @@
 #include "baci_fsi_overlapprec_hybrid.H"
 
 #include "baci_fsi_overlapprec_fsiamg.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"  // for debugging: print matrices ToDo (mayr) remove?
 #include "baci_linear_solver_preconditioner_ifpack.H"
 

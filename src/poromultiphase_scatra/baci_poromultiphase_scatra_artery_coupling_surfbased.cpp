@@ -10,7 +10,7 @@
 
 #include "baci_poromultiphase_scatra_artery_coupling_surfbased.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_poromultiphase_scatra_artery_coupling_pair.H"
 

@@ -9,8 +9,8 @@
 
 #include "baci_ssi_dyn.H"
 
+#include "baci_global_data.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_rebalance_utils.H"
 #include "baci_ssi_monolithic.H"
 #include "baci_ssi_partitioned_1wc.H"

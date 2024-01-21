@@ -20,8 +20,8 @@
  *----------------------------------------------------------------------*/
 #include "baci_config.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_resulttest.H"
 #include "baci_thermo_timint.H"
 

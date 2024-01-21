@@ -14,7 +14,7 @@
 #include "baci_cut_position.H"
 #include "baci_cut_side.H"
 #include "baci_cut_utils.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 
 BACI_NAMESPACE_OPEN
 

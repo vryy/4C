@@ -17,9 +17,9 @@
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_adapter_str_poro_wrapper.H"
 #include "baci_fluid_xfluid.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_poroelast_monolithic.H"
 
 BACI_NAMESPACE_OPEN

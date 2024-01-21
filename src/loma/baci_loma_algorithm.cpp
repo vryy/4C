@@ -14,10 +14,10 @@
 
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_timint_loma.H"
+#include "baci_global_data.H"
 #include "baci_inpar_solver.H"
 #include "baci_io_control.H"
 #include "baci_lib_assemblestrategy.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"

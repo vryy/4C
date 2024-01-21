@@ -14,11 +14,10 @@
 #include "baci_discretization_fem_general_utils_gder2.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_discretization_geometry_position_array.H"
+#include "baci_global_data.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_globalproblem.H"  // for time curve in body force
 #include "baci_lib_utils.H"
 #include "baci_mat_list.H"
 #include "baci_mat_newtonianfluid.H"

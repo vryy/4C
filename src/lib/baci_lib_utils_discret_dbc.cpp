@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
+#include "baci_global_data.H"
 #include "baci_lib_discret_hdg.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_nurbs_discret.H"

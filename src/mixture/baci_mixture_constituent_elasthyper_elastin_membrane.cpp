@@ -9,7 +9,7 @@
 
 #include "baci_mixture_constituent_elasthyper_elastin_membrane.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_anisotropy_extension.H"
 #include "baci_mat_multiplicative_split_defgrad_elasthyper_service.H"

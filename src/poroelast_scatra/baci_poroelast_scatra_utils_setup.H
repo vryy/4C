@@ -13,9 +13,9 @@
 
 #include "baci_config.H"
 
+#include "baci_global_data.H"
 #include "baci_lib_dofset_gidbased_wrapper.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_poroelast_scatra_utils.H"

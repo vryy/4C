@@ -10,9 +10,9 @@
 #include "baci_fbi_beam_to_fluid_meshtying_params.H"
 
 #include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
+#include "baci_global_data.H"
 #include "baci_inpar_fbi.H"
 #include "baci_inpar_geometry_pair.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
 BACI_NAMESPACE_OPEN

@@ -11,7 +11,7 @@
 
 #include "baci_structure_new_factory.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_structure_new_dbc.H"
 #include "baci_structure_new_expl_ab2.H"
 #include "baci_structure_new_expl_abx.H"

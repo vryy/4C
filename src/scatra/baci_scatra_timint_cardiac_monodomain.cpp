@@ -10,9 +10,9 @@
 
 #include "baci_scatra_timint_cardiac_monodomain.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_krylov_projector.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"

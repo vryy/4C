@@ -9,10 +9,10 @@ transport problems
 /*----------------------------------------------------------------------*/
 #include "baci_mat_scatra_multiscale_gp.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_scatra_ele_action.H"

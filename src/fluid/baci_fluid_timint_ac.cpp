@@ -11,8 +11,8 @@
 
 #include "baci_fluid_timint_ac.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

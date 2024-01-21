@@ -11,10 +11,10 @@
 
 #include "baci_so3_scatra.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_ssi.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_element_integration_select.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

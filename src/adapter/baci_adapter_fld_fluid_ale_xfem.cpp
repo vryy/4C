@@ -13,9 +13,9 @@
 #include "baci_adapter_fld_fluid_xfsi.H"
 #include "baci_coupling_adapter.H"
 #include "baci_fluid_utils_mapextractor.H"
+#include "baci_global_data.H"
 #include "baci_inpar_fsi.H"
 #include "baci_inpar_validparameters.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

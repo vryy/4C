@@ -10,9 +10,9 @@
 
 #include "baci_structure_new_discretization_runtime_vtu_output_params.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_inpar_structure.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
 BACI_NAMESPACE_OPEN

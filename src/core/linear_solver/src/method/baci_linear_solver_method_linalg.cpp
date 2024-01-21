@@ -8,9 +8,9 @@
 *-----------------------------------------------------------------------*/
 #include "baci_linear_solver_method_linalg.H"
 
+#include "baci_global_data.H"  // access global problem. can we avoid this?
 #include "baci_inpar_solver.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_globalproblem.H"  // access global problem. can we avoid this?
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linear_solver_method_belos.H"
 #include "baci_linear_solver_method_direct.H"

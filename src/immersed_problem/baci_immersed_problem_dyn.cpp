@@ -11,10 +11,10 @@
 #include "baci_adapter_str_fsiwrapper_immersed.H"
 #include "baci_ale_utils_clonestrategy.H"
 #include "baci_fsi_utils.H"
+#include "baci_global_data.H"
 #include "baci_immersed_problem_immersed_base.H"
 #include "baci_immersed_problem_immersed_partitioned_fsi_dirichletneumann.H"
 #include "baci_inpar_immersed.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
 

@@ -10,8 +10,8 @@
 
 #include "baci_porofluidmultiphase_ele_boundary_factory.H"
 
+#include "baci_global_data.H"
 #include "baci_lib_element.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_porofluidmultiphase_ele_boundary_calc.H"
 #include "baci_porofluidmultiphase_ele_interface.H"
 

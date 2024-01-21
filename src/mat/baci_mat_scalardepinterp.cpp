@@ -21,7 +21,7 @@ MAT 1 MAT_ScalarDepInterp IDMATZEROSC 2 IDMATUNITSC 3
 #include "baci_mat_scalardepinterp.H"
 
 #include "baci_comm_utils_factory.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 
 BACI_NAMESPACE_OPEN

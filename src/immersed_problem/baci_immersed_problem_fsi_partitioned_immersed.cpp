@@ -11,7 +11,7 @@
 
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_fsi_debugwriter.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 
 BACI_NAMESPACE_OPEN
 

@@ -11,8 +11,8 @@
 
 #include "baci_scatra_timint_cardiac_monodomain_scheme_hdg.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_calc_hdg.H"

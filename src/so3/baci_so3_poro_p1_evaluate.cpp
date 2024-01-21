@@ -7,7 +7,7 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_structporo.H"
 #include "baci_so3_poro_p1.H"

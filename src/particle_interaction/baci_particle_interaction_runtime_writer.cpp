@@ -10,12 +10,12 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_runtime_writer.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_particle.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_runtime_csv_writer.H"
 #include "baci_io_visualization_manager.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

@@ -13,8 +13,8 @@
 
 #include "baci_config.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_structure.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_ParameterList.hpp>
 

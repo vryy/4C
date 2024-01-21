@@ -15,11 +15,11 @@
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_fsi_dirichletneumann_volcoupl.H"
+#include "baci_global_data.H"
 #include "baci_inpar_ale.H"
 #include "baci_inpar_fsi.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_io.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

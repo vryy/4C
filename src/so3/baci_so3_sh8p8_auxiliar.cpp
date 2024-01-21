@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 
+#include "baci_global_data.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_so3_sh8p8.H"

@@ -10,8 +10,8 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_dem_adhesion_surface_energy.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_particle.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
 BACI_NAMESPACE_OPEN

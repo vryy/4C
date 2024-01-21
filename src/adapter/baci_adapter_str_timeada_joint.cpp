@@ -12,11 +12,11 @@
 #include "baci_adapter_str_timeada_joint.H"
 
 #include "baci_adapter_str_timeloop.H"
+#include "baci_global_data.H"
 #include "baci_inpar_structure.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_structure_new_solver_factory.H"
 #include "baci_structure_new_timint_base.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"

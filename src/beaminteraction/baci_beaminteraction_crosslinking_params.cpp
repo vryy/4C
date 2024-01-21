@@ -9,7 +9,7 @@
 
 #include "baci_beaminteraction_crosslinking_params.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_crosslinkermat.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 

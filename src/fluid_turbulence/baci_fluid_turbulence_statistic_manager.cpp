@@ -30,8 +30,8 @@ overhead as possible from the time integration method.
 #include "baci_fluid_turbulence_statistics_tgv.H"
 #include "baci_fluid_utils.H"  // for LiftDrag
 #include "baci_fluid_xwall.H"
+#include "baci_global_data.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_scatra_timint_implicit.H"
 
 BACI_NAMESPACE_OPEN

@@ -13,7 +13,7 @@
 
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_fluid_turbulence_statistic_manager.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_scatra_timint_implicit.H"
 
 BACI_NAMESPACE_OPEN

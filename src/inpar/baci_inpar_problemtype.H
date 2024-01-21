@@ -10,8 +10,8 @@
 
 #include "baci_config.H"
 
+#include "baci_global_data_enums.H"
 #include "baci_inpar_parameterlist_utils.H"
-#include "baci_lib_globalproblem_enums.H"
 
 #include <map>
 #include <string>

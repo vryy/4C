@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 #include "baci_adapter_fld_fluid_immersed.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_validparameters.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

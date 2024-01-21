@@ -11,11 +11,11 @@
 
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_ele_hdg_weak_comp.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret_hdg.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_fluid_weakly_compressible.H"
 #include "baci_mat_par_bundle.H"

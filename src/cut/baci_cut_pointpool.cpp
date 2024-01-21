@@ -12,7 +12,7 @@ created
 #include "baci_cut_pointpool.H"
 
 #include "baci_cut_output.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 
 BACI_NAMESPACE_OPEN
 

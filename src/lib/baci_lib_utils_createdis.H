@@ -17,9 +17,9 @@
 #include "baci_config.H"
 
 #include "baci_comm_utils_factory.H"
+#include "baci_global_data.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_immersed_node.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"

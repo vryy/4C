@@ -15,9 +15,9 @@
 
 #include "baci_ale_utils_clonestrategy.H"
 #include "baci_fsi_utils.H"
+#include "baci_global_data.H"
 #include "baci_inpar_wear.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_wear_partitioned.H"

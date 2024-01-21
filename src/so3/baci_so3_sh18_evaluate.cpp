@@ -8,8 +8,8 @@
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_sh18.H"

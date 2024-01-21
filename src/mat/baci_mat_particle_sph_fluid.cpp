@@ -13,7 +13,7 @@
  *---------------------------------------------------------------------------*/
 #include "baci_mat_particle_sph_fluid.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 
 BACI_NAMESPACE_OPEN

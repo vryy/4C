@@ -12,8 +12,8 @@
 #include "baci_fluid_timint_poro.H"
 
 #include "baci_fluid_ele_action.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_poroelast_utils.H"
 #include "baci_utils_function.H"

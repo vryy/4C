@@ -10,7 +10,7 @@
 #include "baci_contact_nitsche_strategy_ssi.H"
 
 #include "baci_contact_interface.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mortar_element.H"
 

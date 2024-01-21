@@ -10,9 +10,9 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm_timint.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_io.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_particle_algorithm_dirichlet_bc.H"
 #include "baci_particle_algorithm_temperature_bc.H"
 #include "baci_particle_engine_container.H"

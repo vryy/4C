@@ -24,6 +24,7 @@
 #include "baci_contact_meshtying_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "baci_contact_meshtying_contact_bridge.H"
 #include "baci_contact_meshtying_manager.H"
+#include "baci_global_data.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_wear.H"
@@ -31,7 +32,6 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_nullspace.h"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_locsys.H"
 #include "baci_linalg_krylov_projector.H"
 #include "baci_linalg_mapextractor.H"

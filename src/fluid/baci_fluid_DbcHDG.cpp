@@ -13,8 +13,8 @@
 #include "baci_fluid_ele_calc.H"
 #include "baci_fluid_ele_calc_hdg.H"
 #include "baci_fluid_ele_hdg.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret_hdg.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 
 BACI_NAMESPACE_OPEN

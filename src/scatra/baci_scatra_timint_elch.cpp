@@ -8,9 +8,9 @@
  *------------------------------------------------------------------------------------------------*/
 #include "baci_scatra_timint_elch.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_equilibrate.H"

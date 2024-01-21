@@ -11,6 +11,7 @@
 
 #include "baci_adapter_scatra_base_algorithm.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_ssi.H"
 #include "baci_inpar_ssti.H"
 #include "baci_inpar_sti.H"
@@ -19,7 +20,6 @@
 #include "baci_levelset_timint_ost.H"
 #include "baci_levelset_timint_stat.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_scatra_resulttest_hdg.H"
 #include "baci_scatra_timint_bdf2.H"

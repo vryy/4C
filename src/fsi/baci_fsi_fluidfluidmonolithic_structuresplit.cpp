@@ -16,12 +16,12 @@
 #include "baci_ale_utils_mapextractor.H"
 #include "baci_coupling_adapter.H"
 #include "baci_fluid_utils_mapextractor.H"
+#include "baci_global_data.H"
 #include "baci_inpar_ale.H"
 #include "baci_inpar_fsi.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_structure_aux.H"
 
 BACI_NAMESPACE_OPEN

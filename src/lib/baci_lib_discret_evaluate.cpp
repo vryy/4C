@@ -10,10 +10,10 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_comm_parobjectfactory.H"
+#include "baci_global_data.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elements_paramsinterface.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"

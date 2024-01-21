@@ -14,7 +14,7 @@
 #include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_coupling_adapter.H"
 #include "baci_fluid_utils_mapextractor.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_structure_aux.H"
 

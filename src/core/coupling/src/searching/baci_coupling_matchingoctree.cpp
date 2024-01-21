@@ -13,8 +13,8 @@
 #include "baci_coupling_matchingoctree.H"
 
 #include "baci_comm_exporter.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

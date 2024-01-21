@@ -13,12 +13,12 @@ to disk
 #include "baci_io_discretization_visualization_writer_mesh.H"
 
 #include "baci_beam3_base.H"
+#include "baci_global_data.H"
 #include "baci_io_control.H"
 #include "baci_io_visualization_manager.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_element_vtk_cell_type_register.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_FEVector.h>

@@ -9,9 +9,9 @@
 
 #include "baci_art_net_art_terminal_bc.H"
 
+#include "baci_global_data.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_function.H"
 #include "baci_utils_function_of_time.H"
 

@@ -9,8 +9,8 @@
 
 *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_fixedsizematrix_tensor_transformation.H"

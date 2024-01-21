@@ -10,7 +10,7 @@ materials
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 
 #include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"

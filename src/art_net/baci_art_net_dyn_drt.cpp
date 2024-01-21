@@ -16,9 +16,9 @@
 #include "baci_adapter_art_net.H"
 #include "baci_art_net_artery_resulttest.H"
 #include "baci_art_net_utils.H"
+#include "baci_global_data.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils_createdis.H"
 

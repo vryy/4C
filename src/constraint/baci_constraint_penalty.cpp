@@ -11,7 +11,7 @@
 
 #include "baci_constraint_penalty.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_utils_function_of_time.H"

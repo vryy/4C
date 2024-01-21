@@ -9,7 +9,7 @@
 
 #include "baci_mat_inelastic_defgrad_factors.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_electrode.H"
 #include "baci_mat_multiplicative_split_defgrad_elasthyper.H"

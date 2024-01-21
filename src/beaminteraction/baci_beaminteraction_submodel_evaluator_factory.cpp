@@ -16,8 +16,8 @@
 #include "baci_beaminteraction_submodel_evaluator_crosslinking.H"
 #include "baci_beaminteraction_submodel_evaluator_potential.H"
 #include "baci_beaminteraction_submodel_evaluator_spherebeamlinking.H"
+#include "baci_global_data.H"
 #include "baci_inpar_beaminteraction.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

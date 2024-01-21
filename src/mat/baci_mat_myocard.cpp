@@ -13,8 +13,8 @@
 
 #include "baci_mat_myocard.H"
 
+#include "baci_global_data.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_mat_myocard_fitzhugh_nagumo.H"
 #include "baci_mat_myocard_inada.H"
 #include "baci_mat_myocard_minimal.H"

@@ -14,7 +14,7 @@
 /* headers */
 #include "baci_io_materialdefinition.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_material.H"
 
 #include <iostream>

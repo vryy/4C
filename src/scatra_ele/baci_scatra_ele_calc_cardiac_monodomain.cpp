@@ -10,10 +10,10 @@
 
 #include "baci_scatra_ele_calc_cardiac_monodomain.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_cardiac_monodomain.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_mat_list.H"
 #include "baci_mat_myocard.H"
 #include "baci_scatra_ele_parameter_std.H"

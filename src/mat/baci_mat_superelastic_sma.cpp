@@ -35,7 +35,7 @@
  *----------------------------------------------------------------------*/
 #include "baci_mat_superelastic_sma.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_densematrix_eigen.H"

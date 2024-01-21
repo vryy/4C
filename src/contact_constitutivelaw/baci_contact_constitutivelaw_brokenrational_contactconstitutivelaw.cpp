@@ -9,7 +9,7 @@
 
 #include "baci_contact_constitutivelaw_brokenrational_contactconstitutivelaw.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 

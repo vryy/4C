@@ -9,8 +9,8 @@ space-time varying coefficients
 
 #include "baci_matelast_coupanisoneohooke_VarProp.H"
 
+#include "baci_global_data.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_mat_par_material.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_utils_function.H"

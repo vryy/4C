@@ -5,8 +5,8 @@
 */
 /*--------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_GLOBALPROBLEM_ENUMS_H
-#define BACI_LIB_GLOBALPROBLEM_ENUMS_H
+#ifndef BACI_GLOBAL_DATA_ENUMS_H
+#define BACI_GLOBAL_DATA_ENUMS_H
 
 #include "baci_config.H"
 

@@ -31,10 +31,10 @@
 #include "baci_fsi_nox_mpe.H"
 #include "baci_fsi_nox_sd.H"
 #include "baci_fsi_utils.H"
+#include "baci_global_data.H"
 #include "baci_inpar_fsi.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_structure_aux.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

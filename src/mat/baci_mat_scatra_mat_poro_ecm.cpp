@@ -11,7 +11,7 @@
 #include "baci_mat_scatra_mat_poro_ecm.H"
 
 #include "baci_comm_utils.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 
 #include <vector>

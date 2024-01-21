@@ -11,8 +11,8 @@
 #include "baci_art_net_timint.H"
 
 #include "baci_art_net_artery_resulttest.H"
+#include "baci_global_data.H"
 #include "baci_inpar_bio.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linear_solver_method_linalg.H"
 
 BACI_NAMESPACE_OPEN

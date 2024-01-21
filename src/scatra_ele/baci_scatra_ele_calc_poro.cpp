@@ -11,9 +11,9 @@
 #include "baci_scatra_ele_calc_poro.H"
 
 #include "baci_fluid_rotsym_periodicbc.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_list.H"
 #include "baci_mat_scatra_mat.H"

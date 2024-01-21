@@ -11,7 +11,7 @@
 
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_fsi_str_model_evaluator_partitioned.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_structure_aux.H"
 #include "baci_structure_new_timint_basedataio.H"
 #include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"

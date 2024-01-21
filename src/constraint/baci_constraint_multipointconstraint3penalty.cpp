@@ -9,10 +9,10 @@
 #include "baci_constraint_multipointconstraint3penalty.H"
 
 #include "baci_constraint_element3.H"
+#include "baci_global_data.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_transparent.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_linalg_sparsematrix.H"

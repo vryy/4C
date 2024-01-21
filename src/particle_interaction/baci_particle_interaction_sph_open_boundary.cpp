@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph_open_boundary.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_particle_engine_container.H"
 #include "baci_particle_engine_interface.H"
 #include "baci_particle_engine_object.H"

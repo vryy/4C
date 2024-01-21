@@ -10,13 +10,13 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_LIB_GLOBALPROBLEM_H
-#define BACI_LIB_GLOBALPROBLEM_H
+#ifndef BACI_GLOBAL_DATA_H
+#define BACI_GLOBAL_DATA_H
 
 #include "baci_config.H"
 
 #include "baci_discretization_fem_general_shape_function_type.H"
-#include "baci_lib_globalproblem_enums.H"
+#include "baci_global_data_enums.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils.H"
 #include "baci_utils_function_manager.H"

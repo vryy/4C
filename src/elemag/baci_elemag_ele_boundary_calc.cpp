@@ -11,8 +11,8 @@
 
 #include "baci_elemag_ele.H"
 #include "baci_elemag_ele_action.H"
+#include "baci_global_data.H"
 #include "baci_inpar_parameterlist_utils.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_node.H"
 
 BACI_NAMESPACE_OPEN

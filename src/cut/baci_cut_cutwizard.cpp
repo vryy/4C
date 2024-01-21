@@ -14,11 +14,11 @@ surface meshes
 #include "baci_cut_parallel.H"
 #include "baci_cut_sidehandle.H"
 #include "baci_cut_volumecell.H"
+#include "baci_global_data.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_xfem.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>

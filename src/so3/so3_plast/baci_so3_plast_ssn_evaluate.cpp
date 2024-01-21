@@ -11,7 +11,7 @@
  | headers                                                  seitz 07/13 |
  *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_plasticelasthyper.H"

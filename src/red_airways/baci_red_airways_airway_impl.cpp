@@ -16,8 +16,8 @@
 #include "baci_red_airways_airway_impl.H"
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_air_0d_O2_saturation.H"
 #include "baci_mat_hemoglobin_0d_O2_saturation.H"

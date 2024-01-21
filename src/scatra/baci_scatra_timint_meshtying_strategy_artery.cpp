@@ -11,9 +11,9 @@
 
 #include "baci_adapter_art_net.H"
 #include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_global_data.H"
 #include "baci_inpar_bio.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_poromultiphase_scatra_artery_coupling_nodebased.H"
 #include "baci_poromultiphase_scatra_utils.H"

@@ -8,8 +8,8 @@ equations
 #include "baci_mixture_constituent_full_constrained_mixture_fiber.H"
 
 #include "baci_comm_parobject.H"
+#include "baci_global_data.H"
 #include "baci_inpar_material.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_mixture_constituent_remodelfiber_lib.H"

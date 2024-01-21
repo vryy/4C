@@ -10,12 +10,12 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_wall_discretization_runtime_vtu_writer.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_visualization_parameters.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_particle_wall_datastate.H"
 
 #include <memory>

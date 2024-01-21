@@ -12,8 +12,8 @@
 
 #include "baci_adapter_fld_fluid.H"
 #include "baci_adapter_str_fsiwrapper.H"
+#include "baci_global_data.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linear_solver_method_linalg.H"

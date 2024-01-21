@@ -9,8 +9,8 @@
 
 #include "baci_beaminteraction_beam_to_solid_params_base.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_geometry_pair.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

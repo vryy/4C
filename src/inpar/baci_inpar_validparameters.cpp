@@ -10,6 +10,7 @@
 
 #include "baci_inpar_validparameters.H"
 
+#include "baci_global_data_enums.H"
 #include "baci_inpar.H"
 #include "baci_inpar_ale.H"
 #include "baci_inpar_beamcontact.H"
@@ -69,7 +70,6 @@
 #include "baci_inpar_wear.H"
 #include "baci_inpar_xfem.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_globalproblem_enums.H"
 
 #include <Teuchos_any.hpp>
 #include <Teuchos_Array.hpp>

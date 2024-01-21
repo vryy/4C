@@ -155,6 +155,8 @@ geometry/                  @baci/team_discretization
 
 geometry_pair/             @baci/team_discretization
 
+global_data/               @baci/team_input
+
 global_full/               @baci/team_discretization
 
 global_legacy_module/      @baci/team_infrastructure

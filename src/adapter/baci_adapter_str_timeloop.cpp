@@ -12,8 +12,8 @@
 
 #include "baci_adapter_str_timeloop.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_structure.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

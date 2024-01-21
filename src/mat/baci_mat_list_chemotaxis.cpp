@@ -14,7 +14,7 @@ is just a "control instance".
 
 #include "baci_mat_list_chemotaxis.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 
 #include <vector>

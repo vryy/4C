@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_sti_clonestrategy.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_scatra_ele.H"
 

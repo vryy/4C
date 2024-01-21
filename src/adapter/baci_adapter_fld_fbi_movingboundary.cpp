@@ -11,8 +11,8 @@
 
 #include "baci_adapter_fld_base_algorithm.H"
 #include "baci_adapter_fld_fbi_wrapper.H"
+#include "baci_global_data.H"
 #include "baci_inpar_validparameters.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_sparseoperator.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

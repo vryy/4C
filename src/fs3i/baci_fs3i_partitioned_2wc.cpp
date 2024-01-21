@@ -17,8 +17,8 @@
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_fluid_timint_loma.H"
 #include "baci_fsi_monolithic.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_scatra_algorithm.H"
 #include "baci_scatra_timint_loma.H"
 

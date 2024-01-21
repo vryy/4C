@@ -9,7 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 
 #include "baci_comm_utils.H"
 #include "baci_contact_constitutivelaw_bundle.H"

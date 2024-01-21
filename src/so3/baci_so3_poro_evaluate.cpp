@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_multiply.H"

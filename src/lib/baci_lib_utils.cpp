@@ -11,9 +11,9 @@
 
 #include "baci_lib_utils.H"
 
+#include "baci_global_data.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_gauss.H"
 #include "baci_linalg_utils_densematrix_communication.H"

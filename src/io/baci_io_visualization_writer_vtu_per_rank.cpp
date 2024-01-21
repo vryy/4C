@@ -10,10 +10,10 @@
 
 #include "baci_io_visualization_writer_vtu_per_rank.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_IO_runtime_vtk_output.H"
 #include "baci_io_control.H"
 #include "baci_io_visualization_data.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

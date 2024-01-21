@@ -13,7 +13,7 @@
 
 #include "baci_comm_pack_buffer.H"
 #include "baci_comm_parobject.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_utils_exceptions.H"
 
 BACI_NAMESPACE_OPEN

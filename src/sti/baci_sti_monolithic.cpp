@@ -12,9 +12,9 @@
 
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
+#include "baci_global_data.H"
 #include "baci_io_control.H"
 #include "baci_lib_assemblestrategy.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_equilibrate.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_matrixtransform.H"

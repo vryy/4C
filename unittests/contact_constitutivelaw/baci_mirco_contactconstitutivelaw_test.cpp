@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 
 #ifdef BACI_WITH_MIRCO

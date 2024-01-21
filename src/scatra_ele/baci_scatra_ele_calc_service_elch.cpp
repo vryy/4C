@@ -10,8 +10,8 @@
 
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_lib_discret.H"        // for time curve in body force
-#include "baci_lib_globalproblem.H"  // consistency check of formulation and material
+#include "baci_global_data.H"  // consistency check of formulation and material
+#include "baci_lib_discret.H"  // for time curve in body force
 #include "baci_lib_utils.H"
 #include "baci_mat_elchmat.H"
 #include "baci_nurbs_discret_nurbs_utils.H"

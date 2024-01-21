@@ -12,7 +12,7 @@ species
 
 #include "baci_mat_newman.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_utils_function_of_time.H"
 

@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_mat_elchmat.H"
 #include "baci_mat_elchphase.H"
 #include "baci_scatra_ele_calc_elch_diffcond.H"

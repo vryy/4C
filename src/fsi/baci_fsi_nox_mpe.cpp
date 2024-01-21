@@ -11,8 +11,8 @@
 
 #include "baci_fsi_nox_mpe.H"
 
+#include "baci_global_data.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
