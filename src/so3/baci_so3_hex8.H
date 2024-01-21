@@ -42,7 +42,7 @@ const int NUMDIM_SOH8 = 3;   ///< number of dimensions
 /// Gauss integration rule
 struct GP_RULE_SOH8
 {
-  static const enum CORE::FE::GaussRule3D rule =
+  static constexpr enum CORE::FE::GaussRule3D rule =
       DRT::ELEMENTS::DisTypeToOptGaussRule<CORE::FE::CellType::hex8>::rule;
 };
 /// total gauss points per element

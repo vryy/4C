@@ -48,52 +48,52 @@ namespace DRT
     template <>
     struct DisTypeToNumCornerNodes<CORE::FE::CellType::tet4>
     {
-      static const int numCornerNodes = 4;
+      static constexpr int numCornerNodes = 4;
     };
     template <>
     struct DisTypeToNumCornerNodes<CORE::FE::CellType::tet10>
     {
-      static const int numCornerNodes = 4;
+      static constexpr int numCornerNodes = 4;
     };
     template <>
     struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex8>
     {
-      static const int numCornerNodes = 8;
+      static constexpr int numCornerNodes = 8;
     };
     template <>
     struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex20>
     {
-      static const int numCornerNodes = 8;
+      static constexpr int numCornerNodes = 8;
     };
     template <>
     struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex27>
     {
-      static const int numCornerNodes = 8;
+      static constexpr int numCornerNodes = 8;
     };
     template <>
     struct DisTypeToNumCornerNodes<CORE::FE::CellType::pyramid5>
     {
-      static const int numCornerNodes = 5;
+      static constexpr int numCornerNodes = 5;
     };
     template <>
     struct DisTypeToNumCornerNodes<CORE::FE::CellType::wedge6>
     {
-      static const int numCornerNodes = 6;
+      static constexpr int numCornerNodes = 6;
     };
     template <>
     struct DisTypeToNumCornerNodes<CORE::FE::CellType::wedge15>
     {
-      static const int numCornerNodes = 6;
+      static constexpr int numCornerNodes = 6;
     };
     template <>
     struct DisTypeToNumCornerNodes<CORE::FE::CellType::nurbs8>
     {
-      static const int numCornerNodes = 8;
+      static constexpr int numCornerNodes = 8;
     };
     template <>
     struct DisTypeToNumCornerNodes<CORE::FE::CellType::nurbs27>
     {
-      static const int numCornerNodes = 8;
+      static constexpr int numCornerNodes = 8;
     };
 
 
@@ -477,8 +477,8 @@ namespace DRT
 
      private:
       Ale3_Impl() = default;
-      static const int iel = CORE::FE::num_nodes<distype>;
-      static const int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
+      static constexpr int iel = CORE::FE::num_nodes<distype>;
+      static constexpr int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 
       inline void ale3_edge_geometry(int i, int j, const CORE::LINALG::Matrix<3, iel>& xyze,
           double& length, double& dx, double& dy, double& dz);
@@ -777,23 +777,23 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! number of element nodes
-      static const int bdrynen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int bdrynen_ = CORE::FE::num_nodes<distype>;
 
       //! number of spatial dimensions of boundary element
-      static const int bdrynsd_ = CORE::FE::dim<distype>;
+      static constexpr int bdrynsd_ = CORE::FE::dim<distype>;
 
       //! number of spatial dimensions of parent element
-      static const int nsd_ = bdrynsd_ + 1;
+      static constexpr int nsd_ = bdrynsd_ + 1;
 
       //! number of degrees of freedom per node
-      static const int numdofpernode_ = nsd_;
+      static constexpr int numdofpernode_ = nsd_;
 
       void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp) override;
 
      private:
-      //  static const int iel =
+      //  static constexpr int iel =
       //  CORE::FE::num_nodes<distype>; static const int
       //  numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 

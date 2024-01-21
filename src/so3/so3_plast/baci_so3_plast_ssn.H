@@ -94,20 +94,20 @@ namespace DRT
       //@}
 
       //! number of element nodes
-      static const int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int nen_ = CORE::FE::num_nodes<distype>;
       //! number of space dimensions
-      static const int nsd_ = 3;
+      static constexpr int nsd_ = 3;
       //! number of dofs per node
-      static const int numdofpernode_ = 3;
+      static constexpr int numdofpernode_ = 3;
       //! total dofs per element
-      static const int numdofperelement_ = numdofpernode_ * nen_;
+      static constexpr int numdofperelement_ = numdofpernode_ * nen_;
       //! number of strains/stresses
-      static const int numstr_ = 6;
+      static constexpr int numstr_ = 6;
       //! number of Gauss points per element (value is added in so3_thermo.cpp)
       int numgpt_{};
       //! static const is required for fixedsizematrices
       //! TODO maybe more beauty is possible
-      static const int numgpt_post = THR::DisTypeToSTRNumGaussPoints<distype>::nquad;
+      static constexpr int numgpt_post = THR::DisTypeToSTRNumGaussPoints<distype>::nquad;
 
 
       //! @name Acess methods
@@ -1149,27 +1149,27 @@ namespace DRT
     template <>
     struct PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>
     {
-      static const int neas = 9;
+      static constexpr int neas = 9;
     };
     template <>
     struct PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>
     {
-      static const int neas = 21;
+      static constexpr int neas = 21;
     };
     template <>
     struct PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>
     {
-      static const int neas = 7;
+      static constexpr int neas = 7;
     };
     template <>
     struct PlastEasTypeToNumEas<DRT::ELEMENTS::soh18p_eassosh18>
     {
-      static const int neas = 9;
+      static constexpr int neas = 9;
     };
     template <>
     struct PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easnone>
     {
-      static const int neas = 0;
+      static constexpr int neas = 0;
     };
 
     int PlastEasTypeToNumEasV(DRT::ELEMENTS::So3Plast_EASType et);

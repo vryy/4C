@@ -84,13 +84,13 @@ namespace DRT
       ElemagBoundaryImpl();
 
       //! number of element nodes
-      static const int bdrynen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int bdrynen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions of the ElemagBoundary element
-      static const int bdrynsd_ = CORE::FE::dim<distype>;
+      static constexpr int bdrynsd_ = CORE::FE::dim<distype>;
 
       //! number of space dimensions of the parent element
-      static const int nsd_ = bdrynsd_ + 1;
+      static constexpr int nsd_ = bdrynsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
       int EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,

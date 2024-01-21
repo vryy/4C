@@ -436,8 +436,8 @@ class EnsightWriter : public PostWriterBase
   std::map<CORE::FE::CellType, std::string> distype2ensightstring_;
 
   //! maximum file size
-  static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff;  // 2GB
-  // static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... useful for debugging ;-)
+  static constexpr unsigned FILE_SIZE_LIMIT_ = 0x7fffffff;  // 2GB
+  // static constexpr unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... useful for debugging ;-)
 };
 
 BACI_NAMESPACE_CLOSE

@@ -411,8 +411,8 @@ namespace IMMERSED
     std::vector<double> x(globdim);
 
     // dimension of source discretization
-    static const int source_dim = CORE::FE::dim<sourcedistype>;
-    static const int target_dim = CORE::FE::dim<targetdistype>;
+    static constexpr int source_dim = CORE::FE::dim<sourcedistype>;
+    static constexpr int target_dim = CORE::FE::dim<targetdistype>;
 
     // declarations and definitions for round robin loop
     const int numproc = comm.NumProc();
@@ -928,7 +928,7 @@ namespace IMMERSED
     // declare vector of global current coordinates
     std::vector<double> x(globdim);
     // dimension of source discretization
-    static const int source_dim = CORE::FE::dim<sourcedistype>;
+    static constexpr int source_dim = CORE::FE::dim<sourcedistype>;
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
     const int myrank = comm.MyPID();                        // myrank
@@ -1253,8 +1253,8 @@ namespace IMMERSED
     std::vector<double> x_fluid_node(globdim);
 
     // dimension of structure and fluid discretization
-    static const int struct_dim = CORE::FE::dim<structdistype>;
-    static const int fluid_dim = CORE::FE::dim<fluiddistype>;
+    static constexpr int struct_dim = CORE::FE::dim<structdistype>;
+    static constexpr int fluid_dim = CORE::FE::dim<fluiddistype>;
 
     // get integration rule of structural surface element
     const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::quad_36point);
@@ -1644,9 +1644,9 @@ namespace IMMERSED
 
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
-    static const int myrank = comm.MyPID();                        // myrank
-    static const int torank = (myrank + 1) % numproc;              // sends to
-    static const int fromrank = (myrank + numproc - 1) % numproc;  // recieves from
+    static constexpr int myrank = comm.MyPID();                        // myrank
+    static constexpr int torank = (myrank + 1) % numproc;              // sends to
+    static constexpr int fromrank = (myrank + numproc - 1) % numproc;  // recieves from
 
     int owner = myrank;
 

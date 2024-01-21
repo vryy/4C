@@ -125,7 +125,7 @@ namespace DRT
 
      private:
       //! number of spatial dimensions for Gauss point coordinates (always three)
-      static const unsigned int numdim_gp_ = 3;
+      static constexpr unsigned int numdim_gp_ = 3;
       //! current Gauss-point coordinates
       double gpcoord_[numdim_gp_];
 

@@ -353,7 +353,7 @@ namespace DRT
      private:
       //! number of dofs per node (for systems of thermo equations)
       //! (storage neccessary because we don't know the material in the post filters anymore)
-      static const int numdofpernode_ = 1;
+      static constexpr int numdofpernode_ = 1;
       //! the element discretization type
       CORE::FE::CellType distype_;
       //! container containing all kind of element this-and-that

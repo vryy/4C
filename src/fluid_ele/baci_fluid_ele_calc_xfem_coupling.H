@@ -59,7 +59,7 @@ namespace DRT
       {
        public:
         /// number of spatial dimensions
-        static const unsigned nsd_ = CORE::FE::dim<distype>;
+        static constexpr unsigned nsd_ = CORE::FE::dim<distype>;
 
         //! set names of displacement and velocity states (differ dependent on the slave element)
         static void DefineStateNames(
@@ -264,11 +264,11 @@ namespace DRT
       {
        public:
         /// number of nodes per master element
-        static const unsigned nen_ = CORE::FE::num_nodes<distype>;
+        static constexpr unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions
-        static const unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
+        static constexpr unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
         /// number of nodal DOF for master element (always a xfem-fluid element)
-        static const unsigned master_numdof_ = nsd_ + 1;
+        static constexpr unsigned master_numdof_ = nsd_ + 1;
 
         static Teuchos::RCP<NitscheInterface<distype>> CreateNitscheCoupling_XFluidWDBC(
             CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
@@ -408,13 +408,13 @@ namespace DRT
       {
        public:
         /// number of nodes per master (xfluid) element
-        static const unsigned nen_ = CORE::FE::num_nodes<distype>;
+        static constexpr unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
+        static constexpr unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
         /// number of nodal dof for master element (coupling master is always a fluid element!)
-        static const unsigned master_numdof_ = nsd_ + 1;
+        static constexpr unsigned master_numdof_ = nsd_ + 1;
         /// number of independent stress-dof
-        static const unsigned numstressdof_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
+        static constexpr unsigned numstressdof_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet
         //! problems

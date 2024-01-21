@@ -133,28 +133,28 @@ namespace DRT
 
 
       /// number of space dimensions of the FluidIntFace element
-      static const int facensd_ = CORE::FE::dim<distype>;
+      static constexpr int facensd_ = CORE::FE::dim<distype>;
 
       /// number of space dimensions of the parent element
-      static const int nsd_ = facensd_ + 1;
+      static constexpr int nsd_ = facensd_ + 1;
 
       /// number of dof's per node
-      static const int numdofpernode_ = nsd_ + 1;
+      static constexpr int numdofpernode_ = nsd_ + 1;
 
       /// number of nodes
-      static const int iel = CORE::FE::num_nodes<distype>;
+      static constexpr int iel = CORE::FE::num_nodes<distype>;
 
       /// number of parentnodes
-      static const int piel = CORE::FE::num_nodes<pdistype>;
+      static constexpr int piel = CORE::FE::num_nodes<pdistype>;
 
       /// number of parentnodes of neighbor element
-      static const int niel = CORE::FE::num_nodes<ndistype>;
+      static constexpr int niel = CORE::FE::num_nodes<ndistype>;
 
       /// number of second order derivatives for master element
-      static const int numderiv2_p = CORE::FE::DisTypeToNumDeriv2<pdistype>::numderiv2;
+      static constexpr int numderiv2_p = CORE::FE::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
       /// number of second order derivatives for slave element
-      static const int numderiv2_n = CORE::FE::DisTypeToNumDeriv2<ndistype>::numderiv2;
+      static constexpr int numderiv2_n = CORE::FE::DisTypeToNumDeriv2<ndistype>::numderiv2;
 
 
 

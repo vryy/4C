@@ -295,7 +295,7 @@ namespace CONTACT
         CORE::GEN::pairedvector<int, double>& d_cauchy_nt_de);
 
     //! number of dofs per node
-    static const int numdofpernode_ = 2;
+    static constexpr int numdofpernode_ = 2;
   };
 }  // namespace CONTACT
 BACI_NAMESPACE_CLOSE

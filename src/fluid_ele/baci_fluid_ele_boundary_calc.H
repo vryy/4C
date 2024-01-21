@@ -85,16 +85,16 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! number of element nodes
-      static const int bdrynen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int bdrynen_ = CORE::FE::num_nodes<distype>;
 
       //! number of spatial dimensions of boundary element
-      static const int bdrynsd_ = CORE::FE::dim<distype>;
+      static constexpr int bdrynsd_ = CORE::FE::dim<distype>;
 
       //! number of spatial dimensions of parent element
-      static const int nsd_ = bdrynsd_ + 1;
+      static constexpr int nsd_ = bdrynsd_ + 1;
 
       //! number of degrees of freedom per node
-      static const int numdofpernode_ = nsd_ + 1;
+      static constexpr int numdofpernode_ = nsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
       int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,

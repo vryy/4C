@@ -123,16 +123,16 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! number of nodes
-      static const int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::FE::dim<distype>;
+      static constexpr int nsd_ = CORE::FE::dim<distype>;
 
       //! number of dof per node
-      static const int numdofpernode_ = 1;
+      static constexpr int numdofpernode_ = 1;
 
       //! number of Gauss points
-      static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
+      static constexpr int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
       //! Evaluate for multiple dofsets
       int Evaluate(DRT::Element* ele,                       //!< current element

@@ -56,10 +56,10 @@ namespace DRT
       //!@}
 
       //! number of dofs per node
-      static const int noddof_ = Base::noddof_ + 1;
+      static constexpr int noddof_ = Base::noddof_ + 1;
 
       //! total dofs per element
-      static const int numdof_ = noddof_ * Base::numnod_;
+      static constexpr int numdof_ = noddof_ * Base::numnod_;
 
       //! @name Acess methods
 

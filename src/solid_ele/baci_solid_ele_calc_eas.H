@@ -41,22 +41,22 @@ namespace STR::ELEMENTS
   template <>
   struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_h8_9>
   {
-    static const int num_eas = 9;
+    static constexpr int num_eas = 9;
   };
   template <>
   struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_h8_21>
   {
-    static const int num_eas = 21;
+    static constexpr int num_eas = 21;
   };
   template <>
   struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_sh8_7>
   {
-    static const int num_eas = 7;
+    static constexpr int num_eas = 7;
   };
   template <>
   struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_sh18_9>
   {
-    static const int num_eas = 9;
+    static constexpr int num_eas = 9;
   };
   template <>
   struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_undefined>

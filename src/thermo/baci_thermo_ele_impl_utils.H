@@ -34,87 +34,87 @@ namespace THR
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::hex8>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_8point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_8point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::hex18>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_18point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_18point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::hex20>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::hex27>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs27>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::tet4>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::tet_4point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::tet_4point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::tet10>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::tet_5point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::tet_5point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::wedge6>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::wedge_6point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::wedge_6point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::pyramid5>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::pyramid_8point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::pyramid_8point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::quad4>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_4point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_4point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::quad8>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::quad9>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::nurbs9>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::tri3>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_3point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_3point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::tri6>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_6point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_6point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::line2>
   {
-    static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_2point;
+    static constexpr CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_2point;
   };
   template <>
   struct DisTypeToOptGaussRule<CORE::FE::CellType::line3>
   {
-    static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_3point;
+    static constexpr CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::line_3point;
   };
 
   //! Template Meta Programming version of switch over discretization type
@@ -125,77 +125,77 @@ namespace THR
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::hex8>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::hex20>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::hex27>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::nurbs27>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::hex_27point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tet4>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tet10>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::wedge6>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::pyramid5>
   {
-    static const CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;
+    static constexpr CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad4>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad8>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::quad9>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_9point;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tri3>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::tri6>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::line2>
   {
-    static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
+    static constexpr CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
   };
   template <>
   struct DisTypeToGaussRuleForExactSol<CORE::FE::CellType::line3>
   {
-    static const CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
+    static constexpr CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
   };
 
   //! Template Meta Programming version of switch over discretization type
@@ -206,82 +206,82 @@ namespace THR
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::hex8>
   {
-    static const int nquad = 8;
+    static constexpr int nquad = 8;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::hex20>
   {
-    static const int nquad = 27;
+    static constexpr int nquad = 27;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::hex27>
   {
-    static const int nquad = 27;
+    static constexpr int nquad = 27;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::nurbs27>
   {
-    static const int nquad = 27;
+    static constexpr int nquad = 27;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::tet4>
   {
-    static const int nquad = 4;
+    static constexpr int nquad = 4;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::tet10>
   {
-    static const int nquad = 5;
+    static constexpr int nquad = 5;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::wedge6>
   {
-    static const int nquad = 6;
+    static constexpr int nquad = 6;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::pyramid5>
   {
-    static const int nquad = 8;
+    static constexpr int nquad = 8;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::quad4>
   {
-    static const int nquad = 4;
+    static constexpr int nquad = 4;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::quad8>
   {
-    static const int nquad = 9;
+    static constexpr int nquad = 9;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::quad9>
   {
-    static const int nquad = 9;
+    static constexpr int nquad = 9;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::nurbs9>
   {
-    static const int nquad = 9;
+    static constexpr int nquad = 9;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::tri3>
   {
-    static const int nquad = 3;
+    static constexpr int nquad = 3;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::tri6>
   {
-    static const int nquad = 6;
+    static constexpr int nquad = 6;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::line2>
   {
-    static const int nquad = 2;
+    static constexpr int nquad = 2;
   };
   template <>
   struct DisTypeToNumGaussPoints<CORE::FE::CellType::line3>
   {
-    static const int nquad = 3;
+    static constexpr int nquad = 3;
   };
 
   //! Template Meta Programming version of switch over discretization type
@@ -292,37 +292,37 @@ namespace THR
   template <>
   struct DisTypeToSTRNumGaussPoints<CORE::FE::CellType::hex8>
   {
-    static const int nquad = 8;
+    static constexpr int nquad = 8;
   };
   template <>
   struct DisTypeToSTRNumGaussPoints<CORE::FE::CellType::tet4>
   {
-    static const int nquad = 5;
+    static constexpr int nquad = 5;
   };
   template <>
   struct DisTypeToSTRNumGaussPoints<CORE::FE::CellType::tet10>
   {
-    static const int nquad = 11;
+    static constexpr int nquad = 11;
   };
   template <>
   struct DisTypeToSTRNumGaussPoints<CORE::FE::CellType::hex27>
   {
-    static const int nquad = 27;
+    static constexpr int nquad = 27;
   };
   template <>
   struct DisTypeToSTRNumGaussPoints<CORE::FE::CellType::hex20>
   {
-    static const int nquad = 27;
+    static constexpr int nquad = 27;
   };
   template <>
   struct DisTypeToSTRNumGaussPoints<CORE::FE::CellType::hex18>
   {
-    static const int nquad = 18;
+    static constexpr int nquad = 18;
   };
   template <>
   struct DisTypeToSTRNumGaussPoints<CORE::FE::CellType::nurbs27>
   {
-    static const int nquad = 27;
+    static constexpr int nquad = 27;
   };
 
 }  // namespace THR

@@ -778,7 +778,7 @@ namespace NOX
           const ::NOX::Utils& utils_;
 
           /// output precision of the scientific numbers in the print methods
-          static const int OUTPUT_PRECISION = 15;
+          static constexpr int OUTPUT_PRECISION = 15;
         };  // class Filter
       }     // namespace StatusTest
     }       // namespace INNER

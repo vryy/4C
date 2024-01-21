@@ -111,13 +111,13 @@ namespace DRT
       TemperBoundaryImpl(int numdofpernode);
 
       //! number of nodes
-      static const int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::FE::dim<distype>;
+      static constexpr int nsd_ = CORE::FE::dim<distype>;
 
       //! number of Gauss points
-      static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
+      static constexpr int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
 
       //! Evaluate (la required in case of multiple dofsets)

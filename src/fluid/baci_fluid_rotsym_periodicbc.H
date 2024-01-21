@@ -42,10 +42,10 @@ namespace FLD
   {
    public:
     /// number of nodes for this element type including virtual nodes
-    static const int elenumnode =
+    static constexpr int elenumnode =
         DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode * CORE::FE::num_nodes<distype>;
     /// number of nodes for this element type (only real nodes)
-    static const int elenumnodereal = CORE::FE::num_nodes<distype>;
+    static constexpr int elenumnodereal = CORE::FE::num_nodes<distype>;
 
     /// standard constructor
     explicit RotationallySymmetricPeriodicBC() : rotangle_(0.0), rotmat_(true) { return; };

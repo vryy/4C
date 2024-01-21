@@ -373,12 +373,12 @@ namespace DRT
     template <>
     struct MultipleNumNode<DRT::ELEMENTS::Fluid::none>
     {
-      static const int multipleNode = 1;
+      static constexpr int multipleNode = 1;
     };
     template <>
     struct MultipleNumNode<DRT::ELEMENTS::Fluid::xwall>
     {
-      static const int multipleNode = 2;
+      static constexpr int multipleNode = 2;
     };
 
     //=======================================================================

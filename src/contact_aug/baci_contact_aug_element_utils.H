@@ -31,24 +31,24 @@ namespace CONTACT
     template <CORE::FE::CellType type>
     struct is_lagrange_ele_type
     {
-      static const bool value_ = false;
+      static constexpr bool value_ = false;
     };
 
     /// supported standard types
     template <>
     struct is_lagrange_ele_type<CORE::FE::CellType::line2>
     {
-      static const bool value_ = true;
+      static constexpr bool value_ = true;
     };
     template <>
     struct is_lagrange_ele_type<CORE::FE::CellType::tri3>
     {
-      static const bool value_ = true;
+      static constexpr bool value_ = true;
     };
     template <>
     struct is_lagrange_ele_type<CORE::FE::CellType::quad4>
     {
-      static const bool value_ = true;
+      static constexpr bool value_ = true;
     };
 
     /** \brief Evaluate the shape function values at a local position xi
@@ -133,29 +133,29 @@ namespace CONTACT
     template <CORE::FE::CellType type>
     struct is_nurbs_ele_type
     {
-      static const bool value_ = false;
+      static constexpr bool value_ = false;
     };
 
     /// supported nurbs types
     template <>
     struct is_nurbs_ele_type<CORE::FE::CellType::nurbs2>
     {
-      static const bool value_ = true;
+      static constexpr bool value_ = true;
     };
     template <>
     struct is_nurbs_ele_type<CORE::FE::CellType::nurbs3>
     {
-      static const bool value_ = true;
+      static constexpr bool value_ = true;
     };
     template <>
     struct is_nurbs_ele_type<CORE::FE::CellType::nurbs4>
     {
-      static const bool value_ = true;
+      static constexpr bool value_ = true;
     };
     template <>
     struct is_nurbs_ele_type<CORE::FE::CellType::nurbs9>
     {
-      static const bool value_ = true;
+      static constexpr bool value_ = true;
     };
 
     /** \brief Access the NURBS weights of the mortar element
@@ -180,7 +180,7 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type shape_function(
         MORTAR::Element& ele, T& xi, V& val)
     {
-      static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
+      static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
@@ -198,7 +198,7 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_deriv1(MORTAR::Element& ele, T& xi, V& deriv)
     {
-      static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
+      static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
@@ -217,7 +217,7 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_and_deriv1(MORTAR::Element& ele, T& xi, U& val, V& deriv)
     {
-      static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
+      static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
@@ -235,8 +235,8 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_deriv2(MORTAR::Element& ele, T& xi, V& deriv2)
     {
-      static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
-      static const unsigned DIM = CORE::FE::dim<type>;
+      static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
+      static constexpr unsigned DIM = CORE::FE::dim<type>;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
@@ -257,7 +257,7 @@ namespace CONTACT
     inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
     shape_function_and_deriv1_and_deriv2(MORTAR::Element& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
-      static const unsigned NUMNODE = CORE::FE::num_nodes<type>;
+      static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
       CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);

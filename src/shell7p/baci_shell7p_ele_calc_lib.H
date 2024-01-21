@@ -982,7 +982,7 @@ namespace DRT::ELEMENTS::SHELL
     CORE::LINALG::TENSOR::InverseFourthTensorRotation(g_metrics_trans, stress.cmat_, Cmat);
 
     // re-arrange indices for shell element formulation
-    static const std::vector<int> voigt_inconsistent_ = {0, 3, 5, 1, 4, 2};
+    static constexpr std::array voigt_inconsistent_ = {0, 3, 5, 1, 4, 2};
     for (unsigned int i = 0; i < 6; ++i)
       for (unsigned int j = 0; j < 6; ++j)
         stress.cmat_(i, j) = Cmat(voigt_inconsistent_[i], voigt_inconsistent_[j]);

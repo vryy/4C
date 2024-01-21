@@ -69,19 +69,20 @@ namespace DRT
       /*========================================================================*/
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::FE::dim<distype>;
+      static constexpr int nsd_ = CORE::FE::dim<distype>;
 
       //! number of components necessary to store second derivatives
       // 1 component  for nsd=1:  (N,xx)
       // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
       // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-      static const int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
+      static constexpr int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! element-type specific flag if second derivatives are needed
-      static const bool use2ndderiv_ = POROFLUIDMULTIPHASE::ELEUTILS::Use2ndDerivs<distype>::use;
+      static constexpr bool use2ndderiv_ =
+          POROFLUIDMULTIPHASE::ELEUTILS::Use2ndDerivs<distype>::use;
 
       /// Evaluate the element
       /*!

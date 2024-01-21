@@ -134,7 +134,7 @@ namespace XFEM
     typedef std::vector<Teuchos::RCP<const DRT::Discretization>> XDisVec;
 
     // number of map extractor types
-    static const unsigned NUM_MAP_TYPES = 2;
+    static constexpr unsigned NUM_MAP_TYPES = 2;
 
    public:
     /// constructor

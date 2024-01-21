@@ -97,7 +97,7 @@ namespace DRT
       explicit RedAirBloodScatraLine3Impl();
 
       //! number of nodes
-      static const int iel = CORE::FE::num_nodes<distype>;
+      static constexpr int iel = CORE::FE::num_nodes<distype>;
 
 
       /// Evaluate

@@ -117,8 +117,8 @@ namespace BEAMINTERACTION
         typename CORE::FADUTILS::HigherOrderFadType<2, scalar_type_rot_1st>::type;
 
     //! Number of rotational DOF for the SR beams;
-    static const unsigned int n_dof_rot_ = 9;
-    static const unsigned int n_dof_pair_ = n_dof_rot_ + surface::n_dof_;
+    static constexpr unsigned int n_dof_rot_ = 9;
+    static constexpr unsigned int n_dof_pair_ = n_dof_rot_ + surface::n_dof_;
 
    public:
     /**

@@ -33,13 +33,13 @@ namespace DRT
     {
      public:
       /// nen_: number of element nodes (T. Hughes: The Finite Element Method).
-      static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
       /// Number of space dimensions.
-      static const unsigned int nsd_ = CORE::FE::dim<distype>;
+      static constexpr unsigned int nsd_ = CORE::FE::dim<distype>;
 
       /// Number of faces on element.
-      static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
+      static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
       int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1) override
@@ -97,9 +97,9 @@ namespace DRT
       struct LocalSolver
       {
         /// Number of Spatial Dimensions
-        static const unsigned int nsd_ = ElemagEleCalc<distype>::nsd_;
+        static constexpr unsigned int nsd_ = ElemagEleCalc<distype>::nsd_;
         /// Number of FACES
-        static const unsigned int nfaces_ = ElemagEleCalc<distype>::nfaces_;
+        static constexpr unsigned int nfaces_ = ElemagEleCalc<distype>::nfaces_;
 
         /// Init function for the struct members
         LocalSolver(const DRT::ELEMENTS::Elemag* ele, CORE::FE::ShapeValues<distype>& shapeValues,

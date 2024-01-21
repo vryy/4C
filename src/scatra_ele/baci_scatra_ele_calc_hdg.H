@@ -34,13 +34,13 @@ namespace DRT
     {
      public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const unsigned int nsd_ = probdim;
+      static constexpr unsigned int nsd_ = probdim;
 
       //! number of faces on element
-      static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
+      static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
       /// Evaluate supporting methods of the element
       /*!
@@ -211,8 +211,8 @@ namespace DRT
       //! local solver that inverts local problem on an element and can solve with various vectors
       struct LocalSolver
       {
-        static const unsigned int nsd_ = ScaTraEleCalcHDG<distype, probdim>::nsd_;
-        static const unsigned int nfaces_ = ScaTraEleCalcHDG<distype, probdim>::nfaces_;
+        static constexpr unsigned int nsd_ = ScaTraEleCalcHDG<distype, probdim>::nsd_;
+        static constexpr unsigned int nfaces_ = ScaTraEleCalcHDG<distype, probdim>::nfaces_;
         int onfdofs_;
 
         LocalSolver(const DRT::Element* ele, CORE::FE::ShapeValues<distype>& shapeValues,

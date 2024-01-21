@@ -70,19 +70,19 @@ namespace DRT
       //!@}
 
       //! number of element nodes (
-      static const int numnod_ = CORE::FE::num_nodes<distype>;
+      static constexpr int numnod_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int numdim_ = CORE::FE::dim<distype>;
+      static constexpr int numdim_ = CORE::FE::dim<distype>;
 
       //! number of dofs per node
-      static const int noddof_ = numdim_;
+      static constexpr int noddof_ = numdim_;
 
       //! total dofs per element
-      static const int numdof_ = noddof_ * numnod_;
+      static constexpr int numdof_ = noddof_ * numnod_;
 
       //! number of strains per node
-      static const int numstr_ = (numdim_ * (numdim_ + 1)) / 2;
+      static constexpr int numstr_ = (numdim_ * (numdim_ + 1)) / 2;
 
       //! number of components necessary to store second derivatives
       /*!
@@ -92,7 +92,7 @@ namespace DRT
 
        6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
       */
-      static const int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
+      static constexpr int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! total gauss points per element
       int numgpt_;

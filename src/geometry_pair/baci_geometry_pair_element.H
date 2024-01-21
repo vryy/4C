@@ -47,22 +47,22 @@ namespace GEOMETRYPAIR
   {
    public:
     //! Type of shape function that will be used when evaluating the shape functions.
-    static const CORE::FE::CellType discretization_ = discretization;
+    static constexpr CORE::FE::CellType discretization_ = discretization;
 
     //! Dimension of element (curve=1, surface=2, volume=3).
-    static const unsigned int dim_ = CORE::FE::dim<discretization_>;
+    static constexpr unsigned int dim_ = CORE::FE::dim<discretization_>;
 
     //! Number of values per node.
-    static const unsigned int n_val_ = values_per_node;
+    static constexpr unsigned int n_val_ = values_per_node;
 
     //! Number of nodes for this element.
-    static const unsigned int n_nodes_ = CORE::FE::num_nodes<discretization_>;
+    static constexpr unsigned int n_nodes_ = CORE::FE::num_nodes<discretization_>;
 
     //! Number of unknowns for this element.
-    static const unsigned int n_dof_ = 3 * n_val_ * n_nodes_;
+    static constexpr unsigned int n_dof_ = 3 * n_val_ * n_nodes_;
 
     //! Geometry type of the element.
-    static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
+    static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         ElementDiscretizationToGeometryType<discretization_>::geometry_type_;
   };
 

@@ -89,24 +89,24 @@ namespace DRT
 
 
       /// number of stress-dof
-      static const int numstressdof_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
+      static constexpr int numstressdof_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! @name useful constants for DOF-index numbering
       //@{
-      static const unsigned Velx = 0;
-      static const unsigned Vely = 1;
-      static const unsigned Velz = 2;
-      static const unsigned Pres = 3;
+      static constexpr unsigned Velx = 0;
+      static constexpr unsigned Vely = 1;
+      static constexpr unsigned Velz = 2;
+      static constexpr unsigned Pres = 3;
 
-      static const unsigned Sigmaxx = 0;
-      static const unsigned Sigmaxy = 1;
-      static const unsigned Sigmaxz = 2;
-      static const unsigned Sigmayx = 1;
-      static const unsigned Sigmayy = 3;
-      static const unsigned Sigmayz = 4;
-      static const unsigned Sigmazx = 2;
-      static const unsigned Sigmazy = 4;
-      static const unsigned Sigmazz = 5;
+      static constexpr unsigned Sigmaxx = 0;
+      static constexpr unsigned Sigmaxy = 1;
+      static constexpr unsigned Sigmaxz = 2;
+      static constexpr unsigned Sigmayx = 1;
+      static constexpr unsigned Sigmayy = 3;
+      static constexpr unsigned Sigmayz = 4;
+      static constexpr unsigned Sigmazx = 2;
+      static constexpr unsigned Sigmazy = 4;
+      static constexpr unsigned Sigmazz = 5;
       //@}
 
       /// get stress dof-index

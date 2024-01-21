@@ -467,12 +467,12 @@ namespace SCATRA
   template <>
   struct CellTypeToOptGaussRule<CORE::FE::CellType::quad4>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_36point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_36point;
   };
   template <>
   struct CellTypeToOptGaussRule<CORE::FE::CellType::tri3>
   {
-    static const CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_37point;
+    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_37point;
   };
 }  // namespace SCATRA
 
