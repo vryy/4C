@@ -83,13 +83,13 @@ namespace DRT
     {
      public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const int nen_ =
+      static constexpr int nen_ =
           DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode * CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = CORE::FE::dim<distype>;
+      static constexpr int nsd_ = CORE::FE::dim<distype>;
 
-      static const int numdofpernode_ = nsd_ + 1;
+      static constexpr int numdofpernode_ = nsd_ + 1;
 
       virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -617,7 +617,7 @@ namespace DRT
 
        6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
       */
-      static const int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
+      static constexpr int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! calculate body force from nodal conditions
       void BodyForce(DRT::ELEMENTS::Fluid* ele,       //< pointer to element

@@ -116,13 +116,13 @@ namespace DRT
 
       /// @name object-wide constants
       //@{
-      static const int maxnod_ = 9;  ///< maximally permitted number of nodes
-      static const int numdim_ = 2;  ///< 2-dimensional/planar element
-      static const int noddof_ = 2;  ///< number of nodal DOFs
-      static const int numstr_ =
+      static constexpr int maxnod_ = 9;  ///< maximally permitted number of nodes
+      static constexpr int numdim_ = 2;  ///< 2-dimensional/planar element
+      static constexpr int noddof_ = 2;  ///< number of nodal DOFs
+      static constexpr int numstr_ =
           4;  ///< number of (symmetric) strain/stress components --- THIS SHOULD BE 3
-      static const int numnstr_ = 4;  ///< number of non-symmetric strain/stress components
-      static const int neas_ = 4;     ///< number of EAS parameters
+      static constexpr int numnstr_ = 4;  ///< number of non-symmetric strain/stress components
+      static constexpr int neas_ = 4;     ///< number of EAS parameters
       //@}
 
       /// @name Constructors and destructors and related methods

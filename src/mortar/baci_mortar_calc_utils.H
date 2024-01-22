@@ -45,8 +45,8 @@ namespace MORTAR
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
       if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
-      static const int n = CORE::FE::num_nodes<distype>;
-      static const int ndim = CORE::FE::dim<distype> + 1;
+      static constexpr int n = CORE::FE::num_nodes<distype>;
+      static constexpr int ndim = CORE::FE::dim<distype> + 1;
 
       DRT::Node** mynodes = ele.Points();
       if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
@@ -307,8 +307,8 @@ namespace MORTAR
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
       if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
-      static const int n = CORE::FE::num_nodes<distype>;
-      static const int ndim = CORE::FE::dim<distype> + 1;
+      static constexpr int n = CORE::FE::num_nodes<distype>;
+      static constexpr int ndim = CORE::FE::dim<distype> + 1;
 
       DRT::Node** mynodes = ele.Nodes();
       if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
@@ -360,8 +360,8 @@ namespace MORTAR
       if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
       if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
-      static const int n = CORE::FE::num_nodes<distype>;
-      static const int ndim = CORE::FE::dim<distype>;
+      static constexpr int n = CORE::FE::num_nodes<distype>;
+      static constexpr int ndim = CORE::FE::dim<distype>;
 
       if ((int)edisp.size() != n * globdim)
         dserror("ERROR: vector of element displacements has wrong dimension (%d != %d)",
@@ -406,8 +406,8 @@ namespace MORTAR
         double* xgl,                       // global position (input)
         double* xi)                        // local position  (output)
     {
-      static const int numnod = CORE::FE::num_nodes<distype>;
-      static const int ndim = CORE::FE::dim<distype>;
+      static constexpr int numnod = CORE::FE::num_nodes<distype>;
+      static constexpr int ndim = CORE::FE::dim<distype>;
 
       CORE::LINALG::Matrix<numnod, 1> funct(true);
       CORE::LINALG::Matrix<ndim, numnod> xref(true);
@@ -534,8 +534,8 @@ namespace MORTAR
         double* xi,
         bool& converged)  // converged solution ?
     {
-      static const int numnod = CORE::FE::num_nodes<distype>;
-      static const int ndim = CORE::FE::dim<distype>;
+      static constexpr int numnod = CORE::FE::num_nodes<distype>;
+      static constexpr int ndim = CORE::FE::dim<distype>;
 
       // converged
       converged = false;
@@ -660,8 +660,8 @@ namespace MORTAR
         double* xi, bool& converged,
         double& residual)  // converged solution ?
     {
-      static const int numnod = CORE::FE::num_nodes<distype>;
-      static const int ndim = CORE::FE::dim<distype>;
+      static constexpr int numnod = CORE::FE::num_nodes<distype>;
+      static constexpr int ndim = CORE::FE::dim<distype>;
 
       // converged
       converged = false;

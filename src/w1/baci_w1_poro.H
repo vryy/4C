@@ -63,16 +63,16 @@ namespace DRT
       //!@}
 
       //! number of element nodes (
-      static const int numnod_ = CORE::FE::num_nodes<distype>;
+      static constexpr int numnod_ = CORE::FE::num_nodes<distype>;
 
       //! number of strains per node
-      static const int numstr_ = 3;
+      static constexpr int numstr_ = 3;
 
       //! number or second derivatives
-      static const int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
+      static constexpr int numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       //! number of degrees of freedom of element
-      static const int numdof_ = numnod_ * noddof_;
+      static constexpr int numdof_ = numnod_ * noddof_;
 
       //! total gauss points per element
       int numgpt_;

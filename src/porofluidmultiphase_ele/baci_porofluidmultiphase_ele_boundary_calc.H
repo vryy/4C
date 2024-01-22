@@ -46,10 +46,10 @@ namespace DRT
 
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of boundary(!) space dimensions
-      static const int nsd_ = CORE::FE::dim<distype>;
+      static constexpr int nsd_ = CORE::FE::dim<distype>;
 
       //! Evaluate the element (using location array)
       int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,

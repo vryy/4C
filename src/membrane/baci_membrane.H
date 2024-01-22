@@ -97,19 +97,19 @@ namespace DRT
       DRT::Element* Clone() const override;
 
       //! number of element nodes
-      static const int numnod_ = CORE::FE::num_nodes<distype>;
+      static constexpr int numnod_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int numdim_ = CORE::FE::dim<distype>;
+      static constexpr int numdim_ = CORE::FE::dim<distype>;
 
       //! number of dofs per node
-      static const int noddof_ = 3;
+      static constexpr int noddof_ = 3;
 
       //! total dofs per element
-      static const int numdof_ = noddof_ * numnod_;
+      static constexpr int numdof_ = noddof_ * numnod_;
 
       //! static const is required for fixedsizematrices
-      static const int numgpt_post_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
+      static constexpr int numgpt_post_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
       /*!
       \brief Get shape type of element
@@ -611,10 +611,10 @@ namespace DRT
       MembraneLine(const MembraneLine<distype2>& old);
 
       //! number of nodes per line
-      static const int numnod_line_ =
+      static constexpr int numnod_line_ =
           CORE::FE::num_nodes<CORE::FE::DisTypeToFaceShapeType<distype2>::shape>;
 
-      static const int noddof_ = 3;
+      static constexpr int noddof_ = 3;
 
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy

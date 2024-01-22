@@ -94,16 +94,16 @@ namespace CORE::FE
   {
    public:
     //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-    static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
+    static constexpr unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
     //! number of space dimensions
-    static const unsigned int nsd_ = CORE::FE::dim<distype>;
+    static constexpr unsigned int nsd_ = CORE::FE::dim<distype>;
 
     ///! number of faces on element
-    static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
+    static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
     ///! number of nodes on faces
-    static const unsigned int nfn_ = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    static constexpr unsigned int nfn_ = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     /*!
     \brief Initialize the data structure for shape functions, set element-independent data
@@ -182,16 +182,16 @@ namespace CORE::FE
   {
    public:
     //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-    static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
+    static constexpr unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
     ///! number of nodes on faces
-    static const unsigned int nfn_ = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    static constexpr unsigned int nfn_ = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     //! number of space dimensions
-    static const unsigned int nsd_ = CORE::FE::dim<distype>;
+    static constexpr unsigned int nsd_ = CORE::FE::dim<distype>;
 
     ///! number of faces on element
-    static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
+    static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
     /*!
     \brief Constructor which does the things which do not need to be redone for the same

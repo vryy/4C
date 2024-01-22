@@ -111,13 +111,13 @@ namespace MORTAR
         CORE::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
 
     //! ns_: number of slave element nodes
-    static const int ns_ = CORE::FE::num_nodes<distypeS>;
+    static constexpr int ns_ = CORE::FE::num_nodes<distypeS>;
 
     //! nm_: number of master element nodes
-    static const int nm_ = CORE::FE::num_nodes<distypeM>;
+    static constexpr int nm_ = CORE::FE::num_nodes<distypeM>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static const int ndim_ = CORE::FE::dim<distypeS> + 1;
+    static constexpr int ndim_ = CORE::FE::dim<distypeS> + 1;
 
     //@}
     //! @name 2D and 3D integration methods

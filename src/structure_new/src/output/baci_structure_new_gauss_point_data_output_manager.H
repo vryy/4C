@@ -110,7 +110,7 @@ namespace STR
 
      private:
       static constexpr int MPI_TAG = 545;
-      static const char MPI_DELIMITER = '!';
+      static constexpr char MPI_DELIMITER = '!';
 
       void SendMyQuantitiesToProc(const CORE::COMM::Exporter& exporter, int to_proc) const;
 

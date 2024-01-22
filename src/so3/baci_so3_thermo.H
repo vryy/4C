@@ -69,20 +69,20 @@ namespace DRT
       //@}
 
       //! number of element nodes
-      static const int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int nen_ = CORE::FE::num_nodes<distype>;
       //! number of space dimensions
-      static const int nsd_ = 3;
+      static constexpr int nsd_ = 3;
       //! number of dofs per node
-      static const int numdofpernode_ = 3;
+      static constexpr int numdofpernode_ = 3;
       //! total dofs per element
-      static const int numdofperelement_ = numdofpernode_ * nen_;
+      static constexpr int numdofperelement_ = numdofpernode_ * nen_;
       //! number of strains/stresses
-      static const int numstr_ = 6;
+      static constexpr int numstr_ = 6;
       //! number of Gauss points per element (value is added in so3_thermo.cpp)
       int numgpt_;
       //! static const is required for fixedsizematrices
       //! TODO maybe more beauty is possible
-      static const int numgpt_post = THR::DisTypeToSTRNumGaussPoints<distype>::nquad;
+      static constexpr int numgpt_post = THR::DisTypeToSTRNumGaussPoints<distype>::nquad;
 
       //! @name Acess methods
 

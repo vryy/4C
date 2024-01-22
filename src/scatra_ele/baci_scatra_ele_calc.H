@@ -142,20 +142,20 @@ namespace DRT
       /*========================================================================*/
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const unsigned nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr unsigned nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const unsigned nsd_ = probdim;
-      static const unsigned nsd_ele_ = CORE::FE::dim<distype>;
+      static constexpr unsigned nsd_ = probdim;
+      static constexpr unsigned nsd_ele_ = CORE::FE::dim<distype>;
 
       //! element-type specific flag if second derivatives are needed
-      static const bool use2ndderiv_ = SCATRA::Use2ndDerivs<distype>::use;
+      static constexpr bool use2ndderiv_ = SCATRA::Use2ndDerivs<distype>::use;
 
       //! number of components necessary to store second derivatives
       // 1 component  for nsd=1:  (N,xx)
       // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
       // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-      static const unsigned numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
+      static constexpr unsigned numderiv2_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
       using varmanager = ScaTraEleInternalVariableManager<nsd_, nen_>;
 

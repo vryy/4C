@@ -411,8 +411,8 @@ namespace IMMERSED
     std::vector<double> x(globdim);
 
     // dimension of source discretization
-    static const int source_dim = CORE::FE::dim<sourcedistype>;
-    static const int target_dim = CORE::FE::dim<targetdistype>;
+    static constexpr int source_dim = CORE::FE::dim<sourcedistype>;
+    static constexpr int target_dim = CORE::FE::dim<targetdistype>;
 
     // declarations and definitions for round robin loop
     const int numproc = comm.NumProc();
@@ -928,7 +928,7 @@ namespace IMMERSED
     // declare vector of global current coordinates
     std::vector<double> x(globdim);
     // dimension of source discretization
-    static const int source_dim = CORE::FE::dim<sourcedistype>;
+    static constexpr int source_dim = CORE::FE::dim<sourcedistype>;
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
     const int myrank = comm.MyPID();                        // myrank
@@ -1253,8 +1253,8 @@ namespace IMMERSED
     std::vector<double> x_fluid_node(globdim);
 
     // dimension of structure and fluid discretization
-    static const int struct_dim = CORE::FE::dim<structdistype>;
-    static const int fluid_dim = CORE::FE::dim<fluiddistype>;
+    static constexpr int struct_dim = CORE::FE::dim<structdistype>;
+    static constexpr int fluid_dim = CORE::FE::dim<fluiddistype>;
 
     // get integration rule of structural surface element
     const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::quad_36point);
@@ -1611,246 +1611,6 @@ namespace IMMERSED
     }
 
     return err;
-  };
-
-
-  /*!
-  \brief Find the intersection of a line normal to a given surface point with the same surface but
-  on the opposite side
-
-  \author rauch
-  \date 2015
-
-   */
-  template <CORE::FE::CellType sourcedistype, CORE::FE::CellType targetdistype>
-  double IntersectLineWithBoundary(Teuchos::RCP<DRT::Discretization> evaldis,
-      const Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::ParameterList& params,
-      CORE::LINALG::Matrix<3, 1>& searchdirection, CORE::LINALG::Matrix<3, 1>& spacepoint,
-      const std::string& condstring, const int condid)
-  {
-    // is to be set 1 if intersection is found
-    int matched = 0;
-
-    // result variable
-    double tempresult = -1234.0;
-
-#ifdef BACI_DEBUG
-    if (!(evaldis->Filled())) dserror("FillComplete() was not called");
-    if (!(evaldis->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
-#endif
-
-    // get communicator
-    const Epetra_Comm& comm = evaldis->Comm();
-
-    // declarations and definitions for round robin loop
-    int numproc = comm.NumProc();
-    static const int myrank = comm.MyPID();                        // myrank
-    static const int torank = (myrank + 1) % numproc;              // sends to
-    static const int fromrank = (myrank + numproc - 1) % numproc;  // recieves from
-
-    int owner = myrank;
-
-    DRT::Element::LocationArray la(evaldis->NumDofSets());
-
-    std::multimap<std::string, Teuchos::RCP<DRT::Condition>>::iterator fool;
-
-    //----------------------------------------------------------------------
-    // loop through conditions and evaluate them if they match the criterion
-    //----------------------------------------------------------------------
-    for (fool = evaldis->GetAllConditions().begin(); fool != evaldis->GetAllConditions().end();
-         ++fool)
-    {
-      if (fool->first == condstring)
-      {
-        DRT::Condition& cond = *(fool->second);
-        if (condid == -1 || condid == cond.GetInt("ConditionID"))
-        {
-          // get geometry
-          std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
-          // DEBUG check
-          if (geom.empty())
-            dserror(
-                "evaluation of condition with empty geometry on proc %d", evaldis->Comm().MyPID());
-
-          // define iterator over surface geometry elements
-          std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
-
-          // loop over all geometry elements and check for intersection with
-          // boundary along search direction
-          CORE::LINALG::Matrix<3, 1> p;
-          CORE::LINALG::Matrix<3, 1> m1;
-          CORE::LINALG::Matrix<3, 1> m2;
-          CORE::LINALG::Matrix<3, 3> A;
-          CORE::LINALG::Matrix<3, 1> b;
-          CORE::LINALG::Matrix<3, 1> parameters;
-          double determinant = -1234.0;
-
-          // round robin loop
-          for (int irobin = 0; irobin < numproc; ++irobin)
-          {
-            std::vector<char> sdata;
-            std::vector<char> rdata;
-
-            // if the spacepoint on the calling proc has not yet been matched
-            // to a point on the opposite surface (in inward normal direction) ...
-            // if matched == 1 then tempresult is already correct
-            if (matched == 0)
-            {
-              // ... loop over all geometry elements on this proc
-              for (curr = geom.begin(); curr != geom.end(); ++curr)
-              {
-                // get nodes
-                DRT::Node** bdrynodes = curr->second->Nodes();
-                const auto& X0 = bdrynodes[0]->X();
-                const auto& X1 = bdrynodes[1]->X();
-                const auto& X3 = bdrynodes[3]->X();
-
-                // get location vector
-                curr->second->LocationVector(*evaldis, la, false, condstring, params);
-                // extract  bdry ele displacements
-                std::vector<double> bdryeledisp(la[0].lm_.size());
-                DRT::UTILS::ExtractMyValues(*dispnp, bdryeledisp, la[0].lm_);
-
-                // target ele space point p is curr. pos. of node 0
-                // from this point a aux plane is built
-                // warping of the element is neglected
-                p(0, 0) = X0[0] + bdryeledisp[0 * 3 + 0];
-                p(1, 0) = X0[1] + bdryeledisp[0 * 3 + 1];
-                p(2, 0) = X0[2] + bdryeledisp[0 * 3 + 2];
-
-                // direction vector m1 is vector from node 0 to node 1
-                // first vector to span the aux plane
-                m1(0, 0) = X1[0] + bdryeledisp[1 * 3 + 0] - p(0, 0);
-                m1(1, 0) = X1[1] + bdryeledisp[1 * 3 + 1] - p(1, 0);
-                m1(2, 0) = X1[2] + bdryeledisp[1 * 3 + 2] - p(2, 0);
-
-                // direction vector m1 is vector from node 0 to node 3
-                // second vector to span the aux plane
-                m2(0, 0) = X3[0] + bdryeledisp[3 * 3 + 0] - p(0, 0);
-                m2(1, 0) = X3[1] + bdryeledisp[3 * 3 + 1] - p(1, 0);
-                m2(2, 0) = X3[2] + bdryeledisp[3 * 3 + 2] - p(2, 0);
-
-                // fill matrix A = [m1,m2,-searchdirection]
-                A(0, 0) = m1(0);
-                A(1, 0) = m1(1);
-                A(2, 0) = m1(2);
-
-                A(0, 1) = m2(0);
-                A(1, 1) = m2(1);
-                A(2, 1) = m2(2);
-
-                A(0, 2) = -searchdirection(0);
-                A(1, 2) = -searchdirection(1);
-                A(2, 2) = -searchdirection(2);
-
-                determinant = A.Invert();
-
-                // vector b = spacepoint - p
-                b.Update(1.0, spacepoint, -1.0, p, 0.0);
-
-                // solve for parameters
-                parameters.Multiply(A, b);
-                tempresult = parameters(2, 0);
-
-                double eps = 1.0e-06;
-
-                // parameters(2,0) is the length of the line intersecting the surface vis-a-vis the
-                // spacepoint
-                if (tempresult > 1e-04 and
-                    (parameters(0, 0) < (1.0 + eps) and parameters(0, 0) > (0.0 - eps)) and
-                    (parameters(1, 0) < (1.0 + eps) and parameters(1, 0) > (0.0 - eps)))
-                {
-                  matched = 1;
-                  if (abs(determinant) < 1e-08)
-                    dserror("determinant close to zero or negative! det=%f", determinant);
-                  break;
-                }
-
-              }  // loop over all geometry elements
-            }    // only if not yet matched
-
-            // send data around to the other procs if there are any
-            if (comm.NumProc() > 1)
-            {
-              CORE::COMM::Exporter exporter(comm);
-
-              // ---- pack data for sending -----
-              {
-                CORE::COMM::PackBuffer data;
-                data.StartPacking();
-                {
-                  data.AddtoPack(
-                      matched);  //< owner already found matching point vis-a-vis spacepoint
-                  data.AddtoPack(owner);  //< myrank = owner of data
-                  CORE::COMM::ParObject::AddtoPack<3, 1>(
-                      data, searchdirection);  //< searchdirection of owner
-                  CORE::COMM::ParObject::AddtoPack<3, 1>(data, spacepoint);  //< spacepoint of owner
-
-                  data.AddtoPack(tempresult);
-                }
-
-                std::swap(sdata, data());
-              }
-              //---------------------------------
-
-              // ---- send ----
-              MPI_Request request;
-              exporter.ISend(myrank, torank, sdata.data(), (int)sdata.size(), 1234, request);
-
-              // ---- receive ----
-              int length = rdata.size();
-              int tag = -1;
-              int from = -1;
-              exporter.ReceiveAny(from, tag, rdata, length);
-              if (tag != 1234 or from != fromrank)
-                dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
-                    myrank, from, myrank);
-
-              // ---- unpack data -----
-              std::vector<char>::size_type position = 0;
-              matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
-              owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
-              CORE::COMM::ParObject::ExtractfromPack<3, 1>(position, rdata, searchdirection);
-              CORE::COMM::ParObject::ExtractfromPack<3, 1>(position, rdata, spacepoint);
-
-              tempresult = CORE::COMM::ParObject::ExtractDouble(position, rdata);
-
-              // wait for all communication to finish
-              exporter.Wait(request);
-              comm.Barrier();
-            }  // only if numproc > 1
-
-            //            if(irobin == numproc-1 and matched == 0 )
-            //            {
-            //              // DEBUG output
-            //              std::cout<<"parameters:"<<parameters<<std::endl;
-            //              std::cout<<"m1"<<m1<<std::endl;
-            //              std::cout<<"m2"<<m2<<std::endl;
-            //              std::cout<<"searchdirection"<<searchdirection<<std::endl;
-            //              std::cout<<"spacepoint"<<spacepoint<<std::endl;
-            //              std::cout<<"p"<<p<<std::endl;
-            //              b(0,0)=p(0,0)+parameters(0,0)*m1(0,0)+parameters(1,0)*m2(0,0);
-            //              b(1,0)=p(1,0)+parameters(0,0)*m1(1,0)+parameters(1,0)*m2(1,0);
-            //              b(2,0)=p(2,0)+parameters(0,0)*m1(2,0)+parameters(1,0)*m2(2,0);
-            //              std::cout<<"intersectionpoint: "<<b<<std::endl;
-            //              b.Update(-1.0,spacepoint,1.0);
-            //              std::cout<<"connectingvector "<<b<<"\n with length:
-            //              "<<b.Norm2()<<std::endl;
-            //                std::cout<<"Warning! Found no intersection for evaluation of cell
-            //                diameter!"<<std::endl;
-            //            }
-          }  // robin loop
-
-          // if not matched after round robin loop, something went wrong
-          if (matched == 0)
-            std::cout << "No intersection for evaluation of cell diameter on rank " << myrank
-                      << std::endl;
-
-        }  // if check of condid successful
-      }    // if condstring found
-    }      // for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-
-    return tempresult;
   };
 
 }  // namespace IMMERSED

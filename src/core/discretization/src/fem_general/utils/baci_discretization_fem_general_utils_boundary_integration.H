@@ -1641,10 +1641,10 @@ namespace CORE::FE
     const int bdrynsd = CORE::FE::dim<distype>;
 
     // Number of spatial dimensions of parent element
-    static const int nsd = bdrynsd + 1;
+    static constexpr int nsd = bdrynsd + 1;
 
     // Number of nodes of boundary element
-    static const int bdrynen = CORE::FE::num_nodes<distype>;
+    static constexpr int bdrynen = CORE::FE::num_nodes<distype>;
 
     // Number of degrees of freedom per node
     int numdofpernode = nsd + 1;  // standard case is 'fluid'

@@ -147,33 +147,33 @@ namespace DRT
       /// @name Element constants
       //@{
 
-      static const int NUMNOD_ = 8;          ///< number of nodes
-      static const int NODDOF_ = 4;          ///< number of DOFs per node
-      static const int NODDISP_ = 3;         ///< number of displacements per node
-      static const int NODPRES_ = 1;         ///< number of pressures per node
-      static const int NUMDOF_ = 32;         ///< total DOFs per element
-      static const int NUMDISP_ = 24;        ///< total discrete displacements per element
-      static const int NUMDISPSQSYM_ = 300;  ///< (NUMDISP_*NUMDISP_ + NUMDISP_)/2, number
-                                             ///< of relevant entries
-                                             ///< if symmetric in element displacements
-      static const int NUMPRES_ = 8;         ///< total discrete pressures per element
-      static const int NUMPRESBRO_ = 1;      ///< total number of discrete, discontinuous/broken
-                                             ///< pressures per element
-      static const int NUMDFGR_ = 9;         ///< number of deformation gradient components
-                                             ///< (deformation gradient is non-symmetric)
-      static const int NUMGPT_ = 8;          ///< total gauss points per element
-      static const int NUMDIM_ = 3;          ///< number of dimensions, it's 3D
+      static constexpr int NUMNOD_ = 8;          ///< number of nodes
+      static constexpr int NODDOF_ = 4;          ///< number of DOFs per node
+      static constexpr int NODDISP_ = 3;         ///< number of displacements per node
+      static constexpr int NODPRES_ = 1;         ///< number of pressures per node
+      static constexpr int NUMDOF_ = 32;         ///< total DOFs per element
+      static constexpr int NUMDISP_ = 24;        ///< total discrete displacements per element
+      static constexpr int NUMDISPSQSYM_ = 300;  ///< (NUMDISP_*NUMDISP_ + NUMDISP_)/2, number
+                                                 ///< of relevant entries
+                                                 ///< if symmetric in element displacements
+      static constexpr int NUMPRES_ = 8;         ///< total discrete pressures per element
+      static constexpr int NUMPRESBRO_ = 1;      ///< total number of discrete, discontinuous/broken
+                                                 ///< pressures per element
+      static constexpr int NUMDFGR_ = 9;         ///< number of deformation gradient components
+                                                 ///< (deformation gradient is non-symmetric)
+      static constexpr int NUMGPT_ = 8;          ///< total gauss points per element
+      static constexpr int NUMDIM_ = 3;          ///< number of dimensions, it's 3D
 
       /// number of ANS sampling points, here 8
-      static const int NUMSP_ = 8;
-      static const int NUMSP2ND_ = 8;  ///< number of 2nd set of sampling points
-      static const int NUMSP3RD_ = 8;  ///< number of 3rd set of sampling points
+      static constexpr int NUMSP_ = 8;
+      static constexpr int NUMSP2ND_ = 8;  ///< number of 2nd set of sampling points
+      static constexpr int NUMSP3RD_ = 8;  ///< number of 3rd set of sampling points
       /// number of modified ANS strains (E_rt,E_st,E_tt), here 3
-      static const int NUMANS_ = 3;
+      static constexpr int NUMANS_ = 3;
 
       // number of EAS parameters
-      static const int NUMEAS_SOSH8_ = 7;  ///< number of EAS parameters of sosh8-like EAS
-      static const int NUMEAS_A_ = 1;      ///< number of EAS parameters of A-type EAS
+      static constexpr int NUMEAS_SOSH8_ = 7;  ///< number of EAS parameters of sosh8-like EAS
+      static constexpr int NUMEAS_A_ = 1;      ///< number of EAS parameters of A-type EAS
 
       /// @name Inconsistent Voigt notation used for shell elements
       ///@{

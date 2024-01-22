@@ -446,127 +446,127 @@ namespace CORE::FE
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::point1>
   {
-    static const int degree = 0;
+    static constexpr int degree = 0;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::line2>
   {
-    static const int degree = 1;
+    static constexpr int degree = 1;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::line3>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::line4>
   {
-    static const int degree = 3;
+    static constexpr int degree = 3;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::line5>
   {
-    static const int degree = 4;
+    static constexpr int degree = 4;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::line6>
   {
-    static const int degree = 5;
+    static constexpr int degree = 5;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::nurbs2>
   {
-    static const int degree = 1;
+    static constexpr int degree = 1;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::nurbs3>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::quad4>
   {
-    static const int degree = 1;
+    static constexpr int degree = 1;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::quad8>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::quad9>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::nurbs4>
   {
-    static const int degree = 1;
+    static constexpr int degree = 1;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::nurbs9>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::tri3>
   {
-    static const int degree = 1;
+    static constexpr int degree = 1;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::tri6>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::hex8>
   {
-    static const int degree = 1;
+    static constexpr int degree = 1;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::hex20>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::hex27>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::tet4>
   {
-    static const int degree = 1;
+    static constexpr int degree = 1;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::tet10>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::wedge6>
   {
-    static const int degree = 1;
+    static constexpr int degree = 1;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::wedge15>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::pyramid5>
   {
-    static const int degree = 1;
+    static constexpr int degree = 1;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::nurbs8>
   {
-    static const int degree = 1;
+    static constexpr int degree = 1;
   };
   template <>
   struct DisTypeToDegree<CORE::FE::CellType::nurbs27>
   {
-    static const int degree = 2;
+    static constexpr int degree = 2;
   };
 
   /*!
@@ -587,127 +587,127 @@ namespace CORE::FE
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::point1>
   {
-    static const int numderiv2 = 0;
+    static constexpr int numderiv2 = 0;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::line2>
   {
-    static const int numderiv2 = 1;
+    static constexpr int numderiv2 = 1;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::line3>
   {
-    static const int numderiv2 = 1;
+    static constexpr int numderiv2 = 1;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs2>
   {
-    static const int numderiv2 = 1;
+    static constexpr int numderiv2 = 1;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs3>
   {
-    static const int numderiv2 = 1;
+    static constexpr int numderiv2 = 1;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::quad4>
   {
-    static const int numderiv2 = 3;
+    static constexpr int numderiv2 = 3;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::quad6>
   {
-    static const int numderiv2 = 3;
+    static constexpr int numderiv2 = 3;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::quad8>
   {
-    static const int numderiv2 = 3;
+    static constexpr int numderiv2 = 3;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::quad9>
   {
-    static const int numderiv2 = 3;
+    static constexpr int numderiv2 = 3;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs4>
   {
-    static const int numderiv2 = 3;
+    static constexpr int numderiv2 = 3;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs9>
   {
-    static const int numderiv2 = 3;
+    static constexpr int numderiv2 = 3;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::tri3>
   {
-    static const int numderiv2 = 3;
+    static constexpr int numderiv2 = 3;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::tri6>
   {
-    static const int numderiv2 = 3;
+    static constexpr int numderiv2 = 3;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::hex8>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::hex16>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::hex18>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::hex20>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::hex27>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::tet4>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::tet10>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::wedge6>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::wedge15>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::pyramid5>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs8>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
   template <>
   struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs27>
   {
-    static const int numderiv2 = 6;
+    static constexpr int numderiv2 = 6;
   };
 
 
@@ -720,129 +720,129 @@ namespace CORE::FE
   template <CORE::FE::CellType DISTYPE>
   struct DisTypeToFaceShapeType
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::max_distype;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::max_distype;
   };
   // template<> struct DisTypeToFaceShapeType<CORE::FE::CellType::point1>   {}; //
   // invalid
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::line2>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::point1;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::point1;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::line3>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::point1;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::point1;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs2>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::point1;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::point1;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs3>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::point1;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::point1;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::quad4>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::line2;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line2;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::quad6>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::line3;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line3;
   };  // invalid
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::quad8>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::line3;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line3;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::quad9>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::line3;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line3;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs4>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::nurbs2;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::nurbs2;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs9>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::nurbs3;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::nurbs3;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::tri3>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::line2;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line2;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::tri6>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::line3;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line3;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::hex8>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::quad4;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::quad4;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::hex16>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::quad8;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::quad8;
   };  // invalid
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::hex18>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::quad9;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::quad9;
   };  // invalid
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::hex20>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::quad8;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::quad8;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::hex27>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::quad9;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::quad9;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs8>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::nurbs4;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::nurbs4;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs27>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::nurbs9;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::nurbs9;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::tet4>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::tri3;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::tri3;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::tet10>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::tri6;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::tri6;
   };
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::wedge6>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::tri3;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::tri3;
   };  // invalid
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::wedge15>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::tri6;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::tri6;
   };  // invalid
   template <>
   struct DisTypeToFaceShapeType<CORE::FE::CellType::pyramid5>
   {
-    static const CORE::FE::CellType shape = CORE::FE::CellType::tri3;
+    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::tri3;
   };  // invalid
 
 
@@ -855,7 +855,8 @@ namespace CORE::FE
   template <CORE::FE::CellType DISTYPE>
   struct DisTypeToNumNodePerFace
   {
-    static const int numNodePerFace = CORE::FE::num_nodes<DisTypeToFaceShapeType<DISTYPE>::shape>;
+    static constexpr int numNodePerFace =
+        CORE::FE::num_nodes<DisTypeToFaceShapeType<DISTYPE>::shape>;
   };
 
 
@@ -871,127 +872,127 @@ namespace CORE::FE
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::point1>
   {
-    static const int order = 0;
+    static constexpr int order = 0;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::line2>
   {
-    static const int order = 1;
+    static constexpr int order = 1;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::line3>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::line4>
   {
-    static const int order = 3;
+    static constexpr int order = 3;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::line5>
   {
-    static const int order = 4;
+    static constexpr int order = 4;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::line6>
   {
-    static const int order = 5;
+    static constexpr int order = 5;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs2>
   {
-    static const int order = 1;
+    static constexpr int order = 1;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs3>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::quad4>
   {
-    static const int order = 1;
+    static constexpr int order = 1;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::quad8>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::quad9>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs4>
   {
-    static const int order = 1;
+    static constexpr int order = 1;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs9>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::tri3>
   {
-    static const int order = 1;
+    static constexpr int order = 1;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::tri6>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::hex8>
   {
-    static const int order = 1;
+    static constexpr int order = 1;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::hex20>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::hex27>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs8>
   {
-    static const int order = 1;
+    static constexpr int order = 1;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs27>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::tet4>
   {
-    static const int order = 1;
+    static constexpr int order = 1;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::tet10>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::pyramid5>
   {
-    static const int order = 1;
+    static constexpr int order = 1;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::wedge6>
   {
-    static const int order = 1;
+    static constexpr int order = 1;
   };
   template <>
   struct DisTypeToEdgeOrder<CORE::FE::CellType::wedge15>
   {
-    static const int order = 2;
+    static constexpr int order = 2;
   };
 
 
@@ -1123,39 +1124,39 @@ namespace CORE::FE
   template <CORE::FE::CellType type>
   struct is_nurbs_dis_type
   {
-    static const bool value = false;
+    static constexpr bool value = false;
   };
 
   /// supported/known NURBS types
   template <>
   struct is_nurbs_dis_type<CORE::FE::CellType::nurbs2>
   {
-    static const bool value = true;
+    static constexpr bool value = true;
   };
   template <>
   struct is_nurbs_dis_type<CORE::FE::CellType::nurbs3>
   {
-    static const bool value = true;
+    static constexpr bool value = true;
   };
   template <>
   struct is_nurbs_dis_type<CORE::FE::CellType::nurbs4>
   {
-    static const bool value = true;
+    static constexpr bool value = true;
   };
   template <>
   struct is_nurbs_dis_type<CORE::FE::CellType::nurbs9>
   {
-    static const bool value = true;
+    static constexpr bool value = true;
   };
   template <>
   struct is_nurbs_dis_type<CORE::FE::CellType::nurbs8>
   {
-    static const bool value = true;
+    static constexpr bool value = true;
   };
   template <>
   struct is_nurbs_dis_type<CORE::FE::CellType::nurbs27>
   {
-    static const bool value = true;
+    static constexpr bool value = true;
   };
 
   /// return TRUE if the given dis_type is a NURBS type

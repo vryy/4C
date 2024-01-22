@@ -38,13 +38,13 @@ namespace DRT
     {
      public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const unsigned int nsd_ = CORE::FE::dim<distype>;
+      static constexpr unsigned int nsd_ = CORE::FE::dim<distype>;
 
       ///! number of faces on element
-      static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
+      static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
 
       int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
@@ -287,8 +287,8 @@ namespace DRT
       /// local solver that inverts local problem on an element and can solve with various vectors
       struct LocalSolver
       {
-        static const unsigned int nsd_ = FluidEleCalcHDG<distype>::nsd_;
-        static const unsigned int nfaces_ = FluidEleCalcHDG<distype>::nfaces_;
+        static constexpr unsigned int nsd_ = FluidEleCalcHDG<distype>::nsd_;
+        static constexpr unsigned int nfaces_ = FluidEleCalcHDG<distype>::nfaces_;
 
         LocalSolver(const DRT::ELEMENTS::Fluid* ele,
             const CORE::FE::ShapeValues<distype>& shapeValues,

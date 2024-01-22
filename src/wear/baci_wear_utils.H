@@ -53,8 +53,8 @@ namespace WEAR
         const std::vector<int>& lm,                     // in
         bool& found, double* e)
     {
-      static const int numnod = CORE::FE::num_nodes<distype>;
-      static const int ndim = CORE::FE::dim<distype>;
+      static constexpr int numnod = CORE::FE::num_nodes<distype>;
+      static constexpr int ndim = CORE::FE::dim<distype>;
 
       CORE::LINALG::Matrix<numnod, 1> funct;
       CORE::LINALG::Matrix<ndim, numnod> xcure;

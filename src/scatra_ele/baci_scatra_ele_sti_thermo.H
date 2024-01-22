@@ -35,10 +35,10 @@ namespace DRT
       using my = ScaTraEleCalc<distype>;
 
       //! number of element nodes
-      static const int nen_ = my::nen_;
+      static constexpr int nen_ = my::nen_;
 
       //! number of space dimensions
-      static const int nsd_ = my::nsd_;
+      static constexpr int nsd_ = my::nsd_;
 
       //! protected constructor for singletons
       ScaTraEleSTIThermo(const int& numscal  //!< number of transported scalars

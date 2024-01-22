@@ -47,13 +47,13 @@ namespace DRT
       {
        public:
         /// number of nodes per master (xfem-fluid) element
-        static const unsigned nen_ = CORE::FE::num_nodes<distype>;
+        static constexpr unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = CORE::FE::dim<distype>;
+        static constexpr unsigned nsd_ = CORE::FE::dim<distype>;
         /// number of spatial dimensions of the slave side
-        static const unsigned slave_nsd_ = CORE::FE::dim<slave_distype>;
+        static constexpr unsigned slave_nsd_ = CORE::FE::dim<slave_distype>;
         /// number of slave element's nodes
-        static const unsigned slave_nen_ = CORE::FE::num_nodes<slave_distype>;
+        static constexpr unsigned slave_nen_ = CORE::FE::num_nodes<slave_distype>;
 
         //! ctor
         SlaveElementRepresentation(CORE::LINALG::SerialDenseMatrix::Base& slave_xyze)
@@ -268,13 +268,13 @@ namespace DRT
       {
        public:
         /// number of nodes per master (xfem-fluid) element
-        static const unsigned nen_ = CORE::FE::num_nodes<distype>;
+        static constexpr unsigned nen_ = CORE::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
-        static const unsigned nsd_ = CORE::FE::dim<distype>;
+        static constexpr unsigned nsd_ = CORE::FE::dim<distype>;
         /// number of spatial dimensions of the slave side
-        static const unsigned slave_nsd_ = CORE::FE::dim<distype>;
+        static constexpr unsigned slave_nsd_ = CORE::FE::dim<distype>;
         /// just for compatibility...
-        static const unsigned slave_nen_ = nen_;
+        static constexpr unsigned slave_nen_ = nen_;
 
         //! get slave elements nodal shape functions - if the interface is given as a level-set
         //! field, the request is unfulfilled
@@ -308,14 +308,14 @@ namespace DRT
       {
        public:
         /// number of nodes per master (xfem-fluid) element
-        static const unsigned nen_ =
+        static constexpr unsigned nen_ =
             SlaveElementRepresentation<distype, slave_distype, slave_numdof>::nen_;
         /// number of spatial dimensions
-        static const unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
+        static constexpr unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
         /// number of nodal dof for master element (coupling master is always a fluid element!)
-        static const unsigned master_numdof_ = nsd_ + 1;
+        static constexpr unsigned master_numdof_ = nsd_ + 1;
         /// number of slave element's nodes
-        static const unsigned slave_nen_ =
+        static constexpr unsigned slave_nen_ =
             SlaveElementRepresentation<distype, slave_distype, slave_numdof>::slave_nen_;
 
         //! ctor for one-sided (xfluid weak dirichlet) problems (interface defined by level-set
@@ -721,10 +721,10 @@ namespace DRT
 
         //! @name useful constants for DOF-index numbering
         //@{
-        static const unsigned Velx = 0;
-        static const unsigned Vely = 1;
-        static const unsigned Velz = 2;
-        static const unsigned Pres = 3;
+        static constexpr unsigned Velx = 0;
+        static constexpr unsigned Vely = 1;
+        static constexpr unsigned Velz = 2;
+        static constexpr unsigned Pres = 3;
         //@}
 
         /// get global master row/col-index of element coupling matrix for a given node index and
@@ -893,17 +893,17 @@ namespace DRT
       {
        public:
         /// number of nodes per master element
-        static const unsigned nen_ =
+        static constexpr unsigned nen_ =
             SlaveElementRepresentation<distype, slave_distype, slave_numdof>::nen_;
         /// number of spatial dimensions
-        static const unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
+        static constexpr unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
         /// number of nodal dof for master element (always a fluid element)
-        static const unsigned master_numdof_ = nsd_ + 1;
+        static constexpr unsigned master_numdof_ = nsd_ + 1;
         /// number of slave element's nodes
-        static const unsigned slave_nen_ =
+        static constexpr unsigned slave_nen_ =
             SlaveElementRepresentation<distype, slave_distype, slave_numdof>::slave_nen_;
         /// number of independent stress-dof
-        static const unsigned numstressdof_ = HybridLMInterface<distype>::numstressdof_;
+        static constexpr unsigned numstressdof_ = HybridLMInterface<distype>::numstressdof_;
 
         //! ctor for one-sided (xfluid weak dirichlet) problems (interface defined by level-set
         //! field)
@@ -1002,10 +1002,10 @@ namespace DRT
        protected:
         //! @name useful constants for DOF-index numbering
         //@{
-        static const unsigned Velx = 0;
-        static const unsigned Vely = 1;
-        static const unsigned Velz = 2;
-        static const unsigned Pres = 3;
+        static constexpr unsigned Velx = 0;
+        static constexpr unsigned Vely = 1;
+        static constexpr unsigned Velz = 2;
+        static constexpr unsigned Pres = 3;
         //@}
 
         /// get stress dof-index

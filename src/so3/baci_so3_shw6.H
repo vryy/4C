@@ -238,8 +238,8 @@ namespace DRT
           const INPAR::STR::StressType iostress,   // stress output option
           const INPAR::STR::StrainType iostrain);  // strain output option
 
-      static const int num_sp = 5;   ///< number of ANS sampling points
-      static const int num_ans = 3;  ///< number of modified ANS strains (E_rt,E_st,E_tt)
+      static constexpr int num_sp = 5;   ///< number of ANS sampling points
+      static constexpr int num_ans = 3;  ///< number of modified ANS strains (E_rt,E_st,E_tt)
 
       //! Setup ANS interpolation (shear and trapezoidal)
       void soshw6_anssetup(

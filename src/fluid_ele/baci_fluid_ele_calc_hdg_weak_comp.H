@@ -36,16 +36,16 @@ namespace DRT
     {
      public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const unsigned int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr unsigned int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const unsigned int nsd_ = CORE::FE::dim<distype>;
+      static constexpr unsigned int nsd_ = CORE::FE::dim<distype>;
 
       //! mixed variable dimension according to Voigt notation
-      static const unsigned int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
+      static constexpr unsigned int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
 
       ///! number of faces on element
-      static const unsigned int nfaces_ = CORE::FE::num_faces<distype>;
+      static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
 
 
       int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
@@ -263,9 +263,9 @@ namespace DRT
         using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
         using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
 
-        static const unsigned int nsd_ = FluidEleCalcHDGWeakComp<distype>::nsd_;
-        static const unsigned int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
-        static const unsigned int nfaces_ = FluidEleCalcHDGWeakComp<distype>::nfaces_;
+        static constexpr unsigned int nsd_ = FluidEleCalcHDGWeakComp<distype>::nsd_;
+        static constexpr unsigned int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
+        static constexpr unsigned int nfaces_ = FluidEleCalcHDGWeakComp<distype>::nfaces_;
 
         /// local solver
         LocalSolver(const DRT::ELEMENTS::Fluid* ele,

@@ -201,7 +201,7 @@ namespace BEAMINTERACTION
 
    private:
     //! Number of rotational DOF for the SR beams;
-    static const unsigned int n_dof_rot_ = 9;
+    static constexpr unsigned int n_dof_rot_ = 9;
 
     //! Number of dimensions for each rotation.
     const unsigned int rot_dim_ = 3;

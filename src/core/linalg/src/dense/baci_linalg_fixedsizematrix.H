@@ -3317,7 +3317,7 @@ namespace CORE::LINALG
    private:
     /// threshold for when to allocate the memory instead of placing the matrix on the stack.
     /// set to 512 bytes (or 64 entries for double matrices).
-    static const bool allocatesmemory_ = rows * cols * sizeof(value_type) > 512;
+    static constexpr bool allocatesmemory_ = rows * cols * sizeof(value_type) > 512;
 
     /// the pointer holding the data
     value_type* data_;

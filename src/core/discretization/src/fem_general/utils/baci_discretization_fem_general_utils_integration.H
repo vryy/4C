@@ -184,152 +184,152 @@ namespace CORE::FE
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::undefined>
   {
-    static const unsigned value = 0;
+    static constexpr unsigned value = 0;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_1point>
   {
-    static const unsigned value = 1;
+    static constexpr unsigned value = 1;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_8point>
   {
-    static const unsigned value = 8;
+    static constexpr unsigned value = 8;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_18point>
   {
-    static const unsigned value = 18;
+    static constexpr unsigned value = 18;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_27point>
   {
-    static const unsigned value = 27;
+    static constexpr unsigned value = 27;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_64point>
   {
-    static const unsigned value = 64;
+    static constexpr unsigned value = 64;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_125point>
   {
-    static const unsigned value = 125;
+    static constexpr unsigned value = 125;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_216point>
   {
-    static const unsigned value = 216;
+    static constexpr unsigned value = 216;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_343point>
   {
-    static const unsigned value = 343;
+    static constexpr unsigned value = 343;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_512point>
   {
-    static const unsigned value = 512;
+    static constexpr unsigned value = 512;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_729point>
   {
-    static const unsigned value = 729;
+    static constexpr unsigned value = 729;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::hex_1000point>
   {
-    static const unsigned value = 1000;
+    static constexpr unsigned value = 1000;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_1point>
   {
-    static const unsigned value = 1;
+    static constexpr unsigned value = 1;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_4point>
   {
-    static const unsigned value = 4;
+    static constexpr unsigned value = 4;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_4point_gauss_radau>
   {
-    static const unsigned value = 4;
+    static constexpr unsigned value = 4;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_5point>
   {
-    static const unsigned value = 5;
+    static constexpr unsigned value = 5;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_10point>
   {
-    static const unsigned value = 10;
+    static constexpr unsigned value = 10;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_11point>
   {
-    static const unsigned value = 11;
+    static constexpr unsigned value = 11;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_15point>
   {
-    static const unsigned value = 15;
+    static constexpr unsigned value = 15;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_24point>
   {
-    static const unsigned value = 24;
+    static constexpr unsigned value = 24;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_64point_peano>
   {
-    static const unsigned value = 64;
+    static constexpr unsigned value = 64;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_45point>
   {
-    static const unsigned value = 45;
+    static constexpr unsigned value = 45;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_125point_peano>
   {
-    static const unsigned value = 125;
+    static constexpr unsigned value = 125;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_343point_peano>
   {
-    static const unsigned value = 343;
+    static constexpr unsigned value = 343;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::tet_729point_peano>
   {
-    static const unsigned value = 729;
+    static constexpr unsigned value = 729;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::wedge_1point>
   {
-    static const unsigned value = 1;
+    static constexpr unsigned value = 1;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::wedge_6point>
   {
-    static const unsigned value = 6;
+    static constexpr unsigned value = 6;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::wedge_9point>
   {
-    static const unsigned value = 9;
+    static constexpr unsigned value = 9;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::pyramid_1point>
   {
-    static const unsigned value = 1;
+    static constexpr unsigned value = 1;
   };
   template <>
   struct GaussRule3DToNumGaussPoints<GaussRule3D::pyramid_8point>
   {
-    static const unsigned value = 8;
+    static constexpr unsigned value = 8;
   };
 
   //! supported 2d integration rules
@@ -579,8 +579,8 @@ namespace CORE::FE
     );
 
    private:
-    static const int max_nquad = 1000;  ///< size of c array
-    CORE::FE::GaussRule3D intrule_;     ///< associated integration rule name
+    static constexpr int max_nquad = 1000;  ///< size of c array
+    CORE::FE::GaussRule3D intrule_;         ///< associated integration rule name
    public:
     int nquad;                 ///< number of gausspoints
     double qxg[max_nquad][3];  ///< coordinates
@@ -616,8 +616,8 @@ namespace CORE::FE
     );
 
    private:
-    static const int max_nquad = 1024;  ///< size of c array
-    CORE::FE::GaussRule2D intrule_;     ///< associated integration rule name
+    static constexpr int max_nquad = 1024;  ///< size of c array
+    CORE::FE::GaussRule2D intrule_;         ///< associated integration rule name
    public:
     int nquad;                 ///< number of gausspoints
     double qxg[max_nquad][2];  ///< coordinates
@@ -652,8 +652,8 @@ namespace CORE::FE
     );
 
    private:
-    static const int max_nquad = 50;  ///< size of c array
-    CORE::FE::GaussRule1D intrule_;   ///< associated integration rule name
+    static constexpr int max_nquad = 50;  ///< size of c array
+    CORE::FE::GaussRule1D intrule_;       ///< associated integration rule name
    public:
     int nquad;                 ///< number of integration points
     double qxg[max_nquad][1];  ///< coordinates

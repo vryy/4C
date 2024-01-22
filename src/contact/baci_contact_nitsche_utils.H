@@ -87,9 +87,9 @@ namespace MORTAR
       k_dt_.clear();
     }
 
-    static const int num_parent_disp_dof =
+    static constexpr int num_parent_disp_dof =
         CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
-    static const int num_parent_thermo_dof = CORE::FE::num_nodes<parent_distype>;
+    static constexpr int num_parent_thermo_dof = CORE::FE::num_nodes<parent_distype>;
 
     CORE::LINALG::Matrix<num_parent_thermo_dof, 1> rhs_t_;
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_thermo_dof, 1>> k_tt_;
@@ -109,9 +109,9 @@ namespace MORTAR
       k_dp_.clear();
     }
 
-    static const int num_parent_disp_dof =
+    static constexpr int num_parent_disp_dof =
         CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
-    static const int num_parent_pf_dof =
+    static constexpr int num_parent_pf_dof =
         CORE::FE::num_nodes<parent_distype> * (CORE::FE::dim<parent_distype> + 1);
 
     CORE::LINALG::Matrix<num_parent_pf_dof, 1> rhs_p_;
@@ -132,9 +132,9 @@ namespace MORTAR
       k_ds_.clear();
     }
 
-    static const int num_parent_disp_dof =
+    static constexpr int num_parent_disp_dof =
         CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
-    static const int num_parent_scatra_dof = CORE::FE::num_nodes<parent_distype>;
+    static constexpr int num_parent_scatra_dof = CORE::FE::num_nodes<parent_distype>;
 
     CORE::LINALG::Matrix<num_parent_scatra_dof, 1> rhs_s_;
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_scatra_dof, 1>> k_ss_;
@@ -154,9 +154,9 @@ namespace MORTAR
       k_de_.clear();
     }
 
-    static const int num_parent_disp_dof =
+    static constexpr int num_parent_disp_dof =
         CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
-    static const int num_parent_elch_dof = CORE::FE::num_nodes<parent_distype> * 2;
+    static constexpr int num_parent_elch_dof = CORE::FE::num_nodes<parent_distype> * 2;
 
     CORE::LINALG::Matrix<num_parent_elch_dof, 1> rhs_e_;
     std::unordered_map<int, CORE::LINALG::Matrix<num_parent_elch_dof, 1>> k_ee_;

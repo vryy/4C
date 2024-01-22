@@ -71,20 +71,20 @@ namespace DRT
       So3_Scatra& operator=(const So3_Scatra& old) = delete;
       //@}
 
-      // static const CORE::FE::GaussIntegration intpoints_ =
+      // static constexpr CORE::FE::GaussIntegration intpoints_ =
       // CORE::FE::GaussIntegration(distype);
 
 
       //! number of element nodes (
-      static const int numnod_ = CORE::FE::num_nodes<distype>;
+      static constexpr int numnod_ = CORE::FE::num_nodes<distype>;
       //! number of space dimensions
-      static const int numdim_ = 3;
+      static constexpr int numdim_ = 3;
       //! number of dofs per node
-      static const int numdofpernode_ = 3;
+      static constexpr int numdofpernode_ = 3;
       //! total dofs per element
-      static const int numdofperelement_ = numdofpernode_ * numnod_;
+      static constexpr int numdofperelement_ = numdofpernode_ * numnod_;
       //! number of strains/stresses
-      static const int numstr_ = 6;
+      static constexpr int numstr_ = 6;
 
       //! @name Acess methods
 

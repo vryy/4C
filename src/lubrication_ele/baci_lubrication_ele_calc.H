@@ -131,13 +131,13 @@ namespace DRT
       /*========================================================================*/
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static const int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int nen_ = CORE::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static const int nsd_ = probdim;
+      static constexpr int nsd_ = probdim;
 
       //! space dimension of Lubrication element (only for flat domains nsd_ele_ = nsd_)
-      static const int nsd_ele_ = CORE::FE::dim<distype>;
+      static constexpr int nsd_ele_ = CORE::FE::dim<distype>;
 
      protected:
       /*========================================================================*/
