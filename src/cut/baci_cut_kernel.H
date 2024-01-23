@@ -178,7 +178,7 @@ namespace CORE::GEO
           {
             if ((std::abs(xsi(1)) <= std::abs(tol(1))) and (std::abs(xsi(0)) <= std::abs(tol(0))))
               nodes_id.push_back(0);
-            if ((std::abs(xsi(1) <= std::abs(tol(1)))) and
+            if ((std::abs(xsi(1)) <= std::abs(tol(1))) and
                 (std::abs(1.0 - xsi(0)) <= std::abs(tol(0))))
               nodes_id.push_back(1);
             if (std::abs(1.0 - xsi(1)) <= std::abs(tol(1))) nodes_id.push_back(2);
