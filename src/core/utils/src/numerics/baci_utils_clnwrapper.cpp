@@ -9,14 +9,6 @@
 *----------------------------------------------------------------------*/
 #include "baci_utils_clnwrapper.H"
 
-#include "baci_cut_tolerance.H"
-
-#include <cmath>
-#include <iomanip>
-#ifdef CUT_CLN_CALC
-#include <cln/malloc.h>
-#endif
-
 BACI_NAMESPACE_OPEN
 
 // initial value of precision_

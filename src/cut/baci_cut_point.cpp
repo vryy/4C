@@ -294,7 +294,8 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
     CORE::CLN::ClnWrapper l1_cln = x_cln.Norm2();
     CORE::CLN::ClnWrapper l2_cln = x2_cln.Norm2();
 
-    if (cln::fabs(l2_cln) < (p1->Tolerance() + p2->Tolerance()))
+    if (CORE::MathOperations<CORE::CLN::ClnWrapper>::abs(l2_cln) <
+        (p1->Tolerance() + p2->Tolerance()))
     {
       dserror("edge with no length");
     }
@@ -316,7 +317,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
     }
     // transformation to the parameter space coordinate t of the edge (between -1 and 1)
     CORE::CLN::ClnWrapper t_cln = 2.0 * z_cln - 1.0;
-    double t = cln::double_approx(t_cln);
+    double t = CORE::MathOperations<CORE::CLN::ClnWrapper>::GetDouble(t_cln);
     CORE::CLN::ClnWrapper::precision_ = prec_old;  // restoring previous cln precision
 
 #else

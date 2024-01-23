@@ -22,6 +22,7 @@
 #include "baci_cut_utils.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_linalg_gauss_templates.H"
+#include "baci_utils_cln_matrix_conversion.H"
 #include "baci_utils_clnwrapper.H"
 #include "baci_utils_mathoperations.H"
 
@@ -29,6 +30,7 @@
 
 
 // #define DEBUG_CUTKERNEL_OUTPUT
+#define CUT_CLN_CALC
 
 
 #ifdef DEBUG_CUTKERNEL_OUTPUT
@@ -765,7 +767,8 @@ namespace CORE::GEO::CUT::KERNEL
     CORE::CLN::ClnWrapper cln_tol_cln =
         cln::cl_float(cln_tol, cln::float_format(CORE::CLN::ClnWrapper::GetPrecision()));
     CORE::CLN::ClnWrapper cln_linsolvetol =
-        cln_tol_cln / cln::sqrt(CORE::CLN::ClnWrapper(3.0)) *
+        cln_tol_cln /
+        CORE::MathOperations<CORE::CLN::ClnWrapper>::sqrt(CORE::CLN::ClnWrapper(3.0)) *
         CORE::CLN::ClnWrapper(10.0);  //  similarly as for double
 
     CORE::CLN::ClnWrapper tol = xyze.NormInf();
@@ -1104,10 +1107,10 @@ namespace CORE::GEO::CUT::KERNEL
                   << (WithinLimits<elementType>(xsi_) ? "TRUE" : "FALSE") << "\n"
                   << "rsd_.Norm2()             = " << xsi_.Norm2() << "\n"
                   << "dx_.Norm2() / rsd.Norm2()= "
-                  << (iter != 0 ? (const double)(dx_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
+                  << (iter != 0 ? dx_.Norm2() / xsi_.Norm2() : -1.0) << "\n"
                   << "b_.Norm2() ( RHS )       = " << b_.Norm2() << "\n"
-                  << "b_.Norm2() / rsd.Norm2() = "
-                  << (iter != 0 ? (const double)(b_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
+                  << "b_.Norm2() / rsd.Norm2() = " << (iter != 0 ? b_.Norm2() / xsi_.Norm2() : -1.0)
+                  << "\n"
                   << "tol_                     = " << tol_ << "\n"
                   << "rsd_ ( aka xsi_ )        = " << xsi_ << "b_ (RHS)                 = " << b_
                   << "\n"
@@ -1460,17 +1463,17 @@ namespace CORE::GEO::CUT::KERNEL
         }
 #endif
         // convertion to correspondent precison
-        ConvDoubleCLN(xyze, clnxyze_, prec);
-        ConvDoubleCLN(px, clnpx_, prec);
+        CORE::CLN::ConvDoubleCLN(xyze, clnxyze_, prec);
+        CORE::CLN::ConvDoubleCLN(px, clnpx_, prec);
 
         this->Setup(clnxyze_, clnpx_);
         conv = this->Solve();
 
         // safety check of precision loss
-        cln::float_format_t prec_beg = cln::float_format(clnxyze_(0, 0));
+        cln::float_format_t prec_beg = cln::float_format(clnxyze_(0, 0).Value());
         for (unsigned int i = 0; i < dim; ++i)
         {
-          cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0));
+          cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0).Value());
           if (prec_beg != prec_end)
           {
             dserror(
@@ -1508,7 +1511,7 @@ namespace CORE::GEO::CUT::KERNEL
 
 
       // safely convert the values back
-      ConvClnDouble(clnxsi_, xsi_);
+      CORE::CLN::ConvClnDouble(clnxsi_, xsi_);
       if ((not conv) && (err < CLN_LIMIT_ERROR) && (err > 0.0)) conv = true;
 
 #ifdef CUSTOM_MEMORY_ALLOCATOR
@@ -1553,10 +1556,10 @@ namespace CORE::GEO::CUT::KERNEL
           cln_ref_shape_xyz;
       CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> cln_glob_init;
       CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> cln_loc_calc;
+      cln_loc_calc = loc_calc;
 
-      ConvDoubleCLN(loc_calc, cln_loc_calc, prec);
-      ConvDoubleCLN(ref_shape_xyz, cln_ref_shape_xyz, prec);
-      ConvDoubleCLN(glob_init, cln_glob_init, prec);
+      CORE::CLN::ConvDoubleCLN(ref_shape_xyz, cln_ref_shape_xyz, prec);
+      CORE::CLN::ConvDoubleCLN(glob_init, cln_glob_init, prec);
 
       CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> cln_glob_calc;
       CORE::LINALG::Matrix<CORE::FE::num_nodes<elementType>, 1, CORE::CLN::ClnWrapper> shapeFunct;
@@ -2010,10 +2013,10 @@ namespace CORE::GEO::CUT::KERNEL
                   << (WithinLimits<sideType>(xsi_) ? "TRUE" : "FALSE") << "\n"
                   << "rsd_.Norm2()             = " << xsi_.Norm2() << "\n"
                   << "dx_.Norm2() / rsd.Norm2()= "
-                  << (iter != 0 ? (const double)(dx_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
+                  << (iter != 0 ? dx_.Norm2() / xsi_.Norm2() : -1.0) << "\n"
                   << "b_.Norm2() ( RHS )       = " << b_.Norm2() << "\n"
-                  << "b_.Norm2() / rsd.Norm2() = "
-                  << (iter != 0 ? (const double)(b_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
+                  << "b_.Norm2() / rsd.Norm2() = " << (iter != 0 ? b_.Norm2() / xsi_.Norm2() : -1.0)
+                  << "\n"
                   << "tol_                     = " << tol_ << "\n"
                   << "rsd_ ( aka xsi_ )        = " << xsi_ << "b_ (RHS)                 = " << b_
                   << "\n"
@@ -2536,8 +2539,8 @@ namespace CORE::GEO::CUT::KERNEL
         }
 
 #endif
-        ConvDoubleCLN(xyze_side, clnxyze_side_, prec);
-        ConvDoubleCLN(px, clnpx_, prec);
+        CORE::CLN::ConvDoubleCLN(xyze_side, clnxyze_side_, prec);
+        CORE::CLN::ConvDoubleCLN(px, clnpx_, prec);
         //  no need to convert, we don't actually compute anything
         // clndistance_ = cln::cl_float(distance, cln::float_format(prec));
         this->Setup(clnxyze_side_, clnpx_, false);
@@ -2546,10 +2549,10 @@ namespace CORE::GEO::CUT::KERNEL
 
 #if CUT_DEVELOP
         // safety check for precision loss across the array
-        cln::float_format_t prec_beg = cln::float_format(clnxyze_side_(0, 0));
+        cln::float_format_t prec_beg = cln::float_format(clnxyze_side_(0, 0).Value());
         for (unsigned int i = 0; i < probDim; ++i)
         {
-          cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0));
+          cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0).Value()));
           if (prec_beg != prec_end)
           {
             dserror(
@@ -2611,8 +2614,9 @@ namespace CORE::GEO::CUT::KERNEL
       // NOTE: Might be not needed later
       FixCornerCase();
       // converting all the values back
-      ConvClnDouble(clnxsi_, xsi_);
-      distance = cln::double_approx(clndistance_);
+      CORE::CLN::ConvClnDouble(clnxsi_, xsi_);
+
+      distance = cln::double_approx(clndistance_.Value());
 
 #ifdef CUSTOM_MEMORY_ALLOCATOR
       if (first_run_)
@@ -2681,14 +2685,14 @@ namespace CORE::GEO::CUT::KERNEL
       CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> clnpx;
       CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> n1;
 
-      clndistance = cln::cl_float(distance[0], cln::float_format(prec));
-      ConvDoubleCLN(refshape_xyze, xyze_side, prec);
-      ConvDoubleCLN(p, clnpx, prec);
-      ConvDoubleCLN(loc_calc, clnxi, prec);
+      clndistance = cln::cl_float(distance[0].Value(), cln::float_format(prec));
+      CORE::CLN::ConvDoubleCLN(refshape_xyze, xyze_side, prec);
+      CORE::CLN::ConvDoubleCLN(p, clnpx, prec);
+      clnxi = loc_calc;
 
       for (unsigned int i = 0; i < probDim; ++i)
       {
-        n1(i) = cln::cl_float(nvec(i, 0), cln::float_format(prec));
+        n1(i) = cln::cl_float(nvec(i, 0).Value(), cln::float_format(prec));
       }
 
       CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, CORE::CLN::ClnWrapper> surfaceFunct;
@@ -2708,7 +2712,7 @@ namespace CORE::GEO::CUT::KERNEL
       {
         CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> n2;
         for (unsigned int i = 0; i < probDim; ++i)
-          n2(i) = cln::cl_float(nvec(i, 1), cln::float_format(prec));
+          n2(i) = cln::cl_float(nvec(i, 1).Value(), cln::float_format(prec));
 
         CORE::CLN::ClnWrapper n2norm_inv = 1.0 / n2.Norm2();
         b.Update(-distance[1] * n2norm_inv, n2, 1.0);
@@ -3965,18 +3969,18 @@ namespace CORE::GEO::CUT::KERNEL
         }
 
 #endif
-        ConvDoubleCLN(xyze_side, clnxyze_side_, prec);
-        ConvDoubleCLN(xyze_edge, clnxyze_edge_, prec);
+        CORE::CLN::ConvDoubleCLN(xyze_side, clnxyze_side_, prec);
+        CORE::CLN::ConvDoubleCLN(xyze_edge, clnxyze_edge_, prec);
         this->Setup(clnxyze_side_, clnxyze_edge_);
 
         conv = this->Solve();
 
 #if CUT_DEVELOP
         // safety check for precision loss
-        cln::float_format_t prec_beg = cln::float_format(clnxyze_side_(0, 0));
+        cln::float_format_t prec_beg = cln::float_format(clnxyze_side_(0, 0).Value());
         for (unsigned int i = 0; i < dimEdge + dimSide; ++i)
         {
-          cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0));
+          cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0).Value());
           if (prec_beg != prec_end)
           {
             dserror(
@@ -4044,7 +4048,7 @@ namespace CORE::GEO::CUT::KERNEL
         first_run_ = false;
       }
 #endif
-      ConvClnDouble(clnxsi_, xsi_);
+      CORE::CLN::ConvClnDouble(clnxsi_, xsi_);
       clnxsi_ = 0.0;  // resetting clnxsi_
       return conv;
     }
@@ -4133,9 +4137,9 @@ namespace CORE::GEO::CUT::KERNEL
           cln_refedge_xyz;
       CORE::LINALG::Matrix<dimEdge + dimSide, 1, CORE::CLN::ClnWrapper> cln_loc_calc;
 
-      ConvDoubleCLN(refside_xyz, cln_refside_xyz, prec);
-      ConvDoubleCLN(refedge_xyz, cln_refedge_xyz, prec);
-      ConvDoubleCLN(loc_calc, cln_loc_calc, prec);
+      CORE::CLN::ConvDoubleCLN(refside_xyz, cln_refside_xyz, prec);
+      CORE::CLN::ConvDoubleCLN(refedge_xyz, cln_refedge_xyz, prec);
+      cln_loc_calc = loc_calc;
 
       // Calculating interpolation from the shapefunction of the side
       CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, CORE::CLN::ClnWrapper> sideFunct;
@@ -4377,7 +4381,7 @@ namespace CORE::GEO::CUT::KERNEL
             touched_edges_ids_ = touched_edges_ids_cln;
 
             if (probDim > dimEdge + dimSide)
-              distance_between_ = cln::double_approx(clncalc.DistanceBetween());
+              distance_between_ = cln::double_approx(clncalc.DistanceBetween().Value());
 
             CORE::CLN::ClnWrapper::ResetPrecision();
           }

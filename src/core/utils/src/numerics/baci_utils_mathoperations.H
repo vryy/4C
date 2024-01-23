@@ -20,14 +20,23 @@ type, or Sacado FAD type.
 #include <cmath>
 #include <cstdlib>
 
-
 BACI_NAMESPACE_OPEN
 namespace CORE
 {
+  /**
+   * This struct allows to evaluate basic mathematical functions on values of @p NumberType. The
+   * implementations are within the specializations for the different @p NumberType.
+   * @tparam Enable This template parameter exists to allow SFINAE
+   */
   template <typename NumberType, typename Enable = void>
   struct MathOperations
   {
+    //! The absolute value of @p t
     static constexpr NumberType abs(NumberType t) = delete;
+    //! The square root value of @p t
+    static constexpr NumberType sqrt(NumberType t) = delete;
+    //! The power of @p
+    static constexpr NumberType pow(const NumberType& base, const int exponent) = delete;
   };
 
   template <typename T>
@@ -43,7 +52,12 @@ namespace CORE
   {
     static constexpr T abs(const T& t) { return cln::abs(t.Value()); }
     static constexpr T sqrt(const T& t) { return cln::sqrt(t.Value()); }
-    static constexpr T pow(const T& base, const int exponent) { return cln::pow(base, exponent); }
+    static constexpr T pow(const T& base, const int exponent)
+    {
+      dserror("Not implemented!");
+      return base;
+    }
+    static constexpr double GetDouble(T t) { return cln::double_approx(t.Value()); }
   };
 
   template <typename T>

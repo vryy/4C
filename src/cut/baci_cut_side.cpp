@@ -14,6 +14,7 @@
 #include "baci_cut_point_impl.H"
 #include "baci_cut_pointgraph.H"
 #include "baci_cut_position.H"
+#include "baci_global_data.H"
 #include "baci_utils_clnwrapper.H"
 
 #include <list>

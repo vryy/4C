@@ -15,13 +15,11 @@
 #include "baci_utils_exceptions.H"
 
 #include <cln/cln.h>
-#include <stddef.h>
 
+#include <cstddef>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
-
-#define CUT_CLN_CALC
 
 // starting precision
 #define CLN_START_PRECISION 17
@@ -39,10 +37,6 @@
 #define CLN_REFERENCE_PREC (CLN_START_PRECISION + CLN_LIMIT_ITER * CLN_INCREMENT_STEP)
 
 BACI_NAMESPACE_OPEN
-
-void* mallocwrap(size_t size);
-void deallocwrap(size_t size);
-
 
 namespace CORE::CLN
 {
@@ -92,9 +86,6 @@ namespace CORE::CLN
       value_ = CachedConvert(other, precision_);
       return *this;
     }
-    // note: we MUST not have implicit convertion, since it will lead to unpredictable behaviour
-    // lose of precision and potential memory leaks
-    explicit inline operator double() const { return cln::double_approx(value_); }
     inline ClnWrapper& operator+=(double other)
     {
       value_ += CachedConvert(other, value_);
@@ -153,10 +144,6 @@ namespace CORE::CLN
     static void ResetPrecision() { precision_ = CLN_START_PRECISION; }
 
     static unsigned int GetPrecision() { return precision_; }
-
-    //      /// Double to cln conversion
-    //      template <class Reference>
-    //      static cln::cl_F& CachedConvert(double a, Reference ref);
 
     template <class ReferenceVal>
     static cln::cl_F& CachedConvert(double a, ReferenceVal ref)
@@ -217,11 +204,6 @@ namespace CORE::CLN
         return (in_ins.first->second);
       }
     }
-    //
-    //
-    //
-    ////      // initial value of precision_
-    ////      precision_ = CLN_START_PRECISION;
 
     friend ::std::ostream& operator<<(std::ostream& stream, const CORE::CLN::ClnWrapper& a)
     {
@@ -275,81 +257,6 @@ namespace CORE::CLN
   MAKE_OPERATOR(bool, >=);
 
 }  // namespace CORE::CLN
-
-
-
-BACI_NAMESPACE_CLOSE
-
-// Additional functions in the cln namespace to callback from ClnWrapper
-namespace cln
-{
-  using namespace BACI;
-  inline CORE::CLN::ClnWrapper fabs(const CORE::CLN::ClnWrapper& a) { return cln::abs(a.Value()); }
-  inline cln::float_format_t float_format(const CORE::CLN::ClnWrapper& a)
-  {
-    return cln::float_format(a.Value());
-  }
-  inline CORE::CLN::ClnWrapper abs(const CORE::CLN::ClnWrapper& a) { return cln::abs(a.Value()); }
-
-  inline CORE::CLN::ClnWrapper sqrt(const CORE::CLN::ClnWrapper& a) { return cln::sqrt(a.Value()); }
-  inline double double_approx(const CORE::CLN::ClnWrapper& a)
-  {
-    return cln::double_approx(a.Value());
-  }
-  inline cln::cl_F cl_float(const CORE::CLN::ClnWrapper& a, const cln::float_format_t& format)
-  {
-    return cln::cl_float(a.Value(), format);
-  }
-  inline CORE::CLN::ClnWrapper pow(const CORE::CLN::ClnWrapper& base, int exponent)
-  {
-    dserror("Not implemented!");
-    return base;
-  }
-
-}  // namespace cln
-
-BACI_NAMESPACE_OPEN
-
-
-namespace CORE::CLN
-{
-  // the only function that can perform conversion of
-  template <class Matrix_cln, class Matrix_double>
-  void ConvClnDouble(const Matrix_cln& in, Matrix_double& out)
-  {
-    for (unsigned int idx = 0; idx < in.numRows() * in.numCols(); ++idx)
-    {
-      out.A()[idx] = cln::double_approx(in.A()[idx]);
-    }
-  }
-
-  template <class Matrix_cln, class Matrix_double>
-  void ConvDoubleCLN(const Matrix_double& in, Matrix_cln& out, int precision = 20)
-  {
-    for (unsigned int idx = 0; idx < in.numRows() * in.numCols(); ++idx)
-    {
-      ClnWrapper clnnum;
-      // zeros do not convert properly to CLN (lose of precision)
-      if ((in.A()[idx] == 0.0))
-      {
-        // returning the cached value from the ClnWrapper cln table
-        clnnum = 0.0;
-      }
-      else
-        clnnum = cln::cl_float(in.A()[idx], cln::float_format(precision));
-      out.A()[idx] = clnnum;
-    }
-  }
-
-  // instantation of the static variables
-  template cln::cl_F& ClnWrapper::CachedConvert<unsigned int>(double a, unsigned int ref);
-  template cln::cl_F& ClnWrapper::CachedConvert<const cln::cl_F&>(double a, const cln::cl_F& ref);
-  template cln::cl_F& ClnWrapper::CachedConvert<cln::cl_F>(double a, cln::cl_F ref);
-  // initial value of precision_
-  // unsigned int ClnWrapper::precision_ = CLN_START_PRECISION;
-
-}  // namespace CORE::CLN
-
 
 BACI_NAMESPACE_CLOSE
 
