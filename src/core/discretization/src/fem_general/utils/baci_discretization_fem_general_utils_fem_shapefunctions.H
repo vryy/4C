@@ -326,7 +326,8 @@ namespace CORE::FE
 
         NumberType ration;
 
-        if (fabs(t - 1.0) > PY5TOL)
+        const NumberType check = t - 1.0;
+        if (fabs(check) > PY5TOL)
         {
           ration = (r * s * t) / (1.0 - t);
         }
@@ -955,7 +956,8 @@ namespace CORE::FE
         NumberType rationds;
         NumberType rationdt;
 
-        if (fabs(t - 1.0) > PY5TOL)
+        const NumberType check = t - 1.0;
+        if (fabs(check) > PY5TOL)
         {
           rationdr = s * t / (1.0 - t);
           rationds = r * t / (1.0 - t);
