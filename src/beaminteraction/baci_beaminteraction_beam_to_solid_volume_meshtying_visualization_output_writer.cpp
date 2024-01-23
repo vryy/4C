@@ -25,9 +25,8 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
-#include <Epetra_FEVector.h>
-
 #include <unordered_set>
+#include <utility>
 
 BACI_NAMESPACE_OPEN
 
@@ -36,11 +35,13 @@ BACI_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
-    BeamToSolidVolumeMeshtyingVisualizationOutputWriter()
+    BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
+        IO::VisualizationParameters visualization_params)
     : isinit_(false),
       issetup_(false),
       output_params_ptr_(Teuchos::null),
-      output_writer_base_ptr_(Teuchos::null)
+      output_writer_base_ptr_(Teuchos::null),
+      visualization_params_(std::move(visualization_params))
 {
 }
 
@@ -59,8 +60,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Init(
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup(
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
-        output_params_ptr,
-    double restart_time)
+        output_params_ptr)
 {
   CheckInit();
 
@@ -70,7 +70,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
-          "beam-to-solid-volume", visualization_output_params, restart_time));
+          "beam-to-solid-volume", visualization_output_params, visualization_params_));
 
   // Whether or not to write unique cell and node IDs.
   const bool write_unique_ids = output_params_ptr_->GetWriteUniqueIDsFlag();
@@ -164,9 +164,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Write
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the
   // next step.
-  auto [output_time, output_step] =
-      IO::GetTimeAndTimeStepIndexForOutput(output_params_ptr_->GetVisualizationParameters(),
-          beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN());
+  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
+      visualization_params_, beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN());
   WriteOutputBeamToSolidVolumeMeshTying(beam_contact, output_step, output_time);
 }
 
@@ -181,9 +180,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
   if (output_params_ptr_->GetOutputEveryIteration())
   {
-    auto [output_time, output_step] =
-        IO::GetTimeAndTimeStepIndexForOutput(output_params_ptr_->GetVisualizationParameters(),
-            beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
+    auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
+        beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
     WriteOutputBeamToSolidVolumeMeshTying(beam_contact, output_step, output_time);
   }
 }

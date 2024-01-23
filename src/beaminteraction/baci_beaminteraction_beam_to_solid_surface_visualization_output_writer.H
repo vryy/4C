@@ -15,6 +15,8 @@
 
 #include "baci_config.H"
 
+#include "baci_io_visualization_parameters.H"
+
 #include <Teuchos_RCP.hpp>
 
 BACI_NAMESPACE_OPEN
@@ -30,13 +32,10 @@ namespace BEAMINTERACTION
     class BeamContact;
   }
 }  // namespace BEAMINTERACTION
-namespace STR
+namespace STR::TIMINT
 {
-  namespace TIMINT
-  {
-    class ParamsRuntimeOutput;
-  }
-}  // namespace STR
+  class ParamsRuntimeOutput;
+}
 
 
 namespace BEAMINTERACTION
@@ -51,7 +50,8 @@ namespace BEAMINTERACTION
     /**
      * \brief Constructor.
      */
-    BeamToSolidSurfaceVisualizationOutputWriter();
+    explicit BeamToSolidSurfaceVisualizationOutputWriter(
+        IO::VisualizationParameters visualization_params);
 
     /**
      * \brief Destructor.
@@ -68,12 +68,10 @@ namespace BEAMINTERACTION
      * @param visualization_output_params (in) RCP to parameter container for global visualization
      * options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
-     * @param restart_time (in) This is needed in case the simulation is a restart.
      */
     void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
         Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
-            output_params_ptr,
-        double restart_time);
+            output_params_ptr);
 
     /**
      * \brief Setup time step output creation, and call WriteOutputData.
@@ -129,6 +127,9 @@ namespace BEAMINTERACTION
 
     //! Pointer to the output writer, which handles the actual output data for this object.
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
+
+    //! visualization parameters
+    const IO::VisualizationParameters visualization_params_;
   };
 
 }  // namespace BEAMINTERACTION

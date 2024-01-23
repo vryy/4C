@@ -595,7 +595,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitOutputRuntime()
   CheckInit();
 
   visualization_manager_ptr_ = Teuchos::rcp(new IO::VisualizationManager(
-      GInOutput().GetRuntimeVtkOutputParams()->GetVisualizationParameters(),
+      IO::VisualizationParametersFactory(
+          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+          *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN()),
       BinDiscretPtr()->Comm(), "spherebeamlinker"));
 }
 

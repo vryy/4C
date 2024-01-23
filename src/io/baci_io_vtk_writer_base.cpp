@@ -10,7 +10,6 @@
 
 #include "baci_io_vtk_writer_base.H"
 
-#include "baci_global_data.H"
 #include "baci_io_legacy_table.H"
 #include "baci_io_pstream.H"
 #include "baci_utils_exceptions.H"
@@ -182,39 +181,23 @@ namespace LIBB64
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-VtkWriterBase::VtkWriterBase()
-    : currentPhase_(VAGUE),
-      num_timestep_digits_(0),
-      num_processor_digits_(0),
-      time_(std::numeric_limits<double>::min()),
-      timestep_(-1),
-      restart_(GLOBAL::Problem::Instance()->Restart()),
-      cycle_(std::numeric_limits<int>::max()),
-      write_binary_output_(true),
-      myrank_(0),
-      numproc_(1)
-{
-  // empty constructor
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void VtkWriterBase::Initialize(unsigned int myrank, unsigned int num_processors,
+VtkWriterBase::VtkWriterBase(unsigned int myrank, unsigned int num_processors,
     unsigned int max_number_timesteps_to_be_written,
     const std::string& path_existing_working_directory,
     const std::string& name_new_vtk_subdirectory, const std::string& geometry_name,
-    const std::string& restart_name, double restart_time, bool write_binary_output)
+    const std::string& restart_name, const double restart_time, bool write_binary_output)
+    : currentPhase_(VAGUE),
+      num_timestep_digits_(LIBB64::ndigits(max_number_timesteps_to_be_written)),
+      num_processor_digits_(LIBB64::ndigits(num_processors)),
+      geometry_name_(geometry_name),
+      time_(restart_time),
+      timestep_(std::numeric_limits<unsigned int>::min()),
+      is_restart_(restart_time > 0.0),
+      cycle_(std::numeric_limits<int>::max()),
+      write_binary_output_(write_binary_output),
+      myrank_(myrank),
+      numproc_(num_processors)
 {
-  myrank_ = myrank;
-  numproc_ = num_processors;
-
-  num_timestep_digits_ = LIBB64::ndigits(max_number_timesteps_to_be_written);
-  num_processor_digits_ = LIBB64::ndigits(num_processors);
-
-  write_binary_output_ = write_binary_output;
-
-  geometry_name_ = geometry_name;
-
   SetAndCreateVtkWorkingDirectory(path_existing_working_directory, name_new_vtk_subdirectory);
 
   CreateRestartedInitialCollectionFileMidSection(geometry_name, restart_name, restart_time);
@@ -247,13 +230,6 @@ void VtkWriterBase::ResetTimeAndTimeStep(double time, unsigned int timestepnumbe
 {
   time_ = time;
   timestep_ = timestepnumber;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void VtkWriterBase::ResetGeometryName(const std::string& geometryname)
-{
-  geometry_name_ = geometryname;
 }
 
 /*----------------------------------------------------------------------*
@@ -722,9 +698,9 @@ void VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
-    const std::string& geometryname, const std::string& restartfilename, double restart_time)
+    const std::string& geometryname, const std::string& restartfilename, const double restart_time)
 {
-  if (myrank_ != 0 or not restart_) return;
+  if (myrank_ != 0 or not is_restart_) return;
 
   // get name and path of restarted collection file
   std::string restartcollectionfilename(restartfilename + "-" + geometryname + ".pvd");

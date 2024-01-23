@@ -15,7 +15,6 @@
 #include "baci_beam3_reissner.H"
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_periodic_boundingbox.H"
-#include "baci_global_data.H"
 #include "baci_io_control.H"
 #include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_visualization_manager.H"
@@ -26,14 +25,16 @@
 
 #include <Epetra_Comm.h>
 
+#include <utility>
+
 BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BeamDiscretizationRuntimeVtuWriter::BeamDiscretizationRuntimeVtuWriter(
     IO::VisualizationParameters parameters, const Epetra_Comm& comm)
-    : visualization_manager_(
-          Teuchos::rcp(new IO::VisualizationManager(parameters, comm, "structure-beams"))),
+    : visualization_manager_(Teuchos::rcp(
+          new IO::VisualizationManager(std::move(parameters), comm, "structure-beams"))),
       use_absolute_positions_(true)
 {
   // empty constructor

@@ -57,7 +57,8 @@ void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeOutputWriter
   std::shared_ptr<IO::VisualizationManager> runtime_visualization_manager =
       std::make_shared<IO::VisualizationManager>(
           IO::VisualizationParametersFactory(
-              GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
+              GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+              *GLOBAL::Problem::Instance()->OutputControlFile(), setuptime_),
           comm_, fieldname);
 
   // set the output writer object

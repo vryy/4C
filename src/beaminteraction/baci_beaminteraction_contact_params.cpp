@@ -46,10 +46,11 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToBeamContactParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactParams::BuildBeamContactRuntimeOutputParams()
+void BEAMINTERACTION::BeamContactParams::BuildBeamContactRuntimeOutputParams(
+    const double restart_time)
 {
   beam_contact_runtime_output_params_ =
-      Teuchos::rcp(new BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams());
+      Teuchos::rcp(new BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams(restart_time));
   beam_contact_runtime_output_params_->Init();
   beam_contact_runtime_output_params_->Setup();
 }

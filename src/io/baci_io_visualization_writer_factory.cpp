@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
  *
  */
 std::unique_ptr<IO::VisualizationWriterBase> IO::VisualizationWriterFactory(
-    VisualizationParameters parameters, const Epetra_Comm& comm,
+    const VisualizationParameters& parameters, const Epetra_Comm& comm,
     const std::string& visualization_data_name)
 {
   if (parameters.writer_ == INPAR::IO_RUNTIME_OUTPUT::OutputWriter::vtu_per_rank)

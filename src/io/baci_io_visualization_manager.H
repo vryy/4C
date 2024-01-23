@@ -48,7 +48,7 @@ namespace IO
     /**
      * @brief Default constructor
      *
-     * @param parameters (in) Pointer to parameter container
+     * @param parameters (in) Parameter container
      * @param comm (in) MPI communicator
      * @param base_output_name (in) Base name of this output data. For example, if the
      * base_output_name is "contact" and the registered visualization data names are "", "forces"
@@ -130,7 +130,7 @@ namespace IO
         visualization_map_;
 
     //! Base name of this output data
-    std::string base_output_name_;
+    const std::string base_output_name_;
   };
 }  // namespace IO
 

@@ -15,6 +15,7 @@
 #include "baci_beam3_discretization_runtime_output_params.H"
 #include "baci_beam3_discretization_runtime_vtu_writer.H"
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_pstream.H"
@@ -94,6 +95,10 @@ void STR::MODELEVALUATOR::Structure::Setup()
   {
     if (GInOutput().GetRuntimeVtkOutputParams() != Teuchos::null)
     {
+      visualization_params_ = IO::VisualizationParametersFactory(
+          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+          *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN());
+
       // We only want to create the respective writers if they are actually needed. Therefore, we
       // get the global number ob beam and non-beam elements here. Based on that number we know
       // which output writers need to be initialized.
@@ -591,8 +596,8 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructure()
   CheckInit();
   const auto discretization = Teuchos::rcp_dynamic_cast<const DRT::Discretization>(
       const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true);
-  vtu_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
-      discretization, GInOutput().GetRuntimeVtkOutputParams()->GetVisualizationParameters()));
+  vtu_writer_ptr_ = Teuchos::rcp(
+      new IO::DiscretizationVisualizationWriterMesh(discretization, visualization_params_));
 
   if (GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams()->GaussPointDataOutput() !=
       INPAR::STR::GaussPointDataOutputType::none)
@@ -640,8 +645,7 @@ void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkStructure() co
   CORE::LINALG::Export(*GState().GetVelN(), *veln_col);
 
   auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
-      GInOutput().GetRuntimeVtkOutputParams()->GetVisualizationParameters(), GState().GetTimeN(),
-      GState().GetStepN());
+      visualization_params_, GState().GetTimeN(), GState().GetStepN());
   WriteOutputRuntimeVtkStructure(disn_col, veln_col, output_step, output_time);
 }
 
@@ -661,8 +665,7 @@ void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkStructure() c
   CORE::LINALG::Export(*GState().GetVelNp(), *velnp_col);
 
   auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
-      GInOutput().GetRuntimeVtkOutputParams()->GetVisualizationParameters(), GState().GetTimeN(),
-      GState().GetStepN(), EvalData().GetNlnIter());
+      visualization_params_, GState().GetTimeN(), GState().GetStepN(), EvalData().GetNlnIter());
   WriteOutputRuntimeVtkStructure(disnp_col, velnp_col, output_step, output_time);
 }
 
@@ -984,8 +987,8 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructureGaussPointData()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
 {
-  beam_vtu_writer_ptr_ = Teuchos::rcp(new BeamDiscretizationRuntimeVtuWriter(
-      GInOutput().GetRuntimeVtkOutputParams()->GetVisualizationParameters(), DisNp().Comm()));
+  beam_vtu_writer_ptr_ =
+      Teuchos::rcp(new BeamDiscretizationRuntimeVtuWriter(visualization_params_, DisNp().Comm()));
 
   // get the parameter container object
   const DRT::ELEMENTS::BeamRuntimeOutputParams& beam_vtu_output_params =
@@ -1020,8 +1023,7 @@ void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkBeams() const
   CORE::LINALG::Export(*GState().GetDisN(), *disn_col);
 
   auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
-      GInOutput().GetRuntimeVtkOutputParams()->GetVisualizationParameters(), GState().GetTimeN(),
-      GState().GetStepN());
+      visualization_params_, GState().GetTimeN(), GState().GetStepN());
   WriteOutputRuntimeVtkBeams(disn_col, output_step, output_time);
 }
 
@@ -1038,8 +1040,7 @@ void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkBeams() const
   CORE::LINALG::Export(*GState().GetDisNp(), *disnp_col);
 
   auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
-      GInOutput().GetRuntimeVtkOutputParams()->GetVisualizationParameters(), GState().GetTimeN(),
-      GState().GetStepN(), EvalData().GetNlnIter());
+      visualization_params_, GState().GetTimeN(), GState().GetStepN(), EvalData().GetNlnIter());
   WriteOutputRuntimeVtkBeams(disnp_col, output_step, output_time);
 }
 

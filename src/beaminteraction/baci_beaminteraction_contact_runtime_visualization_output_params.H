@@ -24,7 +24,7 @@ namespace BEAMINTERACTION
   {
    public:
     //! constructor
-    BeamContactRuntimeVisualizationOutputParams();
+    explicit BeamContactRuntimeVisualizationOutputParams(double restart_time);
 
     //! destructor
     virtual ~BeamContactRuntimeVisualizationOutputParams() = default;

@@ -26,28 +26,16 @@ BACI_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWriter()
-{
-  // empty constructor
-}
-
-PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::~WallDiscretizationRuntimeVtuWriter() = default;
-
-void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Init(
+PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWriter(
     const Teuchos::RCP<DRT::Discretization> walldiscretization,
-    const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate)
+    const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate, const double restart_time)
+    : walldiscretization_(walldiscretization), walldatastate_(walldatastate)
 {
-  // set wall discretization
-  walldiscretization_ = walldiscretization;
-
-  // set wall data state container
-  walldatastate_ = walldatastate;
-
   // construct the writer object
-  runtime_vtuwriter_ =
-      std::make_unique<IO::DiscretizationVisualizationWriterMesh>(walldiscretization_,
-          IO::VisualizationParametersFactory(
-              GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")));
+  runtime_vtuwriter_ = std::make_unique<IO::DiscretizationVisualizationWriterMesh>(
+      walldiscretization, IO::VisualizationParametersFactory(
+                              GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                              *GLOBAL::Problem::Instance()->OutputControlFile(), restart_time));
 }
 
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRuntimeOutput(

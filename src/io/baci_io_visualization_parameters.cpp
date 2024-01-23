@@ -13,6 +13,7 @@
 
 #include "baci_inpar_IO_runtime_output.H"
 #include "baci_inpar_parameterlist_utils.H"
+#include "baci_io_control.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -24,7 +25,8 @@ BACI_NAMESPACE_OPEN
  *
  */
 IO::VisualizationParameters IO::VisualizationParametersFactory(
-    const Teuchos::ParameterList& visualization_ouput_parameter_list)
+    const Teuchos::ParameterList& visualization_ouput_parameter_list,
+    const IO::OutputControl& output_control, const double restart_time)
 {
   IO::VisualizationParameters parameters;
 
@@ -36,6 +38,8 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
   parameters.digits_for_time_step_ =
       visualization_ouput_parameter_list.get<int>("TIMESTEP_RESERVE_DIGITS");
 
+  parameters.directory_name_ = output_control.DirectoryName();
+
   // Parameters for output during the nonlinear solver
   parameters.every_iteration_virtual_time_increment_ =
       visualization_ouput_parameter_list.get<double>("EVERY_ITERATION_VIRTUAL_TIME_INCREMENT");
@@ -45,6 +49,12 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
   // This value can be overwritten from the physical field
   parameters.every_iteration_ =
       INPUT::IntegralValue<bool>(visualization_ouput_parameter_list, "EVERY_ITERATION");
+
+  parameters.file_name_prefix_ = output_control.FileNameOnlyPrefix();
+
+  parameters.restart_time_ = restart_time;
+
+  parameters.restart_from_name_ = output_control.RestartName();
 
   // Type of output writer
   const auto output_writer = Teuchos::getIntegralValue<INPAR::IO_RUNTIME_OUTPUT::OutputWriter>(

@@ -68,7 +68,8 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(bool write_ghosted_particle
       // construct visualiation manager object for current particle type and status
       (runtime_visualization_managers_[type])[status] = std::make_shared<IO::VisualizationManager>(
           IO::VisualizationParametersFactory(
-              GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
+              GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+              *GLOBAL::Problem::Instance()->OutputControlFile(), setuptime_),
           comm_, fieldname.str());
     }
   }

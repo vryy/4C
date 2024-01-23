@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamPotentialParams::Init()
+void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
 {
   issetup_ = false;
 
@@ -169,7 +169,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
   if (visualization_output_)
   {
     params_runtime_visualization_output_BTB_potential_ =
-        Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams);
+        Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams(restart_time));
 
     params_runtime_visualization_output_BTB_potential_->Init(
         beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"));

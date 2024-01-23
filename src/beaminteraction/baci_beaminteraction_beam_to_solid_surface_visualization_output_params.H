@@ -47,14 +47,6 @@ namespace BEAMINTERACTION
     void Setup();
 
     /**
-     * \brief Return the container holding the general output parameters
-     */
-    const IO::VisualizationParameters& GetVisualizationParameters() const
-    {
-      return visualization_parameters_;
-    }
-
-    /**
      * \brief Return the output every iteration flag.
      */
     bool GetOutputEveryIteration() const { return output_every_iteration_; }
@@ -138,9 +130,6 @@ namespace BEAMINTERACTION
 
     //! Flag if object is set up.
     bool issetup_;
-
-    //! General visualization parameters
-    IO::VisualizationParameters visualization_parameters_;
 
     //! Output interval regarding steps: write output every INTERVAL_STEPS steps.
     int output_interval_steps_;

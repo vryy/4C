@@ -25,13 +25,11 @@ class Epetra_MultiVector;
 BACI_NAMESPACE_OPEN
 
 // Forward declarations.
-namespace STR
+
+namespace STR::TIMINT
 {
-  namespace TIMINT
-  {
-    class ParamsRuntimeOutput;
-  }
-}  // namespace STR
+  class ParamsRuntimeOutput;
+}
 namespace DRT
 {
   class Discretization;
@@ -53,11 +51,10 @@ namespace BEAMINTERACTION
      * \brief Constructor. The underlying RuntimeVisualizationWriter will be set up in this method.
      * @param writer_full_name (in) Full name of this visualization on disc.
      * @param visualization_output_params (in) Global visualization parameter pointer.
-     * @param restart_time (in) Initial time of the simulation.
      */
     BeamToSolidOutputWriterVisualization(const std::string& writer_full_name,
-        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
-        double restart_time);
+        IO::VisualizationParameters visualization_params,
+        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params);
 
     /**
      * \brief Destructor.

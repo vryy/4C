@@ -51,19 +51,21 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Init()
  *
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
+    const IO::VisualizationParameters& visualization_params,
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
-    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr,
-    double restart_time)
+    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
 {
   CheckInit();
 
   // Set beam to solid volume mesh tying output parameters.
   output_params_ptr_ = output_params_ptr;
 
+  visualization_params_ = visualization_params;
+
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
-          "beam-to-fluid", visualization_output_params, restart_time));
+          "beam-to-fluid", visualization_output_params, visualization_params));
 
   // Depending on the selected input parameters, create the needed writers. All node / cell data
   // fields that should be output eventually have to be defined here. This helps to prevent issues
@@ -110,8 +112,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputRuntime(
 {
   CheckInitSetup();
 
-  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
-      output_params_ptr_->GetVisualizationParameters(), time, i_step);
+  auto [output_time, output_step] =
+      IO::GetTimeAndTimeStepIndexForOutput(visualization_params_, time, i_step);
   WriteOutputBeamToFluidMeshTying(couplingenforcer, output_step, output_time);
 }
 

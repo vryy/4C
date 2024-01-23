@@ -23,10 +23,9 @@ BACI_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVisualization(
-    const std::string& writer_full_name,
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
-    double restart_time)
-    : IO::VisualizationManager(visualization_output_params->GetVisualizationParameters(),
+    const std::string& writer_full_name, IO::VisualizationParameters visualization_params,
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params)
+    : IO::VisualizationManager(std::move(visualization_params),
           *(GLOBAL::Problem::Instance()->GetCommunicators()->GlobalComm()), writer_full_name),
       visualization_output_params_(visualization_output_params),
       writer_full_name_(writer_full_name),

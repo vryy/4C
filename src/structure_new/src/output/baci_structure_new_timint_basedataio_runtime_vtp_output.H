@@ -53,14 +53,6 @@ namespace STR
       /// setup new class variables
       void Setup();
 
-      /**
-       * \brief Return the container holding the general output parameters
-       */
-      const IO::VisualizationParameters& GetVisualizationParameters() const
-      {
-        return visualization_parameters_;
-      }
-
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
       int OutputIntervalInSteps() const
       {
@@ -145,9 +137,6 @@ namespace STR
 
       /// @name variables controlling output
       /// @{
-
-      //! General visualization parameters
-      IO::VisualizationParameters visualization_parameters_;
 
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
       int output_interval_steps_ = -1;

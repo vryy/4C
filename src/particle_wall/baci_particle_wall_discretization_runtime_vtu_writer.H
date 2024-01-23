@@ -61,8 +61,15 @@ namespace PARTICLEWALL
      * \brief constructor
      *
      * \author Sebastian Fuchs \date 08/2019
+     *
+     * \param[in] walldiscretization wall discretization
+     * \param[in] walldatastate      wall data state container
+     * \param[in] restart_time       restart time of the simulation
+     *
      */
-    explicit WallDiscretizationRuntimeVtuWriter();
+    explicit WallDiscretizationRuntimeVtuWriter(
+        const Teuchos::RCP<DRT::Discretization> walldiscretization,
+        const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate, double restart_time);
 
     /*!
      * \brief destructor
@@ -72,18 +79,7 @@ namespace PARTICLEWALL
      * \note At compile-time a complete type of class T as used in class member
      *       std::unique_ptr<T> ptr_T_ is required
      */
-    ~WallDiscretizationRuntimeVtuWriter();
-
-    /*!
-     * \brief init wall discretization runtime vtu writer
-     *
-     * \author Sebastian Fuchs \date 08/2019
-     *
-     * \param[in] walldiscretization wall discretization
-     * \param[in] walldatastate      wall data state container
-     */
-    void Init(const Teuchos::RCP<DRT::Discretization> walldiscretization,
-        const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate);
+    ~WallDiscretizationRuntimeVtuWriter() = default;
 
     /*!
      * \brief write wall discretization runtime output

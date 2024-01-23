@@ -26,18 +26,11 @@ void STR::TIMINT::ParamsRuntimeOutput::Init(
   // We have to call Setup() after Init()
   issetup_ = false;
 
-  // Set general output parameters
-  visualization_parameters_ = IO::VisualizationParametersFactory(
-      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"));
-
   // initialize the parameter values
   output_interval_steps_ = IO_vtk_structure_paramslist.get<int>("INTERVAL_STEPS");
   output_step_offset_ = IO_vtk_structure_paramslist.get<int>("STEP_OFFSET");
   output_every_iteration_ =
       (bool)INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");
-
-  // Overwrite non default values in the visualization parameters
-  visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   // check for output of structure discretization which is to be handled by an own writer object
   output_structure_ = (bool)INPUT::IntegralValue<int>(
