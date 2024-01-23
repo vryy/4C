@@ -688,7 +688,7 @@ namespace CORE::FE
     */
     sqrtdetg = metrictensor.Determinant();
     if (sqrtdetg > 0.0)
-      sqrtdetg = std::sqrt(sqrtdetg);
+      sqrtdetg = CORE::MathOperations<valueType>::sqrt(sqrtdetg);
     else if (throw_error)
     {
       dserror(
@@ -715,7 +715,8 @@ namespace CORE::FE
       {
         // handle small normal vectors with dxyzdrs(0,0), dxyzdrs(0,1) < 1e-6
         // and other components = 0.0
-        if (std::abs(dxyzdrs(0, 0)) < 1.0e-6 and std::abs(dxyzdrs(0, 1)) < 1.0e-6 and
+        if (CORE::MathOperations<valueType>::abs(dxyzdrs(0, 0)) < 1.0e-6 and
+            CORE::MathOperations<valueType>::abs(dxyzdrs(0, 1)) < 1.0e-6 and
             (dxyzdrs(0, 2) != 0.0 or dxyzdrs(0, 1) != 0.0))
         {
           (*normalvec)(0) = 0.0;

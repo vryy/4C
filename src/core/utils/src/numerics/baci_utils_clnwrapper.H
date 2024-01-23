@@ -8,11 +8,10 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_CLNWRAPPER_H
-#define BACI_CUT_CLNWRAPPER_H
+#ifndef BACI_UTILS_CLNWRAPPER_H
+#define BACI_UTILS_CLNWRAPPER_H
 #include "baci_config.H"
 
-#include "baci_cut_memory_manager.H"
 #include "baci_utils_exceptions.H"
 
 #include <cln/cln.h>
@@ -20,6 +19,7 @@
 
 #include <sstream>
 #include <unordered_map>
+#include <vector>
 
 #define CUT_CLN_CALC
 
@@ -44,7 +44,7 @@ void* mallocwrap(size_t size);
 void deallocwrap(size_t size);
 
 
-namespace CORE::GEO::CUT
+namespace CORE::CLN
 {
   /// Wrapper around CLN long floating point type, that gives better conversion operators,
   /// maintains precision across instances, caches converted double values and
@@ -165,8 +165,7 @@ namespace CORE::GEO::CUT
       cln::cl_inhibit_floating_point_underflow = true;
       static std::ios_base::Init StreamInitializer;
       // id in the cache containers
-      int prec_id =
-          (CORE::GEO::CUT::ClnWrapper::precision_ - CLN_START_PRECISION) / CLN_INCREMENT_STEP;
+      int prec_id = (CORE::CLN::ClnWrapper::precision_ - CLN_START_PRECISION) / CLN_INCREMENT_STEP;
       // we create special vector for zeroes, for faster lookup in the table, since they are
       // needed more often
       static std::vector<std::pair<cln::cl_F, bool>> zeros_cache(
@@ -179,7 +178,7 @@ namespace CORE::GEO::CUT
         {
           // convert from the string representation
           std::stringstream string_buffer;
-          int nsize = CORE::GEO::CUT::ClnWrapper::precision_;
+          int nsize = CORE::CLN::ClnWrapper::precision_;
           string_buffer << nsize;
           std::string clnumstr = "0e+1_" + string_buffer.str();
           zeros_cache[prec_id].first = clnumstr.c_str();
@@ -224,7 +223,7 @@ namespace CORE::GEO::CUT
     ////      // initial value of precision_
     ////      precision_ = CLN_START_PRECISION;
 
-    friend ::std::ostream& operator<<(std::ostream& stream, const CORE::GEO::CUT::ClnWrapper& a)
+    friend ::std::ostream& operator<<(std::ostream& stream, const CORE::CLN::ClnWrapper& a)
     {
       stream << a.Value();
       return stream;
@@ -275,7 +274,7 @@ namespace CORE::GEO::CUT
   MAKE_OPERATOR(bool, <=);
   MAKE_OPERATOR(bool, >=);
 
-}  // namespace CORE::GEO::CUT
+}  // namespace CORE::CLN
 
 
 
@@ -285,32 +284,23 @@ BACI_NAMESPACE_CLOSE
 namespace cln
 {
   using namespace BACI;
-  inline CORE::GEO::CUT::ClnWrapper fabs(const CORE::GEO::CUT::ClnWrapper& a)
-  {
-    return cln::abs(a.Value());
-  }
-  inline cln::float_format_t float_format(const CORE::GEO::CUT::ClnWrapper& a)
+  inline CORE::CLN::ClnWrapper fabs(const CORE::CLN::ClnWrapper& a) { return cln::abs(a.Value()); }
+  inline cln::float_format_t float_format(const CORE::CLN::ClnWrapper& a)
   {
     return cln::float_format(a.Value());
   }
-  inline CORE::GEO::CUT::ClnWrapper abs(const CORE::GEO::CUT::ClnWrapper& a)
-  {
-    return cln::abs(a.Value());
-  }
+  inline CORE::CLN::ClnWrapper abs(const CORE::CLN::ClnWrapper& a) { return cln::abs(a.Value()); }
 
-  inline CORE::GEO::CUT::ClnWrapper sqrt(const CORE::GEO::CUT::ClnWrapper& a)
-  {
-    return cln::sqrt(a.Value());
-  }
-  inline double double_approx(const CORE::GEO::CUT::ClnWrapper& a)
+  inline CORE::CLN::ClnWrapper sqrt(const CORE::CLN::ClnWrapper& a) { return cln::sqrt(a.Value()); }
+  inline double double_approx(const CORE::CLN::ClnWrapper& a)
   {
     return cln::double_approx(a.Value());
   }
-  inline cln::cl_F cl_float(const CORE::GEO::CUT::ClnWrapper& a, const cln::float_format_t& format)
+  inline cln::cl_F cl_float(const CORE::CLN::ClnWrapper& a, const cln::float_format_t& format)
   {
     return cln::cl_float(a.Value(), format);
   }
-  inline CORE::GEO::CUT::ClnWrapper pow(const CORE::GEO::CUT::ClnWrapper& base, int exponent)
+  inline CORE::CLN::ClnWrapper pow(const CORE::CLN::ClnWrapper& base, int exponent)
   {
     dserror("Not implemented!");
     return base;
@@ -321,7 +311,7 @@ namespace cln
 BACI_NAMESPACE_OPEN
 
 
-namespace CORE::GEO::CUT
+namespace CORE::CLN
 {
   // the only function that can perform conversion of
   template <class Matrix_cln, class Matrix_double>
@@ -358,41 +348,9 @@ namespace CORE::GEO::CUT
   // initial value of precision_
   // unsigned int ClnWrapper::precision_ = CLN_START_PRECISION;
 
-}  // namespace CORE::GEO::CUT
+}  // namespace CORE::CLN
 
 
 BACI_NAMESPACE_CLOSE
 
-<<<<<<< HEAD
-// providing overloads for the arithmetical functions
-// (actually dissallowed by the standart), but compiler will most
-// probably support it
-namespace std
-{
-  using namespace BACI;
-
-  inline CORE::GEO::CUT::ClnWrapper abs(const CORE::GEO::CUT::ClnWrapper& a)
-  {
-    return cln::abs(a.Value());
-  };
-
-  inline CORE::GEO::CUT::ClnWrapper sqrt(const CORE::GEO::CUT::ClnWrapper& a)
-  {
-    return cln::sqrt(a.Value());
-  };
-
-}  // namespace std
-
-inline BACI::CORE::GEO::CUT::ClnWrapper fabs(const BACI::CORE::GEO::CUT::ClnWrapper& a)
-{
-  return cln::abs(a.Value());
-}
-
-inline BACI::CORE::GEO::CUT::ClnWrapper pow(
-    const BACI::CORE::GEO::CUT::ClnWrapper& base, int exponent)
-{
-  dserror("Not implemented!");
-  return base;
-}
-
-#endif  // CUT_CLNWRAPPER_H
+#endif

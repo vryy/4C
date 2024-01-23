@@ -11,6 +11,7 @@
 #include "baci_config.H"
 
 #include "baci_linalg_gauss.H"
+#include "baci_utils_mathoperations.H"
 
 BACI_NAMESPACE_OPEN
 
@@ -55,7 +56,10 @@ namespace CORE::LINALG
           // search for pivot element
           for (unsigned i = k + 1; i < dim; ++i)
           {
-            pivot = (std::abs(A(pivot, k)) < std::abs(A(i, k))) ? i : pivot;
+            pivot = (CORE::MathOperations<valtype>::abs(A(pivot, k)) <
+                        CORE::MathOperations<valtype>::abs(A(i, k)))
+                        ? i
+                        : pivot;
           }
 
           // exchange pivot row and current row

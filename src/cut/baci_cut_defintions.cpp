@@ -7,9 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_cut_clnwrapper.H"
-
 #include "baci_cut_tolerance.H"
+#include "baci_utils_clnwrapper.H"
 
 #include <cmath>
 #include <iomanip>
@@ -18,10 +17,6 @@
 #endif
 
 BACI_NAMESPACE_OPEN
-
-// initial value of precision_
-unsigned int CORE::GEO::CUT::ClnWrapper::precision_ = CLN_START_PRECISION;
-
 
 #ifdef CUSTOM_MEMORY_ALLOCATOR
 

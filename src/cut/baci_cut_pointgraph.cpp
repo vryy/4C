@@ -382,7 +382,7 @@ bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
   // Use geometry to build embedding. The only safe way to do it.
 
 #ifdef CLN_CALC_OUTSIDE_KERNEL
-  typedef ClnWrapper floatType;
+  typedef CORE::CLN::ClnWrapper floatType;
   // NOTE: Cln can be used, if one get problem with double arc and there is no other way to fix it
   // However, if running cln with as custom memory manager, this should be changed ( mostly to free
   // objects in a container, similarly as in cut_kernel )
@@ -417,8 +417,9 @@ bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
 
 #ifdef CLN_CALC_OUTSIDE_KERNEL
       //                      Order of arguments is  __x___  ___y___
-      floatType arc = cln::atan(cln::cl_float(d(0), cln::float_format(ClnWrapper::precision_)),
-          cln::cl_float(d(1), cln::float_format(ClnWrapper::precision_)));
+      floatType arc =
+          cln::atan(cln::cl_float(d(0), cln::float_format(CORE::CLN::ClnWrapper::precision_)),
+              cln::cl_float(d(1), cln::float_format(CORE::CLN::ClnWrapper::precision_)));
 #else
       //                    Order of arguments is  __y___  ___x___
       floatType arc = std::atan2(d(1), d(0));

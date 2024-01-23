@@ -16,13 +16,14 @@
 
 #include "baci_config.H"
 
-#include "baci_cut_clnwrapper.H"
 #include "baci_cut_enum.H"
 #include "baci_cut_memory_manager.H"
 #include "baci_cut_tolerance.H"
 #include "baci_cut_utils.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_linalg_gauss_templates.H"
+#include "baci_utils_clnwrapper.H"
+#include "baci_utils_mathoperations.H"
 
 #include <unordered_map>
 
@@ -45,7 +46,7 @@ namespace CORE::GEO
       // functions to compare determinant ot zero, e.g when computing the ConditionNumber
       bool closeToZero(const double a);
 
-      bool closeToZero(const CORE::GEO::CUT::ClnWrapper& a);
+      bool closeToZero(const CORE::CLN::ClnWrapper& a);
 
       // Class to collects statistics about runs on double and cln in the cut intersection
       class CutKernelStatistics
@@ -139,25 +140,42 @@ namespace CORE::GEO
         {
           case CORE::FE::CellType::tri3:
           {
-            if (std::abs(xsi(1)) <= std::abs(tol(1))) edges_id.push_back(0);
-            if (std::abs(xsi(0) + xsi(1) - 1.0) <=
-                std::sqrt(tol(0) * tol(0) * 0.25 + tol(1) * tol(1) * 0.25))
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(1)) <=
+                CORE::MathOperations<typename T::scalar_type>::abs(tol(1)))
+              edges_id.push_back(0);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) + xsi(1) - 1.0) <=
+                CORE::MathOperations<typename floatType::scalar_type>::sqrt(
+                    tol(0) * tol(0) * 0.25 + tol(1) * tol(1) * 0.25))
               edges_id.push_back(1);
-            if (std::abs(xsi(0)) <= std::abs(tol(0))) edges_id.push_back(2);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0)) <=
+                CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0)))
+              edges_id.push_back(2);
             break;
           }
           case CORE::FE::CellType::quad4:
           {
-            if (std::abs(xsi(1) + 1.0) <= std::abs(tol(1))) edges_id.push_back(0);
-            if (std::abs(xsi(0) - 1.0) <= std::abs(tol(0))) edges_id.push_back(1);
-            if (std::abs(xsi(1) - 1.0) <= std::abs(tol(1))) edges_id.push_back(2);
-            if (std::abs(xsi(0) + 1.0) <= std::abs(tol(0))) edges_id.push_back(3);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(1) + 1.0) <=
+                CORE::MathOperations<typename floatType::scalar_type>::abs(tol(1)))
+              edges_id.push_back(0);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) - 1.0) <=
+                CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0)))
+              edges_id.push_back(1);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(1) - 1.0) <=
+                CORE::MathOperations<typename floatType::scalar_type>::abs(tol(1)))
+              edges_id.push_back(2);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) + 1.0) <=
+                CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0)))
+              edges_id.push_back(3);
             break;
           }
           case CORE::FE::CellType::line2:
           {
-            if (std::abs(xsi(0) + 1.0) <= std::abs(tol(0))) edges_id.push_back(0);
-            if (std::abs(xsi(0) - 1.0) <= std::abs(tol(0))) edges_id.push_back(1);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) + 1.0) <=
+                CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0)))
+              edges_id.push_back(0);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) - 1.0) <=
+                CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0)))
+              edges_id.push_back(1);
             break;
           }
           default:
@@ -176,34 +194,53 @@ namespace CORE::GEO
         {
           case CORE::FE::CellType::tri3:
           {
-            if ((std::abs(xsi(1)) <= std::abs(tol(1))) and (std::abs(xsi(0)) <= std::abs(tol(0))))
+            if ((CORE::MathOperations<typename T::scalar_type>::abs(xsi(1)) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(1))) and
+                (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0)) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0))))
               nodes_id.push_back(0);
-            if ((std::abs(xsi(1)) <= std::abs(tol(1))) and
-                (std::abs(1.0 - xsi(0)) <= std::abs(tol(0))))
+            if ((CORE::MathOperations<typename T::scalar_type>::abs(xsi(1)) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(1))) and
+                (CORE::MathOperations<typename T::scalar_type>::abs(1.0 - xsi(0)) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0))))
               nodes_id.push_back(1);
-            if (std::abs(1.0 - xsi(1)) <= std::abs(tol(1))) nodes_id.push_back(2);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(1.0 - xsi(1)) <=
+                CORE::MathOperations<typename floatType::scalar_type>::abs(tol(1)))
+              nodes_id.push_back(2);
             break;
           }
           case CORE::FE::CellType::quad4:
           {
-            if ((std::abs(xsi(1) + 1.0) <= std::abs(tol(1))) and
-                (std::abs(xsi(0) + 1.0) <= std::abs(tol(0))))
+            if ((CORE::MathOperations<typename T::scalar_type>::abs(xsi(1) + 1.0) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(1))) and
+                (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) + 1.0) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0))))
               nodes_id.push_back(0);
-            if ((std::abs(xsi(1) + 1.0) <= std::abs(tol(1))) and
-                (std::abs(xsi(0) - 1.0) <= std::abs(tol(0))))
+            if ((CORE::MathOperations<typename T::scalar_type>::abs(xsi(1) + 1.0) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(1))) and
+                (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) - 1.0) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0))))
               nodes_id.push_back(1);
-            if ((std::abs(xsi(1) - 1.0) <= std::abs(tol(1))) and
-                (std::abs(xsi(0) - 1.0) <= std::abs(tol(0))))
+            if ((CORE::MathOperations<typename T::scalar_type>::abs(xsi(1) - 1.0) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(1))) and
+                (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) - 1.0) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0))))
               nodes_id.push_back(2);
-            if ((std::abs(xsi(0) - 1.0) <= std::abs(tol(1))) and
-                (std::abs(xsi(0) + 1.0) <= std::abs(tol(0))))
+            if ((CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) - 1.0) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(1))) and
+                (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) + 1.0) <=
+                    CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0))))
               nodes_id.push_back(3);
             break;
           }
           case CORE::FE::CellType::line2:
           {
-            if (std::abs(xsi(0) + 1.0) <= std::abs(tol(0))) nodes_id.push_back(0);
-            if (std::abs(xsi(0) - 1.0) <= std::abs(tol(0))) nodes_id.push_back(1);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) + 1.0) <=
+                CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0)))
+              nodes_id.push_back(0);
+            if (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) - 1.0) <=
+                CORE::MathOperations<typename floatType::scalar_type>::abs(tol(0)))
+              nodes_id.push_back(1);
             break;
           }
           default:
@@ -235,22 +272,26 @@ namespace CORE::GEO
         {
           case CORE::FE::CellType::line2:
           {
-            return (std::abs(xsi(0) + 1) < tol or std::abs(xsi(0) - 1) < tol);
+            return (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) + 1) < tol or
+                    CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) - 1) < tol);
             break;
           }
           case CORE::FE::CellType::quad4:
           case CORE::FE::CellType::quad8:
           case CORE::FE::CellType::quad9:
           {
-            return (std::abs(xsi(0) + 1) < tol or std::abs(xsi(1) + 1) < tol or
-                    std::abs(xsi(0) - 1) < tol or std::abs(xsi(1) - 1) < tol);
+            return (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) + 1) < tol or
+                    CORE::MathOperations<typename T::scalar_type>::abs(xsi(1) + 1) < tol or
+                    CORE::MathOperations<typename T::scalar_type>::abs(xsi(0) - 1) < tol or
+                    CORE::MathOperations<typename T::scalar_type>::abs(xsi(1) - 1) < tol);
             break;
           }
           case CORE::FE::CellType::tri3:
           case CORE::FE::CellType::tri6:
           {
-            return (std::abs(xsi(0) + 0) < tol or std::abs(xsi(1) + 0) < tol or
-                    std::abs(xsi(1) + xsi(0) - 1) < tol);
+            return (CORE::MathOperations<double>::abs(xsi(0) + 0) < tol or
+                    CORE::MathOperations<double>::abs(xsi(1) + 0) < tol or
+                    CORE::MathOperations<typename T::scalar_type>::abs(xsi(1) + xsi(0) - 1) < tol);
             break;
           }
           default:
@@ -273,8 +314,10 @@ namespace CORE::GEO
       {
         if (elementType == CORE::FE::CellType::tri3)
         {
-          return xsi(0) >= 0.0 - std::abs(tol(0)) and xsi(1) >= 0.0 - std::abs(tol(1)) and
-                 xsi(0) <= 1.0 + std::abs(tol(0)) and xsi(1) <= 1.0 + std::abs(tol(1)) and
+          return xsi(0) >= 0.0 - CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                 xsi(1) >= 0.0 - CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) and
+                 xsi(0) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                 xsi(1) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) and
                  xsi(1) <= (1.0 - xsi(0)) + tol(2);
         }
         else
@@ -298,7 +341,13 @@ namespace CORE::GEO
           // ---------------------------------------------------------------
           case CORE::FE::CellType::line2:
           {
-            return (xsi(0) >= -1.0 - std::abs(tol(0)) and xsi(0) <= 1.0 + std::abs(tol(0)));
+            return (
+                xsi(0) >=
+                    -1.0 - CORE::MathOperations<typename std::decay<decltype(tol(0))>::type>::abs(
+                               tol(0)) and
+                xsi(0) <=
+                    1.0 + CORE::MathOperations<typename std::decay<decltype(tol(0))>::type>::abs(
+                              tol(0)));
             break;
           }
           // ---------------------------------------------------------------
@@ -308,17 +357,34 @@ namespace CORE::GEO
           case CORE::FE::CellType::quad8:
           case CORE::FE::CellType::quad9:
           {
-            return xsi(0) >= -1.0 - std::abs(tol(0)) and xsi(1) >= -1.0 - std::abs(tol(1)) and
-                   xsi(0) <= 1.0 + std::abs(tol(0)) and xsi(1) <= 1.0 + std::abs(tol(1));
+            return xsi(0) >=
+                       -1.0 -
+                           CORE::MathOperations<typename std::decay<decltype(tol(0))>::type>::abs(
+                               tol(0)) and
+                   xsi(1) >=
+                       -1.0 -
+                           CORE::MathOperations<typename std::decay<decltype(tol(1))>::type>::abs(
+                               tol(1)) and
+                   xsi(0) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                   xsi(1) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(1));
             break;
           }
           case CORE::FE::CellType::tri3:
           case CORE::FE::CellType::tri6:
           {
-            return xsi(0) >= 0.0 - std::abs(tol(0)) and xsi(1) >= 0.0 - std::abs(tol(1)) and
-                   xsi(0) <= 1.0 + std::abs(tol(0)) and xsi(1) <= 1.0 + std::abs(tol(1)) and
-                   xsi(1) <= (1.0 - xsi(0)) + std::sqrt(std::abs(tol(0)) * std::abs(tol(0)) * 0.25 +
-                                                        std::abs(tol(1)) * std::abs(tol(1)) * 0.25);
+            return xsi(0) >= 0.0 - CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                   xsi(1) >= 0.0 - CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) and
+                   xsi(0) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                   xsi(1) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) and
+                   xsi(1) <=
+                       (1.0 - xsi(0)) +
+                           CORE::MathOperations<typename T::scalar_type>::sqrt(
+                               CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) *
+                                   CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) *
+                                   0.25 +
+                               CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) *
+                                   CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) *
+                                   0.25);
             break;
           }
           // NOTE: Not sure if all the tolerances are set up correctly, especially points close to
@@ -331,35 +397,49 @@ namespace CORE::GEO
           case CORE::FE::CellType::hex20:
           case CORE::FE::CellType::hex27:
           {
-            return (xsi(0) >= -1.0 - std::abs(tol(0)) and xsi(1) >= -1.0 - std::abs(tol(1)) and
-                    xsi(2) >= -1.0 - std::abs(tol(2)) and xsi(0) <= 1.0 + std::abs(tol(0)) and
-                    xsi(1) <= 1.0 + std::abs(tol(1)) and xsi(2) <= 1.0 + std::abs(tol(2)));
+            return (xsi(0) >= -1.0 - CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                    xsi(1) >= -1.0 - CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) and
+                    xsi(2) >= -1.0 - CORE::MathOperations<typename T::scalar_type>::abs(tol(2)) and
+                    xsi(0) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                    xsi(1) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) and
+                    xsi(2) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(2)));
             break;
           }
           case CORE::FE::CellType::tet4:
           case CORE::FE::CellType::tet10:
           {
-            return (xsi(0) >= -std::abs(tol(0)) and xsi(1) >= -std::abs(tol(1)) and
-                    xsi(2) >= -std::abs(tol(2)) and
-                    xsi(0) + xsi(1) + xsi(2) <= 1.0 + std::abs(tol(0)));
+            return (xsi(0) >= -CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                    xsi(1) >= -CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) and
+                    xsi(2) >= -CORE::MathOperations<typename T::scalar_type>::abs(tol(2)) and
+                    xsi(0) + xsi(1) + xsi(2) <=
+                        1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(0)));
             break;
           }
           case CORE::FE::CellType::pyramid5:
           {
-            return (xsi(0) >= -1.0 - std::abs(tol(0)) and xsi(1) >= -1.0 - std::abs(tol(1)) and
-                    xsi(2) >= -std::abs(tol(2)) and xsi(0) <= 1.0 + std::abs(tol(0)) and
-                    xsi(1) <= 1.0 + std::abs(tol(1)) and
-                    (std::abs(xsi(0)) > std::abs(xsi(1))
-                            ? (xsi(2) + std::abs(xsi(0)) <= 1.0 + std::abs(tol(0)))
-                            : (xsi(2) + std::abs(xsi(1)) <= 1.0 + std::abs(tol(0)))));
+            return (
+                xsi(0) >= -1.0 - CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                xsi(1) >= -1.0 - CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) and
+                xsi(2) >= -CORE::MathOperations<typename T::scalar_type>::abs(tol(2)) and
+                xsi(0) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                xsi(1) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) and
+                (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0)) >
+                            CORE::MathOperations<typename T::scalar_type>::abs(xsi(1))
+                        ? (xsi(2) + CORE::MathOperations<typename T::scalar_type>::abs(xsi(0)) <=
+                              1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(0)))
+                        : (xsi(2) + CORE::MathOperations<typename T::scalar_type>::abs(xsi(1)) <=
+                              1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(0)))));
             break;
           }
           case CORE::FE::CellType::wedge6:
           case CORE::FE::CellType::wedge15:
           {
-            return (xsi(0) >= -std::abs(tol(0)) and xsi(1) >= -std::abs(tol(1)) and
-                    xsi(2) >= -1.0 - std::abs(tol(0)) and xsi(2) <= 1.0 + std::abs(tol(0)) and
-                    xsi(0) + xsi(1) <= 1.0 + std::abs(tol(0)));
+            return (xsi(0) >= -CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                    xsi(1) >= -CORE::MathOperations<typename T::scalar_type>::abs(tol(1)) and
+                    xsi(2) >= -1.0 - CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                    xsi(2) <= 1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(0)) and
+                    xsi(0) + xsi(1) <=
+                        1.0 + CORE::MathOperations<typename T::scalar_type>::abs(tol(0)));
             break;
           }
           default:
@@ -440,8 +520,12 @@ namespace CORE::GEO
             return (
                 xsi(0) >= -1.0 - tol and xsi(1) >= -1.0 - tol and xsi(2) >= -tol and
                 xsi(0) <= 1.0 + tol and xsi(1) <= 1.0 + tol and
-                (std::abs(xsi(0)) > std::abs(xsi(1)) ? (xsi(2) + std::abs(xsi(0)) <= 1.0 + tol)
-                                                     : (xsi(2) + std::abs(xsi(1)) <= 1.0 + tol)));
+                (CORE::MathOperations<typename T::scalar_type>::abs(xsi(0)) >
+                            CORE::MathOperations<typename T::scalar_type>::abs(xsi(1))
+                        ? (xsi(2) + CORE::MathOperations<typename T::scalar_type>::abs(xsi(0)) <=
+                              1.0 + tol)
+                        : (xsi(2) + CORE::MathOperations<typename T::scalar_type>::abs(xsi(1)) <=
+                              1.0 + tol)));
             break;
           }
           case CORE::FE::CellType::wedge6:
@@ -679,14 +763,14 @@ namespace CORE::GEO
 
       /// computes adaptive precision for AdaptivePrecision strategies
       template <class T1, class T2, class T3>
-      ClnWrapper AdaptiveCombinedNewtonTolerance(
-          const T1& xyze, const T2& px, const T3& initial_rhs, ClnWrapper&)
+      CORE::CLN::ClnWrapper AdaptiveCombinedNewtonTolerance(
+          const T1& xyze, const T2& px, const T3& initial_rhs, CORE::CLN::ClnWrapper&)
       {
         /* --- Build the absolute tolerance */
         // cln does not have built it pow function and using double will cause floating point
         // overflow, so we using manual cln conversion
         std::stringstream string_buffer;
-        int nsize = ClnWrapper::GetPrecision();
+        int nsize = CORE::CLN::ClnWrapper::GetPrecision();
         string_buffer << nsize;
         // construct string that represent 1e^-(current_cln_precision - 2) explicitely
         // otherwise cln might thinkg it too close to zero, and convert to short float zero and mess
@@ -695,13 +779,14 @@ namespace CORE::GEO
             "0." + std::string(nsize - 2, '0') + "1" + "e+1_" + string_buffer.str();
         cln::cl_F cln_tol = clnumstr.c_str();
         // in order to make sure that we maintain proper precision
-        ClnWrapper cln_tol_cln =
-            cln::cl_float(cln_tol, cln::float_format(ClnWrapper::GetPrecision()));
-        ClnWrapper cln_linsolvetol = cln_tol_cln / cln::sqrt(ClnWrapper(3.0)) *
-                                     ClnWrapper(10.0);  //  similarly as for double
+        CORE::CLN::ClnWrapper cln_tol_cln =
+            cln::cl_float(cln_tol, cln::float_format(CORE::CLN::ClnWrapper::GetPrecision()));
+        CORE::CLN::ClnWrapper cln_linsolvetol =
+            cln_tol_cln / cln::sqrt(CORE::CLN::ClnWrapper(3.0)) *
+            CORE::CLN::ClnWrapper(10.0);  //  similarly as for double
 
-        ClnWrapper tol = xyze.NormInf();
-        ClnWrapper linescale = px.NormInf();
+        CORE::CLN::ClnWrapper tol = xyze.NormInf();
+        CORE::CLN::ClnWrapper linescale = px.NormInf();
 
         if (linescale > tol) tol = linescale;
 
@@ -751,7 +836,7 @@ namespace CORE::GEO
         }
 #ifdef CUT_CLN_CALC
         /// required constructor for CLN
-        NewtonSolve(CORE::LINALG::Matrix<dim, 1, ClnWrapper>& xsi, bool checklimits)
+        NewtonSolve(CORE::LINALG::Matrix<dim, 1, CORE::CLN::ClnWrapper>& xsi, bool checklimits)
             : Strategy(xsi, checklimits)
         {
         }
@@ -1050,7 +1135,7 @@ namespace CORE::GEO
                       << std::flush;
           }
 
-          return (std::abs(residual) < tol_ ? converged : unconverged);
+          return (CORE::MathOperations<floatType>::abs(residual) < tol_ ? converged : unconverged);
         }
 
         /** \brief Build and solve the linear system
@@ -1091,7 +1176,7 @@ namespace CORE::GEO
             std::cout << "dx_.Norm2()                = " << dx_.Norm2() << "\n";
           }
 
-          return std::abs(det) >= LINSOLVETOL;
+          return CORE::MathOperations<floatType>::abs(det) >= LINSOLVETOL;
         }
 
         /// Update the solution parameter space coordinates
@@ -1353,8 +1438,8 @@ namespace CORE::GEO
           bool conv;
           int iter = 0;
           int prec = CLN_START_PRECISION;  // standart initial precision
-          ClnWrapper err;
-          ClnWrapper cond_number;
+          CORE::CLN::ClnWrapper err;
+          CORE::CLN::ClnWrapper cond_number;
           cond_infinity_ = false;  // test check if condition number is equal to infinity
 
 #if DEBUG_MEMORY_ALLOCATION
@@ -1374,7 +1459,7 @@ namespace CORE::GEO
 #endif
           do
           {
-            ClnWrapper::SetPrecision(prec);
+            CORE::CLN::ClnWrapper::SetPrecision(prec);
 #ifdef CUSTOM_MEMORY_ALLOCATOR
 #if DEBUG_MEMORY_ALLOCATION
             // set current constainer for most frequenty byte size allocation for this iteration
@@ -1417,7 +1502,7 @@ namespace CORE::GEO
               }
             }
 
-            std::pair<bool, ClnWrapper> cond_pair = this->ConditionNumber();
+            std::pair<bool, CORE::CLN::ClnWrapper> cond_pair = this->ConditionNumber();
             cond_number = cond_pair.second;
             if (not cond_pair.first)
             {
@@ -1465,14 +1550,17 @@ namespace CORE::GEO
           return conv;
         }
 
-        const CORE::LINALG::Matrix<dim, 1, ClnWrapper>& LocalCoordinates()
+        const CORE::LINALG::Matrix<dim, 1, CORE::CLN::ClnWrapper>& LocalCoordinates()
         {
           return Strategy::LocalCoordinates();
         }
 
-        std::pair<bool, ClnWrapper> ConditionNumber() { return Strategy::ConditionNumber(); }
+        std::pair<bool, CORE::CLN::ClnWrapper> ConditionNumber()
+        {
+          return Strategy::ConditionNumber();
+        }
 
-        ClnWrapper GetTolerance() const { return Strategy::GetTolerance(); }
+        CORE::CLN::ClnWrapper GetTolerance() const { return Strategy::GetTolerance(); }
 
         PointOnSurfaceLoc GetSideLocation() { return location_; }
 
@@ -1480,25 +1568,26 @@ namespace CORE::GEO
         // Evaluate difference between inital global coordinates passed to ComputePosition and
         // and global coordinates based on loc coordinates calculated in the ComputePosition,
         // using conversion to very high reference precision
-        ClnWrapper ComputeError(
+        CORE::CLN::ClnWrapper ComputeError(
             const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<elementType>>& ref_shape_xyz,
             const CORE::LINALG::Matrix<probDim, 1>& glob_init,
-            const CORE::LINALG::Matrix<dim, 1, ClnWrapper>& loc_calc, int prec)
+            const CORE::LINALG::Matrix<dim, 1, CORE::CLN::ClnWrapper>& loc_calc, int prec)
         {
-          unsigned int prev_prec = ClnWrapper::GetPrecision();
-          ClnWrapper::SetPrecision(prec);
+          unsigned int prev_prec = CORE::CLN::ClnWrapper::GetPrecision();
+          CORE::CLN::ClnWrapper::SetPrecision(prec);
           // Converting input data into higher precision floating point format
-          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<elementType>, ClnWrapper>
+          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<elementType>, CORE::CLN::ClnWrapper>
               cln_ref_shape_xyz;
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_init;
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_loc_calc;
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> cln_glob_init;
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> cln_loc_calc;
 
           ConvDoubleCLN(loc_calc, cln_loc_calc, prec);
           ConvDoubleCLN(ref_shape_xyz, cln_ref_shape_xyz, prec);
           ConvDoubleCLN(glob_init, cln_glob_init, prec);
 
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_calc;
-          CORE::LINALG::Matrix<CORE::FE::num_nodes<elementType>, 1, ClnWrapper> shapeFunct;
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> cln_glob_calc;
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<elementType>, 1, CORE::CLN::ClnWrapper>
+              shapeFunct;
           CORE::FE::shape_function<elementType>(cln_loc_calc, shapeFunct);
           for (unsigned int inode = 0; inode < CORE::FE::num_nodes<elementType>; ++inode)
           {
@@ -1509,11 +1598,11 @@ namespace CORE::GEO
           }
           // evaluating error by comparison with global position, that was set up initially and the
           // one that we obtained from the ComputePosition evaluation and the interpolation
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> diff_vec;
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> diff_vec;
           for (unsigned int i = 0; i < probDim; ++i)
             diff_vec(i) = cln_glob_calc(i) - cln_glob_init(i);
           // resetting precision to previous
-          ClnWrapper::SetPrecision(prev_prec);
+          CORE::CLN::ClnWrapper::SetPrecision(prev_prec);
           return diff_vec.Norm2();
         }
 
@@ -1565,14 +1654,14 @@ namespace CORE::GEO
 
        private:
         // variable for cln computation
-        CORE::LINALG::Matrix<probDim, numNodesElement, ClnWrapper> clnxyze_;
+        CORE::LINALG::Matrix<probDim, numNodesElement, CORE::CLN::ClnWrapper> clnxyze_;
 
-        CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnpx_;
+        CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> clnpx_;
 
         // reference to the double TMATRIX
         CORE::LINALG::Matrix<dim, 1>& xsi_;
 
-        CORE::LINALG::Matrix<dim, 1, ClnWrapper> clnxsi_;
+        CORE::LINALG::Matrix<dim, 1, CORE::CLN::ClnWrapper> clnxsi_;
 
         // if condition number if infinity or not
         bool cond_infinity_;
@@ -1624,7 +1713,7 @@ namespace CORE::GEO
             {
               ComputePositionAdaptivePrecision<
                   NewtonSolve<ComputePositionStrategy<false, probDim, elementType, numNodesElement,
-                                  dim, ClnWrapper, ComputePositionNoStaticMembers>,
+                                  dim, CORE::CLN::ClnWrapper, ComputePositionNoStaticMembers>,
                       dim>,
                   probDim, elementType>
                   clncalc(xsi_);
@@ -1632,7 +1721,7 @@ namespace CORE::GEO
               bool clnsolver = clncalc(xyze, px);
               conv = clnsolver;
               location_ = clncalc.GetSideLocation();
-              ClnWrapper::ResetPrecision();
+              CORE::CLN::ClnWrapper::ResetPrecision();
             }
 #ifdef CUSTOM_MEMORY_ALLOCATOR
             CORE::GEO::CUT::MemorySingleton::getInstance().Finalize();
@@ -1841,9 +1930,10 @@ namespace CORE::GEO
           switch (probDim - dimSide)
           {
             case 1:
-              return std::abs(distance_[0]);
+              return CORE::MathOperations<floatType>::abs(distance_[0]);
             case 2:
-              return std::sqrt(distance_[0] * distance_[0] + distance_[1] * distance_[1]);
+              return CORE::MathOperations<floatType>::sqrt(
+                  distance_[0] * distance_[0] + distance_[1] * distance_[1]);
             default:
               dserror("Unsupported probDim and dimSide combination!");
               exit(EXIT_FAILURE);
@@ -2186,7 +2276,8 @@ namespace CORE::GEO
 #if EXTENDED_CUT_DEBUG_OUTPUT
             std::cout << "Determinant in  compute position is very close to zero" << std::endl;
 #endif
-          if (std::abs(det) == 0.0)  // here might lie problem for the cln
+          if (CORE::MathOperations<floatType>::abs(det) ==
+              0.0)  // here might lie problem for the cln
           {
             /* then calculation of a normal to a line like this makes no sense at
              * all! */
@@ -2440,8 +2531,8 @@ namespace CORE::GEO
 
           int prec = CLN_START_PRECISION;  // standart initial precision
           bool conv;
-          ClnWrapper err;
-          ClnWrapper cond_number;
+          CORE::CLN::ClnWrapper err;
+          CORE::CLN::ClnWrapper cond_number;
           int iter = 0;
           cond_infinity_ = false;
           bool zero_area = false;
@@ -2470,7 +2561,7 @@ namespace CORE::GEO
 #endif
           do
           {
-            ClnWrapper::SetPrecision(prec);
+            CORE::CLN::ClnWrapper::SetPrecision(prec);
 #ifdef CUSTOM_MEMORY_ALLOCATOR
 #if DEBUG_MEMORY_ALLOCATION
             if (custom_allocator_run_)
@@ -2528,7 +2619,7 @@ namespace CORE::GEO
                   exit(EXIT_FAILURE);
               }
             }
-            std::pair<bool, ClnWrapper> cond_pair = this->ConditionNumber();
+            std::pair<bool, CORE::CLN::ClnWrapper> cond_pair = this->ConditionNumber();
             cond_number = cond_pair.second;
 
             if (not cond_pair.first)
@@ -2585,24 +2676,27 @@ namespace CORE::GEO
           return conv;
         }
         // get the local coordinates
-        const CORE::LINALG::Matrix<probDim, 1, ClnWrapper>& LocalCoordinates() const
+        const CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper>& LocalCoordinates() const
         {
           return Strategy::LocalCoordinates();
         }
 
-        const ClnWrapper* SignedDistance() const { return Strategy::SignedDistance(); }
+        const CORE::CLN::ClnWrapper* SignedDistance() const { return Strategy::SignedDistance(); }
 
-        ClnWrapper Distance() const { return Strategy::Distance(); }
+        CORE::CLN::ClnWrapper Distance() const { return Strategy::Distance(); }
 
-        std::pair<bool, ClnWrapper> ConditionNumber() { return Strategy::ConditionNumber(); }
+        std::pair<bool, CORE::CLN::ClnWrapper> ConditionNumber()
+        {
+          return Strategy::ConditionNumber();
+        }
 
-        CORE::LINALG::Matrix<probDim, 2, ClnWrapper> GetNormalVector()
+        CORE::LINALG::Matrix<probDim, 2, CORE::CLN::ClnWrapper> GetNormalVector()
         {
           return Strategy::GetNormalVector();
         }
 
         /// access the Newton tolerance
-        ClnWrapper GetTolerance() const { return Strategy::GetTolerance(); }
+        CORE::CLN::ClnWrapper GetTolerance() const { return Strategy::GetTolerance(); }
         PointOnSurfaceLoc GetSideLocation() { return location_; }
         const std::vector<int>& GetTouchedSideEdges() { return touched_edges_ids_; }
 
@@ -2616,25 +2710,27 @@ namespace CORE::GEO
         // Evaluate difference between inital global coordinates passed to ComputeDistance and
         // and global coordinates based on loc coordinates and distance  calculated in the
         // ComputeDistance, using conversion to very high reference precision
-        ClnWrapper ComputeError(const CORE::LINALG::Matrix<probDim,
-                                    CORE::FE::num_nodes<sideType>>& refshape_xyze,  // referenape
-            const CORE::LINALG::Matrix<probDim, 1>& p,  // global position of the point
-            const CORE::LINALG::Matrix<probDim, 1, ClnWrapper>&
+        CORE::CLN::ClnWrapper ComputeError(
+            const CORE::LINALG::Matrix<probDim,
+                CORE::FE::num_nodes<sideType>>& refshape_xyze,  // referenape
+            const CORE::LINALG::Matrix<probDim, 1>& p,          // global position of the point
+            const CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper>&
                 loc_calc,  // calculated wrt reference shape local position
-            const CORE::LINALG::Matrix<probDim, 2, ClnWrapper>& nvec,  // normal vector
-            const ClnWrapper*
+            const CORE::LINALG::Matrix<probDim, 2, CORE::CLN::ClnWrapper>& nvec,  // normal vector
+            const CORE::CLN::ClnWrapper*
                 distance,  // distance from the projection on the reference shape  to the point
             int prec       // precision for calculation
         )
         {
-          unsigned int prev_prec = ClnWrapper::GetPrecision();
-          ClnWrapper::SetPrecision(prec);
+          unsigned int prev_prec = CORE::CLN::ClnWrapper::GetPrecision();
+          CORE::CLN::ClnWrapper::SetPrecision(prec);
           // Converting input arrays  to higher precision floating points
-          ClnWrapper clndistance;
-          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>, ClnWrapper> xyze_side;
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnxi;
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnpx;
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> n1;
+          CORE::CLN::ClnWrapper clndistance;
+          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>, CORE::CLN::ClnWrapper>
+              xyze_side;
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> clnxi;
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> clnpx;
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> n1;
 
           clndistance = cln::cl_float(distance[0], cln::float_format(prec));
           ConvDoubleCLN(refshape_xyze, xyze_side, prec);
@@ -2646,31 +2742,32 @@ namespace CORE::GEO
             n1(i) = cln::cl_float(nvec(i, 0), cln::float_format(prec));
           }
 
-          CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, ClnWrapper> surfaceFunct;
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> b;
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, CORE::CLN::ClnWrapper>
+              surfaceFunct;
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> b;
 
-          CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> clnxiside(clnxi.A(), true);
+          CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> clnxiside(clnxi.A(), true);
           CORE::FE::shape_function<sideType>(clnxiside, surfaceFunct);
           b = clnpx;
           b.Multiply(-1.0, xyze_side, surfaceFunct, 1.0);
 
           // inverse of the normal direction norm
-          ClnWrapper n1norm_inv = 1.0 / n1.Norm2();
+          CORE::CLN::ClnWrapper n1norm_inv = 1.0 / n1.Norm2();
           // --- add the distance part to the right-hand-side
           b.Update(-clndistance * n1norm_inv, n1, 1.0);
           // in a special case add more of the distance
           if (probDim == 3 and dimSide == 1)
           {
-            CORE::LINALG::Matrix<probDim, 1, ClnWrapper> n2;
+            CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> n2;
             for (unsigned int i = 0; i < probDim; ++i)
               n2(i) = cln::cl_float(nvec(i, 1), cln::float_format(prec));
 
-            ClnWrapper n2norm_inv = 1.0 / n2.Norm2();
+            CORE::CLN::ClnWrapper n2norm_inv = 1.0 / n2.Norm2();
             b.Update(-distance[1] * n2norm_inv, n2, 1.0);
           }
-          ClnWrapper res = b.Norm2();
+          CORE::CLN::ClnWrapper res = b.Norm2();
           // resetting precision to previous
-          ClnWrapper::SetPrecision(prev_prec);
+          CORE::CLN::ClnWrapper::SetPrecision(prev_prec);
           return res;
         }
 
@@ -2685,9 +2782,10 @@ namespace CORE::GEO
         // get location of the point on the surface  as well as touched edges
         void GetTopologyInformation()
         {
-          CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> scaled_tolerance_side_touched_edges;
+          CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper>
+              scaled_tolerance_side_touched_edges;
           this->GetLocalTolerance(SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
-          CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> zero_tolerance_side;
+          CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> zero_tolerance_side;
           bool is_inside = WithinLimits<sideType>(clnxsi_, zero_tolerance_side);
           PointOnSurfacePlane point_on_surface = GetLocation(SIDE_DETECTION_TOLERANCE);
 
@@ -2712,26 +2810,26 @@ namespace CORE::GEO
             // if we are inside the "tolerance wrapper" around the side
             if (location_.WithinSide())
             {
-              CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> zero_tolerance_side;
+              CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> zero_tolerance_side;
               // this means we are on the outer boundary of the tolerance
               if (not WithinLimits<sideType>(clnxsi_, zero_tolerance_side))
               {
                 // we transform our point to global tolerance and check if it is close enough to the
                 // nodal point of the side, that is common point of the touching edges
-                const CORE::LINALG::Matrix<probDim, numNodesSide, ClnWrapper>& clnxyze_side_latest =
-                    clnxyze_side_;
-                const CORE::LINALG::Matrix<probDim, 1, ClnWrapper>& xsi_global = clnpx_;
+                const CORE::LINALG::Matrix<probDim, numNodesSide, CORE::CLN::ClnWrapper>&
+                    clnxyze_side_latest = clnxyze_side_;
+                const CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper>& xsi_global = clnpx_;
 
                 // find minimum distance and check if it is closer than 1e-14
-                CORE::LINALG::Matrix<probDim, 1, ClnWrapper> dist;
-                ClnWrapper min_dist;
+                CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> dist;
+                CORE::CLN::ClnWrapper min_dist;
                 for (unsigned int inode = 0; inode < numNodesSide; ++inode)
                 {
                   // acess raw responsible for that node
-                  CORE::LINALG::Matrix<probDim, 1, ClnWrapper> coord(
+                  CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> coord(
                       clnxyze_side_latest.A() + inode * probDim, true);
                   dist.Update(1.0, coord, -1.0, xsi_global);
-                  ClnWrapper tmp_dist = dist.Norm2();
+                  CORE::CLN::ClnWrapper tmp_dist = dist.Norm2();
                   if ((inode == 0) or (tmp_dist < min_dist))
                   {
                     min_dist = tmp_dist;
@@ -2797,14 +2895,14 @@ namespace CORE::GEO
         }
 
         // Get location of the point with respect to the plain ( above/on/below )
-        PointOnSurfacePlane GetLocation(const ClnWrapper& err)
+        PointOnSurfacePlane GetLocation(const CORE::CLN::ClnWrapper& err)
         {
           switch (probDim - dimSide)
           {
             case 1:
             {
               PointOnSurfacePlane result;
-              const ClnWrapper* signed_distance = Strategy::SignedDistance();
+              const CORE::CLN::ClnWrapper* signed_distance = Strategy::SignedDistance();
 
               if ((signed_distance[0] + err < 0.0) && (signed_distance[0] - err < 0.0))
               {
@@ -2827,7 +2925,7 @@ namespace CORE::GEO
             default:
             {
               // we cat only get signed distance for edge edge intersection
-              const ClnWrapper distance = Strategy::Distance();
+              const CORE::CLN::ClnWrapper distance = Strategy::Distance();
               // some safety checks
               if (distance < 0.0) dserror("Not possible");
               if (err <= 0.0) dserror("Error should be equal to basic tolerance!");
@@ -2846,17 +2944,17 @@ namespace CORE::GEO
         static std::vector<int> touched_nodes_ids_;
 
         // variable for cln computation
-        CORE::LINALG::Matrix<probDim, numNodesSide, ClnWrapper> clnxyze_side_;
+        CORE::LINALG::Matrix<probDim, numNodesSide, CORE::CLN::ClnWrapper> clnxyze_side_;
 
         // global position of the point converted to cln precision
-        CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnpx_;
+        CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> clnpx_;
 
-        ClnWrapper clndistance_;
+        CORE::CLN::ClnWrapper clndistance_;
 
         // reference to the double Matrix
         CORE::LINALG::Matrix<probDim, 1>& xsi_;
 
-        CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnxsi_;
+        CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> clnxsi_;
 
         // determines position of this point with respect to the side limits (values:
         // inside/outsaide)
@@ -2942,8 +3040,9 @@ namespace CORE::GEO
 #endif
               {
                 ComputeDistanceAdaptivePrecision<
-                    NewtonSolve<ComputeDistanceStrategy<false, probDim, sideType, dimSide,
-                                    numNodesSide, ClnWrapper, ComputeDistanceNoStaticMembers>,
+                    NewtonSolve<
+                        ComputeDistanceStrategy<false, probDim, sideType, dimSide, numNodesSide,
+                            CORE::CLN::ClnWrapper, ComputeDistanceNoStaticMembers>,
                         probDim>,
                     probDim, sideType>
                     cln_calc(xsi_ref_, checklimits_ref_);
@@ -2959,7 +3058,7 @@ namespace CORE::GEO
                 touched_edges_ids_ = touched_edges_ids_cln;
                 touched_nodes_ids_ = touched_nodes_ids_cln;
                 cond_infinity_ = cln_calc.IsConditionInfinity();
-                ClnWrapper::ResetPrecision();
+                CORE::CLN::ClnWrapper::ResetPrecision();
               }
               // finalize memory allocator
 #ifdef CUSTOM_MEMORY_ALLOCATOR
@@ -3413,7 +3512,8 @@ namespace CORE::GEO
             floatType A2_tmp = A(0, idim) * A(0, idim);
             for (unsigned intersect_dim = 1; intersect_dim < probDim; ++intersect_dim)
               A2_tmp += A(intersect_dim, idim) * A(intersect_dim, idim);
-            scaled_tolerance(idim) = global_tolerance * 1.0 / std::sqrt(A2_tmp);
+            scaled_tolerance(idim) =
+                global_tolerance * 1.0 / CORE::MathOperations<floatType>::sqrt(A2_tmp);
           }
           return true;
         }
@@ -3568,7 +3668,8 @@ namespace CORE::GEO
             std::cout << "Newton method failed" << std::endl;
             std::cout << "Residual is" << residual_ << std::endl;
             std::cout << "Tolerance is" << tol_ << std::endl;
-            std::cout << "Precision is" << ClnWrapper::precision_ << "decimal points" << std::endl;
+            std::cout << "Precision is" << CORE::CLN::ClnWrapper::precision_ << "decimal points"
+                      << std::endl;
             std::cout << "Local coordinates are " << xsi_ << std::endl;
           }
 #endif
@@ -3879,8 +3980,8 @@ namespace CORE::GEO
           int prec = CLN_START_PRECISION;
           int iter = 0;
           bool conv;
-          ClnWrapper err;
-          ClnWrapper cond_number;
+          CORE::CLN::ClnWrapper err;
+          CORE::CLN::ClnWrapper cond_number;
           cond_infinity_ = false;
 
 #ifdef CUSTOM_MEMORY_ALLOCATOR
@@ -3906,7 +4007,7 @@ namespace CORE::GEO
 
           do
           {
-            ClnWrapper::SetPrecision(prec);
+            CORE::CLN::ClnWrapper::SetPrecision(prec);
 #ifdef CUSTOM_MEMORY_ALLOCATOR
 #if DEBUG_MEMORY_ALLOCATION
             if (custom_allocator_run_)
@@ -3949,7 +4050,7 @@ namespace CORE::GEO
             }
 #endif
 
-            std::pair<bool, ClnWrapper> cond_pair = this->ConditionNumber();
+            std::pair<bool, CORE::CLN::ClnWrapper> cond_pair = this->ConditionNumber();
             cond_number = cond_pair.second;
             if (not cond_pair.first)
             {
@@ -4013,12 +4114,16 @@ namespace CORE::GEO
           return conv;
         }
 
-        const CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper>& LocalCoordinates() const
+        const CORE::LINALG::Matrix<dimEdge + dimSide, 1, CORE::CLN::ClnWrapper>& LocalCoordinates()
+            const
         {
           return Strategy::LocalCoordinates();
         }
 
-        std::pair<bool, ClnWrapper> ConditionNumber() { return Strategy::ConditionNumber(); }
+        std::pair<bool, CORE::CLN::ClnWrapper> ConditionNumber()
+        {
+          return Strategy::ConditionNumber();
+        }
 
         bool SurfaceWithinLimits(double tolerance = REFERENCETOL) const
         {
@@ -4031,7 +4136,7 @@ namespace CORE::GEO
           return WithinLimits<edgeType>(xsi_line, tolerance);
         }
 
-        ClnWrapper GetTolerance() const { return Strategy::GetTolerance(); }
+        CORE::CLN::ClnWrapper GetTolerance() const { return Strategy::GetTolerance(); }
 
         void WritetoGmsh(std::ofstream& file) { Strategy::WritetoGmsh(file); }
 
@@ -4043,7 +4148,7 @@ namespace CORE::GEO
 
         const std::vector<int>& GetTouchedSideEdges() { return touched_edges_ids_; }
 
-        ClnWrapper DistanceBetween() const { return Strategy::DistanceBetween(); }
+        CORE::CLN::ClnWrapper DistanceBetween() const { return Strategy::DistanceBetween(); }
 
        private:
         //  Converts tolerance in the local coordinates and computes topological information, such
@@ -4051,10 +4156,11 @@ namespace CORE::GEO
         void GetTopologyInformation()
         {
           // tolerance of getting nearby edges
-          CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> scaled_tolerance_side_touched_edges;
+          CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper>
+              scaled_tolerance_side_touched_edges;
           // tolerances of determining inside/outside surface limits
-          CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> scaled_tolerance_side;
-          CORE::LINALG::Matrix<dimEdge, 1, ClnWrapper> scaled_tolerance_edge;
+          CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> scaled_tolerance_side;
+          CORE::LINALG::Matrix<dimEdge, 1, CORE::CLN::ClnWrapper> scaled_tolerance_edge;
           // compute location
           this->GetLocalToleranceSide(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_side);
           this->GetLocalToleranceSide(
@@ -4065,7 +4171,7 @@ namespace CORE::GEO
             sideLocation_ = PointOnSurfaceLoc(true, true);
           else
             sideLocation_ = PointOnSurfaceLoc(false, true);
-          const CORE::LINALG::Matrix<dimEdge, 1, ClnWrapper> clnxsi_line(
+          const CORE::LINALG::Matrix<dimEdge, 1, CORE::CLN::ClnWrapper> clnxsi_line(
               clnxsi_.A() + dimSide, true);
           if (WithinLimits<edgeType>(clnxsi_line, scaled_tolerance_edge))
             edgeLocation_ = PointOnSurfaceLoc(true, true);
@@ -4082,27 +4188,30 @@ namespace CORE::GEO
 
         // Evaluate difference between global coordinates in the intersection when computed based on
         // side and based on edge using conversion to very high reference precision
-        ClnWrapper ComputeError(
+        CORE::CLN::ClnWrapper ComputeError(
             const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>>& refside_xyz,
             const CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<edgeType>>& refedge_xyz,
-            const CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper>& loc_calc, int prec)
+            const CORE::LINALG::Matrix<dimEdge + dimSide, 1, CORE::CLN::ClnWrapper>& loc_calc,
+            int prec)
         {
-          unsigned int prev_prec = ClnWrapper::GetPrecision();
-          ClnWrapper::SetPrecision(prec);
+          unsigned int prev_prec = CORE::CLN::ClnWrapper::GetPrecision();
+          CORE::CLN::ClnWrapper::SetPrecision(prec);
 
           // Converting input arrays  to higher precision floating points
-          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>, ClnWrapper> cln_refside_xyz;
-          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<edgeType>, ClnWrapper> cln_refedge_xyz;
-          CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_loc_calc;
+          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<sideType>, CORE::CLN::ClnWrapper>
+              cln_refside_xyz;
+          CORE::LINALG::Matrix<probDim, CORE::FE::num_nodes<edgeType>, CORE::CLN::ClnWrapper>
+              cln_refedge_xyz;
+          CORE::LINALG::Matrix<dimEdge + dimSide, 1, CORE::CLN::ClnWrapper> cln_loc_calc;
 
           ConvDoubleCLN(refside_xyz, cln_refside_xyz, prec);
           ConvDoubleCLN(refedge_xyz, cln_refedge_xyz, prec);
           ConvDoubleCLN(loc_calc, cln_loc_calc, prec);
 
           // Calculating interpolation from the shapefunction of the side
-          CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, ClnWrapper> sideFunct;
-          CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_glob_calc_side;
-          CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_loc_calc_side(
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, CORE::CLN::ClnWrapper> sideFunct;
+          CORE::LINALG::Matrix<dimEdge + dimSide, 1, CORE::CLN::ClnWrapper> cln_glob_calc_side;
+          CORE::LINALG::Matrix<dimEdge + dimSide, 1, CORE::CLN::ClnWrapper> cln_loc_calc_side(
               cln_loc_calc.A(), true);
           CORE::FE::shape_function<sideType>(cln_loc_calc_side, sideFunct);
 
@@ -4115,9 +4224,9 @@ namespace CORE::GEO
           }
 
           // Calculating interpolation from the shapefunction of the edge
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_calc_edge;
-          CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, ClnWrapper> edgeFunct;
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_loc_calc_edge(
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> cln_glob_calc_edge;
+          CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, CORE::CLN::ClnWrapper> edgeFunct;
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> cln_loc_calc_edge(
               cln_loc_calc.A() + CORE::FE::dim<sideType>, true);
 
           CORE::FE::shape_function<edgeType>(cln_loc_calc_edge, edgeFunct);
@@ -4130,13 +4239,13 @@ namespace CORE::GEO
           }
 
           // Evaluating error
-          CORE::LINALG::Matrix<probDim, 1, ClnWrapper>
+          CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper>
               diff_vec;  // vector of difference between interpolation
           for (unsigned int i = 0; i < (dimEdge + dimSide); ++i)
             diff_vec(i) = cln_glob_calc_edge(i) - cln_glob_calc_side(i);
 
           // resetting precision to previous
-          ClnWrapper::SetPrecision(prev_prec);
+          CORE::CLN::ClnWrapper::SetPrecision(prev_prec);
           return diff_vec.Norm2();
         }
 
@@ -4150,34 +4259,34 @@ namespace CORE::GEO
           {
             if (sideLocation_.WithinSide())
             {
-              CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> zero_tolerance_side;
+              CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> zero_tolerance_side;
               // this means we are on the outer boundary of the tolerance
               if (not WithinLimits<sideType>(clnxsi_, zero_tolerance_side))
               {
                 // we transform our point to global tolerance and check if it is close enough to the
                 // nodal point of the side, that is common point of the touching edges
-                CORE::LINALG::Matrix<numNodesSide, 1, ClnWrapper> sideFunct;
-                CORE::LINALG::Matrix<probDim, 1, ClnWrapper> xsi_global;
+                CORE::LINALG::Matrix<numNodesSide, 1, CORE::CLN::ClnWrapper> sideFunct;
+                CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> xsi_global;
                 xsi_global = 0.0;
                 const CORE::LINALG::Matrix<dimSide, 1> xsi_side(xsi_.A(), true);
                 CORE::FE::shape_function<sideType>(xsi_side, sideFunct);
                 // taking latest cln based coordinate
-                const CORE::LINALG::Matrix<probDim, numNodesSide, ClnWrapper>& clnxyze_side_latest =
-                    clnxyze_side_;
+                const CORE::LINALG::Matrix<probDim, numNodesSide, CORE::CLN::ClnWrapper>&
+                    clnxyze_side_latest = clnxyze_side_;
                 for (unsigned int inode = 0; inode < numNodesSide; ++inode)
                   for (unsigned int isd = 0; isd < probDim; ++isd)
                     xsi_global(isd) += clnxyze_side_latest(isd, inode) * sideFunct(inode);
 
                 // lame method for now. find minimum distance and check if it is closer than 1e-14
-                CORE::LINALG::Matrix<probDim, 1, ClnWrapper> dist;
-                ClnWrapper min_dist;
+                CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> dist;
+                CORE::CLN::ClnWrapper min_dist;
                 for (unsigned int inode = 0; inode < numNodesSide; ++inode)
                 {
                   // acess raw responsible for that node
-                  CORE::LINALG::Matrix<probDim, 1, ClnWrapper> coord(
+                  CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> coord(
                       clnxyze_side_latest.A() + inode * probDim, true);
                   dist.Update(1.0, coord, -1.0, xsi_global);
-                  ClnWrapper tmp_dist = dist.Norm2();
+                  CORE::CLN::ClnWrapper tmp_dist = dist.Norm2();
                   if ((inode == 0) or (tmp_dist < min_dist)) min_dist = tmp_dist;
                 }
 
@@ -4247,14 +4356,14 @@ namespace CORE::GEO
 
         static std::vector<int> touched_edges_ids_;
 
-        CORE::LINALG::Matrix<probDim, numNodesSide, ClnWrapper> clnxyze_side_;
+        CORE::LINALG::Matrix<probDim, numNodesSide, CORE::CLN::ClnWrapper> clnxyze_side_;
 
-        CORE::LINALG::Matrix<probDim, numNodesEdge, ClnWrapper> clnxyze_edge_;
+        CORE::LINALG::Matrix<probDim, numNodesEdge, CORE::CLN::ClnWrapper> clnxyze_edge_;
 
         // holds reference to original value
         CORE::LINALG::Matrix<dimEdge + dimSide, 1>& xsi_;
 
-        CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> clnxsi_;
+        CORE::LINALG::Matrix<dimEdge + dimSide, 1, CORE::CLN::ClnWrapper> clnxsi_;
 
         static bool first_run_;
 
@@ -4325,8 +4434,8 @@ namespace CORE::GEO
               {
                 ComputeIntersectionAdaptivePrecision<
                     NewtonSolve<ComputeIntersectionStrategy<false, probDim, edgeType, sideType,
-                                    dimEdge, dimSide, numNodesEdge, numNodesSide, ClnWrapper,
-                                    ComputeIntersectionNoStaticMembers>,
+                                    dimEdge, dimSide, numNodesEdge, numNodesSide,
+                                    CORE::CLN::ClnWrapper, ComputeIntersectionNoStaticMembers>,
                         dimEdge + dimSide>,
                     probDim, edgeType, sideType>
                     clncalc(xsi_, checklimits_);
@@ -4342,7 +4451,7 @@ namespace CORE::GEO
                 if (probDim > dimEdge + dimSide)
                   distance_between_ = cln::double_approx(clncalc.DistanceBetween());
 
-                ClnWrapper::ResetPrecision();
+                CORE::CLN::ClnWrapper::ResetPrecision();
               }
 #ifdef CUSTOM_MEMORY_ALLOCATOR
               CORE::GEO::CUT::MemorySingleton::getInstance().Finalize();
@@ -4608,7 +4717,7 @@ namespace CORE::GEO
       };  // class DebugComputeIntersection
 
     }  // namespace KERNEL
-  }    // namespace CUT
+  }  // namespace CUT
 }  // namespace CORE::GEO
 
 

@@ -871,7 +871,7 @@ double CORE::GEO::CUT::KERNEL::getAreaConvexQuad(std::vector<Point*>& poly)
 bool CORE::GEO::CUT::KERNEL::closeToZero(const double a) { return ((a < 1e-30) and (a > -1e-30)); };
 
 
-bool CORE::GEO::CUT::KERNEL::closeToZero(const CORE::GEO::CUT::ClnWrapper& a)
+bool CORE::GEO::CUT::KERNEL::closeToZero(const CORE::CLN::ClnWrapper& a)
 {
   cln::cl_F lpf = cln::least_positive_float(cln::float_format(a.Value()));
   cln::cl_F lnf = cln::least_negative_float(cln::float_format(a.Value()));
