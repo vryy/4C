@@ -1713,8 +1713,8 @@ namespace SCATRA
     //! mean values of gradient of transported scalars
     std::map<const int, std::vector<double>> meangradients_;
 
-    //! total of micro scalars
-    std::map<const int, std::vector<double>> micrototalscalars_;
+    //! mean of micro scalars
+    std::map<const int, std::vector<double>> micromeanscalars_;
 
     //! process number
     int myrank_;

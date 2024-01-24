@@ -2683,7 +2683,7 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
     domainintegral_[condid] = 0.0;
 
     // micro dis has only one dof
-    if (output_micro_dis_) micrototalscalars_[condid].resize(1, 0.0);
+    if (output_micro_dis_) micromeanscalars_[condid].resize(1, 0.0);
 
     dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
@@ -2711,7 +2711,7 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
     if (output_micro_dis_)
     {
       runtime_csvwriter_->RegisterDataVector(
-          "Total value of micro scalar in domain " + std::to_string(condid), 1, 16);
+          "Mean value of micro scalar in domain " + std::to_string(condid), 1, 16);
     }
   }
 }
@@ -2810,8 +2810,8 @@ void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
     if (output_micro_dis_)
     {
       runtime_csvwriter_->AppendDataVector(
-          "Total value of micro scalar in domain " + std::to_string(condid),
-          {micrototalscalars_[condid][0]});
+          "Mean value of micro scalar in domain " + std::to_string(condid),
+          {micromeanscalars_[condid][0]});
     }
   }
 }
@@ -2958,7 +2958,8 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
         meangradients_[condid][k] = std::abs(mean_gradient) < 1.0e-10 ? 0.0 : mean_gradient;
       }
     }
-    if (output_micro_dis_) micrototalscalars_[condid][0] = (*scalars)[scalars->length() - 1];
+    if (output_micro_dis_)
+      micromeanscalars_[condid][0] = (*scalars)[scalars->length() - 1] / domainintegral_[condid];
   }
 }
 
