@@ -71,7 +71,9 @@ void BINSTRATEGY::BinningStrategy::Init(
   bindis_ = Teuchos::rcp(new DRT::Discretization("binning", comm_));
 
   // create discretization writer
-  bindis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(bindis_)));
+  bindis_->SetWriter(Teuchos::rcp(
+      new IO::DiscretizationWriter(bindis_, GLOBAL::Problem::Instance()->OutputControlFile(),
+          GLOBAL::Problem::Instance()->SpatialApproximationType())));
   bindis_->FillComplete(false, false, false);
 
   // binning strategy params
@@ -663,7 +665,9 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(bindis_->Comm().Clone());
   visbindis_ = Teuchos::rcp(new DRT::Discretization("bins", com));
   // create discretization writer
-  visbindis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(visbindis_)));
+  visbindis_->SetWriter(Teuchos::rcp(
+      new IO::DiscretizationWriter(visbindis_, GLOBAL::Problem::Instance()->OutputControlFile(),
+          GLOBAL::Problem::Instance()->SpatialApproximationType())));
 
   // store gids of ghosted elements
   std::map<int, std::vector<CORE::LINALG::Matrix<3, 1>>> ghostcorners;

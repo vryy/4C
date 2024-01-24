@@ -162,7 +162,9 @@ void XFEM::MeshCoupling::PrepareCutterOutput()
 
   if (!mark_geometry_)  // Do not write for marked geometry!
   {
-    cutter_dis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cutter_dis_)));
+    cutter_dis_->SetWriter(Teuchos::rcp(
+        new IO::DiscretizationWriter(cutter_dis_, GLOBAL::Problem::Instance()->OutputControlFile(),
+            GLOBAL::Problem::Instance()->SpatialApproximationType())));
     cutter_output_ = cutter_dis_->Writer();
     cutter_output_->WriteMesh(0, 0.0);
   }

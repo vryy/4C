@@ -239,9 +239,10 @@ namespace IO
    public:
     /*!
       Writer constructor always needs a discretization
-      Use default control file from global problem.
      */
-    DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis);
+    DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<OutputControl> output_control,
+        const CORE::FE::ShapeFunctionType shape_function_type);
 
     /** \brief copy constructor
      *

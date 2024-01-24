@@ -11,6 +11,7 @@
 
 #include "baci_fluid_discret_extractor.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_discret_xwall.H"
 #include "baci_lib_dofset_transparent.H"
@@ -427,7 +428,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     childdiscret_->ReplaceDofSet(Teuchos::rcp(new DRT::TransparentDofSet(parentdiscret_, true)));
 
     // set discretization writer
-    childdiscret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(childdiscret_)));
+    childdiscret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(childdiscret_,
+        GLOBAL::Problem::Instance()->OutputControlFile(),
+        GLOBAL::Problem::Instance()->SpatialApproximationType())));
 
     // call FillComplete() to assign the dof
     // remark: equal Redistribute(*newrownodemap,*newcolnodemap,true,true,true) as
