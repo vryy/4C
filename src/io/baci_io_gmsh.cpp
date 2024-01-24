@@ -12,7 +12,6 @@
 #include "baci_io_gmsh.hpp"
 
 #include "baci_discretization_geometry_position_array.hpp"
-#include "baci_global_data.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_utils.hpp"
@@ -578,7 +577,7 @@ void IO::GMSH::ScalarToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< 
 
   s << "{" << scalarvalue << "};";
   s << "\n";
-};
+}
 
 void IO::GMSH::VectorToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
     const CORE::LINALG::Matrix<3, 1>& vectorvalue,                         ///< vector at this point
@@ -599,7 +598,7 @@ void IO::GMSH::VectorToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< 
   s << "," << vectorvalue(2);
   s << "};";  //<< endl;
   s << "\n";
-};
+}
 
 void IO::GMSH::elementAtInitialPositionToStream(
     const double scalar, const DRT::Element* ele, std::ostream& s)
@@ -624,7 +623,7 @@ void IO::GMSH::elementAtInitialPositionToStream(
     {
       s << ",";
     }
-  };
+  }
   s << ")";
   // values
   ScalarToStream(scalar, distype, s);
@@ -685,7 +684,7 @@ void IO::GMSH::disToStream(const std::string& text, const double scalar,
   {
     const DRT::Element* actele = dis->lRowElement(i);
     IO::GMSH::elementAtInitialPositionToStream(scalar, actele, s);
-  };
+  }
   s << "};\n";
 }
 
@@ -708,7 +707,7 @@ void IO::GMSH::disToStream(const std::string& text, const double scalar,
     const DRT::Element* actele = dis->lColElement(i);
     IO::GMSH::cellWithScalarToStream(
         actele->Shape(), scalar, CORE::GEO::getCurrentNodalPositions(actele, currentpositions), s);
-  };
+  }
   s << "};\n";
 }
 
@@ -722,44 +721,37 @@ std::string IO::GMSH::disToString(const std::string& text, const double scalar,
 }
 
 std::string IO::GMSH::GetNewFileNameAndDeleteOldFiles(const std::string& filename_base,
-    const int& actstep,    ///< generate filename for this step
-    const int& step_diff,  ///< how many steps are kept
+    const std::string& file_name_prefix, const int& actstep, const int& step_diff,
     const bool screen_out, const int pid)
 {
   std::ostringstream filename;
   std::ostringstream filenamedel;
-  const std::string filebase(GLOBAL::Problem::Instance()->OutputControlFile()->FileName());
 
   std::ostringstream pid_stream;
   pid_stream << ".p" << std::setw(2) << std::setfill('0') << pid;
 
-  filename << filebase << "." << filename_base << "_" << std::setw(5) << std::setfill('0')
+  filename << file_name_prefix << "." << filename_base << "_" << std::setw(5) << std::setfill('0')
            << actstep << pid_stream.str() << ".pos";
-  filenamedel << filebase << "." << filename_base << "_" << std::setw(5) << std::setfill('0')
-              << actstep - step_diff << pid_stream.str() << ".pos";
+  filenamedel << file_name_prefix << "." << filename_base << "_" << std::setw(5)
+              << std::setfill('0') << actstep - step_diff << pid_stream.str() << ".pos";
   std::remove(filenamedel.str().c_str());
   if (screen_out)
-    std::cout << "writing " << std::left << std::setw(60) << filename.str() << "..." << std::endl;
+    std::cout << "writing " << std::left << std::setw(60) << filename.str() << "..." << '\n';
   return filename.str();
 }
 
 std::string IO::GMSH::GetFileName(const std::string& filename_base,
-    const int& actstep,  ///< generate filename for this step
-                         //    const int&           step_diff,         ///< how many steps are kept
-    const bool screen_out, const int pid)
+    const std::string& file_name_prefix, const int& actstep, const bool screen_out, const int pid)
 {
   std::ostringstream filename;
-
-  const std::string filebase(GLOBAL::Problem::Instance()->OutputControlFile()->FileName());
-
   std::ostringstream pid_stream;
   pid_stream << ".p" << std::setw(2) << std::setfill('0') << pid;
 
-  filename << filebase << "." << filename_base << "_" << std::setw(5) << std::setfill('0')
+  filename << file_name_prefix << "." << filename_base << "_" << std::setw(5) << std::setfill('0')
            << actstep << pid_stream.str() << ".pos";
 
   if (screen_out)
-    std::cout << "writing " << std::left << std::setw(60) << filename.str() << "..." << std::endl;
+    std::cout << "writing " << std::left << std::setw(60) << filename.str() << "..." << '\n';
 
   return filename.str();
 }

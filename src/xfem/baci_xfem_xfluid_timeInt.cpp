@@ -27,6 +27,8 @@
 #include "baci_fluid_ele_interface.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_xfem.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
 #include "baci_io_gmsh.hpp"
 #include "baci_lib_condition_selector.hpp"
 #include "baci_lib_discret.hpp"
@@ -2253,8 +2255,8 @@ void XFEM::XFluidTimeInt::Output()
   int step_diff = 500;
 
   // output for all dofsets of nodes
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      "TIMINT_Method", step_, step_diff, true, dis_->Comm().MyPID());
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("TIMINT_Method",
+      dis_->Writer()->Output()->FileName(), step_, step_diff, true, dis_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);

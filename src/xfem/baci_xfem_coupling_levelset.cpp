@@ -318,8 +318,8 @@ void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const 
   std::ostringstream filename_base_fsi;
   filename_base_fsi << filename_base << "_levelset";
 
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      filename_base_fsi.str(), step, gmsh_step_diff, gmsh_debug_out_screen, myrank_);
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_fsi.str(),
+      cutter_output_->Output()->FileName(), step, gmsh_step_diff, gmsh_debug_out_screen, myrank_);
 
   std::ofstream gmshfilecontent(filename.c_str());
 

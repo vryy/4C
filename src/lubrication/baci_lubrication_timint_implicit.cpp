@@ -1128,8 +1128,8 @@ void LUBRICATION::TimIntImpl::OutputToGmsh(const int step, const double time) co
   const bool screen_out = true;
 
   // create Gmsh postprocessing file
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      "solution_field_pressure", step, 500, screen_out, discret_->Comm().MyPID());
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure",
+      discret_->Writer()->Output()->FileName(), step, 500, screen_out, discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
     // add 'View' to Gmsh postprocessing file
