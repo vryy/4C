@@ -1992,7 +1992,7 @@ void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
   for (auto& mat : matlist)
   {
     // read material from DAT file of type #matlist[m]
-    mat->Read(problem, reader, problem.Materials());
+    mat->Read(reader, problem.Materials());
   }
 
   // check if every material was identified
