@@ -73,7 +73,8 @@ void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeCsvWriter(
     dserror("a runtime csv writer for field '%s' is already stored!", fieldname.c_str());
 
   // set the csv writer object
-  runtime_csvwriters_[fieldname] = std::make_shared<IO::RuntimeCsvWriter>(comm_.MyPID(), fieldname);
+  runtime_csvwriters_[fieldname] = std::make_shared<IO::RuntimeCsvWriter>(
+      comm_.MyPID(), *GLOBAL::Problem::Instance()->OutputControlFile(), fieldname);
 }
 
 void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutput(

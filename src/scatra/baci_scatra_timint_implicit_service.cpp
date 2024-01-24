@@ -2497,7 +2497,7 @@ void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatr
   else
     filename = "scalarvalues";
 
-  runtime_csvwriter_.emplace(myrank_, filename);
+  runtime_csvwriter_.emplace(myrank_, *scatratimint->DiscWriter()->Output(), filename);
   InitStrategySpecific(scatratimint);
 }
 

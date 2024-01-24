@@ -188,7 +188,8 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   // Prepare runtime csv writer
   if (DoOutput())
   {
-    runtime_csvwriter_.emplace(ssi_mono.Comm().MyPID(), "manifold_inflow");
+    runtime_csvwriter_.emplace(ssi_mono.Comm().MyPID(),
+        *GLOBAL::Problem::Instance()->OutputControlFile(), "manifold_inflow");
 
     for (const auto& condition_manifold : conditions_manifold)
     {
