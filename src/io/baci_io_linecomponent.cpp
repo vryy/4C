@@ -14,16 +14,13 @@ BACI_NAMESPACE_OPEN
 
 namespace
 {
-  /*! brief Convert the string 'snumber' to number of type T and return that value number via
-   * stoi or stod
+  /*! @brief Convert the string @p snumber to number of type T and return that value number via
+   * stoi or stod depending on whether T is type int or double.
    *
-   *  Depending on whether T is type int or double, use stoi or stod to convert 'snumber'.
+   * @param[in] position of the next character in string after the numerical value
    */
   template <typename T>
-  T ConvertStringToNumber(
-      const std::string&
-          snumber,        ///< string read from the line to be converted to an int or double
-      std::size_t& pos);  ///< position of the next character in string after the numerical value
+  T ConvertStringToNumber(const std::string& snumber, std::size_t& pos);
 
   /// specialization for int
   template <>
@@ -62,7 +59,6 @@ namespace
         snumbersubstring.c_str(), variablename.c_str(), sectionname.c_str(), nnumber,
         variablename.c_str());
   }
-
 
   // Convert a string to a number, i.e. to an int or a double
   // Perform the appropriate error checks
@@ -106,24 +102,17 @@ namespace
 
     return nnumber;
   }
-
-
-
 }  // namespace
 
 namespace INPUT
 {
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   LineComponent::LineComponent(std::string name, bool optional)
       : optional_(optional), name_(std::move(name))
   {
   }
 
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   SeparatorComponent::SeparatorComponent(
       std::string separator, std::string description, bool optional)
       : INPUT::LineComponent("*SEPARATOR*", optional),
@@ -132,33 +121,21 @@ namespace INPUT
   {
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void SeparatorComponent::DefaultLine(std::ostream& stream) { stream << separator_; }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void SeparatorComponent::Print(std::ostream& stream, const DRT::Container& container)
   {
     stream << separator_;
   }
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void SeparatorComponent::Describe(std::ostream& stream)
   {
     stream << "    " << std::setw(15) << std::left << separator_ << std::setw(15) << std::left
            << (optional_ ? "(optional)" : "") << description_;
   }
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   std::string SeparatorComponent::WriteReadTheDocs() { return separator_; }
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   std::vector<std::string> SeparatorComponent::WriteReadTheDocsTableRow() const
   {
     std::vector<std::string> tablerow;
@@ -170,9 +147,6 @@ namespace INPUT
     return tablerow;
   }
 
-
-  /*-----------------------------------------------------------------------------*
-   *-----------------------------------------------------------------------------*/
   Teuchos::RCP<std::stringstream> SeparatorComponent::Read(const std::string& section_name,
       Teuchos::RCP<std::stringstream> condline, DRT::Container& container)
   {
@@ -210,34 +184,20 @@ namespace INPUT
   }
 
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   StringComponent::StringComponent(std::string name, std::string defaultvalue, bool optional)
       : INPUT::LineComponent(std::move(name), optional), defaultvalue_(std::move(defaultvalue))
   {
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void StringComponent::DefaultLine(std::ostream& stream) { stream << defaultvalue_; }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void StringComponent::Print(std::ostream& stream, const DRT::Container& container)
   {
     stream << *container.Get<std::string>(Name());
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void StringComponent::Describe(std::ostream& stream) {}
 
-
-  /*---------------------------------------------------------------------------*
-   *---------------------------------------------------------------------------*/
   Teuchos::RCP<std::stringstream> StringComponent::Read(const std::string& section_name,
       Teuchos::RCP<std::stringstream> condline, DRT::Container& container)
   {
@@ -273,9 +233,6 @@ namespace INPUT
   }
 
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   SelectionComponent::SelectionComponent(std::string name, std::string defaultvalue,
       const Teuchos::Array<std::string>& datfilevalues,
       const Teuchos::Array<std::string>& stringcondvalues, bool optional)
@@ -297,9 +254,6 @@ namespace INPUT
     }
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   SelectionComponent::SelectionComponent(std::string name, std::string defaultvalue,
       const Teuchos::Array<std::string>& datfilevalues, const Teuchos::Array<int>& intcondvalues,
       bool optional)
@@ -321,28 +275,17 @@ namespace INPUT
     }
   }
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void SelectionComponent::DefaultLine(std::ostream& stream) { stream << defaultvalue_; }
 
   std::string SelectionComponent::WriteReadTheDocs() { return "<" + Name() + ">"; }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   Teuchos::Array<std::string> SelectionComponent::GetOptions() { return datfilevalues_; }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void SelectionComponent::Print(std::ostream& stream, const DRT::Container& container)
   {
     stream << *container.Get<std::string>(Name());
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   Teuchos::RCP<std::stringstream> SelectionComponent::Read(const std::string& section_name,
       Teuchos::RCP<std::stringstream> condline, DRT::Container& container)
   {
@@ -383,17 +326,11 @@ namespace INPUT
   }
 
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   IntComponent::IntComponent(std::string name, IntComponentData data)
       : INPUT::LineComponent(std::move(name), data.optional), data_(data)
   {
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void IntComponent::DefaultLine(std::ostream& stream)
   {
     if (data_.none_allowed)
@@ -402,9 +339,6 @@ namespace INPUT
       stream << data_.default_value;
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void IntComponent::Print(std::ostream& stream, const DRT::Container& container)
   {
     int n = container.GetInt(Name());
@@ -417,22 +351,13 @@ namespace INPUT
     }
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   std::string IntComponent::WriteReadTheDocs()
   {
     return data_.none_allowed ? "none" : std::to_string(data_.default_value);
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void IntComponent::Describe(std::ostream& stream) {}
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   Teuchos::RCP<std::stringstream> IntComponent::Read(const std::string& section_name,
       Teuchos::RCP<std::stringstream> condline, DRT::Container& container)
   {
@@ -483,14 +408,10 @@ namespace INPUT
   }
 
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   IntVectorComponent::IntVectorComponent(std::string name, int length, IntComponentData data)
       : INPUT::LineComponent(std::move(name), data.optional), length_(length), data_(data)
   {
   }
-
-
 
   IntVectorComponent::IntVectorComponent(
       std::string name, LengthDefinition length_from_component, IntComponentData data)
@@ -499,7 +420,6 @@ namespace INPUT
         data_(data)
   {
   }
-
 
   namespace
   {
@@ -510,9 +430,6 @@ namespace INPUT
     };
   }  // namespace
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void IntVectorComponent::DefaultLine(std::ostream& stream)
   {
     using namespace std::string_literals;
@@ -530,7 +447,6 @@ namespace INPUT
     for (int i = 0; i < default_length; ++i) stream << default_value;
   }
 
-
   std::string IntVectorComponent::WriteReadTheDocs()
   {
     std::string parameterstring = "<int vec";
@@ -539,8 +455,6 @@ namespace INPUT
     return parameterstring;
   }
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void IntVectorComponent::Print(std::ostream& stream, const DRT::Container& container)
   {
     const auto* v = container.Get<std::vector<int>>(Name());
@@ -553,7 +467,6 @@ namespace INPUT
     }
   }
 
-
   namespace
   {
     struct LengthVisitor
@@ -564,10 +477,7 @@ namespace INPUT
       const DRT::Container& condition;
     };
   }  // namespace
-     //
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   Teuchos::RCP<std::stringstream> IntVectorComponent::Read(const std::string& section_name,
       Teuchos::RCP<std::stringstream> condline, DRT::Container& container)
   {
@@ -627,46 +537,25 @@ namespace INPUT
     return condline;
   }
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void IntVectorComponent::SetLength(int length) { length_ = length; }
 
-
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void IntVectorComponent::Describe(std::ostream& stream) {}
 
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   RealComponent::RealComponent(std::string name, RealComponentData data)
       : INPUT::LineComponent(std::move(name), data.optional), data_(data)
   {
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void RealComponent::DefaultLine(std::ostream& stream) { stream << data_.default_value; }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void RealComponent::Print(std::ostream& stream, const DRT::Container& container)
   {
     stream << container.GetDouble(Name());
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void RealComponent::Describe(std::ostream& stream) {}
 
-
-  /*---------------------------------------------------------------------------*
-   | Read double parameter value from line line of input file   fang 08/14 |
-   *---------------------------------------------------------------------------*/
   Teuchos::RCP<std::stringstream> RealComponent::Read(const std::string& section_name,
       Teuchos::RCP<std::stringstream> condline, DRT::Container& container)
   {
@@ -705,14 +594,10 @@ namespace INPUT
   }
 
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   RealVectorComponent::RealVectorComponent(std::string name, int length, RealComponentData data)
       : INPUT::LineComponent(std::move(name), data.optional), length_(length), data_(data)
   {
   }
-
 
   RealVectorComponent::RealVectorComponent(
       std::string name, LengthDefinition length, RealComponentData data)
@@ -722,36 +607,22 @@ namespace INPUT
   {
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void RealVectorComponent::DefaultLine(std::ostream& stream)
   {
     const int default_length = std::visit(DefaultLengthVisitor{}, length_);
     for (int i = 0; i < default_length; ++i) stream << data_.default_value;
   }
 
-
-
   std::string RealVectorComponent::WriteReadTheDocs() { return "<real vec:" + Name() + "> "; }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void RealVectorComponent::Print(std::ostream& stream, const DRT::Container& container)
   {
     const auto* v = container.Get<std::vector<double>>(Name());
     for (double i : *v) stream << i << " ";
   }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void RealVectorComponent::Describe(std::ostream& stream) {}
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   Teuchos::RCP<std::stringstream> RealVectorComponent::Read(const std::string& section_name,
       Teuchos::RCP<std::stringstream> condline, DRT::Container& container)
   {
@@ -800,14 +671,9 @@ namespace INPUT
     return condline;
   }
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void RealVectorComponent::SetLength(int length) { length_ = length; }
 
 
-
-  /*======================================================================*/
-  /*======================================================================*/
   const std::string BoolComponent::lineTrue_ = "Yes";
   const std::string BoolComponent::lineFalse_ = "No";
   BoolComponent::BoolComponent(std::string name, const bool defaultvalue, bool optional)
@@ -815,21 +681,14 @@ namespace INPUT
   {
   }
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void BoolComponent::DefaultLine(std::ostream& stream) { PrintYesNo(stream, defaultvalue_); }
 
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void BoolComponent::Print(std::ostream& stream, const DRT::Container& container)
   {
     const bool value = (bool)container.GetInt(Name());
     PrintYesNo(stream, value);
   }
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void BoolComponent::PrintYesNo(std::ostream& stream, const bool value) const
   {
     if (value)
@@ -838,14 +697,8 @@ namespace INPUT
       stream << lineFalse_;
   }
 
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   void BoolComponent::Describe(std::ostream& stream) {}
 
-
-  /*----------------------------------------------------------------------------*
-   | Read boolean parameter value from line line of input file   fang 08/14 |
-   *----------------------------------------------------------------------------*/
   Teuchos::RCP<std::stringstream> BoolComponent::Read(const std::string& section_name,
       Teuchos::RCP<std::stringstream> condline, DRT::Container& container)
   {
@@ -892,7 +745,6 @@ namespace INPUT
   }
 
 
-
   SwitchComponent::SwitchComponent(std::string name, const KeyType& default_key,
       std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<INPUT::LineComponent>>>>
           choices)
@@ -915,8 +767,6 @@ namespace INPUT
         Name(), choices_[default_key_].first, names_for_keys, keys);
   }
 
-
-
   void SwitchComponent::DefaultLine(std::ostream& stream)
   {
     component_for_key_->DefaultLine(stream);
@@ -928,8 +778,6 @@ namespace INPUT
       stream << " ";
     }
   }
-
-
 
   std::vector<std::string> SwitchComponent::WriteReadTheDocsLines()
   {
@@ -948,20 +796,15 @@ namespace INPUT
     return all_choices_as_rtd;
   }
 
-
   std::string SwitchComponent::WriteReadTheDocs()
   {
     return component_for_key_->WriteReadTheDocs() + " [further parameters]";
   }
 
-
-
   Teuchos::Array<std::string> SwitchComponent::GetOptions()
   {
     return component_for_key_->GetOptions();
   }
-
-
 
   void SwitchComponent::Print(std::ostream& stream, const DRT::Container& container)
   {
@@ -977,8 +820,6 @@ namespace INPUT
       stream << " ";
     }
   }
-
-
 
   Teuchos::RCP<std::stringstream> SwitchComponent::Read(const std::string& section_name,
       Teuchos::RCP<std::stringstream> condline, DRT::Container& container)
