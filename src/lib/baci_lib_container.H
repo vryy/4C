@@ -18,11 +18,11 @@
 #include "baci_comm_parobject.H"
 #include "baci_comm_parobjectfactory.H"
 #include "baci_linalg_serialdensematrix.H"
-#include "baci_utils_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <string>
 
 class Epetra_MultiVector;
@@ -164,7 +164,7 @@ namespace DRT
     \brief Add a CORE::LINALG::SerialDenseMatrix to the container
 
     \param name : Name of data to store data with
-    \param data : matrix to store
+    \param matrix : matrix to store
 
     \note If record with name name already exists, it will be overwritten
     */
@@ -211,8 +211,30 @@ namespace DRT
     \return const Ptr to data if data with that name exists, nullptr otherwise
     */
     template <typename T>
-    const T* Get(const std::string& name) const;
+    const T* Get(const std::string& name) const
+    {
+      const auto access = [](const auto& map, const std::string& name) -> const T*
+      {
+        const auto it = map.find(name);
+        if (it != map.end())
+          return std::addressof(it->second);
+        else
+          return nullptr;
+      };
 
+      if constexpr (std::is_same_v<T, std::vector<int>>)
+        return access(intdata_, name);
+      else if constexpr (std::is_same_v<T, std::vector<double>>)
+        return access(doubledata_, name);
+      else if constexpr (std::is_same_v<T, std::map<int, std::vector<double>>>)
+        return access(mapdata_, name);
+      else if constexpr (std::is_same_v<T, std::string>)
+        return access(stringdata_, name);
+      else if constexpr (std::is_same_v<T, CORE::LINALG::SerialDenseMatrix>)
+        return access(matdata_, name);
+      else
+        static_assert(!sizeof(T), "The Get function does not support this type.");
+    };
 
     /*!
     \brief Get a single integer back without all that hassle
@@ -279,8 +301,10 @@ namespace DRT
     \return non-constant Ptr to data if data with that name exists, nullptr otherwise
     */
     template <typename T>
-    T* Get(const std::string& name);
-
+    T* Get(const std::string& name)
+    {
+      return const_cast<T*>(const_cast<const Container*>(this)->Get<T>(name));
+    };
     //@}
 
     //! @name Erase methods
@@ -316,7 +340,6 @@ namespace DRT
 
     //! a map to store matrices in
     std::map<std::string, CORE::LINALG::SerialDenseMatrix> matdata_;
-
   };  // class Container
 }  // namespace DRT
 
