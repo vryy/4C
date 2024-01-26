@@ -8,7 +8,7 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_electrode.H"

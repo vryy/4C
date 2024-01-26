@@ -10,9 +10,9 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_engine_runtime_vtp_writer.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_visualization_manager.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
 BACI_NAMESPACE_OPEN

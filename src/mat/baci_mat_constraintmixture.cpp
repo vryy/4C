@@ -27,11 +27,11 @@ For a detailed description see:
 #include "baci_comm_utils.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"  // for debug plotting with gmsh
 #include "baci_discretization_fem_general_utils_integration.H"  // for debug plotting with gmsh
-#include "baci_inpar_structure.H"                               // for pstime
-#include "baci_io_control.H"                                    // for debug plotting with gmsh
-#include "baci_io_gmsh.H"                                       // for debug plotting with gmsh
+#include "baci_global_data.H"
+#include "baci_inpar_structure.H"  // for pstime
+#include "baci_io_control.H"       // for debug plotting with gmsh
+#include "baci_io_gmsh.H"          // for debug plotting with gmsh
 #include "baci_io_linedefinition.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"  // for debug plotting with gmsh
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_constraintmixture_history.H"

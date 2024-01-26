@@ -14,8 +14,8 @@ analysis for supporting processors
 
 #include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
+#include "baci_global_data.H"
 #include "baci_lib_container.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_mat_micromaterial.H"

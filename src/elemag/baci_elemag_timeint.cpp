@@ -12,10 +12,10 @@
 
 #include "baci_elemag_ele_action.H"
 #include "baci_elemag_resulttest.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret_hdg.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_resulttest.H"
 #include "baci_linalg_equilibrate.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"

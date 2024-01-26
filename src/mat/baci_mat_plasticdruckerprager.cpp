@@ -11,8 +11,8 @@ John Wiley & Sons, Ltd, 2008
 #include "baci_mat_plasticdruckerprager.H"
 
 #include "baci_comm_parobject.H"
+#include "baci_global_data.H"
 #include "baci_inpar_structure.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_FADmatrix_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"

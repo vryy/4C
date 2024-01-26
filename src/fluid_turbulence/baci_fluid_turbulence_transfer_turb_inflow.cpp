@@ -14,8 +14,8 @@ boundary of the actual domain
 #include "baci_fluid_turbulence_transfer_turb_inflow.H"
 
 #include "baci_coupling_matchingoctree.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_function_of_time.H"
 
 BACI_NAMESPACE_OPEN

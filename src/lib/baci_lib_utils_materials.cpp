@@ -12,8 +12,8 @@
 
 #include "baci_lib_utils_materials.H"
 
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 #include <algorithm>

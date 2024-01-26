@@ -13,7 +13,7 @@
 #include "baci_cut_element.H"
 #include "baci_cut_side.H"
 #include "baci_cut_volumecell.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 
 BACI_NAMESPACE_OPEN
 

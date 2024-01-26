@@ -10,11 +10,11 @@
 
 #include "baci_contact_utils.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
 #include "baci_io_every_iteration_writer.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 #include <fstream>
 

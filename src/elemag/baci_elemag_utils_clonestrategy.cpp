@@ -12,8 +12,8 @@
 #include "baci_elemag_utils_clonestrategy.H"
 
 #include "baci_elemag_ele.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_globalproblem_enums.H"
+#include "baci_global_data.H"
+#include "baci_global_data_enums.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_par_material.H"
 #include "baci_scatra_ele.H"

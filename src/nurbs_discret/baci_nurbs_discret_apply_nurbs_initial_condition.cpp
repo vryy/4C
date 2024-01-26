@@ -12,8 +12,8 @@
 
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"

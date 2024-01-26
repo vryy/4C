@@ -9,7 +9,7 @@
 #include "baci_beam3_kirchhoff.H"
 #include "baci_beam3_reissner.H"
 #include "baci_comm_pack_buffer.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_FADmatrix_utils.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_bundle.H"

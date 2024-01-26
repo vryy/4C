@@ -18,7 +18,7 @@ Technical Report 034, MEMS, Rice University (2002) 16.
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_implicit_integration.H"
 #include "baci_fluid_timint_hdg.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_lib_utils.H"
 
 #include <cmath>

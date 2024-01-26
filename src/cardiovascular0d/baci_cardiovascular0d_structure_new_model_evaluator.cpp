@@ -11,9 +11,9 @@
 
 #include "baci_cardiovascular0d_structure_new_model_evaluator.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_sparseoperator.H"

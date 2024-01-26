@@ -14,11 +14,11 @@
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_coupling_volmortar_utils.H"
+#include "baci_global_data.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_dofset_definedmapping_wrapper.H"
 #include "baci_lib_dofset_gidbased_wrapper.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
 BACI_NAMESPACE_OPEN

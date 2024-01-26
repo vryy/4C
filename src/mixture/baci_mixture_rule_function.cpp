@@ -11,7 +11,7 @@ functions
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_rule_function.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_par_material.H"
 #include "baci_mixture_constituent.H"

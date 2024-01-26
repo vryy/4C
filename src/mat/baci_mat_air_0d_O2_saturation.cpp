@@ -12,7 +12,7 @@ airway elements framework (transport in elements and between air and blood)
 
 #include "baci_mat_air_0d_O2_saturation.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 
 #include <vector>

@@ -12,9 +12,9 @@
 /* headers */
 #include "baci_adapter_str_fsi_timint_adaptive.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_structure.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_structure_aux.H"
 #include "baci_structure_timada.H"
 #include "baci_structure_timint.H"

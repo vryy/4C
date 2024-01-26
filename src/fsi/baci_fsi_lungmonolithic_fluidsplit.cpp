@@ -16,9 +16,9 @@
 #include "baci_coupling_adapter_converter.H"
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_fsi_lung_overlapprec.H"
+#include "baci_global_data.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_structure_aux.H"
 

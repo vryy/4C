@@ -16,9 +16,9 @@
 #include "baci_adapter_fld_fluid_fsi.H"
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_fsi_monolithic.H"
+#include "baci_global_data.H"
 #include "baci_inpar_scatra.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_scatra_algorithm.H"
 #include "baci_scatra_timint_implicit.H"
 

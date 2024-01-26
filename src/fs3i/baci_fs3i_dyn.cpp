@@ -18,8 +18,8 @@
 #include "baci_fs3i_fps3i_partitioned_1wc.H"
 #include "baci_fs3i_partitioned_1wc.H"
 #include "baci_fs3i_partitioned_2wc.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

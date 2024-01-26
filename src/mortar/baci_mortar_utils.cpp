@@ -10,7 +10,7 @@
 #include "baci_mortar_utils.H"
 
 #include "baci_comm_exporter.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"

@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "baci_global_data.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_calc_utils.H"
 #include "baci_scatra_ele_parameter_std.H"

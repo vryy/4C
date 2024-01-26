@@ -11,7 +11,7 @@
 
 #include "baci_fluid_functions.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_fluid_linear_density_viscosity.H"
 #include "baci_mat_fluid_murnaghantait.H"
 #include "baci_mat_fluid_weakly_compressible.H"

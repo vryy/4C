@@ -10,7 +10,7 @@
 
 #include "baci_beaminteraction_beam_to_sphere_contact_params.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 
 BACI_NAMESPACE_OPEN
 

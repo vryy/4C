@@ -17,8 +17,8 @@
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_fsi_utils.H"
+#include "baci_global_data.H"
 #include "baci_inpar_validparameters.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_structure_aux.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

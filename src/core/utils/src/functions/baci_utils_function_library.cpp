@@ -12,10 +12,10 @@ The functions in this file are not problem-specific and may be useful for a numb
 /*----------------------------------------------------------------------*/
 #include "baci_utils_function_library.H"
 
+#include "baci_global_data.H"
 #include "baci_io_control.H"
 #include "baci_io_csv_reader.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_cubic_spline_interpolation.H"
 #include "baci_utils_function.H"
 #include "baci_utils_function_manager.H"

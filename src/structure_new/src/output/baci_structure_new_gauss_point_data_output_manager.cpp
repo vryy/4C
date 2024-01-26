@@ -9,7 +9,7 @@
 
 #include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_structure_new_model_evaluator.H"
 
 #include <Epetra_IntVector.h>

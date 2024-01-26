@@ -11,7 +11,7 @@
 
 #include "baci_mixture_constituent_elasthyperbase.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_mixture.H"
 #include "baci_mat_multiplicative_split_defgrad_elasthyper_service.H"
 #include "baci_mat_par_bundle.H"

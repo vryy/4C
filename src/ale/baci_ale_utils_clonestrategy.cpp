@@ -16,7 +16,7 @@
 #include "baci_ale_ale3.H"
 #include "baci_ale_ale3_nurbs.H"
 #include "baci_fluid_ele.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_par_material.H"
 

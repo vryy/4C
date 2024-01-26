@@ -14,9 +14,9 @@
 #include "baci_discretization_geometry_searchtree.H"
 #include "baci_discretization_geometry_searchtree_service.H"
 #include "baci_fluid_ele_action.H"
+#include "baci_global_data.H"
 #include "baci_immersed_problem_fsi_partitioned_immersed.H"
 #include "baci_inpar_immersed.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_structure_aux.H"
 

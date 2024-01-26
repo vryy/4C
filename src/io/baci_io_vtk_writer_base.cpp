@@ -10,9 +10,9 @@
 
 #include "baci_io_vtk_writer_base.H"
 
+#include "baci_global_data.H"
 #include "baci_io_legacy_table.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
 #include <cmath>

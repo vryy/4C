@@ -10,9 +10,9 @@
 
 #include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
+#include "baci_global_data.H"
 #include "baci_lib_container.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_svd.H"
 #include "baci_mat_micromaterial.H"
 #include "baci_mat_micromaterialgp_static.H"

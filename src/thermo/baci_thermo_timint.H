@@ -19,11 +19,11 @@
 #include "baci_config.H"
 
 #include "baci_adapter_thermo.H"
+#include "baci_global_data.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"

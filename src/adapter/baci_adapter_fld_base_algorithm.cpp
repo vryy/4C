@@ -38,6 +38,7 @@
 #include "baci_fluid_timint_stat_hdg.H"
 #include "baci_fluid_xfluid.H"
 #include "baci_fluid_xfluid_fluid.H"
+#include "baci_global_data.H"
 #include "baci_inpar_elch.H"
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_fsi.H"
@@ -49,7 +50,6 @@
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_linear_solver_method_linalg.H"
 

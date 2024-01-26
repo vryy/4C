@@ -12,9 +12,9 @@
 
 #include "baci_lib_conditiondefinition.H"
 
+#include "baci_global_data.H"
 #include "baci_io_linecomponent.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 #include <algorithm>
 #include <iterator>

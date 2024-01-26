@@ -8,8 +8,8 @@
 
 #include "baci_poromultiphase_scatra_dyn.H"
 
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_poromultiphase_scatra_base.H"
 #include "baci_poromultiphase_scatra_utils.H"
 

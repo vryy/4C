@@ -14,7 +14,7 @@
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_comm_utils.H"
 #include "baci_fsi_overlapprec_hybrid.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_linear_solver_preconditioner_linalg.H"
 

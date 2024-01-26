@@ -8,8 +8,8 @@
 
 #include "baci_so3_shw6.H"
 
+#include "baci_global_data.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_so3_nullspace.H"
 #include "baci_so3_utils.H"
 #include "baci_so3_weg6.H"

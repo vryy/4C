@@ -11,10 +11,10 @@
 #include "baci_mor_pod.H"
 
 #include "baci_adapter_str_structure.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"

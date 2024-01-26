@@ -12,12 +12,12 @@
 #include "baci_fluid_timint.H"
 
 #include "baci_fluid_utils_mapextractor.H"
+#include "baci_global_data.H"
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_visualization_parameters.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>

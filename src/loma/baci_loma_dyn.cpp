@@ -12,9 +12,9 @@
 
 #include "baci_loma_dyn.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_loma_algorithm.H"
 #include "baci_scatra_ele.H"

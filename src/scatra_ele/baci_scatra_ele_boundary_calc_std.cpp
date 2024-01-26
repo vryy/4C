@@ -14,7 +14,7 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_discretization_geometry_position_array.H"
-#include "baci_lib_globalproblem.H"  // for curves and functions
+#include "baci_global_data.H"  // for curves and functions
 #include "baci_nurbs_discret.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
 #include "baci_scatra_ele.H"

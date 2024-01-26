@@ -13,8 +13,8 @@
 
 #include "baci_adapter_ale.H"
 #include "baci_ale_resulttest.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_RCP.hpp>
 

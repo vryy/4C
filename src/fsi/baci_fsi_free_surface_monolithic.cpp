@@ -20,11 +20,11 @@
 #include "baci_fsi_nox_newton.H"
 #include "baci_fsi_overlapprec_fsiamg.H"
 #include "baci_fsi_statustest.H"
+#include "baci_global_data.H"
 #include "baci_inpar_fsi.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linear_solver_preconditioner_linalg.H"
 

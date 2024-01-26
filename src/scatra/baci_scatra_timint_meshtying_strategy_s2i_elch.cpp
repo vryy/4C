@@ -10,8 +10,8 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
 
 #include "baci_coupling_adapter.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_mapextractor.H"

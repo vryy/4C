@@ -10,8 +10,8 @@
 
 #include "baci_adapter_str_fpsiwrapper.H"
 
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_aux.H"
 

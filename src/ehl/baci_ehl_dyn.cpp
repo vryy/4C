@@ -13,8 +13,8 @@
 #include "baci_ehl_monolithic.H"
 #include "baci_ehl_partitioned.H"
 #include "baci_ehl_utils.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

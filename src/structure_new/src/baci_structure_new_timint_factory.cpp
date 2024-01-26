@@ -12,8 +12,8 @@
 
 #include "baci_structure_new_timint_factory.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_structure.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_structure_new_timint_basedatasdyn.H"
 #include "baci_structure_new_timint_explicit.H"
 #include "baci_structure_new_timint_implicit.H"

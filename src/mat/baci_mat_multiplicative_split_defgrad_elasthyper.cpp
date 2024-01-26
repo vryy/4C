@@ -10,8 +10,8 @@ multiplicatively into elastic and inelastic parts
 
 #include "baci_mat_multiplicative_split_defgrad_elasthyper.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_ssi.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_elasthyper_service.H"
 #include "baci_mat_inelastic_defgrad_factors.H"

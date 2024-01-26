@@ -11,7 +11,7 @@
 #include "baci_global_full_init_control.H"
 
 #include "baci_comm_utils.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 
 #include <sstream>
 #include <string>

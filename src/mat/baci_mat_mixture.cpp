@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_mat_mixture.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 

@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------------*/
 
+#include "baci_global_data.H"
 #include "baci_inpar_browniandyn.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_spring.H"

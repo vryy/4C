@@ -13,9 +13,9 @@
  *----------------------------------------------------------------------*/
 #include "baci_adapter_thermo.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_thermo.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_thermo_timint_expleuler.H"
 #include "baci_thermo_timint_genalpha.H"
 #include "baci_thermo_timint_ost.H"

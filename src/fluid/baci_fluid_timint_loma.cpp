@@ -13,8 +13,8 @@
 
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_turbulence_statistic_manager.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_sutherland.H"

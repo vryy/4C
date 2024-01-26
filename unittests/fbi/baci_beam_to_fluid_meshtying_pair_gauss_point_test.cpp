@@ -17,8 +17,8 @@
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.H"
 #include "baci_geometry_pair_line_to_volume_segmentation.H"
+#include "baci_global_data.H"
 #include "baci_lib_element.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensevector.H"
 
 #include <vector>

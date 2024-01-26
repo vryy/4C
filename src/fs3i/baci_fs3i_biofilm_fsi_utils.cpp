@@ -10,8 +10,8 @@
 
 #include "baci_fs3i_biofilm_fsi_utils.H"
 
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 BACI_NAMESPACE_OPEN

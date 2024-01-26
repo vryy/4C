@@ -9,8 +9,8 @@
 
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_global_data.H"
 #include "baci_lib_element.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_solid_ele_calc_lib.H"
 #include "baci_solid_ele_calc_lib_integration.H"
 #include "baci_utils_function.H"

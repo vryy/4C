@@ -11,8 +11,8 @@
 #include "baci_scatra_dyn.H"
 
 #include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_global_data.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_scatra_algorithm.H"

@@ -11,8 +11,8 @@
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
 
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
+#include "baci_global_data.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
 BACI_NAMESPACE_OPEN

@@ -29,12 +29,12 @@
 #include "baci_contact_utils.H"
 #include "baci_contact_utils_parallel.H"
 #include "baci_contact_wear_interface.H"
+#include "baci_global_data.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
 #include "baci_inpar_wear.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mortar_utils.H"
 

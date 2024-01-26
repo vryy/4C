@@ -13,7 +13,7 @@
 #include "baci_cut_point_impl.H"
 #include "baci_cut_side.H"
 #include "baci_cut_tolerance.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 
 #include <string>
 

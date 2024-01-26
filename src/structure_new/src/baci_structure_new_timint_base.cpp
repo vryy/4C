@@ -14,12 +14,12 @@
 
 #include "baci_beaminteraction_str_model_evaluator.H"
 #include "baci_comm_utils.H"
+#include "baci_global_data.H"
 #include "baci_inpar_contact.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_structure_new_dbc.H"
 #include "baci_structure_new_enum_lists.H"

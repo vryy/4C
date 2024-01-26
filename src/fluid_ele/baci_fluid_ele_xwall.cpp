@@ -18,9 +18,9 @@ of errors, turbulence statistics etc.)
 
 #include "baci_comm_utils_factory.H"
 #include "baci_fluid_ele_nullspace.H"
+#include "baci_global_data.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

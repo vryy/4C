@@ -9,7 +9,7 @@
 
 #include "baci_mat_fluid_linear_density_viscosity.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 
 #include <vector>

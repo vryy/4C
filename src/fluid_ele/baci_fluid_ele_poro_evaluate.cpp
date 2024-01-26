@@ -15,7 +15,7 @@
 #include "baci_fluid_ele_interface.H"
 #include "baci_fluid_ele_parameter_poro.H"
 #include "baci_fluid_ele_poro.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 
 BACI_NAMESPACE_OPEN
 

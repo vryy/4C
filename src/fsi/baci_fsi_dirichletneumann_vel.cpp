@@ -20,10 +20,10 @@
 #include "baci_fbi_beam_to_fluid_meshtying_params.H"
 #include "baci_fbi_constraintenforcer.H"
 #include "baci_fbi_constraintenforcer_factory.H"
+#include "baci_global_data.H"
 #include "baci_inpar_fbi.H"
 #include "baci_inpar_fsi.H"
 #include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

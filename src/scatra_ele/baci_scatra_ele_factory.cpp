@@ -10,7 +10,7 @@
 
 #include "baci_scatra_ele_factory.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_scatra_ele_calc_advanced_reaction.H"
 #include "baci_scatra_ele_calc_aniso.H"
 #include "baci_scatra_ele_calc_artery.H"

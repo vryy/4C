@@ -13,7 +13,7 @@ See the header file for a detailed description.
  *----------------------------------------------------------------------*/
 #include "baci_mat_crystal_plasticity.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_bundle.H"

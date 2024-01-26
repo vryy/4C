@@ -9,7 +9,7 @@
 
 #include "baci_porofluidmultiphase_ele_porofluid_evaluator.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_porofluidmultiphase_ele_parameter.H"
 #include "baci_porofluidmultiphase_ele_porofluid_phasemanager.H"
 #include "baci_porofluidmultiphase_ele_porofluid_variablemanager.H"

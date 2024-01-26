@@ -8,7 +8,7 @@
 
 #include "baci_mat_scatra_reaction_coupling.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_utils_function.H"
 
 BACI_NAMESPACE_OPEN

@@ -12,9 +12,9 @@
 #include "baci_so3_plast_ssn.H"
 
 #include "baci_comm_utils_factory.H"
+#include "baci_global_data.H"
 #include "baci_inpar_tsi.H"
 #include "baci_io_linedefinition.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mat_plasticelasthyper.H"

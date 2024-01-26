@@ -16,8 +16,8 @@
 #include "baci_cut_position.H"
 #include "baci_cut_tetmesh.H"
 #include "baci_discretization_geometry_element_volume.H"
+#include "baci_global_data.H"
 #include "baci_inpar_cut.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

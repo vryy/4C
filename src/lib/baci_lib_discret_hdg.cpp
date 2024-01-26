@@ -12,11 +12,11 @@
 #include "baci_lib_discret_hdg.H"
 
 #include "baci_comm_exporter.H"
+#include "baci_global_data.H"
 #include "baci_lib_dg_element.h"
 #include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_utils_densematrix_communication.H"

@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_boundary_factory.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_elchmat.H"
 #include "baci_scatra_ele.H"
 #include "baci_scatra_ele_boundary_calc_elch_diffcond.H"

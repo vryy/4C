@@ -16,11 +16,11 @@
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_fluid_turbulence_statistic_manager.H"
 #include "baci_fluid_xfluid.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_levelset_algorithm.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_xfem.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

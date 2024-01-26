@@ -11,9 +11,9 @@
 #include "baci_structure_timint_prestress.H"
 
 #include "baci_constraint_springdashpot_manager.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 BACI_NAMESPACE_OPEN

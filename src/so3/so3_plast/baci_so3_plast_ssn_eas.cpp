@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------*
  | headers                                                  seitz 04/14 |
  *----------------------------------------------------------------------*/
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_so3_plast_ssn.H"

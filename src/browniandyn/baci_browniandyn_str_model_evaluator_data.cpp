@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_timint_base.H"
 

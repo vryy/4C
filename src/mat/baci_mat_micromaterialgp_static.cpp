@@ -11,12 +11,12 @@ class for handling of micro-macro transitions
 
 #include "baci_mat_micromaterialgp_static.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_structure.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_so3_hex8.H"
 #include "baci_so3_shw6.H"

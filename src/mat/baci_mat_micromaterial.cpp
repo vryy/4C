@@ -10,7 +10,7 @@
 
 #include "baci_mat_micromaterial.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_utils_exceptions.H"
 

@@ -10,7 +10,7 @@ function)
 
 #include "baci_mat_beam3r_plasticity.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_beam_elasthyper_parameter.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_utils_fad.H"

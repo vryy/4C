@@ -16,9 +16,9 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include "baci_config.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_xfem.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>

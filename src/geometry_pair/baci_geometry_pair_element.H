@@ -18,8 +18,8 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_geometry_pair_element_classes.H"
+#include "baci_global_data.H"
 #include "baci_lib_element.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
 
 BACI_NAMESPACE_OPEN

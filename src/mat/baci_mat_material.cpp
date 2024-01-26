@@ -9,7 +9,7 @@
 
 #include "baci_mat_material.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_aaa_mixedeffects.H"
 #include "baci_mat_aaagasser.H"
 #include "baci_mat_aaaneohooke.H"

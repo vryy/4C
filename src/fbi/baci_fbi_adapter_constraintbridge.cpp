@@ -15,8 +15,8 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 #include "baci_fbi_fluid_assembly_strategy.H"
 #include "baci_fbi_fluidblockmatrix_assembly_strategy.H"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.H"
+#include "baci_global_data.H"
 #include "baci_inpar_fbi.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_sparseoperator.H"
 
 BACI_NAMESPACE_OPEN

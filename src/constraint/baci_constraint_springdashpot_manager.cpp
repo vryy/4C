@@ -11,11 +11,11 @@
 #include "baci_constraint_springdashpot_manager.H"
 
 #include "baci_constraint_springdashpot.H"
+#include "baci_global_data.H"
 #include "baci_inpar_structure.H"
 #include "baci_io.H"
 #include "baci_io_pstream.H"  // has to go before io.H
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 #include <iostream>
 

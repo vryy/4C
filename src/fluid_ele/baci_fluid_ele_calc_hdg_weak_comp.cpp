@@ -14,7 +14,7 @@
 #include "baci_fluid_ele_parameter_std.H"
 #include "baci_fluid_ele_parameter_timint.H"
 #include "baci_fluid_functions.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_fluid_weakly_compressible.H"
 

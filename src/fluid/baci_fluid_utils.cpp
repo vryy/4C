@@ -13,11 +13,11 @@
 
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_implicit_integration.H"
+#include "baci_global_data.H"
 #include "baci_inpar_fluid.H"
 #include "baci_io_control.H"
 #include "baci_lib_dofset.H"
 #include "baci_lib_dofset_interface.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linear_solver_method_linalg.H"

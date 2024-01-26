@@ -10,10 +10,10 @@
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_utils_mapextractor.H"
 
+#include "baci_global_data.H"
 #include "baci_lib_condition_selector.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

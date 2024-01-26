@@ -9,9 +9,9 @@
 
 #include "baci_poromultiphase_scatra_artery_coupling_base.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_ParameterListExceptions.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

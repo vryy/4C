@@ -11,9 +11,9 @@
 
 #include "baci_fpsi.H"
 #include "baci_fpsi_utils.H"
+#include "baci_global_data.H"
 #include "baci_inpar_fpsi.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

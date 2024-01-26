@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_boundary_calc_elch.H"
 
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_scatra_ele_parameter_elch.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_utils_elch.H"

@@ -16,8 +16,8 @@
 #include "baci_red_airways_interacinardep_impl.H"
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_maxwell_0d_acinus.H"
 #include "baci_mat_newtonianfluid.H"

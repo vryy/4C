@@ -19,10 +19,10 @@
 #include "baci_fluid_turbulence_dyn_vreman.H"
 #include "baci_fluid_utils.H"
 #include "baci_fluid_volumetric_surfaceFlow_condition.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_discret_hdg.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 BACI_NAMESPACE_OPEN

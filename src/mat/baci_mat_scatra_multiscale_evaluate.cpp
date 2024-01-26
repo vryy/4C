@@ -20,7 +20,7 @@ the file filter_commmon/filter_evaluation.cpp needs to be adapted accordingly.
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_scatra_multiscale.H"
 #include "baci_mat_scatra_multiscale_gp.H"

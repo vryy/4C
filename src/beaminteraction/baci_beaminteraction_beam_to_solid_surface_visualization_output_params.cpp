@@ -10,8 +10,8 @@
 
 #include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_parameterlist_utils.H"
-#include "baci_lib_globalproblem.H"
 
 BACI_NAMESPACE_OPEN
 

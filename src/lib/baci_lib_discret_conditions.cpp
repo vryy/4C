@@ -9,9 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_global_data.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_utils_exceptions.H"
 

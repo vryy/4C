@@ -47,6 +47,7 @@
 #include "baci_fluid_utils_infnormscaling.H"
 #include "baci_fluid_utils_mapextractor.H"
 #include "baci_fluid_xwall.H"
+#include "baci_global_data.H"
 #include "baci_inpar_xfem.H"  //for enums only
 #include "baci_io.H"
 #include "baci_io_control.H"
@@ -56,7 +57,6 @@
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_faces.H"
 #include "baci_lib_discret_hdg.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_locsys.H"
 #include "baci_lib_utils_discret.H"
 #include "baci_linalg_krylov_projector.H"

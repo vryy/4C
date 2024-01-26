@@ -13,7 +13,7 @@
 
 #include "baci_adapter_fld_poro.H"
 #include "baci_adapter_str_fpsiwrapper.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_poroelast_monolithic.H"
 #include "baci_structure_aux.H"
 

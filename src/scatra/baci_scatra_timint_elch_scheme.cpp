@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_timint_elch_scheme.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 #include "baci_utils_function_of_time.H"
 

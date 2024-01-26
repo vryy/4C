@@ -11,8 +11,8 @@
 #include "baci_thermo_dyn.H"
 
 #include "baci_adapter_thermo.H"
+#include "baci_global_data.H"
 #include "baci_inpar_validparameters.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_thermo_resulttest.H"
 
 #include <Teuchos_TimeMonitor.hpp>

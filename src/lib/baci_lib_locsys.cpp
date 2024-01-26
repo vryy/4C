@@ -14,8 +14,8 @@ vectors and matrices.
 #include "baci_lib_locsys.H"
 
 #include "baci_discretization_fem_general_largerotations.H"
+#include "baci_global_data.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_utils_function.H"

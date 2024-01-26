@@ -10,8 +10,8 @@
 
 #include "baci_discretization_geometric_search_params.H"
 
+#include "baci_global_data.H"
 #include "baci_inpar_parameterlist_utils.H"
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_ParameterList.hpp>
 

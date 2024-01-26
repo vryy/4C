@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm_gravity.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_utils_function_of_time.H"
 
 BACI_NAMESPACE_OPEN

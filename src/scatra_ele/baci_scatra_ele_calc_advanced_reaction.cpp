@@ -9,9 +9,9 @@
 
 #include "baci_scatra_ele_calc_advanced_reaction.H"
 
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_mat_growth_law.H"
 #include "baci_mat_list.H"
 #include "baci_mat_list_reactions.H"

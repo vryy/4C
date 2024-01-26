@@ -11,7 +11,7 @@
 #include "baci_cut_element.H"
 #include "baci_cut_mesh.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 
 #include <fenv.h>
 #include <Teuchos_CommandLineProcessor.hpp>

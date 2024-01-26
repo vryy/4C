@@ -9,7 +9,7 @@ electric potential as degrees of freedom
 /*----------------------------------------------------------------------*/
 #include "baci_mat_elchsinglemat.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_utils_function_of_time.H"
 

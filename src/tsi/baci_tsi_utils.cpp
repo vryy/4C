@@ -15,10 +15,10 @@
 #include "baci_tsi_utils.H"
 
 #include "baci_coupling_volmortar_utils.H"
+#include "baci_global_data.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_so3_plast_ssn.H"

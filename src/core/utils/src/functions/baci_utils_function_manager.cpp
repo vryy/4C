@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "baci_global_data.H"
 #include "baci_io.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_function.H"
 #include "baci_utils_function_of_time.H"

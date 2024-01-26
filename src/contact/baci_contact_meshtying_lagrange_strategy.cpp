@@ -11,9 +11,9 @@
 #include "baci_contact_meshtying_lagrange_strategy.H"
 
 #include "baci_contact_meshtying_defines.H"
+#include "baci_global_data.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"

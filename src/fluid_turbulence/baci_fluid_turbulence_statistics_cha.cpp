@@ -15,7 +15,7 @@
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_utils.H"
 #include "baci_fluid_xwall.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"

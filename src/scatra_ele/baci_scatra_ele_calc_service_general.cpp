@@ -12,7 +12,7 @@
 #include "baci_coupling_volmortar_shape.H"
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_global_data.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_scatra_mat_multiscale.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
