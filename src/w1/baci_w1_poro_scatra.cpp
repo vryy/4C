@@ -102,7 +102,6 @@ void DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::Print(std::ostream& os) const
   os << "Wall1_Poro_Scatra ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << my::data_;
   return;
 }
 

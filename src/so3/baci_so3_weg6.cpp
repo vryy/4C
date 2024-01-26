@@ -98,7 +98,7 @@ void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner)
-    : So_base(id, owner), data_(), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
+    : So_base(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
   invJ_.resize(NUMGPT_WEG6);
   detJ_.resize(NUMGPT_WEG6);
@@ -127,12 +127,7 @@ DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_weg6::So_weg6(const DRT::ELEMENTS::So_weg6& old)
-    : So_base(old),
-      data_(old.data_),
-      detJ_(old.detJ_),
-      pstype_(old.pstype_),
-      pstime_(old.pstime_),
-      time_(old.time_)
+    : So_base(old), detJ_(old.detJ_), pstype_(old.pstype_), pstime_(old.pstime_), time_(old.time_)
 {
   invJ_.resize(old.invJ_.size());
   for (unsigned int i = 0; i < invJ_.size(); ++i)
@@ -174,8 +169,6 @@ void DRT::ELEMENTS::So_weg6::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, type);
   // add base class Element
   So_base::Pack(data);
-  // data_
-  AddtoPack(data, data_);
 
   // Pack prestress
   AddtoPack(data, static_cast<int>(pstype_));
@@ -212,11 +205,6 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   So_base::Unpack(basedata);
-  // data_
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
-
   // prestress_
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
@@ -257,7 +245,6 @@ void DRT::ELEMENTS::So_weg6::Print(std::ostream& os) const
   os << "So_weg6 ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }
 

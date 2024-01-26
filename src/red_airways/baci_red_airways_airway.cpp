@@ -91,10 +91,7 @@ void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition(
  |  ctor (public)                                           ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirway::RedAirway(int id, int owner) : DRT::Element(id, owner), data_()
-{
-  return;
-}
+DRT::ELEMENTS::RedAirway::RedAirway(int id, int owner) : DRT::Element(id, owner) {}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      ismail 01/10|
@@ -105,10 +102,8 @@ DRT::ELEMENTS::RedAirway::RedAirway(const DRT::ELEMENTS::RedAirway& old)
       elemType_(old.elemType_),
       resistance_(old.resistance_),
       elemsolvingType_(old.elemsolvingType_),
-      data_(old.data_),
       airwayParams_(old.airwayParams_)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*

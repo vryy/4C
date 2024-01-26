@@ -343,9 +343,6 @@ namespace DRT
       //! kinematic type
       INPAR::STR::KinemType kintype_;
 
-      //! kinematic type
-      //! container containing all kind of solid3 thisandthat
-      DRT::Container data_;
       //! vector of inverses of the jacobian in material frame
       std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>> invJ_;
       //! determinant of Jacobian in material frame

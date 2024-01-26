@@ -89,10 +89,7 @@ void DRT::ELEMENTS::RedAcinusType::SetupElementDefinition(
  |  ctor (public)                                           ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAcinus::RedAcinus(int id, int owner) : DRT::Element(id, owner), data_()
-{
-  return;
-}
+DRT::ELEMENTS::RedAcinus::RedAcinus(int id, int owner) : DRT::Element(id, owner) {}
 
 
 /*----------------------------------------------------------------------*
@@ -103,10 +100,8 @@ DRT::ELEMENTS::RedAcinus::RedAcinus(const DRT::ELEMENTS::RedAcinus& old)
     : DRT::Element(old),
       elemType_(old.elemType_),
       resistance_(old.elemType_),
-      data_(old.data_),
       acinusParams_(old.acinusParams_)
 {
-  return;
 }
 
 

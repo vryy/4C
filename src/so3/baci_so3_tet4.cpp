@@ -109,7 +109,6 @@ void DRT::ELEMENTS::So_tet4Type::SetupElementDefinition(
 DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner)
     : So_base(id, owner),
       // material_(0),
-      // data_(),
       V_(-1.0),
       pstype_(INPAR::STR::PreStress::none),
       pstime_(0.0),
@@ -136,7 +135,6 @@ DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner)
 DRT::ELEMENTS::So_tet4::So_tet4(const DRT::ELEMENTS::So_tet4& old)
     : So_base(old),
       // material_(old.material_),
-      // data_(old.data_),
       V_(old.V_),
       pstype_(old.pstype_),
       pstime_(old.pstime_),
@@ -181,10 +179,6 @@ void DRT::ELEMENTS::So_tet4::Pack(CORE::COMM::PackBuffer& data) const
   // material_
   // AddtoPack(data,material_);
 
-  // vector<char> tmp(0);
-  // data_.Pack(tmp);
-  // AddtoPack(data,tmp);
-
   // V_
   AddtoPack(data, V_);
 
@@ -217,10 +211,6 @@ void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
   // ExtractfromPack(position,data,ngp_,3*sizeof(int));
   // material_
   // ExtractfromPack(position,data,material_);
-  // data_
-  // vector<char> tmp(0);
-  // ExtractfromPack(position,data,tmp);
-  // data_.Unpack(tmp);
   // V_
   ExtractfromPack(position, data, V_);
 
@@ -251,7 +241,6 @@ void DRT::ELEMENTS::So_tet4::Print(std::ostream& os) const
   os << "So_tet4 ";
   Element::Print(os);
   std::cout << std::endl;
-  // std::cout << data_;
   return;
 }
 

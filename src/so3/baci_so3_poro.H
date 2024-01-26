@@ -345,8 +345,6 @@ namespace DRT
         interpolate_porosity_to_given_point
       };
 
-      //! container containing all kind of solid3 thisandthat
-      DRT::Container data_;
       //! vector of inverses of the jacobian in material frame
       std::vector<CORE::LINALG::Matrix<numdim_, numdim_>> invJ_;
       //! determinant of Jacobian in material frame

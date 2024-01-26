@@ -205,7 +205,6 @@ void DRT::ELEMENTS::So_Hex8P1J1::Print(std::ostream& os) const
   os << "So_Hex8P1J1 ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }
 

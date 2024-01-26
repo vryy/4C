@@ -401,9 +401,6 @@ namespace DRT
       //! Solver Type
       std::string elemsolvingType_;
 
-      //! container containing all kind of airway thisandthat
-      DRT::Container data_;
-
       //! Airway-specific parameters
       DRT::REDAIRWAYS::AirwayParams airwayParams_;
 
@@ -795,9 +792,6 @@ namespace DRT
       //! Resistance Type
       std::string resistance_;
 
-      //! container containing all kind of airway thisandthat
-      DRT::Container data_;
-
       //! Acinus-specific parameters
       DRT::REDAIRWAYS::AcinusParams acinusParams_;
 
@@ -1168,9 +1162,6 @@ namespace DRT
         calc_elem_volumes
       };
 
-      //! container containing all kind of airway thisandthat
-      DRT::Container data_;
-
       // data
       std::map<std::string, double> elemParams_;
 
@@ -1539,9 +1530,6 @@ namespace DRT
         eval_PO2_from_concentration,
         calc_elem_volumes
       };
-
-      //! container containing all kind of airway thisandthat
-      DRT::Container data_;
 
       // data
       std::map<std::string, double> elemParams_;
@@ -1917,9 +1905,6 @@ namespace DRT
         eval_PO2_from_concentration,
         calc_elem_volumes
       };
-
-      //! container containing all kind of airway thisandthat
-      DRT::Container data_;
 
       // data
       std::map<std::string, double> elemParams_;

@@ -38,7 +38,6 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
     : DRT::Element(id, owner),
       thickness_(0.0),
       cur_thickness_(0),
-      data_(),
       planetype_(plane_stress),
       intpoints_(CORE::FE::GaussRule2D::tri_3point)
 {
@@ -89,7 +88,6 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(const DRT::ELEMENTS::Membrane<distype
     : DRT::Element(old),
       thickness_(old.thickness_),
       cur_thickness_(old.cur_thickness_),
-      data_(old.data_),
       planetype_(old.planetype_),
       intpoints_(old.intpoints_)
 {
@@ -151,10 +149,6 @@ void DRT::ELEMENTS::Membrane<distype>::Pack(CORE::COMM::PackBuffer& data) const
   // current thickness_
   AddtoPack(data, cur_thickness_);
 
-  // data_
-  AddtoPack(data, data_);
-
-
   return;
 }
 
@@ -177,10 +171,6 @@ void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, thickness_);
   // current thickness_
   ExtractfromPack(position, data, cur_thickness_);
-  // data_
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -235,7 +225,6 @@ void DRT::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
   os << " Discretization type: " << CORE::FE::CellTypeToString(distype).c_str();
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }
 

@@ -77,15 +77,11 @@ void DRT::ELEMENTS::Torsion3Type::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Torsion3::Torsion3(int id, int owner) : DRT::Element(id, owner), data_() { return; }
+DRT::ELEMENTS::Torsion3::Torsion3(int id, int owner) : DRT::Element(id, owner) { return; }
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       cyron 02/10|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Torsion3::Torsion3(const DRT::ELEMENTS::Torsion3& old)
-    : DRT::Element(old), data_(old.data_)
-{
-  return;
-}
+DRT::ELEMENTS::Torsion3::Torsion3(const DRT::ELEMENTS::Torsion3& old) : DRT::Element(old) {}
 
 /*----------------------------------------------------------------------*
  | Deep copy this instance of Torsion3 and return pointer to it (public)|
@@ -125,9 +121,6 @@ void DRT::ELEMENTS::Torsion3::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, type);
   Element::Pack(data);
   AddtoPack(data, bendingpotential_);
-  AddtoPack(data, data_);
-
-  return;
 }
 
 
@@ -145,13 +138,9 @@ void DRT::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
   bendingpotential_ = static_cast<BendingPotential>(ExtractInt(position, data));
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
 }
 
 /*----------------------------------------------------------------------*

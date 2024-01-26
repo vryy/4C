@@ -31,7 +31,6 @@ template <CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(int id, int owner)
     : So_base(id, owner),
       fbar_(false),
-      //  data_(Teuchos::null),
       KbbInv_(std::vector<CORE::LINALG::SerialDenseMatrix>(0)),
       Kbd_(std::vector<CORE::LINALG::SerialDenseMatrix>(0)),
       fbeta_(std::vector<CORE::LINALG::SerialDenseVector>(0)),

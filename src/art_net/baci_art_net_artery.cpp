@@ -68,7 +68,7 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Artery::Artery(int id, int owner)
-    : DRT::Element(id, owner), impltype_(INPAR::ARTDYN::impltype_undefined), data_()
+    : DRT::Element(id, owner), impltype_(INPAR::ARTDYN::impltype_undefined)
 {
   gaussrule_ = CORE::FE::GaussRule1D::undefined;
 
@@ -80,7 +80,7 @@ DRT::ELEMENTS::Artery::Artery(int id, int owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Artery::Artery(const DRT::ELEMENTS::Artery& old)
-    : DRT::Element(old), impltype_(old.impltype_), gaussrule_(old.gaussrule_), data_(old.data_)
+    : DRT::Element(old), impltype_(old.impltype_), gaussrule_(old.gaussrule_)
 {
   return;
 }
@@ -129,9 +129,6 @@ void DRT::ELEMENTS::Artery::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, gaussrule_);
   AddtoPack(data, impltype_);
 
-  // data_
-  AddtoPack(data, data_);
-
   return;
 }
 
@@ -153,11 +150,6 @@ void DRT::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
   // Gaussrule
   ExtractfromPack(position, data, gaussrule_);
   impltype_ = static_cast<INPAR::ARTDYN::ImplType>(ExtractInt(position, data));
-
-  // data_
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);

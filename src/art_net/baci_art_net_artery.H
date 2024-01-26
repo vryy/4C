@@ -336,10 +336,6 @@ namespace DRT
       //! Gaussrule
       CORE::FE::GaussRule1D gaussrule_;
 
-      //! container containing all kind of Artery thisandthat
-      DRT::Container data_;
-
-
       // internal calculation methods
 
       // don't want = operator

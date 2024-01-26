@@ -186,7 +186,7 @@ DRT::ELEMENTS::Thermo::Thermo(int id, int owner)
  | copy-ctor (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Thermo::Thermo(const DRT::ELEMENTS::Thermo& old)
-    : DRT::Element(old), kintype_(old.kintype_), distype_(old.distype_), data_(old.data_)
+    : DRT::Element(old), kintype_(old.kintype_), distype_(old.distype_)
 {
   if (old.Shape() == CORE::FE::CellType::nurbs27) SetNurbsElement() = true;
   return;
@@ -227,8 +227,6 @@ void DRT::ELEMENTS::Thermo::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, kintype_);
   // distype
   AddtoPack(data, distype_);
-  // data_
-  AddtoPack(data, data_);
 
   return;
 }  // Pack()
@@ -253,10 +251,6 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   if (distype_ == CORE::FE::CellType::nurbs27) SetNurbsElement() = true;
 
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
-
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
@@ -276,7 +270,6 @@ void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }  // Print()
 
@@ -321,18 +314,6 @@ bool DRT::ELEMENTS::Thermo::VisData(const std::string& name, std::vector<double>
 {
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name, data)) return true;
-
-  for (int k = 0; k < numdofpernode_; k++)
-  {
-    std::ostringstream temp;
-    temp << k;
-    {
-      if ((int)data.size() != 1) dserror("size mismatch");
-      const double value = data_.GetDouble(name);
-      data[0] = value;
-      return true;
-    }
-  }  // loop over temperatures
 
   return false;
 }  // VisData()

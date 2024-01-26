@@ -89,7 +89,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27Type::SetupElementDefinition(
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) : So_base(id, owner), data_()
+DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) : So_base(id, owner)
 {
   invJ_.resize(NUMGPT_SONURBS27, CORE::LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
   detJ_.resize(NUMGPT_SONURBS27, 0.0);
@@ -111,7 +111,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) : So_base(id, ow
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(const DRT::ELEMENTS::NURBS::So_nurbs27& old)
-    : So_base(old), data_(old.data_), detJ_(old.detJ_)
+    : So_base(old), detJ_(old.detJ_)
 {
   invJ_.resize(old.invJ_.size());
   for (int i = 0; i < (int)invJ_.size(); ++i)
@@ -153,8 +153,6 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, type);
   // add base class Element
   So_base::Pack(data);
-  // data_
-  AddtoPack(data, data_);
 
   // detJ_
   AddtoPack(data, detJ_);
@@ -181,11 +179,6 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   So_base::Unpack(basedata);
-  // data_
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
-
   // detJ_
   ExtractfromPack(position, data, detJ_);
   // invJ_
@@ -209,7 +202,6 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Print(std::ostream& os) const
   os << "So_nurbs27 ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }
 

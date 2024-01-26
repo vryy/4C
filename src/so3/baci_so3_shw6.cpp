@@ -186,7 +186,6 @@ void DRT::ELEMENTS::So_shw6::Print(std::ostream& os) const
   os << "So_shw6 ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }
 

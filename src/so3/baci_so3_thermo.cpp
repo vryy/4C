@@ -64,8 +64,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& d
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   so3_ele::AddtoPack(data, type);
-  // data_
-  so3_ele::AddtoPack(data, data_);
   // detJ_
   so3_ele::AddtoPack(data, detJ_);
 
@@ -92,10 +90,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Unpack(const std::vector<char>
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class element data_
-  std::vector<char> tmp(0);
-  so3_ele::ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
   // detJ_
   so3_ele::ExtractfromPack(position, data, detJ_);
   // invJ_
