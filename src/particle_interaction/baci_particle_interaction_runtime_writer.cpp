@@ -46,21 +46,21 @@ void PARTICLEINTERACTION::InteractionWriter::ReadRestart(
   setuptime_ = reader->ReadDouble("time");
 }
 
-void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeVtuWriter(
+void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeOutputWriter(
     const std::string& fieldname)
 {
   // safety check
   if (runtime_visualization_managers_.count(fieldname))
-    dserror("a runtime vtu writer for field '%s' is already stored!", fieldname.c_str());
+    dserror("a runtime output writer for field '%s' is already stored!", fieldname.c_str());
 
-  // construct and init the vtp writer object
+  // construct and init the output writer object
   std::shared_ptr<IO::VisualizationManager> runtime_visualization_manager =
       std::make_shared<IO::VisualizationManager>(
           IO::VisualizationParametersFactory(
               DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
           comm_, fieldname);
 
-  // set the vtp writer object
+  // set the output writer object
   runtime_visualization_managers_[fieldname] = runtime_visualization_manager;
 }
 
@@ -78,7 +78,7 @@ void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeCsvWriter(
 void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutput(
     const int step, const double time) const
 {
-  // iterate over vtp writer objects
+  // iterate over output writer objects
   for (auto& writerIt : runtime_visualization_managers_)
   {
     std::shared_ptr<IO::VisualizationManager> runtime_visualization_manager = writerIt.second;

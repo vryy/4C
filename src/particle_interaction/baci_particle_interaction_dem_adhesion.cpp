@@ -178,9 +178,9 @@ void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionSurfaceEnergyHandler()
 
 void PARTICLEINTERACTION::DEMAdhesion::SetupParticleInteractionWriter()
 {
-  // register specific runtime vtp writer
+  // register specific runtime output writer
   if (writeparticlewallinteraction_)
-    particleinteractionwriter_->RegisterSpecificRuntimeVtuWriter("particle-wall-adhesion");
+    particleinteractionwriter_->RegisterSpecificRuntimeOutputWriter("particle-wall-adhesion");
 }
 
 void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
@@ -479,9 +479,9 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
 
   if (writeinteractionoutput)
   {
-    // get specific runtime vtp writer
+    // get specific runtime output writer
     IO::VisualizationManager* visualization_manager =
-        particleinteractionwriter_->GetSpecificRuntimeVtuWriter("particle-wall-adhesion");
+        particleinteractionwriter_->GetSpecificRuntimeOutputWriter("particle-wall-adhesion");
     auto& visualization_data = visualization_manager->GetVisualizationData();
 
     // set wall attack points

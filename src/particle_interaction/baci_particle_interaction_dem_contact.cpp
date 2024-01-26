@@ -337,9 +337,9 @@ void PARTICLEINTERACTION::DEMContact::InitRollingContactHandler()
 
 void PARTICLEINTERACTION::DEMContact::SetupParticleInteractionWriter()
 {
-  // register specific runtime vtp writer
+  // register specific runtime output writer
   if (writeparticlewallinteraction_)
-    particleinteractionwriter_->RegisterSpecificRuntimeVtuWriter("particle-wall-contact");
+    particleinteractionwriter_->RegisterSpecificRuntimeOutputWriter("particle-wall-contact");
 }
 
 double PARTICLEINTERACTION::DEMContact::GetMaxDensityOfAllMaterials() const
@@ -841,9 +841,9 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
   if (writeinteractionoutput)
   {
-    // get specific runtime vtp writer
+    // get specific runtime output writer
     IO::VisualizationManager* visualization_manager =
-        particleinteractionwriter_->GetSpecificRuntimeVtuWriter("particle-wall-contact");
+        particleinteractionwriter_->GetSpecificRuntimeOutputWriter("particle-wall-contact");
     auto& visualization_data = visualization_manager->GetVisualizationData();
 
     // set wall attack points

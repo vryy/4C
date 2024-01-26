@@ -56,8 +56,8 @@ namespace PARTICLEINTERACTION
     //! read restart of interaction writer
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! register specific runtime vtp writer
-    void RegisterSpecificRuntimeVtuWriter(const std::string& fieldname);
+    //! register specific runtime output writer
+    void RegisterSpecificRuntimeOutputWriter(const std::string& fieldname);
 
     //! register specific runtime csv writer
     void RegisterSpecificRuntimeCsvWriter(const std::string& fieldname);
@@ -71,12 +71,12 @@ namespace PARTICLEINTERACTION
     //! get current write result flag
     inline bool GetCurrentWriteResultFlag() const { return writeresultsthisstep_; }
 
-    //! get specific runtime vtp writer
-    inline IO::VisualizationManager* GetSpecificRuntimeVtuWriter(const std::string& fieldname)
+    //! get specific runtime output writer
+    inline IO::VisualizationManager* GetSpecificRuntimeOutputWriter(const std::string& fieldname)
     {
 #ifdef BACI_DEBUG
       if (not runtime_visualization_managers_.count(fieldname))
-        dserror("no runtime vtp writer for field '%s' stored!", fieldname.c_str());
+        dserror("no runtime output writer for field '%s' stored!", fieldname.c_str());
 #endif
 
       return runtime_visualization_managers_[fieldname].get();
@@ -103,13 +103,13 @@ namespace PARTICLEINTERACTION
     //! particle simulation parameter list
     const Teuchos::ParameterList& params_;
 
-    //! setup time of runtime vtp writer
+    //! setup time of runtime output writer
     double setuptime_;
 
     //! result control flag
     bool writeresultsthisstep_;
 
-    //! holds all vtp writer objects
+    //! holds all visualization output writer objects
     std::unordered_map<std::string, std::shared_ptr<IO::VisualizationManager>>
         runtime_visualization_managers_;
 

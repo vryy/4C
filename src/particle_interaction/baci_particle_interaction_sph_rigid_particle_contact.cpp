@@ -82,9 +82,9 @@ void PARTICLEINTERACTION::SPHRigidParticleContactBase::Setup(
 
 void PARTICLEINTERACTION::SPHRigidParticleContactBase::SetupParticleInteractionWriter()
 {
-  // register specific runtime vtp writer
+  // register specific runtime output writer
   if (writeparticlewallinteraction_)
-    particleinteractionwriter_->RegisterSpecificRuntimeVtuWriter("rigidparticle-wall-contact");
+    particleinteractionwriter_->RegisterSpecificRuntimeOutputWriter("rigidparticle-wall-contact");
 }
 
 PARTICLEINTERACTION::SPHRigidParticleContactElastic::SPHRigidParticleContactElastic(
@@ -342,9 +342,9 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
 
   if (writeinteractionoutput)
   {
-    // get specific runtime vtp writer
+    // get specific runtime output writer
     IO::VisualizationManager* visualization_manager =
-        particleinteractionwriter_->GetSpecificRuntimeVtuWriter("rigidparticle-wall-contact");
+        particleinteractionwriter_->GetSpecificRuntimeOutputWriter("rigidparticle-wall-contact");
     auto& visualization_data = visualization_manager->GetVisualizationData();
 
     // set wall attack points
