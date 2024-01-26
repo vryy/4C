@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*! \file
 
-\brief input parameters related to VTU output at runtime for beams
+\brief input parameters related to output at runtime for beams
 
 \level 3
 
@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef BACI_BEAM3_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H
-#define BACI_BEAM3_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H
+#ifndef BACI_BEAM3_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_H
+#define BACI_BEAM3_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_H
 
 
 #include "baci_config.H"
@@ -28,17 +28,17 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    /** \brief Input data container for VTU output at runtime for beams
+    /** \brief Input data container for output at runtime for beams
      *
      * \author Maximilian Grill */
-    class BeamRuntimeVtuOutputParams
+    class BeamRuntimeOutputParams
     {
      public:
       /// constructor
-      BeamRuntimeVtuOutputParams();
+      BeamRuntimeOutputParams();
 
       /// destructor
-      virtual ~BeamRuntimeVtuOutputParams() = default;
+      virtual ~BeamRuntimeOutputParams() = default;
 
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IO_vtk_structure_beams_paramslist);

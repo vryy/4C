@@ -116,7 +116,7 @@ namespace STR
           };*/
 
       /*    /// get the data container for parameters regarding beams
-          Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeVtuOutputParams> GetBeamParams() const
+          Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
           {
             CheckInitSetup();
             return params_runtime_vtu_output_beams_;
@@ -174,7 +174,7 @@ namespace STR
           bool output_displacement_state_;*/
 
       /*    /// data container for input parameters related to VTU output of beams at runtime
-          Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeVtuOutputParams>
+          Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeOutputParams>
          params_runtime_vtu_output_beams_;*/
 
 

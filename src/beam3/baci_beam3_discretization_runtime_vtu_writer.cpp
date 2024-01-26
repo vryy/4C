@@ -75,10 +75,10 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
    *
    *
    *  Another approach would be to visualize the cubic Hermite polynomials as cubic Lagrange
-   *  polynomials and specify four vtk points from e.g. the two FE nodes and two more arbitrary
-   *  points along the centerline.
-   *  However, the representation of nonlinear geometry in Paraview turned out to not work as
-   *  expected (e.g. no visible refinement of subsegments if corresponding parameter is changed).
+   *  polynomials and specify four visualization points from e.g. the two FE nodes and two more
+   * arbitrary points along the centerline. However, the representation of nonlinear geometry in
+   * Paraview turned out to not work as expected (e.g. no visible refinement of subsegments if
+   * corresponding parameter is changed).
    */
 
   // always use 3D for beams
@@ -106,7 +106,7 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
-  unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
+  unsigned int num_visualization_points = num_beam_row_elements * (n_subsegments_ + 1);
 
   // do not need to store connectivity indices here because we create a
   // contiguous array by the order in which we fill the coordinates (otherwise
@@ -115,7 +115,7 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
 
   std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
   point_coordinates.clear();
-  point_coordinates.reserve(num_spatial_dimensions * num_vtk_points);
+  point_coordinates.reserve(num_spatial_dimensions * num_visualization_points);
 
   std::vector<uint8_t>& cell_types = visualization_data.GetCellTypes();
   cell_types.clear();
@@ -231,10 +231,10 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
   }
 
   if (periodic_boundingbox_ != Teuchos::null and !periodic_boundingbox_->HavePBC() and
-      (point_coordinates.size() != num_spatial_dimensions * num_vtk_points))
+      (point_coordinates.size() != num_spatial_dimensions * num_visualization_points))
   {
     dserror("RuntimeVtuWriter expected %d coordinate values, but got %d",
-        num_spatial_dimensions * num_vtk_points, point_coordinates.size());
+        num_spatial_dimensions * num_visualization_points, point_coordinates.size());
   }
 
   if (periodic_boundingbox_ != Teuchos::null and !periodic_boundingbox_->HavePBC() and
@@ -259,12 +259,12 @@ void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
-  unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
+  unsigned int num_visualization_points = num_beam_row_elements * (n_subsegments_ + 1);
   std::vector<int32_t> const& cell_offsets = visualization_data.GetCellOffsets();
 
   // disp vector
   std::vector<double> displacement_vector;
-  displacement_vector.reserve(num_spatial_dimensions * num_vtk_points);
+  displacement_vector.reserve(num_spatial_dimensions * num_visualization_points);
 
   // number of points so far
   int points_sofar = 0;
@@ -348,18 +348,18 @@ void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
-  unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
+  unsigned int num_visualization_points = num_beam_row_elements * (n_subsegments_ + 1);
   std::vector<int32_t> const& cell_offsets = visualization_data.GetCellOffsets();
 
   // we write the triad field as three base vectors at every visualization point
   std::vector<double> base_vector_1;
-  base_vector_1.reserve(num_spatial_dimensions * num_vtk_points);
+  base_vector_1.reserve(num_spatial_dimensions * num_visualization_points);
 
   std::vector<double> base_vector_2;
-  base_vector_2.reserve(num_spatial_dimensions * num_vtk_points);
+  base_vector_2.reserve(num_spatial_dimensions * num_visualization_points);
 
   std::vector<double> base_vector_3;
-  base_vector_3.reserve(num_spatial_dimensions * num_vtk_points);
+  base_vector_3.reserve(num_spatial_dimensions * num_visualization_points);
 
   // number of points so far
   int points_sofar = 0;
@@ -681,7 +681,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformat
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
-  unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
+  unsigned int num_visualization_points = num_beam_row_elements * (n_subsegments_ + 1);
 
 
   // a beam with circular cross-section can be visualized as a 'chain' of straight cylinders
@@ -693,7 +693,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformat
   //       However, we keep this method as it could be useful for other visualization approaches
   //       in the future.
   std::vector<double> circular_cross_section_information_vector;
-  circular_cross_section_information_vector.reserve(num_spatial_dimensions * num_vtk_points);
+  circular_cross_section_information_vector.reserve(
+      num_spatial_dimensions * num_visualization_points);
   std::vector<int32_t> const& cell_offsets = visualization_data.GetCellOffsets();
 
   // number of points so far
@@ -1701,11 +1702,11 @@ void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   std::size_t num_beam_row_elements = local_row_indices_beam_elements_.size();
-  std::size_t num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
+  std::size_t num_visualization_points = num_beam_row_elements * (n_subsegments_ + 1);
 
   // Set up global vectors
   std::vector<std::vector<double>> stress_strain_vector(6);
-  for (std::size_t i = 0; i < 6; i++) stress_strain_vector[i].reserve(num_vtk_points);
+  for (std::size_t i = 0; i < 6; i++) stress_strain_vector[i].reserve(num_visualization_points);
 
   // loop over myrank's beam elements and compute strain resultants for each visualization point
   for (std::size_t ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
