@@ -110,34 +110,37 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
       "BEAMPOT_BOXESINOCT", 8, "max number of bounding boxes in any leaf octant", &beampotential);
 
   /*------------------------------------------------------------------------*/
-  /* parameters for visualization of potential-based beam interactions via vtk output at runtime */
+  /* parameters for visualization of potential-based beam interactions via output at runtime */
 
-  Teuchos::ParameterList& beampotential_vtk_sublist =
+  Teuchos::ParameterList& beampotential_output_sublist =
       beampotential.sublist("RUNTIME VTK OUTPUT", false, "");
 
 
-  // whether to write vtk output for beam contact
+  // whether to write visualization output for beam contact
   BoolParameter("VTK_OUTPUT_BEAM_POTENTIAL", "No",
-      "write vtk output for potential-based beam interactions", &beampotential_vtk_sublist);
+      "write visualization output for potential-based beam interactions",
+      &beampotential_output_sublist);
 
   // output interval regarding steps: write output every INTERVAL_STEPS steps
-  IntParameter("INTERVAL_STEPS", -1, "write VTK output at runtime every INTERVAL_STEPS steps",
-      &beampotential_vtk_sublist);
+  IntParameter("INTERVAL_STEPS", -1, "write output at runtime every INTERVAL_STEPS steps",
+      &beampotential_output_sublist);
 
   // whether to write output in every iteration of the nonlinear solver
   BoolParameter("EVERY_ITERATION", "No", "write output in every iteration of the nonlinear solver",
-      &beampotential_vtk_sublist);
+      &beampotential_output_sublist);
 
-  // whether to write vtp output for forces
-  BoolParameter("FORCES", "No", "write vtp output for forces", &beampotential_vtk_sublist);
+  // whether to write visualization output for forces
+  BoolParameter(
+      "FORCES", "No", "write visualization output for forces", &beampotential_output_sublist);
 
-  // whether to write vtp output for moments
-  BoolParameter("MOMENTS", "No", "write vtp output for moments", &beampotential_vtk_sublist);
+  // whether to write visualization output for moments
+  BoolParameter(
+      "MOMENTS", "No", "write visualization output for moments", &beampotential_output_sublist);
 
-  // whether to write vtp output for forces/moments separately for each element pair
+  // whether to write visualization output for forces/moments separately for each element pair
   BoolParameter("WRITE_FORCE_MOMENT_PER_ELEMENTPAIR", "No",
-      "write vtp output for forces/moments separately for each element pair",
-      &beampotential_vtk_sublist);
+      "write visualization output for forces/moments separately for each element pair",
+      &beampotential_output_sublist);
 }
 
 void INPAR::BEAMPOTENTIAL::SetValidConditions(

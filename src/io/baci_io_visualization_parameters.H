@@ -14,7 +14,7 @@
 
 #include "baci_config.H"
 
-#include "baci_inpar_IO_runtime_vtk_output.H"
+#include "baci_inpar_IO_runtime_output.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
@@ -29,7 +29,7 @@ namespace IO
   struct VisualizationParameters
   {
     //! Enum containing the type of output data format, i.e., binary or ascii.
-    INPAR::IO_RUNTIME_VTK::OutputDataFormat data_format_;
+    INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat data_format_;
 
     //! Flag if output should be written for each nonlinear iteration
     bool every_iteration_;
@@ -44,7 +44,7 @@ namespace IO
     int digits_for_iteration_;
 
     //! Enum containing the output writer that shall be used
-    INPAR::IO_RUNTIME_VTK::OutputWriter writer_;
+    INPAR::IO_RUNTIME_OUTPUT::OutputWriter writer_;
   };
 
   /**

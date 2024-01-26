@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief input parameters for VTK output of a fluid field at runtime
+\brief input parameters for output of beam discretization at runtime
 
-\level 2
+\level 3
 
 */
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef BACI_INPAR_IO_RUNTIME_VTK_OUTPUT_FLUID_H
-#define BACI_INPAR_IO_RUNTIME_VTK_OUTPUT_FLUID_H
+#ifndef BACI_INPAR_IO_RUNTIME_OUTPUT_STRUCTURE_BEAMS_H
+#define BACI_INPAR_IO_RUNTIME_OUTPUT_STRUCTURE_BEAMS_H
 
 
 /*----------------------------------------------------------------------*/
@@ -21,18 +21,19 @@
 
 BACI_NAMESPACE_OPEN
 
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  namespace IO_RUNTIME_VTK
+  namespace IO_RUNTIME_OUTPUT
   {
-    namespace FLUID
+    namespace BEAMS
     {
-      /// set the valid parameters related to writing of VTK output at runtime
+      /// set the valid parameters related to writing of output at runtime
       void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-    }  // namespace FLUID
-  }    // namespace IO_RUNTIME_VTK
+    }  // namespace BEAMS
+  }    // namespace IO_RUNTIME_OUTPUT
 }  // namespace INPAR
 
 BACI_NAMESPACE_CLOSE

@@ -11,7 +11,7 @@
 #include "baci_io_visualization_writer_vtu_per_rank.H"
 
 #include "baci_global_data.H"
-#include "baci_inpar_IO_runtime_vtk_output.H"
+#include "baci_inpar_IO_runtime_output.H"
 #include "baci_io_control.H"
 #include "baci_io_visualization_data.H"
 
@@ -32,7 +32,7 @@ IO::VisualizationWriterVtuPerRank::VisualizationWriterVtuPerRank(
       output_control->DirectoryName(), (output_control->FileNameOnlyPrefix() + "-vtk-files"),
       visualization_data_name_, output_control->RestartName(),
       DRT::Problem::Instance()->RestartTime(),
-      parameters.data_format_ == INPAR::IO_RUNTIME_VTK::OutputDataFormat::binary);
+      parameters.data_format_ == INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat::binary);
 }
 
 

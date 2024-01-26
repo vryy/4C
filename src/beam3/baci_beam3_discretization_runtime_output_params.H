@@ -15,7 +15,7 @@
 
 #include "baci_config.H"
 
-#include "baci_inpar_IO_runtime_vtk_output_structure_beams.H"
+#include "baci_inpar_IO_runtime_output_structure_beams.H"
 
 namespace Teuchos
 {

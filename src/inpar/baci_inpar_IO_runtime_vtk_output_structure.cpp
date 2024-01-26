@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief input parameters for VTK output of structural problem at runtime
+\brief input parameters for output of structural problem at runtime
 
 \level 2
 
@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
 
 namespace INPAR
 {
-  namespace IO_RUNTIME_VTK
+  namespace IO_RUNTIME_OUTPUT
   {
     namespace STRUCTURE
     {
@@ -85,7 +85,7 @@ namespace INPAR
 
 
     }  // namespace STRUCTURE
-  }    // namespace IO_RUNTIME_VTK
+  }    // namespace IO_RUNTIME_OUTPUT
 }  // namespace INPAR
 
 BACI_NAMESPACE_CLOSE

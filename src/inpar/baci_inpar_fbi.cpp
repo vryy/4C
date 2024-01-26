@@ -87,41 +87,41 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   /*----------------------------------------------------------------------*/
 
-  // Create subsection for runtime vtk output.
-  Teuchos::ParameterList& beam_to_fluid_meshtying_vtk =
+  // Create subsection for runtime output.
+  Teuchos::ParameterList& beam_to_fluid_meshtying_output =
       beam_to_fluid_meshtying.sublist("RUNTIME VTK OUTPUT", false, "");
 
-  // Whether to write vtp output at all for beam to fluid meshtying.
+  // Whether to write visualization output at all for beam to fluid meshtying.
   BoolParameter("WRITE_OUTPUT", "No", "Enable / disable beam-to-fluid mesh tying output.",
-      &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_output);
 
   BoolParameter("NODAL_FORCES", "No",
       "Enable / disable output of the resulting nodal forces due to beam to Fluid interaction.",
-      &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_output);
 
   BoolParameter("SEGMENTATION", "No", "Enable / disable output of segmentation points.",
-      &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_output);
 
   BoolParameter("INTEGRATION_POINTS", "No",
       "Enable / disable output of used integration points. If the meshtying method has 'forces' at "
       "the integration point, they will also be output.",
-      &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_output);
 
   BoolParameter("CONSTRAINT_VIOLATION", "No",
       "Enable / disable output of the constraint violation into a output_name.penalty csv file.",
-      &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_output);
 
   BoolParameter("MORTAR_LAMBDA_DISCRET", "No",
       "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
       "multiplier shape functions.",
-      &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_output);
 
   BoolParameter("MORTAR_LAMBDA_CONTINUOUS", "No",
       "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
-      &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_output);
 
   INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
-      "Number of segments for continuous mortar output", &beam_to_fluid_meshtying_vtk);
+      "Number of segments for continuous mortar output", &beam_to_fluid_meshtying_output);
 }
 
 void INPAR::FBI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist)

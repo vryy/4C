@@ -142,40 +142,40 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   }
 
   // Beam to solid volume mesh tying output parameters.
-  Teuchos::ParameterList& beam_to_solid_volume_mestying_vtk =
+  Teuchos::ParameterList& beam_to_solid_volume_mestying_output =
       beam_to_solid_volume_mestying.sublist("RUNTIME VTK OUTPUT", false, "");
   {
-    // Whether to write vtp output at all for btsvmt.
+    // Whether to write visualization output at all for btsvmt.
     BoolParameter("WRITE_OUTPUT", "No", "Enable / disable beam-to-solid volume mesh tying output.",
-        &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_output);
 
     BoolParameter("NODAL_FORCES", "No",
         "Enable / disable output of the resulting nodal forces due to beam to solid interaction.",
-        &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_output);
 
     BoolParameter("MORTAR_LAMBDA_DISCRET", "No",
         "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
         "multiplier shape functions.",
-        &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_output);
 
     BoolParameter("MORTAR_LAMBDA_CONTINUOUS", "No",
         "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
-        &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_output);
 
     INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
-        "Number of segments for continuous mortar output", &beam_to_solid_volume_mestying_vtk);
+        "Number of segments for continuous mortar output", &beam_to_solid_volume_mestying_output);
 
     BoolParameter("SEGMENTATION", "No", "Enable / disable output of segmentation points.",
-        &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_output);
 
     BoolParameter("INTEGRATION_POINTS", "No",
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
-        &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_output);
 
     BoolParameter("UNIQUE_IDS", "No",
         "Enable / disable output of unique IDs (mainly for testing of created VTK files).",
-        &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_output);
   }
 
   // Beam to solid surface mesh tying parameters.
@@ -296,44 +296,44 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       beaminteraction.sublist("BEAM TO SOLID SURFACE", false, "");
 
   // Beam to solid surface output parameters.
-  Teuchos::ParameterList& beam_to_solid_surface_vtk =
+  Teuchos::ParameterList& beam_to_solid_surface_output =
       beam_to_solid_surface.sublist("RUNTIME VTK OUTPUT", false, "");
   {
-    // Whether to write vtp output at all.
+    // Whether to write visualization output at all.
     BoolParameter("WRITE_OUTPUT", "No", "Enable / disable beam-to-solid volume mesh tying output.",
-        &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_output);
 
     BoolParameter("NODAL_FORCES", "No",
         "Enable / disable output of the resulting nodal forces due to beam to solid interaction.",
-        &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_output);
 
     BoolParameter("AVERAGED_NORMALS", "No",
         "Enable / disable output of averaged nodal normals on the surface.",
-        &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_output);
 
     BoolParameter("MORTAR_LAMBDA_DISCRET", "No",
         "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
         "multiplier shape functions.",
-        &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_output);
 
     BoolParameter("MORTAR_LAMBDA_CONTINUOUS", "No",
         "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
-        &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_output);
 
     INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
-        "Number of segments for continuous mortar output", &beam_to_solid_surface_vtk);
+        "Number of segments for continuous mortar output", &beam_to_solid_surface_output);
 
     BoolParameter("SEGMENTATION", "No", "Enable / disable output of segmentation points.",
-        &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_output);
 
     BoolParameter("INTEGRATION_POINTS", "No",
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
-        &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_output);
 
     BoolParameter("UNIQUE_IDS", "No",
         "Enable / disable output of unique IDs (mainly for testing of created VTK files).",
-        &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_output);
   }
 }
 

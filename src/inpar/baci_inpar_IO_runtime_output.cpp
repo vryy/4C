@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief input parameters for VTK output of structural problem at runtime
+\brief input parameters for output of structural problem at runtime
 
 \level 2
 
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_inpar_IO_runtime_vtk_output.H"
+#include "baci_inpar_IO_runtime_output.H"
 
 #include "baci_inpar.H"
 #include "baci_inpar_parameterlist_utils.H"
@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
 
 namespace INPAR
 {
-  namespace IO_RUNTIME_VTK
+  namespace IO_RUNTIME_OUTPUT
   {
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
@@ -37,7 +37,8 @@ namespace INPAR
 
 
       // output interval regarding steps: write output every INTERVAL_STEPS steps
-      IntParameter("INTERVAL_STEPS", -1, "write VTK output at runtime every INTERVAL_STEPS steps",
+      IntParameter("INTERVAL_STEPS", -1,
+          "write visualization output at runtime every INTERVAL_STEPS steps",
           &sublist_IO_VTK_structure);
 
 
@@ -47,11 +48,11 @@ namespace INPAR
 
 
       // data format for written numeric data
-      setStringToIntegralParameter<INPAR::IO_RUNTIME_VTK::OutputDataFormat>("OUTPUT_DATA_FORMAT",
+      setStringToIntegralParameter<INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat>("OUTPUT_DATA_FORMAT",
           "binary", "data format for written numeric data", tuple<std::string>("binary", "ascii"),
-          tuple<INPAR::IO_RUNTIME_VTK::OutputDataFormat>(
-              INPAR::IO_RUNTIME_VTK::OutputDataFormat::binary,
-              INPAR::IO_RUNTIME_VTK::OutputDataFormat::ascii),
+          tuple<INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat>(
+              INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat::binary,
+              INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat::ascii),
           &sublist_IO_VTK_structure);
 
       // specify the maximum digits in the number of time steps that shall be written
@@ -83,7 +84,7 @@ namespace INPAR
     }
 
 
-  }  // namespace IO_RUNTIME_VTK
+  }  // namespace IO_RUNTIME_OUTPUT
 }  // namespace INPAR
 
 BACI_NAMESPACE_CLOSE
