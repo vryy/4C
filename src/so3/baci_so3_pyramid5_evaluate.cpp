@@ -692,8 +692,19 @@ int DRT::ELEMENTS::So_pyramid5::EvaluateNeumann(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDIM_SOP5, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
+  {
     for (int dim = 0; dim < NUMDIM_SOP5; dim++)
+    {
       if ((*funct)[dim] > 0) havefunct = havefunct or true;
+    }
+
+    if (time < 0)
+    {
+      dserror(
+          "Time is smaller than 0, which is not allowed. Probably time has not been set by the "
+          "time integrator.");
+    }
+  }
 
 
   /* ============================================================================*
