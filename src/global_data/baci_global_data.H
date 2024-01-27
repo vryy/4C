@@ -20,6 +20,7 @@
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils.H"
 #include "baci_utils_function_manager.H"
+#include "baci_utils_std_cxx20_ranges.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
@@ -34,7 +35,6 @@ namespace IO
 {
   class OutputControl;
   class InputControl;
-  class ErrorFileControl;
 }  // namespace IO
 
 namespace CORE::COMM
@@ -157,6 +157,18 @@ namespace DRT
    public:
     /// @name Instances
 
+    /// Disallow copying this class.
+    Problem(const Problem&) = delete;
+
+    /// Disallow copying this class.
+    Problem& operator=(const Problem&) = delete;
+
+    /// Disallow moving this class.
+    Problem(Problem&&) = delete;
+
+    /// Disallow moving this class.
+    Problem& operator=(Problem&&) = delete;
+
     /// return an instance of this class
     static Problem* Instance(int num = 0);
 
@@ -174,39 +186,6 @@ namespace DRT
 
     /// @name Input
 
-    /// read global parameters
-    void ReadParameter(INPUT::DatFileReader& reader);
-
-    /// setup the discretizations
-    void ReadFields(INPUT::DatFileReader& reader, const bool readmesh = true);
-
-    /// set up micro-scale discretizations in case of structure multi-scale simulations
-    void ReadMicroFields(INPUT::DatFileReader& reader);
-
-    /// set up supporting processors for micro-scale discretizations
-    void ReadMicrofieldsNPsupport();
-
-    /// input of contact constitutive laws
-    void ReadContactConstitutiveLaws(INPUT::DatFileReader& reader);
-
-    /// input of materials
-    void ReadMaterials(INPUT::DatFileReader& reader);
-
-    /// setup map between materials of original and cloned elements
-    void ReadCloningMaterialMap(INPUT::DatFileReader& reader);
-
-    /// input of conditions
-    void ReadConditions(INPUT::DatFileReader& reader);
-
-    /// input of result tests
-    void ReadResult(INPUT::DatFileReader& reader);
-
-    /// input of knots for isogeometric analysis
-    void ReadKnots(INPUT::DatFileReader& reader);
-
-    /// input of particles
-    void ReadParticles(INPUT::DatFileReader& reader);
-
     /// set restart step which was read from the command line
     void SetRestartStep(int r);
 
@@ -214,6 +193,8 @@ namespace DRT
 
     /// manipulate problem type
     void SetProblemType(ProblemType targettype);
+
+    void SetSpatialApproximationType(CORE::FE::ShapeFunctionType shape_function_type);
 
     //@}
 
@@ -499,6 +480,16 @@ namespace DRT
       return parameters_->sublist("MESH PARTITIONING");
     }
 
+    const Teuchos::ParameterList& ProblemTypeParams() const
+    {
+      return parameters_->sublist("PROBLEM TYP");
+    }
+
+    const Teuchos::ParameterList& ProblemSizeParams() const
+    {
+      return parameters_->sublist("PROBLEM SIZE");
+    }
+
     const Teuchos::ParameterList& SolverParams(int solverNr) const;
 
     const Teuchos::ParameterList& UMFPACKSolverParams();
@@ -509,6 +500,10 @@ namespace DRT
 
     /// get access to a particular discretization
     Teuchos::RCP<DRT::Discretization> GetDis(const std::string& name) const;
+
+    auto DiscretizationRange() { return std_20::ranges::views::all(discretizationmap_); }
+
+    auto DiscretizationRange() const { return std_20::ranges::views::all(discretizationmap_); }
 
     /// tell number of known fields
     unsigned NumFields() const { return discretizationmap_.size(); }
@@ -545,7 +540,7 @@ namespace DRT
 
     //@}
 
-    std::map<std::pair<std::string, std::string>, std::map<int, int>> CloningMaterialMap()
+    std::map<std::pair<std::string, std::string>, std::map<int, int>>& CloningMaterialMap()
     {
       return clonefieldmatmap_;
     }
@@ -573,6 +568,8 @@ namespace DRT
     /// add field specific result test object
     void AddFieldTest(Teuchos::RCP<ResultTest> test) { resulttest_.AddFieldTest(test); }
 
+    ResultTestManager& GetResultTestManager() { return resulttest_; }
+
     //@}
 
     /// Return the class that handles random numbers globally
@@ -592,27 +589,6 @@ namespace DRT
    private:
     /// private default constructor to disallow creation of instances
     Problem();
-
-    /// no copying
-    Problem(const Problem&);
-
-    /// no copying
-    Problem& operator=(const Problem&);
-
-    /// @name Private access to parameters from certain input file sections
-
-    /// for internal use only! Use Restart(), SpatialApproximation() etc. instead !!!
-    const Teuchos::ParameterList& ProblemTypeParams() const
-    {
-      return parameters_->sublist("PROBLEM TYP");
-    }
-
-    /// for internal use only! Use NDim() to access the number of space dimensions
-    const Teuchos::ParameterList& ProblemSizeParams() const
-    {
-      return parameters_->sublist("PROBLEM SIZE");
-    }
-    //@}
 
     /// the single instance
     static std::vector<Problem*> instances_;

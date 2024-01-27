@@ -16,6 +16,7 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_global_data.H"
+#include "baci_global_data_read.H"
 #include "baci_global_legacy_module.H"
 #include "baci_io_control.H"  //for writing to the error file
 #include "baci_io_inputreader.H"
@@ -41,18 +42,18 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
 
   // read and validate dynamic and solver sections
   std::cout << "...Read parameters" << std::endl;
-  problem->ReadParameter(reader);
+  GLOBAL::ReadParameter(*problem, reader);
 
   // read and validate all material definitions
   std::cout << "...Read materials" << std::endl;
-  problem->ReadMaterials(reader);
+  GLOBAL::ReadMaterials(*problem, reader);
 
   // do NOT allocate the different fields (discretizations) here,
   // since RAM might be a problem for huge problems!
   // But, we have to perform at least the problem-specific setup since
   // some reading procedures depend on the number of fields (e.g., ReadKnots())
   std::cout << "...Read field setup" << std::endl;
-  problem->ReadFields(reader, false);  // option false is important here!
+  GLOBAL::ReadFields(*problem, reader, false);  // option false is important here!
 
   std::cout << "...";
   {
@@ -61,15 +62,15 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
     function_manager.ReadInput(reader);
   }
 
-  problem->ReadResult(reader);
-  problem->ReadConditions(reader);
+  GLOBAL::ReadResult(*problem, reader);
+  GLOBAL::ReadConditions(*problem, reader);
 
   // input of materials of cloned fields (if needed)
-  problem->ReadCloningMaterialMap(reader);
+  GLOBAL::ReadCloningMaterialMap(*problem, reader);
 
   // read all knot information for isogeometric analysis
   // and add it to the (derived) nurbs discretization
-  problem->ReadKnots(reader);
+  GLOBAL::ReadKnots(*problem, reader);
 
   // inform user about unused/obsolete section names being found
   // and force him/her to correct the input file accordingly

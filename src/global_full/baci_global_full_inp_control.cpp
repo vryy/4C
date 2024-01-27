@@ -9,6 +9,7 @@
 
 #include "baci_comm_utils.H"
 #include "baci_global_data.H"
+#include "baci_global_data_read.H"
 #include "baci_global_legacy_module.H"
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_io_inputreader.H"
@@ -39,7 +40,7 @@ void ntainp_ccadiscret(
   // and now the actual reading
   INPUT::DatFileReader reader(inputfile_name, lcomm);
 
-  problem->ReadParameter(reader);
+  GLOBAL::ReadParameter(*problem, reader);
 
   SetupParallelOutput(outputfile_kenner, lcomm, group);
 
@@ -47,25 +48,25 @@ void ntainp_ccadiscret(
   problem->OpenControlFile(*lcomm, inputfile_name, outputfile_kenner, restartfile_kenner);
 
   // input of materials
-  problem->ReadMaterials(reader);
+  GLOBAL::ReadMaterials(*problem, reader);
 
   // input of materials
-  problem->ReadContactConstitutiveLaws(reader);
+  GLOBAL::ReadContactConstitutiveLaws(*problem, reader);
 
   // input of materials of cloned fields (if needed)
-  problem->ReadCloningMaterialMap(reader);
+  GLOBAL::ReadCloningMaterialMap(*problem, reader);
 
   {
     CORE::UTILS::FunctionManager function_manager;
-    BACI::GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
+    GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
     function_manager.ReadInput(reader);
     problem->SetFunctionManager(std::move(function_manager));
   }
 
-  problem->ReadResult(reader);
+  GLOBAL::ReadResult(*problem, reader);
 
   // input of particles
-  problem->ReadParticles(reader);
+  GLOBAL::ReadParticles(*problem, reader);
 
   switch (npType)
   {
@@ -73,30 +74,30 @@ void ntainp_ccadiscret(
     case CORE::COMM::NestedParallelismType::every_group_read_dat_file:
     case CORE::COMM::NestedParallelismType::separate_dat_files:
       // input of fields
-      problem->ReadFields(reader);
+      GLOBAL::ReadFields(*problem, reader);
 
       // read all types of geometry related conditions (e.g. boundary conditions)
       // Also read time and space functions and local coord systems
-      problem->ReadConditions(reader);
+      GLOBAL::ReadConditions(*problem, reader);
 
       // read all knot information for isogeometric analysis
       // and add it to the (derived) nurbs discretization
-      problem->ReadKnots(reader);
+      GLOBAL::ReadKnots(*problem, reader);
       break;
     case CORE::COMM::NestedParallelismType::copy_dat_file:
       // group 0 only reads discretization etc
       if (group == 0)
       {
         // input of fields
-        problem->ReadFields(reader);
+        GLOBAL::ReadFields(*problem, reader);
 
         // read all types of geometry related conditions (e.g. boundary conditions)
         // Also read time and space functions and local coord systems
-        problem->ReadConditions(reader);
+        GLOBAL::ReadConditions(*problem, reader);
 
         // read all knot information for isogeometric analysis
         // and add it to the (derived) nurbs discretization
-        problem->ReadKnots(reader);
+        GLOBAL::ReadKnots(*problem, reader);
       }
       gcomm->Barrier();
       // group 0 broadcasts the discretizations to the other groups

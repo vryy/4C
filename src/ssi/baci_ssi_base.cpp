@@ -14,6 +14,7 @@
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_adapter_str_structure_new.H"
 #include "baci_global_data.H"
+#include "baci_global_data_read.H"
 #include "baci_inpar_ssi.H"
 #include "baci_inpar_volmortar.H"
 #include "baci_io_control.H"
@@ -361,7 +362,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
   // read in the micro field, has to be done after cloning of the scatra discretization
   auto input_file_name = problem->OutputControlFile()->InputFileName();
   INPUT::DatFileReader local_reader(input_file_name);
-  problem->ReadMicroFields(local_reader);
+  GLOBAL::ReadMicroFields(*problem, local_reader);
 }
 
 /*----------------------------------------------------------------------*
