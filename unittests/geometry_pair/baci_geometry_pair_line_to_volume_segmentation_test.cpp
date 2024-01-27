@@ -313,7 +313,7 @@ namespace
     // Add the relevant nurbs information to the discretization.
     Teuchos::RCP<DRT::NURBS::NurbsDiscretization> structdis =
         Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", Teuchos::null));
-    DRT::Problem::Instance()->AddDis("structure", structdis);
+    GLOBAL::Problem::Instance()->AddDis("structure", structdis);
 
     // Get the geometry.
     XtestMultipleIntersectionsNurbs27Geometry(line_elements_, volume_elements_, q_line_elements,

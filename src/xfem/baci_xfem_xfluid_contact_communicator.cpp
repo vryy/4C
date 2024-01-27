@@ -64,7 +64,7 @@ void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::Cut
     dserror("ConvStabScaling not handled correctly!");
 
   extrapolate_to_zero_ = (bool)INPUT::IntegralValue<int>(
-      DRT::Problem::Instance()->XFluidDynamicParams().sublist("XFPSI MONOLITHIC"),
+      GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("XFPSI MONOLITHIC"),
       "EXTRAPOLATE_TO_ZERO");
 
   if (extrapolate_to_zero_)

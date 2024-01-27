@@ -50,7 +50,7 @@ void FSI::DirichletNeumannVolCoupl::Setup()
 {
   FSI::DirichletNeumann::Setup();
 
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   SetKinematicCoupling(
       INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
@@ -70,7 +70,7 @@ void FSI::DirichletNeumannVolCoupl::Setup()
 void FSI::DirichletNeumannVolCoupl::SetupCouplingStructAle(
     const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   coupsa_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
@@ -91,7 +91,7 @@ void FSI::DirichletNeumannVolCoupl::SetupCouplingStructAle(
       &dofsets21, Teuchos::null, false);
 
   // setup coupling adapter
-  coupsa_->Setup(DRT::Problem::Instance()->VolmortarParams());
+  coupsa_->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
 }
 
 /*----------------------------------------------------------------------*/
@@ -179,7 +179,7 @@ void FSI::InterfaceCorrector::Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale)
   fluidale_ = fluidale;
 
   volcorrector_ = Teuchos::rcp(new VolCorrector);
-  volcorrector_->Setup(DRT::Problem::Instance()->NDim(), fluidale);
+  volcorrector_->Setup(GLOBAL::Problem::Instance()->NDim(), fluidale);
 
   return;
 }

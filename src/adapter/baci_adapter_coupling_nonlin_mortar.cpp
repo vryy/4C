@@ -199,9 +199,9 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
   }
 
   // get mortar coupling parameters
-  const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& meshtying = DRT::Problem::Instance()->ContactDynamicParams();
-  const Teuchos::ParameterList& wearlist = DRT::Problem::Instance()->WearParams();
+  const Teuchos::ParameterList& inputmortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& meshtying = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& wearlist = GLOBAL::Problem::Instance()->WearParams();
 
   input.setParameters(inputmortar);
   input.setParameters(meshtying);
@@ -212,10 +212,10 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
 
   // is this a nurbs problem?
   bool isnurbs = false;
-  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->SpatialApproximationType();
   if (distype == CORE::FE::ShapeFunctionType::nurbs) isnurbs = true;
   input.set<bool>("NURBS", isnurbs);
-  input.set<int>("DIMENSION", DRT::Problem::Instance()->NDim());
+  input.set<int>("DIMENSION", GLOBAL::Problem::Instance()->NDim());
 
   // check for invalid parameter values
   if (INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input, "LM_SHAPEFCN") !=
@@ -245,7 +245,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
   const bool isnurbs = input.get<bool>("NURBS");
 
   // get problem dimension (2D or 3D) and create (MORTAR::Interface)
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = GLOBAL::Problem::Instance()->NDim();
 
   // create an empty mortar interface
   interface = CONTACT::Interface::Create(0, *comm_, dim, input, false);
@@ -352,7 +352,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
   const bool isnurbs = input.get<bool>("NURBS");
 
   // get problem dimension (2D or 3D) and create (MORTAR::Interface)
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = GLOBAL::Problem::Instance()->NDim();
 
   // ########## CHECK for a better implementation of this ###################
   // If this option is used, check functionality ... not sure if this is correct!
@@ -510,7 +510,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
 {
   const Teuchos::ParameterList& input =
-      DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+      GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
   const INPAR::MORTAR::ParallelRedist parallelRedist =
       Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST");
 
@@ -628,13 +628,13 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   // get mortar coupling parameters
   Teuchos::ParameterList input;
   // set default values
-  input.setParameters(DRT::Problem::Instance()->MortarCouplingParams());
-  input.setParameters(DRT::Problem::Instance()->ContactDynamicParams());
-  input.setParameters(DRT::Problem::Instance()->WearParams());
+  input.setParameters(GLOBAL::Problem::Instance()->MortarCouplingParams());
+  input.setParameters(GLOBAL::Problem::Instance()->ContactDynamicParams());
+  input.setParameters(GLOBAL::Problem::Instance()->WearParams());
   input.set<int>("PROBTYPE", INPAR::CONTACT::other);
 
   // is this a nurbs problem?
-  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->SpatialApproximationType();
   switch (distype)
   {
     case CORE::FE::ShapeFunctionType::nurbs:
@@ -655,7 +655,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   input.set<bool>("Two_half_pass", false);
 
   // get problem dimension (2D or 3D) and create (MORTAR::Interface)
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = GLOBAL::Problem::Instance()->NDim();
 
   // generate contact interface
   Teuchos::RCP<CONTACT::Interface> interface =
@@ -728,7 +728,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   {
     bool isFinalDistribution = false;
     const Teuchos::ParameterList& input =
-        DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+        GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
     if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") ==
             INPAR::MORTAR::ParallelRedist::redist_none or
         comm_->NumProc() == 1)
@@ -816,7 +816,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input =
-      DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+      GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") !=
       INPAR::MORTAR::ParallelRedist::redist_none)
     parredist = true;
@@ -894,7 +894,7 @@ void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input =
-      DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+      GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") !=
       INPAR::MORTAR::ParallelRedist::redist_none)
     parredist = true;

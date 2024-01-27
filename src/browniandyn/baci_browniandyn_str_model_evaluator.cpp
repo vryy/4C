@@ -658,8 +658,8 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
       pow(2.0 * eval_browniandyn_ptr_->KT() / brown_dyn_state_data_.browndyn_dt, 0.5);
 
   // Set mean value and standard deviation of normal distribution
-  DRT::Problem::Instance()->Random()->SetMeanVariance(meanvalue, standarddeviation);
-  DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+  GLOBAL::Problem::Instance()->Random()->SetMeanVariance(meanvalue, standarddeviation);
+  GLOBAL::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
 
   // multivector for stochastic forces evaluated by each element based on row map
   Teuchos::RCP<Epetra_MultiVector> randomnumbersrow = eval_browniandyn_ptr_->GetRandomForces();
@@ -668,7 +668,7 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
   int numperele = randomnumbersrow->NumVectors();
   int count = numele * numperele;
   std::vector<double> randvec(count);
-  DRT::Problem::Instance()->Random()->Normal(randvec, count);
+  GLOBAL::Problem::Instance()->Random()->Normal(randvec, count);
 
   // MAXRANDFORCE is a multiple of the standard deviation
   double maxrandforcefac = eval_browniandyn_ptr_->MaxRandForce();
@@ -789,8 +789,8 @@ void STR::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
   // -----------------------------------------------------------------------
   // seed random number generator and set uni range
   // -----------------------------------------------------------------------
-  DRT::Problem::Instance()->Random()->SetRandSeed( static_cast<unsigned int>(
-rand_data_.seedvariable ) ); DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0);
+  GLOBAL::Problem::Instance()->Random()->SetRandSeed( static_cast<unsigned int>(
+rand_data_.seedvariable ) ); GLOBAL::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0);
 
 }*/
 

@@ -264,12 +264,12 @@ namespace FLD
     dt_ = params_.get<double>("time step size");
 
     // get fluid viscosity from material definition
-    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
     if (id == -1)
       dserror("Could not find Newtonian fluid material");
     else
     {
-      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
       // we need the kinematic viscosity here
       double dens = actmat->density_;

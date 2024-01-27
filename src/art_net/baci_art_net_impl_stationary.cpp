@@ -132,13 +132,13 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   if (solvescatra_)
   {
     const Teuchos::ParameterList& myscatraparams =
-        DRT::Problem::Instance()->ScalarTransportDynamicParams();
+        GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
     if (INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
         INPAR::SCATRA::velocity_zero)
       dserror("set your velocity field to zero!");
     // construct the scatra problem
     scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
-        DRT::Problem::Instance()->SolverParams(linsolvernumber_), scatra_disname, false));
+        GLOBAL::Problem::Instance()->SolverParams(linsolvernumber_), scatra_disname, false));
 
     // initialize the base algo.
     // scatra time integrator is initialized inside.
@@ -581,12 +581,12 @@ void ART::ArtNetImplStationary::OutputFlow()
 void ART::ArtNetImplStationary::TestResults()
 {
   Teuchos::RCP<DRT::ResultTest> resulttest = CreateFieldTest();
-  DRT::Problem::Instance()->AddFieldTest(resulttest);
+  GLOBAL::Problem::Instance()->AddFieldTest(resulttest);
   if (solvescatra_)
   {
-    DRT::Problem::Instance()->AddFieldTest(scatra_->CreateScaTraFieldTest());
+    GLOBAL::Problem::Instance()->AddFieldTest(scatra_->CreateScaTraFieldTest());
   }
-  DRT::Problem::Instance()->TestAll(discret_->Comm());
+  GLOBAL::Problem::Instance()->TestAll(discret_->Comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -679,7 +679,7 @@ void ART::ArtNetImplStationary::SetInitialField(
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
-          double initialval = DRT::Problem::Instance()
+          double initialval = GLOBAL::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X().data(), time_, k);
           int err = pressurenp_->ReplaceMyValues(1, &initialval, &doflid);

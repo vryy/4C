@@ -849,8 +849,8 @@ void ART::ArtNetExplicitTimeInt::CalcScatraFromScatraFW(
 void ART::ArtNetExplicitTimeInt::TestResults()
 {
   Teuchos::RCP<DRT::ResultTest> resulttest = CreateFieldTest();
-  DRT::Problem::Instance()->AddFieldTest(resulttest);
-  DRT::Problem::Instance()->TestAll(discret_->Comm());
+  GLOBAL::Problem::Instance()->AddFieldTest(resulttest);
+  GLOBAL::Problem::Instance()->TestAll(discret_->Comm());
 }
 
 /*----------------------------------------------------------------------*

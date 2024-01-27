@@ -94,7 +94,7 @@ void MAT::PAR::Parameter::ExpandParametersToEleColLayout()
       double temp = (*matparams_.at(i))[0];
       // put new RCP<Epetra_Vector> in matparams struct
       Teuchos::RCP<Epetra_Vector> temp2 = Teuchos::rcp(new Epetra_Vector(
-          *(DRT::Problem::Instance()->GetDis("structure")->ElementColMap()), true));
+          *(GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()), true));
       temp2->PutScalar(temp);
       matparams_.at(i) = temp2;
     }
@@ -134,7 +134,7 @@ MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> 
   int mat_id_structural_tensor = matdata->GetInt("STR_TENS_ID");
   // get pointer to material
   Teuchos::RCP<MAT::PAR::Material> mat_str_tens =
-      DRT::Problem::Instance()->Materials()->ById(mat_id_structural_tensor);
+      GLOBAL::Problem::Instance()->Materials()->ById(mat_id_structural_tensor);
   // construct parameter class
   if (mat_str_tens->Parameter() == nullptr)
     mat_str_tens->SetParameter(new MAT::ELASTIC::PAR::StructuralTensorParameter(mat_str_tens));

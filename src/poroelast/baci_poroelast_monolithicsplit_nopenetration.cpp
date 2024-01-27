@@ -51,16 +51,16 @@ POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epet
 
   k_Dn_ = Teuchos::null;
 
-  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(DRT::Problem::Instance()->NDim(),
-      DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(
+      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
 }
 
 void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
 {
   {
-    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
     std::vector<int> coupleddof(ndim + 1, 1);
     coupleddof[ndim] = 0;
 
@@ -603,7 +603,7 @@ void POROELAST::MonolithicSplitNoPenetration::Output(bool forced_writerestart)
 
 void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrices()
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   icoupfs_->SetupConditionCoupling(*StructureField()->Discretization(),
       StructureField()->Interface()->FSICondMap(), *FluidField()->Discretization(),
       FluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);

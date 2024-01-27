@@ -24,8 +24,8 @@ ADAPTER::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> struct
     : FSIStructureWrapper(structure)
 {
   const bool is_prestress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-                                DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") !=
-                            INPAR::STR::PreStress::none;
+                                GLOBAL::Problem::Instance()->StructuralDynamicParams(),
+                                "PRESTRESS") != INPAR::STR::PreStress::none;
   if (is_prestress)
   {
     dserror("Prestressing for fluid-beam interaction not tested yet.");

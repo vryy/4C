@@ -118,7 +118,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
   // interior correction term for the weakly compressible benchmark if applicable
   interiorecorrectionterm_.resize(shapes_->ndofs_, 0.0);
-  const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   int corrtermfuncnum = fluidparams.get<int>("CORRTERMFUNCNO");
   if (corrtermfuncnum > 0)
     localSolver_->ComputeCorrectionTerm(interiorecorrectionterm_, corrtermfuncnum);
@@ -597,7 +597,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
           // for each component of the velocity field
           const int funct_num = (*functno)[d];
           if (funct_num > 0)
-            u(d) = DRT::Problem::Instance()
+            u(d) = GLOBAL::Problem::Instance()
                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
                        .Evaluate(xyz.A(), *time, d);
         }
@@ -1291,10 +1291,10 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
     case INPAR::FLUID::initfield_disturbed_field_from_function:
     {
       for (unsigned int index = 0; index < nsd_; ++index)
-        u(index) = DRT::Problem::Instance()
+        u(index) = GLOBAL::Problem::Instance()
                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfunc - 1)
                        .Evaluate(xyz.A(), 0, index);
-      p = DRT::Problem::Instance()
+      p = GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfunc - 1)
               .Evaluate(xyz.A(), 0, nsd_);
     }
@@ -1346,7 +1346,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMEN
   CORE::LINALG::Matrix<nsd_, 1> xyz(true);
 
   // get function used to evaluate the error
-  const Teuchos::ParameterList fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   const INPAR::FLUID::CalcError calcerr =
       INPUT::IntegralValue<INPAR::FLUID::CalcError>(fluidparams, "CALCERROR");
   const int calcerrfunctno = fluidparams.get<int>("CALCERRORFUNCNO");
@@ -2504,7 +2504,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeCorrectionTerm
     for (unsigned int d = 0; d < nsd_; ++d) x[d] = shapes_.nodexyzreal[i][d];
 
     interiorecorrectionterm[i] =
-        DRT::Problem::Instance()
+        GLOBAL::Problem::Instance()
             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(corrtermfuncnum - 1)
             .Evaluate(x, 0.0, 0);
   }
@@ -2521,7 +2521,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeBodyForce(
 
     for (unsigned int d = 0; d < nsd_; ++d)
       interiorebodyforce[d * ndofs_ + i] =
-          DRT::Problem::Instance()
+          GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(bodyforcefuncnum - 1)
               .Evaluate(x, 0.0, d);
   }

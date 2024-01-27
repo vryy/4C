@@ -322,7 +322,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
         Teuchos::rcp(new Cardiovascular0DResultTest(*this, actdisc_));
 
     // Resulttest for 0D problem
-    DRT::Problem::Instance()->AddFieldTest(resulttest);
+    GLOBAL::Problem::Instance()->AddFieldTest(resulttest);
   }
 
   return;
@@ -569,7 +569,7 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
   std::vector<DRT::Condition*> surfneumcond;
   std::vector<DRT::Condition*> cardvasc0dstructcoupcond;
   std::vector<int> tmp;
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
   if (structdis == Teuchos::null) dserror("No structure discretization available!");
 
   // get all coupling conditions on structure
@@ -1064,10 +1064,10 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<CORE::LINALG::SparseMatri
   Teuchos::ParameterList sfparams =
       solver_->Params();  // save copy of original solver parameter list
   const Teuchos::ParameterList& cardvasc0dstructparams =
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams();
+      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams();
   const int linsolvernumber = cardvasc0dstructparams.get<int>("LINEAR_COUPLED_SOLVER");
   solver_->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
   switch (algochoice_)
   {
     case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_direct:
@@ -1075,7 +1075,7 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<CORE::LINALG::SparseMatri
     case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
     {
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
         case INPAR::SOLVER::PreconditionerType::cheap_simple:

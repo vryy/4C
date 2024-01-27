@@ -29,7 +29,7 @@ FPSI::FPSI_Base::FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList
  *----------------------------------------------------------------------*/
 void FPSI::FPSI_Base::RedistributeInterface()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 

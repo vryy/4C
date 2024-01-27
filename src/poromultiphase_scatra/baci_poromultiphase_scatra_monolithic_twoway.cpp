@@ -255,7 +255,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
   // create a linear solver
   // get dynamic section of poroelasticity
   const Teuchos::ParameterList& poromultscatradyn =
-      DRT::Problem::Instance()->PoroMultiPhaseScatraDynamicParams();
+      GLOBAL::Problem::Instance()->PoroMultiPhaseScatraDynamicParams();
   // get the solver number used for linear poroelasticity solver
   const int linsolvernumber = poromultscatradyn.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER");
   // check if the poroelasticity solver has a valid solver number
@@ -264,7 +264,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
         "no linear solver defined for poromultiphaseflow with scatra coupling.\n"
         " Please set LINEAR_SOLVER in POROMULTIPHASESCATRA DYNAMIC to a valid number!");
   const Teuchos::ParameterList& solverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 

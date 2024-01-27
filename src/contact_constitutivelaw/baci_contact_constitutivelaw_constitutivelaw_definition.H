@@ -31,9 +31,13 @@ namespace INPUT
 
 namespace DRT
 {
-  class Problem;
   class Discretization;
 }  // namespace DRT
+
+namespace GLOBAL
+{
+  class Problem;
+}
 
 namespace INPAR
 {
@@ -88,7 +92,7 @@ namespace CONTACT
        * \param[in] reader the actual dat file reader that has access to the dat file
        * \params[inout] mmap map mapping IDs to parameters of the contact constitutive model
        */
-      void Read(const DRT::Problem& problem, INPUT::DatFileReader& reader,
+      void Read(const GLOBAL::Problem& problem, INPUT::DatFileReader& reader,
           Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle);
 
       /// print my DAT file section and possible contact constitutive laws

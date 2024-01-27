@@ -60,9 +60,13 @@ namespace DRT
   class Discretization;
   class DofSet;
   class Condition;
-  class Problem;
   class ResultTest;
 }  // namespace DRT
+
+namespace GLOBAL
+{
+  class Problem;
+}
 
 namespace IO
 {
@@ -1135,7 +1139,7 @@ namespace SCATRA
     /*========================================================================*/
 
     //! problem
-    DRT::Problem* const problem_;
+    GLOBAL::Problem* const problem_;
 
     //! problem number
     const int probnum_;

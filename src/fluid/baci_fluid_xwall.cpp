@@ -98,9 +98,9 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
   gp_par_ = params_->sublist("WALL MODEL").get<int>("GP_Wall_Parallel");
 
   // compute initial pressure
-  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
   if (id == -1) dserror("Newtonian fluid material could not be found");
-  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
   const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
   dens_ = actmat->density_;
   visc_ = actmat->viscosity_ / dens_;  // here I want to have the kinematic viscosity
@@ -128,7 +128,7 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
   inctauwnorm_ = 0.0;
 
   const int mlsmooth =
-      (DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
+      (GLOBAL::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
   if (mlsmooth != -1)
     smooth_res_aggregation_ = true;
   else
@@ -163,7 +163,7 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
     std::cout << "Blending method:              " << blendingtype << std::endl;
     std::cout << "Smooth tau_w:                 " << smooth_res_aggregation_ << std::endl;
     std::cout << "Solver for tau_w smoothing:   "
-              << (DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER")
+              << (GLOBAL::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER")
               << std::endl;
     std::cout << "Solver for projection:        "
               << params_->sublist("WALL MODEL").get<int>("PROJECTION_SOLVER") << std::endl;
@@ -737,7 +737,7 @@ void FLD::XWall::SetupL2Projection()
     if (solvernumber < 0) dserror("provide a solver number for l2-projection");
     // get solver parameter list of linear solver
     const Teuchos::ParameterList& solverparams =
-        DRT::Problem::Instance()->SolverParams(solvernumber);
+        GLOBAL::Problem::Instance()->SolverParams(solvernumber);
     const auto solvertype =
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 

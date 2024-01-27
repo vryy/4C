@@ -26,8 +26,8 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(const 
     const Teuchos::ParameterList& solverparams)
     : ScaTraFluidCouplingAlgorithm(
           comm, prbdyn, true, "scatra", solverparams),  // yes, we need the ALE formulation
-      AleBaseAlgorithm(
-          prbdyn, DRT::Problem::Instance()->GetDis("ale")),  // construct ale base algorithm as well
+      AleBaseAlgorithm(prbdyn,
+          GLOBAL::Problem::Instance()->GetDis("ale")),  // construct ale base algorithm as well
       condname_(condname)
 {
   // keep constructor empty
@@ -55,7 +55,7 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup()
   // call Setup() in base class
   ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
 
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   // set up couplings
   icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());

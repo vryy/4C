@@ -68,9 +68,9 @@ MAT::PAR::InelasticDefgradIntercalFrac::InelasticDefgradIntercalFrac(
   if (matid > 0)
   {
     // retrieve problem instance to read from
-    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+    const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
     // retrieve validated input line of material ID in question
-    auto curmat = DRT::Problem::Instance(probinst)->Materials()->ById(matid);
+    auto curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ById(matid);
     switch (curmat->Type())
     {
       case INPAR::MAT::m_electrode:
@@ -197,15 +197,15 @@ MAT::InelasticDefgradFactors::InelasticDefgradFactors(MAT::PAR::Parameter* param
 Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory(int matnum)
 {
   // for the sake of safety
-  if (DRT::Problem::Instance()->Materials() == Teuchos::null)
+  if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
     dserror("List of materials cannot be accessed in the global problem instance.");
 
   // another safety check
-  if (DRT::Problem::Instance()->Materials()->Num() == 0)
+  if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
     dserror("List of materials in the global problem instance is empty.");
 
   // check correct masslin type
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   if (INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN") != INPAR::STR::ml_none)
   {
     dserror(
@@ -214,10 +214,10 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
   }
 
   // retrieve problem instance to read from
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
-      DRT::Problem::Instance(probinst)->Materials()->ById(matnum);
+      GLOBAL::Problem::Instance(probinst)->Materials()->ById(matnum);
 
   // get material type and call corresponding constructors
   const INPAR::MAT::MaterialType currentMaterialType = curmat->Type();
@@ -1136,7 +1136,7 @@ MAT::InelasticDefgradTimeFunct::InelasticDefgradTimeFunct(MAT::PAR::Parameter* p
 void MAT::InelasticDefgradTimeFunct::PreEvaluate(Teuchos::ParameterList& params, int gp)
 {
   // evaluate function value for current time step.
-  auto& funct = DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(
+  auto& funct = GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(
       Parameter()->FunctNum() - 1);
   const double time = params.get<double>("total time");
   funct_value_ = funct.Evaluate(time);

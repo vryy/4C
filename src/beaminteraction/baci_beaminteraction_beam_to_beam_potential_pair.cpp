@@ -242,14 +242,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   int function_number = linechargeconds_[0]->GetInt("funct");
 
   if (function_number != -1)
-    q1 *= DRT::Problem::Instance()
+    q1 *= GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
-    q2 *= DRT::Problem::Instance()
+    q2 *= GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
@@ -623,14 +623,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   int function_number = linechargeconds_[0]->GetInt("funct");
 
   if (function_number != -1)
-    q1 *= DRT::Problem::Instance()
+    q1 *= GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
-    q2 *= DRT::Problem::Instance()
+    q2 *= GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
@@ -1236,14 +1236,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   int function_number = linechargeconds_[0]->GetInt("funct");
 
   if (function_number != -1)
-    rho1 *= DRT::Problem::Instance()
+    rho1 *= GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
                 .Evaluate(time_);
 
   function_number = linechargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
-    rho2 *= DRT::Problem::Instance()
+    rho2 *= GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
                 .Evaluate(time_);
 

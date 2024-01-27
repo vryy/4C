@@ -22,7 +22,7 @@ BACI_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::So_tet4::sotet4_homog(Teuchos::ParameterList& params)
 {
-  if (DRT::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
+  if (GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = so_tet4_1gp_weights();
@@ -53,7 +53,8 @@ void DRT::ELEMENTS::So_tet4::sotet4_read_restart_multi()
     auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
     int eleID = Id();
     bool eleowner = false;
-    if (DRT::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner()) eleowner = true;
+    if (GLOBAL::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
+      eleowner = true;
 
     for (int gp = 0; gp < NUMGPT_SOTET4; ++gp) micro->ReadRestart(gp, eleID, eleowner);
   }

@@ -1069,7 +1069,7 @@ void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
  *----------------------------------------------------------------------------*/
 std::string CORE::GEO::CUT::OUTPUT::GenerateGmshOutputFilename(const std::string& filename_tail)
 {
-  //  std::string filename = ::DRT::Problem::Instance()->OutputControlFile()->FileName();
+  //  std::string filename = ::GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   std::string filename("xxx");
   filename.append(filename_tail);
   return filename;

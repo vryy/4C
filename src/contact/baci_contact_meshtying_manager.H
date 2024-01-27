@@ -72,7 +72,7 @@ namespace CONTACT
     \brief Read and check input parameters
 
     All specified meshtying-related input parameters are read from the
-    DRT::Problem::Instance() and stored into a local variable of
+    GLOBAL::Problem::Instance() and stored into a local variable of
     type Teuchos::ParameterList. Invalid parameter combinations are
     sorted out and throw a dserror.
 

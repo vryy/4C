@@ -64,11 +64,11 @@ void FS3I::PartFS3I::Init()
   FS3I::FS3I_Base::Init();
 
   volume_fieldcouplings_.push_back(INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(
-      DRT::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_FIELDCOUPLING"));
+      GLOBAL::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_FIELDCOUPLING"));
   volume_fieldcouplings_.push_back(INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(
-      DRT::Problem::Instance()->FS3IDynamicParams(), "STRUCTSCAL_FIELDCOUPLING"));
+      GLOBAL::Problem::Instance()->FS3IDynamicParams(), "STRUCTSCAL_FIELDCOUPLING"));
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
 
   //---------------------------------------------------------------------
@@ -114,7 +114,7 @@ void FS3I::PartFS3I::Init()
 
   // determine type of scalar transport
   const INPAR::SCATRA::ImplType impltype_fluid = INPUT::IntegralValue<INPAR::SCATRA::ImplType>(
-      DRT::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_SCATRATYPE");
+      GLOBAL::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
   // create discretization for fluid-based scalar transport from and
@@ -375,9 +375,9 @@ Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObjec
       Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
   // setup projection matrices (use default material strategy)
-  volume_coupling_object->Init(DRT::Problem::Instance()->NDim(), masterdis, slavedis);
+  volume_coupling_object->Init(GLOBAL::Problem::Instance()->NDim(), masterdis, slavedis);
   volume_coupling_object->Redistribute();
-  volume_coupling_object->Setup(DRT::Problem::Instance()->VolmortarParams());
+  volume_coupling_object->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
 
   return volume_coupling_object;
 }
@@ -407,11 +407,11 @@ void FS3I::PartFS3I::ReadRestart()
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
 
   if (restart)
   {
-    const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams();
+    const Teuchos::ParameterList& fs3idynac = GLOBAL::Problem::Instance()->FS3IDynamicParams();
     const bool restartfrompartfsi = INPUT::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
 
     if (not restartfrompartfsi)  // standard restart
@@ -544,7 +544,7 @@ void FS3I::PartFS3I::SetupSystem()
       "SOLVER", INPAR::SOLVER::SolverType::umfpack, scatrasolvparams);
   scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(scatrasolvparams, firstscatradis->Comm()));
 #else
-  const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
   // get solver number used for fs3i
   const int linsolvernumber = fs3idyn.get<int>("COUPLED_LINEAR_SOLVER");
   // check if LOMA solvers has a valid number
@@ -554,7 +554,7 @@ void FS3I::PartFS3I::SetupSystem()
         "DYNAMIC to a valid number!");
 
   const Teuchos::ParameterList& coupledscatrasolvparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
@@ -586,9 +586,9 @@ void FS3I::PartFS3I::SetupSystem()
         "in FS3I DYNAMIC to a valid number!");
 
   scatrasolver_->PutSolverParamsToSubParams(
-      "Inverse1", DRT::Problem::Instance()->SolverParams(linsolver1number));
+      "Inverse1", GLOBAL::Problem::Instance()->SolverParams(linsolver1number));
   scatrasolver_->PutSolverParamsToSubParams(
-      "Inverse2", DRT::Problem::Instance()->SolverParams(linsolver2number));
+      "Inverse2", GLOBAL::Problem::Instance()->SolverParams(linsolver2number));
 
   (scatravec_[0])
       ->ScaTraField()
@@ -606,16 +606,16 @@ void FS3I::PartFS3I::SetupSystem()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::TestResults(const Epetra_Comm& comm)
 {
-  DRT::Problem::Instance()->AddFieldTest(fsi_->FluidField()->CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(fsi_->AleField()->CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(fsi_->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fsi_->FluidField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fsi_->AleField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fsi_->StructureField()->CreateFieldTest());
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    DRT::Problem::Instance()->AddFieldTest(scatra->CreateScaTraFieldTest());
+    GLOBAL::Problem::Instance()->AddFieldTest(scatra->CreateScaTraFieldTest());
   }
-  DRT::Problem::Instance()->TestAll(comm);
+  GLOBAL::Problem::Instance()->TestAll(comm);
 }
 
 
@@ -747,8 +747,8 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
 
   Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->CalculateWallShearStresses();
 
-  if (INPUT::IntegralValue<INPAR::FLUID::WSSType>(
-          DRT::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE") != INPAR::FLUID::wss_standard)
+  if (INPUT::IntegralValue<INPAR::FLUID::WSSType>(GLOBAL::Problem::Instance()->FluidDynamicParams(),
+          "WSS_TYPE") != INPAR::FLUID::wss_standard)
     dserror("WSS_TYPE not supported for FS3I!");
 
   wss.push_back(WallShearStress);

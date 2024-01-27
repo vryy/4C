@@ -54,10 +54,10 @@ namespace
       testele_ = Teuchos::null;
       testdis_ = Teuchos::null;
 
-      // We need to make sure the DRT::Problem instance created in setUp is deleted again. If this
-      // is not done, some troubles arise where unit tests influence each other on some
+      // We need to make sure the GLOBAL::Problem instance created in setUp is deleted again. If
+      // this is not done, some troubles arise where unit tests influence each other on some
       // configurations. We suspect that missing singleton destruction might be the reason for that.
-      DRT::Problem::Done();
+      GLOBAL::Problem::Done();
     }
     //! dummy discretization for holding element and node pointers
     Teuchos::RCP<DRT::Discretization> testdis_;

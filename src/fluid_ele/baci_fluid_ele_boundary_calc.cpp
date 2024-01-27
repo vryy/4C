@@ -447,11 +447,11 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
           if (functnum > 0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()
+            functfac = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .Evaluate(coordgpref, time, idim);
             if (fldparatimint_->IsNewOSTImplementation())
-              functfacn = DRT::Problem::Instance()
+              functfacn = GLOBAL::Problem::Instance()
                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate(coordgpref, time - fldparatimint_->Dt(), idim);
           }
@@ -486,11 +486,11 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
           if (functnum > 0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()
+            functfac = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .Evaluate(coordgpref, time, idim);
             if (fldparatimint_->IsNewOSTImplementation())
-              functfacn = DRT::Problem::Instance()
+              functfacn = GLOBAL::Problem::Instance()
                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate(coordgpref, time - fldparatimint_->Dt(), idim);
           }
@@ -1563,7 +1563,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // order of accuracy of grid velocity determination
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
   const int gridvel = INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fdyn, "GRIDVEL");
 
   // normal vector

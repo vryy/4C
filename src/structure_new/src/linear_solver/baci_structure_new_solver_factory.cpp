@@ -109,7 +109,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver
         "Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
   const Teuchos::ParameterList& linsolverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   Teuchos::RCP<CORE::LINALG::Solver> linsolver =
       Teuchos::rcp(new CORE::LINALG::Solver(linsolverparams, actdis.Comm()));
@@ -185,7 +185,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver
 Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolver(
     DRT::Discretization& actdis) const
 {
-  const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
 
   const enum INPAR::CONTACT::SolvingStrategy sol_type =
       static_cast<INPAR::CONTACT::SolvingStrategy>(INPUT::IntegralValue<int>(mcparams, "STRATEGY"));
@@ -249,9 +249,9 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
 
       // solver can be either UMFPACK (direct solver) or an iterative solver
       const auto sol = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(
-          DRT::Problem::Instance()->SolverParams(lin_solver_id), "SOLVER");
+          GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), "SOLVER");
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
-          DRT::Problem::Instance()->SolverParams(lin_solver_id), "AZPREC");
+          GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), "AZPREC");
       if (sol != INPAR::SOLVER::SolverType::umfpack && sol != INPAR::SOLVER::SolverType::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
@@ -268,7 +268,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
 
       // build meshtying/contact solver
       linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
+          GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
 
       actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
 
@@ -311,7 +311,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
 
       // build meshtying solver
       linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
+          GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
       actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
     }
     break;
@@ -328,8 +328,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
 {
   Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::null;
 
-  const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
-  const Teuchos::ParameterList& strparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& strparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // solution algorithm - direct, simple or Uzawa
   INPAR::STR::ConSolveAlgo algochoice =
@@ -343,10 +343,10 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
 
       // build constraint-structural linear solver
       linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
       linsolver->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber));
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
     }
     break;
     case INPAR::STR::consolve_simple:
@@ -355,15 +355,15 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
 
       // build constraint-structural linear solver
       linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
       linsolver->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber));
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
 
       if (!linsolver->Params().isSublist("Belos Parameters")) dserror("Iterative solver expected!");
 
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
         case INPAR::SOLVER::PreconditionerType::cheap_simple:
@@ -415,15 +415,15 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLi
 
 
   const Teuchos::ParameterList& cardvasc0dstructparams =
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams();
+      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams();
   const int linsolvernumber = cardvasc0dstructparams.get<int>("LINEAR_COUPLED_SOLVER");
 
   // build 0D cardiovascular-structural linear solver
   linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
   linsolver->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
 
   // solution algorithm - direct or simple
   INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice =
@@ -437,7 +437,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLi
     case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
     {
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
         case INPAR::SOLVER::PreconditionerType::cheap_simple:

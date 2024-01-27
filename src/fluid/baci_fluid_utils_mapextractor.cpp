@@ -24,7 +24,7 @@ BACI_NAMESPACE_OPEN
 void FLD::UTILS::MapExtractor::Setup(
     const DRT::Discretization& dis, bool withpressure, bool overlapping, const int nds_master)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
   mcs.SetOverlapping(overlapping);  // defines if maps can overlap
   mcs.AddSelector(Teuchos::rcp(
@@ -97,7 +97,7 @@ Teuchos::RCP<std::set<int>> FLD::UTILS::MapExtractor::ConditionedElementMap(
 
 void FLD::UTILS::VolumetricFlowMapExtractor::Setup(const DRT::Discretization& dis)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
   mcs.SetOverlapping(true);  // defines if maps can overlap
   mcs.AddSelector(Teuchos::rcp(
@@ -130,7 +130,7 @@ Teuchos::RCP<std::set<int>> FLD::UTILS::KSPMapExtractor::ConditionedElementMap(
 /*----------------------------------------------------------------------*/
 void FLD::UTILS::VelPressExtractor::Setup(const DRT::Discretization& dis)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   CORE::LINALG::CreateMapExtractorFromDiscretization(dis, ndim, *this);
 }
 
@@ -138,7 +138,7 @@ void FLD::UTILS::VelPressExtractor::Setup(const DRT::Discretization& dis)
 /*----------------------------------------------------------------------*/
 void FLD::UTILS::FsiMapExtractor::Setup(const DRT::Discretization& dis)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
   mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);

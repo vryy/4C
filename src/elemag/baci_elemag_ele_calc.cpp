@@ -925,7 +925,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
     const double t, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     CORE::LINALG::SerialDenseVector& v) const
 {
-  int numComp = DRT::Problem::Instance()
+  int numComp = GLOBAL::Problem::Instance()
                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                     .NumberComponents();
 
@@ -933,7 +933,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
   if (numComp == v.numRows())
   {
     for (int d = 0; d < v.numRows(); ++d)
-      v[d] = DRT::Problem::Instance()
+      v[d] = GLOBAL::Problem::Instance()
                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                  .Evaluate(xyz.A(), t, d);
   }
@@ -941,7 +941,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
   else if (numComp == 2 * v.numRows())
   {
     for (int d = 0; d < v.numRows(); ++d)
-      v[d] = DRT::Problem::Instance()
+      v[d] = GLOBAL::Problem::Instance()
                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                  .Evaluate(xyz.A(), t, d);
   }
@@ -949,7 +949,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
   else if (numComp == v.numRows() / 2)
   {
     for (int d = 0; d < v.numRows(); ++d)
-      v[d] = DRT::Problem::Instance()
+      v[d] = GLOBAL::Problem::Instance()
                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                  .Evaluate(xyz.A(), t, d % numComp);
   }
@@ -957,7 +957,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int s
   else if (numComp == 1)
   {
     for (int d = 0; d < v.numRows(); ++d)
-      v[d] = DRT::Problem::Instance()
+      v[d] = GLOBAL::Problem::Instance()
                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(start_func - 1)
                  .Evaluate(xyz.A(), t, 0);
   }

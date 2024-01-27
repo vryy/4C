@@ -222,7 +222,7 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
       for (int dim = 0; dim < statedim; ++dim)
       {
         // generate random value
-        const double randomvalue = DRT::Problem::Instance()->Random()->Uni();
+        const double randomvalue = GLOBAL::Problem::Instance()->Random()->Uni();
 
         // update position of particle
         pos[statedim * i + dim] += randomvalue * amplitude[dim];

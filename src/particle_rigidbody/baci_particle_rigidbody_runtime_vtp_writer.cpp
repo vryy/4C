@@ -36,7 +36,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::Init(
   // construct the writer object
   visualization_manager_ = std::make_shared<IO::VisualizationManager>(
       IO::VisualizationParametersFactory(
-          DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
+          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
       comm_, "rigidbody");
 }
 

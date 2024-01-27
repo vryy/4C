@@ -70,7 +70,7 @@ void FS3I::BiofilmFSI::Init()
 
   // this algorithm needs an ale discretization also for the structure in order to be able to handle
   // the growth
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   problem->GetDis("structale")->FillComplete();
 
   // create struct ale elements if not yet existing
@@ -106,12 +106,13 @@ void FS3I::BiofilmFSI::Init()
   // getting and initializing problem-specific parameters
   //---------------------------------------------------------------------
 
-  const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
+  const Teuchos::ParameterList& biofilmcontrol =
+      GLOBAL::Problem::Instance()->BIOFILMControlParams();
 
   // make sure that initial time derivative of concentration is not calculated
   // automatically (i.e. field-wise)
   const Teuchos::ParameterList& scatradyn =
-      DRT::Problem::Instance()->ScalarTransportDynamicParams();
+      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
   if (INPUT::IntegralValue<int>(scatradyn, "SKIPINITDER") == false)
     dserror(
         "Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to "
@@ -159,7 +160,7 @@ void FS3I::BiofilmFSI::Setup()
   // call Setup() in base class
   FS3I::PartFS3I_1WC::Setup();
 
-  Teuchos::RCP<DRT::Discretization> structaledis = DRT::Problem::Instance()->GetDis("structale");
+  Teuchos::RCP<DRT::Discretization> structaledis = GLOBAL::Problem::Instance()->GetDis("structale");
 
   // create fluid-ALE Dirichlet Map Extractor for FSI step
   ale_->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std);
@@ -179,7 +180,7 @@ void FS3I::BiofilmFSI::Setup()
   //---------------------------------------------------------------------
 
   const std::string condname = "FSICoupling";
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   // set up ale-fluid couplings
   icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
@@ -257,7 +258,8 @@ void FS3I::BiofilmFSI::Timeloop()
   CheckIsSetup();
 
 
-  const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
+  const Teuchos::ParameterList& biofilmcontrol =
+      GLOBAL::Problem::Instance()->BIOFILMControlParams();
   const int biofilmgrowth = INPUT::IntegralValue<int>(biofilmcontrol, "BIOFILMGROWTH");
   const int outputgmsh_ = INPUT::IntegralValue<int>(biofilmcontrol, "OUTPUT_GMSH");
 
@@ -361,7 +363,8 @@ void FS3I::BiofilmFSI::InnerTimeloop()
   // Calculation of growth can be based both on values averaged during the inner timeloop
   // (in this case for the time being it takes in account also the initial transient state!),
   // or only on the last values coming from the fsi-scatra simulation
-  const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
+  const Teuchos::ParameterList& biofilmcontrol =
+      GLOBAL::Problem::Instance()->BIOFILMControlParams();
   const int avgrowth = INPUT::IntegralValue<int>(biofilmcontrol, "AVGROWTH");
   // in case of averaged values we need temporary variables
   Teuchos::RCP<Epetra_Vector> normtempinflux_ =
@@ -439,7 +442,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     // at the purpose to compute lambdafull, it is necessary to know which coupling algorithm is
     // used however the imposition of a Dirichlet condition on the interface produce wrong lambda_
     // when structuresplit is used
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     int coupling = Teuchos::getIntegralValue<int>(fsidyn, "COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit)
     {
@@ -885,7 +888,7 @@ void FS3I::BiofilmFSI::VecToScatravec(Teuchos::RCP<DRT::Discretization> scatradi
   for (int lnodeid = 0; lnodeid < scatradis->NumMyRowNodes(); lnodeid++)
   {
     // determine number of space dimensions
-    const int numdim = DRT::Problem::Instance()->NDim();
+    const int numdim = GLOBAL::Problem::Instance()->NDim();
 
     for (int index = 0; index < numdim; ++index)
     {

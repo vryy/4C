@@ -63,12 +63,12 @@ void ADAPTER::CouplingPoroMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discreti
       mastergnodes, slavegnodes, masterelements, slaveelements);
 
   // Set Problem Type to Poro
-  switch (DRT::Problem::Instance()->GetProblemType())
+  switch (GLOBAL::Problem::Instance()->GetProblemType())
   {
-    case ProblemType::poroelast:
+    case GLOBAL::ProblemType::poroelast:
       input.set<int>("PROBTYPE", INPAR::CONTACT::poroelast);
       break;
-    case ProblemType::poroscatra:
+    case GLOBAL::ProblemType::poroscatra:
       input.set<int>("PROBTYPE", INPAR::CONTACT::poroscatra);
       break;
     default:
@@ -77,11 +77,11 @@ void ADAPTER::CouplingPoroMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discreti
   }
 
   // porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
-  const Teuchos::ParameterList& stru = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& stru = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   double porotimefac =
       1 / (stru.sublist("ONESTEPTHETA").get<double>("THETA") * stru.get<double>("TIMESTEP"));
   input.set<double>("porotimefac", porotimefac);
-  const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+  const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
   input.set<bool>("CONTACTNOPEN",
       INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
   if (!INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
@@ -100,7 +100,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
   bool isnurbs = input.get<bool>("NURBS");
 
   // get problem dimension (2D or 3D) and create (MORTAR::Interface)
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = GLOBAL::Problem::Instance()->NDim();
 
   // We need to determine an element offset to start the numbering of the slave
   // mortar elements AFTER the master mortar elements in order to ensure unique
@@ -263,7 +263,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
   // poro lagrange strategy:
 
   // get problem dimension (2D or 3D) and create (MORTAR::Interface)
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = GLOBAL::Problem::Instance()->NDim();
 
   // bools to decide which side is structural and which side is poroelastic to manage all 4
   // constellations
@@ -331,7 +331,7 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
     }
   }
 
-  const Teuchos::ParameterList& stru = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& stru = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   double theta = stru.sublist("ONESTEPTHETA").get<double>("THETA");
   // what if problem is static ? there should be an error for previous line called in a dyna_statics
   // problem and not a value of 0.5 a proper disctinction is necessary if poro meshtying is expanded

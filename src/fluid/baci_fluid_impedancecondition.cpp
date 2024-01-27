@@ -217,9 +217,9 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(
   // get theta of global time integration scheme to use it here
   // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5
   std::string dyntype =
-      DRT::Problem::Instance()->FluidDynamicParams().get<std::string>("TIMEINTEGR");
+      GLOBAL::Problem::Instance()->FluidDynamicParams().get<std::string>("TIMEINTEGR");
   if (dyntype == "One_Step_Theta")
-    theta_ = DRT::Problem::Instance()->FluidDynamicParams().get<double>("THETA");
+    theta_ = GLOBAL::Problem::Instance()->FluidDynamicParams().get<double>("THETA");
 
   // ---------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -352,7 +352,7 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
   }
   else if (treetype_ == "pressure_by_funct")
   {
-    pressure = DRT::Problem::Instance()
+    pressure = GLOBAL::Problem::Instance()
                    ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum_ - 1)
                    .Evaluate(time);
     Q_np_fac = 0.0;

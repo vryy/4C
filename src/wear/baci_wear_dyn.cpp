@@ -33,13 +33,13 @@ BACI_NAMESPACE_OPEN
 void wear_dyn_drt(int restart)
 {
   // create a communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("structure")->Comm();
 
   // ***********************************************************
   // Setup the problem
   // ***********************************************************
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& wearpara = DRT::Problem::Instance()->WearParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& wearpara = GLOBAL::Problem::Instance()->WearParams();
 
   // check if quasistatic analysis
   if (sdyn.get<std::string>("DYNAMICTYP") != "Statics")
@@ -50,13 +50,13 @@ void wear_dyn_drt(int restart)
 
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->GetDis("structure");
+  structdis = GLOBAL::Problem::Instance()->GetDis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs()) structdis->FillComplete();
 
   // access the ale discretization
   Teuchos::RCP<DRT::Discretization> aledis = Teuchos::null;
-  aledis = DRT::Problem::Instance()->GetDis("ale");
+  aledis = GLOBAL::Problem::Instance()->GetDis("ale");
   if (!aledis->Filled()) aledis->FillComplete();
 
   // we use the structure discretization as layout for the ale discretization
@@ -75,7 +75,7 @@ void wear_dyn_drt(int restart)
   else  // filled ale discretization
   {
     // if we have non-matching meshes:
-    if (!INPUT::IntegralValue<bool>(DRT::Problem::Instance()->WearParams(), "MATCHINGGRID"))
+    if (!INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->WearParams(), "MATCHINGGRID"))
     {
       // create vector of discr.
       std::vector<Teuchos::RCP<DRT::Discretization>> dis;
@@ -115,8 +115,8 @@ void wear_dyn_drt(int restart)
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  DRT::Problem::Instance()->AddFieldTest(stru_ale->StructureField()->CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
+  GLOBAL::Problem::Instance()->AddFieldTest(stru_ale->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->TestAll(comm);
 
   return;
 }  // wear_dyn_drt()

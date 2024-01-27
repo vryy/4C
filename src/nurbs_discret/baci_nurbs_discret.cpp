@@ -301,7 +301,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
     {
       Teuchos::RCP<DRT::Element> actele = curr->second;
 
-      static const int probdim = DRT::Problem::Instance()->NDim();
+      static const int probdim = GLOBAL::Problem::Instance()->NDim();
       const CORE::FE::CellType distype = actele->Shape();
       const int dim = CORE::FE::getDimension(distype);
       const bool isboundary = (dim != probdim);
@@ -456,7 +456,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
   // Owing to experience a very accurate solution has to be enforced here!
   // Thus, we allocate an own solver with VERY strict tolerance!
   // One could think of verifiying an extra solver in the input file...
-  Teuchos::ParameterList p = DRT::Problem::Instance()->UMFPACKSolverParams();
+  Teuchos::ParameterList p = GLOBAL::Problem::Instance()->UMFPACKSolverParams();
   //  const double origtol = p.get<double>("AZTOL");
   //  const double newtol  = 1.0e-11;
   //  p.set("AZTOL",newtol);
@@ -600,7 +600,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
       if (funct_num > 0)
       {
         // important: position has to have always three components!!
-        functimederivfac = DRT::Problem::Instance()
+        functimederivfac = GLOBAL::Problem::Instance()
                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                                .EvaluateTimeDerivative(position.values(), time, deg, rr);
       }
@@ -750,11 +750,11 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
       if (funct_num > 0)
       {
         // important: position has to have always three components!!
-        functimederivfac = DRT::Problem::Instance()
+        functimederivfac = GLOBAL::Problem::Instance()
                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                                .EvaluateTimeDerivative(position.values(), time, deg, rr);
 
-        functfac = DRT::Problem::Instance()
+        functfac = GLOBAL::Problem::Instance()
                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                        .Evaluate(position.values(), time, rr);
       }

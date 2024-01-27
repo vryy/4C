@@ -337,7 +337,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   ele->DRT::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // get material parameters and constants needed to calculate matrix terms
-  const Teuchos::ParameterList& fpsidynparams = DRT::Problem::Instance()->FPSIDynamicParams();
+  const Teuchos::ParameterList& fpsidynparams = GLOBAL::Problem::Instance()->FPSIDynamicParams();
 
   Teuchos::RCP<MAT::Material> fluidmaterial;
   Teuchos::RCP<MAT::Material> generalmaterial;
@@ -354,7 +354,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //(just on the FPSI interface)
     {
       Teuchos::RCP<DRT::Discretization> porofluiddis =
-          DRT::Problem::Instance()->GetDis("porofluid");
+          GLOBAL::Problem::Instance()->GetDis("porofluid");
       it = InterfaceFacingElementMap->find(ele->Id());
       if (it == InterfaceFacingElementMap->end())
         dserror("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
@@ -378,7 +378,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   }
   else if (discretization.Name() == "porofluid")
   {
-    Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+    Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
     it = InterfaceFacingElementMap->find(ele->Id());
     if (it == InterfaceFacingElementMap->end())
       dserror("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
@@ -495,7 +495,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
 
   // access structure discretization
-  structdis = DRT::Problem::Instance()->GetDis("structure");
+  structdis = GLOBAL::Problem::Instance()->GetDis("structure");
 
   DRT::Element* structele = nullptr;
   // get corresponding structure element (it has the same global ID as the porofluid element)
@@ -527,9 +527,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   }
 
   // what's the current problem type?
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
   double Lp = 0.0;
-  if (probtype == ProblemType::fps3i)
+  if (probtype == GLOBAL::ProblemType::fps3i)
   {
     // get the conductivity of membrane at the interface
     Lp = params.get<double>("membrane conductivity");
@@ -1315,7 +1315,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                             ) *
                     pfunct(inode) * tangentialfac * Base::fac_ * timefac;
 
-                if (probtype == ProblemType::fps3i)
+                if (probtype == GLOBAL::ProblemType::fps3i)
                 {
                   /*
                             d(w o n,(u-vs) o n) / d(ds)
@@ -1372,7 +1372,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                   (tangential1(idof2) * tangential1(idof3) +
                       tangential2(idof2) * tangential2(idof3)) *
                   pfunct(nnod) * pfunct(inode) * tangentialfac * Base::fac_ * timefac;
-              if (probtype == ProblemType::fps3i)
+              if (probtype == GLOBAL::ProblemType::fps3i)
               {
                 /*
                      d(w o n,(u-vs) o n) / d(u)
@@ -1657,7 +1657,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
           // permeability of biological membranes to non-electrolytes." Biochimica et biophysica
           // Acta 27 (1958): 229-246.
           // One could think of not using this equation, i.e. having L_p -> inf (Thon)
-          if (probtype == ProblemType::fps3i)
+          if (probtype == GLOBAL::ProblemType::fps3i)
           {
             // evaluated on fluid field --> no sign flip
             elevec1(inode * Base::numdofpernode_ + idof2) -=

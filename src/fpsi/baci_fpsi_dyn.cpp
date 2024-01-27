@@ -24,7 +24,7 @@ BACI_NAMESPACE_OPEN
  *------------------------------------------------------------------------------------------------*/
 void fpsi_drt()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // 1.- Get Communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();

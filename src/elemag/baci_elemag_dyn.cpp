@@ -38,7 +38,7 @@ BACI_NAMESPACE_OPEN
 void electromagnetics_drt()
 {
   // declare abbreviation
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // The function NumDofPerElementAuxiliary() of the electromagnetic elements return nsd_*2. This
   // does not assure that the code will work in any case (more spatial dimensions might give
@@ -210,11 +210,11 @@ void electromagnetics_drt()
         // This is necessary to have the dirichlet conditions done also in the scatra problmem. It
         // might be necessary to rethink how things are handled inside the
         // DRT::UTILS::DbcHDG::DoDirichletCondition.
-        problem->SetProblemType(ProblemType::scatra);
+        problem->SetProblemType(GLOBAL::ProblemType::scatra);
 
         // access the problem-specific parameter list
         const Teuchos::ParameterList& scatradyn =
-            DRT::Problem::Instance()->ScalarTransportDynamicParams();
+            GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
 
         // do the scatra
         const INPAR::SCATRA::VelocityField veltype =
@@ -230,7 +230,7 @@ void electromagnetics_drt()
             // add proxy of velocity related degrees of freedom to scatra discretization
             Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
                 Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(
-                    DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+                    GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
             if (scatradis->AddDofSet(dofsetaux) != 1)
               dserror("Scatra discretization has illegal number of dofsets!");
 
@@ -241,7 +241,7 @@ void electromagnetics_drt()
             // access the problem-specific parameter list
             Teuchos::RCP<Teuchos::ParameterList> scatraparams =
                 Teuchos::rcp(new Teuchos::ParameterList(
-                    DRT::Problem::Instance()->ScalarTransportDynamicParams()));
+                    GLOBAL::Problem::Instance()->ScalarTransportDynamicParams()));
 
             // TODO (berardocco) Might want to add the scatra section in the input file to avoid
             // adding params to the elemag or using existing ones for scatra purposes
@@ -261,7 +261,7 @@ void electromagnetics_drt()
             Teuchos::RCP<Teuchos::ParameterList> scatraextraparams;
             scatraextraparams = Teuchos::rcp(new Teuchos::ParameterList());
             scatraextraparams->set<bool>("isale", false);
-            const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+            const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
             scatraextraparams->sublist("TURBULENCE MODEL") = fdyn.sublist("TURBULENCE MODEL");
             scatraextraparams->sublist("SUBGRID VISCOSITY") = fdyn.sublist("SUBGRID VISCOSITY");
             scatraextraparams->sublist("MULTIFRACTAL SUBGRID SCALES") =
@@ -277,7 +277,7 @@ void electromagnetics_drt()
 
             // create solver
             Teuchos::RCP<CORE::LINALG::Solver> scatrasolver = Teuchos::rcp(new CORE::LINALG::Solver(
-                DRT::Problem::Instance()->SolverParams(scatraparams->get<int>("LINEAR_SOLVER")),
+                GLOBAL::Problem::Instance()->SolverParams(scatraparams->get<int>("LINEAR_SOLVER")),
                 scatradis->Comm()));
 
             // create instance of scalar transport basis algorithm (empty fluid discretization)
@@ -336,7 +336,7 @@ void electromagnetics_drt()
             elemagalgo->SetInitialElectricField(phi, scatradis);
 
             // Once work is done change back to problem elemag
-            problem->SetProblemType(ProblemType::elemag);
+            problem->SetProblemType(GLOBAL::ProblemType::elemag);
 
             break;
           }

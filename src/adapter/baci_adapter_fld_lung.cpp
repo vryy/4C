@@ -93,7 +93,7 @@ void ADAPTER::FluidLung::Init()
     DRT::Node* actnode = Discretization()->gNode(outflowfsinodes[i]);
     const std::vector<int> dof = Discretization()->Dof(actnode);
 
-    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
     if (ndim > static_cast<int>(dof.size()))
       dserror("got just %d dofs but expected %d", dof.size(), ndim);
     std::copy(dof.data(), dof.data() + ndim, back_inserter(dofmapvec));

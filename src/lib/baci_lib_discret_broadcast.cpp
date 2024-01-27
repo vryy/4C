@@ -26,7 +26,7 @@ BACI_NAMESPACE_OPEN
  | broadcast all discretizations from group 0 to all other groups using
  | a ponzi scheme                                          biehler 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::BroadcastDiscretizations(DRT::Problem& problem)
+void DRT::BroadcastDiscretizations(GLOBAL::Problem& problem)
 {
   // source of all discretizations is always group 0
   int bgroup = 0;

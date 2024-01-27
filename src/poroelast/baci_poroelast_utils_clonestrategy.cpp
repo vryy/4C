@@ -40,7 +40,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::CheckMaterialType(const int matid
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
+  INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
   if ((mtype != INPAR::MAT::m_fluidporo))
     dserror("Material with ID %d is not admissible for fluid poroelasticity elements", matid);
 }

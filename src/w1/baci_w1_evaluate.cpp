@@ -563,7 +563,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           CORE::LINALG::Matrix<2, 2> derivanalyt(true);
 
           // check if we evaluate the error through the contact facilities
-          const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
+          const Teuchos::ParameterList& listcmt =
+              GLOBAL::Problem::Instance()->ContactDynamicParams();
           INPAR::CONTACT::ErrorNorms entype =
               INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
 
@@ -576,16 +577,16 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           {
             // get final time
             const double finaltime =
-                DRT::Problem::Instance()->StructuralDynamicParams().get<double>("MAXTIME");
+                GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("MAXTIME");
 
             // get function number
             const int calcerrfunctno =
-                DRT::Problem::Instance()->StructuralDynamicParams().get<int>("CALCERRORFUNCNO");
+                GLOBAL::Problem::Instance()->StructuralDynamicParams().get<int>("CALCERRORFUNCNO");
 
             // evaluate displacement error
             for (unsigned int d = 0; d < 2; ++d)
               uanalyt(d, 0) =
-                  DRT::Problem::Instance()
+                  GLOBAL::Problem::Instance()
                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                       .Evaluate(xgp.A(), finaltime, d);
 
@@ -1069,7 +1070,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
         const double* coordgpref = gp_coord2;  // needed for function evaluation
 
         // evaluate function at current gauss point
-        functfac = DRT::Problem::Instance()
+        functfac = GLOBAL::Problem::Instance()
                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                        .Evaluate(coordgpref, time, i);
       }

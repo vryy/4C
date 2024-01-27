@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
 
   Teuchos::RCP<CORE::COMM::Communicators> communicators =
       CORE::COMM::CreateComm(std::vector<std::string>(argv, argv + argc));
-  DRT::Problem::Instance()->SetCommunicators(communicators);
+  GLOBAL::Problem::Instance()->SetCommunicators(communicators);
   Teuchos::RCP<Epetra_Comm> lcomm = communicators->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = communicators->GlobalComm();
   int ngroups = communicators->NumGroups();
@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
         gcomm->Barrier();
       }
 
-      DRT::Problem::Done();
+      GLOBAL::Problem::Done();
 
       MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
@@ -371,7 +371,7 @@ int main(int argc, char *argv[])
     printf("processor %d finished normally\n", lcomm->MyPID());
   }
 
-  DRT::Problem::Done();
+  GLOBAL::Problem::Done();
 
   MPI_Finalize();
 

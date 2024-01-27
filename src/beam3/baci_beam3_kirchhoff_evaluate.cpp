@@ -2125,7 +2125,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
       if (funct) functnum = (*funct)[i];
 
       if (functnum > 0)
-        functtimefac[i] = DRT::Problem::Instance()
+        functtimefac[i] = GLOBAL::Problem::Instance()
                               ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum - 1)
                               .Evaluate(time);
 
@@ -2585,7 +2585,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
       if (function_numbers != nullptr and (*function_numbers)[idof] > 0)
       {
         functionfac =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
                 .Evaluate(X_ref.data(), time, idof);
       }

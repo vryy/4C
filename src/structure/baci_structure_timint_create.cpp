@@ -68,7 +68,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
 
   // check if we have a problem that needs to be prestressed
   if (Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-          DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") !=
+          GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") !=
       INPAR::STR::PreStress::none)
   {
     sti = Teuchos::rcp(new STR::TimIntPrestress(
@@ -134,12 +134,12 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate(const Teuchos::ParameterList
   Teuchos::RCP<STR::TimIntExpl> sti = Teuchos::null;
 
   // what's the current problem type?
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
-  if (probtype == ProblemType::fsi or probtype == ProblemType::fsi_redmodels or
-      probtype == ProblemType::fsi_lung or probtype == ProblemType::gas_fsi or
-      probtype == ProblemType::ac_fsi or probtype == ProblemType::biofilm_fsi or
-      probtype == ProblemType::thermo_fsi)
+  if (probtype == GLOBAL::ProblemType::fsi or probtype == GLOBAL::ProblemType::fsi_redmodels or
+      probtype == GLOBAL::ProblemType::fsi_lung or probtype == GLOBAL::ProblemType::gas_fsi or
+      probtype == GLOBAL::ProblemType::ac_fsi or probtype == GLOBAL::ProblemType::biofilm_fsi or
+      probtype == GLOBAL::ProblemType::thermo_fsi)
   {
     dserror("no explicit time integration with fsi");
   }

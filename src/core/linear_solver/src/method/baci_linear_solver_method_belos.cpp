@@ -103,7 +103,7 @@ void CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Setup(
           "contact activeDofMap", Teuchos::null, linSystemProps, "contact activeDofMap");
       this->template copyParams<std::string>(
           this->Params().sublist("Belos Parameters").sublist("Linear System properties"),
-          "ProblemType", "contact", linSystemProps, "ProblemType");
+          "GLOBAL::ProblemType", "contact", linSystemProps, "GLOBAL::ProblemType");
       this->template copyParams<int>(
           this->Params().sublist("Belos Parameters").sublist("Linear System properties"),
           "time step", -1, linSystemProps, "time step");

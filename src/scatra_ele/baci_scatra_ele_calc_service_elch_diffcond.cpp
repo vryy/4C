@@ -61,7 +61,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
 
       int numdofpernode = 0;
       if (diffcondparams_->CurSolVar())
-        numdofpernode = nummat + DRT::Problem::Instance()->NDim() + numphase;
+        numdofpernode = nummat + GLOBAL::Problem::Instance()->NDim() + numphase;
       else if (actphase->MatById(actphase->MatID(0))->MaterialType() ==
                INPAR::MAT::m_newman_multiscale)
         numdofpernode = 3;
@@ -312,7 +312,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
   if (curvenum >= 0)
   {
     const double curvefac =
-        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
             time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;

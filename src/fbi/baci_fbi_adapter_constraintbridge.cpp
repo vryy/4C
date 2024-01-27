@@ -38,7 +38,7 @@ void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetr
   beam_interaction_params_->Setup();
 
   const Teuchos::ParameterList& geometry_parameter_list =
-      DRT::Problem::Instance()->FBIParams().sublist("BEAM TO FLUID MESHTYING");
+      GLOBAL::Problem::Instance()->FBIParams().sublist("BEAM TO FLUID MESHTYING");
 
   // Create the beaminteraction data container and set the parameters
   geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(

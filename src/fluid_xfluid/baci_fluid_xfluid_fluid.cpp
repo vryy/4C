@@ -127,7 +127,7 @@ void FLD::XFluidFluid::CreateInitialState()
   //--------------------------------------------------
   // Create XFluidFluid State
   //-----------------------------------------------
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
 
   if (restart)
   {
@@ -1015,7 +1015,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::EvaluateErrorComparedToAnaly
     if ((step_ == stepmax_) or (time_ == maxtime_))  // write results to file
     {
       std::ostringstream temp;
-      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
       const std::string fname = simulation + ".xfem_abserror";
 
       std::ofstream f;
@@ -1062,7 +1062,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::EvaluateErrorComparedToAnaly
       f.close();
     }
     std::ostringstream temp;
-    const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     const std::string fname = simulation + "_time.xfem_abserror";
 
     if (step_ == 1)

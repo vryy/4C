@@ -34,7 +34,7 @@ BACI_NAMESPACE_OPEN
 void tsi_dyn_drt()
 {
   // create a communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("structure")->Comm();
 
   // print TSI-Logo to screen
   if (comm.MyPID() == 0) TSI::printlogo();
@@ -43,9 +43,9 @@ void tsi_dyn_drt()
   TSI::UTILS::SetupTSI(comm);
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  const Teuchos::ParameterList& tsidyn = GLOBAL::Problem::Instance()->TSIDynamicParams();
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdynparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   const INPAR::TSI::SolutionSchemeOverFields coupling =
       INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
@@ -78,7 +78,7 @@ void tsi_dyn_drt()
       break;
   }  // end switch
 
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     // read the restart information, set vectors and variables
@@ -95,9 +95,9 @@ void tsi_dyn_drt()
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  DRT::Problem::Instance()->AddFieldTest(tsi->StructureField()->CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(tsi->ThermoField()->CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
+  GLOBAL::Problem::Instance()->AddFieldTest(tsi->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(tsi->ThermoField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->TestAll(comm);
 
   return;
 }  // tsi_dyn_drt()

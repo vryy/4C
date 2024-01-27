@@ -18,7 +18,7 @@ BACI_NAMESPACE_OPEN
 /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)
 void CORE::GEO::CUT::Options::Init_by_Paramlist()
 {
-  Init_by_Paramlist(DRT::Problem::Instance()->CutGeneralParams());
+  Init_by_Paramlist(GLOBAL::Problem::Instance()->CutGeneralParams());
 }
 
 /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)

@@ -70,6 +70,10 @@ namespace INPUT
 namespace DRT
 {
   class Discretization;
+}
+
+namespace GLOBAL
+{
 
   /// Global problem instance that keeps the discretizations
   /*!
@@ -192,17 +196,15 @@ namespace DRT
     void SetInputControlFile(Teuchos::RCP<IO::InputControl>& input) { inputcontrol_ = input; }
 
     /// manipulate problem type
-    void SetProblemType(ProblemType targettype);
+    void SetProblemType(GLOBAL::ProblemType targettype);
 
     void SetSpatialApproximationType(CORE::FE::ShapeFunctionType shape_function_type);
-
-    //@}
 
     /// @name General query methods
     /// Once and for all definitions
 
     /// give enum of my problem type
-    ProblemType GetProblemType() const;
+    GLOBAL::ProblemType GetProblemType() const;
 
     /// give string name of my problem type
     std::string ProblemName() const;
@@ -515,7 +517,7 @@ namespace DRT
     bool DoesExistDis(const std::string& name) const;
 
     /// add a discretization to the global problem
-    void AddDis(const std::string& name, Teuchos::RCP<Discretization> dis);
+    void AddDis(const std::string& name, Teuchos::RCP<DRT::Discretization> dis);
 
 
     //@}
@@ -566,9 +568,9 @@ namespace DRT
     void TestAll(const Epetra_Comm& comm) { resulttest_.TestAll(comm); }
 
     /// add field specific result test object
-    void AddFieldTest(Teuchos::RCP<ResultTest> test) { resulttest_.AddFieldTest(test); }
+    void AddFieldTest(Teuchos::RCP<DRT::ResultTest> test) { resulttest_.AddFieldTest(test); }
 
-    ResultTestManager& GetResultTestManager() { return resulttest_; }
+    DRT::ResultTestManager& GetResultTestManager() { return resulttest_; }
 
     //@}
 
@@ -594,7 +596,7 @@ namespace DRT
     static std::vector<Problem*> instances_;
 
     /// the problem type
-    ProblemType probtype_;
+    GLOBAL::ProblemType probtype_;
 
     /// Spatial approximation type
     CORE::FE::ShapeFunctionType shapefuntype_;
@@ -606,7 +608,7 @@ namespace DRT
     double restarttime_;
 
     /// discretizations of this problem
-    std::map<std::string, Teuchos::RCP<Discretization>> discretizationmap_;
+    std::map<std::string, Teuchos::RCP<DRT::Discretization>> discretizationmap_;
 
     /// material bundle
     Teuchos::RCP<MAT::PAR::Bundle> materials_;
@@ -647,7 +649,7 @@ namespace DRT
     Teuchos::RCP<Teuchos::ParameterList> parameters_;
   };
 
-}  // namespace DRT
+}  // namespace GLOBAL
 
 BACI_NAMESPACE_CLOSE
 

@@ -34,11 +34,11 @@ POROELASTSCATRA::PoroScatraBase::PoroScatraBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : AlgorithmBase(comm, timeparams),
       matchinggrid_(INPUT::IntegralValue<bool>(
-          DRT::Problem::Instance()->PoroScatraControlParams(), "MATCHINGGRID")),
+          GLOBAL::Problem::Instance()->PoroScatraControlParams(), "MATCHINGGRID")),
       volcoupl_structurescatra_(Teuchos::null),
       volcoupl_fluidscatra_(Teuchos::null)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
   // do some checks
@@ -111,7 +111,7 @@ void POROELASTSCATRA::PoroScatraBase::SetupSystem() { poro_->SetupSystem(); }
  *----------------------------------------------------------------------*/
 void POROELASTSCATRA::PoroScatraBase::TestResults(const Epetra_Comm& comm)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   problem->AddFieldTest(poro_->StructureField()->CreateFieldTest());
   problem->AddFieldTest(poro_->FluidField()->CreateFieldTest());
@@ -292,13 +292,13 @@ void POROELASTSCATRA::PoroScatraBase::SetupCoupling(Teuchos::RCP<DRT::Discretiza
     std::pair<int, int> dofsets21_fluidscatra = std::pair<int, int>(2, 0);
 
     // setup projection matrices (use default material strategy)
-    volcoupl_structurescatra_->Init(DRT::Problem::Instance()->NDim(), structdis, scatradis, nullptr,
-        nullptr, &dofsets12_structurescatra, &dofsets21_structurescatra, Teuchos::null);
-    volcoupl_fluidscatra_->Init(DRT::Problem::Instance()->NDim(), fluiddis, scatradis, nullptr,
+    volcoupl_structurescatra_->Init(GLOBAL::Problem::Instance()->NDim(), structdis, scatradis,
+        nullptr, nullptr, &dofsets12_structurescatra, &dofsets21_structurescatra, Teuchos::null);
+    volcoupl_fluidscatra_->Init(GLOBAL::Problem::Instance()->NDim(), fluiddis, scatradis, nullptr,
         nullptr, &dofsets12_fluidscatra, &dofsets21_fluidscatra, Teuchos::null);
 
-    volcoupl_structurescatra_->Setup(DRT::Problem::Instance()->VolmortarParams());
-    volcoupl_fluidscatra_->Setup(DRT::Problem::Instance()->VolmortarParams());
+    volcoupl_structurescatra_->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
+    volcoupl_fluidscatra_->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
   }
 }
 

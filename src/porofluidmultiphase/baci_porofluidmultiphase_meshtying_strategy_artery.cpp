@@ -34,9 +34,9 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
     const Teuchos::ParameterList& poroparams)
     : MeshtyingStrategyBase(porofluidmultitimint, probparams, poroparams)
 {
-  const Teuchos::ParameterList& artdyn = DRT::Problem::Instance()->ArterialDynamicParams();
+  const Teuchos::ParameterList& artdyn = GLOBAL::Problem::Instance()->ArterialDynamicParams();
 
-  arterydis_ = DRT::Problem::Instance()->GetDis("artery");
+  arterydis_ = GLOBAL::Problem::Instance()->GetDis("artery");
 
   if (!arterydis_->Filled()) arterydis_->FillComplete();
 
@@ -72,7 +72,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
       [&]()
       {
         if (INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-                DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
+                GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
                     "ARTERY COUPLING"),
                 "ARTERY_COUPLING_METHOD") ==
             INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
@@ -144,10 +144,10 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::InitializeLinearSolver(
     Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   const Teuchos::ParameterList& porofluidparams =
-      DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams();
+      GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams();
   const int linsolvernumber = porofluidparams.get<int>("LINEAR_SOLVER");
   const Teuchos::ParameterList& solverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
   // no need to do the rest for direct solvers
@@ -249,7 +249,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CalculateNorms(std::vector<do
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CreateFieldTest()
 {
   Teuchos::RCP<DRT::ResultTest> arteryresulttest = artnettimint_->CreateFieldTest();
-  DRT::Problem::Instance()->AddFieldTest(arteryresulttest);
+  GLOBAL::Problem::Instance()->AddFieldTest(arteryresulttest);
   return;
 }
 

@@ -757,7 +757,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::Output()
     Teuchos::RCP<Epetra_Vector> lambdaemb =
         FluidField()->XFluidFluidMapExtractor()->ExtractFluidVector(lambdafull);
 
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
     const int upres = fsidyn.get<int>("RESULTSEVRY");
     if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) ||

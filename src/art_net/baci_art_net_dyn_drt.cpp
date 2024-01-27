@@ -41,7 +41,7 @@ void dyn_art_net_drt() { dyn_art_net_drt(false); }
 
 Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
 {
-  if (DRT::Problem::Instance()->DoesExistDis("artery") == false)
+  if (GLOBAL::Problem::Instance()->DoesExistDis("artery") == false)
   {
     return Teuchos::null;
   }
@@ -51,7 +51,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   const std::string scatra_disname = "artery_scatra";
 
   // access the problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // -------------------------------------------------------------------
   // access the discretization
@@ -159,7 +159,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   }
 
   // initial field from restart or calculated by given function
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart && !CoupledTo3D)
   {
     // read the restart information, set vectors and variables

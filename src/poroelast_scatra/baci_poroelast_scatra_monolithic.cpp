@@ -47,7 +47,7 @@ POROELASTSCATRA::PoroScatraMono::PoroScatraMono(
       blockrowdofmap_(Teuchos::null),
       directsolve_(true)
 {
-  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdynparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // some solver paramaters are red form the structure dynamic list (this is not the best way to do
   // it ...)
@@ -556,7 +556,8 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
   //  solver
   // create a linear solver
   // get dynamic section of poroelasticity
-  const Teuchos::ParameterList& poroscatradyn = DRT::Problem::Instance()->PoroScatraControlParams();
+  const Teuchos::ParameterList& poroscatradyn =
+      GLOBAL::Problem::Instance()->PoroScatraControlParams();
   // get the solver number used for linear poroelasticity solver
   const int linsolvernumber = poroscatradyn.get<int>("LINEAR_SOLVER");
   // check if the poroelasticity solver has a valid solver number
@@ -565,7 +566,7 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
         "no linear solver defined for scalar transport in porous media. Please set LINEAR_SOLVER "
         "in POROSCATRA CONTROL to a valid number!");
   const Teuchos::ParameterList& solverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 

@@ -389,13 +389,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
                               : std::log(material->initRadius_);
 
         // initialize random number generator
-        DRT::Problem::Instance()->Random()->SetMeanVariance(mu, sigma);
+        GLOBAL::Problem::Instance()->Random()->SetMeanVariance(mu, sigma);
 
         // iterate over particles stored in container
         for (int i = 0; i < particlestored; ++i)
         {
           // generate random value
-          const double randomvalue = DRT::Problem::Instance()->Random()->Normal();
+          const double randomvalue = GLOBAL::Problem::Instance()->Random()->Normal();
 
           // set normal or log-normal distributed random value for particle radius
           radius[i] = (radiusdistributiontype == INPAR::PARTICLE::NormalRadiusDistribution)

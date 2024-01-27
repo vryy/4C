@@ -320,7 +320,7 @@ void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::Setup
 double MAT::ELASTIC::StructuralTensorStrategyBase::GetResidualTol()
 {
   double restol = -1.0;
-  DRT::Problem* gprob = DRT::Problem::Instance();
+  GLOBAL::Problem* gprob = GLOBAL::Problem::Instance();
   restol = gprob->StructuralDynamicParams().get<double>("TOLRES");
 
   return restol;

@@ -88,7 +88,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterLi
       }
       const double* coordgpref = xrefe.data();
       double functfac =
-          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(num).Evaluate(
+          GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(num).Evaluate(
               coordgpref, time, 0);
       params.set<double>("scalar", functfac);
     }
@@ -1261,8 +1261,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::InitElement()
 
   scatra_coupling_ = false;
 
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
-  if (probtype == ProblemType::poroscatra) scatra_coupling_ = true;
+  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  if (probtype == GLOBAL::ProblemType::poroscatra) scatra_coupling_ = true;
 }
 
 template <class so3_ele, CORE::FE::CellType distype>

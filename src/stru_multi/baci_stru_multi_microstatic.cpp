@@ -43,7 +43,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  discret_ = DRT::Problem::Instance(microdisnum_)->GetDis("structure");
+  discret_ = GLOBAL::Problem::Instance(microdisnum_)->GetDis("structure");
 
   // set degrees of freedom in the discretization
   if (!discret_->Filled()) discret_->FillComplete();
@@ -56,11 +56,11 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // while other parameters (like output options, convergence checks)
   // can be used individually from the microscale input file
   const Teuchos::ParameterList& sdyn_micro =
-      DRT::Problem::Instance(microdisnum_)->StructuralDynamicParams();
-  const Teuchos::ParameterList& sdyn_macro = DRT::Problem::Instance()->StructuralDynamicParams();
+      GLOBAL::Problem::Instance(microdisnum_)->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn_macro = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // i/o options should be read from the corresponding micro-file
-  const Teuchos::ParameterList& ioflags = DRT::Problem::Instance(microdisnum_)->IOParams();
+  const Teuchos::ParameterList& ioflags = GLOBAL::Problem::Instance(microdisnum_)->IOParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -74,7 +74,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
         "DYNAMIC to a valid number!");
 
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm()));
+      GLOBAL::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
   INPAR::STR::PredEnum pred = INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
@@ -103,7 +103,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   printscreen_ = (ioflags.get<int>("STDOUTEVRY"));
 
 
-  restart_ = DRT::Problem::Instance()->Restart();
+  restart_ = GLOBAL::Problem::Instance()->Restart();
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
   iodisp_ = INPUT::IntegralValue<int>(ioflags, "STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");
@@ -1020,7 +1020,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
 
     // get solver parameter list of linear solver
     const Teuchos::ParameterList& solverparams =
-        DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber);
+        GLOBAL::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber);
 
     const auto solvertype =
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
@@ -1125,7 +1125,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
 
 void STRUMULTI::stop_np_multiscale()
 {
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
   int task[2] = {9, 0};
   subcomm->Broadcast(task, 2, 0);
   return;

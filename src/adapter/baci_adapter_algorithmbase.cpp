@@ -23,7 +23,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 ADAPTER::AlgorithmBase::AlgorithmBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : comm_(comm), printscreen_(DRT::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
+    : comm_(comm), printscreen_(GLOBAL::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
 {
   if (comm_.MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, timeparams);
 

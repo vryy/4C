@@ -40,9 +40,9 @@ SSTI::SSTIAlgorithm::SSTIAlgorithm(
       meshtying_strategy_scatra_(Teuchos::null),
       meshtying_strategy_thermo_(Teuchos::null),
       ssti_structure_meshtying_(Teuchos::null),
-      interfacemeshtying_(
-          DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSTIInterfaceMeshtying") !=
-          nullptr),
+      interfacemeshtying_(GLOBAL::Problem::Instance()
+                              ->GetDis("structure")
+                              ->GetCondition("SSTIInterfaceMeshtying") != nullptr),
       isinit_(false),
       issetup_(false)
 {
@@ -58,7 +58,7 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   issetup_ = false;
 
   // get the global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   problem->GetDis("structure")->FillComplete(true, true, true);
   problem->GetDis("scatra")->FillComplete(true, true, true);
@@ -140,7 +140,7 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
 void SSTI::SSTIAlgorithm::Setup()
 {
   // get the global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // check initialization
   CheckIsInit();
@@ -215,7 +215,7 @@ void SSTI::SSTIAlgorithm::CloneDiscretizations(const Epetra_Comm& comm)
   // Then, the scatra discretization is cloned.
   // Then, the thermo discretization is cloned.
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
@@ -250,7 +250,7 @@ void SSTI::SSTIAlgorithm::ReadRestart(int restart)
 /*----------------------------------------------------------------------*/
 void SSTI::SSTIAlgorithm::TestResults(const Epetra_Comm& comm) const
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(scatra_->CreateScaTraFieldTest());

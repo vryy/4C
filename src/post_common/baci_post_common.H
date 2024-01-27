@@ -138,7 +138,7 @@ class PostProblem
   std::string input_dir() { return input_dir_; }
 
   //! returns type of the simulation
-  ProblemType Problemtype() { return problemtype_; }
+  GLOBAL::ProblemType Problemtype() { return problemtype_; }
 
   //! returns type of the spatial approximation (nurbs/polynomial)
   CORE::FE::ShapeFunctionType SpatialApproximationType() { return spatial_approx_; }
@@ -208,7 +208,7 @@ class PostProblem
   std::string filter_;
 
   //! type of the problem we post process
-  ProblemType problemtype_;
+  GLOBAL::ProblemType problemtype_;
 
   //! type of the spatial approximation of theproblem we post process
   CORE::FE::ShapeFunctionType spatial_approx_;

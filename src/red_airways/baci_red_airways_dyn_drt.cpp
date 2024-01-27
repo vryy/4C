@@ -42,14 +42,14 @@ void dyn_red_airways_drt() { dyn_red_airways_drt(false); }
 
 Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D)
 {
-  if (DRT::Problem::Instance()->DoesExistDis("red_airway") == false)
+  if (GLOBAL::Problem::Instance()->DoesExistDis("red_airway") == false)
   {
     return Teuchos::null;
   }
 
   // 1. Access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->GetDis("red_airway");
+  actdis = GLOBAL::Problem::Instance()->GetDis("red_airway");
 
   // Set degrees of freedom in the discretization
   if (!actdis->Filled())
@@ -68,7 +68,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   output->WriteMesh(0, 0.0);
 
   // 3. Set pointers and variables for ParameterList rawdyn
-  const Teuchos::ParameterList& rawdyn = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
+  const Teuchos::ParameterList& rawdyn = GLOBAL::Problem::Instance()->ReducedDAirwayDynamicParams();
 
   // Print default parameters
   if (actdis->Comm().MyPID() == 0)
@@ -88,14 +88,14 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
   // Create the solver
   std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // 5. Set parameters in list required for all schemes
   Teuchos::ParameterList airwaystimeparams;
 
   // Number of degrees of freedom
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   airwaystimeparams.set<int>("number of degrees of freedom", 1 * ndim);
 
   // Time step size
@@ -150,7 +150,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
 
   // Initial field from restart or calculated by given function
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart && !CoupledTo3D)
   {
     // Read the restart information, set vectors and variables
@@ -168,8 +168,8 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
         Teuchos::rcp(new AIRWAY::RedAirwayResultTest(*airwayimplicit));
 
     // Resulttest for 0D problem and testing
-    DRT::Problem::Instance()->AddFieldTest(resulttest);
-    DRT::Problem::Instance()->TestAll(actdis->Comm());
+    GLOBAL::Problem::Instance()->AddFieldTest(resulttest);
+    GLOBAL::Problem::Instance()->TestAll(actdis->Comm());
 
     return airwayimplicit;
   }
@@ -186,13 +186,14 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
  *----------------------------------------------------------------------*/
 void redairway_tissue_dyn()
 {
-  const Teuchos::ParameterList& rawdyn = DRT::Problem::Instance()->RedAirwayTissueDynamicParams();
-  Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
+  const Teuchos::ParameterList& rawdyn =
+      GLOBAL::Problem::Instance()->RedAirwayTissueDynamicParams();
+  Teuchos::RCP<DRT::Discretization> actdis = GLOBAL::Problem::Instance()->GetDis("structure");
   Teuchos::RCP<AIRWAY::RedAirwayTissue> redairway_tissue =
       Teuchos::rcp(new AIRWAY::RedAirwayTissue(actdis->Comm(), rawdyn));
 
   // Read the restart information, set vectors and variables
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     redairway_tissue->ReadRestart(restart);
@@ -206,11 +207,11 @@ void redairway_tissue_dyn()
 
   // Resulttest for red_airway-tissue coupling
   // create result tests for single fields
-  DRT::Problem::Instance()->AddFieldTest(redairway_tissue->RedAirwayField()->CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(redairway_tissue->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(redairway_tissue->RedAirwayField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(redairway_tissue->StructureField()->CreateFieldTest());
 
   // Do the actual testing
-  DRT::Problem::Instance()->TestAll(actdis->Comm());
+  GLOBAL::Problem::Instance()->TestAll(actdis->Comm());
 }
 
 BACI_NAMESPACE_CLOSE

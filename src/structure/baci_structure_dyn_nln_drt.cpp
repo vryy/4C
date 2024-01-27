@@ -38,7 +38,7 @@ BACI_NAMESPACE_OPEN
 void caldyn_drt()
 {
   // get input lists
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   // major switch to different time integrators
   switch (INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
@@ -70,9 +70,9 @@ void caldyn_drt()
 void dyn_nlnstructural_drt()
 {
   // get input lists
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
 
   // connect degrees of freedom for periodic boundary conditions
   {
@@ -119,12 +119,12 @@ void dyn_nlnstructural_drt()
   }
 
   const bool write_initial_state =
-      INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "WRITE_INITIAL_STATE");
+      INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "WRITE_INITIAL_STATE");
   const bool write_final_state =
-      INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "WRITE_FINAL_STATE");
+      INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "WRITE_FINAL_STATE");
 
   // do restart
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     structadapter->ReadRestart(restart);
@@ -154,8 +154,8 @@ void dyn_nlnstructural_drt()
   }
 
   // test results
-  DRT::Problem::Instance()->AddFieldTest(structadapter->CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(structadapter->DofRowMap()->Comm());
+  GLOBAL::Problem::Instance()->AddFieldTest(structadapter->CreateFieldTest());
+  GLOBAL::Problem::Instance()->TestAll(structadapter->DofRowMap()->Comm());
 
   // print monitoring of time consumption
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =

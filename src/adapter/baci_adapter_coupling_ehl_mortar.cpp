@@ -29,14 +29,14 @@ ADAPTER::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     : CouplingNonLinMortar(
           spatial_dimension, mortar_coupling_params, contact_dynamic_params, shape_function_type),
       contact_regularization_(INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ContactDynamicParams(), "REGULARIZED_NORMAL_CONTACT")),
-      regularization_thickness_(
-          DRT::Problem::Instance()->ContactDynamicParams().get<double>("REGULARIZATION_THICKNESS")),
-      regularization_compliance_(
-          DRT::Problem::Instance()->ContactDynamicParams().get<double>("REGULARIZATION_STIFFNESS"))
+          GLOBAL::Problem::Instance()->ContactDynamicParams(), "REGULARIZED_NORMAL_CONTACT")),
+      regularization_thickness_(GLOBAL::Problem::Instance()->ContactDynamicParams().get<double>(
+          "REGULARIZATION_THICKNESS")),
+      regularization_compliance_(GLOBAL::Problem::Instance()->ContactDynamicParams().get<double>(
+          "REGULARIZATION_STIFFNESS"))
 {
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
-          DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
+          GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
           "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     dserror(
         "EHL does not support parallel redistribution. Set \"PARALLEL_REDIST none\" in section "
@@ -46,10 +46,10 @@ ADAPTER::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     if (regularization_compliance_ <= 0. || regularization_thickness_ <= 0.)
       dserror("need positive REGULARIZATION_THICKNESS and REGULARIZATION_STIFFNESS");
   if (contact_regularization_) regularization_compliance_ = 1. / regularization_compliance_;
-  if (INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ContactDynamicParams(), "REGULARIZED_NORMAL_CONTACT") == true &&
+  if (INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->ContactDynamicParams(),
+          "REGULARIZED_NORMAL_CONTACT") == true &&
       INPUT::IntegralValue<bool>(
-          DRT::Problem::Instance()->ElastoHydroDynamicParams(), "DRY_CONTACT_MODEL") == false)
+          GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "DRY_CONTACT_MODEL") == false)
     dserror("for dry contact model you need REGULARIZED_NORMAL_CONTACT and DRY_CONTACT_MODEL");
 }
 
@@ -78,7 +78,7 @@ void ADAPTER::CouplingEhlMortar::Setup(Teuchos::RCP<DRT::Discretization> masterd
   fscn_ = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowDofs(), true));
 
   INPAR::CONTACT::FrictionType ftype = INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(
-      DRT::Problem::Instance()->ContactDynamicParams(), "FRICTION");
+      GLOBAL::Problem::Instance()->ContactDynamicParams(), "FRICTION");
 
   std::vector<DRT::Condition*> ehl_conditions(0);
   masterdis->GetCondition(couplingcond, ehl_conditions);
@@ -799,7 +799,7 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGap()
   }
 
   static const double offset =
-      DRT::Problem::Instance()->LubricationDynamicParams().get<double>("GAP_OFFSET");
+      GLOBAL::Problem::Instance()->LubricationDynamicParams().get<double>("GAP_OFFSET");
   for (int i = 0; i < nodal_gap_->Map().NumMyElements(); ++i) nodal_gap_->operator[](i) += offset;
 }
 

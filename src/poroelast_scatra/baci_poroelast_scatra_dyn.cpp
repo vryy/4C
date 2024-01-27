@@ -22,7 +22,7 @@ BACI_NAMESPACE_OPEN
 
 void poro_scatra_drt()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // 1.- Initialization
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();

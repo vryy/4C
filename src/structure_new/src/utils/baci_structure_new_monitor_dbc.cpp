@@ -129,7 +129,7 @@ void STR::MonitorDbc::Setup()
   ThrowIfNotInit();
 
   const Teuchos::ParameterList& sublist_IO_monitor_structure_dbc =
-      DRT::Problem::Instance()->IOParams().sublist("MONITOR STRUCTURE DBC");
+      GLOBAL::Problem::Instance()->IOParams().sublist("MONITOR STRUCTURE DBC");
 
   std::string filetype = sublist_IO_monitor_structure_dbc.get<std::string>("FILE_TYPE");
 
@@ -155,9 +155,9 @@ void STR::MonitorDbc::Setup()
 
   // create directory ...
   const std::string full_dirpath(
-      DRT::Problem::Instance()->OutputControlFile()->FileName() + "_monitor_dbc");
+      GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + "_monitor_dbc");
   const std::string filename_only_prefix(
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix());
+      GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix());
   IO::CreateDirectory(full_dirpath, Comm().MyPID());
   // ... create files paths ...
   full_filepaths_ = CreateFilePaths(rconds, full_dirpath, filename_only_prefix, filetype);
@@ -166,12 +166,12 @@ void STR::MonitorDbc::Setup()
       INPUT::IntegralValue<int>(sublist_IO_monitor_structure_dbc, "WRITE_HEADER"));
 
   // handle restart
-  if (DRT::Problem::Instance()->Restart())
+  if (GLOBAL::Problem::Instance()->Restart())
   {
     const std::string full_restart_dirpath(
-        DRT::Problem::Instance()->OutputControlFile()->RestartName() + "_monitor_dbc");
+        GLOBAL::Problem::Instance()->OutputControlFile()->RestartName() + "_monitor_dbc");
     const std::string filename_restart_only_prefix(
-        IO::ExtractFileName(DRT::Problem::Instance()->OutputControlFile()->RestartName()));
+        IO::ExtractFileName(GLOBAL::Problem::Instance()->OutputControlFile()->RestartName()));
 
     std::vector<std::string> full_restart_filepaths =
         CreateFilePaths(rconds, full_restart_dirpath, filename_restart_only_prefix, filetype);

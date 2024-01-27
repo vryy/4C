@@ -533,7 +533,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
 
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structurediscretization =
-      DRT::Problem::Instance()->GetDis("structure");
+      GLOBAL::Problem::Instance()->GetDis("structure");
 
   // finalize structure discretization construction
   if (not structurediscretization->Filled()) structurediscretization->FillComplete();

@@ -50,12 +50,12 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  auto probtype = DRT::Problem::Instance()->GetProblemType();
+  auto probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  auto discret = DRT::Problem::Instance()->GetDis(disname);
+  auto discret = GLOBAL::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -103,9 +103,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // overrule flags for solid-based scalar transport!
   // (assumed disname = "scatra2" for solid-based scalar transport)
   // -------------------------------------------------------------------
-  if (probtype == ProblemType::ac_fsi or probtype == ProblemType::biofilm_fsi or
-      probtype == ProblemType::gas_fsi or probtype == ProblemType::fps3i or
-      probtype == ProblemType::thermo_fsi)
+  if (probtype == GLOBAL::ProblemType::ac_fsi or probtype == GLOBAL::ProblemType::biofilm_fsi or
+      probtype == GLOBAL::ProblemType::gas_fsi or probtype == GLOBAL::ProblemType::fps3i or
+      probtype == GLOBAL::ProblemType::thermo_fsi)
   {
     // scatra1 (=fluid scalar) get's inputs from SCALAR TRANSPORT DYNAMIC/STABILIZATION, hence
     // nothing is to do here
@@ -158,7 +158,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   extraparams->set<bool>("isale", isale);
 
   // ------------------------------------get also fluid turbulence sublist
-  const auto& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const auto& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
   extraparams->sublist("TURBULENCE MODEL") = fdyn.sublist("TURBULENCE MODEL");
   extraparams->sublist("SUBGRID VISCOSITY") = fdyn.sublist("SUBGRID VISCOSITY");
   extraparams->sublist("MULTIFRACTAL SUBGRID SCALES") = fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
@@ -177,10 +177,10 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
       INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
 
   // low Mach number flow
-  if (probtype == ProblemType::loma or probtype == ProblemType::thermo_fsi)
+  if (probtype == GLOBAL::ProblemType::loma or probtype == GLOBAL::ProblemType::thermo_fsi)
   {
     auto lomaparams =
-        Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LOMAControlParams()));
+        Teuchos::rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->LOMAControlParams()));
     switch (timintscheme)
     {
       case INPAR::SCATRA::timeint_gen_alpha:
@@ -197,23 +197,23 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   }
 
   // electrochemistry
-  else if (probtype == ProblemType::elch or
-           ((probtype == ProblemType::ssi and
+  else if (probtype == GLOBAL::ProblemType::elch or
+           ((probtype == GLOBAL::ProblemType::ssi and
                 Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
-                    DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
+                    GLOBAL::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
                     INPAR::SSI::ScaTraTimIntType::elch) or
                (disname == "scatra" and
-                   ((probtype == ProblemType::ssti and
+                   ((probtype == GLOBAL::ProblemType::ssti and
                         Teuchos::getIntegralValue<INPAR::SSTI::ScaTraTimIntType>(
-                            DRT::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
+                            GLOBAL::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
                             INPAR::SSTI::ScaTraTimIntType::elch) or
-                       (probtype == ProblemType::sti and
+                       (probtype == GLOBAL::ProblemType::sti and
                            Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
-                               DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
-                               INPAR::STI::ScaTraTimIntType::elch)))))
+                               GLOBAL::Problem::Instance()->STIDynamicParams(),
+                               "SCATRATIMINTTYPE") == INPAR::STI::ScaTraTimIntType::elch)))))
   {
     auto elchparams =
-        Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
+        Teuchos::rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->ELCHControlParams()));
 
     switch (timintscheme)
     {
@@ -270,19 +270,20 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   }
 
   // levelset
-  else if (probtype == ProblemType::level_set or probtype == ProblemType::fluid_xfem_ls)
+  else if (probtype == GLOBAL::ProblemType::level_set or
+           probtype == GLOBAL::ProblemType::fluid_xfem_ls)
   {
     Teuchos::RCP<Teuchos::ParameterList> lsparams = Teuchos::null;
     switch (probtype)
     {
-      case ProblemType::level_set:
+      case GLOBAL::ProblemType::level_set:
         lsparams = Teuchos::rcp(new Teuchos::ParameterList(prbdyn));
         break;
       default:
       {
         if (lsparams.is_null())
-          lsparams =
-              Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LevelSetControl()));
+          lsparams = Teuchos::rcp(
+              new Teuchos::ParameterList(GLOBAL::Problem::Instance()->LevelSetControl()));
         // overrule certain parameters for coupled problems
         // this has already been ensured for scatratimeparams, but has also been ensured for the
         // level-set parameter in a hybrid approach time step size
@@ -314,7 +315,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         // create instance of time integration class (call the constructor)
         switch (probtype)
         {
-          case ProblemType::level_set:
+          case GLOBAL::ProblemType::level_set:
           {
             dserror(
                 "Stationary time integration scheme only supported for a selection of coupled "
@@ -348,16 +349,17 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   }
 
   // cardiac monodomain
-  else if (probtype == ProblemType::cardiac_monodomain or
-           (probtype == ProblemType::ssi and
+  else if (probtype == GLOBAL::ProblemType::cardiac_monodomain or
+           (probtype == GLOBAL::ProblemType::ssi and
                Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
-                   DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
+                   GLOBAL::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
                    INPAR::SSI::ScaTraTimIntType::cardiac_monodomain))
   {
-    auto cmonoparams = rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->EPControlParams()));
+    auto cmonoparams =
+        rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->EPControlParams()));
 
     // HDG implements all time stepping schemes within gen-alpha
-    if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
+    if (GLOBAL::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
     {
       scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainHDG(
           discret, solver, cmonoparams, scatratimeparams, extraparams, output));
@@ -393,7 +395,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
       }  // switch(timintscheme)
     }
   }
-  else if (probtype == ProblemType::poromultiphasescatra)
+  else if (probtype == GLOBAL::ProblemType::poromultiphasescatra)
   {
     switch (timintscheme)
     {
@@ -434,7 +436,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   else
   {
     // HDG implements all time stepping schemes within gen-alpha
-    if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
+    if (GLOBAL::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
     {
       switch (timintscheme)
       {
@@ -528,17 +530,17 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  auto probtype = DRT::Problem::Instance()->GetProblemType();
+  auto probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   // prepare fixing the null space for electrochemistry and sti
-  if (probtype == ProblemType::elch or
-      (probtype == ProblemType::sti and discret->Name() == "scatra" and
+  if (probtype == GLOBAL::ProblemType::elch or
+      (probtype == GLOBAL::ProblemType::sti and discret->Name() == "scatra" and
           Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
-              DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
+              GLOBAL::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
               INPAR::STI::ScaTraTimIntType::elch))
   {
     auto elchparams =
-        Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
+        Teuchos::rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->ELCHControlParams()));
 
     // create a 2nd solver for block-preconditioning if chosen from input
     if (INPUT::IntegralValue<int>(*elchparams, "BLOCKPRECOND"))
@@ -547,7 +549,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
 
       const int linsolvernumber = scatradyn->get<int>("LINEAR_SOLVER");
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       if (prec != INPAR::SOLVER::PreconditionerType::cheap_simple)  // TODO adapt error message
       {
         dserror(

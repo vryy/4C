@@ -129,10 +129,11 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   invJ_.resize(NUMGPT_SOH8, CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>(true));
   detJ_.resize(NUMGPT_SOH8, 0.0);
 
-  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  Teuchos::RCP<const Teuchos::ParameterList> params =
+      GLOBAL::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+    const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
     pstype_ = PRESTRESS::GetType();
     pstime_ = PRESTRESS::GetPrestressTime();
@@ -141,7 +142,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
   if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));
 
-  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::struct_ale)
   {
     if (kintype_ == INPAR::STR::KinemType::linear)
       dserror("Structure-Ale approach only for nonlinear kinematics !!!");
@@ -182,7 +183,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
   if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
-  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::struct_ale)
   {
     if (kintype_ == INPAR::STR::KinemType::linear)
       dserror("Structure-Ale approach only for nonlinear kinematics !!!");

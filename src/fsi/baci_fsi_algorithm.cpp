@@ -32,7 +32,7 @@ BACI_NAMESPACE_OPEN
 // turn defines the dof number ordering of the Discretizations.
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
-    : AlgorithmBase(comm, DRT::Problem::Instance()->FSIDynamicParams()),
+    : AlgorithmBase(comm, GLOBAL::Problem::Instance()->FSIDynamicParams()),
       adapterbase_ptr_(Teuchos::null),
       use_old_structure_(false)
 {
@@ -46,15 +46,15 @@ FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 void FSI::Algorithm::Setup()
 {
   // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
 
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // access the fsi dynamic params
   Teuchos::ParameterList& fsidyn =
-      const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->FSIDynamicParams());
+      const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->FSIDynamicParams());
 
   // build and register fsi model evaluator
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> fsi_model_ptr =
@@ -96,7 +96,7 @@ void FSI::Algorithm::Setup()
                 << std::endl;
 
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(
-        new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),
+        new ADAPTER::StructureBaseAlgorithm(GLOBAL::Problem::Instance()->FSIDynamicParams(),
             const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structure_ =
         Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
@@ -116,7 +116,7 @@ void FSI::Algorithm::Setup()
 
   Teuchos::RCP<ADAPTER::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
       Teuchos::rcp(new ADAPTER::FluidMovingBoundaryBaseAlgorithm(
-          DRT::Problem::Instance()->FSIDynamicParams(), "FSICoupling"));
+          GLOBAL::Problem::Instance()->FSIDynamicParams(), "FSICoupling"));
   fluid_ = MBFluidbase->MBFluidField();
 
   coupsf_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());

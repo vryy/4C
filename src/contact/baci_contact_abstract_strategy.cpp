@@ -2154,7 +2154,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   z_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
   zold_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
   if (!restartwithcontact)
-    if (!(DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+    if (!(GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
                 "Standard" &&
             IsPenalty()))
     {
@@ -2448,7 +2448,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
     {
       FILE* MyFile = nullptr;
       std::ostringstream filename;
-      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string filebase = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
       filename << filebase << ".interface";
       MyFile = fopen(filename.str().c_str(), "at+");
 
@@ -2802,7 +2802,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
       FILE* MyFile = nullptr;
       std::ostringstream filename;
       const std::string filebase =
-          DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+          GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
       filename << filebase << ".jump";
       MyFile = fopen(filename.str().c_str(), "at+");
       if (MyFile)

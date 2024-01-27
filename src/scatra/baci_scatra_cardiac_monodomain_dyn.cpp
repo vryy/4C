@@ -44,7 +44,7 @@ BACI_NAMESPACE_OPEN
 void scatra_cardiac_monodomain_dyn(int restart)
 {
   // pointer to problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // access the communicator
   const Epetra_Comm& comm = problem->GetDis("fluid")->Comm();
@@ -53,7 +53,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
   if (comm.MyPID() == 0)
   {
     std::cout << "###################################################" << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << GLOBAL::Problem::Instance()->ProblemName() << std::endl;
     std::cout << "###################################################" << std::endl;
   }
 
@@ -98,11 +98,11 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // create instance of scalar transport basis algorithm (empty fluid discretization)
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
           Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
-              scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+              scatradyn, scatradyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
-          new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+          new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         dserror("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
@@ -175,8 +175,8 @@ void scatra_cardiac_monodomain_dyn(int restart)
       (scatraonly->ScaTraField())->TimeLoop();
 
       // perform the result test if required
-      DRT::Problem::Instance()->AddFieldTest(scatraonly->CreateScaTraFieldTest());
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->AddFieldTest(scatraonly->CreateScaTraFieldTest());
+      GLOBAL::Problem::Instance()->TestAll(comm);
 
       break;
     }
@@ -189,7 +189,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
       const INPAR::SCATRA::FieldCoupling fieldcoupling =
           INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(
-              DRT::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING");
+              GLOBAL::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING");
 
       // create scatra elements if the scatra discretization is empty
       if (scatradis->NumGlobalNodes() == 0)
@@ -291,7 +291,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       }
 
       // support for turbulent flow statistics
-      const Teuchos::ParameterList& fdyn = (DRT::Problem::Instance()->FluidDynamicParams());
+      const Teuchos::ParameterList& fdyn = (GLOBAL::Problem::Instance()->FluidDynamicParams());
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
@@ -302,7 +302,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
       // create a scalar transport algorithm instance
       Teuchos::RCP<SCATRA::ScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::ScaTraAlgorithm(comm,
-          scatradyn, fdyn, "scatra", DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+          scatradyn, fdyn, "scatra", GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // init algo (init fluid time integrator and scatra time integrator inside)
       algo->Init();
@@ -335,9 +335,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      DRT::Problem::Instance()->AddFieldTest(algo->FluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(algo->CreateScaTraFieldTest());
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->AddFieldTest(algo->FluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(algo->CreateScaTraFieldTest());
+      GLOBAL::Problem::Instance()->TestAll(comm);
 
       break;
     }  // case 2

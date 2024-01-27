@@ -45,7 +45,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
     int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // access the global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // Create the two uncoupled subproblems.
   // access the structural discretization
@@ -71,7 +71,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // -------------------------------------------------------------------
   // access the fluid discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis(fluid_disname);
+  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis(fluid_disname);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -199,7 +199,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::CreateFieldTest()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(fluid_->CreateFieldTest());

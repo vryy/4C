@@ -23,9 +23,10 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 ADAPTER::FBIFluidMB::FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::string condname)
 {
-  fluidadapter_ = Teuchos::rcp(new FluidBaseAlgorithm(prbdyn,
-                                   DRT::Problem::Instance()->FluidDynamicParams(), "fluid", false))
-                      ->FluidField();
+  fluidadapter_ =
+      Teuchos::rcp(new FluidBaseAlgorithm(
+                       prbdyn, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", false))
+          ->FluidField();
   // make sure
   if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true) == Teuchos::null)
     dserror("Failed to create the correct underlying fluid adapter");

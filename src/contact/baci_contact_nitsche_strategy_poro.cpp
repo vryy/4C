@@ -66,7 +66,7 @@ void CONTACT::NitscheStrategyPoro::SetParentState(
   //
   if (statename == MORTAR::state_fvelocity || statename == MORTAR::state_fpressure)
   {
-    Teuchos::RCP<DRT::Discretization> dis = DRT::Problem::Instance()->GetDis("porofluid");
+    Teuchos::RCP<DRT::Discretization> dis = GLOBAL::Problem::Instance()->GetDis("porofluid");
     if (dis == Teuchos::null) dserror("didn't get my discretization");
 
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(), true));
@@ -126,7 +126,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::SetupRhsBlockVec(
   {
     case CONTACT::VecBlockType::porofluid:
       return Teuchos::rcp(
-          new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap()));
+          new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("porofluid")->DofRowMap()));
     default:
       return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
   }
@@ -154,13 +154,13 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyPoro::SetupMatr
     case CONTACT::MatBlockType::displ_porofluid:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     case CONTACT::MatBlockType::porofluid_displ:
     case CONTACT::MatBlockType::porofluid_porofluid:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("porofluid")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
       return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
@@ -175,16 +175,16 @@ void CONTACT::NitscheStrategyPoro::CompleteMatrixBlockPtr(
     case CONTACT::MatBlockType::displ_porofluid:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
-                  *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap(),  // col map
-                  *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),  // row map
+                  *GLOBAL::Problem::Instance()->GetDis("porofluid")->DofRowMap(),  // col map
+                  *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // row map
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::porofluid_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
-                  *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
-                  *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap(),  // row map
+                  *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
+                  *GLOBAL::Problem::Instance()->GetDis("porofluid")->DofRowMap(),  // row map
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;

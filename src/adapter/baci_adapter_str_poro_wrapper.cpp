@@ -74,7 +74,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructurePoroWrapper::CombinedDBCMap()
 }
 
 //   //! perform result test
-void ADAPTER::StructurePoroWrapper::TestResults(DRT::Problem* problem)
+void ADAPTER::StructurePoroWrapper::TestResults(GLOBAL::Problem* problem)
 {
   problem->AddFieldTest(structure_->CreateFieldTest());
 

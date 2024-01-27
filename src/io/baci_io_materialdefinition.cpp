@@ -47,8 +47,8 @@ void INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<INPUT::LineCompo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void INPUT::MaterialDefinition::Read(
-    const DRT::Problem& problem, DatFileReader& reader, const Teuchos::RCP<MAT::PAR::Bundle>& mmap)
+void INPUT::MaterialDefinition::Read(const GLOBAL::Problem& problem, DatFileReader& reader,
+    const Teuchos::RCP<MAT::PAR::Bundle>& mmap)
 {
   std::string name = "--MATERIALS";
   std::vector<const char*> section = reader.Section(name);

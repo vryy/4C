@@ -65,13 +65,13 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   // create ale-struct coupling
   const Epetra_Map* structdofmap = StructureField()->Discretization()->NodeRowMap();
   const Epetra_Map* aledofmap = AleField().Discretization()->NodeRowMap();
 
-  if (INPUT::IntegralValue<bool>(DRT::Problem::Instance()->WearParams(), "MATCHINGGRID"))
+  if (INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->WearParams(), "MATCHINGGRID"))
   {
     // if there are two identical nodes (i.e. for initial contact) the nodes matching creates an
     // error !!!
@@ -96,16 +96,16 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 
     // init coupling
     Teuchos::rcp_dynamic_cast<CORE::ADAPTER::MortarVolCoupl>(coupalestru_)
-        ->Init(ndim, DRT::Problem::Instance()->GetDis("ale"),
-            DRT::Problem::Instance()->GetDis("structure"), &coupleddof12, &coupleddof21, &dofset12,
-            &dofset21, Teuchos::null, false);
+        ->Init(ndim, GLOBAL::Problem::Instance()->GetDis("ale"),
+            GLOBAL::Problem::Instance()->GetDis("structure"), &coupleddof12, &coupleddof21,
+            &dofset12, &dofset21, Teuchos::null, false);
 
     // redistribute discretizations to meet needs of volmortar coupling
     //    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Redistribute();
 
     // setup projection matrices
     Teuchos::rcp_dynamic_cast<CORE::ADAPTER::MortarVolCoupl>(coupalestru_)
-        ->Setup(DRT::Problem::Instance()->VolmortarParams());
+        ->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
   }
 
   // create interface coupling
@@ -124,7 +124,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
   delta_ale_ = Teuchos::rcp(new Epetra_Vector(AleField().Dispnp()->Map(), true));
   ale_i_ = Teuchos::rcp(new Epetra_Vector(AleField().Dispnp()->Map(), true));
 
-  alepara_ = DRT::Problem::Instance()->AleDynamicParams();
+  alepara_ = GLOBAL::Problem::Instance()->AleDynamicParams();
 }
 
 
@@ -134,7 +134,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 void WEAR::Partitioned::TimeLoop()
 {
   // get wear paramter list
-  const Teuchos::ParameterList& wearpara = DRT::Problem::Instance()->WearParams();
+  const Teuchos::ParameterList& wearpara = GLOBAL::Problem::Instance()->WearParams();
   double timeratio = wearpara.get<double>("WEAR_TIMERATIO");
 
   int counter = -1;
@@ -408,7 +408,7 @@ void WEAR::Partitioned::UpdateSpatConf()
 
   // get info about wear conf
   INPAR::WEAR::WearShapeEvo wconf = INPUT::IntegralValue<INPAR::WEAR::WearShapeEvo>(
-      DRT::Problem::Instance()->WearParams(), "WEAR_SHAPE_EVO");
+      GLOBAL::Problem::Instance()->WearParams(), "WEAR_SHAPE_EVO");
 
   // for shape evol in spat conf
   if (wconf == INPAR::WEAR::wear_se_sp)
@@ -550,15 +550,15 @@ void WEAR::Partitioned::InterfaceDisp(
 {
   // get info about wear side
   INPAR::WEAR::WearSide wside = INPUT::IntegralValue<INPAR::WEAR::WearSide>(
-      DRT::Problem::Instance()->WearParams(), "WEAR_SIDE");
+      GLOBAL::Problem::Instance()->WearParams(), "WEAR_SIDE");
 
   // get info about wear type
   INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
-      DRT::Problem::Instance()->WearParams(), "WEARTYPE");
+      GLOBAL::Problem::Instance()->WearParams(), "WEARTYPE");
 
   // get info about wear coeff conf
   INPAR::WEAR::WearCoeffConf wcoeffconf = INPUT::IntegralValue<INPAR::WEAR::WearCoeffConf>(
-      DRT::Problem::Instance()->WearParams(), "WEARCOEFF_CONF");
+      GLOBAL::Problem::Instance()->WearParams(), "WEARCOEFF_CONF");
 
   if (interfaces_.size() > 1)
     dserror("Wear algorithm not able to handle more than 1 interface yet!");
@@ -737,7 +737,7 @@ void WEAR::Partitioned::WearSpatialMaster(Teuchos::RCP<Epetra_Vector>& disinterf
 {
   // get info about wear conf
   INPAR::WEAR::WearTimeScale wtime = INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(
-      DRT::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
+      GLOBAL::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
 
   for (int i = 0; i < (int)interfaces_.size(); ++i)
   {
@@ -806,13 +806,13 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
   WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
-      DRT::Problem::Instance()->WearParams(), "WEARTYPE");
+      GLOBAL::Problem::Instance()->WearParams(), "WEARTYPE");
 
   INPAR::WEAR::WearTimInt wtimint = INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(
-      DRT::Problem::Instance()->WearParams(), "WEARTIMINT");
+      GLOBAL::Problem::Instance()->WearParams(), "WEARTIMINT");
 
   INPAR::WEAR::WearTimeScale wtime = INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(
-      DRT::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
+      GLOBAL::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
 
   if (!(wtype == INPAR::WEAR::wear_intstate and wtimint == INPAR::WEAR::wear_impl))
     cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
@@ -988,13 +988,13 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
   WEAR::LagrangeStrategyWear& cstrategy = dynamic_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
-      DRT::Problem::Instance()->WearParams(), "WEARTYPE");
+      GLOBAL::Problem::Instance()->WearParams(), "WEARTYPE");
 
   INPAR::WEAR::WearTimInt wtimint = INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(
-      DRT::Problem::Instance()->WearParams(), "WEARTIMINT");
+      GLOBAL::Problem::Instance()->WearParams(), "WEARTIMINT");
 
   INPAR::WEAR::WearTimeScale wtime = INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(
-      DRT::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
+      GLOBAL::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
 
   if (!(wtype == INPAR::WEAR::wear_intstate and wtimint == INPAR::WEAR::wear_impl))
     cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
@@ -1171,10 +1171,10 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinterface_m)
 {
   INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
-      DRT::Problem::Instance()->WearParams(), "WEARTYPE");
+      GLOBAL::Problem::Instance()->WearParams(), "WEARTYPE");
 
   INPAR::WEAR::WearTimeScale wtime = INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(
-      DRT::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
+      GLOBAL::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
 
   // loop over all interfaces
   for (int m = 0; m < (int)interfaces_.size(); ++m)
@@ -1427,7 +1427,7 @@ void WEAR::Partitioned::UpdateMatConf()
 
   // get info about wear conf
   INPAR::WEAR::WearShapeEvo wconf = INPUT::IntegralValue<INPAR::WEAR::WearShapeEvo>(
-      DRT::Problem::Instance()->WearParams(), "WEAR_SHAPE_EVO");
+      GLOBAL::Problem::Instance()->WearParams(), "WEAR_SHAPE_EVO");
 
   // if shape evol. in mat conf: ale dispnp = material displ.
   if (wconf == INPAR::WEAR::wear_se_mat)
@@ -1512,7 +1512,7 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
     bool spatialtomaterial)                            // in
 {
   // get problem dimension
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   // define source and target configuration
   std::string sourceconf;
@@ -1708,7 +1708,7 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
 
   // get info about wear conf
   INPAR::WEAR::WearShapeEvo wconf = INPUT::IntegralValue<INPAR::WEAR::WearShapeEvo>(
-      DRT::Problem::Instance()->WearParams(), "WEAR_SHAPE_EVO");
+      GLOBAL::Problem::Instance()->WearParams(), "WEAR_SHAPE_EVO");
 
   //  if(aletype != INPAR::ALE::solid)
   //    dserror("ERORR: Chosen ALE type not supported!");

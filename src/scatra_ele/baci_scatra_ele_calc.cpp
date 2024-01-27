@@ -838,7 +838,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::BodyForce(const DRT::Elemen
       {
         const double functfac =
             (functnum > 0)
-                ? DRT::Problem::Instance()
+                ? GLOBAL::Problem::Instance()
                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                       .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), idof)
                 : 1.0;
@@ -1186,7 +1186,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
   {
     // access fluid discretization
     Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-    fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+    fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
     // get corresponding fluid element (it has the same global ID as the scatra element)
     DRT::Element* fluidele = fluiddis->gElement(eid_);
     if (fluidele == nullptr)
@@ -2064,7 +2064,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
     for (int d = 0; d < static_cast<int>(nsd_); ++d)
     {
       current[d] += funct_(jnode) *
-                    DRT::Problem::Instance()
+                    GLOBAL::Problem::Instance()
                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functno - 1)
                         .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), d);
     }

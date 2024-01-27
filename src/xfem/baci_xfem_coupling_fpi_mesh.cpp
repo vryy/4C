@@ -778,10 +778,10 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
     std::cout << "==| XFEM::MeshCouplingFPI: Computed h_scaling for fluidele is: " << h_scaling_
               << "(Proc: " << bg_dis_->Comm().MyPID() << ")! |==" << std::endl;
 
-    fpsi_contact_hfraction_ = (DRT::Problem::Instance()->XFluidDynamicParams())
+    fpsi_contact_hfraction_ = (GLOBAL::Problem::Instance()->XFluidDynamicParams())
                                   .sublist("XFPSI MONOLITHIC")
                                   .get<double>("POROCONTACTFPSI_HFRACTION");
-    fpsi_contact_fullpcfraction_ = (DRT::Problem::Instance()->XFluidDynamicParams())
+    fpsi_contact_fullpcfraction_ = (GLOBAL::Problem::Instance()->XFluidDynamicParams())
                                        .sublist("XFPSI MONOLITHIC")
                                        .get<double>("POROCONTACTFPSI_FULLPCFRACTION");
   }
@@ -862,7 +862,7 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
       << std::right << std::setw(16) << std::scientific << c(2);
 
     std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName() +
+    const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() +
                               ".liftdrag." + cond_name_ + ".txt";
     if (step <= 1)
     {

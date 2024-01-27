@@ -30,7 +30,7 @@ namespace
       elch_params.set<double>("GAS_CONSTANT", -1.0);
 
       // set the parameter list in the global problem
-      DRT::Problem::Instance()->setParameterList(parameter_list);
+      GLOBAL::Problem::Instance()->setParameterList(parameter_list);
 
       // add dummy parameters to container
       container->Add("DIFF_COEF_CONC_DEP_FUNCT", 0);
@@ -296,10 +296,10 @@ namespace
 
     void TearDown() override
     {
-      // We need to make sure the DRT::Problem instance created in SetUp is deleted again. If this
-      // is not done, some troubles arise where unit tests influence each other on some
+      // We need to make sure the GLOBAL::Problem instance created in SetUp is deleted again. If
+      // this is not done, some troubles arise where unit tests influence each other on some
       // configurations. We suspect that missing singleton destruction might be the reason for that.
-      DRT::Problem::Done();
+      GLOBAL::Problem::Done();
     }
 
     //! cathode material based on half cell open circuit potential obtained from cubic spline

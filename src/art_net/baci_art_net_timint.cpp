@@ -74,7 +74,7 @@ void ART::TimInt::Init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
 
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 

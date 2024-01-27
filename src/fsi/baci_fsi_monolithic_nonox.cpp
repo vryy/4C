@@ -37,7 +37,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : MonolithicBase(comm, timeparams), zeros_(Teuchos::null)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // use taylored fluid- and ALE-wrappers
@@ -51,7 +51,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField()->Discretization()));
   }
 
-  std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
   itermax_ = fsimono.get<int>("ITEMAX");
@@ -82,7 +82,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
 
 void FSI::MonolithicNoNOX::SetupSystem()
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
@@ -303,13 +303,13 @@ void FSI::MonolithicNoNOX::LinearSolve()
   CORE::LINALG::ApplyDirichletToSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
 #ifndef moresolvers
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
   const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");
   solver_ = Teuchos::rcp(
-      new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(fluidsolver), Comm()));
+      new CORE::LINALG::Solver(GLOBAL::Problem::Instance()->SolverParams(fluidsolver), Comm()));
 #else
   // get UMFPACK...
-  Teuchos::ParameterList solverparams = DRT::Problem::Instance()->UMFPACKSolverParams();
+  Teuchos::ParameterList solverparams = GLOBAL::Problem::Instance()->UMFPACKSolverParams();
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
 #endif
 

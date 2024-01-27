@@ -24,7 +24,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidXFEM::FluidXFEM(const Teuchos::ParameterList& prbdyn, std::string condname)
     : fluid_(Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(prbdyn,
-                              DRT::Problem::Instance()->FluidDynamicParams(), "fluid", false))
+                              GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", false))
                  ->FluidField())
 {
   return;

@@ -763,7 +763,7 @@ void CORE::GEO::CutWizard::PrintCellStats() { intersection_->PrintCellStats(); }
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CutWizard::DumpGmshNumDOFSets(bool include_inner)
 {
-  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string filename = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << filename;
 
@@ -776,7 +776,7 @@ void CORE::GEO::CutWizard::DumpGmshNumDOFSets(bool include_inner)
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CutWizard::DumpGmshVolumeCells(bool include_inner)
 {
-  std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string name = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << name << ".CUT_volumecells." << myrank_ << ".pos";
   intersection_->DumpGmshVolumeCells(str.str(), include_inner);
@@ -787,7 +787,7 @@ void CORE::GEO::CutWizard::DumpGmshVolumeCells(bool include_inner)
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CutWizard::DumpGmshIntegrationCells()
 {
-  std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string name = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << name << ".CUT_integrationcells." << myrank_ << ".pos";
   intersection_->DumpGmshIntegrationCells(str.str());

@@ -31,18 +31,18 @@ BACI_NAMESPACE_OPEN
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(const int id)
 {
-  const int probinst = DRT::Problem::Instance()->ContactConstitutiveLaws()->GetReadFromProblem();
+  const int probinst = GLOBAL::Problem::Instance()->ContactConstitutiveLaws()->GetReadFromProblem();
 
   // for the sake of safety
-  if (DRT::Problem::Instance(probinst)->ContactConstitutiveLaws() == Teuchos::null)
+  if (GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws() == Teuchos::null)
     dserror("Cannot work out problem instance!");
   // yet another safety check
-  if (DRT::Problem::Instance(probinst)->ContactConstitutiveLaws()->Num() == 0)
+  if (GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws()->Num() == 0)
     dserror("Cannot find any contact constitutive law!");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> coconstlawdata =
-      DRT::Problem::Instance(probinst)->ContactConstitutiveLaws()->ById(id);
+      GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws()->ById(id);
   return CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(coconstlawdata);
 }
 

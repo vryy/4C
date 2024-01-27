@@ -67,15 +67,15 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
   tempinc_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // setup mortar coupling
-  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::thermo)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::thermo)
   {
     DRT::Condition* mrtrcond = actdis->GetCondition("Mortar");
     if (mrtrcond != nullptr)
     {
       adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-          DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
-          DRT::Problem::Instance()->ContactDynamicParams(),
-          DRT::Problem::Instance()->SpatialApproximationType()));
+          GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
+          GLOBAL::Problem::Instance()->ContactDynamicParams(),
+          GLOBAL::Problem::Instance()->SpatialApproximationType()));
 
       std::vector<int> coupleddof(1, 1);
       adaptermeshtying_->Setup(

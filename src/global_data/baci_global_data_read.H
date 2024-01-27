@@ -20,36 +20,37 @@ BACI_NAMESPACE_OPEN
 namespace GLOBAL
 {
   /// setup the discretizations
-  void ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, const bool readmesh = true);
+  void ReadFields(
+      GLOBAL::Problem& problem, INPUT::DatFileReader& reader, const bool readmesh = true);
 
-  void ReadMicroFields(DRT::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
 
   /// set up supporting processors for micro-scale discretizations
-  void ReadMicrofieldsNPsupport(DRT::Problem& problem);
+  void ReadMicrofieldsNPsupport(GLOBAL::Problem& problem);
 
   /// read global parameters
-  void ReadParameter(DRT::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
 
   /// input of contact constitutive laws
-  void ReadContactConstitutiveLaws(DRT::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
 
   /// input of materials
-  void ReadMaterials(DRT::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
 
   /// setup map between materials of original and cloned elements
-  void ReadCloningMaterialMap(DRT::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadCloningMaterialMap(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
 
   /// input of conditions
-  void ReadConditions(DRT::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
 
   /// input of result tests
-  void ReadResult(DRT::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadResult(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
 
   /// input of knots for isogeometric analysis
-  void ReadKnots(DRT::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
 
   /// input of particles
-  void ReadParticles(DRT::Problem& problem, INPUT::DatFileReader& reader);
+  void ReadParticles(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
 }  // namespace GLOBAL
 
 BACI_NAMESPACE_CLOSE

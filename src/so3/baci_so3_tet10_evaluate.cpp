@@ -249,7 +249,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         }
 
         // output of rotation matrix R with F = U*R
-        if (INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(), "OUTPUT_ROT") == true)
+        if (INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_ROT") ==
+            true)
         {
           CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> R;
           DRT::ELEMENTS::UTILS::CalcR<CORE::FE::CellType::tet10>(this, mydisp, R);
@@ -930,7 +931,7 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
         // function evaluation
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
-            (functnum > 0) ? DRT::Problem::Instance()
+            (functnum > 0) ? GLOBAL::Problem::Instance()
                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;

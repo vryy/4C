@@ -27,7 +27,7 @@ BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVi
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
     double restart_time)
     : IO::VisualizationManager(visualization_output_params->GetVisualizationParameters(),
-          *(DRT::Problem::Instance()->GetCommunicators()->GlobalComm()), writer_full_name),
+          *(GLOBAL::Problem::Instance()->GetCommunicators()->GlobalComm()), writer_full_name),
       visualization_output_params_(visualization_output_params),
       writer_full_name_(writer_full_name),
       discret_(Teuchos::null),

@@ -143,7 +143,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
         params.get<Teuchos::RCP<std::vector<double>>>("position");
     const double* coordgpref_ = pos_->data();
     activationFunction =
-        DRT::Problem::Instance()
+        GLOBAL::Problem::Instance()
             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
             .Evaluate(coordgpref_, totaltime, 0);
   }

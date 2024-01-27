@@ -204,13 +204,13 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const unsigned int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const unsigned int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ViscoElastHyper*>(mat);
       else
@@ -420,7 +420,7 @@ void MAT::ViscoElastHyper::Update()
     // gauss-point
 
     // numsteps
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+    const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
     const int numsteps = sdyn.get<int>("NUMSTEP");
     // maximal size of history (in time steps)
     const unsigned int max_hist = numsteps + 1;
@@ -852,9 +852,9 @@ void MAT::ViscoElastHyper::EvaluateViscoGenMax(CORE::LINALG::Matrix<6, 1>* stres
     // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5 (abirzle
     // 09/14)
     std::string dyntype =
-        DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("DYNAMICTYP");
+        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("DYNAMICTYP");
     if (dyntype == "OneStepTheta")
-      theta = DRT::Problem::Instance()
+      theta = GLOBAL::Problem::Instance()
                   ->StructuralDynamicParams()
                   .sublist("ONESTEPTHETA")
                   .get<double>("THETA");
@@ -1059,9 +1059,9 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6
       // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5 (abirzle
       // 09/14)
       std::string dyntype =
-          DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("DYNAMICTYP");
+          GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("DYNAMICTYP");
       if (dyntype == "OneStepTheta")
-        theta = DRT::Problem::Instance()
+        theta = GLOBAL::Problem::Instance()
                     ->StructuralDynamicParams()
                     .sublist("ONESTEPTHETA")
                     .get<double>("THETA");

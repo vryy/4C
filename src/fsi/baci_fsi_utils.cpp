@@ -179,10 +179,10 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
 {
   structcoupmaster_ = structcoupmaster;
 
-  coupff_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(DRT::Problem::Instance()->NDim(),
-      DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+  coupff_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
+      GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
 
   // declare struct objects in interface
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> structelements;
@@ -290,7 +290,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
   iprojhist_ = Teuchos::rcp(new Epetra_Vector(*fluiddofrowmap_, true));
 
 
-  centerdisptotal_.resize(DRT::Problem::Instance()->NDim());
+  centerdisptotal_.resize(GLOBAL::Problem::Instance()->NDim());
 
   RedundantElements(coupsf, structdis->Comm());
 
@@ -298,7 +298,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
 
   // coupling condition at the fsi interface: displacements (=number spacial dimensions) are
   // coupled) e.g.: 3D: coupleddof = [1, 1, 1]
-  std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(), 1);
+  std::vector<int> coupleddof(GLOBAL::Problem::Instance()->NDim(), 1);
 
   // this setup only initialize two sets of identical mortar elements (master and slave)
   // -> projection matrix is a unity matrix
@@ -314,7 +314,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing(ADAPTER::FSIStructureWrapper& structur
     const Epetra_Comm& comm)
 {
   Teuchos::RCP<Epetra_Vector> idisptotal = structure.ExtractInterfaceDispnp();
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = GLOBAL::Problem::Instance()->NDim();
 
   // project sliding fluid nodes onto struct interface surface
   SlideProjection(structure, fluiddis, idispale, iprojdispale, coupsf, comm);
@@ -414,7 +414,7 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp(
   int err = idispstep->Update(-1.0, *idispn, 1.0);
   if (err != 0) dserror("ERROR");
 
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = GLOBAL::Problem::Instance()->NDim();
   // get structure and fluid discretizations  and set stated for element evaluation
   const Teuchos::RCP<Epetra_Vector> idisptotalcol =
       CORE::LINALG::CreateVector(*structdis->DofColMap(), true);
@@ -540,7 +540,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
 
 )
 {
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = GLOBAL::Problem::Instance()->NDim();
 
   Teuchos::RCP<Epetra_Vector> idispnp = structure.ExtractInterfaceDispnp();
 
@@ -706,7 +706,7 @@ void FSI::UTILS::SlideAleUtils::RedundantElements(
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>::iterator mapit;
   // build redundant version istructslideles_;
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator eit;
-  int dim = DRT::Problem::Instance()->NDim();
+  int dim = GLOBAL::Problem::Instance()->NDim();
 
   for (int i = 0; i <= maxid_; ++i)
   {

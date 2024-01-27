@@ -34,7 +34,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) : it
   dis_->FillComplete(true, true, true);
 
   coup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   coup_->SetupCoupling(*dis, *dis_, *DRT::UTILS::ConditionNodeRowMap(*dis, "FSICoupling"),
       *dis_->NodeRowMap(), ndim);
 }
@@ -45,7 +45,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) : it
 void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
 {
   std::stringstream s;
-  s << DRT::Problem::Instance()->OutputControlFile()->FileName();
+  s << GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
@@ -54,10 +54,10 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
       CORE::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
       s.str(),                                  // an output file name is needed
-      DRT::Problem::Instance()->NDim(),
+      GLOBAL::Problem::Instance()->NDim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
+      INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
 
   writer_ = dis_->Writer();
   writer_->SetOutput(control_);
@@ -97,7 +97,7 @@ FSI::UTILS::SimpleDebugWriter::SimpleDebugWriter(
 void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
 {
   std::stringstream s;
-  s << DRT::Problem::Instance()->OutputControlFile()->FileName() << "-" << name_;
+  s << GLOBAL::Problem::Instance()->OutputControlFile()->FileName() << "-" << name_;
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
@@ -106,10 +106,10 @@ void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
       CORE::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
       s.str(),                                  // an output file name is needed
-      DRT::Problem::Instance()->NDim(),
+      GLOBAL::Problem::Instance()->NDim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
+      INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
 
   writer_ = dis_->Writer();
   writer_->SetOutput(control_);

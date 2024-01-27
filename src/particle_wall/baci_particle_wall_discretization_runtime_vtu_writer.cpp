@@ -44,9 +44,10 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Init(
   walldatastate_ = walldatastate;
 
   // construct the writer object
-  runtime_vtuwriter_ = std::make_unique<IO::DiscretizationVisualizationWriterMesh>(
-      walldiscretization_, IO::VisualizationParametersFactory(
-                               DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")));
+  runtime_vtuwriter_ =
+      std::make_unique<IO::DiscretizationVisualizationWriterMesh>(walldiscretization_,
+          IO::VisualizationParametersFactory(
+              GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")));
 }
 
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRuntimeOutput(

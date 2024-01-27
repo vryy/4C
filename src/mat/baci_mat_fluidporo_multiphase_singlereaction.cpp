@@ -43,7 +43,7 @@ MAT::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(Teuchos::RCP<MAT::PAR
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroSingleReaction::Initialize()
 {
-  switch (DRT::Problem::Instance()->NDim())
+  switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
       return InitializeInternal<1>();
@@ -52,7 +52,7 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
     case 3:
       return InitializeInternal<3>();
     default:
-      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
 }
 
@@ -62,7 +62,7 @@ template <int dim>
 void MAT::PAR::FluidPoroSingleReaction::InitializeInternal()
 {
   // safety check
-  if (DRT::Problem::Instance()
+  if (GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
           .NumberComponents() != 1)
     dserror("expected only one component for single phase reaction!");
@@ -127,7 +127,7 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(std::vector<double>& re
     const std::vector<double>& volfracs, const std::vector<double>& volfracpressures,
     const std::vector<double>& scalar)
 {
-  switch (DRT::Problem::Instance()->NDim())
+  switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
       return EvaluateFunctionInternal<1>(reacval, reacderivspressure, reacderivssaturation,
@@ -142,7 +142,7 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(std::vector<double>& re
           reacderivsporosity, reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar,
           pressure, saturation, porosity, volfracs, volfracpressures, scalar);
     default:
-      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
 }
 
@@ -196,11 +196,11 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunctionInternal(std::vector<dou
         std::pair<std::string, double>(volfracpressurenames_[k], volfracpressures[k]));
 
   // evaluate the reaction term
-  double curval = DRT::Problem::Instance()
+  double curval = GLOBAL::Problem::Instance()
                       ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
                       .Evaluate(variables, constants, 0);
   // evaluate derivatives
-  std::vector<double> curderivs(DRT::Problem::Instance()
+  std::vector<double> curderivs(GLOBAL::Problem::Instance()
                                     ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
                                     .EvaluateDerivative(variables, constants, 0));
 
@@ -414,12 +414,12 @@ void MAT::FluidPoroSingleReaction::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroSingleReaction*>(mat);
       else

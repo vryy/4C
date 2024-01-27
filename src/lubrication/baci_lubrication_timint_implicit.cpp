@@ -60,7 +60,7 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
       dtele_(0.0),
       dtsolve_(0.0),
       iternum_(0),
-      nsd_(DRT::Problem::Instance()->NDim()),
+      nsd_(GLOBAL::Problem::Instance()->NDim()),
       // Initialization of degrees of freedom variables
       prenp_(Teuchos::null),
       nds_disp_(-1),
@@ -291,7 +291,7 @@ void LUBRICATION::TimIntImpl::SetHeightFieldPureLub(const int nds)
     for (int index = 0; index < nsd_; ++index)
     {
       double heightfuncvalue =
-          DRT::Problem::Instance()
+          GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
               .Evaluate(lnode->X().data(), time_, index);
 
@@ -334,7 +334,7 @@ void LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub(const int nds)
 
     for (int index = 0; index < nsd_; ++index)
     {
-      double velfuncvalue = DRT::Problem::Instance()
+      double velfuncvalue = GLOBAL::Problem::Instance()
                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
                                 .Evaluate(lnode->X().data(), time_, index);
 
@@ -1089,7 +1089,7 @@ void LUBRICATION::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
   {
     // print last error in a separate file
 
-    const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     const std::string fname = simulation + "_pressure_time.relerror";
 
     if (step_ == 0)
@@ -1185,7 +1185,7 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
       // file output
       std::stringstream number;
       number << num;
-      const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName() +
+      const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() +
                                 number.str() + ".meanvalues.txt";
 
       std::ofstream f;

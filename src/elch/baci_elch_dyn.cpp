@@ -31,7 +31,7 @@ BACI_NAMESPACE_OPEN
 void elch_dyn(int restart)
 {
   // pointer to problem
-  auto* problem = DRT::Problem::Instance();
+  auto* problem = GLOBAL::Problem::Instance();
 
   // access the communicator
   const auto& comm = problem->GetDis("fluid")->Comm();
@@ -81,11 +81,11 @@ void elch_dyn(int restart)
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
       auto scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
-          scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+          scatradyn, scatradyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       auto dofsetaux = Teuchos::rcp(
-          new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+          new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         dserror("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);

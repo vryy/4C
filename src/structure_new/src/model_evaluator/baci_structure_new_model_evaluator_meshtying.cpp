@@ -123,7 +123,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   {
     // perform mesh initialization if required by input parameter MESH_RELOCATION
     auto mesh_relocation_parameter = INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-        DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
+        GLOBAL::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
 
     if (mesh_relocation_parameter == INPAR::MORTAR::relocation_initial)
     {
@@ -322,7 +322,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::GetBlockDofRowMap
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetCurrentSolutionPtr() const
 {
   //  //TODO: this should be removed!
-  //  DRT::Problem* problem = DRT::Problem::Instance();
+  //  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   //  enum INPAR::CONTACT::SystemType systype =
   //      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
   //          problem->ContactDynamicParams(),"SYSTEM");
@@ -348,7 +348,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetCurrentSolu
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetLastTimeStepSolutionPtr() const
 {
-  //  DRT::Problem* problem = DRT::Problem::Instance();
+  //  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   //  enum INPAR::CONTACT::SystemType systype =
   //      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
   //          problem->ContactDynamicParams(),"SYSTEM");
@@ -435,7 +435,7 @@ void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(
   CORE::LINALG::Export(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
-  const int numdim = DRT::Problem::Instance()->NDim();
+  const int numdim = GLOBAL::Problem::Instance()->NDim();
   const Epetra_Vector& gvector = *Xslavemodcol;
 
   // loop over all slave nodes (for all procs)

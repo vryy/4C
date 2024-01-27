@@ -62,14 +62,14 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   poroelast_subproblem_ =
       Teuchos::rcp(new POROELAST::Monolithic(comm, fpsidynparams, Teuchos::null));
   // ask base algorithm for the fluid time integrator
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fpsidynparams, fluiddynparams, "fluid", true));
   fluid_subproblem_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFPSI>(fluid->FluidField());
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new ADAPTER::AleBaseAlgorithm(fpsidynparams, DRT::Problem::Instance()->GetDis("ale")));
+      new ADAPTER::AleBaseAlgorithm(fpsidynparams, GLOBAL::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->AleField());
   if (ale_ == Teuchos::null) dserror("cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
 
@@ -208,7 +208,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
       islinesearch_(false),
       firstcall_(true)
 {
-  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdynparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   solveradapttol_ = (INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
@@ -240,7 +240,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
         "in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors "
         "to BACI!");
 
-  const Teuchos::ParameterList& fdynparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdynparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   if (fdynparams.get<std::string>("PREDICTOR") != "steady_state")
     dserror(
         "No Fluid Predictor for FPSI implemented at the moment, choose <PREDICTOR = steady_state> "
@@ -254,7 +254,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
 /*----------------------------------------------------------------------*/
 void FPSI::Monolithic::SetupSystem()
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
@@ -283,7 +283,7 @@ void FPSI::Monolithic::SetupSystem_FSI()
 
   // right now we use matching meshes at the interface
 
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   CORE::ADAPTER::Coupling& coupsf_fsi = StructureFluidCoupling_FSI();
   CORE::ADAPTER::Coupling& coupsa_fsi = StructureAleCoupling_FSI();
@@ -484,10 +484,10 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 /*----------------------------------------------------------------------*/
 void FPSI::Monolithic::TestResults(const Epetra_Comm& comm)
 {
-  DRT::Problem::Instance()->AddFieldTest(PoroField()->StructureField()->CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(PoroField()->FluidField()->CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
+  GLOBAL::Problem::Instance()->AddFieldTest(PoroField()->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(PoroField()->FluidField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->TestAll(comm);
 }
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -497,7 +497,8 @@ void FPSI::Monolithic::TestResults(const Epetra_Comm& comm)
 
 void FPSI::Monolithic::SetupSolver()
 {
-  const Teuchos::ParameterList& fpsidynamicparams = DRT::Problem::Instance()->FPSIDynamicParams();
+  const Teuchos::ParameterList& fpsidynamicparams =
+      GLOBAL::Problem::Instance()->FPSIDynamicParams();
 
   const int linsolvernumber = fpsidynamicparams.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
@@ -506,7 +507,7 @@ void FPSI::Monolithic::SetupSolver()
         "valid number !");
 
   const Teuchos::ParameterList& solverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
@@ -547,7 +548,7 @@ void FPSI::Monolithic::SetupSolver()
     toleranceiterinc_ = toleranceiterinclist_[0];
   }
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
   linesearch_ = INPUT::IntegralValue<int>(fpsidynparams, "LineSearch");
   if (linesearch_ == 1)
@@ -568,7 +569,7 @@ void FPSI::Monolithic::SetupSolver()
 void FPSI::Monolithic::CreateLinearSolver()
 {
   // get dynamic section
-  const Teuchos::ParameterList& fpsidyn = DRT::Problem::Instance()->FPSIDynamicParams();
+  const Teuchos::ParameterList& fpsidyn = GLOBAL::Problem::Instance()->FPSIDynamicParams();
 
   // get the linear solver number
   const int linsolvernumber = fpsidyn.get<int>("LINEAR_SOLVER");
@@ -578,7 +579,7 @@ void FPSI::Monolithic::CreateLinearSolver()
         "valid number !");
 
   // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   // use solver blocks for structure
   // get the solver number used for structural solver
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -589,7 +590,7 @@ void FPSI::Monolithic::CreateLinearSolver()
         "DYNAMIC to a valid number!");
 
   // get parameter list of fluid dynamics
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
   // use solver blocks for fluid
   // get the solver number used for fluid solver
   const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
@@ -600,7 +601,7 @@ void FPSI::Monolithic::CreateLinearSolver()
         "valid number!");
 
   // get parameter list of structural dynamics
-  const Teuchos::ParameterList& aledyn = DRT::Problem::Instance()->AleDynamicParams();
+  const Teuchos::ParameterList& aledyn = GLOBAL::Problem::Instance()->AleDynamicParams();
   // use solver blocks for structure
   // get the solver number used for structural solver
   const int alinsolvernumber = aledyn.get<int>("LINEAR_SOLVER");
@@ -612,7 +613,7 @@ void FPSI::Monolithic::CreateLinearSolver()
 
   // get solver parameter list of linear Poroelasticity solver
   const Teuchos::ParameterList& fpsisolverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(fpsisolverparams, "SOLVER");
@@ -649,11 +650,11 @@ void FPSI::Monolithic::CreateLinearSolver()
 
   // use solver blocks for structure and fluid
   const Teuchos::ParameterList& ssolverparams =
-      DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(slinsolvernumber);
   const Teuchos::ParameterList& fsolverparams =
-      DRT::Problem::Instance()->SolverParams(flinsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(flinsolvernumber);
   const Teuchos::ParameterList& asolverparams =
-      DRT::Problem::Instance()->SolverParams(alinsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(alinsolvernumber);
 
   // for now, use same solver parameters for poro fluid and free fluid
 
@@ -679,7 +680,7 @@ void FPSI::Monolithic::CreateLinearSolver()
   // fixing length of Inverse1 nullspace (solver/preconditioner ML)
   {
     std::string inv = "Inverse1";
-    const Epetra_Map& oldmap = *(DRT::Problem::Instance()->GetDis("structure")->DofRowMap());
+    const Epetra_Map& oldmap = *(GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(structure_block_, structure_block_).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
@@ -725,7 +726,7 @@ void FPSI::Monolithic::LinearSolve()
     solver_params.nonlin_residual = toleranceresidualforces_;
     solver_params.lin_tol_better = solveradaptolbetter_;
   }
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
   if (Teuchos::getIntegralValue<int>(fpsidynparams, "FDCheck"))
   {
@@ -1502,7 +1503,7 @@ void FPSI::Monolithic::FPSIFDCheck()
   // define and set toggle parameter delta
   const double delta = 1e-8;
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
   int columntocheck = fpsidynparams.get<int>("FDCheck_column");
   int rowtocheck = fpsidynparams.get<int>("FDCheck_row");

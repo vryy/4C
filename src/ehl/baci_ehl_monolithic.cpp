@@ -65,16 +65,16 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
           lubrication_disname),
       solveradapttol_(
           INPUT::IntegralValue<int>(
-              ((DRT::Problem::Instance()->ElastoHydroDynamicParams()).sublist("MONOLITHIC")),
+              ((GLOBAL::Problem::Instance()->ElastoHydroDynamicParams()).sublist("MONOLITHIC")),
               "ADAPTCONV") == 1),
       solveradaptolbetter_(
-          ((DRT::Problem::Instance()->ElastoHydroDynamicParams()).sublist("MONOLITHIC"))
+          ((GLOBAL::Problem::Instance()->ElastoHydroDynamicParams()).sublist("MONOLITHIC"))
               .get<double>("ADAPTCONV_BETTER")),
       printiter_(true),  // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
       strmethodname_(INPUT::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP")),
-      ehldyn_(DRT::Problem::Instance()->ElastoHydroDynamicParams()),
-      ehldynmono_((DRT::Problem::Instance()->ElastoHydroDynamicParams()).sublist("MONOLITHIC")),
+      ehldyn_(GLOBAL::Problem::Instance()->ElastoHydroDynamicParams()),
+      ehldynmono_((GLOBAL::Problem::Instance()->ElastoHydroDynamicParams()).sublist("MONOLITHIC")),
       blockrowdofmap_(Teuchos::null),
       systemmatrix_(Teuchos::null),
       k_sl_(Teuchos::null),
@@ -98,7 +98,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     // get solver parameter list of linear TSI solver
     const int linsolvernumber = ehldynmono_.get<int>("LINEAR_SOLVER");
     const Teuchos::ParameterList& ehlsolverparams =
-        DRT::Problem::Instance()->SolverParams(linsolvernumber);
+        GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     *solverparams = ehlsolverparams;
@@ -144,7 +144,7 @@ void EHL::Monolithic::CreateLinearSolver()
         "DYNAMIC to a valid number!");
 
   // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   // use solver blocks for structure
   // get the solver number used for structural solver
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -155,7 +155,7 @@ void EHL::Monolithic::CreateLinearSolver()
         "DYNAMIC to a valid number!");
 
   // get parameter list of lubrication dynamics
-  const Teuchos::ParameterList& ldyn = DRT::Problem::Instance()->LubricationDynamicParams();
+  const Teuchos::ParameterList& ldyn = GLOBAL::Problem::Instance()->LubricationDynamicParams();
   // use solver blocks for pressure (lubrication field)
   // get the solver number used for lubrication solver
   const int tlinsolvernumber = ldyn.get<int>("LINEAR_SOLVER");
@@ -167,7 +167,7 @@ void EHL::Monolithic::CreateLinearSolver()
 
   // get solver parameter list of linear EHL solver
   const Teuchos::ParameterList& ehlsolverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(ehlsolverparams, "SOLVER");
@@ -221,9 +221,9 @@ void EHL::Monolithic::CreateLinearSolver()
 
       // use solver blocks for structure and pressure (lubrication field)
       const Teuchos::ParameterList& ssolverparams =
-          DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(slinsolvernumber);
       const Teuchos::ParameterList& tsolverparams =
-          DRT::Problem::Instance()->SolverParams(tlinsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(tlinsolvernumber);
 
       solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
       solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
@@ -252,9 +252,9 @@ void EHL::Monolithic::CreateLinearSolver()
 
       // use solver blocks for structure and pressure (lubrication field)
       const Teuchos::ParameterList& ssolverparams =
-          DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(slinsolvernumber);
       const Teuchos::ParameterList& tsolverparams =
-          DRT::Problem::Instance()->SolverParams(tlinsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(tlinsolvernumber);
 
       // This is not very elegant:
       // first read in solver parameters. These have to contain ML parameters such that...
@@ -1647,7 +1647,7 @@ void EHL::Monolithic::SetDefaultParameters()
 {
   // time parameters
   // call the EHL parameter list
-  const Teuchos::ParameterList& ldyn = DRT::Problem::Instance()->LubricationDynamicParams();
+  const Teuchos::ParameterList& ldyn = GLOBAL::Problem::Instance()->LubricationDynamicParams();
 
   // get the parameters for the Newton iteration
   itermax_ = ehldyn_.get<int>("ITEMAX");
@@ -1893,7 +1893,7 @@ void EHL::Monolithic::LinPoiseuilleForceDisp(Teuchos::RCP<CORE::LINALG::SparseMa
 void EHL::Monolithic::LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   DRT::Discretization& lub_dis = *lubrication_->LubricationField()->Discretization();
   Teuchos::RCP<Epetra_Vector> visc_vec =
       Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->DofRowMap(1)));
@@ -2041,7 +2041,7 @@ void EHL::Monolithic::LinPoiseuilleForcePres(Teuchos::RCP<CORE::LINALG::SparseMa
 void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dp)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   const Teuchos::RCP<const Epetra_Vector> relVel = mortaradapter_->RelTangVel();
   Teuchos::RCP<Epetra_Vector> height =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));

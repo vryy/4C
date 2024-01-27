@@ -90,8 +90,8 @@ namespace CORE::LINALG
     by #TranslateSolverParameters to the format required by Belos, if @p translate_params is true.
     Otherwise, they need to be provided such that Belos understands them.
 
-    \param inparams (in): input parameter list as provided by DRT::Problem,
-                          e.g. DRT::Problem::SolverParams(num)
+    \param inparams (in): input parameter list as provided by GLOBAL::Problem,
+                          e.g. GLOBAL::Problem::SolverParams(num)
     \param comm     (in): a reference to a Epetra communicator object
 
     \param translate_params_to_belos  (in): translate parameters to Belos
@@ -189,8 +189,8 @@ namespace CORE::LINALG
     \brief Translate solver input parameters from input parameter list to
            internal solver parameters list style
 
-    \param inparams (in): input parameter list as provided by DRT::Problem,
-                          e.g. DRT::Problem::SolverParams(num) in case of solver for
+    \param inparams (in): input parameter list as provided by GLOBAL::Problem,
+                          e.g. GLOBAL::Problem::SolverParams(num) in case of solver for
                           structures and num according to STRUCTURAL DYNAMIC
     \return             : internal parameter list ready to be associated
                           with #params_
@@ -217,8 +217,8 @@ namespace CORE::LINALG
            parameters
 
     \param name     (in): name for sublist for #params_ to attach data to
-    \param inparams (in): input parameter list as provided by DRT::Problem,
-                          e.g. DRT::Problem::FluidPressureSolverParams in case
+    \param inparams (in): input parameter list as provided by GLOBAL::Problem,
+                          e.g. GLOBAL::Problem::FluidPressureSolverParams in case
                           of additional solver for pressure preconditioner
     \author bborn
     \date 11/08

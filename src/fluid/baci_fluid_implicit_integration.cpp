@@ -108,7 +108,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(const Teuchos::RCP<DRT::Discreti
       impedancebc_(Teuchos::null),
       isimpedancebc_(false),
       off_proc_assembly_(params_->get<bool>("OFF_PROC_ASSEMBLY", false)),
-      ndsale_((DRT::Problem::Instance()->SpatialApproximationType() ==
+      ndsale_((GLOBAL::Problem::Instance()->SpatialApproximationType() ==
                   CORE::FE::ShapeFunctionType::hdg) *
               2),
       massmat_(Teuchos::null),
@@ -269,8 +269,8 @@ void FLD::FluidImplicitTimeInt::Init()
     // XWall: enrichment with spaldings law
     if (INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"), "X_WALL"))
     {
-      if (DRT::Problem::Instance()->GetProblemType() == ProblemType::fsi ||
-          DRT::Problem::Instance()->GetProblemType() == ProblemType::fluid_ale)
+      if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fsi ||
+          GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fluid_ale)
       {
         xwall_ = Teuchos::rcp(
             new XWallAleFSI(discret_, numdim_, params_, dbcmaps_, stressmanager_, dispnp_, gridv_));
@@ -532,7 +532,7 @@ void FLD::FluidImplicitTimeInt::CompleteGeneralInit()
   {
     // write energy-file
     {
-      std::string fileiter = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      std::string fileiter = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
       fileiter.append(".fluidenergy");
       logenergy_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
@@ -894,7 +894,7 @@ void FLD::FluidImplicitTimeInt::Solve()
       //     the integration error can already disturb matrix nullspace too
       //     much for sensitive problems
       //     xwall uses non-polynomial shape functions
-      if (DRT::Problem::Instance()->SpatialApproximationType() ==
+      if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
               CORE::FE::ShapeFunctionType::polynomial &&
           xwall_ == Teuchos::null)
         CheckMatrixNullspace();
@@ -1403,7 +1403,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     if (myrank_ == 0)
     {
       const std::string fname1 =
-          DRT::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
+          GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
 
       std::ofstream f1;
 
@@ -1563,7 +1563,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       if (myrank_ == 0)
       {
         const std::string fname1 =
-            DRT::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
+            GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
 
         std::ofstream f1;
         f1.open(fname1.c_str(), std::fstream::ate | std::fstream::app);
@@ -1577,7 +1577,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     if (myrank_ == 0)
     {
       const std::string fname1 =
-          DRT::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
+          GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
 
       std::ofstream f1;
       f1.open(fname1.c_str(), std::fstream::ate | std::fstream::app);
@@ -2690,7 +2690,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
           for (int i = 0; i < numdim_; i++)
           {
             (*nodeNormals)[dofsLocalInd[i]] =
-                (DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+                (GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                      nodeNormalFunct - 1))
                     .Evaluate(currPos.data(), 0.0, i);
           }
@@ -3238,7 +3238,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
     if (myrank_ == 0)
     {
       const std::string fname1 =
-          DRT::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
+          GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".fdpressure";
       std::ofstream f1;
       f1.open(fname1.c_str(), std::fstream::ate | std::fstream::app);
 
@@ -3988,7 +3988,7 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
 {
   // get order of accuracy of grid velocity determination
   // from input file data
-  const Teuchos::ParameterList& fluiddynparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluiddynparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   const int gridvel = INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   switch (gridvel)
@@ -4177,7 +4177,7 @@ void FLD::FluidImplicitTimeInt::AVM3GetScaleSeparationMatrix()
   if (scale_sep_solvernumber != (-1))  // create a dummy solver
   {
     Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-        DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber), discret_->Comm()));
+        GLOBAL::Problem::Instance()->SolverParams(scale_sep_solvernumber), discret_->Comm()));
     // compute the null space,
     discret_->ComputeNullSpaceIfNecessary(solver->Params(), true);
 
@@ -4266,7 +4266,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       {
         int gid = nodedofset[index];
 
-        double initialval = DRT::Problem::Instance()
+        double initialval = GLOBAL::Problem::Instance()
                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                 .Evaluate(lnode->X().data(), time_, index);
 
@@ -4277,7 +4277,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     // for NURBS discretizations we have to solve a least squares problem,
     // with high accuracy! (do nothing for Lagrangian polynomials)
     DRT::NURBS::apply_nurbs_initial_condition(
-        *discret_, DRT::Problem::Instance()->UMFPACKSolverParams(), startfuncno, velnp_);
+        *discret_, GLOBAL::Problem::Instance()->UMFPACKSolverParams(), startfuncno, velnp_);
 
     // initialize veln_ as well. That's what we actually want to do here!
     veln_->Update(1.0, *velnp_, 0.0);
@@ -4356,7 +4356,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
         {
           int gid = nodedofset[index];
 
-          double randomnumber = DRT::Problem::Instance()->Random()->Uni();
+          double randomnumber = GLOBAL::Problem::Instance()->Random()->Uni();
 
           double noise = perc * bmvel * randomnumber;
 
@@ -4545,9 +4545,9 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
                       exp(a * xyz[1]) * cos(a * xyz[2] + d * xyz[0]));
 
       // compute initial pressure
-      int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+      int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
       if (id == -1) dserror("Newtonian fluid material could not be found");
-      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const auto* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
       double dens = actmat->density_;
       double visc = actmat->viscosity_;
@@ -4914,7 +4914,8 @@ Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorCompar
         if ((step_ == stepmax_) or (time_ == maxtime_))  // write results to file
         {
           std::ostringstream temp;
-          const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+          const std::string simulation =
+              GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
           const std::string fname = simulation + ".relerror";
 
           std::ofstream f;
@@ -4930,7 +4931,7 @@ Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorCompar
 
 
         std::ostringstream temp;
-        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
         const std::string fname = simulation + "_time.relerror";
 
         if (step_ == 1)
@@ -5017,7 +5018,7 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::EvaluateDivU()
       std::cout << "| Norm(inf) = " << maxdivu << " | Norm(1) = " << *sumdivu << "  |" << std::endl;
       std::cout << "---------------------------------------------------" << std::endl << std::endl;
 
-      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
       const std::string fname = simulation + ".divu";
 
       std::ofstream f;

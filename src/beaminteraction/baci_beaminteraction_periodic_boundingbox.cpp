@@ -59,7 +59,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Init()
   // fixme: like this or by eight nodes of element in discret
   box_.PutScalar(1.0e12);
   std::istringstream xaabbstream(Teuchos::getNumericStringParameter(
-      DRT::Problem::Instance()->BinningStrategyParams(), "DOMAINBOUNDINGBOX"));
+      GLOBAL::Problem::Instance()->BinningStrategyParams(), "DOMAINBOUNDINGBOX"));
   for (int col = 0; col < 2; ++col)
   {
     for (int row = 0; row < 3; ++row)
@@ -79,7 +79,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Init()
 
   // set up boundary conditions
   std::istringstream periodicbc(Teuchos::getNumericStringParameter(
-      DRT::Problem::Instance()->BinningStrategyParams(), "PERIODICONOFF"));
+      GLOBAL::Problem::Instance()->BinningStrategyParams(), "PERIODICONOFF"));
 
   // loop over all spatial directions
   for (int dim = 0; dim < 3; ++dim)
@@ -155,7 +155,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Setup()
   disn_col_ = CORE::LINALG::CreateVector(*boxdiscret_->DofColMap(), true);
 
   // initialize bounding box runtime output
-  if (DRT::Problem::Instance()
+  if (GLOBAL::Problem::Instance()
           ->IOParams()
           .sublist("RUNTIME VTK OUTPUT")
           .get<int>("INTERVAL_STEPS") != -1)
@@ -169,9 +169,9 @@ void CORE::GEO::MESHFREE::BoundingBox::Setup()
  *----------------------------------------------------------------------------*/
 void CORE::GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
 {
-  if (DRT::Problem::Instance()->DoesExistDis("boundingbox"))
+  if (GLOBAL::Problem::Instance()->DoesExistDis("boundingbox"))
   {
-    boxdiscret_ = DRT::Problem::Instance()->GetDis("boundingbox");
+    boxdiscret_ = GLOBAL::Problem::Instance()->GetDis("boundingbox");
 
     if (boxdiscret_->Filled() == false) boxdiscret_->FillComplete(true, false, false);
 
@@ -188,18 +188,18 @@ void CORE::GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
     boxdiscret_->FillComplete(true, false, false);
   }
 
-  if (not DRT::Problem::Instance()->DoesExistDis("boundingbox") or
+  if (not GLOBAL::Problem::Instance()->DoesExistDis("boundingbox") or
       boxdiscret_->NumMyColElements() == 0)
   {
-    if (not DRT::Problem::Instance()->DoesExistDis("boundingbox"))
+    if (not GLOBAL::Problem::Instance()->DoesExistDis("boundingbox"))
     {
       Teuchos::RCP<Epetra_Comm> com =
-          Teuchos::rcp(DRT::Problem::Instance()->GetDis("structure")->Comm().Clone());
+          Teuchos::rcp(GLOBAL::Problem::Instance()->GetDis("structure")->Comm().Clone());
       boxdiscret_ = Teuchos::rcp(new DRT::Discretization("boundingbox", com));
     }
     else
     {
-      boxdiscret_ = DRT::Problem::Instance()->GetDis("boundingbox");
+      boxdiscret_ = GLOBAL::Problem::Instance()->GetDis("boundingbox");
     }
 
     // create nodes
@@ -472,9 +472,9 @@ void CORE::GEO::MESHFREE::BoundingBox::RandomPosWithin(CORE::LINALG::Matrix<3, 1
 {
   ThrowIfNotInit();
 
-  DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+  GLOBAL::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
   std::vector<double> randuni;
-  DRT::Problem::Instance()->Random()->Uni(randuni, 3);
+  GLOBAL::Problem::Instance()->Random()->Uni(randuni, 3);
 
   CORE::LINALG::Matrix<3, 1> randpos_ud(true);
   for (int dim = 0; dim < 3; ++dim)
@@ -616,7 +616,7 @@ void CORE::GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
 {
   visualization_output_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
       boxdiscret_, IO::VisualizationParametersFactory(
-                       DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
+                       GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
 }
 
 /*----------------------------------------------------------------------------*

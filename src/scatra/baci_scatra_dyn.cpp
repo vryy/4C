@@ -44,23 +44,23 @@ BACI_NAMESPACE_OPEN
 void scatra_dyn(int restart)
 {
   // access the communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("fluid")->Comm();
 
   // print problem type
   if (comm.MyPID() == 0)
   {
     std::cout << "###################################################" << '\n';
-    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << '\n';
+    std::cout << "# YOUR PROBLEM TYPE: " << GLOBAL::Problem::Instance()->ProblemName() << '\n';
     std::cout << "###################################################" << '\n';
   }
 
   // access the problem-specific parameter list
-  const auto& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  const auto& scatradyn = GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
 
   // access the fluid discretization
-  auto fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  auto fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
   // access the scatra discretization
-  auto scatradis = DRT::Problem::Instance()->GetDis("scatra");
+  auto scatradis = GLOBAL::Problem::Instance()->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order;
   // this creates dof numbers with fluid dof < scatra dof
@@ -69,7 +69,7 @@ void scatra_dyn(int restart)
 
   // determine coupling type
   const auto fieldcoupling = INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(
-      DRT::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING");
+      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING");
 
   // determine velocity type
   const auto veltype =
@@ -116,11 +116,11 @@ void scatra_dyn(int restart)
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
       auto scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
-          scatradyn, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+          scatradyn, scatradyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       auto dofsetaux = Teuchos::rcp(
-          new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+          new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         dserror("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
@@ -200,7 +200,7 @@ void scatra_dyn(int restart)
       }
 
       // support for turbulent flow statistics
-      const Teuchos::ParameterList& fdyn = (DRT::Problem::Instance()->FluidDynamicParams());
+      const Teuchos::ParameterList& fdyn = (GLOBAL::Problem::Instance()->FluidDynamicParams());
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
@@ -213,7 +213,7 @@ void scatra_dyn(int restart)
 
       // create a scalar transport algorithm instance
       auto algo = Teuchos::rcp(new SCATRA::ScaTraAlgorithm(comm, scatradyn, fdyn, "scatra",
-          DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // create scatra elements by cloning from fluid dis in matching case
       if (fieldcoupling == INPAR::SCATRA::coupling_match)

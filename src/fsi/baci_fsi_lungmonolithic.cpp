@@ -195,7 +195,7 @@ FSI::LungMonolithic::LungMonolithic(
 /*----------------------------------------------------------------------*/
 void FSI::LungMonolithic::GeneralSetup()
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
       INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
@@ -216,7 +216,7 @@ void FSI::LungMonolithic::GeneralSetup()
   CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
   CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   // structure to fluid
 
@@ -288,7 +288,8 @@ void FSI::LungMonolithic::GeneralSetup()
 
   if (Comm().MyPID() == 0)
   {
-    std::string outputprefix = DRT::Problem::Instance()->OutputControlFile()->NewOutputFileName();
+    std::string outputprefix =
+        GLOBAL::Problem::Instance()->OutputControlFile()->NewOutputFileName();
     std::string dfluidfilename;
     std::string dstructfilename;
     std::string absstructfilename;
@@ -440,7 +441,7 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
 void FSI::LungMonolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -493,7 +494,7 @@ void FSI::LungMonolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, 
 void FSI::LungMonolithic::UnscaleSolution(
     CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -918,7 +919,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> FSI::LungMonolithic::SystemMat
 /*----------------------------------------------------------------------*/
 void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // get the PCITER from inputfile

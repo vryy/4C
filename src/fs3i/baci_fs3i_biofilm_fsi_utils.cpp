@@ -50,7 +50,7 @@ void FS3I::BIOFILM::UTILS::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> 
     std::vector<double> nvector(3, 0.0);
 
     // determine number of space dimensions
-    const int numdim = DRT::Problem::Instance()->NDim();
+    const int numdim = GLOBAL::Problem::Instance()->NDim();
 
     for (int i = 0; i < numdim; ++i)
     {

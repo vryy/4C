@@ -22,7 +22,7 @@ BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
     : isinit_(false),
       issetup_(false),
       visualization_parameters_(IO::VisualizationParametersFactory(
-          DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))),
+          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))),
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_forces_(false),
@@ -49,7 +49,7 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::Setup()
 
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_contact_visualization_output_paramslist =
-      DRT::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT");
+      GLOBAL::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT");
 
   /****************************************************************************/
   // get and check required parameters

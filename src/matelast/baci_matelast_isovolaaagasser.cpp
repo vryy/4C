@@ -24,16 +24,16 @@ MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR:
     : Parameter(matdata), isinit_(false)
 {
   // new style
-  Epetra_Map dummy_map(1, 1, 0, *(DRT::Problem::Instance()->GetCommunicators()->LocalComm()));
+  Epetra_Map dummy_map(1, 1, 0, *(GLOBAL::Problem::Instance()->GetCommunicators()->LocalComm()));
 
   // Epetra_Map dummy_map(1, 1, 0,
-  // *(DRT::Problem::Instance()->GetDis("Structure")->ElementColMap()));
+  // *(GLOBAL::Problem::Instance()->GetDis("Structure")->ElementColMap()));
 
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
     // matparams_.push_back(Teuchos::rcp(new
-    // Epetra_Vector(*(DRT::Problem::Instance()->GetDis("structure")->ElementColMap()),true)));
+    // Epetra_Vector(*(GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()),true)));
   }
   matparams_.at(clum)->PutScalar(matdata->GetDouble("CLUM"));
   matparams_.at(cmed)->PutScalar(matdata->GetDouble("CMED"));
@@ -91,7 +91,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params, con
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters
   //  int eleID =
-  //      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
+  //      GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
   //          eleGID);
 
   CalcCele(eleGID);
@@ -164,7 +164,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddDerivativesModified(CORE::LINALG::Matrix<
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters
   //  int eleID =
-  //      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
+  //      GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
   //          eleGID);
 
   if (params_->IsInit())
@@ -198,7 +198,7 @@ bool MAT::ELASTIC::IsoVolAAAGasser::VisData(
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID in case we have element specific material parameters
   //  int eleID =
-  //      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
+  //      GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
   //          eleGID);
 
   if (name == "cele")

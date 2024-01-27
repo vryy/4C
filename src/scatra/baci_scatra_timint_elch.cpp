@@ -1713,8 +1713,8 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
           "non-linear solver!!");
     }
 
-    if (problem_->GetProblemType() != ProblemType::ssi and
-        problem_->GetProblemType() != ProblemType::ssti and
+    if (problem_->GetProblemType() != GLOBAL::ProblemType::ssi and
+        problem_->GetProblemType() != GLOBAL::ProblemType::ssti and
         INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params_, "CONVFORM") !=
             INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");
@@ -3138,7 +3138,7 @@ void SCATRA::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint
           elchtimint->ElchParameterList()->sublist("DIFFCOND"), "CURRENT_SOLUTION_VAR"))
   {
     // shape of local row element(0) -> number of space dimensions
-    int dim = DRT::Problem::Instance()->NDim();
+    int dim = GLOBAL::Problem::Instance()->NDim();
     // number of concentrations transported is numdof-1-dim
     numscal_.clear();
     numscal_.insert(NumDofPerNode() - 1 - dim);

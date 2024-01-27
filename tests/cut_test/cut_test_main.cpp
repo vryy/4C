@@ -417,7 +417,7 @@ int runtests(char** argv, std::map<std::string, testfunct>& functable, std::stri
  */
 void SetProblemDimension(const std::map<std::string, testfunct>& functable)
 {
-  DRT::Problem& problem = (*DRT::Problem::Instance());
+  GLOBAL::Problem& problem = (*GLOBAL::Problem::Instance());
   Teuchos::RCP<Teuchos::ParameterList> pptr = Teuchos::rcp(new Teuchos::ParameterList());
   Teuchos::ParameterList& size_params = pptr->sublist("PROBLEM SIZE", false);
   int probdim = 3;
@@ -776,7 +776,7 @@ int main(int argc, char** argv)
 
   SetProblemDimension(functable);
   int result = runtests(argv, functable, testname, ignore_testname);
-  DRT::Problem::Done();
+  GLOBAL::Problem::Done();
   MPI_Finalize();
   return result;
 }

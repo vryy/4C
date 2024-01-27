@@ -24,7 +24,7 @@ POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
       fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(FluidField()->Velnp())))),
       structincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp()))))
 {
-  const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+  const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
   // Get the parameters for the ConvergenceCheck
   itmax_ = porodyn.get<int>("ITEMAX");     // default: =10
   ittol_ = porodyn.get<double>("INCTOL");  // default: =1e-6

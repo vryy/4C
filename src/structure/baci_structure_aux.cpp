@@ -64,7 +64,7 @@ double STR::CalculateVectorNorm(const enum INPAR::STR::VectorNorm norm,
 void STR::MapExtractor::Setup(
     const DRT::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
   mcs.SetOverlapping(overlapping);
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));

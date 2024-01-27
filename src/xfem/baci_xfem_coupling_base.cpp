@@ -71,7 +71,7 @@ XFEM::CouplingBase::CouplingBase(
     const double time,      ///< time
     const int step          ///< time step
     )
-    : nsd_(DRT::Problem::Instance()->NDim()),
+    : nsd_(GLOBAL::Problem::Instance()->NDim()),
       bg_dis_(bg_dis),
       cond_name_(cond_name),
       cond_dis_(cond_dis),
@@ -572,7 +572,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 
     if (functnum > 0)
     {
-      functionfac = DRT::Problem::Instance()
+      functionfac = GLOBAL::Problem::Instance()
                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                         .Evaluate(x, time, dof % numdof);
     }
@@ -586,8 +586,9 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 
       if (fabs(perc) > 1e-14)
       {
-        const double randomnumber =
-            DRT::Problem::Instance()->Random()->Uni();  // uniformly distributed between -1.0, 1.0
+        const double randomnumber = GLOBAL::Problem::Instance()
+                                        ->Random()
+                                        ->Uni();  // uniformly distributed between -1.0, 1.0
         noise = perc * randomnumber;
       }
     }
@@ -633,7 +634,7 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
 
     if (functnum > 0)
     {
-      functionfac = DRT::Problem::Instance()
+      functionfac = GLOBAL::Problem::Instance()
                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                         .Evaluate(x, time, dof % numdof);
     }
@@ -647,8 +648,9 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
 
       if (fabs(perc) > 1e-14)
       {
-        const double randomnumber =
-            DRT::Problem::Instance()->Random()->Uni();  // uniformly distributed between -1.0, 1.0
+        const double randomnumber = GLOBAL::Problem::Instance()
+                                        ->Random()
+                                        ->Uni();  // uniformly distributed between -1.0, 1.0
         noise = perc * randomnumber;
       }
     }

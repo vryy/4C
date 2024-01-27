@@ -29,7 +29,7 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid) : DRT::Result
   mysol_ = fluid.velnp_;
 
   // quantities not implemented in the HDG formulation
-  if (DRT::Problem::Instance()->SpatialApproximationType() != CORE::FE::ShapeFunctionType::hdg)
+  if (GLOBAL::Problem::Instance()->SpatialApproximationType() != CORE::FE::ShapeFunctionType::hdg)
   {
     mytraction_ = fluid.stressmanager_->GetPreCalcStresses(fluid.trueresidual_);
     mywss_ = fluid.stressmanager_->GetPreCalcWallShearStresses(fluid.trueresidual_);
@@ -72,7 +72,7 @@ void FLD::FluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& 
 
       const Epetra_BlockMap& velnpmap = mysol_->Map();
 
-      const int numdim = DRT::Problem::Instance()->NDim();
+      const int numdim = GLOBAL::Problem::Instance()->NDim();
 
       std::string position;
       res.ExtractString("QUANTITY", position);

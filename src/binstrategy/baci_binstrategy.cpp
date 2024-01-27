@@ -43,10 +43,10 @@ BINSTRATEGY::BinningStrategy::BinningStrategy()
       domain_bounding_box_corner_positions_(true),
       deforming_simulation_domain_handler_(Teuchos::null),
       writebinstype_(INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(
-          DRT::Problem::Instance()->BinningStrategyParams(), ("WRITEBINS"))),
+          GLOBAL::Problem::Instance()->BinningStrategyParams(), ("WRITEBINS"))),
       havepbc_(false),
-      myrank_(DRT::Problem::Instance()->GetCommunicators()->GlobalComm()->MyPID()),
-      comm_(DRT::Problem::Instance()->GetCommunicators()->LocalComm()->Clone())
+      myrank_(GLOBAL::Problem::Instance()->GetCommunicators()->GlobalComm()->MyPID()),
+      comm_(GLOBAL::Problem::Instance()->GetCommunicators()->LocalComm()->Clone())
 {
   // initialize arrays
   for (int idim = 0; idim < 3; ++idim)
@@ -76,7 +76,7 @@ void BINSTRATEGY::BinningStrategy::Init(
 
   // binning strategy params
   const Teuchos::ParameterList& binstrategyparams =
-      DRT::Problem::Instance()->BinningStrategyParams();
+      GLOBAL::Problem::Instance()->BinningStrategyParams();
 
   // try to read valid input
   bool feasibleboxinput = true;
@@ -515,7 +515,7 @@ double BINSTRATEGY::BinningStrategy::GetMaxBinSize() const
 void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
 {
   std::istringstream periodicbc(Teuchos::getNumericStringParameter(
-      DRT::Problem::Instance()->BinningStrategyParams(), "PERIODICONOFF"));
+      GLOBAL::Problem::Instance()->BinningStrategyParams(), "PERIODICONOFF"));
 
   // loop over all spatial directions
   for (int dim = 0; dim < 3; ++dim)

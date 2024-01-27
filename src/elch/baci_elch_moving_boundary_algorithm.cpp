@@ -395,7 +395,7 @@ void ELCH::MovingBoundaryAlgorithm::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::TestResults()
 {
-  auto* problem = DRT::Problem::Instance();
+  auto* problem = GLOBAL::Problem::Instance();
   problem->AddFieldTest(FluidField()->CreateFieldTest());
   problem->AddFieldTest(AleField()->CreateFieldTest());
   problem->AddFieldTest(ScaTraField()->CreateScaTraFieldTest());

@@ -196,7 +196,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
       std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
       std::vector<CORE::LINALG::SerialDenseVector> boundaryknots(dim - 1);
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
-          DRT::Problem::Instance()->GetDis("structure").get())
+          GLOBAL::Problem::Instance()->GetDis("structure").get())
           ->GetKnotVector()
           ->GetBoundaryEleAndParentKnots(
               parentknots, boundaryknots, normalfac, ParentElement()->Id(), FaceParentNumber());
@@ -255,7 +255,7 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
   {
     std::vector<CORE::LINALG::SerialDenseVector> knots;
     dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
-        DRT::Problem::Instance()->GetDis("structure").get())
+        GLOBAL::Problem::Instance()->GetDis("structure").get())
         ->GetKnotVector()
         ->GetEleKnots(knots, ParentElementId());
 

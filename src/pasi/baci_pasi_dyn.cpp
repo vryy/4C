@@ -26,7 +26,7 @@ BACI_NAMESPACE_OPEN
 void pasi_dyn()
 {
   // get pointer to global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // create a communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();

@@ -53,9 +53,9 @@ BACI_NAMESPACE_OPEN
 FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams, const ADAPTER::FieldWrapper::Fieldtype type)
     : AlgorithmXFEM(comm, timeparams, type),
-      fsidyn_(DRT::Problem::Instance()->FSIDynamicParams()),
+      fsidyn_(GLOBAL::Problem::Instance()->FSIDynamicParams()),
       fsimono_(fsidyn_.sublist("MONOLITHIC SOLVER")),
-      xfluidparams_(DRT::Problem::Instance()->XFluidDynamicParams()),
+      xfluidparams_(GLOBAL::Problem::Instance()->XFluidDynamicParams()),
       xfpsimono_(xfluidparams_.sublist("XFPSI MONOLITHIC")),
       solveradapttol_(true),
       solveradaptolbetter_(fsimono_.get<double>("ADAPTIVEDIST")),  // adaptive distance
@@ -123,8 +123,8 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
 
   // TODO set some of these flags via the input file
 
-  //  const Teuchos::ParameterList& xdyn       = DRT::Problem::Instance()->XFEMGeneralParams();
-  //  const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
+  //  const Teuchos::ParameterList& xdyn       = GLOBAL::Problem::Instance()->XFEMGeneralParams();
+  //  const Teuchos::ParameterList& xfluiddyn  = GLOBAL::Problem::Instance()->XFluidDynamicParams();
 
   //-------------------------------------------------------------------------
   // enable debugging
@@ -141,7 +141,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   //-------------------------------------------------------------------------
 
   // write iterations-file
-  std::string fileiter = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string fileiter = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   fileiter.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
@@ -150,7 +150,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   {
     dserror("writing energy not supported yet");
     //  TODO
-    //    std::string fileiter2 = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    //    std::string fileiter2 = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     //    fileiter2.append(".fsienergy");
     //    logenergy_ = Teuchos::rcp(new std::ofstream(fileiter2.c_str()));
   }
@@ -194,7 +194,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   // REMARK: We don't want to do this at the beginning, to be able to use std
   // ADAPTER::Coupling for FA-Coupling
   //-------------------------------------------------------------------------
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (not restart)
     FluidField()->CreateInitialState();  // otherwise called within the FluidField-Restart when Ale
                                          // displacements are correct
@@ -203,7 +203,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   {
     // set initial field by given function
     // we do this here, since we have direct access to all necessary parameters
-    const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+    const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
     INPAR::FLUID::InitialField initfield =
         INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn, "INITIALFIELD");
     if (initfield != INPAR::FLUID::initfield_zero_field)
@@ -919,7 +919,7 @@ void FSI::MonolithicXFEM::Output()
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
   //--------------------------------
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const int uprestart = fsidyn.get<int>("RESTARTEVRY");
   const int upres = fsidyn.get<int>("RESULTSEVRY");
   if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) ||
@@ -1991,7 +1991,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
   // get solver parameter list of linear XFSI solver
   const Teuchos::ParameterList& xfsisolverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   // safety check if the hard-coded solver number is the XFSI-solver
   if (xfsisolverparams.get<std::string>("NAME") != "XFSI_SOLVER")
@@ -2028,7 +2028,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
 
   // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   // use solver blocks for structure
   // get the solver number used for structural solver
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -2039,7 +2039,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
         "DYNAMIC to a valid number!");
 
   // get parameter list of fluid dynamics
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
   // use solver blocks for temperature (thermal field)
   // get the solver number used for thermal solver
   const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
@@ -2053,7 +2053,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   if (HaveAle())
   {
     // get parameter list of ale dynamics
-    const Teuchos::ParameterList& adyn = DRT::Problem::Instance()->AleDynamicParams();
+    const Teuchos::ParameterList& adyn = GLOBAL::Problem::Instance()->AleDynamicParams();
     alinsolvernumber = adyn.get<int>("LINEAR_SOLVER");
     // check if the ale solver has a valid solver number
     if (alinsolvernumber == (-1))
@@ -2101,9 +2101,9 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
       // use solver blocks for structure and fluid
       const Teuchos::ParameterList& ssolverparams =
-          DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(slinsolvernumber);
       const Teuchos::ParameterList& fsolverparams =
-          DRT::Problem::Instance()->SolverParams(flinsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(flinsolvernumber);
 
       solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
       StructurePoro()->Discretization()->ComputeNullSpaceIfNecessary(
@@ -2122,7 +2122,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
       if (HaveAle())
       {
         const Teuchos::ParameterList& asolverparams =
-            DRT::Problem::Instance()->SolverParams(alinsolvernumber);
+            GLOBAL::Problem::Instance()->SolverParams(alinsolvernumber);
         if (ale_i_block_ == 3)
         {
           solver_->PutSolverParamsToSubParams("Inverse3", asolverparams);
@@ -2156,9 +2156,9 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
       // use solver blocks for structure and fluid
       const Teuchos::ParameterList& ssolverparams =
-          DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(slinsolvernumber);
       const Teuchos::ParameterList& fsolverparams =
-          DRT::Problem::Instance()->SolverParams(flinsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(flinsolvernumber);
 
       // This is not very elegant:
       // first read in solver parameters. These have to contain ML parameters such that...

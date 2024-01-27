@@ -196,7 +196,7 @@ void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
   if (energyfile_.is_null())
   {
     std::string energy_file_name =
-        DRT::Problem::Instance()->OutputControlFile()->FileName() + "_energy.csv";
+        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + "_energy.csv";
 
     energyfile_ = Teuchos::rcp(new std::ofstream(energy_file_name.c_str()));
   }

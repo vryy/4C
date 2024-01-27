@@ -33,11 +33,11 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
   switch (method)
   {
     case INPAR::FSI::DirichletNeumannSlideale:
-      switch (DRT::Problem::Instance()->GetProblemType())
+      switch (GLOBAL::Problem::Instance()->GetProblemType())
       {
-        case (ProblemType::fsi):
-        case (ProblemType::fsi_redmodels):
-        case (ProblemType::fsi_lung):
+        case (GLOBAL::ProblemType::fsi):
+        case (GLOBAL::ProblemType::fsi_redmodels):
+        case (GLOBAL::ProblemType::fsi_lung):
           if (INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel)
           {
             dserror(
@@ -53,11 +53,11 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
       }
       break;
     case INPAR::FSI::DirichletNeumannVolCoupl:
-      switch (DRT::Problem::Instance()->GetProblemType())
+      switch (GLOBAL::Problem::Instance()->GetProblemType())
       {
-        case (ProblemType::fsi):
-        case (ProblemType::fsi_redmodels):
-        case (ProblemType::fsi_lung):
+        case (GLOBAL::ProblemType::fsi):
+        case (GLOBAL::ProblemType::fsi_redmodels):
+        case (GLOBAL::ProblemType::fsi_lung):
           if (INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel)
           {
             dserror(
@@ -73,12 +73,12 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
       }
       break;
     case INPAR::FSI::DirichletNeumann:
-      switch (DRT::Problem::Instance()->GetProblemType())
+      switch (GLOBAL::Problem::Instance()->GetProblemType())
       {
-        case (ProblemType::fsi):
-        case (ProblemType::fsi_redmodels):
-        case (ProblemType::fsi_lung):
-        case (ProblemType::fsi_xfem):
+        case (GLOBAL::ProblemType::fsi):
+        case (GLOBAL::ProblemType::fsi_redmodels):
+        case (GLOBAL::ProblemType::fsi_lung):
+        case (GLOBAL::ProblemType::fsi_xfem):
           if (INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel)
           {
             dserror(
@@ -88,7 +88,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
           else
             return Teuchos::rcp(new FSI::DirichletNeumannDisp(comm));
           break;
-        case (ProblemType::fbi):
+        case (GLOBAL::ProblemType::fbi):
           if (INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp)
           {
             dserror(

@@ -1071,7 +1071,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::PenaltyStrategy::GetMatrixBloc
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultN(const bool& redist) const
 {
-  if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
+  if (GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+      "Old")
     return CONTACT::AbstractStrategy::GetLagrMultN(redist);
   else
     return Teuchos::null;
@@ -1081,7 +1082,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultN(const b
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultNp(const bool& redist) const
 {
-  if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
+  if (GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+      "Old")
     return CONTACT::AbstractStrategy::GetLagrMultNp(redist);
   else
     return Teuchos::null;
@@ -1091,7 +1093,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultNp(const 
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> CONTACT::PenaltyStrategy::LagrMultOld()
 {
-  if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
+  if (GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+      "Old")
     return CONTACT::AbstractStrategy::LagrMultOld();
   else
     return Teuchos::null;
@@ -1101,7 +1104,8 @@ Teuchos::RCP<Epetra_Vector> CONTACT::PenaltyStrategy::LagrMultOld()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> CONTACT::PenaltyStrategy::LMDoFRowMapPtr(const bool& redist) const
 {
-  if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
+  if (GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+      "Old")
     return CONTACT::AbstractStrategy::LMDoFRowMapPtr(redist);
   else
     return Teuchos::null;

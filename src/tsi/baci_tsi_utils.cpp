@@ -51,8 +51,9 @@ void TSI::UTILS::ThermoStructureCloneStrategy::CheckMaterialType(const int matid
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  //  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
-  //  if ((mtype != INPAR::MAT::m_th_fourier_iso))
+  //  INPAR::MAT::MaterialType mtype =
+  //  GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type(); if ((mtype !=
+  //  INPAR::MAT::m_th_fourier_iso))
   //    dserror("Material with ID %d is not admissible for thermo elements",matid);
 
 }  // CheckMaterialType()
@@ -120,7 +121,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 {
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis;
-  structdis = DRT::Problem::Instance()->GetDis("structure");
+  structdis = GLOBAL::Problem::Instance()->GetDis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs())
   {
@@ -132,11 +133,11 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 
   // access the thermo discretization
   Teuchos::RCP<DRT::Discretization> thermdis;
-  thermdis = DRT::Problem::Instance()->GetDis("thermo");
+  thermdis = GLOBAL::Problem::Instance()->GetDis("thermo");
   if (!thermdis->Filled()) thermdis->FillComplete();
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  const Teuchos::ParameterList& tsidyn = GLOBAL::Problem::Instance()->TSIDynamicParams();
 
   bool matchinggrid = INPUT::IntegralValue<bool>(tsidyn, "MATCHINGGRID");
 
@@ -204,7 +205,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
     // build auxiliary dofsets, i.e. pseudo dofs on each discretization
     const int ndofpernode_thermo = 1;
     const int ndofperelement_thermo = 0;
-    const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
+    const int ndofpernode_struct = GLOBAL::Problem::Instance()->NDim();
     const int ndofperelement_struct = 0;
     Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
     dofsetaux = Teuchos::rcp(

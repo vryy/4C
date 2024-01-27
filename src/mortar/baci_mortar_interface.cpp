@@ -4165,7 +4165,7 @@ void MORTAR::Interface::CreateVolumeGhosting()
       MORTAR::UTILS::CreateVolumeGhosting(Discret(), tar_dis, material_map);
 
       // we need to redistribute the scalar field since distribution has changed during setup
-      auto structdis = DRT::Problem::Instance()->GetDis("structure");
+      auto structdis = GLOBAL::Problem::Instance()->GetDis("structure");
       structdis->RedistributeState(1, "scalarfield");
 
       break;

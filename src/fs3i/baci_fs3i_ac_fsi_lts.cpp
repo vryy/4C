@@ -217,21 +217,21 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
   // | create new output file
   //*-------------------------------------------------------------------------------*/
   Teuchos::RCP<IO::DiscretizationWriter> output_writer =
-      DRT::Problem::Instance()->GetDis("structure")->Writer();
+      GLOBAL::Problem::Instance()->GetDis("structure")->Writer();
   output_writer->NewResultFile(step_);
   // and write all meshes
   output_writer->CreateNewResultAndMeshFile();
   output_writer->WriteMesh(0, 0.0);
-  output_writer = DRT::Problem::Instance()->GetDis("fluid")->Writer();
+  output_writer = GLOBAL::Problem::Instance()->GetDis("fluid")->Writer();
   output_writer->CreateNewResultAndMeshFile();
   output_writer->WriteMesh(0, 0.0);
-  output_writer = DRT::Problem::Instance()->GetDis("ale")->Writer();
+  output_writer = GLOBAL::Problem::Instance()->GetDis("ale")->Writer();
   output_writer->CreateNewResultAndMeshFile();
   output_writer->WriteMesh(0, 0.0);
-  output_writer = DRT::Problem::Instance()->GetDis("scatra1")->Writer();
+  output_writer = GLOBAL::Problem::Instance()->GetDis("scatra1")->Writer();
   output_writer->CreateNewResultAndMeshFile();
   output_writer->WriteMesh(0, 0.0);
-  output_writer = DRT::Problem::Instance()->GetDis("scatra2")->Writer();
+  output_writer = GLOBAL::Problem::Instance()->GetDis("scatra2")->Writer();
   output_writer->CreateNewResultAndMeshFile();
   output_writer->WriteMesh(0, 0.0);
 
@@ -391,7 +391,7 @@ bool FS3I::ACFSI::StructScatraConvergenceCheck(const int itnum)
 
   // some input parameters for the scatra fields
   const Teuchos::ParameterList& scatradyn =
-      DRT::Problem::Instance()->ScalarTransportDynamicParams();
+      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
   const int scatraitemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
   const double scatraittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
   const double scatraabstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
@@ -542,9 +542,10 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
     // screen output
     //----------------------------------------------------------------------------------------------------
     const int growth_updates =
-        DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
+        GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
     const double fsi_update_tol =
-        DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("FSI_UPDATE_TOL");
+        GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
+            "FSI_UPDATE_TOL");
 
     if (Comm().MyPID() == 0)
       std::cout << std::scientific << std::setprecision(3)
@@ -584,7 +585,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
 void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
 {
   const int growth_updates =
-      DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
+      GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
 
   const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> fluidscatra = scatravec_[0]->ScaTraField();
   const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> structurescatra = scatravec_[1]->ScaTraField();

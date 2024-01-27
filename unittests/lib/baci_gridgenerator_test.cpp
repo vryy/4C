@@ -30,7 +30,7 @@ namespace
     mat_stvenant->Add("NUE", 0.1);
     mat_stvenant->Add("DENS", 2.0);
 
-    DRT::Problem::Instance()->Materials()->Insert(1, mat_stvenant);
+    GLOBAL::Problem::Instance()->Materials()->Insert(1, mat_stvenant);
   }
 
   class GridGeneratorTest : public ::testing::Test

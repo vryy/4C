@@ -89,14 +89,14 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
       equilibration_(Teuchos::null),
       equilibration_method_(CORE::LINALG::EquilibrationMethod::none)
 {
-  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdynparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // some solver paramaters are red form the structure dynamic list (this is not the best way to do
   // it ...)
   solveradapttol_ = (INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
-  const Teuchos::ParameterList& poroparams = DRT::Problem::Instance()->PoroelastDynamicParams();
+  const Teuchos::ParameterList& poroparams = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
   equilibration_method_ =
       Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(poroparams, "EQUILIBRATION");
 
@@ -229,7 +229,7 @@ void POROELAST::Monolithic::Solve()
   //      << std::right << std::setw(10) << std::scientific << iter_-1;
   //
   //    std::ofstream f;
-  //    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+  //    const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName()
   //                            + "_numiter.txt";
   //
   //    if (Step() <= 1)
@@ -611,7 +611,7 @@ void POROELAST::Monolithic::LinearSolve()
 void POROELAST::Monolithic::CreateLinearSolver()
 {
   // get dynamic section
-  const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+  const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
 
   // get the linear solver number
   const int linsolvernumber = porodyn.get<int>("LINEAR_SOLVER");
@@ -623,7 +623,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
   }
 
   // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   // use solver blocks for structure
   // get the solver number used for structural solver
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -636,7 +636,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
   }
 
   // get parameter list of fluid dynamics
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
   // use solver blocks for fluid
   // get the solver number used for fluid solver
   const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
@@ -650,7 +650,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
 
   // get solver parameter list of linear Poroelasticity solver
   const Teuchos::ParameterList& porosolverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(porosolverparams, "SOLVER");
@@ -689,9 +689,9 @@ void POROELAST::Monolithic::CreateLinearSolver()
 
   // use solver blocks for structure and fluid
   const Teuchos::ParameterList& ssolverparams =
-      DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(slinsolvernumber);
   const Teuchos::ParameterList& fsolverparams =
-      DRT::Problem::Instance()->SolverParams(flinsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(flinsolvernumber);
 
   solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
   solver_->PutSolverParamsToSubParams("Inverse2", fsolverparams);
@@ -1563,7 +1563,8 @@ bool POROELAST::Monolithic::SetupSolver()
   //  solver
   // create a linear solver
   // get dynamic section of poroelasticity
-  const Teuchos::ParameterList& poroelastdyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+  const Teuchos::ParameterList& poroelastdyn =
+      GLOBAL::Problem::Instance()->PoroelastDynamicParams();
   // get the solver number used for linear poroelasticity solver
   const int linsolvernumber = poroelastdyn.get<int>("LINEAR_SOLVER");
   // check if the poroelasticity solver has a valid solver number
@@ -1574,7 +1575,7 @@ bool POROELAST::Monolithic::SetupSolver()
         "DYNAMIC to a valid number!");
   }
   const Teuchos::ParameterList& solverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
@@ -1792,7 +1793,7 @@ void POROELAST::Monolithic::SetPoroContactStates()
 
           int* mygids = fpres->Map().MyGlobalElements();
           double* val = fpres->Values();
-          const int ndim = DRT::Problem::Instance()->NDim();
+          const int ndim = GLOBAL::Problem::Instance()->NDim();
           for (int i = 0; i < fpres->MyLength(); ++i)
           {
             int gid = mygids[i] - ndim;

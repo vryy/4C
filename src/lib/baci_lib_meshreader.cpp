@@ -131,14 +131,14 @@ void INPUT::MeshReader::Rebalance()
 
     // create partitioning parameters
     const double imbalance_tol =
-        DRT::Problem::Instance()->MeshPartitioningParams().get<double>("IMBALANCE_TOL");
+        GLOBAL::Problem::Instance()->MeshPartitioningParams().get<double>("IMBALANCE_TOL");
 
     Teuchos::RCP<Teuchos::ParameterList> rebalanceParams =
         Teuchos::rcp(new Teuchos::ParameterList());
     rebalanceParams->set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
     const auto rebalanceMethod = Teuchos::getIntegralValue<INPAR::REBALANCE::RebalanceType>(
-        DRT::Problem::Instance()->MeshPartitioningParams(), "METHOD");
+        GLOBAL::Problem::Instance()->MeshPartitioningParams(), "METHOD");
 
     Teuchos::RCP<Epetra_Map> rowmap, colmap;
 
@@ -191,8 +191,8 @@ void INPUT::MeshReader::Rebalance()
           Teuchos::RCP<const Epetra_CrsGraph> enriched_graph =
               CORE::REBALANCE::BuildMonolithicNodeGraph(
                   *discret, CORE::GEOMETRICSEARCH::GeometricSearchParams(
-                                DRT::Problem::Instance()->GeometricSearchParams(),
-                                DRT::Problem::Instance()->IOParams()));
+                                GLOBAL::Problem::Instance()->GeometricSearchParams(),
+                                GLOBAL::Problem::Instance()->IOParams()));
 
           std::tie(rowmap, colmap) =
               CORE::REBALANCE::RebalanceNodeMaps(enriched_graph, *rebalanceParams);

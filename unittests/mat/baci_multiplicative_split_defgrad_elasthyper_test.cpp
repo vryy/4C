@@ -64,10 +64,10 @@ namespace
 
     void TearDown() override
     {
-      // We need to make sure the DRT::Problem instance created in SetUp is deleted again. If this
-      // is not done, some troubles arise where unit tests influence each other on some
+      // We need to make sure the GLOBAL::Problem instance created in SetUp is deleted again. If
+      // this is not done, some troubles arise where unit tests influence each other on some
       // configurations. We suspect that missing singleton destruction might be the reason for that.
-      DRT::Problem::Done();
+      GLOBAL::Problem::Done();
     }
 
     // note: requirement of the generation of an object of the multiplicative split material is that
@@ -77,7 +77,7 @@ namespace
     {
       // do problem instance specific stuff
       const int problemid(0);
-      DRT::Problem& problem = (*DRT::Problem::Instance());
+      GLOBAL::Problem& problem = (*GLOBAL::Problem::Instance());
       problem.Materials()->SetReadFromProblem(problemid);
 
       // set up elastic material to be added to problem instance

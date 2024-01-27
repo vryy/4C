@@ -2962,7 +2962,7 @@ inline const CORE::UTILS::FunctionOfAnything&
 DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(int functnum) const
 {
   const auto& funct =
-      DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(functnum);
+      GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(functnum);
   if (funct.NumberComponents() != 1)
     dserror("only one component allowed for domain integral functions");
   return funct;

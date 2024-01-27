@@ -90,17 +90,17 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis(disname);
+  Teuchos::RCP<DRT::Discretization> actdis = GLOBAL::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  if (probtype != ProblemType::fsi)
+  if (probtype != GLOBAL::ProblemType::fsi)
   {
     PeriodicBoundaryConditions pbc(actdis);
     pbc.UpdateDofsForPeriodicBoundaryConditions();
@@ -111,9 +111,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   if (!actdis->HaveDofs())
   {
-    if (probtype == ProblemType::fsi_xfem or probtype == ProblemType::fluid_xfem or
-        (probtype == ProblemType::fpsi_xfem and disname == "fluid") or
-        probtype == ProblemType::fluid_xfem_ls)
+    if (probtype == GLOBAL::ProblemType::fsi_xfem or probtype == GLOBAL::ProblemType::fluid_xfem or
+        (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "fluid") or
+        probtype == GLOBAL::ProblemType::fluid_xfem_ls)
     {
       actdis->FillComplete(false, false, false);
     }
@@ -132,9 +132,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  // const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  // const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
-  // const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  // const Teuchos::ParameterList& probtype = GLOBAL::Problem::Instance()->ProblemTypeParams();
+  // const Teuchos::ParameterList& probsize = GLOBAL::Problem::Instance()->ProblemSizeParams();
+  // const Teuchos::ParameterList& ioflags  = GLOBAL::Problem::Instance()->IOParams();
 
   if (actdis->Comm().MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, fdyn);
 
@@ -150,7 +150,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // FIXME: The solver should not be taken from the contact dynamic section here,
       // but must be specified in the fluid dynamic section instead (popp 11/2012)
 
-      const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
+      const Teuchos::ParameterList& mshparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
       const int mshsolver = mshparams.get<int>(
           "LINEAR_SOLVER");  // meshtying solver (with block preconditioner, e.g. BGS 2x2)
       const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");           // fluid solver
@@ -172,7 +172,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
       // check, if meshtying solver is used with a valid block preconditioner
       const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
-          DRT::Problem::Instance()->SolverParams(mshsolver), "AZPREC");
+          GLOBAL::Problem::Instance()->SolverParams(mshsolver), "AZPREC");
 
       // plausibility check
       switch (azprectype)
@@ -192,7 +192,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
       // create solver objects
       solver = Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(mshsolver), actdis->Comm()));
+          GLOBAL::Problem::Instance()->SolverParams(mshsolver), actdis->Comm()));
 
       // add sub block solvers/smoothers to block preconditioners
       switch (azprectype)
@@ -207,10 +207,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           // for BGS preconditioner
           // This is only necessary for BGS. CheapSIMPLE has a more modern framework
           solver->PutSolverParamsToSubParams(
-              "Inverse1", DRT::Problem::Instance()->SolverParams(fluidsolver));
+              "Inverse1", GLOBAL::Problem::Instance()->SolverParams(fluidsolver));
 
           solver->PutSolverParamsToSubParams(
-              "Inverse2", DRT::Problem::Instance()->SolverParams(fluidpressuresolver));
+              "Inverse2", GLOBAL::Problem::Instance()->SolverParams(fluidpressuresolver));
         }
         break;
         default:
@@ -228,7 +228,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case INPAR::FLUID::condensed_bmat_merged:
     {
       // meshtying (no saddle point problem)
-      const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
+      const Teuchos::ParameterList& mshparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
       const int mshsolver = mshparams.get<int>(
           "LINEAR_SOLVER");  // meshtying solver (with block preconditioner, e.g. BGS 2x2)
       if (mshsolver == (-1))
@@ -237,7 +237,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             "CONTACT DYNAMIC to a valid number!");
 
       solver = Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(mshsolver), actdis->Comm()));
+          GLOBAL::Problem::Instance()->SolverParams(mshsolver), actdis->Comm()));
     }
     break;
     case INPAR::FLUID::no_meshtying:  // no meshtying -> use FLUID SOLVER
@@ -252,31 +252,34 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC "
             "to a valid number!");
       solver = Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
       break;
     }
   }
 
   // compute null space information
-  if (probtype != ProblemType::fsi_xfem and probtype != ProblemType::fpsi_xfem and
-      probtype != ProblemType::fluid_xfem and probtype != ProblemType::fluid_xfem_ls and
-      !(probtype == ProblemType::fsi and
+  if (probtype != GLOBAL::ProblemType::fsi_xfem and probtype != GLOBAL::ProblemType::fpsi_xfem and
+      probtype != GLOBAL::ProblemType::fluid_xfem and
+      probtype != GLOBAL::ProblemType::fluid_xfem_ls and
+      !(probtype == GLOBAL::ProblemType::fsi and
           INPUT::IntegralValue<bool>(
-              DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID")))
+              GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
+              "XFLUIDFLUID")))
   {
     switch (INPUT::IntegralValue<int>(fdyn, "MESHTYING"))
     {
       // switch types
       case INPAR::FLUID::condensed_bmat:
       {
-        const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
+        const Teuchos::ParameterList& mshparams =
+            GLOBAL::Problem::Instance()->ContactDynamicParams();
         const int mshsolver = mshparams.get<int>(
             "LINEAR_SOLVER");  // meshtying solver (with block preconditioner, e.g. BGS 2x2)
 
         // check, if meshtying solver is used with a valid block preconditioner
         const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
-            DRT::Problem::Instance()->SolverParams(mshsolver), "AZPREC");
+            GLOBAL::Problem::Instance()->SolverParams(mshsolver), "AZPREC");
 
         switch (azprectype)
         {
@@ -321,14 +324,15 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<int>(
       "Physical Type", INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE"));
   // and  check correct setting
-  if (probtype == ProblemType::loma and (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(
-                                             fdyn, "PHYSICAL_TYPE") != INPAR::FLUID::loma and
-                                            INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,
-                                                "PHYSICAL_TYPE") != INPAR::FLUID::tempdepwater))
+  if (probtype == GLOBAL::ProblemType::loma and
+      (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
+              INPAR::FLUID::loma and
+          INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
+              INPAR::FLUID::tempdepwater))
     dserror(
         "Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' or "
         "'Temp_dep_water' for low-Mach-number flow!");
-  if ((probtype == ProblemType::thermo_fsi) and
+  if ((probtype == GLOBAL::ProblemType::thermo_fsi) and
       (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
               INPAR::FLUID::loma and
           INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
@@ -336,12 +340,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     dserror(
         "Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' or "
         "'Temp_dep_water' for Thermo-fluid-structure interaction!");
-  if ((probtype == ProblemType::poroelast or probtype == ProblemType::poroscatra or
-          probtype == ProblemType::fpsi or probtype == ProblemType::fps3i or
-          probtype == ProblemType::fpsi_xfem) and
+  if ((probtype == GLOBAL::ProblemType::poroelast or probtype == GLOBAL::ProblemType::poroscatra or
+          probtype == GLOBAL::ProblemType::fpsi or probtype == GLOBAL::ProblemType::fps3i or
+          probtype == GLOBAL::ProblemType::fpsi_xfem) and
       disname == "porofluid")
   {
-    const Teuchos::ParameterList& pedyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+    const Teuchos::ParameterList& pedyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
     fluidtimeparams->set<int>(
         "Physical Type", INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE"));
     if (fluidtimeparams->get<int>("Physical Type") != INPAR::FLUID::poro and
@@ -361,9 +365,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // and, finally, add problem specific parameters
 
   // for poro problems, use POROUS-FLOW STABILIZATION
-  if ((probtype == ProblemType::poroelast or probtype == ProblemType::poroscatra or
-          probtype == ProblemType::fpsi or probtype == ProblemType::fps3i or
-          probtype == ProblemType::fpsi_xfem) and
+  if ((probtype == GLOBAL::ProblemType::poroelast or probtype == GLOBAL::ProblemType::poroscatra or
+          probtype == GLOBAL::ProblemType::fpsi or probtype == GLOBAL::ProblemType::fps3i or
+          probtype == GLOBAL::ProblemType::fpsi_xfem) and
       disname == "porofluid")
   {
     fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION") =
@@ -374,27 +378,29 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // add some loma specific parameters
   // get also scatra stabilization sublist
-  const Teuchos::ParameterList& lomadyn = DRT::Problem::Instance()->LOMAControlParams();
+  const Teuchos::ParameterList& lomadyn = GLOBAL::Problem::Instance()->LOMAControlParams();
   fluidtimeparams->sublist("LOMA").set<bool>(
       "update material", INPUT::IntegralValue<int>(lomadyn, "SGS_MATERIAL_UPDATE"));
 
   // ----------------------------- sublist for general xfem-specific parameters
-  if (probtype == ProblemType::fluid_xfem or probtype == ProblemType::fsi_xfem or
-      (probtype == ProblemType::fpsi_xfem and disname == "fluid") or
-      (probtype == ProblemType::fluid_ale and
+  if (probtype == GLOBAL::ProblemType::fluid_xfem or probtype == GLOBAL::ProblemType::fsi_xfem or
+      (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "fluid") or
+      (probtype == GLOBAL::ProblemType::fluid_ale and
           INPUT::IntegralValue<bool>(
-              DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID")) or
-      (probtype == ProblemType::fsi and
+              GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
+              "XFLUIDFLUID")) or
+      (probtype == GLOBAL::ProblemType::fsi and
           INPUT::IntegralValue<bool>(
-              DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID")) or
-      probtype == ProblemType::fluid_xfem_ls)
+              GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
+              "XFLUIDFLUID")) or
+      probtype == GLOBAL::ProblemType::fluid_xfem_ls)
   {
     // get also scatra stabilization sublist
-    const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
+    const Teuchos::ParameterList& xdyn = GLOBAL::Problem::Instance()->XFEMGeneralParams();
 
     fluidtimeparams->sublist("XFEM") = xdyn;
     // ----------------------------- sublist for xfem-specific fluid parameters
-    const Teuchos::ParameterList& xfdyn = DRT::Problem::Instance()->XFluidDynamicParams();
+    const Teuchos::ParameterList& xfdyn = GLOBAL::Problem::Instance()->XFluidDynamicParams();
 
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL") = xfdyn.sublist("GENERAL");
     fluidtimeparams->sublist("XFLUID DYNAMIC/STABILIZATION") = xfdyn.sublist("STABILIZATION");
@@ -416,18 +422,18 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
 
   // sanity checks and default flags
-  if (probtype == ProblemType::fsi or probtype == ProblemType::fsi_lung or
-      probtype == ProblemType::gas_fsi or probtype == ProblemType::ac_fsi or
-      probtype == ProblemType::biofilm_fsi or probtype == ProblemType::thermo_fsi or
-      probtype == ProblemType::fsi_xfem or
-      (probtype == ProblemType::fpsi_xfem and disname == "fluid") or
-      probtype == ProblemType::fsi_redmodels)
+  if (probtype == GLOBAL::ProblemType::fsi or probtype == GLOBAL::ProblemType::fsi_lung or
+      probtype == GLOBAL::ProblemType::gas_fsi or probtype == GLOBAL::ProblemType::ac_fsi or
+      probtype == GLOBAL::ProblemType::biofilm_fsi or probtype == GLOBAL::ProblemType::thermo_fsi or
+      probtype == GLOBAL::ProblemType::fsi_xfem or
+      (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "fluid") or
+      probtype == GLOBAL::ProblemType::fsi_redmodels)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (timeint == INPAR::FLUID::timeint_stationary)
       dserror("Stationary fluid solver not allowed for FSI.");
 
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
     fluidtimeparams->set<bool>(
@@ -451,13 +457,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             "'steady_state', instead!");
     }
   }
-  if (probtype == ProblemType::freesurf)
+  if (probtype == GLOBAL::ProblemType::freesurf)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (timeint == INPAR::FLUID::timeint_stationary)
       dserror("Stationary fluid solver not allowed for free surface problem.");
 
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
     fluidtimeparams->set<bool>(
@@ -479,18 +485,18 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
 
   // sanity checks and default flags
-  if (probtype == ProblemType::fluid_xfem)
+  if (probtype == GLOBAL::ProblemType::fluid_xfem)
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>(
         "interface second order", INPUT::IntegralValue<int>(fsidyn, "SECONDORDER"));
   }
 
   // sanity checks and default flags
-  if (probtype == ProblemType::fsi_xfem or
-      (probtype == ProblemType::fpsi_xfem and disname == "fluid"))
+  if (probtype == GLOBAL::ProblemType::fsi_xfem or
+      (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "fluid"))
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
 
     const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
 
@@ -504,27 +510,27 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
 
   // sanity checks and default flags
-  if (probtype == ProblemType::fluid_xfem or probtype == ProblemType::fsi_xfem or
-      (probtype == ProblemType::fpsi_xfem and disname == "fluid"))
+  if (probtype == GLOBAL::ProblemType::fluid_xfem or probtype == GLOBAL::ProblemType::fsi_xfem or
+      (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "fluid"))
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
     fluidtimeparams->set<int>("COUPALGO", coupling);
   }
 
-  if (probtype == ProblemType::elch)
+  if (probtype == GLOBAL::ProblemType::elch)
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>(
         "interface second order", INPUT::IntegralValue<int>(fsidyn, "SECONDORDER"));
   }
 
-  if (probtype == ProblemType::poroelast or probtype == ProblemType::poroscatra or
-      (probtype == ProblemType::fpsi and disname == "porofluid") or
-      (probtype == ProblemType::fps3i and disname == "porofluid") or
-      (probtype == ProblemType::fpsi_xfem and disname == "porofluid"))
+  if (probtype == GLOBAL::ProblemType::poroelast or probtype == GLOBAL::ProblemType::poroscatra or
+      (probtype == GLOBAL::ProblemType::fpsi and disname == "porofluid") or
+      (probtype == GLOBAL::ProblemType::fps3i and disname == "porofluid") or
+      (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "porofluid"))
   {
-    const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
     fluidtimeparams->set<bool>("poroelast", true);
     fluidtimeparams->set<bool>(
         "interface second order", INPUT::IntegralValue<int>(porodyn, "SECONDORDER"));
@@ -534,8 +540,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>(
         "convective term", INPUT::IntegralValue<bool>(porodyn, "CONVECTIVE_TERM"));
   }
-  else if ((probtype == ProblemType::fpsi and disname == "fluid") or
-           (probtype == ProblemType::fps3i and disname == "fluid"))
+  else if ((probtype == GLOBAL::ProblemType::fpsi and disname == "fluid") or
+           (probtype == GLOBAL::ProblemType::fps3i and disname == "fluid"))
   {
     if (timeint == INPAR::FLUID::timeint_stationary)
       dserror("Stationary fluid solver not allowed for FPSI.");
@@ -551,7 +557,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // =================================================================================
   if (nullptr != actdis->GetCondition("VolumetricSurfaceFlowCond"))
   {
-    if (not(ProblemType::fluid_redmodels == probtype or ProblemType::fsi_redmodels == probtype))
+    if (not(GLOBAL::ProblemType::fluid_redmodels == probtype or
+            GLOBAL::ProblemType::fsi_redmodels == probtype))
     {
       dserror(
           "ERROR: Given Volumetric Womersly infow condition only works with Problemtyp "
@@ -613,13 +620,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>("ost new", ostnew);
 
     bool dirichletcond = true;
-    if (probtype == ProblemType::fsi or probtype == ProblemType::fsi_lung or
-        probtype == ProblemType::gas_fsi or probtype == ProblemType::ac_fsi or
-        probtype == ProblemType::biofilm_fsi or probtype == ProblemType::thermo_fsi or
-        probtype == ProblemType::fsi_redmodels)
+    if (probtype == GLOBAL::ProblemType::fsi or probtype == GLOBAL::ProblemType::fsi_lung or
+        probtype == GLOBAL::ProblemType::gas_fsi or probtype == GLOBAL::ProblemType::ac_fsi or
+        probtype == GLOBAL::ProblemType::biofilm_fsi or
+        probtype == GLOBAL::ProblemType::thermo_fsi or
+        probtype == GLOBAL::ProblemType::fsi_redmodels)
     {
       // FSI input parameters
-      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
       const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
@@ -641,9 +649,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
     }
 
-    if (probtype == ProblemType::poroelast or probtype == ProblemType::poroscatra or
-        probtype == ProblemType::fpsi or probtype == ProblemType::fps3i or
-        (probtype == ProblemType::fpsi_xfem and disname == "porofluid"))
+    if (probtype == GLOBAL::ProblemType::poroelast or probtype == GLOBAL::ProblemType::poroscatra or
+        probtype == GLOBAL::ProblemType::fpsi or probtype == GLOBAL::ProblemType::fps3i or
+        (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "porofluid"))
       dirichletcond = false;
 
     //------------------------------------------------------------------
@@ -654,11 +662,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     switch (probtype)
     {
-      case ProblemType::fluid:
-      case ProblemType::scatra:
+      case GLOBAL::ProblemType::fluid:
+      case GLOBAL::ProblemType::scatra:
       {
         // HDG implements all time stepping schemes within gen-alpha
-        if (DRT::Problem::Instance()->SpatialApproximationType() ==
+        if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
                 CORE::FE::ShapeFunctionType::hdg &&
             timeint != INPAR::FLUID::timeint_stationary &&
             INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
@@ -666,7 +674,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 INPAR::FLUID::weakly_compressible_stokes_dens_mom)
           fluid_ = Teuchos::rcp(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
-        else if (DRT::Problem::Instance()->SpatialApproximationType() ==
+        else if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
                      CORE::FE::ShapeFunctionType::hdg &&
                  (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          INPAR::FLUID::weakly_compressible_dens_mom ||
@@ -674,7 +682,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                          INPAR::FLUID::weakly_compressible_stokes_dens_mom))
           fluid_ = Teuchos::rcp(
               new FLD::TimIntHDGWeakComp(actdis, solver, fluidtimeparams, output, isale));
-        else if (DRT::Problem::Instance()->SpatialApproximationType() ==
+        else if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
                      CORE::FE::ShapeFunctionType::hdg &&
                  timeint == INPAR::FLUID::timeint_stationary)
           fluid_ = Teuchos::rcp(
@@ -696,7 +704,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           dserror("Unknown time integration for this fluid problem type\n");
       }
       break;
-      case ProblemType::fluid_redmodels:
+      case GLOBAL::ProblemType::fluid_redmodels:
       {
         if (timeint == INPAR::FLUID::timeint_stationary)
           fluid_ = Teuchos::rcp(
@@ -715,7 +723,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           dserror("Unknown time integration for this fluid problem type\n");
       }
       break;
-      case ProblemType::loma:
+      case GLOBAL::ProblemType::loma:
       {
         if (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
             INPAR::FLUID::tempdepwater)
@@ -750,13 +758,15 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         }
       }
       break;
-      case ProblemType::fluid_xfem:
+      case GLOBAL::ProblemType::fluid_xfem:
       {
         if (INPUT::IntegralValue<bool>(
-                DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
+                GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
+                "XFLUIDFLUID"))
         {
           // actdis is the embedded fluid discretization
-          Teuchos::RCP<DRT::Discretization> xfluiddis = DRT::Problem::Instance()->GetDis("xfluid");
+          Teuchos::RCP<DRT::Discretization> xfluiddis =
+              GLOBAL::Problem::Instance()->GetDis("xfluid");
 
           Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
           if (timeint == INPAR::FLUID::timeint_stationary)
@@ -780,11 +790,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           break;
         }
 
-        Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
+        Teuchos::RCP<DRT::Discretization> soliddis =
+            GLOBAL::Problem::Instance()->GetDis("structure");
         Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
 
-        if (DRT::Problem::Instance()->DoesExistDis("scatra"))
-          scatradis = DRT::Problem::Instance()->GetDis("scatra");
+        if (GLOBAL::Problem::Instance()->DoesExistDis("scatra"))
+          scatradis = GLOBAL::Problem::Instance()->GetDis("scatra");
 
         Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp(
             new FLD::XFluid(actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale));
@@ -803,12 +814,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           fluid_ = tmpfluid;
       }
       break;
-      case ProblemType::fsi_xfem:
+      case GLOBAL::ProblemType::fsi_xfem:
       {
         std::string condition_name;
 
         // FSI input parameters
-        const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+        const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
         const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
         if (coupling == fsi_iter_xfem_monolithic)
         {
@@ -828,17 +839,20 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         else
           dserror("non supported COUPALGO for FSI");
 
-        Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
+        Teuchos::RCP<DRT::Discretization> soliddis =
+            GLOBAL::Problem::Instance()->GetDis("structure");
         Teuchos::RCP<FLD::XFluid> tmpfluid;
         if (INPUT::IntegralValue<bool>(
-                DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
+                GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
+                "XFLUIDFLUID"))
         {
           dserror(
               "XFLUIDFLUID with XFSI framework not supported via FLD::XFluidFluid but via "
               "FLD::XFluid");
 
           // actdis is the embedded fluid discretization
-          Teuchos::RCP<DRT::Discretization> xfluiddis = DRT::Problem::Instance()->GetDis("xfluid");
+          Teuchos::RCP<DRT::Discretization> xfluiddis =
+              GLOBAL::Problem::Instance()->GetDis("xfluid");
 
           Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid_emb;
           if (timeint == INPAR::FLUID::timeint_stationary)
@@ -864,8 +878,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         {
           Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
 
-          if (DRT::Problem::Instance()->DoesExistDis("scatra"))
-            scatradis = DRT::Problem::Instance()->GetDis("scatra");
+          if (GLOBAL::Problem::Instance()->DoesExistDis("scatra"))
+            scatradis = GLOBAL::Problem::Instance()->GetDis("scatra");
 
           tmpfluid = Teuchos::rcp(
               new FLD::XFluid(actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale));
@@ -878,28 +892,29 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
               new XFluidFSI(tmpfluid, condition_name, solver, fluidtimeparams, output));
       }
       break;
-      case ProblemType::fluid_xfem_ls:
+      case GLOBAL::ProblemType::fluid_xfem_ls:
       {
-        Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
+        Teuchos::RCP<DRT::Discretization> soliddis =
+            GLOBAL::Problem::Instance()->GetDis("structure");
         Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
 
-        if (DRT::Problem::Instance()->DoesExistDis("scatra"))
-          scatradis = DRT::Problem::Instance()->GetDis("scatra");
+        if (GLOBAL::Problem::Instance()->DoesExistDis("scatra"))
+          scatradis = GLOBAL::Problem::Instance()->GetDis("scatra");
 
         fluid_ = Teuchos::rcp(
             new FLD::XFluid(actdis, soliddis, scatradis, solver, fluidtimeparams, output));
       }
       break;
-      case ProblemType::fsi:
-      case ProblemType::immersed_fsi:
-      case ProblemType::gas_fsi:
-      case ProblemType::biofilm_fsi:
-      case ProblemType::fbi:
-      case ProblemType::fluid_ale:
-      case ProblemType::freesurf:
+      case GLOBAL::ProblemType::fsi:
+      case GLOBAL::ProblemType::immersed_fsi:
+      case GLOBAL::ProblemType::gas_fsi:
+      case GLOBAL::ProblemType::biofilm_fsi:
+      case GLOBAL::ProblemType::fbi:
+      case GLOBAL::ProblemType::fluid_ale:
+      case GLOBAL::ProblemType::freesurf:
       {  //
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-        if (DRT::Problem::Instance()->SpatialApproximationType() ==
+        if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
                 CORE::FE::ShapeFunctionType::hdg &&
             (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                     INPAR::FLUID::weakly_compressible_dens_mom ||
@@ -923,15 +938,17 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         else
           dserror("Unknown time integration for this fluid problem type\n");
 
-        const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+        const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
         int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
 
         if (INPUT::IntegralValue<bool>(
-                DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
+                GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
+                "XFLUIDFLUID"))
         {
           fluidtimeparams->set<bool>("shape derivatives", false);
           // actdis is the embedded fluid discretization
-          Teuchos::RCP<DRT::Discretization> xfluiddis = DRT::Problem::Instance()->GetDis("xfluid");
+          Teuchos::RCP<DRT::Discretization> xfluiddis =
+              GLOBAL::Problem::Instance()->GetDis("xfluid");
           Teuchos::RCP<FLD::XFluidFluid> xffluid = Teuchos::rcp(
               new FLD::XFluidFluid(tmpfluid, xfluiddis, solver, fluidtimeparams, false, isale));
           fluid_ = Teuchos::rcp(
@@ -941,7 +958,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                  coupling == fsi_iter_sliding_monolithicstructuresplit)
           fluid_ = Teuchos::rcp(new FluidFSIMsht(
               tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
-        else if (probtype == ProblemType::fbi)
+        else if (probtype == GLOBAL::ProblemType::fbi)
           fluid_ = Teuchos::rcp(new FluidFBI(
               tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
         else
@@ -949,7 +966,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
               tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
       }
       break;
-      case ProblemType::thermo_fsi:
+      case GLOBAL::ProblemType::thermo_fsi:
       {
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
         if (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
@@ -984,7 +1001,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             dserror("Unknown time integration for this fluid problem type\n");
         }
 
-        const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+        const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
         int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
 
         if (coupling == fsi_iter_sliding_monolithicfluidsplit or
@@ -996,7 +1013,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
               tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
       }
       break;
-      case ProblemType::ac_fsi:
+      case GLOBAL::ProblemType::ac_fsi:
       {  //
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
         if (timeint == INPAR::FLUID::timeint_one_step_theta)
@@ -1009,7 +1026,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
       }
       break;
-      case ProblemType::fsi_redmodels:
+      case GLOBAL::ProblemType::fsi_redmodels:
       {  // give a warning
         if (actdis->Comm().MyPID() == 0)
           std::cout << "\n Warning: FSI_RedModels is little tested. Keep testing! \n" << std::endl;
@@ -1035,7 +1052,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             new FluidFSI(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
       }
       break;
-      case ProblemType::fsi_lung:
+      case GLOBAL::ProblemType::fsi_lung:
       {
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
         if (timeint == INPAR::FLUID::timeint_stationary)
@@ -1057,11 +1074,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             new FluidLung(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
       }
       break;
-      case ProblemType::poroelast:
-      case ProblemType::poroscatra:
-      case ProblemType::fpsi:
-      case ProblemType::fps3i:
-      case ProblemType::fpsi_xfem:
+      case GLOBAL::ProblemType::poroelast:
+      case GLOBAL::ProblemType::poroscatra:
+      case GLOBAL::ProblemType::fpsi:
+      case GLOBAL::ProblemType::fps3i:
+      case GLOBAL::ProblemType::fpsi_xfem:
       {
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
         if (disname == "porofluid")
@@ -1083,7 +1100,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         }
         else if (disname == "fluid")
         {
-          if (probtype == ProblemType::fpsi or probtype == ProblemType::fps3i)
+          if (probtype == GLOBAL::ProblemType::fpsi or probtype == GLOBAL::ProblemType::fps3i)
           {
             if (timeint == INPAR::FLUID::timeint_stationary)
               tmpfluid = Teuchos::rcp(
@@ -1096,14 +1113,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             fluid_ = Teuchos::rcp(new FluidFPSI(
                 tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
           }
-          else if (probtype == ProblemType::fpsi_xfem)
+          else if (probtype == GLOBAL::ProblemType::fpsi_xfem)
           {
             Teuchos::RCP<DRT::Discretization> soliddis =
-                DRT::Problem::Instance()->GetDis("structure");
+                GLOBAL::Problem::Instance()->GetDis("structure");
             Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
 
-            if (DRT::Problem::Instance()->DoesExistDis("scatra"))
-              scatradis = DRT::Problem::Instance()->GetDis("scatra");
+            if (GLOBAL::Problem::Instance()->DoesExistDis("scatra"))
+              scatradis = GLOBAL::Problem::Instance()->GetDis("scatra");
 
             fluid_ = Teuchos::rcp(new FLD::XFluid(
                 actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale));
@@ -1111,10 +1128,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         }
       }
       break;
-      case ProblemType::elch:
+      case GLOBAL::ProblemType::elch:
       {
         // access the problem-specific parameter list
-        const Teuchos::ParameterList& elchcontrol = DRT::Problem::Instance()->ELCHControlParams();
+        const Teuchos::ParameterList& elchcontrol =
+            GLOBAL::Problem::Instance()->ELCHControlParams();
         // is ALE needed or not?
         const INPAR::ELCH::ElchMovingBoundary withale =
             INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol, "MOVINGBOUNDARY");
@@ -1235,13 +1253,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   // what's the current problem type?
   // -------------------------------------------------------------------
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   // the inflow computation can only deal with standard fluid problems so far
   // extensions for xfluid, fsi problems have to be added if necessary
   // they should not pose any additional problem
   // meshtying or xfem related parameters are not supported, yet
-  if (probtype != ProblemType::fluid)
+  if (probtype != GLOBAL::ProblemType::fluid)
     dserror("Only fluid problems supported! Read comment and add your problem type!");
 
   // -------------------------------------------------------------------
@@ -1260,7 +1278,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
 
   if (discret->Comm().MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, fdyn);
 
@@ -1274,7 +1292,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
         "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to "
         "a valid number!");
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), discret->Comm()));
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), discret->Comm()));
 
   discret->ComputeNullSpaceIfNecessary(solver->Params(), true);
 
@@ -1414,7 +1432,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   fluidtimeparams->set<int>("number of velocity degrees of freedom", ndim);
 
   // -------------------------------------------------- time integration
@@ -1480,7 +1498,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
       "INFNORMSCALING", (INPUT::IntegralValue<int>(fdyn, "INFNORMSCALING") == 1));
 
   // ----------------------------------------------- restart and output
-  const Teuchos::ParameterList& ioflags = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& ioflags = GLOBAL::Problem::Instance()->IOParams();
   // restart
   fluidtimeparams->set<int>("write restart every", prbdyn.get<int>("RESTARTEVRY"));
   // solution output
@@ -1498,7 +1516,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<int>("write node data in first step",
       INPUT::IntegralValue<int>(ioflags, "FLUID_NODEDATA_FIRST_STEP"));
   // flag for writing fluid field to gmsh
-  if (INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH") == false)
+  if (INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH") == false)
   {
     fluidtimeparams->set<bool>("GMSH_OUTPUT", false);
     if (INPUT::IntegralValue<bool>(fdyn, "GMSH_OUTPUT") == true)
@@ -1555,7 +1573,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 
   // -----------------------------get also scatra stabilization sublist
   const Teuchos::ParameterList& scatradyn =
-      DRT::Problem::Instance()->ScalarTransportDynamicParams();
+      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
   fluidtimeparams->sublist("SCATRA STABILIZATION") = scatradyn.sublist("STABILIZATION");
 
   // --------------------------sublist containing turbulence parameters
@@ -1569,7 +1587,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 
     fluidtimeparams->sublist("TURBULENCE MODEL")
         .set<std::string>(
-            "statistics outfile", DRT::Problem::Instance()->OutputControlFile()->FileName());
+            "statistics outfile", GLOBAL::Problem::Instance()->OutputControlFile()->FileName());
   }
 
   // ---------------------------parallel evaluation
@@ -1592,7 +1610,7 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
   {
     const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
     const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
-        DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+        GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
     switch (prec)
     {
       case INPAR::SOLVER::PreconditionerType::cheap_simple:

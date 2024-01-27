@@ -155,10 +155,10 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(
 
   notsetup_ = true;
 
-  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(DRT::Problem::Instance()->NDim(),
-      DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
+      GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
   fscoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
   aigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
@@ -222,7 +222,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
 {
   if (notsetup_)
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     linearsolverstrategy_ =
         INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
@@ -234,7 +234,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     // we use non-matching meshes at the interface
     // mortar with: structure = master, fluid = slave
 
-    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
 
     // get coupling objects
     CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
@@ -315,7 +315,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
   // requires coupsf_ in order to map the nodal fluid forces on the structure nodes we have to do it
   // e.g. in here. But:
   // TODO: Move this to ReadRestart() when possible
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     const bool restartfrompartfsi =
@@ -996,7 +996,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
 void FSI::MortarMonolithicFluidSplit::ScaleSystem(
     CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -1047,7 +1047,7 @@ void FSI::MortarMonolithicFluidSplit::ScaleSystem(
 void FSI::MortarMonolithicFluidSplit::UnscaleSolution(
     CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -2007,8 +2007,8 @@ void FSI::MortarMonolithicFluidSplit::CreateInterfaceMapping(
   int NumMaxElementsP;
   comm_.MaxAll(&NumMyElementsP, &NumMaxElementsP, 1);
 
-  int skip = DRT::Problem::Instance()->NDim();  // Only evaluate one dof per node, skip the other
-                                                // dofs related to the node. It is nsd_=skip.
+  int skip = GLOBAL::Problem::Instance()->NDim();  // Only evaluate one dof per node, skip the other
+                                                   // dofs related to the node. It is nsd_=skip.
 
   int re[2];   // return: re[0] = global node id, re[1] = owner of node
   int flnode;  // fluid
@@ -2236,8 +2236,8 @@ void FSI::MortarMonolithicFluidSplit::CreateNodeOwnerRelationship(std::map<int, 
   int NumMaxElements;
   comm_.MaxAll(&NumMyElements, &NumMaxElements, 1);
 
-  int skip = DRT::Problem::Instance()->NDim();  // Only evaluate one dof per node, skip the other
-                                                // dofs related to the node. It is nsd_=skip.
+  int skip = GLOBAL::Problem::Instance()->NDim();  // Only evaluate one dof per node, skip the other
+                                                   // dofs related to the node. It is nsd_=skip.
 
   int re[2];   // return: re[0] = global node id, re[1] = owner of node
   int flnode;  // fluid

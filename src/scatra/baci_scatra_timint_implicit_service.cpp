@@ -1075,7 +1075,7 @@ void SCATRA::ScaTraTimIntImpl::OutputLinSolverStats(
   {
     // set file name
     std::string filename(
-        DRT::Problem::Instance()->OutputControlFile()->FileName() + ".lin_solver_stats.csv");
+        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".lin_solver_stats.csv");
 
     // open file in appropriate mode and write header at beginning
     std::ofstream file;
@@ -1112,7 +1112,7 @@ void SCATRA::ScaTraTimIntImpl::OutputNonlinSolverStats(
   {
     // set file name
     std::string filename(
-        DRT::Problem::Instance()->OutputControlFile()->FileName() + ".nonlin_solver_stats.csv");
+        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".nonlin_solver_stats.csv");
 
     // open file in appropriate mode and write header at beginning
     std::ofstream file;
@@ -2877,8 +2877,8 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
                 << std::setprecision(3) << (*integralvalue)(0) << "        |" << std::endl;
 
       // set file name
-      const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName() + "." +
-                                 label + "_integrals.csv");
+      const std::string filename(GLOBAL::Problem::Instance()->OutputControlFile()->FileName() +
+                                 "." + label + "_integrals.csv");
 
       // open file in appropriate mode and write header at beginning
       std::ofstream file;

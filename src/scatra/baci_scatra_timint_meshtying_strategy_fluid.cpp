@@ -100,7 +100,7 @@ void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
 
   // setup meshtying
   meshtying_ = Teuchos::rcp(new FLD::Meshtying(scatratimint_->Discretization(),
-      *(scatratimint_->Solver()), type_, DRT::Problem::Instance()->NDim()));
+      *(scatratimint_->Solver()), type_, GLOBAL::Problem::Instance()->NDim()));
 
   return;
 }  // SCATRA::MeshtyingStrategyFluid::InitMeshtying

@@ -35,7 +35,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
   //            If an artery discretization with non-matching coupling is present, we first
   //            redistribute
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // 1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
@@ -43,10 +43,10 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
   // possible interaction partners [artelegid; contelegid_1, ... contelegid_n]
   std::map<int, std::set<int>> nearbyelepairs;
 
-  if (DRT::Problem::Instance()->DoesExistDis("artery"))
+  if (GLOBAL::Problem::Instance()->DoesExistDis("artery"))
   {
     Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;
-    arterydis = DRT::Problem::Instance()->GetDis("artery");
+    arterydis = GLOBAL::Problem::Instance()->GetDis("artery");
 
     // get coupling method
     auto arterycoupl =
@@ -139,7 +139,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
 void POROMULTIPHASE::UTILS::AssignMaterialPointers(
     const std::string& struct_disname, const std::string& fluid_disname)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);

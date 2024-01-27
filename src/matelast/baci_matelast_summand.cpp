@@ -61,18 +61,18 @@ BACI_NAMESPACE_OPEN
 Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
 {
   // for the sake of safety
-  if (DRT::Problem::Instance()->Materials() == Teuchos::null)
+  if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
     dserror("List of materials cannot be accessed in the global problem instance.");
 
   // yet another safety check
-  if (DRT::Problem::Instance()->Materials()->Num() == 0)
+  if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
     dserror("List of materials in the global problem instance is empty.");
 
   // retrieve problem instance to read from
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
-      DRT::Problem::Instance(probinst)->Materials()->ById(matnum);
+      GLOBAL::Problem::Instance(probinst)->Materials()->ById(matnum);
 
   // construct structural tensor strategy for anisotropic materials
   switch (curmat->Type())

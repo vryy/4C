@@ -5362,7 +5362,7 @@ void CONTACT::LagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epetr
 
   {
     // setting of the parameters is still under investigation Ager Chr.
-    // DRT::Problem* problem = DRT::Problem::Instance();
+    // GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
     // const Teuchos::ParameterList& structdyn   = problem->StructuralDynamicParams(); //just for
     // now!
 

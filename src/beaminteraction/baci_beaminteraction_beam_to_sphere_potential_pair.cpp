@@ -254,14 +254,14 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   int function_number = chargeconds_[0]->GetInt("funct");
 
   if (function_number != -1)
-    q1 *= DRT::Problem::Instance()
+    q1 *= GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
   function_number = chargeconds_[1]->GetInt("funct");
 
   if (function_number != -1)
-    q2 *= DRT::Problem::Instance()
+    q2 *= GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 

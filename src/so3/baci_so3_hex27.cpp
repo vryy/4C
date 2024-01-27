@@ -102,14 +102,15 @@ DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner)
 {
   invJ_.resize(NUMGPT_SOH27, CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27>(true));
   detJ_.resize(NUMGPT_SOH27, 0.0);
-  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  Teuchos::RCP<const Teuchos::ParameterList> params =
+      GLOBAL::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
     pstype_ = PRESTRESS::GetType();
     pstime_ = PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH27, NUMGPT_SOH27));

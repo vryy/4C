@@ -227,7 +227,7 @@ void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::CheckMaterialType(const in
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
+  INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
   if ((mtype != INPAR::MAT::m_scatra) && (mtype != INPAR::MAT::m_elchmat) &&
       (mtype != INPAR::MAT::m_electrode) && (mtype != INPAR::MAT::m_matlist) &&
       (mtype != INPAR::MAT::m_matlist_reactions) && (mtype != INPAR::MAT::m_myocard) &&

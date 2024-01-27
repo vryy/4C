@@ -48,7 +48,7 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
   if (structdis->AddDofSet(scatradofset) != ++structure_dofset_counter)
     dserror("unexpected dof sets in structure field");
 
-  if (DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
+  if (GLOBAL::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
   {
     const int numDofsPerNodeTemp = 1;  // defined by temperature field
 
@@ -58,8 +58,10 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
       dserror("unexpected dof sets in structure field");
   }
 
-  if (DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1 or
-      DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale) != -1)
+  if (GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) !=
+          -1 or
+      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale) !=
+          -1)
   {
     auto dofsetmicro = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, true));
     if (scatradis->AddDofSet(dofsetmicro) != ++scatra_dofset_counter)
@@ -229,9 +231,9 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
 
   // setup mortar adapter for surface volume coupling
   adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-      DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
 
   SetIsInit(true);
 }
@@ -368,7 +370,7 @@ void SSI::SSICouplingNonMatchingVolume::Setup()
   CheckIsInit();
 
   // setup projection matrices (use default material strategy)
-  volcoupl_structurescatra_->Setup(DRT::Problem::Instance()->VolmortarParams());
+  volcoupl_structurescatra_->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
 
   SetIsSetup(true);
 }
@@ -540,7 +542,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     scatra_manifold_integrator->SetNumberOfDofSetVelocity(scatra_manifold_dofset_counter);
   }
 
-  if (DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
+  if (GLOBAL::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
   {
     const int numDofsPerNodeTemp = 1;  // defined by temperature field
 

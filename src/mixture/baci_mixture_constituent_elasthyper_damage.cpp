@@ -90,7 +90,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::Update(CORE::LINALG::Matrix<3
   }
 
   current_reference_growth_[gp] =
-      DRT::Problem::Instance()
+      GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
           .Evaluate(gprefecoord.A(), totaltime, 0);
 

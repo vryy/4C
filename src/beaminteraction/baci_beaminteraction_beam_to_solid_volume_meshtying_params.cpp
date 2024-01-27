@@ -38,7 +38,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_contact_params_list =
-      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID VOLUME MESHTYING");
+      GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
+          "BEAM TO SOLID VOLUME MESHTYING");
 
   // Set the common beam-to-solid parameters.
   SetBaseParams(beam_to_solid_contact_params_list);

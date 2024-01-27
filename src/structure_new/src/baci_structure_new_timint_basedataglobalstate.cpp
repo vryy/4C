@@ -142,7 +142,7 @@ void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretizati
     stepnp_ = stepn_ + 1;
 
     // initialize restart step
-    restartstep_ = DRT::Problem::Instance()->Restart();
+    restartstep_ = GLOBAL::Problem::Instance()->Restart();
     if (restartstep_ < 0) dserror("The restart step is expected to be positive.");
   }
 
@@ -242,7 +242,7 @@ void STR::TIMINT::BaseDataGlobalState::SetInitialFields()
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
   std::vector<int> porositylocaldofs;
-  porositylocaldofs.push_back(DRT::Problem::Instance()->NDim());
+  porositylocaldofs.push_back(GLOBAL::Problem::Instance()->NDim());
   DRT::UTILS::EvaluateInitialField(*discret_, porosityfield, (*dis_)(0), porositylocaldofs);
 }
 
@@ -259,7 +259,7 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
     const STR::MODELEVALUATOR::Generic& me, const INPAR::STR::ModelType& mt)
 {
   CheckInit();
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<const Epetra_Map> me_map_ptr = me.GetBlockDofRowMapPtr();
 
   model_maps_[mt] = me_map_ptr;

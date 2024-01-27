@@ -35,14 +35,14 @@ BACI_NAMESPACE_OPEN
 void loma_dyn(int restart)
 {
   // create a communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("fluid")->Comm();
 
   // print warning to screen
   if (comm.MyPID() == 0)
     std::cout << "You are now about to enter the module for low-Mach-number flow!" << std::endl;
 
   // define abbreviation
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // access fluid and (typically empty) scatra discretization
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
@@ -86,11 +86,11 @@ void loma_dyn(int restart)
       // create instance of scalar transport basis algorithm (no fluid discretization)
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
           Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
-              lomacontrol, scatradyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+              lomacontrol, scatradyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
-          new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+          new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         dserror("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
@@ -164,7 +164,7 @@ void loma_dyn(int restart)
 
       // create a LOMA::Algorithm instance
       Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(
-          comm, lomacontrol, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+          comm, lomacontrol, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of fluid transport degrees of freedom to scatra discretization
       if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)

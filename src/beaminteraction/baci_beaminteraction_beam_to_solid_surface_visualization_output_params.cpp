@@ -24,7 +24,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::
     : isinit_(false),
       issetup_(false),
       visualization_parameters_(IO::VisualizationParametersFactory(
-          DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))),
+          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))),
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_flag_(false),
@@ -58,12 +58,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::Setup()
 
   // Teuchos parameter lists from input file.
   const Teuchos::ParameterList& beam_to_solid_volume_meshtying_visualization_output_paramslist =
-      DRT::Problem::Instance()
+      GLOBAL::Problem::Instance()
           ->BeamInteractionParams()
           .sublist("BEAM TO SOLID SURFACE")
           .sublist("RUNTIME VTK OUTPUT");
   const Teuchos::ParameterList& global_visualization_output_paramslist =
-      DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT");
+      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT");
 
   // Get global parameters.
   output_interval_steps_ = global_visualization_output_paramslist.get<int>("INTERVAL_STEPS");

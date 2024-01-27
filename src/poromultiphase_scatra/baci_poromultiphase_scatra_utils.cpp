@@ -149,7 +149,7 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
       POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
           comm, struct_disname, fluid_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure);
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
@@ -228,7 +228,7 @@ void POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(const std::string& stru
 {
   POROMULTIPHASE::UTILS::AssignMaterialPointers(struct_disname, fluid_disname);
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);

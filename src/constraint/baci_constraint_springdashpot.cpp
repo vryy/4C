@@ -240,20 +240,20 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
           const double dof_stiffness =
               (*numfuncstiff)[dof] != 0
                   ? (*springstiff)[dof] *
-                        DRT::Problem::Instance()
+                        GLOBAL::Problem::Instance()
                             ->FunctionById<CORE::UTILS::FunctionOfTime>((*numfuncstiff)[dof] - 1)
                             .Evaluate(total_time)
                   : (*springstiff)[dof];
           const double dof_viscosity =
               (*numfuncvisco)[dof] != 0
                   ? (*dashpotvisc)[dof] *
-                        DRT::Problem::Instance()
+                        GLOBAL::Problem::Instance()
                             ->FunctionById<CORE::UTILS::FunctionOfTime>((*numfuncvisco)[dof] - 1)
                             .Evaluate(total_time)
                   : (*dashpotvisc)[dof];
           const double dof_disploffset =
               (*numfuncdisploffset)[dof] != 0
-                  ? (*disploffset)[dof] * DRT::Problem::Instance()
+                  ? (*disploffset)[dof] * GLOBAL::Problem::Instance()
                                               ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                                   (*numfuncdisploffset)[dof] - 1)
                                               .Evaluate(total_time)
@@ -271,11 +271,11 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
           {
             std::array<double, 3> displ = {(*disp)[0], (*disp)[1], (*disp)[2]};
             force_disp =
-                DRT::Problem::Instance()
+                GLOBAL::Problem::Instance()
                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
                     .Evaluate(displ.data(), total_time, 0);
 
-            force_disp_deriv = (DRT::Problem::Instance()
+            force_disp_deriv = (GLOBAL::Problem::Instance()
                                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                         (*numfuncnonlinstiff)[dof] - 1)
                                     .EvaluateSpatialDerivative(displ.data(), total_time, 0))[dof];
@@ -749,10 +749,10 @@ void CONSTRAINTS::SpringDashpot::OutputPrestrOffsetOld(
 void CONSTRAINTS::SpringDashpot::InitializeCurSurfNormal()
 {
   // create MORTAR interface
-  mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(DRT::Problem::Instance()->NDim(),
-      DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+  mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(GLOBAL::Problem::Instance()->NDim(),
+      GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
 
   // create CONTACT elements at interface for normal and gap calculation
   mortar_->SetupSpringDashpot(actdisc_, actdisc_, spring_, coupling_, actdisc_->Comm());

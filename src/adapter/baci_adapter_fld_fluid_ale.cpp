@@ -31,15 +31,15 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     : timeparams_(prbdyn)
 {
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(
-      prbdyn, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", true, false));
+      prbdyn, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", true, false));
   fluid_ = fluid->FluidField();
-  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale =
-      Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(prbdyn, DRT::Problem::Instance()->GetDis("ale")));
+  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
+      new ADAPTER::AleBaseAlgorithm(prbdyn, GLOBAL::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField(), true);
 
   if (ale_ == Teuchos::null) dserror("Failed to cast to problem-specific ALE-wrapper");
 
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   // default parameters for coupling
   double tolerance = 1.e-3;
@@ -48,14 +48,14 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
   // set nds_master = 2 in case of HDG discretization
   // (nds = 0 used for trace values, nds = 1 used for interior values)
-  if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
+  if (GLOBAL::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
   {
     nds_master = 2;
   }
 
   // check for matching fluid and ale meshes (==true in default case)
   if (INPUT::IntegralValue<bool>(
-          DRT::Problem::Instance()->FSIDynamicParams(), "MATCHGRID_FLUIDALE"))
+          GLOBAL::Problem::Instance()->FSIDynamicParams(), "MATCHGRID_FLUIDALE"))
   {
     // the fluid-ale coupling matches
     const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
@@ -71,7 +71,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
         Teuchos::rcp(new CORE::ADAPTER::Coupling());
     coupfa_matching->SetupCoupling(*FluidField()->Discretization(), *AleField()->Discretization(),
         *fluidnodemap, *alenodemap, ndim,
-        INPUT::IntegralValue<bool>(DRT::Problem::Instance()->FSIDynamicParams(), "MATCHALL"),
+        INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "MATCHALL"),
         tolerance, nds_master, nds_slave);
     coupfa_ = coupfa_matching;
   }
@@ -101,14 +101,14 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
         &dofsets21, Teuchos::null, false);
 
     // setup coupling adapter
-    coupfa_volmortar->Setup(DRT::Problem::Instance()->VolmortarParams());
+    coupfa_volmortar->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
 
     // set pointer to coupling adapter
     coupfa_ = coupfa_volmortar;
   }
 
   // Apply initial ALE mesh displacement
-  if (INPUT::IntegralValue<INPAR::ALE::InitialDisp>(DRT::Problem::Instance()->AleDynamicParams(),
+  if (INPUT::IntegralValue<INPAR::ALE::InitialDisp>(GLOBAL::Problem::Instance()->AleDynamicParams(),
           "INITIALDISP") != INPAR::ALE::initdisp_zero_disp)
   {
     FluidField()->SetMeshMap(coupfa_->MasterDofMap(), nds_master);
@@ -120,11 +120,11 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   // there (coupfa_ cannot be build anymore!!!)
   FluidField()->Init();
   fluid->SetInitialFlowField(
-      DRT::Problem::Instance()->FluidDynamicParams());  // call from base algorithm
+      GLOBAL::Problem::Instance()->FluidDynamicParams());  // call from base algorithm
 
 
   if (INPUT::IntegralValue<bool>(
-          DRT::Problem::Instance()->FSIDynamicParams(), "MATCHGRID_STRUCTALE"))
+          GLOBAL::Problem::Instance()->FSIDynamicParams(), "MATCHGRID_STRUCTALE"))
   {
     Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa = Teuchos::rcp(new CORE::ADAPTER::Coupling());
     icoupfa->SetupConditionCoupling(*FluidField()->Discretization(),
@@ -151,11 +151,11 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     std::pair<int, int> dofsets12(0, 0);
     std::pair<int, int> dofsets21(0, 0);
 
-    icoupfa->Init(ndim, DRT::Problem::Instance()->GetDis("fluid"),
-        DRT::Problem::Instance()->GetDis("ale"), &coupleddof12, &coupleddof21, &dofsets12,
+    icoupfa->Init(ndim, GLOBAL::Problem::Instance()->GetDis("fluid"),
+        GLOBAL::Problem::Instance()->GetDis("ale"), &coupleddof12, &coupleddof21, &dofsets12,
         &dofsets21, Teuchos::null, false);
 
-    icoupfa->Setup(DRT::Problem::Instance()->VolmortarParams());
+    icoupfa->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
 
     icoupfa_ = icoupfa;
   }
@@ -213,7 +213,7 @@ void ADAPTER::FluidAle::Output()
   // monolithically from an partitioned fsi scheme (e.g. fsi prestress simulation).
   // TODO (Thon): this is not the nice way, but fluid-ale and xfem problems may have now FSI
   // interface, so we can not do this in general :(
-  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::fsi)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fsi)
   {
     // we want to be able to restart monolithically from an partitioned fsi scheme
     const int uprestart = timeparams_.get<int>("RESTARTEVRY");
@@ -248,7 +248,7 @@ double ADAPTER::FluidAle::ReadRestart(int step)
 void ADAPTER::FluidAle::NonlinearSolve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   if (idisp != Teuchos::null)
   {
     // if we have values at the interface we need to apply them
@@ -297,7 +297,7 @@ void ADAPTER::FluidAle::NonlinearSolve(
 void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp,
     Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<FSI::InterfaceCorrector> icorrector)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   if (idisp != Teuchos::null)
   {
     AleField()->ApplyInterfaceDisplacements(AleField()->Interface()->ExtractFSICondVector(idisp));
@@ -347,7 +347,7 @@ void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp
 void ADAPTER::FluidAle::ApplyInterfaceValues(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   if (idisp != Teuchos::null)
   {
     // if we have values at the interface we need to apply them

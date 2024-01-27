@@ -150,14 +150,14 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, num_gp);
 
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() !=
+  if (GLOBAL::Problem::Instance()->Materials() !=
       Teuchos::null)  // it does not enter here in postprocessing
   {
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
         params_ = static_cast<MAT::PAR::Myocard*>(mat);
@@ -215,14 +215,14 @@ void MAT::Myocard::UnpackMaterial(const std::vector<char>& data)
   ExtractfromPack(position, data, num_gp);
 
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() !=
+  if (GLOBAL::Problem::Instance()->Materials() !=
       Teuchos::null)  // it does not enter here in postprocessing
   {
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
         params_ = static_cast<MAT::PAR::Myocard*>(mat);

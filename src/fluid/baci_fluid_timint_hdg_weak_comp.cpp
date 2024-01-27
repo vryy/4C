@@ -563,7 +563,8 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDGWeakComp::EvaluateErrorComparedT
         if ((step_ == stepmax_) or (time_ == maxtime_))  // write results to file
         {
           std::ostringstream temp;
-          const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+          const std::string simulation =
+              GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
           const std::string fname = simulation + ".abserror";
 
           std::ofstream f;
@@ -578,7 +579,7 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDGWeakComp::EvaluateErrorComparedT
         }
 
         std::ostringstream temp;
-        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
         const std::string fname = simulation + "_time.abserror";
 
         if (step_ == 1)
@@ -730,9 +731,9 @@ void FLD::TimIntHDGWeakComp::Output()
         *discret_, intvelnp_, velnp_, nsd, interpolatedMixedVar_, interpolatedDensity_, traceDen);
 
     // get weakly compressible material
-    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(
+    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
         INPAR::MAT::m_fluid_weakly_compressible);
-    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::WeaklyCompressibleFluid* actmat =
         static_cast<const MAT::PAR::WeaklyCompressibleFluid*>(mat);
 

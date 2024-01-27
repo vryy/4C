@@ -537,7 +537,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
   double curvefac = 1.0;
   if (curvenum >= 0 and usetime)
     curvefac =
-        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
             time);
 
   // (temporarily) switch off any flow-dependent pressure condition in case of zero
@@ -2209,7 +2209,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
         {
           // evaluate function at current gauss point
           // (important: requires 3D position vector)
-          functionfac(idim) = DRT::Problem::Instance()
+          functionfac(idim) = GLOBAL::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                   .Evaluate(coordgp.A(), time, idim);
         }
@@ -4894,7 +4894,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             if (functnum > 0)
             {
               // evaluate function at current gauss point (important: requires 3D position vector)
-              functionfac(dim) = DRT::Problem::Instance()
+              functionfac(dim) = GLOBAL::Problem::Instance()
                                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                      .Evaluate(coordgp.A(), time, dim);
             }
@@ -5265,7 +5265,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           if (functnum > 0)
           {
             // evaluate function at current gauss point (important: requires 3D position vector)
-            functionfac(dim) = DRT::Problem::Instance()
+            functionfac(dim) = GLOBAL::Problem::Instance()
                                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                    .Evaluate(coordgp.A(), time, dim);
           }

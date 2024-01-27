@@ -30,7 +30,7 @@ BACI_NAMESPACE_OPEN
 UTILS::MOR::MOR(Teuchos::RCP<DRT::Discretization> discr)
     : actdisc_(discr),
       myrank_(actdisc_->Comm().MyPID()),
-      morparams_(DRT::Problem::Instance()->MORParams()),
+      morparams_(GLOBAL::Problem::Instance()->MORParams()),
       havemor_(false),
       projmatrix_(Teuchos::null),
       structmapr_(Teuchos::null),
@@ -240,7 +240,7 @@ void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVecto
   // insert path to file if necessary
   if (filename[0] != '/')
   {
-    std::string pathfilename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+    std::string pathfilename = GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName();
     std::string::size_type pos = pathfilename.rfind('/');
     if (pos != std::string::npos)
     {

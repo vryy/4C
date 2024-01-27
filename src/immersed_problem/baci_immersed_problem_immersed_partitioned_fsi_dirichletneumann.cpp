@@ -97,7 +97,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
   FSI::PartitionedImmersed::Setup();
 
   // get pointer to global problem
-  globalproblem_ = DRT::Problem::Instance();
+  globalproblem_ = GLOBAL::Problem::Instance();
 
   // get pointer to discretizations
   fluiddis_ = globalproblem_->GetDis("fluid");

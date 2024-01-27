@@ -44,9 +44,9 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
 {
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-  const Teuchos::ParameterList& xfdyn = DRT::Problem::Instance()->XFluidDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& xfdyn = GLOBAL::Problem::Instance()->XFluidDynamicParams();
   bool ale = INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
 
   num_fields_ += 2;
@@ -57,7 +57,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
   {
     // ask base algorithm for the structural time integrator
     // access the structural discretization
-    Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+    Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
         Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
             timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
@@ -69,7 +69,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     num_fields_ += 1;
     fluidp_block_ = 2;
 
-    DRT::Problem* problem = DRT::Problem::Instance();
+    GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
     const Teuchos::ParameterList& poroelastdyn =
         problem->PoroelastDynamicParams();  // access the problem-specific parameter list
     Teuchos::RCP<POROELAST::Monolithic> poro = Teuchos::rcp_dynamic_cast<POROELAST::Monolithic>(
@@ -93,11 +93,11 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
   {
     num_fields_ += 1;
     ale_i_block_ = num_fields_ - 1;
-    DRT::Problem* problem = DRT::Problem::Instance();
+    GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
     const Teuchos::ParameterList& fsidynparams = problem->FSIDynamicParams();
     // ask base algorithm for the ale time integrator
     Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
-        new ADAPTER::AleBaseAlgorithm(fsidynparams, DRT::Problem::Instance()->GetDis("ale")));
+        new ADAPTER::AleBaseAlgorithm(fsidynparams, GLOBAL::Problem::Instance()->GetDis("ale")));
     ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->AleField());
     if (ale_ == Teuchos::null) dserror("Cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
   }

@@ -31,7 +31,7 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret)
     : discret_(discret), dim_(-1), numlocsys_(-1), locsysfunct_(false)
 {
   // get problem dimension (2D or 3D) and store into dim_
-  dim_ = DRT::Problem::Instance()->NDim();
+  dim_ = GLOBAL::Problem::Instance()->NDim();
 
   if (Dim() != 2 && Dim() != 3) dserror("Locsys problem must be 2D or 3D");
 
@@ -229,7 +229,7 @@ void DRT::UTILS::LocsysManager::Update(
 
                   // Evaluate function with current node position
                   functfac =
-                      (DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+                      (GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                            (*funct)[j] - 1))
                           .Evaluate(currPos.data(), time, j);
                 }
@@ -237,7 +237,7 @@ void DRT::UTILS::LocsysManager::Update(
                 {
                   // Evaluate function with reference node position
                   functfac =
-                      (DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+                      (GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                            (*funct)[j] - 1))
                           .Evaluate(node->X().data(), time, j);
                 }

@@ -332,7 +332,7 @@ void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::Spars
   /*
   //make solver CheapSIMPLE-ready
   // meshtying/contact for structure
-  const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
   // get the solver number used for meshtying/contact problems
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
   // check if the meshtying/contact solver has a valid solver number
@@ -343,14 +343,14 @@ void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::Spars
 
   Teuchos::ParameterList sfparams =
       solver_->Params();  // save copy of original solver parameter list
-  const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
   solver_->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
 
   // Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter
   // list solver_->Params() =
-  // CORE::LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
+  // CORE::LINALG::Solver::TranslateSolverParameters(GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
   if (!solver_->Params().isSublist("Belos Parameters")) dserror("Iterative solver expected!");
 
   solver_->Params().set<bool>(
@@ -364,7 +364,7 @@ void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::Spars
   if (simplersolvernumber == (-1))
     dserror("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in CONTACT
   DYNAMIC to a valid number!"); solver_->PutSolverParamsToSubParams("Inverse2",
-      DRT::Problem::Instance()->SolverParams(simplersolvernumber));
+      GLOBAL::Problem::Instance()->SolverParams(simplersolvernumber));
   */
 
   // build block matrix for SIMPLE

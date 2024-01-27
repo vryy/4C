@@ -57,12 +57,12 @@ void FLD::TimIntLoma::Init()
   // ---------------------------------------------------------------------
 
   // get gas constant
-  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
+  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
   if (id == -1)
     dserror("Could not find sutherland material");
   else
   {
-    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
     // we need the kinematic viscosity here
     gasconstant_ = actmat->gasconst_;

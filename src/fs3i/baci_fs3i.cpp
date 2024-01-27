@@ -45,10 +45,10 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FS3I::FS3I_Base::FS3I_Base()
     : infperm_(
-          INPUT::IntegralValue<int>(DRT::Problem::Instance()->FS3IDynamicParams(), "INF_PERM")),
-      timemax_(DRT::Problem::Instance()->FS3IDynamicParams().get<double>("MAXTIME")),
-      numstep_(DRT::Problem::Instance()->FS3IDynamicParams().get<int>("NUMSTEP")),
-      dt_(DRT::Problem::Instance()->FS3IDynamicParams().get<double>("TIMESTEP")),
+          INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->FS3IDynamicParams(), "INF_PERM")),
+      timemax_(GLOBAL::Problem::Instance()->FS3IDynamicParams().get<double>("MAXTIME")),
+      numstep_(GLOBAL::Problem::Instance()->FS3IDynamicParams().get<int>("NUMSTEP")),
+      dt_(GLOBAL::Problem::Instance()->FS3IDynamicParams().get<double>("TIMESTEP")),
       time_(0.0),
       step_(0),
       issetup_(false),
@@ -163,7 +163,7 @@ void FS3I::FS3I_Base::CheckInterfaceDirichletBC()
 void FS3I::FS3I_Base::CheckFS3IInputs()
 {
   // Check FS3I dynamic parameters
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   // const Teuchos::ParameterList& ioparams = problem->IOParams();
   const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
   const Teuchos::ParameterList& structdynparams = problem->StructuralDynamicParams();
@@ -248,7 +248,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
     }
   }
   INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-      DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+      GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
   // is structure calculated dynamic when not prestressing?
   if (INPUT::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_statics and

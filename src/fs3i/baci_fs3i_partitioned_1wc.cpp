@@ -57,9 +57,9 @@ void FS3I::PartFS3I_1WC::Timeloop()
   SetFSISolution();
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
-  if (DRT::Problem::Instance()->Restart() and
+  if (GLOBAL::Problem::Instance()->Restart() and
       INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
+          GLOBAL::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
     scatravec_[0]->ScaTraField()->PrepareFirstTimeStep();
     scatravec_[1]->ScaTraField()->PrepareFirstTimeStep();
@@ -155,7 +155,7 @@ void FS3I::PartFS3I_1WC::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
 {
-  const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
   INPAR::SCATRA::SolverType scatra_solvtype =
       INPUT::IntegralValue<INPAR::SCATRA::SolverType>(fs3idyn, "SCATRA_SOLVERTYPE");
 
@@ -184,7 +184,7 @@ bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
     {
       // some input parameters for the scatra fields
       const Teuchos::ParameterList& scatradyn =
-          DRT::Problem::Instance()->ScalarTransportDynamicParams();
+          GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
       const int itemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
       const double ittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
       const double abstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");

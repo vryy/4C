@@ -258,12 +258,12 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 
   // SAFETY CHECKS
   // read parameter list and problem type
-  const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
-  const Teuchos::ParameterList& contact = DRT::Problem::Instance()->ContactDynamicParams();
-  const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
+  const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
+  const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
 
   // XFSI is the only reason why you want this option (as the xfluid redistribution is different)
-  if (problemtype == ProblemType::fsi_xfem || problemtype == ProblemType::fpsi_xfem)
+  if (problemtype == GLOBAL::ProblemType::fsi_xfem || problemtype == GLOBAL::ProblemType::fpsi_xfem)
     Searchele_AllProc = true;
   else
     Searchele_AllProc = false;
@@ -300,8 +300,10 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
       }
     }
 
-    if ((problemtype != ProblemType::structure) and (problemtype != ProblemType::fsi_xfem) and
-        (problemtype != ProblemType::fpsi_xfem) and (problemtype != ProblemType::ssi))
+    if ((problemtype != GLOBAL::ProblemType::structure) and
+        (problemtype != GLOBAL::ProblemType::fsi_xfem) and
+        (problemtype != GLOBAL::ProblemType::fpsi_xfem) and
+        (problemtype != GLOBAL::ProblemType::ssi))
       dserror("two half pass algorithm only implemented in structural, fsi/fpsi and ssi problems");
     if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
         INPAR::CONTACT::solution_nitsche)
@@ -311,7 +313,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
       dserror("two half pass algorithm only with harmonic weighting");
   }
 
-  if (!Two_half_pass && problemtype == ProblemType::fsi_xfem)
+  if (!Two_half_pass && problemtype == GLOBAL::ProblemType::fsi_xfem)
     dserror("Nitsche FSI with Contact requires Two_half_pass which is not set!");
 
   if ((!Two_half_pass) && Check_nonsmooth_selfcontactsurface)

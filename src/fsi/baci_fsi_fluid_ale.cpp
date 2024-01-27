@@ -19,10 +19,11 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
-    : FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(), "FSICoupling"),
+    : FluidMovingBoundaryBaseAlgorithm(
+          GLOBAL::Problem::Instance()->FSIDynamicParams(), "FSICoupling"),
       comm_(comm)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
 
   if (comm_.MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, fsidyn);
 

@@ -29,9 +29,13 @@ BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class Problem;
   class Discretization;
 }  // namespace DRT
+
+namespace GLOBAL
+{
+  class Problem;
+}
 
 namespace INPUT
 {
@@ -73,7 +77,7 @@ namespace INPUT
     void AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c);
 
     /// read all materials from my input file section
-    void Read(const DRT::Problem& problem,  ///< global problem instance that manages the input
+    void Read(const GLOBAL::Problem& problem,  ///< global problem instance that manages the input
         DatFileReader& reader,  ///< the actual dat file reader that has access to the dat file
         const Teuchos::RCP<MAT::PAR::Bundle>& mmap  ///< the materials we read here
     );

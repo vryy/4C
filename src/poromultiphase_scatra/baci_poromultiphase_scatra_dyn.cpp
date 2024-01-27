@@ -27,7 +27,7 @@ void poromultiphasescatra_dyn(int restart)
   const std::string scatra_disname = "scatra";
 
   // access the problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // access the communicator
   const Epetra_Comm& comm = problem->GetDis(struct_disname)->Comm();

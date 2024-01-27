@@ -59,7 +59,8 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
           INPUT::IntegralValue<INPAR::S2I::CouplingType>(parameters.sublist("S2I COUPLING"),
               "COUPLINGTYPE") == INPAR::S2I::coupling_mortar_standard and
           Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
-              DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
+              GLOBAL::Problem::Instance()->MortarCouplingParams().sublist(
+                  "PARALLEL REDISTRIBUTION"),
               "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none),
       islavemap_(Teuchos::null),
       imastermap_(Teuchos::null),
@@ -2142,7 +2143,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             "on standard mortar approach!");
       }
       if (INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-              DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") !=
+              GLOBAL::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") !=
           INPAR::MORTAR::relocation_none)
         dserror("Mesh relocation not yet implemented for scatra-scatra interface coupling!");
 
@@ -2189,10 +2190,11 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             slaveelements, slavecondition);
 
         // initialize mortar coupling adapter
-        icoupmortar_[condid] = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-            DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
-            DRT::Problem::Instance()->ContactDynamicParams(),
-            DRT::Problem::Instance()->SpatialApproximationType()));
+        icoupmortar_[condid] =
+            Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
+                GLOBAL::Problem::Instance()->MortarCouplingParams(),
+                GLOBAL::Problem::Instance()->ContactDynamicParams(),
+                GLOBAL::Problem::Instance()->SpatialApproximationType()));
         CORE::ADAPTER::CouplingMortar& icoupmortar = *icoupmortar_[condid];
         std::vector<int> coupleddof(scatratimint_->NumDofPerNode(), 1);
         icoupmortar.SetupInterface(scatratimint_->Discretization(), scatratimint_->Discretization(),
@@ -2239,7 +2241,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           {
             interface.InterfaceParams()
                 .sublist("PARALLEL REDISTRIBUTION")
-                .set<std::string>("PARALLEL_REDIST", DRT::Problem::Instance()
+                .set<std::string>("PARALLEL_REDIST", GLOBAL::Problem::Instance()
                                                          ->MortarCouplingParams()
                                                          .sublist("PARALLEL REDISTRIBUTION")
                                                          .get<std::string>("PARALLEL_REDIST"));
@@ -3393,7 +3395,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     // layer growth
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
     {
-      const int extendedsolver = DRT::Problem::Instance()
+      const int extendedsolver = GLOBAL::Problem::Instance()
                                      ->ScalarTransportDynamicParams()
                                      .sublist("S2I COUPLING")
                                      .get<int>("INTLAYERGROWTH_LINEAR_SOLVER");
@@ -3404,7 +3406,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
             "interface layer growth!");
       }
       extendedsolver_ = Teuchos::rcp(
-          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(extendedsolver),
+          new CORE::LINALG::Solver(GLOBAL::Problem::Instance()->SolverParams(extendedsolver),
               scatratimint_->Discretization()->Comm()));
     }
   }  // initialize scatra-scatra interface layer growth

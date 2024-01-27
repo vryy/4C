@@ -148,9 +148,9 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
   notsetup_ = true;
 
   coupling_solid_fluid_mortar_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-      DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
 
   ale_inner_interf_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
   fluid_mesh_inner_inner_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
@@ -192,14 +192,14 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
 {
   if (notsetup_)
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
 
     SetDefaultParameters(fsidyn, NOXParameterList());
 
     // we use non-matching meshes at the interface
     // mortar with: structure = master, fluid = slave
 
-    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
 
     // get coupling objects
     CORE::ADAPTER::Coupling& interface_coup_fluid_ale = InterfaceFluidAleCoupling();
@@ -258,7 +258,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystem()
     notsetup_ = false;
   }
 
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     const bool restartfrompartfsi =

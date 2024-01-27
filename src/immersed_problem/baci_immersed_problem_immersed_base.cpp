@@ -466,7 +466,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
         if (curvenum >= 0 && usetime)
-          curvefac = DRT::Problem::Instance()
+          curvefac = GLOBAL::Problem::Instance()
                          ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
                          .Evaluate(time);
 
@@ -604,7 +604,7 @@ void IMMERSED::ImmersedBase::WriteExtraOutput(const Epetra_Comm& comm, const dou
   if (comm.MyPID() == 0)
   {
     const std::string fname1 =
-        DRT::Problem::Instance()->OutputControlFile()->FileName() + "." + filenameending;
+        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + "." + filenameending;
 
     std::ofstream f1;
     f1.open(fname1.c_str(), std::fstream::ate | std::fstream::app);

@@ -44,7 +44,7 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(
   FluidSchur_ = Teuchos::rcp(new LungSchurComplement());
 
   // stuff needed for SIMPLE preconditioner
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   alpha_ = fsidyn.sublist("CONSTRAINT").get<double>("ALPHA");
   simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
   prec_ =

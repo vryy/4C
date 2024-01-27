@@ -34,7 +34,7 @@ MAT::ScatraMultiScaleGP::ScatraMultiScaleGP(
     const int ele_id, const int gp_id, const int microdisnum, const bool is_ale)
     : gp_id_(gp_id),
       ele_id_(ele_id),
-      eleowner_(DRT::Problem::Instance()->GetDis("scatra")->ElementRowMap()->MyGID(ele_id)),
+      eleowner_(GLOBAL::Problem::Instance()->GetDis("scatra")->ElementRowMap()->MyGID(ele_id)),
       microdisnum_(microdisnum),
       step_(0),
       phin_(Teuchos::null),
@@ -70,7 +70,7 @@ MAT::ScatraMultiScaleGP::~ScatraMultiScaleGP()
 void MAT::ScatraMultiScaleGP::Init()
 {
   // extract micro-scale problem
-  DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
+  GLOBAL::Problem* microproblem = GLOBAL::Problem::Instance(microdisnum_);
 
   // extract micro-scale discretization
   std::stringstream microdisname;
@@ -90,14 +90,14 @@ void MAT::ScatraMultiScaleGP::Init()
   {
     // extract macro-scale parameter list
     const Teuchos::ParameterList& sdyn_macro =
-        DRT::Problem::Instance()->ScalarTransportDynamicParams();
+        GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
 
     // extract micro-scale parameter list and create deep copy
     Teuchos::RCP<Teuchos::ParameterList> sdyn_micro = Teuchos::rcp(new Teuchos::ParameterList(
-        DRT::Problem::Instance(microdisnum_)->ScalarTransportDynamicParams()));
+        GLOBAL::Problem::Instance(microdisnum_)->ScalarTransportDynamicParams()));
 
     // preliminary safety check
-    if (DRT::Problem::Instance(microdisnum_)->NDim() != 1)
+    if (GLOBAL::Problem::Instance(microdisnum_)->NDim() != 1)
     {
       dserror(
           "Must have one-dimensional micro scale in multi-scale simulations of scalar transport "
@@ -169,7 +169,7 @@ void MAT::ScatraMultiScaleGP::Init()
 
     // add proxy of velocity related degrees of freedom to scatra discretization
     Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(
-        DRT::Problem::Instance(microdisnum_)->NDim() + 1, 0, 0, true));
+        GLOBAL::Problem::Instance(microdisnum_)->NDim() + 1, 0, 0, true));
     if (microdis->AddDofSet(dofsetaux) != 1)
       dserror("Micro-scale discretization has illegal number of dofsets!");
 
@@ -189,7 +189,7 @@ void MAT::ScatraMultiScaleGP::Init()
 
     // create solver
     Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-        DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), microdis->Comm()));
+        GLOBAL::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), microdis->Comm()));
 
     // provide solver with null space information if necessary
     microdis->ComputeNullSpaceIfNecessary(solver->Params());
@@ -198,9 +198,9 @@ void MAT::ScatraMultiScaleGP::Init()
     Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::rcp(new Teuchos::ParameterList());
     extraparams->set<bool>("isale", false);
     extraparams->sublist("TURBULENT INFLOW") =
-        DRT::Problem::Instance(microdisnum_)->FluidDynamicParams().sublist("TURBULENT INFLOW");
+        GLOBAL::Problem::Instance(microdisnum_)->FluidDynamicParams().sublist("TURBULENT INFLOW");
     extraparams->sublist("TURBULENCE MODEL") =
-        DRT::Problem::Instance(microdisnum_)->FluidDynamicParams().sublist("TURBULENCE MODEL");
+        GLOBAL::Problem::Instance(microdisnum_)->FluidDynamicParams().sublist("TURBULENCE MODEL");
 
     // instantiate and initialize micro-scale time integrator
     microdisnum_microtimint_map_[microdisnum_] = Teuchos::rcp(new SCATRA::TimIntOneStepTheta(
@@ -392,12 +392,12 @@ void MAT::ScatraMultiScaleGP::Update()
 void MAT::ScatraMultiScaleGP::NewResultFile()
 {
   // get properties from macro scale
-  Teuchos::RCP<IO::OutputControl> macrocontrol = DRT::Problem::Instance()->OutputControlFile();
+  Teuchos::RCP<IO::OutputControl> macrocontrol = GLOBAL::Problem::Instance()->OutputControlFile();
   std::string microprefix = macrocontrol->RestartName();
   std::string micronewprefix = macrocontrol->NewOutputFileName();
 
   // extract micro-scale problem and discretization
-  DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
+  GLOBAL::Problem* microproblem = GLOBAL::Problem::Instance(microdisnum_);
   std::stringstream microdisname;
   microdisname << "scatra_multiscale_" << microdisnum_;
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis(microdisname.str());
@@ -411,7 +411,7 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
   if (eleowner_)
   {
     const int ndim = microproblem->NDim();
-    const int restart = DRT::Problem::Instance()->Restart();
+    const int restart = GLOBAL::Problem::Instance()->Restart();
     bool adaptname = true;
 
     // in case of restart, the new output file name has already been adapted
@@ -420,8 +420,9 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
     Teuchos::RCP<IO::OutputControl> microcontrol = Teuchos::rcp(new IO::OutputControl(
         microdis->Comm(), "Scalar_Transport", microproblem->SpatialApproximationType(),
         "micro-input-file-not-known", restartname_, newfilename, ndim, restart,
-        DRT::Problem::Instance(microdisnum_)->IOParams().get<int>("FILESTEPS"),
-        INPUT::IntegralValue<bool>(DRT::Problem::Instance(microdisnum_)->IOParams(), "OUTPUT_BIN"),
+        GLOBAL::Problem::Instance(microdisnum_)->IOParams().get<int>("FILESTEPS"),
+        INPUT::IntegralValue<bool>(
+            GLOBAL::Problem::Instance(microdisnum_)->IOParams(), "OUTPUT_BIN"),
         adaptname));
 
     micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(microdis));
@@ -510,7 +511,7 @@ void MAT::ScatraMultiScaleGP::ReadRestart()
   Teuchos::RCP<SCATRA::TimIntOneStepTheta> microtimint = microdisnum_microtimint_map_[microdisnum_];
 
   // extract restart step
-  step_ = DRT::Problem::Instance()->Restart();
+  step_ = GLOBAL::Problem::Instance()->Restart();
 
   // set current state in micro-scale time integrator
   microtimint->SetState(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,

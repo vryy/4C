@@ -32,7 +32,7 @@ void immersed_problem_drt()
   // declare general ParameterList that can be handed into Algorithm
   Teuchos::ParameterList params;
   // get pointer to global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   // get communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
@@ -53,9 +53,9 @@ void immersed_problem_drt()
   {
     case INPAR::IMMERSED::partitioned:
     {
-      switch (DRT::Problem::Instance()->GetProblemType())
+      switch (GLOBAL::Problem::Instance()->GetProblemType())
       {
-        case ProblemType::immersed_fsi:
+        case GLOBAL::ProblemType::immersed_fsi:
         {
           // fill discretizations
           problem->GetDis("structure")->FillComplete(false, false, false);
@@ -105,7 +105,7 @@ void immersed_problem_drt()
           // PARTITIONED FSI ALGORITHM
 
           // read restart step
-          const int restart = DRT::Problem::Instance()->Restart();
+          const int restart = GLOBAL::Problem::Instance()->Restart();
           if (restart)
             algo->ReadRestart(restart);
           else
@@ -121,14 +121,14 @@ void immersed_problem_drt()
           }
 
           // create result tests for single fields
-          DRT::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());
-          DRT::Problem::Instance()->AddFieldTest(algo->StructureField()->CreateFieldTest());
+          GLOBAL::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());
+          GLOBAL::Problem::Instance()->AddFieldTest(algo->StructureField()->CreateFieldTest());
 
           // do the actual testing
-          DRT::Problem::Instance()->TestAll(comm);
+          GLOBAL::Problem::Instance()->TestAll(comm);
 
           break;
-        }  // case ProblemType::immersed_fsi
+        }  // case GLOBAL::ProblemType::immersed_fsi
 
         default:
         {

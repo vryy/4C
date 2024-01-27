@@ -132,7 +132,7 @@ void STR::Integrator::SetInitialDisplacement(
 
           // evaluate component k of spatial function
           const double initialval =
-              DRT::Problem::Instance()
+              GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                   .Evaluate(lnode->X().data(), GlobalState().GetTimeN(), d);
 

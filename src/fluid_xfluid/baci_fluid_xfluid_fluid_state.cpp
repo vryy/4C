@@ -132,7 +132,7 @@ void FLD::XFluidFluidState::SetupMapExtractors(
   XFluidState::SetupMapExtractors(xfluiddiscret, time);
   xffluidsplitter_->Setup(*xffluiddofrowmap_, embfluiddofrowmap_, XFluidState::xfluiddofrowmap_);
 
-  FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluiddiscret, DRT::Problem::Instance()->NDim(),
+  FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluiddiscret, GLOBAL::Problem::Instance()->NDim(),
       *embfluiddiscret, *xffluidvelpressplitter_, xffluiddofrowmap_);
 }
 

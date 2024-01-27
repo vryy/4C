@@ -42,7 +42,7 @@ ADAPTER::StructureTimeAdaJoint::StructureTimeAdaJoint(Teuchos::RCP<Structure> st
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
 {
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& jep = sdyn.sublist("TIMEADAPTIVITY").sublist("JOINT EXPLICIT");
 
   // get the parameters of the auxiliary integrator
@@ -54,7 +54,7 @@ void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
   sta_ = STR::TIMINT::BuildStrategy(adyn);
 
   ///// setup dataio
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   //
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
       Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
@@ -98,7 +98,7 @@ void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
   // setup wrapper
   sta_wrapper_ = Teuchos::rcp(new ADAPTER::StructureTimeLoop(sta_));
 
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     const STR::TIMINT::Base& sti = *stm_;

@@ -44,7 +44,7 @@
 
 BACI_NAMESPACE_OPEN
 
-void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, const bool readmesh)
+void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, const bool readmesh)
 {
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
@@ -76,9 +76,9 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
   switch (problem.GetProblemType())
   {
-    case ProblemType::fsi:
-    case ProblemType::fsi_redmodels:
-    case ProblemType::fsi_lung:
+    case GLOBAL::ProblemType::fsi:
+    case GLOBAL::ProblemType::fsi_redmodels:
+    case GLOBAL::ProblemType::fsi_lung:
     {
       if (distype == CORE::FE::ShapeFunctionType::nurbs)
       {
@@ -128,9 +128,9 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::gas_fsi:
-    case ProblemType::ac_fsi:
-    case ProblemType::thermo_fsi:
+    case GLOBAL::ProblemType::gas_fsi:
+    case GLOBAL::ProblemType::ac_fsi:
+    case GLOBAL::ProblemType::thermo_fsi:
     {
       switch (distype)
       {
@@ -176,7 +176,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::biofilm_fsi:
+    case GLOBAL::ProblemType::biofilm_fsi:
     {
       switch (distype)
       {
@@ -228,8 +228,8 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::fsi_xfem:
-    case ProblemType::fluid_xfem:
+    case GLOBAL::ProblemType::fsi_xfem:
+    case GLOBAL::ProblemType::fluid_xfem:
     {
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
       // create discretization writer - in constructor set into and owned by corresponding discret
@@ -270,7 +270,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
       meshreader.AddElementReader(INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
       break;
     }
-    case ProblemType::fpsi_xfem:
+    case GLOBAL::ProblemType::fpsi_xfem:
     {
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
       fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid", reader.Comm()));
@@ -298,7 +298,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::ale:
+    case GLOBAL::ProblemType::ale:
     {
       switch (distype)
       {
@@ -323,8 +323,8 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::fluid:
-    case ProblemType::fluid_redmodels:
+    case GLOBAL::ProblemType::fluid:
+    case GLOBAL::ProblemType::fluid_redmodels:
     {
       if (distype == CORE::FE::ShapeFunctionType::hdg)
       {
@@ -366,7 +366,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::lubrication:
+    case GLOBAL::ProblemType::lubrication:
     {
       // create empty discretizations
       lubricationdis = Teuchos::rcp(new DRT::Discretization("lubrication", reader.Comm()));
@@ -381,8 +381,8 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::cardiac_monodomain:
-    case ProblemType::scatra:
+    case GLOBAL::ProblemType::cardiac_monodomain:
+    case GLOBAL::ProblemType::scatra:
     {
       switch (distype)
       {
@@ -419,7 +419,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::sti:
+    case GLOBAL::ProblemType::sti:
     {
       // safety checks
       if (distype == CORE::FE::ShapeFunctionType::nurbs)
@@ -442,8 +442,8 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::fluid_ale:
-    case ProblemType::freesurf:
+    case GLOBAL::ProblemType::fluid_ale:
+    case GLOBAL::ProblemType::freesurf:
     {
       if (distype == CORE::FE::ShapeFunctionType::hdg)
       {
@@ -498,7 +498,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::tsi:
+    case GLOBAL::ProblemType::tsi:
     {
       switch (distype)
       {
@@ -532,7 +532,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::thermo:
+    case GLOBAL::ProblemType::thermo:
     {
       switch (distype)
       {
@@ -558,7 +558,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
       break;
     }
 
-    case ProblemType::structure:
+    case GLOBAL::ProblemType::structure:
     {
       switch (distype)
       {
@@ -586,7 +586,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
       break;
     }
 
-    case ProblemType::polymernetwork:
+    case GLOBAL::ProblemType::polymernetwork:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -606,7 +606,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
       break;
     }
 
-    case ProblemType::loma:
+    case GLOBAL::ProblemType::loma:
     {
       // create empty discretizations
       fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
@@ -625,11 +625,11 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
       break;
     }
 
-    case ProblemType::fluid_xfem_ls:
+    case GLOBAL::ProblemType::fluid_xfem_ls:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-      if (problem.GetProblemType() == ProblemType::fluid_xfem_ls)
+      if (problem.GetProblemType() == GLOBAL::ProblemType::fluid_xfem_ls)
         fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid", reader.Comm()));
       else
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
@@ -654,7 +654,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
       break;
     }
 
-    case ProblemType::elch:
+    case GLOBAL::ProblemType::elch:
     {
       // create empty discretizations
       switch (distype)
@@ -697,7 +697,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::art_net:  // _1D_ARTERY_
+    case GLOBAL::ProblemType::art_net:  // _1D_ARTERY_
     {
       // create empty discretizations
       arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
@@ -729,7 +729,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::red_airways:  // _reduced D airways
+    case GLOBAL::ProblemType::red_airways:  // _reduced D airways
     {
       // create empty discretizations
       airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm()));
@@ -744,7 +744,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::struct_ale:  // structure with ale
+    case GLOBAL::ProblemType::struct_ale:  // structure with ale
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -762,8 +762,8 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::poroelast:
-    case ProblemType::poromultiphase:
+    case GLOBAL::ProblemType::poroelast:
+    case GLOBAL::ProblemType::poromultiphase:
     {
       // create empty discretizations
       switch (distype)
@@ -803,7 +803,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::poromultiphasescatra:
+    case GLOBAL::ProblemType::poromultiphasescatra:
     {
       // create empty discretizations
       switch (distype)
@@ -855,7 +855,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::porofluidmultiphase:
+    case GLOBAL::ProblemType::porofluidmultiphase:
     {
       // create empty discretizations
       switch (distype)
@@ -889,7 +889,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
       }
       break;
     }
-    case ProblemType::fpsi:
+    case GLOBAL::ProblemType::fpsi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -913,7 +913,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::fbi:
+    case GLOBAL::ProblemType::fbi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -933,7 +933,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::immersed_fsi:
+    case GLOBAL::ProblemType::immersed_fsi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -951,7 +951,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::fps3i:
+    case GLOBAL::ProblemType::fps3i:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -988,7 +988,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::poroscatra:
+    case GLOBAL::ProblemType::poroscatra:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1009,7 +1009,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
       meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
-    case ProblemType::ehl:
+    case GLOBAL::ProblemType::ehl:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1028,8 +1028,8 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::ssi:
-    case ProblemType::ssti:
+    case GLOBAL::ProblemType::ssi:
+    case GLOBAL::ProblemType::ssti:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1056,7 +1056,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
       meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
-      if (problem.GetProblemType() == ProblemType::ssti)
+      if (problem.GetProblemType() == GLOBAL::ProblemType::ssti)
       {
         thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm()));
         thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));
@@ -1066,8 +1066,8 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::particle:
-    case ProblemType::pasi:
+    case GLOBAL::ProblemType::particle:
+    case GLOBAL::ProblemType::pasi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1081,7 +1081,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::level_set:
+    case GLOBAL::ProblemType::level_set:
     {
       // create empty discretizations
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
@@ -1094,12 +1094,12 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
       meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
-    case ProblemType::np_support:
+    case GLOBAL::ProblemType::np_support:
     {
       // no discretizations and nodes needed for supporting procs
       break;
     }
-    case ProblemType::elemag:
+    case GLOBAL::ProblemType::elemag:
     {
       // create empty discretizations
       elemagdis = Teuchos::rcp(new DRT::DiscretizationHDG("elemag", reader.Comm()));
@@ -1118,7 +1118,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
 
       break;
     }
-    case ProblemType::redairways_tissue:
+    case GLOBAL::ProblemType::redairways_tissue:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -1144,10 +1144,10 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
   // add artery or airways discretizations only for the following problem types
   switch (problem.GetProblemType())
   {
-    case ProblemType::fsi_redmodels:
-    case ProblemType::fsi_lung:
-    case ProblemType::fluid_ale:
-    case ProblemType::fluid_redmodels:
+    case GLOBAL::ProblemType::fsi_redmodels:
+    case GLOBAL::ProblemType::fsi_lung:
+    case GLOBAL::ProblemType::fluid_ale:
+    case GLOBAL::ProblemType::fluid_redmodels:
     {
       if (distype == CORE::FE::ShapeFunctionType::polynomial)
       {
@@ -1177,16 +1177,16 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
     meshreader.ReadAndPartition();
 
     CORE::COMM::NestedParallelismType npType =
-        DRT::Problem::Instance()->GetCommunicators()->NpType();
+        GLOBAL::Problem::Instance()->GetCommunicators()->NpType();
     // care for special applications
     switch (problem.GetProblemType())
     {
-      case ProblemType::elch:
-      case ProblemType::fsi:
-      case ProblemType::fsi_redmodels:
-      case ProblemType::fsi_lung:
-      case ProblemType::scatra:
-      case ProblemType::structure:
+      case GLOBAL::ProblemType::elch:
+      case GLOBAL::ProblemType::fsi:
+      case GLOBAL::ProblemType::fsi_redmodels:
+      case GLOBAL::ProblemType::fsi_lung:
+      case GLOBAL::ProblemType::scatra:
+      case GLOBAL::ProblemType::structure:
       {
         // read microscale fields from second, third, ... input file if necessary
         // (in case of multi-scale material models)
@@ -1194,7 +1194,7 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
           ReadMicroFields(problem, reader);
         break;
       }
-      case ProblemType::np_support:
+      case GLOBAL::ProblemType::np_support:
       {
         // read microscale fields from second, third, ... inputfile for supporting processors
         ReadMicrofieldsNPsupport(problem);
@@ -1206,15 +1206,15 @@ void GLOBAL::ReadFields(DRT::Problem& problem, INPUT::DatFileReader& reader, con
   }  // if(readmesh)
 }
 
-void GLOBAL::ReadMicroFields(DRT::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   // check whether micro material is specified
   const int id_struct =
-      DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_struct_multiscale);
+      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_struct_multiscale);
   const int id_scatra =
-      DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale);
+      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale);
   const int id_elch =
-      DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale);
+      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale);
 
   // return if no multiscale material is used
   if (id_struct == -1 and id_scatra == -1 and id_elch == -1) return;
@@ -1235,7 +1235,7 @@ void GLOBAL::ReadMicroFields(DRT::Problem& problem, INPUT::DatFileReader& reader
   Teuchos::RCP<Epetra_Comm> lcomm = problem.GetCommunicators()->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = problem.GetCommunicators()->GlobalComm();
 
-  DRT::Problem* macro_problem = DRT::Problem::Instance();
+  GLOBAL::Problem* macro_problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<DRT::Discretization> macro_dis = macro_problem->GetDis(macro_dis_name);
 
   // repartition macro problem for a good distribution of elements with micro material
@@ -1356,7 +1356,7 @@ void GLOBAL::ReadMicroFields(DRT::Problem& problem, INPUT::DatFileReader& reader
         int microdisnum(-1);
         std::string micro_dis_name = "";
         std::string micro_inputfile_name("");
-        DRT::Problem* micro_problem(nullptr);
+        GLOBAL::Problem* micro_problem(nullptr);
 
         // structure case
         if (macro_dis_name == "structure")
@@ -1375,7 +1375,7 @@ void GLOBAL::ReadMicroFields(DRT::Problem& problem, INPUT::DatFileReader& reader
           micro_inputfile_name = micromat->MicroInputFileName();
 
           // instantiate micro-scale problem
-          micro_problem = DRT::Problem::Instance(microdisnum);
+          micro_problem = GLOBAL::Problem::Instance(microdisnum);
         }
 
         // scalar transport case
@@ -1403,7 +1403,7 @@ void GLOBAL::ReadMicroFields(DRT::Problem& problem, INPUT::DatFileReader& reader
           micro_inputfile_name = micromat->MicroInputFileName();
 
           // instantiate micro-scale problem
-          micro_problem = DRT::Problem::Instance(microdisnum);
+          micro_problem = GLOBAL::Problem::Instance(microdisnum);
         }
 
         if (micro_inputfile_name[0] != '/')
@@ -1501,7 +1501,7 @@ void GLOBAL::ReadMicroFields(DRT::Problem& problem, INPUT::DatFileReader& reader
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadMicrofieldsNPsupport(DRT::Problem& problem)
+void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = problem.GetCommunicators()->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = problem.GetCommunicators()->GlobalComm();
@@ -1552,7 +1552,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(DRT::Problem& problem)
     int microdisnum = -1;
     subgroupcomm->Broadcast(&microdisnum, 1, 0);
 
-    DRT::Problem* micro_problem = DRT::Problem::Instance(microdisnum);
+    GLOBAL::Problem* micro_problem = GLOBAL::Problem::Instance(microdisnum);
 
     // broadcast micro input file name
     int length = -1;
@@ -1614,7 +1614,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(DRT::Problem& problem)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadParameter(DRT::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList("DAT FILE"));
 
@@ -1841,7 +1841,7 @@ void GLOBAL::ReadParameter(DRT::Problem& problem, INPUT::DatFileReader& reader)
 
   // 1) get the problem type
   const Teuchos::ParameterList& type = problem.ProblemTypeParams();
-  problem.SetProblemType(INPUT::IntegralValue<ProblemType>(type, "PROBLEMTYP"));
+  problem.SetProblemType(INPUT::IntegralValue<GLOBAL::ProblemType>(type, "PROBLEMTYP"));
 
   // 2) get the spatial approximation type
   problem.SetSpatialApproximationType(
@@ -1876,7 +1876,7 @@ void GLOBAL::ReadParameter(DRT::Problem& problem, INPUT::DatFileReader& reader)
     int rs = type.get<int>("RANDSEED");
     if (rs < 0)
       rs = static_cast<int>(time(nullptr)) +
-           42 * DRT::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
+           42 * GLOBAL::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
 
     srand((unsigned int)rs);  // Set random seed for stdlibrary. This is deprecated, as it does not
     // produce random numbers on some platforms!
@@ -1887,7 +1887,7 @@ void GLOBAL::ReadParameter(DRT::Problem& problem, INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadMaterials(DRT::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   // create list of known materials
   Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> vm = INPUT::ValidMaterials();
@@ -1938,7 +1938,7 @@ void GLOBAL::ReadMaterials(DRT::Problem& problem, INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadContactConstitutiveLaws(DRT::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   // create list of known contact constitutive laws
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
@@ -1991,7 +1991,7 @@ void GLOBAL::ReadContactConstitutiveLaws(DRT::Problem& problem, INPUT::DatFileRe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadCloningMaterialMap(DRT::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadCloningMaterialMap(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
 
@@ -2021,14 +2021,14 @@ void GLOBAL::ReadCloningMaterialMap(DRT::Problem& problem, INPUT::DatFileReader&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadResult(DRT::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadResult(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   problem.GetResultTestManager().ReadInput(reader);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadConditions(DRT::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   Teuchos::Time time("", true);
   if (reader.Comm()->MyPID() == 0)
@@ -2165,7 +2165,7 @@ void GLOBAL::ReadConditions(DRT::Problem& problem, INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadKnots(DRT::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   // get information on the spatial approximation --- we only read knots
   // in the nurbs case
@@ -2224,7 +2224,7 @@ void GLOBAL::ReadKnots(DRT::Problem& problem, INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadParticles(DRT::Problem& problem, INPUT::DatFileReader& reader)
+void GLOBAL::ReadParticles(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
   // no need to read in particles in case of restart
   if (problem.Restart()) return;

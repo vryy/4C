@@ -43,7 +43,7 @@ FSI::ConstrOverlappingBlockMatrix::ConstrOverlappingBlockMatrix(
 
   // stuff needed for SIMPLE preconditioner -> this needs to be read
   // in from the input file one day!
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   alpha_ = fsidyn.sublist("CONSTRAINT").get<double>("ALPHA");
   simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
   prec_ =

@@ -57,7 +57,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   ndsporofluid_scatra_ = ndsporofluid_scatra;
 
   // access the global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // Create the two uncoupled subproblems.
 
@@ -271,7 +271,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::CreateFieldTest()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   poromulti_->CreateFieldTest();
   problem->AddFieldTest(scatra_->CreateScaTraFieldTest());

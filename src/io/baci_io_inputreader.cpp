@@ -242,7 +242,7 @@ namespace INPUT
             dserror("Illegal line in section '%s': '%s'", marker.c_str(), l);
           }
 
-          Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis(disname);
+          Teuchos::RCP<DRT::Discretization> actdis = GLOBAL::Problem::Instance()->GetDis(disname);
 
           std::vector<double> box_specifications;
           if (cached_box_specifications_.find(disname) != cached_box_specifications_.end())
@@ -930,7 +930,7 @@ namespace INPUT
 
     // if we are in copydatafile mode use global comm instead of local comm
     // and only read in input file once instead of npgroup times
-    DRT::Problem* problem = DRT::Problem::Instance();
+    GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
     CORE::COMM::NestedParallelismType npType = problem->GetCommunicators()->NpType();
     if (npType == CORE::COMM::NestedParallelismType::copy_dat_file)
       comm = problem->GetCommunicators()->GlobalComm();

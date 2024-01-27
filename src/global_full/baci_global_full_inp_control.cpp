@@ -29,7 +29,7 @@ void ntainp_ccadiscret(
 {
   using namespace BACI;
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = problem->GetCommunicators()->GlobalComm();
   int group = problem->GetCommunicators()->GroupId();
@@ -133,7 +133,7 @@ void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Com
   using namespace BACI;
 
   // configure the parallel output environment
-  const Teuchos::ParameterList& io = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& io = GLOBAL::Problem::Instance()->IOParams();
   bool screen = INPUT::IntegralValue<int>(io, "WRITE_TO_SCREEN");
   bool file = INPUT::IntegralValue<int>(io, "WRITE_TO_FILE");
   bool preGrpID = INPUT::IntegralValue<int>(io, "PREFIX_GROUP_ID");

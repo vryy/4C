@@ -38,7 +38,7 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
   if ((GetDiscretizations()[1]->Comm().MyPID() == 0) &&
       (Bridge()->GetParams()->GetVisualizationOuputParamsPtr()->GetConstraintViolationOutputFlag()))
   {
-    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".penalty");
     log.open(s.c_str(), std::ofstream::out);
     log << "Time \t Step \t ViolationNorm \t FluidViolationNorm \t StructureViolationNorm"
@@ -143,7 +143,7 @@ void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step
     std::ofstream log;
     if (GetDiscretizations()[1]->Comm().MyPID() == 0)
     {
-      std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
       s.append(".penalty");
       log.open(s.c_str(), std::ofstream::app);
       log << time << "\t" << step << "\t" << norm / penalty_parameter << "\t"

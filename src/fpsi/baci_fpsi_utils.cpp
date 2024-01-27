@@ -50,7 +50,7 @@ Teuchos::RCP<FPSI::Utils> FPSI::Utils::Instance()
 Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(const Epetra_Comm& comm,
     const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   Fluid_PoroFluid_InterfaceMap = Teuchos::rcp(new std::map<int, int>);
   PoroFluid_Fluid_InterfaceMap = Teuchos::rcp(new std::map<int, int>);
@@ -115,7 +115,7 @@ Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(const Epetra_Com
   // setup of the discretizations, including clone strategy
 
   // choose cloning strategy depending on poroelast or scatra poroelast problem type
-  if (problem->GetProblemType() == ProblemType::fps3i)
+  if (problem->GetProblemType() == GLOBAL::ProblemType::fps3i)
   {
     POROELAST::UTILS::SetupPoro<POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements>();
   }
@@ -193,7 +193,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
     const DRT::Discretization& slavedis, const std::string& condname,
     std::map<int, int>& interfacefacingelementmap)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Epetra_Comm& mastercomm = problem->GetDis(masterdis.Name())->Comm();
 
   bool condition_exists = true;
@@ -477,7 +477,7 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator masterelecurr;
   DRT::Element* masterele = nullptr;
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis(masterdis->Name())->Comm();
   Teuchos::RCP<Epetra_Comm> rcpcomm = Teuchos::rcp(comm.Clone());
 
@@ -638,7 +638,7 @@ void FPSI::Utils::SetupInterfaceMap(const Epetra_Comm& comm,
 void FPSI::UTILS::MapExtractor::Setup(
     const DRT::Discretization& dis, bool withpressure, bool overlapping)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
   mcs.SetOverlapping(overlapping);  // defines if maps can overlap
   mcs.AddSelector(Teuchos::rcp(

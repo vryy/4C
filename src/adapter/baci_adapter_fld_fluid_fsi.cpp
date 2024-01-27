@@ -73,7 +73,7 @@ void ADAPTER::FluidFSI::Init()
 
   // set nds_master = 2 in case of HDG discretization
   // (nds = 0 used for trace values, nds = 1 used for interior values)
-  if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
+  if (GLOBAL::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
   {
     nds_master = 2;
   }
@@ -95,7 +95,7 @@ void ADAPTER::FluidFSI::Init()
   interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(Interface()->FSICondMap())));
 
   // time step size adaptivity in monolithic FSI
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const bool timeadapton =
       INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
   if (timeadapton)
@@ -161,7 +161,7 @@ double ADAPTER::FluidFSI::TimeScaling() const
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::Update()
 {
-  if (DRT::Problem::Instance()->SpatialApproximationType() !=
+  if (GLOBAL::Problem::Instance()->SpatialApproximationType() !=
       CORE::FE::ShapeFunctionType::hdg)  // TODO als fix this!
   {
     Teuchos::RCP<Epetra_Vector> interfaceforcem = Interface()->ExtractFSICondVector(TrueResidual());
@@ -230,7 +230,7 @@ void ADAPTER::FluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ive
   Interface()->InsertFSICondVector(ivel, fluidimpl_->WriteAccessVelnp());
 
   const Teuchos::ParameterList& fsipart =
-      DRT::Problem::Instance()->FSIDynamicParams().sublist("PARTITIONED SOLVER");
+      GLOBAL::Problem::Instance()->FSIDynamicParams().sublist("PARTITIONED SOLVER");
   if (INPUT::IntegralValue<int>(fsipart, "DIVPROJECTION"))
   {
     // project the velocity field into a divergence free subspace
@@ -495,7 +495,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
   Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(*domainmap));
 
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
   const int simplersolvernumber = fdyn.get<int>("LINEAR_SOLVER");
   if (simplersolvernumber == (-1))
     dserror(
@@ -503,7 +503,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
         "\nPlease set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
 
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(simplersolvernumber), Discretization()->Comm()));
+      GLOBAL::Problem::Instance()->SolverParams(simplersolvernumber), Discretization()->Comm()));
 
   if (solver->Params().isSublist("ML Parameters"))
   {

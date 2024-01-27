@@ -1395,7 +1395,7 @@ Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawConst::CreateGrowthLaw()
 MAT::PAR::GrowthLawConst::GrowthLawConst(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata)
 {
-  Epetra_Map dummy_map(1, 1, 0, *(DRT::Problem::Instance()->GetCommunicators()->LocalComm()));
+  Epetra_Map dummy_map(1, 1, 0, *(GLOBAL::Problem::Instance()->GetCommunicators()->LocalComm()));
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
@@ -1419,7 +1419,7 @@ void MAT::GrowthLawConst::Evaluate(double* theta, const double& thetaold,
 {
   double dt = params.get<double>("delta time", -1.0);
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
-  // int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+  // int eleID = GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
   *theta = thetaold + Parameter()->GetParameter(Parameter()->thetarate, eleGID) * dt;
   //*theta = Parameter()->GetParameter(Parameter()->thetarate,eleID);
 

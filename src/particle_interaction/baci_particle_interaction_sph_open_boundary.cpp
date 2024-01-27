@@ -287,8 +287,9 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::PrescribeOpenBoundaryStates(
   if (particlestored <= 0) return;
 
   // get reference to function
-  const auto& function = DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-      prescribedstatefunctid_ - 1);
+  const auto& function =
+      GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+          prescribedstatefunctid_ - 1);
 
   // safety check
   if (function.NumberComponents() != 1)
@@ -496,8 +497,9 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::PrescribeOpenBoundaryStates(
   if (prescribedstatefunctid_ > 0)
   {
     // get reference to function
-    const auto& function = DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-        prescribedstatefunctid_ - 1);
+    const auto& function =
+        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+            prescribedstatefunctid_ - 1);
 
     // safety check
     if (function.NumberComponents() != 1)

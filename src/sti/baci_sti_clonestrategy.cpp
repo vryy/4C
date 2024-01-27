@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
 void STI::ScatraThermoCloneStrategy::CheckMaterialType(const int matid)
 {
   // check whether material with specified ID is compatible with cloned element or not
-  switch (DRT::Problem::Instance()->Materials()->ById(matid)->Type())
+  switch (GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type())
   {
     case INPAR::MAT::m_soret:
     case INPAR::MAT::m_th_fourier_iso:

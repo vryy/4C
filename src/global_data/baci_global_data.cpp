@@ -36,12 +36,12 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<DRT::Problem*> DRT::Problem::instances_;
+std::vector<GLOBAL::Problem*> GLOBAL::Problem::instances_;
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Problem* DRT::Problem::Instance(int num)
+GLOBAL::Problem* GLOBAL::Problem::Instance(int num)
 {
   if (num > static_cast<int>(instances_.size()) - 1)
   {
@@ -54,7 +54,7 @@ DRT::Problem* DRT::Problem::Instance(int num)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::Done()
+void GLOBAL::Problem::Done()
 {
   // destroy singleton objects when the problem object is still alive
   for (auto* instance : instances_)
@@ -83,8 +83,8 @@ void DRT::Problem::Done()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Problem::Problem()
-    : probtype_(ProblemType::none),
+GLOBAL::Problem::Problem()
+    : probtype_(GLOBAL::ProblemType::none),
       restartstep_(0),
       restarttime_(0.0),
       communicators_(Teuchos::null)
@@ -96,15 +96,15 @@ DRT::Problem::Problem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ProblemType DRT::Problem::GetProblemType() const { return probtype_; }
+GLOBAL::ProblemType GLOBAL::Problem::GetProblemType() const { return probtype_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string DRT::Problem::ProblemName() const
+std::string GLOBAL::Problem::ProblemName() const
 {
-  std::map<std::string, ProblemType> map = INPAR::PROBLEMTYPE::StringToProblemTypeMap();
-  std::map<std::string, ProblemType>::const_iterator i;
+  std::map<std::string, GLOBAL::ProblemType> map = INPAR::PROBLEMTYPE::StringToProblemTypeMap();
+  std::map<std::string, GLOBAL::ProblemType>::const_iterator i;
 
   for (i = map.begin(); i != map.end(); ++i)
   {
@@ -117,16 +117,16 @@ std::string DRT::Problem::ProblemName() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int DRT::Problem::Restart() const { return restartstep_; }
+int GLOBAL::Problem::Restart() const { return restartstep_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Problem::RestartTime() const { return restarttime_; }
+double GLOBAL::Problem::RestartTime() const { return restarttime_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int DRT::Problem::NDim() const
+int GLOBAL::Problem::NDim() const
 {
   const Teuchos::ParameterList& sizeparams = ProblemSizeParams();
   return sizeparams.get<int>("DIM");
@@ -135,7 +135,7 @@ int DRT::Problem::NDim() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Problem::Walltime()
+double GLOBAL::Problem::Walltime()
 {
   const std::chrono::time_point<std::chrono::high_resolution_clock> now =
       std::chrono::high_resolution_clock::now();
@@ -148,7 +148,7 @@ double DRT::Problem::Walltime()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::ParameterList& DRT::Problem::SolverParams(int solverNr) const
+const Teuchos::ParameterList& GLOBAL::Problem::SolverParams(int solverNr) const
 {
   std::stringstream ss;
   ss << "SOLVER " << solverNr;
@@ -157,7 +157,7 @@ const Teuchos::ParameterList& DRT::Problem::SolverParams(int solverNr) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::ParameterList& DRT::Problem::UMFPACKSolverParams()
+const Teuchos::ParameterList& GLOBAL::Problem::UMFPACKSolverParams()
 {
   Teuchos::ParameterList& subParams = parameters_->sublist("UMFPACK SOLVER");
   subParams.set("SOLVER", "UMFPACK");
@@ -168,7 +168,7 @@ const Teuchos::ParameterList& DRT::Problem::UMFPACKSolverParams()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::SetCommunicators(Teuchos::RCP<CORE::COMM::Communicators> communicators)
+void GLOBAL::Problem::SetCommunicators(Teuchos::RCP<CORE::COMM::Communicators> communicators)
 {
   if (communicators_ != Teuchos::null) dserror("Communicators were already set.");
   communicators_ = communicators;
@@ -176,7 +176,7 @@ void DRT::Problem::SetCommunicators(Teuchos::RCP<CORE::COMM::Communicators> comm
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::COMM::Communicators> DRT::Problem::GetCommunicators() const
+Teuchos::RCP<CORE::COMM::Communicators> GLOBAL::Problem::GetCommunicators() const
 {
   if (communicators_ == Teuchos::null) dserror("No communicators allocated yet.");
   return communicators_;
@@ -186,7 +186,7 @@ Teuchos::RCP<CORE::COMM::Communicators> DRT::Problem::GetCommunicators() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string& inputfile,
+void GLOBAL::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string& inputfile,
     std::string prefix, const std::string& restartkenner)
 {
   if (Restart())
@@ -216,7 +216,7 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string& i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::WriteInputParameters()
+void GLOBAL::Problem::WriteInputParameters()
 {
   std::string s = OutputControlFile()->FileName();
   s.append(".parameter");
@@ -228,7 +228,7 @@ void DRT::Problem::WriteInputParameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& parameter_list)
+void GLOBAL::Problem::setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& parameter_list)
 {
   try
   {
@@ -249,7 +249,7 @@ void DRT::Problem::setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getValidParameters() const
+Teuchos::RCP<const Teuchos::ParameterList> GLOBAL::Problem::getValidParameters() const
 {
   // call the external method to get the valid parameters
   // this way the parameter configuration is separate from the source
@@ -257,7 +257,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getValidParameters() co
 }
 
 
-Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getParameterList() const
+Teuchos::RCP<const Teuchos::ParameterList> GLOBAL::Problem::getParameterList() const
 {
   return parameters_;
 }
@@ -265,7 +265,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getParameterList() cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::AddDis(const std::string& name, Teuchos::RCP<Discretization> dis)
+void GLOBAL::Problem::AddDis(const std::string& name, Teuchos::RCP<DRT::Discretization> dis)
 {
   // safety checks
   if (dis == Teuchos::null) dserror("Received Teuchos::null.");
@@ -283,7 +283,7 @@ void DRT::Problem::AddDis(const std::string& name, Teuchos::RCP<Discretization> 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> DRT::Problem::GetDis(const std::string& name) const
+Teuchos::RCP<DRT::Discretization> GLOBAL::Problem::GetDis(const std::string& name) const
 {
   auto iter = discretizationmap_.find(name);
 
@@ -301,17 +301,14 @@ Teuchos::RCP<DRT::Discretization> DRT::Problem::GetDis(const std::string& name) 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<std::string> DRT::Problem::GetDisNames() const
+std::vector<std::string> GLOBAL::Problem::GetDisNames() const
 {
   unsigned mysize = NumFields();
   std::vector<std::string> vec;
   vec.reserve(mysize);
 
-  std::map<std::string, Teuchos::RCP<Discretization>>::const_iterator iter;
-  for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
-  {
-    vec.push_back(iter->first);
-  }
+  std::transform(discretizationmap_.begin(), discretizationmap_.end(), std::back_inserter(vec),
+      [](const auto& key_value) { return key_value.first; });
 
   return vec;
 }
@@ -319,7 +316,7 @@ std::vector<std::string> DRT::Problem::GetDisNames() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::Problem::DoesExistDis(const std::string& name) const
+bool GLOBAL::Problem::DoesExistDis(const std::string& name) const
 {
   auto iter = discretizationmap_.find(name);
   return iter != discretizationmap_.end();
@@ -328,20 +325,20 @@ bool DRT::Problem::DoesExistDis(const std::string& name) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::SetRestartStep(int r) { restartstep_ = r; }
+void GLOBAL::Problem::SetRestartStep(int r) { restartstep_ = r; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::SetProblemType(ProblemType targettype) { probtype_ = targettype; }
+void GLOBAL::Problem::SetProblemType(GLOBAL::ProblemType targettype) { probtype_ = targettype; }
 
 
-void DRT::Problem::SetFunctionManager(CORE::UTILS::FunctionManager&& function_manager_in)
+void GLOBAL::Problem::SetFunctionManager(CORE::UTILS::FunctionManager&& function_manager_in)
 {
   functionmanager_ = std::move(function_manager_in);
 }
 
-void DRT::Problem::SetSpatialApproximationType(CORE::FE::ShapeFunctionType shape_function_type)
+void GLOBAL::Problem::SetSpatialApproximationType(CORE::FE::ShapeFunctionType shape_function_type)
 {
   shapefuntype_ = shape_function_type;
 }

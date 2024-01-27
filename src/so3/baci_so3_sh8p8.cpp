@@ -120,11 +120,12 @@ const int DRT::ELEMENTS::So_sh8p8::PRESTODISPPRES_[NUMPRES_] = {3, 7, 11, 15, 19
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8p8::So_sh8p8(int id, int owner) : DRT::ELEMENTS::So_sh8(id, owner)
 {
-  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  Teuchos::RCP<const Teuchos::ParameterList> params =
+      GLOBAL::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   return;
 }

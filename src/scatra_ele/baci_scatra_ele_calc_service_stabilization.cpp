@@ -992,7 +992,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
             functfac =
-                DRT::Problem::Instance()
+                GLOBAL::Problem::Instance()
                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                     .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), isd);
           }

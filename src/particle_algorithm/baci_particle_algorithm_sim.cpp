@@ -25,7 +25,7 @@ BACI_NAMESPACE_OPEN
 void particle_drt()
 {
   // get instance of global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // get local communicator
   const Epetra_Comm& comm = *problem->GetCommunicators()->LocalComm().get();

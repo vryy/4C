@@ -1862,7 +1862,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(CORE::FE::CellType
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges) const
 {
   Side* s = nullptr;
-  const int probdim = DRT::Problem::Instance()->NDim();
+  const int probdim = GLOBAL::Problem::Instance()->NDim();
   switch (sidetype)
   {
     case CORE::FE::CellType::line2:
@@ -1892,7 +1892,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::CreateLevelSetSide(const int& sid)
 {
   Side* lvs_side_ptr = nullptr;
 
-  const int probdim = DRT::Problem::Instance()->NDim();
+  const int probdim = GLOBAL::Problem::Instance()->NDim();
   switch (probdim)
   {
     case 2:

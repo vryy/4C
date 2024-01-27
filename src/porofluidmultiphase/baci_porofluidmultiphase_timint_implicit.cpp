@@ -50,7 +50,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       params_(probparams),
       poroparams_(poroparams),
       myrank_(actdis->Comm().MyPID()),
-      nsd_(DRT::Problem::Instance()->NDim()),
+      nsd_(GLOBAL::Problem::Instance()->NDim()),
       isale_(false),
       skipinitder_(INPUT::IntegralValue<int>(poroparams_, "SKIPINITDER")),
       output_satpress_(INPUT::IntegralValue<int>(poroparams_, "OUTPUT_SATANDPRESS")),
@@ -294,7 +294,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // create a solver
   // -------------------------------------------------------------------
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
   strategy_->InitializeLinearSolver(solver_);
 
   return;
@@ -902,7 +902,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyStartingDBC()
               {
                 dirichlet_dofs.push_back(gid);
               }
-              const double dbc_value = DRT::Problem::Instance()
+              const double dbc_value = GLOBAL::Problem::Instance()
                                            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                                starting_dbc_funct_[dof_idx] - 1)
                                            .Evaluate(current_node->X().data(), time_, 0);
@@ -1323,7 +1323,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
   // action for elements
   eleparams.set<int>("action", POROFLUIDMULTIPHASE::recon_flux_at_nodes);
 
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = GLOBAL::Problem::Instance()->NDim();
   // we assume same number of dofs per node in the whole dis here
   const int totalnumdof = discret_->NumDof(0, discret_->lRowNode(0));
   const int numvec = totalnumdof * dim;
@@ -1416,7 +1416,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateDomainIntegrals()
   {
     // set filename and file
     const std::string filename(
-        DRT::Problem::Instance()->OutputControlFile()->FileName() + ".domain_int" + ".csv");
+        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".domain_int" + ".csv");
     std::ofstream file;
 
     if (step_ == 0)
@@ -1623,7 +1623,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
     // post_ensight does not support multivectors based on the dofmap
     // for now, I create single vectors that can be handled by the filter
 
-    const int dim = DRT::Problem::Instance()->NDim();
+    const int dim = GLOBAL::Problem::Instance()->NDim();
     const int numdof = discret_->NumDof(0, discret_->lRowNode(0));
     // get the noderowmap
     const Epetra_Map* noderowmap = discret_->NodeRowMap();
@@ -1732,7 +1732,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
   {
     // print last error in a separate file
 
-    const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     const std::string fname = simulation + "_pressure_time.relerror";
 
     if (step_ == 0)
@@ -1900,7 +1900,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
-          double initialval = DRT::Problem::Instance()
+          double initialval = GLOBAL::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);

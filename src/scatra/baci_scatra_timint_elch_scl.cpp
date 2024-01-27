@@ -68,7 +68,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
 
   SCATRA::ScaTraTimIntElch::Setup();
 
-  auto* problem = DRT::Problem::Instance();
+  auto* problem = GLOBAL::Problem::Instance();
 
   auto sdyn_micro =
       Teuchos::rcp(new Teuchos::ParameterList(problem->ScalarTransportDynamicParams()));
@@ -477,7 +477,7 @@ bool SCATRA::ScaTraTimIntElchSCL::BreakNewtonLoopAndPrintConvergence()
   const int mypid = discret_->Comm().MyPID();
 
   const auto& params =
-      DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("NONLINEAR");
+      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams().sublist("NONLINEAR");
 
   const int itermax = params.get<int>("ITEMAX");
   const double itertol = params.get<double>("CONVTOL");
@@ -1271,9 +1271,9 @@ Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntElchSCL::CreateMicroFieldTest(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchSCL::TestResults()
 {
-  DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(CreateMicroFieldTest());
-  DRT::Problem::Instance()->TestAll(discret_->Comm());
+  GLOBAL::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(CreateMicroFieldTest());
+  GLOBAL::Problem::Instance()->TestAll(discret_->Comm());
 }
 
 BACI_NAMESPACE_CLOSE

@@ -24,7 +24,7 @@ DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::Provi
 {
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  static const int ndim = DRT::Problem::Instance()->NDim();
+  static const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   switch (distype)
   {

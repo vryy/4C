@@ -81,7 +81,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   dserror("class OverlappingBlockMatrixFSIAMG does not support #define BLOCKMATRIXMERGE");
 #endif
 
-  if (DRT::Problem::Instance()->GetCommunicators()->NumGroups() != 1)
+  if (GLOBAL::Problem::Instance()->GetCommunicators()->NumGroups() != 1)
     dserror(
         "No nested parallelism for AMG FSI. See comments in "
         "FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()!");

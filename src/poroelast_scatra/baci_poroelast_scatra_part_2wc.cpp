@@ -30,7 +30,7 @@ POROELASTSCATRA::PoroScatraPart2WC::PoroScatraPart2WC(
 {
   if (comm.MyPID() == 0) std::cout << "\n Create PoroScatraPart2WC algorithm ... \n" << std::endl;
 
-  const Teuchos::ParameterList& params = DRT::Problem::Instance()->PoroScatraControlParams();
+  const Teuchos::ParameterList& params = GLOBAL::Problem::Instance()->PoroScatraControlParams();
   // Get the parameters for the ConvergenceCheck
   itmax_ = params.get<int>("ITEMAX");            // default: =10
   ittol_ = params.get<double>("TOLINC_GLOBAL");  // default: =1e-6

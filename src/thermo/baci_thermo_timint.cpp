@@ -348,7 +348,7 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
   {
     // restart has already been written or simulation has just started
     if ((writerestartevery_ and (step_ % writerestartevery_ == 0)) or
-        step_ == DRT::Problem::Instance()->Restart())
+        step_ == GLOBAL::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
     if (writeglobevery_ and (step_ % writeglobevery_ == 0))
@@ -880,7 +880,7 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
-          double initialval = DRT::Problem::Instance()
+          double initialval = GLOBAL::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X().data(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
@@ -998,7 +998,8 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::EvaluateErrorComparedToAnalytical
         if ((step_ == stepmax_) or ((*time_)[0] == timemax_))  // write results to file
         {
           std::ostringstream temp;
-          const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+          const std::string simulation =
+              GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
           const std::string fname = simulation + "_thermo.relerror";
 
           std::ofstream f;
@@ -1011,7 +1012,7 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::EvaluateErrorComparedToAnalytical
           f.close();
         }
 
-        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
         const std::string fname = simulation + "_thermo_time.relerror";
 
         if (step_ == 1)

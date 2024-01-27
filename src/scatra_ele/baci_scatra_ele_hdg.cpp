@@ -91,7 +91,7 @@ void DRT::ELEMENTS::ScaTraHDGType::NodalBlockInformation(
   dimns = numdf;
   nv = numdf;
 
-  if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::elch)
+  if (GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::elch)
   {
     if (nv > 1)  // only when we have more than 1 dof per node!
     {

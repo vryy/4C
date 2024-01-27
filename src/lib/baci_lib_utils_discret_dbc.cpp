@@ -329,7 +329,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
         {
           funct_num = (*funct)[onesetj];
           if (funct_num > 0)
-            functfac = DRT::Problem::Instance()
+            functfac = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
                            .Evaluate(actnode->X().data(), time, onesetj);
         }
@@ -531,7 +531,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
       {
         funct_num = (*funct)[onesetj];
         if (funct_num > 0)
-          functimederivfac = DRT::Problem::Instance()
+          functimederivfac = GLOBAL::Problem::Instance()
                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
                                  .EvaluateTimeDerivative(actnode->X().data(), time, deg, onesetj);
       }

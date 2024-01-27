@@ -27,7 +27,7 @@ void ssi_drt()
 {
   // 1.- Initialization
   Teuchos::RCP<SSI::SSIBase> ssi = Teuchos::null;
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   {
@@ -40,7 +40,7 @@ void ssi_drt()
     // access structural dynamic params list which will be possibly modified while creating the time
     // integrator
     auto& sdyn =
-        const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams());
+        const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->StructuralDynamicParams());
 
     // introduce additional scatra field on manifold?
     const bool is_scatra_manifold =

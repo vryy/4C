@@ -210,7 +210,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
             {
               if (tmp_funct && (*tmp_funct)[j] > 0)
               {
-                return DRT::Problem::Instance()
+                return GLOBAL::Problem::Instance()
                     ->FunctionById<CORE::UTILS::FunctionOfTime>((*tmp_funct)[j] - 1)
                     .Evaluate(time);
               }
@@ -393,9 +393,9 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
         double curvefac = 1.0;
         if (curvenum >= 0)
         {
-          curvefac =
-              Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
-                  time);
+          curvefac = GLOBAL::Problem::Instance()
+                         ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+                         .Evaluate(time);
         }
 
         // Get ConditionID of current condition if defined and write value in parameter list

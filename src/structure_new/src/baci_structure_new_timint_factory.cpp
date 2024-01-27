@@ -71,8 +71,8 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
       INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
   const bool is_prestress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-                                DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS") !=
-                            INPAR::STR::PreStress::none;
+                                GLOBAL::Problem::Instance()->StructuralDynamicParams(),
+                                "PRESTRESS") != INPAR::STR::PreStress::none;
   if (is_prestress or dyntype == INPAR::STR::dyna_statics or  // dynamic type
       dyntype == INPAR::STR::dyna_genalpha or dyntype == INPAR::STR::dyna_genalpha_liegroup or
       dyntype == INPAR::STR::dyna_onesteptheta or dyntype == INPAR::STR::dyna_gemm)
@@ -89,12 +89,12 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildExplicitStrategy(
   Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
 
   // what's the current problem type?
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
-  if (probtype == ProblemType::fsi or probtype == ProblemType::fsi_redmodels or
-      probtype == ProblemType::fsi_lung or probtype == ProblemType::gas_fsi or
-      probtype == ProblemType::ac_fsi or probtype == ProblemType::biofilm_fsi or
-      probtype == ProblemType::thermo_fsi)
+  if (probtype == GLOBAL::ProblemType::fsi or probtype == GLOBAL::ProblemType::fsi_redmodels or
+      probtype == GLOBAL::ProblemType::fsi_lung or probtype == GLOBAL::ProblemType::gas_fsi or
+      probtype == GLOBAL::ProblemType::ac_fsi or probtype == GLOBAL::ProblemType::biofilm_fsi or
+      probtype == GLOBAL::ProblemType::thermo_fsi)
     dserror("No explicit time integration with fsi");
 
   const enum INPAR::STR::DynamicType dyntype =

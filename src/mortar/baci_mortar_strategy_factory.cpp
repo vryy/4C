@@ -74,7 +74,7 @@ void MORTAR::STRATEGY::Factory::Setup()
   comm_ptr_ = Teuchos::rcp(discret_ptr_->Comm().Clone());
 
   // get the problem dimension
-  dim_ = DRT::Problem::Instance()->NDim();
+  dim_ = GLOBAL::Problem::Instance()->NDim();
 
   // Note: Since this is an abstract class, the setup flag stays false.
 
@@ -226,8 +226,8 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
     const enum INPAR::CONTACT::SolvingStrategy soltype)
 {
   // some parameters
-  const Teuchos::ParameterList& smortar = DRT::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& smortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& scontact = GLOBAL::Problem::Instance()->ContactDynamicParams();
   INPAR::MORTAR::ShapeFcn shapefcn =
       INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar, "LM_SHAPEFCN");
   INPAR::CONTACT::SystemType systype =

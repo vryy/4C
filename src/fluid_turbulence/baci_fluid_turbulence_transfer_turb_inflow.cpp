@@ -216,7 +216,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       if (time >= 0.0)
       {
         curvefac =
-            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve_).Evaluate(
+            GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve_).Evaluate(
                 time);
       }
       else
@@ -735,7 +735,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       if (time >= 0.0)
       {
         curvefac =
-            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve_).Evaluate(
+            GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve_).Evaluate(
                 time);
       }
       else

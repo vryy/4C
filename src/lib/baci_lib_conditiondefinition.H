@@ -32,9 +32,13 @@ BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class Problem;
   class Discretization;
 }  // namespace DRT
+
+namespace GLOBAL
+{
+  class Problem;
+}
 
 namespace INPUT
 {
@@ -92,7 +96,7 @@ namespace INPUT
       \param reader (i) the actual dat file reader that has access to the dat file
       \param cmap (o) the conditions we read here
      */
-    void Read(const DRT::Problem& problem, DatFileReader& reader,
+    void Read(const GLOBAL::Problem& problem, DatFileReader& reader,
         std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the Discretization

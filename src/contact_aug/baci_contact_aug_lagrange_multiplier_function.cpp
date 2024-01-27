@@ -92,7 +92,8 @@ Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::Cre
   if (lin_sol_id == -1) dserror("You must specify a meaningful LINEAR_SOLVER!");
 
   // get solver parameter list of linear solver
-  const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(lin_sol_id);
+  const Teuchos::ParameterList& solverparams =
+      GLOBAL::Problem::Instance()->SolverParams(lin_sol_id);
   solver_type = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
   Teuchos::RCP<CORE::LINALG::Solver> solver =

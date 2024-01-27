@@ -52,7 +52,7 @@ void PARTICLEINTERACTION::MaterialHandler::Init()
 
     // get material parameters and cast to particle material parameter
     const MAT::PAR::Parameter* matparameter =
-        DRT::Problem::Instance()->Materials()->ParameterById(typeIt.second);
+        GLOBAL::Problem::Instance()->Materials()->ParameterById(typeIt.second);
     const MAT::PAR::ParticleMaterialBase* particlematparameter =
         dynamic_cast<const MAT::PAR::ParticleMaterialBase*>(matparameter);
 

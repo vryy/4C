@@ -141,7 +141,7 @@ void CONTACT::NitscheStrategy::SetState(
 void CONTACT::NitscheStrategy::SetParentState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
-  Teuchos::RCP<DRT::Discretization> dis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> dis = GLOBAL::Problem::Instance()->GetDis("structure");
   if (dis == Teuchos::null) dserror("didn't get my discretization");
   if (statename == MORTAR::state_new_displacement || statename == MORTAR::state_svelocity)
   {
@@ -246,7 +246,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::SetupRhsBlockVec(
   {
     case CONTACT::VecBlockType::displ:
       return Teuchos::rcp(
-          new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("structure")->DofRowMap()));
+          new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()));
     default:
       dserror("you should not be here");
       break;
@@ -301,7 +301,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::SetupMatrixBl
     case CONTACT::MatBlockType::displ_displ:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
       dserror("you should not be here");
@@ -425,7 +425,7 @@ void CONTACT::NitscheStrategy::EvaluateReferenceState()
  *---------------------------------------------------------------------------------------------*/
 void CONTACT::NitscheStrategy::ReconnectParentElements()
 {
-  Teuchos::RCP<DRT::Discretization> voldis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> voldis = GLOBAL::Problem::Instance()->GetDis("structure");
 
   for (const auto& contact_interface : ContactInterfaces())
   {

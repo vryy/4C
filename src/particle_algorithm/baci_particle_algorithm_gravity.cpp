@@ -48,7 +48,7 @@ void PARTICLEALGORITHM::GravityHandler::GetGravityAcceleration(
   // evaluate gravity ramp function
   if (gravityrampfctnumber_ > 0)
   {
-    const double fac = DRT::Problem::Instance()
+    const double fac = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfTime>(gravityrampfctnumber_ - 1)
                            .Evaluate(time);
 

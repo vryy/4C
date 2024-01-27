@@ -145,7 +145,7 @@ void XFLUIDLEVELSET::Algorithm::Setup()
   // call Setup() in base class
   ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
 
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
 
   if (restart) Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true)->CreateInitialState();
 
@@ -272,7 +272,7 @@ void XFLUIDLEVELSET::Algorithm::OuterLoop()
 
   // initial time-derivative
   // old particle framework removed -> todo: requires clean up
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (Step() == restart + 1) scatra_init = true;
 
   // todo: scatra_init unused, requires clean up
@@ -651,8 +651,8 @@ void XFLUIDLEVELSET::Algorithm::OutputInitialField()
 void XFLUIDLEVELSET::Algorithm::TestResults()
 {
   // perform result tests if required
-  DRT::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
-  // DRT::Problem::Instance()->TestAll(Comm());
+  GLOBAL::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
+  // GLOBAL::Problem::Instance()->TestAll(Comm());
 
   if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_gen_alpha)
   {

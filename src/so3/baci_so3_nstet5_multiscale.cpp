@@ -24,7 +24,7 @@ BACI_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::NStet5::nstet5_homog(Teuchos::ParameterList& params)
 {
-  if (DRT::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
+  if (GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
   {
     const double density = Material()->Density(0);
 
@@ -52,7 +52,8 @@ void DRT::ELEMENTS::NStet5::nstet5_read_restart_multi()
     auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
     int eleID = Id();
     bool eleowner = false;
-    if (DRT::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner()) eleowner = true;
+    if (GLOBAL::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
+      eleowner = true;
 
     micro->ReadRestart(gp, eleID, eleowner);
   }

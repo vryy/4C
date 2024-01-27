@@ -24,7 +24,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void ssti_drt()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 

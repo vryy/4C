@@ -29,10 +29,10 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// create map of problem name and problem type enum
-    std::map<std::string, ProblemType> StringToProblemTypeMap();
+    std::map<std::string, GLOBAL::ProblemType> StringToProblemTypeMap();
 
     /// return problem type enum for a given problem name
-    ProblemType StringToProblemType(std::string name);
+    GLOBAL::ProblemType StringToProblemType(std::string name);
 
 
   }  // namespace PROBLEMTYPE

@@ -6348,13 +6348,13 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
 
         if (nsd_ == 2)
         {
-          const double u_exact_x = DRT::Problem::Instance()
+          const double u_exact_x = GLOBAL::Problem::Instance()
                                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
                                        .Evaluate(position.data(), t, 0);
-          const double u_exact_y = DRT::Problem::Instance()
+          const double u_exact_y = GLOBAL::Problem::Instance()
                                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
                                        .Evaluate(position.data(), t, 1);
-          const double p_exact = DRT::Problem::Instance()
+          const double p_exact = GLOBAL::Problem::Instance()
                                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
                                      .Evaluate(position.data(), t, 2);
 
@@ -6364,16 +6364,16 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
         }
         else if (nsd_ == 3)
         {
-          const double u_exact_x = DRT::Problem::Instance()
+          const double u_exact_x = GLOBAL::Problem::Instance()
                                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
                                        .Evaluate(position.data(), t, 0);
-          const double u_exact_y = DRT::Problem::Instance()
+          const double u_exact_y = GLOBAL::Problem::Instance()
                                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
                                        .Evaluate(position.data(), t, 1);
-          const double u_exact_z = DRT::Problem::Instance()
+          const double u_exact_z = GLOBAL::Problem::Instance()
                                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
                                        .Evaluate(position.data(), t, 2);
-          const double p_exact = DRT::Problem::Instance()
+          const double p_exact = GLOBAL::Problem::Instance()
                                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
                                      .Evaluate(position.data(), t, 3);
 

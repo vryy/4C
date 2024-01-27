@@ -39,7 +39,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_surface_meshtying_params_list =
-      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE MESHTYING");
+      GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
+          "BEAM TO SOLID SURFACE MESHTYING");
 
   // Set the common beam-to-solid parameters.
   SetBaseParams(beam_to_solid_surface_meshtying_params_list);

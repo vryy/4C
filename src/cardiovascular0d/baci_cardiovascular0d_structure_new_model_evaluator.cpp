@@ -67,8 +67,9 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
   // time-integration dies ...
   // initialize 0D cardiovascular manager
   cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(dis, disnp_ptr_,
-      DRT::Problem::Instance()->StructuralDynamicParams(),
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams(), *dummysolver, Teuchos::null));
+      GLOBAL::Problem::Instance()->StructuralDynamicParams(),
+      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams(), *dummysolver,
+      Teuchos::null));
 
   // set flag
   issetup_ = true;

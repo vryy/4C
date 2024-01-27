@@ -69,14 +69,14 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname)
 {
   // get the fluid discretization
-  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis(fluid_disname);
+  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis(fluid_disname);
 
   // initialize material map
   std::map<int, int> matmap;
   {
     // get the cloning material map from the .dat file
     std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap =
-        DRT::Problem::Instance()->CloningMaterialMap();
+        GLOBAL::Problem::Instance()->CloningMaterialMap();
     if (clonefieldmatmap.size() < 1)
       dserror("At least one material pairing required in --CLONING MATERIAL MAP.");
 

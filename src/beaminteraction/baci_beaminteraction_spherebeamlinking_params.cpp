@@ -41,7 +41,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
   issetup_ = false;
 
   const Teuchos::ParameterList& spherebeamlink_params_list =
-      DRT::Problem::Instance()->BeamInteractionParams().sublist("SPHERE BEAM LINK");
+      GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("SPHERE BEAM LINK");
 
   // time step for stochastic events concering crosslinking
   deltatime_ = spherebeamlink_params_list.get<double>("TIMESTEP");

@@ -41,7 +41,7 @@ void DRT::UTILS::UpdateMaterialConfigWithDispVector(
   CORE::LINALG::Export(*disp, *coldisp);
 
   // determine number of space dimensions
-  const int numdim = DRT::Problem::Instance()->NDim();
+  const int numdim = GLOBAL::Problem::Instance()->NDim();
 
   // loop over all nodes
   for (int index = 0; index < numnode; ++index)

@@ -833,17 +833,17 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateAll(const int func
     const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t, CORE::LINALG::Matrix<msd_, 1>& L,
     double& r, CORE::LINALG::Matrix<nsd_, 1>& w) const
 {
-  r = DRT::Problem::Instance()
+  r = GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
           .Evaluate(xyz.A(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
-    w(d) = DRT::Problem::Instance()
+    w(d) = GLOBAL::Problem::Instance()
                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                .Evaluate(xyz.A(), t, 1 + d);
 
   for (unsigned int m = 0; m < msd_; ++m)
-    L(m) = DRT::Problem::Instance()
+    L(m) = GLOBAL::Problem::Instance()
                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                .Evaluate(xyz.A(), t, 1 + nsd_ + m);
 }
@@ -855,12 +855,12 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateDensityMomentum(co
     const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t, double& r,
     CORE::LINALG::Matrix<nsd_, 1>& w) const
 {
-  r = DRT::Problem::Instance()
+  r = GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
           .Evaluate(xyz.A(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
-    w(d) = DRT::Problem::Instance()
+    w(d) = GLOBAL::Problem::Instance()
                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                .Evaluate(xyz.A(), t, 1 + d);
 }
@@ -1046,7 +1046,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMateri
     for (unsigned int e = 0; e < nsd_; ++e) D_fac(d, e) -= 1.0 / 3.0;
 
   // check for variable viscosity
-  const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   int varviscfuncnum = fluidparams.get<int>("VARVISCFUNCNO");
 
   // compute material matrix
@@ -1073,7 +1073,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMateri
     const double time = fldparatimint_->Time();
 
     // get viscosity
-    double mu = DRT::Problem::Instance()
+    double mu = GLOBAL::Problem::Instance()
                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(varviscfuncnum - 1)
                     .Evaluate(xyz.A(), time, 0);
 
@@ -1098,7 +1098,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
   convective = (physicaltype != INPAR::FLUID::weakly_compressible_stokes_dens_mom);
 
   // set unsteady flag
-  const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   std::string timeintegr = fluidparams.get<std::string>("TIMEINTEGR");
   unsteady = (timeintegr.compare("Stationary") != 0);
 
@@ -1190,7 +1190,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
 
       if (forcefuncnum > 0)
         for (unsigned int dmod = 0; dmod < (1 + nsd_); ++dmod)
-          feg(dmod, q) = DRT::Problem::Instance()
+          feg(dmod, q) = GLOBAL::Problem::Instance()
                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(forcefuncnum - 1)
                              .Evaluate(xyzeg.A(), time, dmod);
 
@@ -1472,7 +1472,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceRe
   double eps = actmat->ComprCoeff();
 
   // get stabilization parameters
-  const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   double tau_r_ref = fluidparams.get<double>("STAB_DEN_REF");
   double tau_w_ref = fluidparams.get<double>("STAB_MOM_REF");
   tau_r = tau_r_ref / eps;

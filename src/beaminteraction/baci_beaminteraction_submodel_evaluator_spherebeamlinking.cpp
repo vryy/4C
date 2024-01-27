@@ -817,7 +817,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
       {
         double plink = 1.0 - exp((-1.0) * spherebeamlinking_params_ptr_->DeltaTime() *
                                  spherebeamlinking_params_ptr_->GetLinkerMaterial()->KOn());
-        if (DRT::Problem::Instance()->Random()->Uni() > plink) continue;
+        if (GLOBAL::Problem::Instance()->Random()->Uni() > plink) continue;
       }
 
 #ifdef BACI_DEBUG
@@ -1026,7 +1026,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UnbindSphereBeamBond
       CalcForceDependentCatchSlipBondUnbindProbability(elepairptr, p_unbind);
 
       // if probability criterion is not met, we are done here
-      if (DRT::Problem::Instance()->Random()->Uni() > p_unbind) continue;
+      if (GLOBAL::Problem::Instance()->Random()->Uni() > p_unbind) continue;
 
       to_dissolve.push_back(ipair.first);
       ++num_dissolved;

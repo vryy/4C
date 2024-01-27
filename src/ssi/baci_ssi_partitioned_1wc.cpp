@@ -272,7 +272,7 @@ void SSI::SSIPart1WCScatraToSolid::Init(const Epetra_Comm& comm,
 
   // Flag for reading scatra result from restart file instead of computing it
   isscatrafromfile_ = INPUT::IntegralValue<bool>(
-      DRT::Problem::Instance()->SSIControlParams(), "SCATRA_FROM_RESTART_FILE");
+      GLOBAL::Problem::Instance()->SSIControlParams(), "SCATRA_FROM_RESTART_FILE");
 }
 
 /*----------------------------------------------------------------------*/

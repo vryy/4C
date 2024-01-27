@@ -24,9 +24,9 @@ BACI_NAMESPACE_OPEN
 MAT::PAR::ScatraMat::ScatraMat(Teuchos::RCP<MAT::PAR::Material> matdata) : Parameter(matdata)
 {
   // extract relevant communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Materials()->GetReadFromProblem() == 0
-                                ? *DRT::Problem::Instance()->GetCommunicators()->LocalComm()
-                                : *DRT::Problem::Instance()->GetCommunicators()->SubComm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem() == 0
+                                ? *GLOBAL::Problem::Instance()->GetCommunicators()->LocalComm()
+                                : *GLOBAL::Problem::Instance()->GetCommunicators()->SubComm();
 
   Epetra_Map dummy_map(1, 1, 0, comm);
   for (int i = first; i <= last; i++)
@@ -98,12 +98,12 @@ void MAT::ScatraMat::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMat*>(mat);
       else

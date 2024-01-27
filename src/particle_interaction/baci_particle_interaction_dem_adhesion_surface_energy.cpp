@@ -89,10 +89,10 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::AdhesionSu
     const double& mean_surface_energy, double& surface_energy) const
 {
   // initialize random number generator
-  DRT::Problem::Instance()->Random()->SetMeanVariance(mean_surface_energy, variance_);
+  GLOBAL::Problem::Instance()->Random()->SetMeanVariance(mean_surface_energy, variance_);
 
   // set normal distributed random value for surface energy
-  surface_energy = DRT::Problem::Instance()->Random()->Normal();
+  surface_energy = GLOBAL::Problem::Instance()->Random()->Normal();
 
   // adjust surface energy to allowed bounds
   AdjustSurfaceEnergyToAllowedBounds(mean_surface_energy, surface_energy);
@@ -109,10 +109,10 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::Adhesio
     const double& mean_surface_energy, double& surface_energy) const
 {
   // initialize random number generator
-  DRT::Problem::Instance()->Random()->SetMeanVariance(std::log(mean_surface_energy), variance_);
+  GLOBAL::Problem::Instance()->Random()->SetMeanVariance(std::log(mean_surface_energy), variance_);
 
   // set log-normal distributed random value for surface energy
-  surface_energy = std::exp(DRT::Problem::Instance()->Random()->Normal());
+  surface_energy = std::exp(GLOBAL::Problem::Instance()->Random()->Normal());
 
   // adjust surface energy to allowed bounds
   AdjustSurfaceEnergyToAllowedBounds(mean_surface_energy, surface_energy);

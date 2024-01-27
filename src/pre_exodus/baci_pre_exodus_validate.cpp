@@ -35,7 +35,7 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
   // std::cout << "checking BACI input file       --> "<<datfile<< std::endl;
 
   // access our problem instance
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // create a DatFileReader
   INPUT::DatFileReader reader(datfile, comm, 0);
