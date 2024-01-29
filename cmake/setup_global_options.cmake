@@ -9,6 +9,9 @@ target_compile_options(baci_global_compile_settings INTERFACE "-Wall")
 target_compile_options(baci_global_compile_settings INTERFACE "-Wextra")
 # Disable unused parameter detection since there would be too many hits to fix
 target_compile_options(baci_global_compile_settings INTERFACE "-Wno-unused-parameter")
+# Disable maybe uninitialized detection since this can give false positives that are hard to circumvent.
+# Our address sanitizer checks will also find such errors, although only later.
+target_compile_options(baci_global_compile_settings INTERFACE "-Wno-maybe-uninitialized")
 target_compile_options(baci_global_compile_settings INTERFACE "-Wvla")
 
 baci_process_global_option(BACI_DSERROR_DUMP "dserror creates a core file" OFF)
