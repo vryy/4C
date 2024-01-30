@@ -1,12 +1,14 @@
 baci_auto_define_module()
 
-set(_xfem_dependencies
+set(_dependencies
     # cmake-format: sortable
     bele
+    config
     contact
     core
     cut
     fluid_ele
+    global_data
     inpar
     io
     lib
@@ -16,4 +18,5 @@ set(_xfem_dependencies
     so3
     solver_nonlin_nox
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_xfem_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

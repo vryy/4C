@@ -1,11 +1,14 @@
 baci_auto_define_module()
 
-set(_fluid_xfluid_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    config
+    core
     cut
     fluid
     fluid_ele
+    global_data
     inpar
     io
     levelset
@@ -13,4 +16,5 @@ set(_fluid_xfluid_dependencies
     mat
     xfem
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fluid_xfluid_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

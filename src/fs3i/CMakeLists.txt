@@ -1,14 +1,16 @@
 baci_auto_define_module()
 
-set(_fs3i_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
     ale
+    config
     core
     fluid
     fluid_ele
     fpsi
     fsi
+    global_data
     inpar
     io
     lib
@@ -20,4 +22,5 @@ set(_fs3i_dependencies
     ssi
     structure
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fs3i_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

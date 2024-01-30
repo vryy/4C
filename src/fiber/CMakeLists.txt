@@ -1,9 +1,10 @@
 baci_auto_define_module()
 
-set(_fiber_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
     core
-    inpar
     lib
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fiber_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

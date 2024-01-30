@@ -1,10 +1,12 @@
 baci_auto_define_module()
 
-set(_poroelast_scatra_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    config
     core
     fluid_ele
+    global_data
     inpar
     io
     lib
@@ -16,4 +18,5 @@ set(_poroelast_scatra_dependencies
     solid_poro_ele
     w1
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_poroelast_scatra_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

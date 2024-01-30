@@ -1,15 +1,17 @@
 baci_auto_define_module()
 
-set(_fluid_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    ale
     art_net
+    config
     core
     fluid_ele
     fluid_turbulence
+    global_data
     inpar
     io
-    levelset
     lib
     mat
     mortar
@@ -17,4 +19,5 @@ set(_fluid_dependencies
     poroelast
     red_airways
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fluid_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

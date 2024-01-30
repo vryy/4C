@@ -1,8 +1,16 @@
 baci_auto_define_module()
 
-set(_solid_poro_ele_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
+    core
+    inpar
+    io
     lib
+    mat
+    so3
     solid_ele
+    structure_new
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_solid_poro_ele_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

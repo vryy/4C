@@ -8,11 +8,15 @@ set(_dependencies
     beaminteraction
     bele
     binstrategy
+    config
     constraint
     contact
+    core
     elemag
+    fluid
     fluid_ele
-    immersed_problem
+    fluid_xfluid
+    lib
     lubrication_ele
     mat
     membrane
@@ -21,6 +25,7 @@ set(_dependencies
     nurbs_discret
     particle_engine
     porofluidmultiphase_ele
+    poromultiphase_scatra
     red_airways
     rigidsphere
     scatra_ele
@@ -28,9 +33,11 @@ set(_dependencies
     so3
     solid_ele
     solid_poro_ele
+    structure_new
     thermo
     torsion3
     truss3
     w1
     )
+
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

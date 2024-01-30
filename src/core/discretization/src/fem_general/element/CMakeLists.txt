@@ -1,9 +1,10 @@
 baci_auto_define_module()
 
-set(LIBS_FEM_GENERAL_ELEMENT
+set(_dependencies
     # cmake-format: sortable
-    cut
+    config
+    core
     lib
     )
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_FEM_GENERAL_ELEMENT})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

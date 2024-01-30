@@ -1,12 +1,15 @@
 baci_auto_define_module()
 
-set(_matelast_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
     core
+    global_data
     inpar
     io
     lib
     mat
     structure_new
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_matelast_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

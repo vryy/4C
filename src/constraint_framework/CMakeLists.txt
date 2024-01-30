@@ -1,9 +1,10 @@
 baci_auto_define_module()
 
-set(_constraint_framework_dependencies
+set(_dependencies
     # cmake-format: sortable
-    adapter
-    core
+    config
     inpar
+    structure_new
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_constraint_framework_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

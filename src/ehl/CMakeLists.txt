@@ -1,10 +1,12 @@
 baci_auto_define_module()
 
-set(_ehl_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    config
     contact
     core
+    global_data
     inpar
     io
     lib
@@ -13,4 +15,5 @@ set(_ehl_dependencies
     mat
     mortar
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_ehl_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

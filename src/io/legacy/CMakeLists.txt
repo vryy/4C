@@ -1,2 +1,9 @@
 baci_auto_define_module()
-baci_add_dependency(io_legacy core)
+
+set(_dependencies
+    # cmake-format: sortable
+    config
+    core
+    )
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

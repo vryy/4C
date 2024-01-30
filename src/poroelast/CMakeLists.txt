@@ -1,20 +1,24 @@
 baci_auto_define_module()
 
-set(_poroelast_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    config
     contact
     core
     fluid
     fluid_ele
     fsi
+    global_data
     inpar
     io
     lib
     mat
     mortar
     so3
+    solid_poro_ele
     structure
     w1
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_poroelast_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

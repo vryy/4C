@@ -1,12 +1,17 @@
 baci_auto_define_module()
 
-set(_membrane_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
     core
+    global_data
     inpar
+    io
     lib
     mat
+    so3
     structure_new
     thermo
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_membrane_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

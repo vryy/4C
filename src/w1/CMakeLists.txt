@@ -1,10 +1,14 @@
 baci_auto_define_module()
 
-set(_w1_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
     contact
     core
+    fluid_ele
+    global_data
     inpar
+    io
     lib
     mat
     nurbs_discret
@@ -12,4 +16,5 @@ set(_w1_dependencies
     so3
     structure_new
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_w1_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

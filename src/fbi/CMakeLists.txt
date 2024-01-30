@@ -1,17 +1,20 @@
 baci_auto_define_module()
 
-set(_fbi_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
     beam3
     beaminteraction
     binstrategy
+    config
     core
     fluid
     fluid_ele
     geometry_pair
+    global_data
     inpar
     io
     lib
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fbi_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

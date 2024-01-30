@@ -1,12 +1,14 @@
 baci_auto_define_module()
 
-set(_scatra_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
     binstrategy
+    config
     core
     fluid
     fluid_turbulence
+    global_data
     inpar
     io
     lib
@@ -15,6 +17,6 @@ set(_scatra_dependencies
     nurbs_discret
     poromultiphase_scatra
     scatra_ele
-    solver_nonlin_nox
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_scatra_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
