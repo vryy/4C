@@ -1,7 +1,10 @@
 baci_auto_define_module()
 
-set(_stru_multi_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
+    core
+    global_data
     inpar
     io
     lib
@@ -9,4 +12,5 @@ set(_stru_multi_dependencies
     so3
     structure
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_stru_multi_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

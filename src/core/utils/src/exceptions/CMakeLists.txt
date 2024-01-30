@@ -1,4 +1,8 @@
 baci_auto_define_module()
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} config)
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${CMAKE_DL_LIBS})
+set(_dependencies
+    # cmake-format: sortable
+    config
+    )
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

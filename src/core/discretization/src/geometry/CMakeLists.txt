@@ -1,10 +1,12 @@
 baci_auto_define_module()
 
-set(_geometry_dependencies
+set(_dependencies
     # cmake-format: sortable
-    core_linalg
+    config
+    core
     cut
     io
     lib
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_geometry_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

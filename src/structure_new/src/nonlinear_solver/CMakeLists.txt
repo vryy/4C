@@ -1,7 +1,15 @@
 baci_auto_define_module()
 
-set(_structure_new_nln_solver_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
+    core
+    global_data
     inpar
+    io
+    lib
+    solver_nonlin_nox
+    structure_new
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_structure_new_nln_solver_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

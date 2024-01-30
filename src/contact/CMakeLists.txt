@@ -1,11 +1,13 @@
 baci_auto_define_module()
 
-set(_contact_dependencies
+set(_dependencies
     # cmake-format: sortable
     binstrategy
+    config
     contact_aug
     contact_constitutivelaw
     core
+    global_data
     inpar
     io
     lib
@@ -18,4 +20,5 @@ set(_contact_dependencies
     structure_new
     xfem
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_contact_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

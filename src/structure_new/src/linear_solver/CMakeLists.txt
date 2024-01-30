@@ -1,7 +1,16 @@
 baci_auto_define_module()
 
-set(_structure_new_lin_solver_dependencies
+set(_dependencies
     # cmake-format: sortable
     beam3
+    beaminteraction
+    config
+    core
+    global_data
+    inpar
+    io
+    lib
+    so3
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_structure_new_lin_solver_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

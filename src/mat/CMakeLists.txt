@@ -1,9 +1,11 @@
 baci_auto_define_module()
 
-set(_mat_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
     core
     fiber
+    global_data
     inpar
     io
     lib
@@ -18,4 +20,5 @@ set(_mat_dependencies
     structure_new
     tsi
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_mat_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

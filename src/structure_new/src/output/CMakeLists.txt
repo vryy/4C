@@ -1,7 +1,14 @@
 baci_auto_define_module()
 
-set(_structure_new_output_dependencies
+set(_dependencies
     # cmake-format: sortable
+    beam3
+    config
+    core
+    global_data
+    inpar
     io
+    structure_new
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_structure_new_output_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

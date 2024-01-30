@@ -1,7 +1,18 @@
 baci_auto_define_module()
 
-set(_solid_ele_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
+    core
+    fiber
+    global_data
+    inpar
+    io
     lib
+    mat
+    nurbs_discret
+    so3
+    structure_new
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_solid_ele_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

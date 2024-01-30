@@ -1,16 +1,20 @@
 baci_auto_define_module()
 
-set(_ale_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    config
     contact
     core
     fluid_ele
+    global_data
     inpar
     io
     lib
     mat
     mortar
     nurbs_discret
+    so3
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_ale_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

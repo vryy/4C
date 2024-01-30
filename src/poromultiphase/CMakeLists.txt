@@ -1,8 +1,11 @@
 baci_auto_define_module()
 
-set(_poromultiphase_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    config
+    core
+    global_data
     inpar
     io
     lib
@@ -11,4 +14,5 @@ set(_poromultiphase_dependencies
     porofluidmultiphase
     porofluidmultiphase_ele
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_poromultiphase_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

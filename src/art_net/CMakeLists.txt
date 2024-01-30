@@ -1,9 +1,12 @@
 baci_auto_define_module()
 
-set(_art_net_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    config
     core
+    fluid_ele
+    global_data
     inpar
     io
     lib
@@ -11,4 +14,5 @@ set(_art_net_dependencies
     scatra
     scatra_ele
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_art_net_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

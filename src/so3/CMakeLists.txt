@@ -1,11 +1,13 @@
 baci_auto_define_module()
 
-set(_so3_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
     contact
     core
     fiber
     fluid_ele
+    global_data
     immersed_problem
     inpar
     io
@@ -15,4 +17,5 @@ set(_so3_dependencies
     structure_new
     thermo
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_so3_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

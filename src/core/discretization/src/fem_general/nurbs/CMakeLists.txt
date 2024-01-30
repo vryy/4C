@@ -1,10 +1,10 @@
 baci_auto_define_module()
 
-set(LIBS_FEM_GENERAL_NURBS
+set(_dependencies
     # cmake-format: sortable
-    cut
-    lib
+    config
+    core
     nurbs_discret
     )
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_FEM_GENERAL_NURBS})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

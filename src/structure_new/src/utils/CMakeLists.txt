@@ -1,7 +1,18 @@
 baci_auto_define_module()
 
-set(_structure_new_utils_dependencies
+set(_dependencies
     # cmake-format: sortable
+    config
+    constraint
+    contact
+    core
+    global_data
+    inpar
+    io
+    lib
+    mat
     solver_nonlin_nox
+    structure_new
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_structure_new_utils_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

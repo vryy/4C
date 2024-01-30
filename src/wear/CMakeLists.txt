@@ -1,14 +1,16 @@
 baci_auto_define_module()
 
-set(_wear_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
     ale
+    config
     contact
     contact_aug
     core
     fs3i
     fsi
+    global_data
     inpar
     lib
     mortar
@@ -17,4 +19,5 @@ set(_wear_dependencies
     structure
     w1
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_wear_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

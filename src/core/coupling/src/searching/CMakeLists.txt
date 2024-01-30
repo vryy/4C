@@ -1,8 +1,11 @@
 baci_auto_define_module()
 
-set(LIBS_SEARCHING
+set(_dependencies
     # cmake-format: sortable
+    config
+    core
+    global_data
     lib
     )
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_SEARCHING})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

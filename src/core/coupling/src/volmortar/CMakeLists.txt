@@ -1,9 +1,14 @@
 baci_auto_define_module()
 
-set(LIBS_VOLMORTAR
+set(_dependencies
     # cmake-format: sortable
+    config
+    core
+    cut
+    global_data
+    inpar
     lib
     mortar
     )
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_VOLMORTAR})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

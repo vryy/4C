@@ -1,10 +1,12 @@
 baci_auto_define_module()
 
-set(_constraint_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    config
     contact
     core
+    global_data
     inpar
     io
     lib
@@ -12,4 +14,5 @@ set(_constraint_dependencies
     structure_new
     truss3
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_constraint_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

@@ -1,9 +1,11 @@
 baci_auto_define_module()
 
-set(LIBS_REBALANCE
+set(_dependencies
     # cmake-format: sortable
+    config
+    core
     io
     lib
     )
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_REBALANCE})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

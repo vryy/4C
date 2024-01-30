@@ -1,9 +1,12 @@
 baci_auto_define_module()
 
-set(LIBS_GEOMETRIC_SEARCH
+set(_dependencies
     # cmake-format: sortable
+    config
+    core
+    global_data
+    inpar
     io
-    lib
     )
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_GEOMETRIC_SEARCH})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

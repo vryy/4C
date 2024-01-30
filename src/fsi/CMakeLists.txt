@@ -1,16 +1,18 @@
 baci_auto_define_module()
 
-set(_fsi_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
     ale
     binstrategy
+    config
     constraint
     core
     fbi
     fluid
     fluid_xfluid
     fsi_xfem
+    global_data
     inpar
     io
     lib
@@ -23,4 +25,5 @@ set(_fsi_dependencies
     structure_new
     timestepping
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fsi_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

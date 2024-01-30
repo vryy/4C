@@ -1,9 +1,11 @@
 baci_auto_define_module()
 
-set(_sti_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    config
     core
+    global_data
     inpar
     io
     lib
@@ -11,4 +13,5 @@ set(_sti_dependencies
     scatra
     scatra_ele
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_sti_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

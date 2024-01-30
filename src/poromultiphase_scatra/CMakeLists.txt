@@ -1,10 +1,12 @@
 baci_auto_define_module()
 
-set(_poromultiphase_scatra_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
     art_net
+    config
     core
+    global_data
     inpar
     io
     lib
@@ -17,4 +19,5 @@ set(_poromultiphase_scatra_dependencies
     scatra
     scatra_ele
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_poromultiphase_scatra_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

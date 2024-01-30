@@ -1,15 +1,13 @@
 baci_auto_define_module()
 
-set(LIBS_ADAPTER_COUPLING
+set(_dependencies
     # cmake-format: sortable
-    constraint
-    core_coupling_volmortar
-    core_linalg
+    config
+    core
+    inpar
     io
-    levelset
     lib
     mortar
-    nurbs_discret
     )
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${LIBS_ADAPTER_COUPLING})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

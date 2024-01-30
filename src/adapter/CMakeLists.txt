@@ -1,15 +1,22 @@
 baci_auto_define_module()
 
-set(_adapter_dependencies
+set(_dependencies
     # cmake-format: sortable
     ale
+    beam3
     beaminteraction
+    config
     constraint
     contact
     core
     fluid
+    fluid_ele
+    fluid_turbulence
+    fluid_xfluid
     fpsi
     fsi
+    global_data
+    inpar
     io
     levelset
     lib
@@ -25,12 +32,15 @@ set(_adapter_dependencies
     shell7p
     so3
     solid_ele
+    solver_nonlin_nox
     ssi
     struct_ale
     structure
     structure_new
     thermo
+    truss3
+    w1
     xfem
     )
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_adapter_dependencies})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

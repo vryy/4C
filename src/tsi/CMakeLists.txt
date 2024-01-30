@@ -1,10 +1,12 @@
 baci_auto_define_module()
 
-set(_tsi_dependencies
+set(_dependencies
     # cmake-format: sortable
     adapter
+    config
     contact
     core
+    global_data
     inpar
     io
     lib
@@ -13,4 +15,5 @@ set(_tsi_dependencies
     structure_new
     thermo
     )
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_tsi_dependencies})
+
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
