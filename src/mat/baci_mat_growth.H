@@ -12,7 +12,7 @@ growth laws.
 
 #include "baci_config.H"
 
-#include "baci_lib_container.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
@@ -279,9 +279,8 @@ namespace MAT
     /// growth stretch at the time step before
     Teuchos::RCP<std::vector<double>> thetaold_;
 
-    /// data container to store and recall history data
-    DRT::Container histdata_;
-
+    /// map to store and recall history data
+    std::map<int, std::vector<double>> histdata_;
   };  // class Growth
 
 
