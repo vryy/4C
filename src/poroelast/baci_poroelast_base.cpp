@@ -179,11 +179,11 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     }
 
     std::string damping = sdyn.get<std::string>("DAMPING");
-    if (damping != "Material")
+    if (damping != "Material" && structtimealgo != INPAR::STR::dyna_statics)
     {
       dserror(
-          "Material damping has to be used for porous media! Set DAMPING to 'Material' in the "
-          "STRUCTURAL DYNAMIC section.");
+          "Material damping has to be used for dynamic porous media simulations! Set DAMPING to "
+          "'Material' in the STRUCTURAL DYNAMIC section.");
     }
 
     // access the problem-specific parameter lists
