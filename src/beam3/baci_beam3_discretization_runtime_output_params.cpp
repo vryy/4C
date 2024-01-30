@@ -1,14 +1,14 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*! \file
 
-\brief input parameters related to VTU output at runtime for beams
+\brief input parameters related to output at runtime for beams
 
 \level 3
 
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beam3_discretization_runtime_vtu_output_params.H"
+#include "baci_beam3_discretization_runtime_output_params.H"
 
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_utils_exceptions.H"
@@ -17,7 +17,7 @@ BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
+DRT::ELEMENTS::BeamRuntimeOutputParams::BeamRuntimeOutputParams()
     : isinit_(false),
       issetup_(false),
       output_displacement_state_(false),
@@ -43,7 +43,7 @@ DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
+void DRT::ELEMENTS::BeamRuntimeOutputParams::Init(
     const Teuchos::ParameterList& IO_vtk_structure_beams_paramslist)
 {
   // We have to call Setup() after Init()
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Setup()
+void DRT::ELEMENTS::BeamRuntimeOutputParams::Setup()
 {
   if (not IsInit()) dserror("Init() has not been called, yet!");
 
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::CheckInitSetup() const
+void DRT::ELEMENTS::BeamRuntimeOutputParams::CheckInitSetup() const
 {
   if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
 }

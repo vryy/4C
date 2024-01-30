@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief input parameters for VTK output of structural problem at runtime
+\brief input parameters for output of structural problem at runtime
 
 \level 2
 
 */
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef BACI_INPAR_IO_RUNTIME_VTK_OUTPUT_H
-#define BACI_INPAR_IO_RUNTIME_VTK_OUTPUT_H
+#ifndef BACI_INPAR_IO_RUNTIME_OUTPUT_H
+#define BACI_INPAR_IO_RUNTIME_OUTPUT_H
 
 
 /*----------------------------------------------------------------------*/
@@ -22,7 +22,7 @@
 BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR::IO_RUNTIME_VTK
+namespace INPAR::IO_RUNTIME_OUTPUT
 {
   /// data format for written numeric data
   enum class OutputDataFormat
@@ -39,10 +39,10 @@ namespace INPAR::IO_RUNTIME_VTK
     vtu_per_rank  // Write one file per time step per rank in the vtu format
   };
 
-  /// set the valid parameters related to writing of VTK output at runtime
+  /// set the valid parameters related to writing of output at runtime
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-}  // namespace INPAR::IO_RUNTIME_VTK
+}  // namespace INPAR::IO_RUNTIME_OUTPUT
 
 BACI_NAMESPACE_CLOSE
 

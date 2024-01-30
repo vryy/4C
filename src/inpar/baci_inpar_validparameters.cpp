@@ -35,10 +35,10 @@
 #include "baci_inpar_immersed.H"
 #include "baci_inpar_io.H"
 #include "baci_inpar_IO_monitor_structure_dbc.H"
-#include "baci_inpar_IO_runtime_vtk_output.H"
-#include "baci_inpar_IO_runtime_vtk_output_fluid.H"
+#include "baci_inpar_IO_runtime_output.H"
+#include "baci_inpar_IO_runtime_output_fluid.H"
+#include "baci_inpar_IO_runtime_output_structure_beams.H"
 #include "baci_inpar_IO_runtime_vtk_output_structure.H"
-#include "baci_inpar_IO_runtime_vtk_output_structure_beams.H"
 #include "baci_inpar_IO_runtime_vtp_output_structure.H"
 #include "baci_inpar_levelset.H"
 #include "baci_inpar_lubrication.H"
@@ -377,15 +377,15 @@ Teuchos::RCP<const Teuchos::ParameterList> INPUT::ValidParameters()
   INPAR::STR::SetValidParameters(list);
   INPAR::IO::SetValidParameters(list);
   INPAR::IO_MONITOR_STRUCTURE_DBC::SetValidParameters(list);
-  INPAR::IO_RUNTIME_VTK::SetValidParameters(list);
+  INPAR::IO_RUNTIME_OUTPUT::SetValidParameters(list);
   INPAR::IO_RUNTIME_VTP_STRUCTURE::SetValidParameters(list);
   INPAR::MORTAR::SetValidParameters(list);
   INPAR::CONTACT::SetValidParameters(list);
   INPAR::VOLMORTAR::SetValidParameters(list);
   INPAR::WEAR::SetValidParameters(list);
-  INPAR::IO_RUNTIME_VTK::FLUID::SetValidParameters(list);
-  INPAR::IO_RUNTIME_VTK::STRUCTURE::SetValidParameters(list);
-  INPAR::IO_RUNTIME_VTK::BEAMS::SetValidParameters(list);
+  INPAR::IO_RUNTIME_OUTPUT::FLUID::SetValidParameters(list);
+  INPAR::IO_RUNTIME_OUTPUT::STRUCTURE::SetValidParameters(list);
+  INPAR::IO_RUNTIME_OUTPUT::BEAMS::SetValidParameters(list);
   INPAR::BEAMCONTACT::SetValidParameters(list);
   INPAR::BEAMPOTENTIAL::SetValidParameters(list);
   INPAR::BEAMINTERACTION::SetValidParameters(list);

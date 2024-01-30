@@ -12,7 +12,7 @@
 #include "baci_structure_new_model_evaluator_structure.H"
 
 #include "baci_beam3_base.H"
-#include "baci_beam3_discretization_runtime_vtu_output_params.H"
+#include "baci_beam3_discretization_runtime_output_params.H"
 #include "baci_beam3_discretization_runtime_vtu_writer.H"
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_io.H"
@@ -988,7 +988,7 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
       GInOutput().GetRuntimeVtkOutputParams()->GetVisualizationParameters(), DisNp().Comm()));
 
   // get the parameter container object
-  const DRT::ELEMENTS::BeamRuntimeVtuOutputParams& beam_vtu_output_params =
+  const DRT::ELEMENTS::BeamRuntimeOutputParams& beam_vtu_output_params =
       *GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams();
 
   // export displacement state to column format
@@ -1052,7 +1052,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
   CheckInitSetup();
 
   // get the parameter container object
-  const DRT::ELEMENTS::BeamRuntimeVtuOutputParams& beam_vtu_output_params =
+  const DRT::ELEMENTS::BeamRuntimeOutputParams& beam_vtu_output_params =
       *GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams();
 
   // set geometry

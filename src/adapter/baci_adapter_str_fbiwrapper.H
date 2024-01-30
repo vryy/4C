@@ -83,7 +83,7 @@ namespace ADAPTER
     /// Setup the multi map extractor after ghosting of the structure discretization
     virtual void SetupMultiMapExtractor();
 
-    /// Get Runtime VTK Output data
+    /// Get Runtime Output data
     virtual Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> GetIOData();
 
    private:

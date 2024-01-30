@@ -142,31 +142,31 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
 
   /*------------------------------------------------------------------------*/
-  /* parameters for visualization of beam contact via vtk output at runtime */
+  /* parameters for visualization of beam contact via output at runtime */
 
   Teuchos::ParameterList& beamcontact_vtk_sublist =
       beamcontact.sublist("RUNTIME VTK OUTPUT", false, "");
 
 
-  // whether to write vtk output for beam contact
-  BoolParameter("VTK_OUTPUT_BEAM_CONTACT", "No", "write vtp output for beam contact",
+  // whether to write visualization output for beam contact
+  BoolParameter("VTK_OUTPUT_BEAM_CONTACT", "No", "write visualization output for beam contact",
       &beamcontact_vtk_sublist);
 
   // output interval regarding steps: write output every INTERVAL_STEPS steps
-  IntParameter("INTERVAL_STEPS", -1, "write VTK output at runtime every INTERVAL_STEPS steps",
-      &beamcontact_vtk_sublist);
+  IntParameter("INTERVAL_STEPS", -1,
+      "write visualization output at runtime every INTERVAL_STEPS steps", &beamcontact_vtk_sublist);
 
   // whether to write output in every iteration of the nonlinear solver
   BoolParameter("EVERY_ITERATION", "No", "write output in every iteration of the nonlinear solver",
       &beamcontact_vtk_sublist);
 
-  // whether to write vtp output for contact forces
-  BoolParameter(
-      "CONTACT_FORCES", "No", "write vtp output for contact forces", &beamcontact_vtk_sublist);
+  // whether to write visualization output for contact forces
+  BoolParameter("CONTACT_FORCES", "No", "write visualization output for contact forces",
+      &beamcontact_vtk_sublist);
 
-  // whether to write vtp output for gaps
-  BoolParameter(
-      "GAPS", "No", "write vtp output for gap, i.e. penetration", &beamcontact_vtk_sublist);
+  // whether to write visualization output for gaps
+  BoolParameter("GAPS", "No", "write visualization output for gap, i.e. penetration",
+      &beamcontact_vtk_sublist);
 }
 
 /**

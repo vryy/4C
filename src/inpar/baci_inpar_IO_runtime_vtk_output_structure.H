@@ -24,7 +24,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  namespace IO_RUNTIME_VTK
+  namespace IO_RUNTIME_OUTPUT
   {
     namespace STRUCTURE
     {
@@ -32,7 +32,7 @@ namespace INPAR
       void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     }  // namespace STRUCTURE
-  }    // namespace IO_RUNTIME_VTK
+  }    // namespace IO_RUNTIME_OUTPUT
 }  // namespace INPAR
 
 BACI_NAMESPACE_CLOSE

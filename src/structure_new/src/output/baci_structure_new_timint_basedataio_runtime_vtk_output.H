@@ -28,7 +28,7 @@ namespace DRT
   namespace ELEMENTS
   {
     class StructureRuntimeVtuOutputParams;
-    class BeamRuntimeVtuOutputParams;
+    class BeamRuntimeOutputParams;
   }  // namespace ELEMENTS
 }  // namespace DRT
 
@@ -102,7 +102,7 @@ namespace STR
       };
 
       /// get the data container for parameters regarding beams
-      Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeVtuOutputParams> GetBeamParams() const
+      Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
       {
         CheckInitSetup();
         return params_runtime_vtu_output_beams_;
@@ -155,7 +155,7 @@ namespace STR
           params_runtime_vtu_output_structure_ = Teuchos::null;
 
       /// data container for input parameters related to VTU output of beams at runtime
-      Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeVtuOutputParams> params_runtime_vtu_output_beams_ =
+      Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeOutputParams> params_runtime_vtu_output_beams_ =
           Teuchos::null;
 
 

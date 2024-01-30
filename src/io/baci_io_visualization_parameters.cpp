@@ -11,7 +11,7 @@
 
 #include "baci_io_visualization_parameters.H"
 
-#include "baci_inpar_IO_runtime_vtk_output.H"
+#include "baci_inpar_IO_runtime_output.H"
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_utils_exceptions.H"
 
@@ -29,7 +29,7 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
   IO::VisualizationParameters parameters;
 
   // Data format
-  parameters.data_format_ = Teuchos::getIntegralValue<INPAR::IO_RUNTIME_VTK::OutputDataFormat>(
+  parameters.data_format_ = Teuchos::getIntegralValue<INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat>(
       visualization_ouput_parameter_list, "OUTPUT_DATA_FORMAT");
 
   // Number of digits to reserve for time step count
@@ -47,9 +47,9 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
       INPUT::IntegralValue<bool>(visualization_ouput_parameter_list, "EVERY_ITERATION");
 
   // Type of output writer
-  const auto output_writer = Teuchos::getIntegralValue<INPAR::IO_RUNTIME_VTK::OutputWriter>(
+  const auto output_writer = Teuchos::getIntegralValue<INPAR::IO_RUNTIME_OUTPUT::OutputWriter>(
       visualization_ouput_parameter_list, "OUTPUT_WRITER");
-  if (output_writer == INPAR::IO_RUNTIME_VTK::OutputWriter::none)
+  if (output_writer == INPAR::IO_RUNTIME_OUTPUT::OutputWriter::none)
   {
     dserror(
         "The visualization writer has to be set in the input file under IO/RUNTIME VTK "

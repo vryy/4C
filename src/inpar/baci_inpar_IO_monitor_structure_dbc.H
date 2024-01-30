@@ -34,7 +34,7 @@ namespace INPAR
       data
     };
 
-    /// set the valid parameters related to writing of VTK output at runtime
+    /// set the valid parameters related to writing of output at runtime
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace IO_MONITOR_STRUCTURE_DBC

@@ -304,7 +304,7 @@ namespace MAT
     }
 
     /*!
-     * @brief Register names of the internal data that should be saved during runtime vtk output
+     * @brief Register names of the internal data that should be saved during runtime output
      *
      * @param[out] name_and_size Unordered map of names of the data with the respective vector size
      */
@@ -313,7 +313,7 @@ namespace MAT
     }
 
     /*!
-     * @brief Evaluate internal data for every Gauss point saved for output during runtime vtk
+     * @brief Evaluate internal data for every Gauss point saved for output during runtime
      * output
      *
      * @param[in] name  Name of the data to export

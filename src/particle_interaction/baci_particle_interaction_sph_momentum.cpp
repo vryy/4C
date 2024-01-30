@@ -236,9 +236,9 @@ void PARTICLEINTERACTION::SPHMomentum::InitArtificialViscosityHandler()
 
 void PARTICLEINTERACTION::SPHMomentum::SetupParticleInteractionWriter()
 {
-  // register specific runtime vtp writer
+  // register specific runtime output writer
   if (writeparticlewallinteraction_)
-    particleinteractionwriter_->RegisterSpecificRuntimeVtuWriter("particle-wall-momentum");
+    particleinteractionwriter_->RegisterSpecificRuntimeOutputWriter("particle-wall-momentum");
 }
 
 void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() const
@@ -899,9 +899,9 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
 
   if (writeinteractionoutput)
   {
-    // get specific runtime vtp writer
+    // get specific runtime output writer
     IO::VisualizationManager* visualization_manager =
-        particleinteractionwriter_->GetSpecificRuntimeVtuWriter("particle-wall-momentum");
+        particleinteractionwriter_->GetSpecificRuntimeOutputWriter("particle-wall-momentum");
     auto& visualization_data = visualization_manager->GetVisualizationData();
 
     // set wall attack points

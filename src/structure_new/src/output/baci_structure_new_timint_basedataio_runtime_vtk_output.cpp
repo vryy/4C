@@ -10,7 +10,7 @@
 
 #include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
 
-#include "baci_beam3_discretization_runtime_vtu_output_params.H"
+#include "baci_beam3_discretization_runtime_output_params.H"
 #include "baci_global_data.H"
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_structure_new_discretization_runtime_vtu_output_params.H"
@@ -61,8 +61,7 @@ void STR::TIMINT::ParamsRuntimeOutput::Init(
   // create and initialize parameter container object for beam specific runtime vtk output
   if (output_beams_)
   {
-    params_runtime_vtu_output_beams_ =
-        Teuchos::rcp(new DRT::ELEMENTS::BeamRuntimeVtuOutputParams());
+    params_runtime_vtu_output_beams_ = Teuchos::rcp(new DRT::ELEMENTS::BeamRuntimeOutputParams());
 
     params_runtime_vtu_output_beams_->Init(IO_vtk_structure_paramslist.sublist("BEAMS"));
     params_runtime_vtu_output_beams_->Setup();
