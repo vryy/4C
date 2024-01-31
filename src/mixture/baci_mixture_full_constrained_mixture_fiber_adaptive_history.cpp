@@ -19,33 +19,6 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace
-{
-  template <typename Number>
-  unsigned int GetNumberCoarsenableIntervals(const double begin_time, const double dt,
-      const unsigned int max_simpson_intervals,
-      const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number>& growth_evolution,
-      const double time, const Number tolerance_per_unit_time)
-  {
-    unsigned int num_coarsening_level = 0;
-    const unsigned int max_coarsened_simpson_intervals = max_simpson_intervals / 2;
-
-    for (unsigned int i = 0; i < max_coarsened_simpson_intervals; ++i)
-    {
-      if (MIXTURE::IsModelEquationSimpsonRuleIntegrationBelowTolerance<Number>(growth_evolution,
-              time, begin_time + 4 * dt * i, begin_time + 4 * dt * (i + 1),
-              tolerance_per_unit_time * 4 * dt))
-      {
-        num_coarsening_level += 2;
-      }
-      else
-        break;
-    }
-
-    return num_coarsening_level;
-  }
-}  // namespace
-
 void MIXTURE::DETAILS::AdaptTimestepAdaptivityInfo(
     MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info, unsigned int level,
     unsigned int num_coarsened_intervals)
