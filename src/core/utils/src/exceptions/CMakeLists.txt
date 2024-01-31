@@ -6,3 +6,4 @@ set(_dependencies
     )
 
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
+baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${CMAKE_DL_LIBS})
