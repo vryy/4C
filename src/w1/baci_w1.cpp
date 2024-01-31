@@ -154,7 +154,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1LineType::Create(const int id, co
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
     : So_base(id, owner),
-      data_(),
       material_(0),
       thickness_(0.0),
       old_step_length_(0.0),
@@ -163,6 +162,7 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
       stresstype_(w1_none),
       iseas_(false),
       eastype_(eas_vague),
+      easdata_(EASData()),
       structale_(false),
       distype_(CORE::FE::CellType::dis_none)
 {
@@ -176,7 +176,6 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1::Wall1(const DRT::ELEMENTS::Wall1& old)
     : So_base(old),
-      data_(old.data_),
       material_(old.material_),
       thickness_(old.thickness_),
       old_step_length_(old.old_step_length_),
@@ -185,6 +184,7 @@ DRT::ELEMENTS::Wall1::Wall1(const DRT::ELEMENTS::Wall1& old)
       stresstype_(old.stresstype_),
       iseas_(old.iseas_),
       eastype_(old.eas_vague),
+      easdata_(old.easdata_),
       structale_(old.structale_),
       distype_(old.distype_)
 // tsi_couptyp_(old.tsi_couptyp_)
@@ -238,12 +238,12 @@ void DRT::ELEMENTS::Wall1::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, iseas_);
   // eas type
   AddtoPack(data, eastype_);
+  // eas data
+  PackEasData(data);
   // structale
   AddtoPack(data, structale_);
   // distype
   AddtoPack(data, distype_);
-  // data
-  AddtoPack(data, data_);
   // line search
   AddtoPack(data, old_step_length_);
 
@@ -279,14 +279,12 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   iseas_ = ExtractInt(position, data);
   // eastype_
   eastype_ = static_cast<EasType>(ExtractInt(position, data));
+  // easdata_
+  UnpackEasData(position, data);
   // structale_
   structale_ = ExtractInt(position, data);
   // distype_
   distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
-  // data
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
   // line search
   ExtractfromPack(position, data, old_step_length_);
   if (position != data.size())

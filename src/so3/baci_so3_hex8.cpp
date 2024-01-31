@@ -117,7 +117,7 @@ const CORE::FE::IntPointsAndWeights<NUMDIM_SOH8> DRT::ELEMENTS::So_hex8::gp_rule
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
     : So_base(id, owner),
-      data_(),
+      easdata_(EASData()),
       analyticalmaterialtangent_(true),
       pstype_(INPAR::STR::PreStress::none),
       pstime_(0.0),
@@ -164,7 +164,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
     : So_base(old),
       eastype_(old.eastype_),
       neas_(old.neas_),
-      data_(old.data_),
+      easdata_(old.easdata_),
       detJ_(old.detJ_),
       analyticalmaterialtangent_(old.analyticalmaterialtangent_),
       pstype_(old.pstype_),
@@ -232,8 +232,8 @@ void DRT::ELEMENTS::So_hex8::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, neas_);
   // analyticalmaterialtangent_
   AddtoPack(data, analyticalmaterialtangent_);
-  // data_
-  AddtoPack(data, data_);
+  // eas data
+  PackEasData(data);
   // line search
   AddtoPack(data, old_step_length_);
   // Pack prestress type
@@ -277,10 +277,8 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, neas_);
   // analyticalmaterialtangent_
   analyticalmaterialtangent_ = ExtractInt(position, data);
-  // data_
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
+  // eas data
+  UnpackEasData(position, data);
   // line search
   ExtractfromPack(position, data, old_step_length_);
   // Extract prestress
@@ -323,7 +321,6 @@ void DRT::ELEMENTS::So_hex8::Print(std::ostream& os) const
   os << "So_hex8 ";
   Element::Print(os);
   // std::cout << std::endl;
-  // std::cout << data_;
   return;
 }
 

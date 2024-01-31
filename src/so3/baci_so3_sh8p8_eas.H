@@ -27,17 +27,17 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(CORE::LINALG::SerialDenseMa
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kad,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kap, CORE::LINALG::SerialDenseMatrix*& alpha,
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M, DRT::Container& data,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M, EASData& data,
     const CORE::LINALG::Matrix<NUMDISP_, 1>& dispi, const CORE::LINALG::Matrix<NUMPRES_, 1>& presi)
 {
   // retrieve history
-  alpha = data.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
+  alpha = &data.alpha;  // get old alpha
   // evaluate current (updated) EAS alphas (from history variables)
   // get stored EAS history
-  oldfeas = data.Get<CORE::LINALG::SerialDenseMatrix>("feas");
-  oldKaainv = data.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
-  oldKad = data.Get<CORE::LINALG::SerialDenseMatrix>("Kda");  // actually k_ad
-  oldKap = data.Get<CORE::LINALG::SerialDenseMatrix>("Kap");
+  oldfeas = &data.feas;
+  oldKaainv = &data.invKaa;
+  oldKad = &data.Kda;  // actually k_ad
+  oldKap = &data.Kap;
   if (!alpha || !oldKaainv || !oldKad || !oldKap || !oldfeas) dserror("Missing EAS history-data");
 
   // feas^{k+1} := feas^k + k_ad^k . Ddisp^k + k_ap^k . Dpres^k
@@ -62,9 +62,6 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(CORE::LINALG::SerialDenseMa
 
   // M-operator, ie EAS shape functions
   M = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(MAT::NUM_STRESS_3D, NUMEAS_T));
-
-  // see you
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -94,8 +91,6 @@ void DRT::ELEMENTS::So_sh8p8::EasAddStrain(CORE::LINALG::Matrix<MAT::NUM_STRESS_
   // add enhanced strains = M . alpha to GL strains to "unlock" element
   CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, NUMEAS_T, 1>(
       1.0, glstrain.values(), 1.0, M->values(), alpha->values());
-  // ready
-  return;
 }
 
 /*----------------------------------------------------------------------*/

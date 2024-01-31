@@ -217,8 +217,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = &easdata_.alpha;    // Alpha_{n+1}
+        auto* alphao = &easdata_.alphao;  // Alpha_n
         // alphao := alpha
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alphao, *alpha);
       }
@@ -231,8 +231,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = &easdata_.alpha;    // Alpha_{n+1}
+        auto* alphao = &easdata_.alphao;  // Alpha_n
         // alpha := alphao
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alpha, *alphao);
       }
@@ -326,13 +326,13 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
+    alpha = &easdata_.alpha;  // get old alpha
     // evaluate current (updated) EAS alphas (from history variables)
     // get stored EAS history
-    oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
-    oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
-    oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
-    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    oldfeas = &easdata_.feas;
+    oldKaainv = &easdata_.invKaa;
+    oldKda = &easdata_.Kda;
+    eas_inc = &easdata_.eas_inc;
     if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
       dserror("Missing EAS history-data");
 
@@ -988,9 +988,6 @@ void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_shw6::soshw6_easinit()
 {
-  // all parameters are stored in CORE::LINALG::SerialDenseMatrix as only
-  // those can be added to DRT::Container
-
   // EAS enhanced strain parameters at currently investigated load/time step
   CORE::LINALG::SerialDenseMatrix alpha(neas_, 1);
   // EAS enhanced strain parameters of last converged load/time step
@@ -1005,14 +1002,12 @@ void DRT::ELEMENTS::So_shw6::soshw6_easinit()
   CORE::LINALG::SerialDenseMatrix eas_inc(neas_, 1);
 
   // save EAS data into element container
-  data_.Add("alpha", alpha);
-  data_.Add("alphao", alphao);
-  data_.Add("feas", feas);
-  data_.Add("invKaa", invKaa);
-  data_.Add("Kda", Kda);
-  data_.Add("eas_inc", eas_inc);
-
-  return;
+  easdata_.alpha = alpha;
+  easdata_.alphao = alphao;
+  easdata_.feas = feas;
+  easdata_.invKaa = invKaa;
+  easdata_.Kda = Kda;
+  easdata_.eas_inc = eas_inc;
 }
 
 /*----------------------------------------------------------------------*
@@ -1297,11 +1292,11 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
 
   const double step_length = StrParamsInterface().GetStepLength();
 
-  auto* oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
-  auto* oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
-  auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
-  auto* eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
-  auto* oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+  auto* oldfeas = &easdata_.feas;
+  auto* oldKda = &easdata_.Kda;
+  auto* alpha = &easdata_.alpha;
+  auto* eas_inc = &easdata_.eas_inc;
+  auto* oldKaainv = &easdata_.invKaa;
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
   if (StrParamsInterface().IsDefaultStep())
