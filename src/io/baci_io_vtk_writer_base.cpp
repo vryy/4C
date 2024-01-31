@@ -188,7 +188,7 @@ VtkWriterBase::VtkWriterBase()
       num_processor_digits_(0),
       time_(std::numeric_limits<double>::min()),
       timestep_(-1),
-      restart_(DRT::Problem::Instance()->Restart()),
+      restart_(GLOBAL::Problem::Instance()->Restart()),
       cycle_(std::numeric_limits<int>::max()),
       write_binary_output_(true),
       myrank_(0),

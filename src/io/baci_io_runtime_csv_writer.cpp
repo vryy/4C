@@ -138,7 +138,7 @@ namespace IO
   {
     // determine full path to output prefix
     const std::string fullpathoutputprefix =
-        (DRT::Problem::Instance()->OutputControlFile()->FileName());
+        (GLOBAL::Problem::Instance()->OutputControlFile()->FileName());
 
     // set full path to output file
     fullpathoutputfile_ = fullpathoutputprefix + "-" + outputname_ + ".csv";
@@ -150,12 +150,12 @@ namespace IO
     }
 
     // in case of restart copy content of restart file to output file prior to restart time step
-    const int restart = DRT::Problem::Instance()->Restart();
+    const int restart = GLOBAL::Problem::Instance()->Restart();
     if (restart)
     {
       // determine full path to restart prefix
       const std::string fullpathrestartprefix =
-          DRT::Problem::Instance()->OutputControlFile()->RestartName();
+          GLOBAL::Problem::Instance()->OutputControlFile()->RestartName();
 
       // set full path to restart file
       const std::string fullpathrestartfile = fullpathrestartprefix + "-" + outputname_ + ".csv";

@@ -24,7 +24,7 @@ void ntam(int argc, char *argv[])
 {
   using namespace BACI;
 
-  Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GetCommunicators()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = GLOBAL::Problem::Instance()->GetCommunicators()->GlobalComm();
 
   double t0, ti, tc;
 
@@ -37,11 +37,11 @@ void ntam(int argc, char *argv[])
 
   /* input phase, input of all information */
 
-  t0 = DRT::Problem::Walltime();
+  t0 = GLOBAL::Problem::Walltime();
 
   ntainp_ccadiscret(inputfile_name, outputfile_kenner, restartfile_kenner);
 
-  ti = DRT::Problem::Walltime() - t0;
+  ti = GLOBAL::Problem::Walltime() - t0;
   if (gcomm->MyPID() == 0)
   {
     IO::cout << "\nTotal CPU Time for INPUT:       " << std::setw(10) << std::setprecision(3)
@@ -49,11 +49,11 @@ void ntam(int argc, char *argv[])
   }
 
   /*--------------------------------------------------calculation phase */
-  t0 = DRT::Problem::Walltime();
+  t0 = GLOBAL::Problem::Walltime();
 
   ntacal();
 
-  tc = DRT::Problem::Walltime() - t0;
+  tc = GLOBAL::Problem::Walltime() - t0;
   if (gcomm->MyPID() == 0)
   {
     IO::cout << "\nTotal CPU Time for CALCULATION: " << std::setw(10) << std::setprecision(3)

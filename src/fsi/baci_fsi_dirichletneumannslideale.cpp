@@ -45,13 +45,13 @@ void FSI::DirichletNeumannSlideale::Setup()
   // call setup of base class
   FSI::DirichletNeumann::Setup();
 
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   SetKinematicCoupling(
       INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
 
   INPAR::FSI::SlideALEProj aletype = INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(
-      DRT::Problem::Instance()->FSIDynamicParams(), "SLIDEALEPROJ");
+      GLOBAL::Problem::Instance()->FSIDynamicParams(), "SLIDEALEPROJ");
 
   slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
       MBFluidField()->Discretization(), StructureFluidCouplingMortar(), true, aletype));
@@ -159,7 +159,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
   }
   else
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
     if (INPUT::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {

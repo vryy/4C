@@ -163,7 +163,7 @@ namespace BEAMINTERACTION
       // auxiliary variable
       int j = 0;
 
-      DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+      GLOBAL::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
 
       // result vector initialized with ordered numbers from 0 to N-1
       std::vector<int> randorder(number, 0);
@@ -172,7 +172,7 @@ namespace BEAMINTERACTION
       for (int i = 0; i < number; ++i)
       {
         // generate random number between 0 and i
-        j = (int)floor((i + 1.0) * DRT::Problem::Instance()->Random()->Uni());
+        j = (int)floor((i + 1.0) * GLOBAL::Problem::Instance()->Random()->Uni());
 
         /*exchange values at positions i and j (note: value at position i is i due to above
          *initialization and because so far only positions <=i have been changed*/

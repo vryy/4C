@@ -120,7 +120,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
     if (curvenum >= 0 && usetime)
     {
       curvefac_np =
-          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
               tim);
     }
 

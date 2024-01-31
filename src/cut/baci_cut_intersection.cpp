@@ -1383,7 +1383,7 @@ Teuchos::RCP<CORE::GEO::CUT::IntersectionBase>
 CORE::GEO::CUT::IntersectionFactory::CreateIntersection(
     CORE::FE::CellType edge_type, CORE::FE::CellType side_type) const
 {
-  const int probdim = DRT::Problem::Instance()->NDim();
+  const int probdim = GLOBAL::Problem::Instance()->NDim();
   switch (edge_type)
   {
     case CORE::FE::CellType::line2:

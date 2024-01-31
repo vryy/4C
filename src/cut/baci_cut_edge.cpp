@@ -900,7 +900,7 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
     const CORE::FE::CellType& edgetype, const std::vector<Node*>& nodes) const
 {
   Teuchos::RCP<Edge> cedge_ptr = Teuchos::null;
-  const int probdim = DRT::Problem::Instance()->NDim();
+  const int probdim = GLOBAL::Problem::Instance()->NDim();
   switch (edgetype)
   {
     case CORE::FE::CellType::line2:

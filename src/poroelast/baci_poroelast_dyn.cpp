@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
 
 void poroelast_drt()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // create a communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();

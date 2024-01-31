@@ -53,7 +53,7 @@ namespace MORTAR
       /*! \brief Read and check meshtying/contact input parameters
        *
        * All specified contact-related input parameters are read from the
-       * DRT::Problem::Instance() and stored into a local variable of
+       * GLOBAL::Problem::Instance() and stored into a local variable of
        * type Teuchos::ParameterList. Invalid parameter combinations are
        * sorted out and throw a dserror.
        *

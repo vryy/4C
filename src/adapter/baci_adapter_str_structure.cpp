@@ -92,9 +92,9 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   Teuchos::TimeMonitor monitor(*t);
 
   // get the problem instance
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   // what's the current problem type?
-  ProblemType probtype = problem->GetProblemType();
+  GLOBAL::ProblemType probtype = problem->GetProblemType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -299,7 +299,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
    * \author mayr.mt \date 12/2013
    */
   // ---------------------------------------------------------------------------
-  if (probtype == ProblemType::fsi or probtype == ProblemType::fsi_redmodels)
+  if (probtype == GLOBAL::ProblemType::fsi or probtype == GLOBAL::ProblemType::fsi_redmodels)
   {
     const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
     const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
@@ -337,13 +337,13 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   {
     switch (probtype)
     {
-      case ProblemType::structure:  // pure structural time adaptivity
+      case GLOBAL::ProblemType::structure:  // pure structural time adaptivity
       {
         structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
         break;
       }
-      case ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
-      case ProblemType::fsi_redmodels:
+      case GLOBAL::ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
+      case GLOBAL::ProblemType::fsi_redmodels:
       {
         if ((actdis->Comm()).MyPID() == 0)
           IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
@@ -369,13 +369,13 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   {
     switch (probtype)
     {
-      case ProblemType::fsi:
-      case ProblemType::fsi_redmodels:
-      case ProblemType::fsi_lung:
-      case ProblemType::gas_fsi:
-      case ProblemType::ac_fsi:
-      case ProblemType::biofilm_fsi:
-      case ProblemType::thermo_fsi:
+      case GLOBAL::ProblemType::fsi:
+      case GLOBAL::ProblemType::fsi_redmodels:
+      case GLOBAL::ProblemType::fsi_lung:
+      case GLOBAL::ProblemType::gas_fsi:
+      case GLOBAL::ProblemType::ac_fsi:
+      case GLOBAL::ProblemType::biofilm_fsi:
+      case GLOBAL::ProblemType::thermo_fsi:
       {
         const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
         const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -405,28 +405,28 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
         }
       }
       break;
-      case ProblemType::immersed_fsi:
+      case GLOBAL::ProblemType::immersed_fsi:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapperImmersed(tmpstr));
       }
       break;
-      case ProblemType::ssi:
-      case ProblemType::ssti:
+      case GLOBAL::ProblemType::ssi:
+      case GLOBAL::ProblemType::ssti:
       {
         structure_ = Teuchos::rcp(new SSIStructureWrapper(tmpstr));
       }
       break;
-      case ProblemType::redairways_tissue:
+      case GLOBAL::ProblemType::redairways_tissue:
       {
         structure_ = Teuchos::rcp(new StructureRedAirway(tmpstr));
       }
       break;
-      case ProblemType::poroelast:
-      case ProblemType::poroscatra:
-      case ProblemType::fpsi:
-      case ProblemType::fps3i:
-      case ProblemType::fpsi_xfem:
-      case ProblemType::fsi_xfem:
+      case GLOBAL::ProblemType::poroelast:
+      case GLOBAL::ProblemType::poroscatra:
+      case GLOBAL::ProblemType::fpsi:
+      case GLOBAL::ProblemType::fps3i:
+      case GLOBAL::ProblemType::fpsi_xfem:
+      case GLOBAL::ProblemType::fsi_xfem:
       {
         const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
         const INPAR::POROELAST::SolutionSchemeOverFields coupling =
@@ -446,7 +446,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
         }
       }
       break;
-      case ProblemType::struct_ale:
+      case GLOBAL::ProblemType::struct_ale:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
       }
@@ -484,7 +484,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinear
         "DYNAMIC to a valid number!");
 
   solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
@@ -511,7 +511,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
     if (mtcond.size() != 0 and ccond.size() == 0) onlymeshtying = true;
     if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
   }
-  const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
 
   // Get the solver number used for meshtying/contact problems
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
@@ -531,9 +531,9 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
        * Solver can be either a direct solver (UMFPACK, Superlu) or an iterative solver (Belos).
        */
       const auto sol = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), "SOLVER");
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "SOLVER");
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       if (sol != INPAR::SOLVER::SolverType::umfpack && sol != INPAR::SOLVER::SolverType::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner
@@ -549,7 +549,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
 
       // build meshtying/contact solver
       solver = Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
@@ -594,7 +594,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
     {
       // build meshtying solver
       solver = Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
     }
     break;

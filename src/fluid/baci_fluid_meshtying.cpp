@@ -49,9 +49,9 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::S
       mergedmap_(Teuchos::null),
       valuesdc_(Teuchos::null),
       adaptermeshtying_(Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-          DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
-          DRT::Problem::Instance()->ContactDynamicParams(),
-          DRT::Problem::Instance()->SpatialApproximationType()))),
+          GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
+          GLOBAL::Problem::Instance()->ContactDynamicParams(),
+          GLOBAL::Problem::Instance()->SpatialApproximationType()))),
       pcoupled_(true),
       dconmaster_(false),
       firstnonliniter_(false),
@@ -461,7 +461,7 @@ void FLD::Meshtying::IncludeDirichletInCondensation(
 void FLD::Meshtying::EvaluateWithMeshRelocation(Teuchos::RCP<Epetra_Vector>& dispnp)
 {
   // get ALE discretization
-  Teuchos::RCP<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<DRT::Discretization> aledis = GLOBAL::Problem::Instance()->GetDis("ale");
 
   // call mortar evaluate routine including mesh correction
   adaptermeshtying_->EvaluateWithMeshRelocation(discret_, aledis, dispnp, discret_->Comm(), true);

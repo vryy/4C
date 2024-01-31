@@ -1328,7 +1328,7 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElem
     const std::vector<Node*>& nodes, bool active) const
 {
   Teuchos::RCP<Element> e = Teuchos::null;
-  const int probdim = DRT::Problem::Instance()->NDim();
+  const int probdim = GLOBAL::Problem::Instance()->NDim();
   switch (elementtype)
   {
     case CORE::FE::CellType::line2:

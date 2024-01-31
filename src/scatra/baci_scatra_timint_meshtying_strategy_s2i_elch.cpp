@@ -239,11 +239,11 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
           dserror("Number of stoichiometric coefficients does not match number of scalars!");
         if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
         const double faraday =
-            DRT::Problem::Instance(0)->ELCHControlParams().get<double>("FARADAY_CONSTANT");
+            GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>("FARADAY_CONSTANT");
         const double gasconstant =
-            DRT::Problem::Instance(0)->ELCHControlParams().get<double>("GAS_CONSTANT");
+            GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>("GAS_CONSTANT");
         const double frt =
-            faraday / (gasconstant * (DRT::Problem::Instance(0)->ELCHControlParams().get<double>(
+            faraday / (gasconstant * (GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>(
                                          "TEMPERATURE")));
         const double alphaa = cond_slave->GetDouble("alpha_a");
         const double alphac = cond_slave->GetDouble("alpha_c");

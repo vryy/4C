@@ -42,7 +42,7 @@ BACI_NAMESPACE_OPEN
  | Constructor                                              farah 11/13 |
  *----------------------------------------------------------------------*/
 WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
-    : AlgorithmBase(comm, DRT::Problem::Instance()->StructuralDynamicParams())
+    : AlgorithmBase(comm, GLOBAL::Problem::Instance()->StructuralDynamicParams())
 
 {
   /*--------------------------------------------------------------------*
@@ -52,9 +52,10 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
 
   // create structure
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(
-      new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(),
-          const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams()),
-          DRT::Problem::Instance()->GetDis("structure")));
+      new ADAPTER::StructureBaseAlgorithm(GLOBAL::Problem::Instance()->StructuralDynamicParams(),
+          const_cast<Teuchos::ParameterList&>(
+              GLOBAL::Problem::Instance()->StructuralDynamicParams()),
+          GLOBAL::Problem::Instance()->GetDis("structure")));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
   structure_->Setup();
 
@@ -63,8 +64,8 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new ADAPTER::AleBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(),
-          DRT::Problem::Instance()->GetDis("ale")));
+      new ADAPTER::AleBaseAlgorithm(GLOBAL::Problem::Instance()->StructuralDynamicParams(),
+          GLOBAL::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleWearWrapper>(ale->AleField());
   if (ale_ == Teuchos::null) dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
 
@@ -99,7 +100,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void WEAR::Algorithm::CheckInput()
 {
-  //  Teuchos::ParameterList apara = DRT::Problem::Instance()->AleDynamicParams();
+  //  Teuchos::ParameterList apara = GLOBAL::Problem::Instance()->AleDynamicParams();
   //
   //  INPAR::ALE::AleDynamic aletype =
   //      INPUT::IntegralValue<INPAR::ALE::AleDynamic>(apara, "ALE_TYPE");
@@ -117,7 +118,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
   WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
   // create some local variables (later to be stored in strategy)
-  int dim = DRT::Problem::Instance()->NDim();
+  int dim = GLOBAL::Problem::Instance()->NDim();
   if (dim != 2 && dim != 3) dserror("Contact problem must be 2D or 3D");
   Teuchos::ParameterList cparams = cstrategy.Params();
 

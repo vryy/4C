@@ -40,9 +40,9 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
   InitConvCheckStrategy();
 
   const Teuchos::ParameterList& globaltimeparams =
-      DRT::Problem::Instance()->PoroMultiPhaseScatraDynamicParams();
+      GLOBAL::Problem::Instance()->PoroMultiPhaseScatraDynamicParams();
   const Teuchos::ParameterList& myscatraparams =
-      DRT::Problem::Instance()->ScalarTransportDynamicParams();
+      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
   if (INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
       INPAR::SCATRA::velocity_zero)
     dserror("set your velocity field to zero!");
@@ -50,7 +50,7 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
   // construct artery scatra problem
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> art_scatra =
       Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
-          DRT::Problem::Instance()->SolverParams(myscatraparams.get<int>("LINEAR_SOLVER")),
+          GLOBAL::Problem::Instance()->SolverParams(myscatraparams.get<int>("LINEAR_SOLVER")),
           "artery_scatra", false));
 
   // initialize the base algo.
@@ -62,7 +62,7 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
   // created and pointers are set.
   // calls Setup() on the scatra time integrator inside.
   art_scatra->ScaTraField()->Setup();
-  DRT::Problem::Instance()->AddFieldTest(art_scatra->CreateScaTraFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(art_scatra->CreateScaTraFieldTest());
 
   // set the time integrator
   SetArteryScatraTimeIntegrator(art_scatra->ScaTraField());
@@ -80,7 +80,7 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
   }
 
   const bool evaluate_on_lateral_surface = INPUT::IntegralValue<int>(
-      DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+      GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
       "LATERAL_SURFACE_COUPLING");
 
   // set coupling condition name
@@ -88,7 +88,7 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
       [&]()
       {
         if (INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-                DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
+                GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
                     "ARTERY COUPLING"),
                 "ARTERY_COUPLING_METHOD") ==
             INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
@@ -139,7 +139,7 @@ void SCATRA::MeshtyingStrategyArtery::InitializeLinearSolver(
 {
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
   const Teuchos::ParameterList& solverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
   // no need to do the rest for direct solvers

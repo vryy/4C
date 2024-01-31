@@ -135,7 +135,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
       params.get<Teuchos::RCP<std::vector<double>>>("position");
   const double* coordgpref_ = pos_->data();
   double stressFact_ =
-      DRT::Problem::Instance()
+      GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
           .Evaluate(coordgpref_, time_, 0);
 

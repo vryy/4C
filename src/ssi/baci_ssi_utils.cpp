@@ -1031,7 +1031,7 @@ void SSI::UTILS::SSIMeshTying::SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discreti
         DRT::UTILS::AddOwnedNodeGID(*dis, slave_gid, my_coupled_original_slave_gids);
 
       slave_slave_transformation->SetupCoupling(*dis, *dis, inodegidvec_slave,
-          my_coupled_original_slave_gids, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
+          my_coupled_original_slave_gids, GLOBAL::Problem::Instance()->NDim(), true, 1.0e-8);
     }
 
     // combine coupling adapters and multimap extractor to mesh tying object

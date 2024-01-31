@@ -36,7 +36,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
     const int numscal, const std::string& disname)
 {
   // number of space dimensions
-  const int ndim = disname != "scatra_micro" ? DRT::Problem::Instance()->NDim() : 1;
+  const int ndim = disname != "scatra_micro" ? GLOBAL::Problem::Instance()->NDim() : 1;
 
   switch (ele->Shape())
   {

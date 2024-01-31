@@ -20,7 +20,7 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT
+namespace GLOBAL
 {
   class Problem;
 }
@@ -113,7 +113,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap();
 
     //! perform result test
-    void TestResults(DRT::Problem* problem);
+    void TestResults(GLOBAL::Problem* problem);
 
     //! return poro PoroField
     const Teuchos::RCP<POROELAST::Monolithic>& PoroField();

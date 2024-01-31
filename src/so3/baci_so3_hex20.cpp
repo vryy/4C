@@ -102,14 +102,15 @@ DRT::ELEMENTS::So_hex20::So_hex20(int id, int owner)
   invJ_.resize(NUMGPT_SOH20, CORE::LINALG::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
   detJ_.resize(NUMGPT_SOH20, 0.0);
 
-  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  Teuchos::RCP<const Teuchos::ParameterList> params =
+      GLOBAL::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
     pstype_ = PRESTRESS::GetType();
     pstime_ = PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));

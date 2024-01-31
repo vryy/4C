@@ -31,36 +31,36 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void fs3i_dyn()
 {
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("structure")->Comm();
 
   Teuchos::RCP<FS3I::FS3I_Base> fs3i;
 
   // what's the current problem type?
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   switch (probtype)
   {
-    case ProblemType::gas_fsi:
+    case GLOBAL::ProblemType::gas_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFS3I_1WC(comm));
     }
     break;
-    case ProblemType::ac_fsi:
+    case GLOBAL::ProblemType::ac_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::ACFSI(comm));
     }
     break;
-    case ProblemType::thermo_fsi:
+    case GLOBAL::ProblemType::thermo_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFS3I_2WC(comm));
     }
     break;
-    case ProblemType::biofilm_fsi:
+    case GLOBAL::ProblemType::biofilm_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::BiofilmFSI(comm));
     }
     break;
-    case ProblemType::fps3i:
+    case GLOBAL::ProblemType::fps3i:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFPS3I_1WC(comm));
     }

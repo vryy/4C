@@ -37,7 +37,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   // into neumann orthopressure conditions
   std::vector<DRT::Condition*> surfneumcond;
   std::vector<int> tmp;
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
   if (structdis == Teuchos::null) dserror("no structure discretization available");
 
   // First get all Neumann conditions on structure
@@ -70,7 +70,8 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   }
 
   std::vector<DRT::Condition*> nodecond;
-  Teuchos::RCP<DRT::Discretization> redairwaydis = DRT::Problem::Instance()->GetDis("red_airway");
+  Teuchos::RCP<DRT::Discretization> redairwaydis =
+      GLOBAL::Problem::Instance()->GetDis("red_airway");
   if (redairwaydis == Teuchos::null) dserror("no redairway discretization available");
 
   // First get all redairway prescribed conditions on structure
@@ -109,7 +110,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   coupvol_ip_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   coupvol_im_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
 
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
@@ -118,7 +119,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   structure_->Setup();
 
   SetupRedAirways();
-  const Teuchos::ParameterList& rawdyn = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
+  const Teuchos::ParameterList& rawdyn = GLOBAL::Problem::Instance()->ReducedDAirwayDynamicParams();
 
   // Check Time integration parameters
   if (sdyn.get<double>("TIMESTEP") != timeparams.get<double>("TIMESTEP") or
@@ -134,7 +135,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
 
   // Get coupling parameters
   const Teuchos::ParameterList& rawtisdyn =
-      DRT::Problem::Instance()->RedAirwayTissueDynamicParams();
+      GLOBAL::Problem::Instance()->RedAirwayTissueDynamicParams();
   // Get max iterations
   itermax_ = rawtisdyn.get<int>("MAXITER");
 
@@ -458,7 +459,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
 {
   // Access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->GetDis("red_airway");
+  actdis = GLOBAL::Problem::Instance()->GetDis("red_airway");
 
   // Set degrees of freedom in the discretization
   if (!actdis->Filled())
@@ -471,7 +472,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   output->WriteMesh(0, 0.0);
 
   // Set some pointers and variables
-  const Teuchos::ParameterList& rawdyn = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
+  const Teuchos::ParameterList& rawdyn = GLOBAL::Problem::Instance()->ReducedDAirwayDynamicParams();
 
   // Create a solver
   // Get the solver number
@@ -482,14 +483,14 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
         "no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC "
         "to a valid number!");
   std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // Set parameters in list required for all schemes
   Teuchos::ParameterList airwaystimeparams;
 
   // Number of degrees of freedom
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   airwaystimeparams.set<int>("number of degrees of freedom", 1 * ndim);
 
   // Time integration

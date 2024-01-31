@@ -531,7 +531,8 @@ void DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(
   if (numproc == 1)
   {
     // Get output prefix
-    std::string outputprefix = DRT::Problem::Instance()->OutputControlFile()->NewOutputFileName();
+    std::string outputprefix =
+        GLOBAL::Problem::Instance()->OutputControlFile()->NewOutputFileName();
     // Create boundary surface file
     std::ostringstream sf;
     sf << outputprefix << "_boundarysurfaces.log";

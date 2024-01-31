@@ -40,7 +40,7 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discr
       numdim_(numdim),
       SepEnr_(Teuchos::null),
       WssType_(INPUT::IntegralValue<INPAR::FLUID::WSSType>(
-          DRT::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")),
+          GLOBAL::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")),
       SumStresses_(Teuchos::null),
       SumWss_(Teuchos::null),
       SumDtStresses_(0.0),
@@ -435,13 +435,14 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
 
     MLAPI::Init();
 
-    int ML_solver = (DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
+    int ML_solver =
+        (GLOBAL::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
 
     if (ML_solver == -1)
       dserror("If you want to aggregate your stresses you need to specify a WSS_ML_AGR_SOLVER!");
 
     Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-        DRT::Problem::Instance()->SolverParams(ML_solver), discret_->Comm()));
+        GLOBAL::Problem::Instance()->SolverParams(ML_solver), discret_->Comm()));
 
     if (solver == Teuchos::null)
       dserror("The solver WSS_ML_AGR_SOLVER in the FLUID DYNMAICS section is not a valid solver!");
@@ -829,7 +830,7 @@ void FLD::UTILS::WriteLiftDragToFile(
     std::ostringstream slabel;
     slabel << std::setw(3) << std::setfill('0') << liftdragval->first;
     std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName() +
+    const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() +
                               ".liftdrag_label_" + slabel.str() + ".txt";
 
     if (step <= 1)
@@ -1036,7 +1037,7 @@ void FLD::UTILS::WriteDoublesToFile(
     std::ostringstream slabel;
     slabel << std::setw(3) << std::setfill('0') << iter->first;
     std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName() + "." +
+    const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + "." +
                               name + "_ID_" + slabel.str() + ".txt";
 
     if (step <= 1)
@@ -1078,9 +1079,9 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
   // reconstruction of second derivatives for fluid residual
   INPAR::FLUID::GradientReconstructionMethod recomethod =
       INPUT::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(
-          DRT::Problem::Instance()->FluidDynamicParams(), "VELGRAD_PROJ_METHOD");
+          GLOBAL::Problem::Instance()->FluidDynamicParams(), "VELGRAD_PROJ_METHOD");
 
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = GLOBAL::Problem::Instance()->NDim();
   const int numvec = dim * dim;
   Teuchos::ParameterList params;
   Teuchos::RCP<Epetra_MultiVector> projected_velgrad = Teuchos::null;
@@ -1127,7 +1128,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
     case INPAR::FLUID::gradreco_l2:
     {
       const int solvernumber =
-          DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
+          GLOBAL::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
       if (solvernumber < 1) dserror("you have to specify a VELGRAD_PROJ_SOLVER");
       params.set<int>("action", FLD::velgradient_projection);
 

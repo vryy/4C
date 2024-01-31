@@ -40,7 +40,7 @@ void FBI::BeamToFluidMeshtyingParams::Init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_fluid_meshtying_params_list =
-      DRT::Problem::Instance()->getParameterList()->sublist("FLUID BEAM INTERACTION");
+      GLOBAL::Problem::Instance()->getParameterList()->sublist("FLUID BEAM INTERACTION");
 
   // Get parameters form input file.
   // Constraint enforcement.

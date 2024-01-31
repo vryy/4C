@@ -102,7 +102,7 @@ namespace
         int curvenum = -1;
         if (curve) curvenum = (*curve)[0];
         if (curvenum >= 0)
-          curvefac = DRT::Problem::Instance()
+          curvefac = GLOBAL::Problem::Instance()
                          ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
                          .Evaluate(time);
 
@@ -119,7 +119,7 @@ namespace
         double functionfac = 0.0;
         if (functnum > 0)
         {
-          functionfac = DRT::Problem::Instance()
+          functionfac = GLOBAL::Problem::Instance()
                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                             .Evaluate(node->X().data(), time, 0);
         }
@@ -128,7 +128,7 @@ namespace
         double curve2fac = 1.0;
         if (curve) curve2num = (*curve)[1];
         if (curve2num >= 0)
-          curve2fac = DRT::Problem::Instance()
+          curve2fac = GLOBAL::Problem::Instance()
                           ->FunctionById<CORE::UTILS::FunctionOfTime>(curve2num)
                           .Evaluate(time);
 
@@ -770,7 +770,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
                               ->GetCondition("RedAirwayScatraHemoglobinCond")
                               ->GetDouble("INITIAL_CONCENTRATION");
 
-          int id = DRT::Problem::Instance()->Materials()->FirstIdByType(
+          int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
               INPAR::MAT::m_0d_o2_hemoglobin_saturation);
           // check if O2 properties material exists
           if (id == -1)
@@ -779,7 +779,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
             exit(1);
           }
           const MAT::PAR::Parameter* smat =
-              DRT::Problem::Instance()->Materials()->ParameterById(id);
+              GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
           const MAT::PAR::Hemoglobin_0d_O2_saturation* actmat =
               static_cast<const MAT::PAR::Hemoglobin_0d_O2_saturation*>(smat);
 
@@ -806,7 +806,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
           double intSat = ele->Nodes()[sci]
                               ->GetCondition("RedAirwayScatraAirCond")
                               ->GetDouble("INITIAL_CONCENTRATION");
-          int id = DRT::Problem::Instance()->Materials()->FirstIdByType(
+          int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
               INPAR::MAT::m_0d_o2_air_saturation);
           // check if O2 properties material exists
           if (id == -1)
@@ -815,7 +815,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
             exit(1);
           }
           const MAT::PAR::Parameter* smat =
-              DRT::Problem::Instance()->Materials()->ParameterById(id);
+              GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
           const MAT::PAR::Air_0d_O2_saturation* actmat =
               static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
 
@@ -1031,7 +1031,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             const int funct_id_switch = switchCondition->GetInt("FUNCT_ID_PRESSURE_ACTIVE");
 
             const double pressure_active =
-                DRT::Problem::Instance()
+                GLOBAL::Problem::Instance()
                     ->FunctionById<CORE::UTILS::FunctionOfTime>(funct_id_switch - 1)
                     .Evaluate(time);
 
@@ -1057,7 +1057,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
               exit(1);
             }
 
-            BCin = DRT::Problem::Instance()
+            BCin = GLOBAL::Problem::Instance()
                        ->FunctionById<CORE::UTILS::FunctionOfTime>(funct_id_current - 1)
                        .Evaluate(time);
           }
@@ -1076,7 +1076,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
               int curvenum = -1;
               if (curve)
                 if ((curvenum = (*curve)[id]) >= 0)
-                  return DRT::Problem::Instance()
+                  return GLOBAL::Problem::Instance()
                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
                       .Evaluate(time);
                 else
@@ -1093,7 +1093,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                   const std::vector<int>* functions = condition->Get<std::vector<int>>("funct");
                   if (functions)
                     if ((functnum = (*functions)[0]) > 0)
-                      return DRT::Problem::Instance()
+                      return GLOBAL::Problem::Instance()
                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                           .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
                     else
@@ -1213,7 +1213,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           int curvenum = -1;
           if (curve) curvenum = (*curve)[phase_number];
           if (curvenum >= 0)
-            curvefac = DRT::Problem::Instance()
+            curvefac = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
                            .Evaluate(time);
 
@@ -1228,7 +1228,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             {
               double Vnp = BCin;
               double Vn =
-                  (*vals)[phase_number] * DRT::Problem::Instance()
+                  (*vals)[phase_number] * GLOBAL::Problem::Instance()
                                               ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
                                               .Evaluate(time - dt);
               BCin = (Vnp - Vn) / dt;
@@ -1830,9 +1830,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       if (curvenum >= 0)
-        curvefac =
-            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
-                time);
+        curvefac = GLOBAL::Problem::Instance()
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+                       .Evaluate(time);
 
       scnp = (*vals)[0] * curvefac;
 
@@ -1846,7 +1846,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
       double functionfac = 0.0;
       if (functnum > 0)
       {
-        functionfac = DRT::Problem::Instance()
+        functionfac = GLOBAL::Problem::Instance()
                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                           .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
       }
@@ -1891,7 +1891,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
         // Get O2 properties in air
         // -----------------------------------------------------------------
 
-        int id = DRT::Problem::Instance()->Materials()->FirstIdByType(
+        int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
             INPAR::MAT::m_0d_o2_air_saturation);
         // check if O2 properties material exists
         if (id == -1)
@@ -1899,7 +1899,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
           dserror("A material defining O2 properties in air could not be found");
           exit(1);
         }
-        const MAT::PAR::Parameter* smat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+        const MAT::PAR::Parameter* smat =
+            GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
         const MAT::PAR::Air_0d_O2_saturation* actmat =
             static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
 
@@ -1925,7 +1926,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
         // -----------------------------------------------------------------
         // Get O2 properties in blood
         // -----------------------------------------------------------------
-        int id = DRT::Problem::Instance()->Materials()->FirstIdByType(
+        int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
             INPAR::MAT::m_0d_o2_hemoglobin_saturation);
         // check if O2 properties material exists
         if (id == -1)
@@ -1933,7 +1934,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
           dserror("A material defining O2 properties in blood could not be found");
           exit(1);
         }
-        const MAT::PAR::Parameter* smat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+        const MAT::PAR::Parameter* smat =
+            GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
         const MAT::PAR::Hemoglobin_0d_O2_saturation* actmat =
             static_cast<const MAT::PAR::Hemoglobin_0d_O2_saturation*>(smat);
 
@@ -2291,14 +2293,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
     // -----------------------------------------------------------------
 
     int id =
-        DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
+        GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
     // check if O2 properties material exists
     if (id == -1)
     {
       dserror("A material defining O2 properties in air could not be found");
       exit(1);
     }
-    const MAT::PAR::Parameter* smat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::Air_0d_O2_saturation* actmat =
         static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
 
@@ -2329,7 +2331,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
   // -------------------------------------------------------------------
   else if (fluidType == "blood")
   {
-    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(
+    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
         INPAR::MAT::m_0d_o2_hemoglobin_saturation);
     // check if O2 properties material exists
     if (id == -1)
@@ -2337,7 +2339,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
       dserror("A material defining O2 properties in blood could not be found");
       exit(1);
     }
-    const MAT::PAR::Parameter* smat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::Hemoglobin_0d_O2_saturation* actmat =
         static_cast<const MAT::PAR::Hemoglobin_0d_O2_saturation*>(smat);
 

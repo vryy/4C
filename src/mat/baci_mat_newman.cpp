@@ -105,12 +105,12 @@ void MAT::Newman::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Newman*>(mat);
       else
@@ -135,7 +135,7 @@ double MAT::Newman::ComputeTransferenceNumber(const double cint) const
   else if (TransNrCurve() == 0)
     trans = EvalPreDefinedFunct(-1, cint, TransNrParams());
   else
-    trans = DRT::Problem::Instance()
+    trans = GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfTime>(TransNrCurve() - 1)
                 .Evaluate(cint);
 
@@ -153,7 +153,7 @@ double MAT::Newman::ComputeFirstDerivTrans(const double cint) const
   else if (TransNrCurve() == 0)
     firstderiv = EvalFirstDerivPreDefinedFunct(-1, cint, TransNrParams());
   else
-    firstderiv = DRT::Problem::Instance()
+    firstderiv = GLOBAL::Problem::Instance()
                      ->FunctionById<CORE::UTILS::FunctionOfTime>(TransNrCurve() - 1)
                      .EvaluateDerivative(cint);
 
@@ -172,7 +172,7 @@ double MAT::Newman::ComputeThermFac(const double cint) const
     // thermodynamic factor has to be one if not defined
     therm = 1.0;
   else
-    therm = DRT::Problem::Instance()
+    therm = GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
                 .Evaluate(cint);
 
@@ -192,7 +192,7 @@ double MAT::Newman::ComputeFirstDerivThermFac(const double cint) const
     // -> first derivative = 0.0
     firstderiv = 0.0;
   else
-    firstderiv = DRT::Problem::Instance()
+    firstderiv = GLOBAL::Problem::Instance()
                      ->FunctionById<CORE::UTILS::FunctionOfTime>(ThermFacCurve() - 1)
                      .EvaluateDerivative(cint);
 

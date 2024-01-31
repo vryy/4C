@@ -854,7 +854,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       const double* jx = pele->Nodes()[jnode]->X().data();
       for (int idim = 0; idim < nsd_; ++idim)
         peconvvelaf_(idim, jnode) =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                 .Evaluate(jx, time, idim);
     }
@@ -865,7 +865,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       const double* jx = nele->Nodes()[jnode]->X().data();
       for (int idim = 0; idim < nsd_; ++idim)
         neconvvelaf_(idim, jnode) =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                 .Evaluate(jx, time, idim);
     }

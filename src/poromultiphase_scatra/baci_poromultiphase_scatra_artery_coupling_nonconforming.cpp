@@ -46,9 +46,10 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
       porofluidprob_(false),
       has_varying_diam_(false),
       delete_free_hanging_eles_(INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+          GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
+              "ARTERY COUPLING"),
           "DELETE_FREE_HANGING_ELES")),
-      delete_free_hanging_eles_threshold_(DRT::Problem::Instance()
+      delete_free_hanging_eles_threshold_(GLOBAL::Problem::Instance()
                                               ->PoroFluidMultiPhaseDynamicParams()
                                               .sublist("ARTERY COUPLING")
                                               .get<double>("DELETE_SMALL_FREE_HANGING_COMPS")),
@@ -66,7 +67,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
 {
   // we do not have a moving mesh
-  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::porofluidmultiphase)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::porofluidmultiphase)
   {
     evaluate_in_ref_config_ = true;
     porofluidprob_ = true;
@@ -121,7 +122,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 {
   // get the coupling method
   auto arterycoupl = INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-      DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+      GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
       "ARTERY_COUPLING_METHOD");
 
   // create the pairs
@@ -232,7 +233,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
     CreateCouplingPairsLineSurfBased()
 {
   const Teuchos::ParameterList& fluidcouplingparams =
-      DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING");
+      GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING");
   // loop over pairs found by search
   std::map<int, std::set<int>>::const_iterator nearbyeleiter;
   int numactive_pairs = 0;
@@ -295,7 +296,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCouplingPairsNTP()
 {
   const Teuchos::ParameterList& fluidcouplingparams =
-      DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING");
+      GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING");
 
   int numactive_pairs = std::accumulate(nearbyelepairs_.begin(), nearbyelepairs_.end(), 0,
       [](int a, auto b) { return a + (static_cast<int>(b.second.size())); });
@@ -664,7 +665,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
       {
         case CORE::FE::CellType::quad4:
         {
-          switch (DRT::Problem::Instance()->NDim())
+          switch (GLOBAL::Problem::Instance()->NDim())
           {
             case 1:
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
@@ -676,12 +677,12 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
                   CORE::FE::CellType::line2, CORE::FE::CellType::quad4, 3>());
             default:
-              dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+              dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
           }
         }
         case CORE::FE::CellType::hex8:
         {
-          switch (DRT::Problem::Instance()->NDim())
+          switch (GLOBAL::Problem::Instance()->NDim())
           {
             case 1:
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
@@ -693,12 +694,12 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
                   CORE::FE::CellType::line2, CORE::FE::CellType::hex8, 3>());
             default:
-              dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+              dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
           }
         }
         case CORE::FE::CellType::tet4:
         {
-          switch (DRT::Problem::Instance()->NDim())
+          switch (GLOBAL::Problem::Instance()->NDim())
           {
             case 1:
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
@@ -710,12 +711,12 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
                   CORE::FE::CellType::line2, CORE::FE::CellType::tet4, 3>());
             default:
-              dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+              dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
           }
         }
         case CORE::FE::CellType::tet10:
         {
-          switch (DRT::Problem::Instance()->NDim())
+          switch (GLOBAL::Problem::Instance()->NDim())
           {
             case 1:
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
@@ -727,7 +728,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
                   CORE::FE::CellType::line2, CORE::FE::CellType::tet10, 3>());
             default:
-              dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+              dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
           }
         }
         default:

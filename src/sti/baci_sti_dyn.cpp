@@ -30,7 +30,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
 )
 {
   // access global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // access communicator
   const Epetra_Comm& comm = problem->GetDis("scatra")->Comm();
@@ -128,9 +128,9 @@ void sti_dyn(const int& restartstep  //! time step for restart
             "DYNAMIC/MONOLITHIC'!");
 
       sti_algorithm = Teuchos::rcp(new STI::Monolithic(comm, stidyn, scatradyn,
-          DRT::Problem::Instance()->SolverParams(solver_id),
-          DRT::Problem::Instance()->SolverParams(solver_id_scatra),
-          DRT::Problem::Instance()->SolverParams(solver_id_thermo)));
+          GLOBAL::Problem::Instance()->SolverParams(solver_id),
+          GLOBAL::Problem::Instance()->SolverParams(solver_id_scatra),
+          GLOBAL::Problem::Instance()->SolverParams(solver_id_thermo)));
 
       break;
     }
@@ -145,8 +145,8 @@ void sti_dyn(const int& restartstep  //! time step for restart
     case INPAR::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       sti_algorithm = Teuchos::rcp(new STI::Partitioned(comm, stidyn, scatradyn,
-          DRT::Problem::Instance()->SolverParams(solver_id_scatra),
-          DRT::Problem::Instance()->SolverParams(solver_id_thermo)));
+          GLOBAL::Problem::Instance()->SolverParams(solver_id_scatra),
+          GLOBAL::Problem::Instance()->SolverParams(solver_id_thermo)));
 
       break;
     }

@@ -36,7 +36,8 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
   // construct unique filename for gmsh output
   // basic information
   std::ostringstream filename;
-  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+  const std::string filebase =
+      GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filename << "o/gmsh_output/" << filebase << "_co_id";
   if (id_ < 10)
     filename << 0;
@@ -699,7 +700,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
   // create files for visualization of slave dops for every layer
   std::ostringstream filenametn;
   const std::string filebasetn =
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+      GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filenametn << "o/gmsh_output/" << filebasetn << "_";
 
   if (step < 10)
@@ -870,7 +871,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
 #ifdef MORTARGMSHCTN
   std::ostringstream filenamectn;
   const std::string filebasectn =
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+      GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filenamectn << "o/gmsh_output/" << filebasectn << "_";
   if (step < 10)
     filenamectn << 0 << 0 << 0 << 0;

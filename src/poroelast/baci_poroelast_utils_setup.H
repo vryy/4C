@@ -31,10 +31,10 @@ namespace POROELAST
     template <class PoroCloneStrategy>
     void SetupPoro(bool setmaterialpointers = true)
     {
-      DRT::Problem* problem = DRT::Problem::Instance();
+      GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
       // access the problem-specific parameter list
-      const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+      const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
       const bool matchinggrid = INPUT::IntegralValue<bool>(porodyn, "MATCHINGGRID");
 
       // access the structure discretization, make sure it is filled
@@ -127,9 +127,9 @@ namespace POROELAST
         fluiddis->FillComplete();
 
         // build auxiliary dofsets, i.e. pseudo dofs on each discretization
-        const int ndofpernode_fluid = DRT::Problem::Instance()->NDim() + 1;
+        const int ndofpernode_fluid = GLOBAL::Problem::Instance()->NDim() + 1;
         const int ndofperelement_fluid = 0;
-        const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
+        const int ndofpernode_struct = GLOBAL::Problem::Instance()->NDim();
         const int ndofperelement_struct = 0;
 
         Teuchos::RCP<DRT::DofSetInterface> dofsetaux;

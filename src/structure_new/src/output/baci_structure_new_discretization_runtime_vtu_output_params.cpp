@@ -64,7 +64,7 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
   {
     // If stress / strain data should be output, check that the relevant parameters in the --IO
     // section are set.
-    const Teuchos::ParameterList& io_parameter_list = DRT::Problem::Instance()->IOParams();
+    const Teuchos::ParameterList& io_parameter_list = GLOBAL::Problem::Instance()->IOParams();
     INPAR::STR::StressType io_stress =
         INPUT::IntegralValue<INPAR::STR::StressType>(io_parameter_list, "STRUCT_STRESS");
     INPAR::STR::StrainType io_strain =

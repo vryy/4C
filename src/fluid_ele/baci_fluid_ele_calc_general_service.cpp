@@ -903,15 +903,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
       if (nsd_ == 2)
       {
         const double u_exact_x =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .Evaluate(position, t, 0);
         const double u_exact_y =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .Evaluate(position, t, 1);
         const double p_exact =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .Evaluate(position, t, 2);
 
@@ -920,15 +920,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
         p = p_exact;
 
         std::vector<double> uder_exact_x =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .EvaluateSpatialDerivative(position, t, 0);
         std::vector<double> uder_exact_y =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .EvaluateSpatialDerivative(position, t, 1);
         // std::vector<double> pder_exact   =
-        // DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no-1).EvaluateSpatialDerivative(2,position,t,1);
+        // GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no-1).EvaluateSpatialDerivative(2,position,t,1);
 
         if (uder_exact_x.size())
         {
@@ -945,19 +945,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
       else if (nsd_ == 3)
       {
         const double u_exact_x =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .Evaluate(position, t, 0);
         const double u_exact_y =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .Evaluate(position, t, 1);
         const double u_exact_z =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .Evaluate(position, t, 2);
         const double p_exact =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .Evaluate(position, t, 3);
 
@@ -967,15 +967,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
         p = p_exact;
 
         std::vector<double> uder_exact_x =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .EvaluateSpatialDerivative(position, t, 0);
         std::vector<double> uder_exact_y =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .EvaluateSpatialDerivative(position, t, 1);
         std::vector<double> uder_exact_z =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .EvaluateSpatialDerivative(position, t, 2);
 
@@ -2923,7 +2923,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
     dserror("no support for discretization guaranteed. check for valid material.");
 
   // determine whether fluid mesh is deformable or not
-  static int isALE = (DRT::Problem::Instance()->ImmersedMethodParams().get<std::string>(
+  static int isALE = (GLOBAL::Problem::Instance()->ImmersedMethodParams().get<std::string>(
                           "DEFORM_BACKGROUND_MESH") == "yes");
 
   // resize vector to the size of the nsd_ times nsd_ independent entries of the velocity gradient
@@ -3096,7 +3096,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
   DRT::ELEMENTS::FluidImmersedBase* immersedele =
       dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
 
-  DRT::Problem* globalproblem = DRT::Problem::Instance();
+  GLOBAL::Problem* globalproblem = GLOBAL::Problem::Instance();
 
   // check if fluid interacton is switched ON
   // if NOT : just mark isimmersed and isboundaryimmersed elements
@@ -3413,7 +3413,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
   if (immersedele->IsBoundaryImmersed())
   {
     // get global problem
-    DRT::Problem* globalproblem = DRT::Problem::Instance();
+    GLOBAL::Problem* globalproblem = GLOBAL::Problem::Instance();
 
     // get factor for search radius
     static double searchradiusfac =

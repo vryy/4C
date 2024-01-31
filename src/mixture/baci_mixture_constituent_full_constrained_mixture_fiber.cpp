@@ -350,7 +350,7 @@ double MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateInitialD
     return params_->deposition_stretch_;
   }
 
-  return DRT::Problem::Instance()
+  return GLOBAL::Problem::Instance()
       ->FunctionById<CORE::UTILS::FunctionOfTime>(
           params_->initial_deposition_stretch_timefunc_num_ - 1)
       .Evaluate(time);

@@ -58,7 +58,7 @@ CONTACT::LagrangeStrategyPoro::LagrangeStrategyPoro(
 void CONTACT::LagrangeStrategyPoro::DoReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
-  Teuchos::RCP<DRT::Discretization> discret = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> discret = GLOBAL::Problem::Instance()->GetDis("structure");
   if (discret == Teuchos::null) dserror("didn't get my discretization");
 
   Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*discret->DofColMap(), true));

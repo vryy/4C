@@ -263,9 +263,9 @@ void CONSTRAINTS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
       if (curvenum >= 0)
-        curvefac =
-            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
-                time);
+        curvefac = GLOBAL::Problem::Instance()
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+                       .Evaluate(time);
 
       // global and local ID of this bc in the redundant vectors
       const int offsetID = params.get<int>("OffsetID");

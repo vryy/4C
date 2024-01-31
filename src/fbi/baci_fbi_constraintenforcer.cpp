@@ -69,7 +69,7 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
       *(fluid_->Discretization()), 3, *velocity_pressure_splitter_);
 
   bool meshtying =
-      (DRT::Problem::Instance()->FluidDynamicParams().get<std::string>("MESHTYING") != "no");
+      (GLOBAL::Problem::Instance()->FluidDynamicParams().get<std::string>("MESHTYING") != "no");
 
   Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix(Teuchos::null);
 
@@ -148,7 +148,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid(int
   // todo only access the parameter list once
 
   // Check if we want to couple the fluid
-  const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
+  const Teuchos::ParameterList& fbi = GLOBAL::Problem::Instance()->FBIParams();
   if (Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") !=
           INPAR::FBI::BeamToFluidCoupling::solid &&
       fbi.get<int>("STARTSTEP") < step)

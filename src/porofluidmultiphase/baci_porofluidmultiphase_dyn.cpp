@@ -35,17 +35,17 @@ void porofluidmultiphase_dyn(int restart)
   const std::string artery_disname = "artery";
 
   // access the communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis(fluid_disname)->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis(fluid_disname)->Comm();
 
   // access the problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // print problem type and logo
   if (comm.MyPID() == 0)
   {
     POROFLUIDMULTIPHASE::PrintLogo();
     std::cout << "###################################################" << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << GLOBAL::Problem::Instance()->ProblemName() << std::endl;
     std::cout << "###################################################" << std::endl;
   }
 
@@ -61,16 +61,16 @@ void porofluidmultiphase_dyn(int restart)
   // access the discretization(s)
   // -------------------------------------------------------------------
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->GetDis(fluid_disname);
+  actdis = GLOBAL::Problem::Instance()->GetDis(fluid_disname);
 
   // possible interaction partners as seen from the artery elements
   // [artelegid; contelegid_1, ...contelegid_n]
   std::map<int, std::set<int>> nearbyelepairs;
 
-  if (DRT::Problem::Instance()->DoesExistDis(artery_disname))
+  if (GLOBAL::Problem::Instance()->DoesExistDis(artery_disname))
   {
     Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;
-    arterydis = DRT::Problem::Instance()->GetDis(artery_disname);
+    arterydis = GLOBAL::Problem::Instance()->GetDis(artery_disname);
     // get the coupling method
     INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
         INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(

@@ -227,7 +227,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicStructureSplit::SetupSystem()
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
       INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
@@ -240,7 +240,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // we might have a free surface
   if (FluidField()->Interface()->FSCondRelevant())
   {
-    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
 
     fscoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
         FluidField()->Interface()->FSCondMap(), *AleField()->Discretization(),
@@ -279,7 +279,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // requires coupsf_ in order to map the nodal fluid forces on the structure nodes we have to do it
   // e.g. in here. But:
   // TODO: Move this to ReadRestart() when possible
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     const bool restartfrompartfsi =
@@ -810,7 +810,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseM
 void FSI::MonolithicStructureSplit::ScaleSystem(
     CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -862,7 +862,7 @@ void FSI::MonolithicStructureSplit::ScaleSystem(
 void FSI::MonolithicStructureSplit::UnscaleSolution(
     CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 

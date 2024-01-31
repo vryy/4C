@@ -131,7 +131,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictImmerse
       break;
     }
     default:
-      dserror("unknown interface displacement predictor '%s'", DRT::Problem::Instance()
+      dserror("unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
                                                                    ->FSIDynamicParams()
                                                                    .sublist("PARTITIONED SOLVER")
                                                                    .get<std::string>("PREDICTOR")
@@ -215,7 +215,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictFullInt
       break;
     }
     default:
-      dserror("unknown interface displacement predictor '%s'", DRT::Problem::Instance()
+      dserror("unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
                                                                    ->FSIDynamicParams()
                                                                    .sublist("PARTITIONED SOLVER")
                                                                    .get<std::string>("PREDICTOR")

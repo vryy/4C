@@ -637,13 +637,13 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
         {  //  since, for the pure box filter application,
            // get fluid viscosity from material definition                                //  we do
            // not want to multiply the reynolds stress by density
-          int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+          int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
           if (id == -1)
             dserror("Could not find Newtonian fluid material");
           else
           {
             const MAT::PAR::Parameter* mat =
-                DRT::Problem::Instance()->Materials()->ParameterById(id);
+                GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
             const MAT::PAR::NewtonianFluid* actmat =
                 static_cast<const MAT::PAR::NewtonianFluid*>(mat);
             // we need the kinematic viscosity here

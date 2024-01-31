@@ -241,8 +241,9 @@ void STR::TimInt::Setup()
   mor_ = Teuchos::rcp(new UTILS::MOR(discret_));
 
   // initialize 0D cardiovascular manager
-  cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(discret_, (*dis_)(0),
-      sdynparams_, DRT::Problem::Instance()->Cardiovascular0DStructuralParams(), *solver_, mor_));
+  cardvasc0dman_ =
+      Teuchos::rcp(new UTILS::Cardiovascular0DManager(discret_, (*dis_)(0), sdynparams_,
+          GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams(), *solver_, mor_));
 
   // initialize spring dashpot manager
   springman_ = Teuchos::rcp(new CONSTRAINTS::SpringDashpotManager(discret_));
@@ -345,8 +346,8 @@ void STR::TimInt::CreateAllSolutionVectors()
   // displacements D_{n+1} at t_{n+1}
   disn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
-  if ((DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale and
-          (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0))
+  if ((GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::struct_ale and
+          (GLOBAL::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0))
   {
     // material displacements Dm_{n+1} at t_{n+1}
     dismatn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
@@ -420,7 +421,7 @@ void STR::TimInt::SetInitialFields()
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
   std::vector<int> porositylocaldofs;
-  porositylocaldofs.push_back(DRT::Problem::Instance()->NDim());
+  porositylocaldofs.push_back(GLOBAL::Problem::Instance()->NDim());
   discret_->EvaluateInitialField(porosityfield, (*dis_)(0), porositylocaldofs);
 }
 
@@ -429,7 +430,7 @@ void STR::TimInt::SetInitialFields()
 void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
 {
   // some parameters
-  const Teuchos::ParameterList& beamcontact = DRT::Problem::Instance()->BeamContactParams();
+  const Teuchos::ParameterList& beamcontact = GLOBAL::Problem::Instance()->BeamContactParams();
   INPAR::BEAMCONTACT::Strategy strategy =
       INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
@@ -465,8 +466,8 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   TEUCHOS_FUNC_TIME_MONITOR("STR::TimInt::PrepareContactMeshtying");
 
   // some parameters
-  const Teuchos::ParameterList& smortar = DRT::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& smortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& scontact = GLOBAL::Problem::Instance()->ContactDynamicParams();
   INPAR::MORTAR::ShapeFcn shapefcn =
       INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar, "LM_SHAPEFCN");
   INPAR::CONTACT::SolvingStrategy soltype =
@@ -517,9 +518,9 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     dserror("Constraints and contact cannot be treated at the same time yet");
 
   // print messages for multifield problems (e.g FSI)
-  const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
-  const std::string probname = DRT::Problem::Instance()->ProblemName();
-  if (probtype != ProblemType::structure && !myrank_)
+  const GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  const std::string probname = GLOBAL::Problem::Instance()->ProblemName();
+  if (probtype != GLOBAL::ProblemType::structure && !myrank_)
   {
     // warnings
 #ifdef CONTACTPSEUDO2D
@@ -540,7 +541,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // perform mesh initialization if required by input parameter MESH_RELOCATION
     auto mesh_relocation_parameter = INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-        DRT::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
+        GLOBAL::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
 
     if (mesh_relocation_parameter == INPAR::MORTAR::relocation_initial)
     {
@@ -574,7 +575,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
   // visualization of initial configuration
 #ifdef MORTARGMSH3
-  bool gmsh = INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
+  bool gmsh = INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
   if (gmsh) cmtbridge_->VisualizeGmsh(0);
 #endif  // #ifdef MORTARGMSH3
 
@@ -920,7 +921,7 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xsla
   CORE::LINALG::Export(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
-  const int numdim = DRT::Problem::Instance()->NDim();
+  const int numdim = GLOBAL::Problem::Instance()->NDim();
   const Epetra_Vector& gvector = *Xslavemodcol;
 
   // loop over all slave nodes (for all procs)
@@ -1239,7 +1240,7 @@ void STR::TimInt::UpdateStepContactMeshtying()
   {
     cmtbridge_->Update(disn_);
 #ifdef MORTARGMSH1
-    bool gmsh = INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
+    bool gmsh = INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
     if (gmsh) cmtbridge_->VisualizeGmsh(stepn_);
 #endif  // #ifdef MORTARGMSH1
   }
@@ -1282,7 +1283,7 @@ void STR::TimInt::UpdateStepContactVUM()
 
       // parameter list
       const Teuchos::ParameterList& sdynparams =
-          DRT::Problem::Instance()->StructuralDynamicParams();
+          GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
       // time integration parameter
       double alpham = 0.0;
@@ -1864,7 +1865,7 @@ void STR::TimInt::ReadRestartBeamContact()
 /* Read and set restart values for multi-scale */
 void STR::TimInt::ReadRestartMultiScale()
 {
-  Teuchos::RCP<MAT::PAR::Bundle> materials = DRT::Problem::Instance()->Materials();
+  Teuchos::RCP<MAT::PAR::Bundle> materials = GLOBAL::Problem::Instance()->Materials();
   for (std::map<int, Teuchos::RCP<MAT::PAR::Material>>::const_iterator i =
            materials->Map()->begin();
        i != materials->Map()->end(); ++i)
@@ -1963,7 +1964,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
     ResetStep();
     // restart has already been written or simulation has just started
     if ((writerestartevery_ and (step_ % writerestartevery_ == 0)) or
-        step_ == DRT::Problem::Instance()->Restart())
+        step_ == GLOBAL::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
     if (writeresultsevery_ and (step_ % writeresultsevery_ == 0))
@@ -1982,7 +1983,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
   // write restart step
   if ((writerestartevery_ and (step_ % writerestartevery_ == 0) and step_ != 0) or
       forced_writerestart or
-      DRT::Problem::Instance()->RestartManager()->Restart(step_, discret_->Comm()))
+      GLOBAL::Problem::Instance()->RestartManager()->Restart(step_, discret_->Comm()))
   {
     OutputRestart(datawritten);
     lastwrittenresultsstep_ = step_;
@@ -2677,7 +2678,7 @@ void STR::TimInt::OutputContact()
       {
         // path and filename
         std::ostringstream filename;
-        const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string filebase = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
         filename << filebase << ".energymomentum";
 
         // open file
@@ -2749,7 +2750,7 @@ void STR::TimInt::OutputContact()
 void STR::TimInt::OutputErrorNorms()
 {
   // get out of here if no output wanted
-  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& listcmt = GLOBAL::Problem::Instance()->ContactDynamicParams();
   INPAR::CONTACT::ErrorNorms entype =
       INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
   if (entype == INPAR::CONTACT::errornorms_none) return;
@@ -2812,7 +2813,7 @@ void STR::TimInt::OutputErrorNorms()
 /* output volume and mass */
 void STR::TimInt::OutputVolumeMass()
 {
-  const Teuchos::ParameterList& listwear = DRT::Problem::Instance()->WearParams();
+  const Teuchos::ParameterList& listwear = GLOBAL::Problem::Instance()->WearParams();
   bool massvol = INPUT::IntegralValue<int>(listwear, "VOLMASS_OUTPUT");
   if (!massvol) return;
 
@@ -2978,7 +2979,7 @@ void STR::TimInt::ApplyForceExternal(const double time, const Teuchos::RCP<Epetr
 /* check whether we have nonlinear inertia forces or not */
 int STR::TimInt::HaveNonlinearMass() const
 {
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   int masslin = INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN");
 
   return masslin;
@@ -3310,7 +3311,8 @@ void STR::TimInt::AttachEnergyFile()
 {
   if (energyfile_.is_null())
   {
-    std::string energyname = DRT::Problem::Instance()->OutputControlFile()->FileName() + ".energy";
+    std::string energyname =
+        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".energy";
     energyfile_ = Teuchos::rcp(new std::ofstream(energyname.c_str()));
     (*energyfile_) << "# timestep time total_energy"
                    << " kinetic_energy internal_energy external_energy" << std::endl;

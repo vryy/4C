@@ -212,7 +212,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           // Get factor of first CURVE
           if ((*curve)[0] >= 0)
           {
-            curvefac = DRT::Problem::Instance()
+            curvefac = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                            .Evaluate(time);
             BCin = (*vals)[0] * curvefac;
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           double functionfac = 0.0;
           if (functnum > 0)
           {
-            functionfac = DRT::Problem::Instance()
+            functionfac = GLOBAL::Problem::Instance()
                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
           }
@@ -242,7 +242,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
-            curve2fac = DRT::Problem::Instance()
+            curve2fac = GLOBAL::Problem::Instance()
                             ->FunctionById<CORE::UTILS::FunctionOfTime>(curve2num)
                             .Evaluate(time);
 
@@ -280,7 +280,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
               {
-                curvefac = DRT::Problem::Instance()
+                curvefac = GLOBAL::Problem::Instance()
                                ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                                .Evaluate(time);
               }

@@ -765,7 +765,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
       // function evaluation
       const int functnum = (funct) ? (*funct)[dim] : -1;
       const double functfac =
-          (functnum > 0) ? DRT::Problem::Instance()
+          (functnum > 0) ? GLOBAL::Problem::Instance()
                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                .Evaluate(xrefegp.A(), time, dim)
                          : 1.0;
@@ -3286,7 +3286,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetNurbsEleInfo(DRT::Discretization* dis
 {
   if (!IsNurbsElement()) return;
 
-  if (dis == nullptr) dis = DRT::Problem::Instance()->GetDis("structure").get();
+  if (dis == nullptr) dis = GLOBAL::Problem::Instance()->GetDis("structure").get();
 
   dynamic_cast<DRT::NURBS::NurbsDiscretization*>(dis)->GetKnotVector()->GetEleKnots(
       SetKnots(), Id());

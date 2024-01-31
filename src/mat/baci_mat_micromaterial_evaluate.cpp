@@ -87,14 +87,14 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   int microdisnum = MicroDisNum();
   double V0 = InitVol();
-  DRT::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
+  GLOBAL::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   // avoid writing output also for ghosted elements
   const bool eleowner =
-      DRT::Problem::Instance(0)->GetDis("structure")->ElementRowMap()->MyGID(eleGID);
+      GLOBAL::Problem::Instance(0)->GetDis("structure")->ElementRowMap()->MyGID(eleGID);
 
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
 
   // tell the supporting procs that the micro material will be evaluated
   int task[2] = {0, eleGID};
@@ -152,7 +152,7 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   actmicromatgp->PerformMicroSimulation(defgrd_enh, stress, cmat);
 
   // reactivate macroscale material
-  DRT::Problem::Instance()->Materials()->ResetReadFromProblem();
+  GLOBAL::Problem::Instance()->Materials()->ResetReadFromProblem();
 
   return;
 }
@@ -165,7 +165,7 @@ void MAT::MicroMaterial::Evaluate(CORE::LINALG::Matrix<3, 3>* defgrd,
     CORE::LINALG::Matrix<6, 6>* cmat, CORE::LINALG::Matrix<6, 1>* stress, const int gp,
     const int ele_ID, const int microdisnum, double V0, bool eleowner)
 {
-  DRT::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
+  GLOBAL::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   if (matgp_.find(gp) == matgp_.end())
   {
@@ -179,7 +179,7 @@ void MAT::MicroMaterial::Evaluate(CORE::LINALG::Matrix<3, 3>* defgrd,
   actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat);
 
   // reactivate macroscale material
-  DRT::Problem::Instance()->Materials()->ResetReadFromProblem();
+  GLOBAL::Problem::Instance()->Materials()->ResetReadFromProblem();
 
   return;
 }
@@ -189,7 +189,7 @@ void MAT::MicroMaterial::Evaluate(CORE::LINALG::Matrix<3, 3>* defgrd,
 void MAT::MicroMaterial::Update()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be evaluated for the element with id
@@ -212,7 +212,7 @@ void MAT::MicroMaterial::Update()
 void MAT::MicroMaterial::PrepareOutput()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be prepared for output
@@ -234,7 +234,7 @@ void MAT::MicroMaterial::PrepareOutput()
 void MAT::MicroMaterial::Output()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be output
@@ -259,7 +259,7 @@ void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool e
   double V0 = InitVol();
 
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
 
   // tell the supporting procs that the micro material will restart
   int task[2] = {4, eleID};

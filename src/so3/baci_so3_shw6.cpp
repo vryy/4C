@@ -92,11 +92,12 @@ DRT::ELEMENTS::So_shw6::So_shw6(int id, int owner) : DRT::ELEMENTS::So_weg6(id, 
   optimal_parameterspace_map_ = false;
   nodes_rearranged_ = false;
 
-  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  Teuchos::RCP<const Teuchos::ParameterList> params =
+      GLOBAL::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;

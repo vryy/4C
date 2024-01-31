@@ -47,9 +47,9 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
       structurephinp_blts_(Teuchos::null),
       growth_updates_counter_(0),
       WallShearStress_lp_(Teuchos::null),
-      fsiperiod_(
-          DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("PERIODICITY")),
-      dt_large_(DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
+      fsiperiod_(GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
+          "PERIODICITY")),
+      dt_large_(GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
           "LARGE_TIMESCALE_TIMESTEP")),
       fsiisperiodic_(false),
       scatraisperiodic_(false),
@@ -67,7 +67,7 @@ void FS3I::ACFSI::Init()
 
   // Some AC FSI specific testings:
 
-  const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
   const Teuchos::ParameterList& fs3idynpart = fs3idyn.sublist("PARTITIONED");
   const Teuchos::ParameterList& fs3idynac = fs3idyn.sublist("AC");
 
@@ -89,7 +89,7 @@ void FS3I::ACFSI::Init()
         "fs3i TIMESTEP!");
 
   std::vector<DRT::Condition*> ImpCond;
-  DRT::Problem::Instance()->GetDis("fluid")->GetCondition("ImpedanceCond", ImpCond);
+  GLOBAL::Problem::Instance()->GetDis("fluid")->GetCondition("ImpedanceCond", ImpCond);
   for (unsigned int i = 0; i < ImpCond.size(); i++)
   {
     const double thisperiod = (ImpCond[i])->GetDouble("TIMEPERIOD");
@@ -135,7 +135,7 @@ void FS3I::ACFSI::Init()
 
   if (not(INPAR::FLUID::wss_standard ==
           INPUT::IntegralValue<INPAR::FLUID::WSSType>(
-              DRT::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")))
+              GLOBAL::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")))
     dserror("WSS_TYPE must be 'Standard', we will mean the WSS by using the fs3i mean manager!");
 
   return;
@@ -173,11 +173,11 @@ void FS3I::ACFSI::ReadRestart()
   PartFS3I::ReadRestart();
 
   // AC specific restart stuff
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
 
   if (restart)
   {
-    const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams();
+    const Teuchos::ParameterList& fs3idynac = GLOBAL::Problem::Instance()->FS3IDynamicParams();
     const bool restartfrompartfsi = INPUT::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
 
     if (not restartfrompartfsi)  // standard restart
@@ -251,9 +251,9 @@ void FS3I::ACFSI::Timeloop()
   SetFSISolution();
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
-  if (DRT::Problem::Instance()->Restart() and
+  if (GLOBAL::Problem::Instance()->Restart() and
       INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
+          GLOBAL::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
     scatravec_[0]->ScaTraField()->PrepareFirstTimeStep();
     scatravec_[1]->ScaTraField()->PrepareFirstTimeStep();
@@ -357,7 +357,7 @@ void FS3I::ACFSI::SmallTimeScalePrepareTimeStep()
 void FS3I::ACFSI::SmallTimeScaleOuterLoop()
 {
   const Teuchos::ParameterList& fs3idynpart =
-      DRT::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED");
+      GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED");
   // get coupling algorithm from input file
   const INPAR::FS3I::SolutionSchemeOverFields couplingalgo =
       INPUT::IntegralValue<INPAR::FS3I::SolutionSchemeOverFields>(fs3idynpart, "COUPALGO");
@@ -435,8 +435,9 @@ void FS3I::ACFSI::DoFSIStep()
 {
   if (not fsiisperiodic_)
   {
-    const int fsiperssisteps = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>(
-        "FSI_STEPS_PER_SCATRA_STEP");
+    const int fsiperssisteps =
+        GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>(
+            "FSI_STEPS_PER_SCATRA_STEP");
     if (fsiperssisteps == 1)  // no subcycling
     {
       // this is the normal case, here we also check before
@@ -485,7 +486,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
     std::vector<double> wk_rel_errors = fluid->GetWindkesselErrors();
 
     const double wk_rel_tol =
-        DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
+        GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
             "WINDKESSEL_REL_TOL");
 
     if (Comm().MyPID() == 0) std::cout << std::endl;
@@ -504,7 +505,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
   //------------- second check convergence of WSS ------------------------------
   {
     const double wss_rel_tol =
-        DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("WSS_REL_TOL");
+        GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("WSS_REL_TOL");
 
     // Note: we compare the difference of mean wssnp and mean wssn only on the FS3I interface, since
     // this is the interesting part for the multiscale problem Therefore we have to do nothing
@@ -563,7 +564,7 @@ void FS3I::ACFSI::IsScatraPeriodic()
   scatraisperiodic_ = true;
 
   const double fluid_scatra_rel_tol =
-      DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
+      GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
           "FLUID_SCATRA_REL_TOL");
   const int numscal = scatravec_[0]->ScaTraField()->NumScal();  // numscal of fluid scatra field
 
@@ -738,7 +739,7 @@ double FS3I::ACFSI::GetStepOfOnePeriodAgoAndPrepareReading(const int actstep, co
   // Is this the right step? Let's check:
   {
     // we have to clean the mapstack, otherwise it would fill with each iteration
-    DRT::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
+    GLOBAL::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
 
     // get filename in which the equivalent step of the last period is written
     std::string filename = GetFileName(previousperiodstep);
@@ -747,7 +748,7 @@ double FS3I::ACFSI::GetStepOfOnePeriodAgoAndPrepareReading(const int actstep, co
     Teuchos::RCP<IO::InputControl> inputreader =
         Teuchos::rcp(new IO::InputControl(filename, Comm()));
     // overwrite existing InputControl()
-    DRT::Problem::Instance()->SetInputControlFile(inputreader);
+    GLOBAL::Problem::Instance()->SetInputControlFile(inputreader);
 
     // AC-FSI specific input
     IO::DiscretizationReader reader =
@@ -780,7 +781,7 @@ double FS3I::ACFSI::GetStepOfBeginnOfThisPeriodAndPrepareReading(
   // Is this the right step? Let's check:
   {
     // we have to clean the mapstack, otherwise it would fill with each iteration
-    DRT::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
+    GLOBAL::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
 
     // get filename in which the equivalent step of the last period is written
     std::string filename = GetFileName(teststep);
@@ -789,7 +790,7 @@ double FS3I::ACFSI::GetStepOfBeginnOfThisPeriodAndPrepareReading(
     Teuchos::RCP<IO::InputControl> inputreader =
         Teuchos::rcp(new IO::InputControl(filename, Comm()));
     // overwrite existing InputControl()
-    DRT::Problem::Instance()->SetInputControlFile(inputreader);
+    GLOBAL::Problem::Instance()->SetInputControlFile(inputreader);
 
     // AC-FSI specific input
     IO::DiscretizationReader reader =
@@ -824,23 +825,23 @@ std::string FS3I::ACFSI::GetFileName(const int step)
 
   std::string filename;
 
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     const int crit_step = (int)(restart + fsiperiod_ / dt_ + 1e-14);
 
     if (step <= crit_step)  // the last period is written in the file we have restarted from
     {
-      filename = DRT::Problem::Instance()->InputControlFile()->FileName();
+      filename = GLOBAL::Problem::Instance()->InputControlFile()->FileName();
     }
     else  // the last period is written in the newly written output file
     {
-      filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      filename = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     }
   }
   else
   {
-    filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   }
   return filename;
 }
@@ -942,9 +943,9 @@ void FS3I::ACFSI::SmallTimeScaleUpdateAndOutput()
 void FS3I::ACFSI::FsiOutput()
 {
   int coupling =
-      Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->FSIDynamicParams(), "COUPALGO");
+      Teuchos::getIntegralValue<int>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "COUPALGO");
 
-  const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
   const int uprestart = fs3idyn.get<int>("RESTARTEVRY");
   const int upresults = fs3idyn.get<int>("RESULTSEVRY");
 
@@ -990,7 +991,7 @@ bool FS3I::ACFSI::ScatraConvergenceCheck(const int itnum)
 {
   // some input parameters for the scatra fields
   const Teuchos::ParameterList& scatradyn =
-      DRT::Problem::Instance()->ScalarTransportDynamicParams();
+      GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
   const int scatraitemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
   const double scatraittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
   const double scatraabstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
@@ -1056,7 +1057,7 @@ bool FS3I::ACFSI::ScatraConvergenceCheck(const int itnum)
 bool FS3I::ACFSI::PartFs3iConvergenceCkeck(const int itnum)
 {
   const Teuchos::ParameterList& fs3idynpart =
-      DRT::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED");
+      GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED");
   // get control parameters from input file
   double ittol = fs3idynpart.get<double>("CONVTOL");
   int itmax = fs3idynpart.get<int>("ITEMAX");
@@ -1208,7 +1209,7 @@ void FS3I::ACFSI::CheckIfTimesAndStepsAndDtsMatch()
 
   // check dts
   const double fsiperssisteps =
-      (double)(DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>(
+      (double)(GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>(
           "FSI_STEPS_PER_SCATRA_STEP"));
   const double fluiddt = fsi_->FluidField()->Dt() * fsiperssisteps;
   const double structuredt = fsi_->StructureField()->Dt() * fsiperssisteps;

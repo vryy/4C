@@ -154,7 +154,7 @@ FPSI::Monolithic_Plain::Monolithic_Plain(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*/
 void FPSI::Monolithic_Plain::SetupSystem()
 {
-  const Teuchos::ParameterList& fpsidynparams = DRT::Problem::Instance()->FPSIDynamicParams();
+  const Teuchos::ParameterList& fpsidynparams = GLOBAL::Problem::Instance()->FPSIDynamicParams();
 
   SetDefaultParameters(fpsidynparams);
 
@@ -392,7 +392,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBa
   //////             motion               //////
   //////                                  //////
   //////////////////////////////////////////////
-  const Teuchos::ParameterList& fpsidynparams = DRT::Problem::Instance()->FPSIDynamicParams();
+  const Teuchos::ParameterList& fpsidynparams = GLOBAL::Problem::Instance()->FPSIDynamicParams();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> fluidalematrix =
       FluidField()->ShapeDerivatives();
   if (Teuchos::getIntegralValue<int>(fpsidynparams, "USESHAPEDERIVATIVES"))

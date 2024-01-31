@@ -37,7 +37,7 @@ namespace POROELASTSCATRA
       // disc.is cloned from the struct. one.
       //  After that, an ale-scatra disc. is cloned from the structure discretization.
 
-      DRT::Problem* problem = DRT::Problem::Instance();
+      GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
       // 1.-Initialization.
       Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");

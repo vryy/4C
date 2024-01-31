@@ -273,7 +273,9 @@ bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::PositionFactory::PositionFactory() : probdim_(DRT::Problem::Instance()->NDim()) {}
+CORE::GEO::CUT::PositionFactory::PositionFactory() : probdim_(GLOBAL::Problem::Instance()->NDim())
+{
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

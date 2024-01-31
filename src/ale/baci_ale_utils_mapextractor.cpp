@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool overlapping)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
   mcs.SetOverlapping(overlapping);
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
@@ -80,7 +80,7 @@ Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::ConditionedElementMap(
 /*----------------------------------------------------------------------*/
 void ALE::UTILS::FsiMapExtractor::Setup(const DRT::Discretization& dis)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
   mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
@@ -90,7 +90,7 @@ void ALE::UTILS::FsiMapExtractor::Setup(const DRT::Discretization& dis)
 /*----------------------------------------------------------------------------*/
 void ALE::UTILS::XFluidFluidMapExtractor::Setup(const DRT::Discretization& dis)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
   mcs.AddSelector(
       Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "FluidFluidCoupling", 0, ndim)));

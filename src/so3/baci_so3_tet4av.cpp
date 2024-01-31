@@ -99,11 +99,12 @@ void DRT::ELEMENTS::So_tet4avType::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet4av::So_tet4av(int id, int owner) : So_base(id, owner)
 {
-  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  Teuchos::RCP<const Teuchos::ParameterList> params =
+      GLOBAL::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;

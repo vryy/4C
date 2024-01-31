@@ -25,23 +25,23 @@ BACI_NAMESPACE_OPEN
 void lubrication_dyn(int restart)
 {
   // access the communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("lubrication")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("lubrication")->Comm();
 
   // print problem type
   if (comm.MyPID() == 0)
   {
     std::cout << "###################################################" << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << GLOBAL::Problem::Instance()->ProblemName() << std::endl;
     std::cout << "###################################################" << std::endl;
   }
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& lubricationdyn =
-      DRT::Problem::Instance()->LubricationDynamicParams();
+      GLOBAL::Problem::Instance()->LubricationDynamicParams();
 
   // access the lubrication discretization
   Teuchos::RCP<DRT::Discretization> lubricationdis =
-      DRT::Problem::Instance()->GetDis("lubrication");
+      GLOBAL::Problem::Instance()->GetDis("lubrication");
 
   lubricationdis->FillComplete();
 
@@ -51,7 +51,7 @@ void lubrication_dyn(int restart)
 
   // add proxy of velocity related degrees of freedom to lubrication discretization
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
-      new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim(), 0, 0, true));
+      new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim(), 0, 0, true));
   if (lubricationdis->AddDofSet(dofsetaux) != 1)
     dserror("lub discretization has illegal number of dofsets!");
 
@@ -71,7 +71,7 @@ void lubrication_dyn(int restart)
 
   // setup Lubrication basis algorithm
   lubricationonly->Setup(
-      lubricationdyn, lubricationdyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
+      lubricationdyn, lubricationdyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
 
   // read the restart information, set vectors and variables
   if (restart) lubricationonly->LubricationField()->ReadRestart(restart);
@@ -80,8 +80,8 @@ void lubrication_dyn(int restart)
   (lubricationonly->LubricationField())->TimeLoop();
 
   // perform the result test if required
-  DRT::Problem::Instance()->AddFieldTest(lubricationonly->CreateLubricationFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
+  GLOBAL::Problem::Instance()->AddFieldTest(lubricationonly->CreateLubricationFieldTest());
+  GLOBAL::Problem::Instance()->TestAll(comm);
 
   return;
 

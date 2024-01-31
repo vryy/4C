@@ -51,7 +51,7 @@ void INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void INPUT::ConditionDefinition::Read(const DRT::Problem& problem, DatFileReader& reader,
+void INPUT::ConditionDefinition::Read(const GLOBAL::Problem& problem, DatFileReader& reader,
     std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap)
 {
   std::string name = "--";

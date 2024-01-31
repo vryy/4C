@@ -27,7 +27,7 @@ namespace
     MircoConstitutiveLawTest()
     {
       const int problemid(0);
-      DRT::Problem& problem = (*DRT::Problem::Instance());
+      GLOBAL::Problem& problem = (*GLOBAL::Problem::Instance());
       problem.Materials()->SetReadFromProblem(problemid);
       // set up material to be added to problem instance
       const int matid(1);

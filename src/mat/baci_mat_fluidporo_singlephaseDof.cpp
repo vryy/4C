@@ -29,18 +29,18 @@ MAT::PAR::FluidPoroPhaseDof::FluidPoroPhaseDof(Teuchos::RCP<MAT::PAR::Material> 
 MAT::PAR::FluidPoroPhaseDof* MAT::PAR::FluidPoroPhaseDof::CreatePhaseDof(int phasedofId)
 {
   // retrieve problem instance to read from
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
     dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
     dserror("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
-      DRT::Problem::Instance(probinst)->Materials()->ById(phasedofId);
+      GLOBAL::Problem::Instance(probinst)->Materials()->ById(phasedofId);
 
   // phase law
   MAT::PAR::FluidPoroPhaseDof* phasedof = nullptr;

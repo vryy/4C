@@ -53,9 +53,10 @@ namespace
       if (csv_file.empty())
         dserror("You forgot to specify the *.csv file for cubic spline interpolation!");
 
-      const std::string input_file = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+      const std::string input_file =
+          GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName();
       std::filesystem::path input_file_path =
-          DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+          GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName();
       const auto csv_file_path = input_file_path.replace_filename(csv_file);
 
       return Teuchos::rcp(new CORE::UTILS::CubicSplineFromCSV(csv_file_path.string()));

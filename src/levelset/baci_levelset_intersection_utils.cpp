@@ -298,7 +298,7 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
 {
   const CORE::FE::CellType distype = ele->Shape();
   unsigned numnode = CORE::FE::getNumberOfElementNodes(distype);
-  const unsigned probdim = DRT::Problem::Instance()->NDim();
+  const unsigned probdim = GLOBAL::Problem::Instance()->NDim();
 
   xyze.shape(3, numnode);
   switch (distype)

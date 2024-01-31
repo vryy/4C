@@ -62,7 +62,7 @@ void CONTACT::NitscheStrategyTsi::SetParentState(
 {
   if (statename == MORTAR::state_temperature)
   {
-    Teuchos::RCP<DRT::Discretization> disT = DRT::Problem::Instance()->GetDis("thermo");
+    Teuchos::RCP<DRT::Discretization> disT = GLOBAL::Problem::Instance()->GetDis("thermo");
     if (disT.is_null()) dserror("set state temperature, but no thermo-discretization???");
 
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*disT->DofColMap(), true));
@@ -129,7 +129,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::SetupRhsBlockVec(
   {
     case CONTACT::VecBlockType::temp:
       return Teuchos::rcp(
-          new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("thermo")->DofRowMap()));
+          new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("thermo")->DofRowMap()));
     default:
       return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
   }
@@ -157,13 +157,13 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyTsi::SetupMatri
     case CONTACT::MatBlockType::displ_temp:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     case CONTACT::MatBlockType::temp_displ:
     case CONTACT::MatBlockType::temp_temp:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *DRT::Problem::Instance()->GetDis("thermo")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("thermo")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
       return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
@@ -177,16 +177,17 @@ void CONTACT::NitscheStrategyTsi::CompleteMatrixBlockPtr(
   {
     case CONTACT::MatBlockType::displ_temp:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
-              .GlobalAssemble(*DRT::Problem::Instance()->GetDis("thermo")->DofRowMap(),  // col map
-                  *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),           // row map
+              .GlobalAssemble(
+                  *GLOBAL::Problem::Instance()->GetDis("thermo")->DofRowMap(),     // col map
+                  *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // row map
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::temp_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
-                  *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
-                  *DRT::Problem::Instance()->GetDis("thermo")->DofRowMap(),     // row map
+                  *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
+                  *GLOBAL::Problem::Instance()->GetDis("thermo")->DofRowMap(),     // row map
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;

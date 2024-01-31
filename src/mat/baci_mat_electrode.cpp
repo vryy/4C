@@ -71,14 +71,14 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
       // parse *.csv file
       if (ocpcsv[0] != '/')
       {
-        if (DRT::Problem::Instance()->OutputControlFile() == Teuchos::null)
+        if (GLOBAL::Problem::Instance()->OutputControlFile() == Teuchos::null)
         {
           std::cout << "WARNING: could not check, if OCP .csv file in MAT_electrode is correct."
                     << std::endl;
 
           break;
         }
-        std::string ocpcsvpath = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+        std::string ocpcsvpath = GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName();
         ocpcsvpath = ocpcsvpath.substr(0, ocpcsvpath.rfind('/') + 1);
         ocpcsv.insert(ocpcsv.begin(), ocpcsvpath.begin(), ocpcsvpath.end());
       }
@@ -277,13 +277,13 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Electrode*>(mat);
       else

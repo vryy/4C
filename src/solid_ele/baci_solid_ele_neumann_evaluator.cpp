@@ -128,7 +128,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
             const int function_number = (function_ids != nullptr) ? (*function_ids)[dim] : -1;
             const double function_scale_factor =
                 (function_number > 0)
-                    ? DRT::Problem::Instance()
+                    ? GLOBAL::Problem::Instance()
                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(function_number - 1)
                           .Evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
                     : 1.0;

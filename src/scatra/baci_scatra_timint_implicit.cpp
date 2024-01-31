@@ -66,7 +66,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output,
     const int probnum)
-    : problem_(DRT::Problem::Instance(probnum)),
+    : problem_(GLOBAL::Problem::Instance(probnum)),
       probnum_(probnum),
       solver_(std::move(solver)),
       params_(params),
@@ -634,7 +634,8 @@ void SCATRA::ScaTraTimIntImpl::Setup()
     {
       // It is important to make a distinction as HDG always have NumDofPerNode = 0
       // The vector is therefore sized to contain the errors of one scalar and its gradient
-      if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
+      if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
+          CORE::FE::ShapeFunctionType::hdg)
         relerrors_ = Teuchos::rcp(new std::vector<double>(2));  // TODO: update to n species
       else
         relerrors_ = Teuchos::rcp(new std::vector<double>(2 * NumDofPerNode()));
@@ -3227,13 +3228,13 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
                 dserror("Number of stoichiometric coefficients does not match number of scalars!");
               if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
               const double faraday =
-                  DRT::Problem::Instance(0)->ELCHControlParams().get<double>("FARADAY_CONSTANT");
+                  GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>("FARADAY_CONSTANT");
               const double gasconstant =
-                  DRT::Problem::Instance(0)->ELCHControlParams().get<double>("GAS_CONSTANT");
+                  GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>("GAS_CONSTANT");
               const double frt =
                   faraday /
-                  (gasconstant *
-                      (DRT::Problem::Instance(0)->ELCHControlParams().get<double>("TEMPERATURE")));
+                  (gasconstant * (GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>(
+                                     "TEMPERATURE")));
               const double alphaa = condition->GetDouble("alpha_a");  // anodic transfer coefficient
               const double alphac =
                   condition->GetDouble("alpha_c");  // cathodic transfer coefficient
@@ -3708,8 +3709,8 @@ Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntImpl::CreateScaTraFieldTest()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::TestResults()
 {
-  DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
-  DRT::Problem::Instance()->TestAll(discret_->Comm());
+  GLOBAL::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
+  GLOBAL::Problem::Instance()->TestAll(discret_->Comm());
 }
 
 BACI_NAMESPACE_CLOSE

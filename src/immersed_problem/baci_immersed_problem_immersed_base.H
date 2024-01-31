@@ -392,7 +392,7 @@ namespace IMMERSED
     const Epetra_Comm& comm = sourcedis->Comm();
 
     // get the global problem
-    DRT::Problem* problem = DRT::Problem::Instance();
+    GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
     // true in case we have to deal wit ha deformable background mesh
     static int isALE =
@@ -920,7 +920,7 @@ namespace IMMERSED
     // get communicator
     const Epetra_Comm& comm = sourcedis->Comm();
     // get the global problem
-    DRT::Problem* problem = DRT::Problem::Instance();
+    GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
     // dimension of global problem
     const int globdim = problem->NDim();
     // pointer to background element
@@ -1240,7 +1240,7 @@ namespace IMMERSED
     const Epetra_Comm& comm = structdis->Comm();
 
     // get the global problem
-    DRT::Problem* problem = DRT::Problem::Instance();
+    GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
     // true in case we have to deal wit ha deformable background mesh
     static int isALE =

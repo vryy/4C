@@ -34,16 +34,16 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
     : fluidpositions_(new std::map<int, CORE::LINALG::Matrix<3, 1>>),
       beampositions_(new std::map<int, CORE::LINALG::Matrix<3, 1>>),
       searchtree_(new CORE::GEO::SearchTree(5)),
-      searchradius_(DRT::Problem::Instance()
+      searchradius_(GLOBAL::Problem::Instance()
                         ->FBIParams()
                         .sublist("BEAM TO FLUID MESHTYING")
                         .get<double>("SEARCH_RADIUS")),
       edgebased_fluidstabilization_(false)
 {
-  edgebased_fluidstabilization_ =
-      (INPUT::IntegralValue<INPAR::FLUID::StabType>(
-           DRT::Problem::Instance()->FluidDynamicParams().sublist("RESIDUAL-BASED STABILIZATION"),
-           "STABTYPE") == INPAR::FLUID::stabtype_edgebased);
+  edgebased_fluidstabilization_ = (INPUT::IntegralValue<INPAR::FLUID::StabType>(
+                                       GLOBAL::Problem::Instance()->FluidDynamicParams().sublist(
+                                           "RESIDUAL-BASED STABILIZATION"),
+                                       "STABTYPE") == INPAR::FLUID::stabtype_edgebased);
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIGeometryCoupler::Setup(std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,

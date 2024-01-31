@@ -312,11 +312,12 @@ DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(int id, int owner)
   nodes_rearranged_ = false;
   thickvec_.resize(3, 0.);
 
-  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  Teuchos::RCP<const Teuchos::ParameterList> params =
+      GLOBAL::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;
@@ -512,9 +513,9 @@ bool DRT::ELEMENTS::So_sh8Plast::ReadElement(
   dDp_last_iter_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
   dDp_inc_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
 
-  Teuchos::ParameterList plparams = DRT::Problem::Instance()->SemiSmoothPlastParams();
+  Teuchos::ParameterList plparams = GLOBAL::Problem::Instance()->SemiSmoothPlastParams();
   DRT::UTILS::AddEnumClassToParameterList(
-      "ProblemType", DRT::Problem::Instance()->GetProblemType(), plparams);
+      "GLOBAL::ProblemType", GLOBAL::Problem::Instance()->GetProblemType(), plparams);
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
   if (tsi_)

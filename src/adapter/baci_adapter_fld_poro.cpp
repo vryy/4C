@@ -67,7 +67,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
     // write global IDs of dofs on which the no penetration condition is applied (can vary in time
     // and iteration)
     {
-      const int ndim = DRT::Problem::Instance()->NDim();
+      const int ndim = GLOBAL::Problem::Instance()->NDim();
       const int ndof = ndim + 1;
       const int length = condVector->MyLength();
       const int nnod = length / ndof;

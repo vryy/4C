@@ -31,18 +31,18 @@ MAT::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(Teuchos::RCP<MAT::PAR::Material> 
 MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int phaselawId)
 {
   // retrieve problem instance to read from
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
     dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
     dserror("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
-      DRT::Problem::Instance(probinst)->Materials()->ById(phaselawId);
+      GLOBAL::Problem::Instance(probinst)->Materials()->ById(phaselawId);
 
   // phase law
   MAT::PAR::FluidPoroPhaseLaw* phaselaw = nullptr;
@@ -304,7 +304,7 @@ MAT::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
 {
-  switch (DRT::Problem::Instance()->NDim())
+  switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
       return InitializeInternal<1>();
@@ -313,7 +313,7 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
     case 3:
       return InitializeInternal<3>();
     default:
-      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
 }
 
@@ -322,11 +322,11 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
 template <int dim>
 void MAT::PAR::FluidPoroPhaseLawByFunction::InitializeInternal()
 {
-  if (DRT::Problem::Instance()
+  if (GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
           .NumberComponents() != 1)
     dserror("expected only one component for the saturation evaluation");
-  if (DRT::Problem::Instance()
+  if (GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
           .NumberComponents() != 1)
     dserror("expected only one component for the pressure evaluation");
@@ -347,7 +347,7 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::InitializeInternal()
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturation(
     const std::vector<double>& pressure)
 {
-  switch (DRT::Problem::Instance()->NDim())
+  switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
       return EvaluateSaturationInternal<1>(pressure);
@@ -356,7 +356,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturation(
     case 3:
       return EvaluateSaturationInternal<3>(pressure);
     default:
-      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
       return 0.0;
   }
 }
@@ -377,7 +377,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturationInternal(
   // directly write into entry without checking the name for performance reasons
   dp_[0].second = presval;
 
-  return DRT::Problem::Instance()
+  return GLOBAL::Problem::Instance()
       ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
       .Evaluate(dp_, {}, 0);
 }
@@ -387,7 +387,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturationInternal(
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressure(
     int doftoderive, const std::vector<double>& pressure)
 {
-  switch (DRT::Problem::Instance()->NDim())
+  switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
       return EvaluateDerivOfSaturationWrtPressureInternal<1>(doftoderive, pressure);
@@ -396,7 +396,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressu
     case 3:
       return EvaluateDerivOfSaturationWrtPressureInternal<3>(doftoderive, pressure);
     default:
-      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
       return 0.0;
   }
 }
@@ -419,7 +419,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressu
   dp_[0].second = presval;
 
   std::vector<double> deriv =
-      DRT::Problem::Instance()
+      GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
           .EvaluateDerivative(dp_, {}, 0);
 
@@ -445,7 +445,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSecondDerivOfSaturationWrt
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturation(
     int doftoderive, double saturation)
 {
-  switch (DRT::Problem::Instance()->NDim())
+  switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
       return EvaluateDerivOfPressureWrtSaturationInternal<1>(doftoderive, saturation);
@@ -454,7 +454,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturati
     case 3:
       return EvaluateDerivOfPressureWrtSaturationInternal<3>(doftoderive, saturation);
     default:
-      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
       return 0.0;
   }
 }
@@ -472,7 +472,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturati
   S_[0].second = saturation;
 
   std::vector<double> deriv =
-      DRT::Problem::Instance()
+      GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
           .EvaluateDerivative(S_, {}, 0);
 
@@ -483,7 +483,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturati
  *----------------------------------------------------------------------*/
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressure(double saturation)
 {
-  switch (DRT::Problem::Instance()->NDim())
+  switch (GLOBAL::Problem::Instance()->NDim())
   {
     case 1:
       return EvaluateGenPressureInternal<1>(saturation);
@@ -492,7 +492,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressure(double saturat
     case 3:
       return EvaluateGenPressureInternal<3>(saturation);
     default:
-      dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
       return 0.0;
   }
 }
@@ -505,7 +505,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressureInternal(double
   // directly write into entry without checking the name for performance reasons
   S_[0].second = saturation;
 
-  return DRT::Problem::Instance()
+  return GLOBAL::Problem::Instance()
       ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
       .Evaluate(S_, {}, 0);
 }

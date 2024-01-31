@@ -216,7 +216,7 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::SetupSystem()
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
       INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
@@ -824,7 +824,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseMatri
 void FSI::MonolithicFluidSplit::ScaleSystem(
     CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -875,7 +875,7 @@ void FSI::MonolithicFluidSplit::ScaleSystem(
 void FSI::MonolithicFluidSplit::UnscaleSolution(
     CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 

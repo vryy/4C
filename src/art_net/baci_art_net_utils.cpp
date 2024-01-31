@@ -64,7 +64,7 @@ Teuchos::RCP<ADAPTER::ArtNet> ART::UTILS::CreateAlgorithm(
 void ART::UTILS::AssignMaterialPointers(
     const std::string& artery_disname, const std::string& scatra_disname)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> arterydis = problem->GetDis(artery_disname);
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
@@ -150,7 +150,7 @@ void ART::ArteryScatraCloneStrategy::CheckMaterialType(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
+  INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
   if ((mtype != INPAR::MAT::m_scatra) && (mtype != INPAR::MAT::m_matlist))
     dserror("Material with ID %d is not admissible for scalar transport elements", matid);
 }

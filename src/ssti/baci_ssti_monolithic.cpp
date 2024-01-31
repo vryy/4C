@@ -35,7 +35,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
       increment_(Teuchos::null),
       residual_(Teuchos::null),
       solver_(Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(
+          GLOBAL::Problem::Instance()->SolverParams(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
           comm))),
       scatrastructureoffdiagcoupling_(Teuchos::null),
@@ -287,10 +287,10 @@ void SSTI::SSTIMono::Setup()
     dserror("Block based equilibration only for block matrices");
 
   const bool equilibration_scatra_initial = INPUT::IntegralValue<bool>(
-      DRT::Problem::Instance()->SSTIControlParams().sublist("MONOLITHIC"),
+      GLOBAL::Problem::Instance()->SSTIControlParams().sublist("MONOLITHIC"),
       "EQUILIBRATION_INIT_SCATRA");
   const bool calc_initial_pot =
-      INPUT::IntegralValue<bool>(DRT::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
+      INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
 
   if (!equilibration_scatra_initial and
       ScaTraField()->EquilibrationMethod() != CORE::LINALG::EquilibrationMethod::none)

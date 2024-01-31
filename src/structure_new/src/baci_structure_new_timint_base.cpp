@@ -492,7 +492,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
     ResetStep();
     // restart has already been written or simulation has just started
     if (dataio_->ShouldWriteRestartForStep(dataglobalstate_->GetStepN()) or
-        dataglobalstate_->GetStepN() == DRT::Problem::Instance()->Restart())
+        dataglobalstate_->GetStepN() == GLOBAL::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
     if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()))
@@ -975,7 +975,7 @@ void STR::TIMINT::Base::SetActionType(const DRT::ELEMENTS::ActionType& action)
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Base::GroupId() const
 {
-  Teuchos::RCP<CORE::COMM::Communicators> group = DRT::Problem::Instance()->GetCommunicators();
+  Teuchos::RCP<CORE::COMM::Communicators> group = GLOBAL::Problem::Instance()->GetCommunicators();
   return group->GroupId();
 }
 /*----------------------------------------------------------------------------*
@@ -983,7 +983,7 @@ int STR::TIMINT::Base::GroupId() const
 void STR::TIMINT::Base::OutputErrorNorms()
 {
   // get parameters
-  const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& params = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // get error calculation info
   const auto calcerr = INPUT::IntegralValue<INPAR::STR::CalcError>(params, "CALCERROR");
@@ -1029,7 +1029,8 @@ void STR::TIMINT::Base::OutputErrorNorms()
             (dataglobalstate_->GetTimeN() == datasdyn_->GetTimeMax()))  // write results to file
         {
           std::ostringstream temp;
-          const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+          const std::string simulation =
+              GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
           const std::string fname = simulation + ".abserror";
 
           std::ofstream f;
@@ -1043,7 +1044,7 @@ void STR::TIMINT::Base::OutputErrorNorms()
         }
 
         std::ostringstream temp;
-        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
         const std::string fname = simulation + "_time.abserror";
 
         if (dataglobalstate_->GetStepN() == 1)

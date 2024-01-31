@@ -400,7 +400,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       value = FunctImplementation(func_no, lnode->X().data(), time);
     else if (func_no >= 1)
     {
-      value = DRT::Problem::Instance()
+      value = GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
                   .Evaluate(lnode->X().data(), time, 0);
     }

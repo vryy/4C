@@ -149,7 +149,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
     double functfac = 1.0;
     if (functnum >= 0)
       functfac =
-          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(
+          GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(
               time);
     for (int i = 0; i < nnode; ++i)
     {

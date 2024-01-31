@@ -57,7 +57,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
   Teuchos::TimeMonitor monitor(*t);
 
   // what's the current problem type?
-  const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+  const GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   // ---------------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -83,7 +83,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
   // set some pointers and variables
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> adyn =
-      Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->AleDynamicParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->AleDynamicParams()));
 
   // ---------------------------------------------------------------------------
   // create a linear solver
@@ -96,7 +96,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
         "LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // ---------------------------------------------------------------------------
@@ -108,10 +108,10 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
   adyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
   adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
 
-  if (probtype == ProblemType::fpsi)
+  if (probtype == GLOBAL::ProblemType::fpsi)
   {
     // FPSI input parameters
-    const Teuchos::ParameterList& fpsidyn = DRT::Problem::Instance()->FPSIDynamicParams();
+    const Teuchos::ParameterList& fpsidyn = GLOBAL::Problem::Instance()->FPSIDynamicParams();
     int coupling = INPUT::IntegralValue<int>(fpsidyn, "COUPALGO");
     if (coupling == partitioned)
     {
@@ -155,18 +155,18 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
    * problem-specific wrapper */
   switch (probtype)
   {
-    case ProblemType::ale:
+    case GLOBAL::ProblemType::ale:
     {
       ale_ = ale;
       break;
     }
-    case ProblemType::fsi:
-    case ProblemType::gas_fsi:
-    case ProblemType::thermo_fsi:
-    case ProblemType::ac_fsi:
-    case ProblemType::biofilm_fsi:
+    case GLOBAL::ProblemType::fsi:
+    case GLOBAL::ProblemType::gas_fsi:
+    case GLOBAL::ProblemType::thermo_fsi:
+    case GLOBAL::ProblemType::ac_fsi:
+    case GLOBAL::ProblemType::biofilm_fsi:
     {
-      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
       int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
@@ -211,9 +211,9 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
       }
       break;
     }
-    case ProblemType::fsi_lung:
+    case GLOBAL::ProblemType::fsi_lung:
     {
-      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
       int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_lung_monolithicfluidsplit or
           coupling == fsi_iter_lung_monolithicstructuresplit)
@@ -228,9 +228,9 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
       }
       break;
     }
-    case ProblemType::fsi_redmodels:
+    case GLOBAL::ProblemType::fsi_redmodels:
     {
-      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
       int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
@@ -262,23 +262,23 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
       }
       break;
     }
-    case ProblemType::fpsi:
-    case ProblemType::fps3i:
-    case ProblemType::fsi_xfem:
-    case ProblemType::fpsi_xfem:
+    case GLOBAL::ProblemType::fpsi:
+    case GLOBAL::ProblemType::fps3i:
+    case GLOBAL::ProblemType::fsi_xfem:
+    case GLOBAL::ProblemType::fpsi_xfem:
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleFpsiWrapper(ale));
       break;
     }
-    case ProblemType::struct_ale:
+    case GLOBAL::ProblemType::struct_ale:
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleWearWrapper(ale));
       break;
     }
-    case ProblemType::freesurf:
-    case ProblemType::fluid_ale:
-    case ProblemType::elch:
-    case ProblemType::fluid_xfem:
+    case GLOBAL::ProblemType::freesurf:
+    case GLOBAL::ProblemType::fluid_ale:
+    case GLOBAL::ProblemType::elch:
+    case GLOBAL::ProblemType::fluid_xfem:
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
       break;

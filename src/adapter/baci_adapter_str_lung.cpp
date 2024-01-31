@@ -120,7 +120,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   DRT::UTILS::FindConditionedNodes(*Discretization(), "StructFluidSurfCoupling", nodes);
   const int numnode = nodes.size();
 
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   for (int i = 0; i < numnode; ++i)
   {
     const DRT::Node* actnode = Discretization()->gNode(nodes[i]);

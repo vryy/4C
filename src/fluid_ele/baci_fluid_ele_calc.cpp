@@ -283,7 +283,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
   // given in "New analytical solutions for weakly compressible Newtonian
   // Poiseuille flows with pressure-dependent viscosity"
   // Kostas D. Housiadas, Georgios C. Georgiou
-  const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   int corrtermfuncnum = (fluidparams.get<int>("CORRTERMFUNCNO"));
   ecorrectionterm_.Clear();
   if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes && corrtermfuncnum > 0)
@@ -1451,7 +1451,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
             // evaluation at the integration point. However, we need a node
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
-            functionfac = DRT::Problem::Instance()
+            functionfac = GLOBAL::Problem::Instance()
                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate((ele->Nodes()[jnode])->X().data(), time, isd);
           }
@@ -1479,7 +1479,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
             // evaluation at the integration point. However, we need a node
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
-            functionfac = DRT::Problem::Instance()
+            functionfac = GLOBAL::Problem::Instance()
                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate((ele->Nodes()[jnode])->X().data(), time, isd);
           }
@@ -1529,7 +1529,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
       {
         // time factor (negative time indicating error)
         if (time >= 0.0)
-          functfac = DRT::Problem::Instance()
+          functfac = GLOBAL::Problem::Instance()
                          ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum)
                          .Evaluate(time);
         else
@@ -1559,12 +1559,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectionTerm(
     DRT::ELEMENTS::Fluid* ele, CORE::LINALG::Matrix<1, nen_>& ecorrectionterm)
 {
   // fill the element correction term
-  const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   int functnum = (fluidparams.get<int>("CORRTERMFUNCNO"));
   if (functnum < 0) dserror("Please provide a correct function number");
   for (int i = 0; i < nen_; ++i)
   {
-    ecorrectionterm(i) = DRT::Problem::Instance()
+    ecorrectionterm(i) = GLOBAL::Problem::Instance()
                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate((ele->Nodes()[i])->X().data(), 0.0, 0);
   }
@@ -1823,7 +1823,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetAdvectiveVelOseen(DRT::EL
     {
       const double* jx = ele->Nodes()[jnode]->X().data();
       for (int idim = 0; idim < nsd_; ++idim)
-        eadvvel_(idim, jnode) = DRT::Problem::Instance()
+        eadvvel_(idim, jnode) = GLOBAL::Problem::Instance()
                                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)
                                     .Evaluate(jx, time, idim);
     }

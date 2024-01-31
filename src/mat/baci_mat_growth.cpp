@@ -30,18 +30,18 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
       endtime_(matdata->GetDouble("ENDTIME"))
 {
   // retrieve problem instance to read from
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
     dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
     dserror("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
-      DRT::Problem::Instance(probinst)->Materials()->ById(idgrowthlaw_);
+      GLOBAL::Problem::Instance(probinst)->Materials()->ById(idgrowthlaw_);
 
   switch (curmat->Type())
   {
@@ -229,13 +229,13 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, matid);
 
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::Growth*>(mat);
       else
@@ -878,13 +878,13 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, matid);
 
   paramsVolumetric_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         paramsVolumetric_ = dynamic_cast<MAT::PAR::Growth*>(mat);
       else

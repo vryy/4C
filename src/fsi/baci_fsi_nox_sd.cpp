@@ -95,7 +95,7 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
     static std::ofstream* out;
     if (out == nullptr)
     {
-      std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
       s.append(".omega");
       out = new std::ofstream(s.c_str());
     }

@@ -45,7 +45,7 @@ ADAPTER::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
 void ADAPTER::ThermoBaseAlgorithm::SetupThermo(
     const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
-  const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+  const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->ThermalDynamicParams();
 
   // major switch to different time integrators
   INPAR::THR::DynamicType timinttype =
@@ -88,11 +88,11 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
 
   //  // get input parameter lists and copy them, because a few parameters are overwritten
   const Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->IOParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->IOParams()));
   const Teuchos::RCP<Teuchos::ParameterList> tdyn =
-      Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ThermalDynamicParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->ThermalDynamicParams()));
   //  //const Teuchos::ParameterList& size
-  //  //  = DRT::Problem::Instance()->ProblemSizeParams();
+  //  //  = GLOBAL::Problem::Instance()->ProblemSizeParams();
 
   // show default parameters of thermo parameter list
   if ((actdis->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(IO::cout, *tdyn);
@@ -126,7 +126,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
   // create a linear solver
   Teuchos::RCP<Teuchos::ParameterList> solveparams = Teuchos::rcp(new Teuchos::ParameterList());
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // create marching time integrator

@@ -197,7 +197,7 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   // create a new XFEM-dofset
   dofset = Teuchos::rcp(new XFEM::XFEMDofSet(*wizard, maxNumMyReservedDofsperNode, *xdiscret));
 
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if ((step < 1) or restart) minnumdofsets_ = xdiscret->DofRowMap()->MinAllGID();
 
   dofset->SetMinGID(minnumdofsets_);         // set the minimal GID of xfem dis

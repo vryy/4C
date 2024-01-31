@@ -371,7 +371,7 @@ void FLD::XFluidState::SetupMapExtractors(
   zeros_->PutScalar(0.0);
 
   // create vel-pres splitter
-  const int numdim = DRT::Problem::Instance()->NDim();
+  const int numdim = GLOBAL::Problem::Instance()->NDim();
   velpressplitter_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
   CORE::LINALG::CreateMapExtractorFromDiscretization(*xfluiddiscret, numdim, 1, *velpressplitter_);
 }

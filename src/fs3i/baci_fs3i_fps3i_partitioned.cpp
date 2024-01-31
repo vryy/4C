@@ -94,7 +94,7 @@ void FS3I::PartFPS3I::Init()
     std::cout << std::endl;
   }
   // ##################       1.- Parameter reading          //#########################
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
   const Teuchos::ParameterList& poroelastdynparams = problem->PoroelastDynamicParams();
@@ -149,7 +149,7 @@ void FS3I::PartFPS3I::Init()
 
   // determine type of scalar transport
   const INPAR::SCATRA::ImplType impltype_fluid = INPUT::IntegralValue<INPAR::SCATRA::ImplType>(
-      DRT::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_SCATRATYPE");
+      GLOBAL::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
   // create discretization for fluid-based scalar transport from and
@@ -364,7 +364,7 @@ void FS3I::PartFPS3I::ReadRestart()
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const int restart = problem->Restart();
 
   if (restart)
@@ -391,7 +391,7 @@ void FS3I::PartFPS3I::RedistributeInterface()
 {
   fpsi_->RedistributeInterface();
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   if (comm_.NumProc() >
       1)  // if we have more than one processor, we need to redistribute at the FPSI interface
@@ -516,7 +516,7 @@ void FS3I::PartFPS3I::SetupSystem()
       "SOLVER", INPAR::SOLVER::SolverType::umfpack, scatrasolvparams);
   scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(scatrasolvparams, firstscatradis->Comm()));
 #else
-  const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
   // get solver number used for fs3i
   const int linsolvernumber = fs3idyn.get<int>("COUPLED_LINEAR_SOLVER");
   // check if LOMA solvers has a valid number
@@ -525,7 +525,7 @@ void FS3I::PartFPS3I::SetupSystem()
         "no linear solver defined for FS3I problems. Please set COUPLED_LINEAR_SOLVER in FS3I "
         "DYNAMIC to a valid number!");
   const Teuchos::ParameterList& coupledscatrasolvparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
@@ -556,9 +556,9 @@ void FS3I::PartFPS3I::SetupSystem()
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
   scatrasolver_->PutSolverParamsToSubParams(
-      "Inverse1", DRT::Problem::Instance()->SolverParams(linsolver1number));
+      "Inverse1", GLOBAL::Problem::Instance()->SolverParams(linsolver1number));
   scatrasolver_->PutSolverParamsToSubParams(
-      "Inverse2", DRT::Problem::Instance()->SolverParams(linsolver2number));
+      "Inverse2", GLOBAL::Problem::Instance()->SolverParams(linsolver2number));
   (scatravec_[0])
       ->ScaTraField()
       ->Discretization()
@@ -577,15 +577,15 @@ void FS3I::PartFPS3I::SetupSystem()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::TestResults(const Epetra_Comm& comm)
 {
-  DRT::Problem::Instance()->AddFieldTest(fpsi_->FluidField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fpsi_->FluidField()->CreateFieldTest());
 
   fpsi_->PoroField()->StructureField()->CreateFieldTest();
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    DRT::Problem::Instance()->AddFieldTest(scatra->CreateScaTraFieldTest());
+    GLOBAL::Problem::Instance()->AddFieldTest(scatra->CreateScaTraFieldTest());
   }
-  DRT::Problem::Instance()->TestAll(comm);
+  GLOBAL::Problem::Instance()->TestAll(comm);
 }
 
 
@@ -639,7 +639,7 @@ void FS3I::PartFPS3I::SetMeshDisp()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::SetVelocityFields()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
   int cdvel = INPUT::IntegralValue<int>(scatradyn, "VELOCITYFIELD");
   switch (cdvel)

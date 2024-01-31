@@ -187,7 +187,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetDensity(const DRT::Ele
   {
     // access fluid discretization
     Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-    fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+    fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
     // get corresponding fluid element (it has the same global ID as the scatra element)
     DRT::Element* fluidele = fluiddis->gElement(ele->Id());
     if (fluidele == nullptr) dserror("Fluid element %i not on local processor", ele->Id());

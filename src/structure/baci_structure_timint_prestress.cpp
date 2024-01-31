@@ -42,7 +42,7 @@ void STR::TimIntPrestress::Setup()
   STR::TimIntStatics::Setup();
   // Check for compatible prestressing algorithms
   const auto pre_stress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-      DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+      GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
   switch (pre_stress)
   {
     case INPAR::STR::PreStress::mulf:
@@ -63,9 +63,9 @@ void STR::TimIntPrestress::UpdateStepElement()
   Teuchos::ParameterList p;
 
   const auto pre_stress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-      DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+      GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
   const double pstime =
-      DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+      GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
   // MULF, Material iterative prestressing
   if (pre_stress == INPAR::STR::PreStress::mulf)
   {

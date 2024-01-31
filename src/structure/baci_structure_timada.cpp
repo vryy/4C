@@ -99,7 +99,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
 
   // enable restart for adaptive timestepping - however initial timestep size is still read from
   // datfile! (mhv 01/2015)
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop
@@ -508,7 +508,8 @@ void STR::TimAda::AttachFileStepSize()
 {
   if (outsizefile_.is_null())
   {
-    std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName() + ".stepsize";
+    std::string filename =
+        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".stepsize";
     outsizefile_ = Teuchos::rcp(new std::ofstream(filename.c_str()));
     (*outsizefile_) << "# timestep time step-size adaptations" << std::endl;
   }

@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
 ADAPTER::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std::string condname)
 {
   fluid_ = Teuchos::rcp(new FluidBaseAlgorithm(
-      prbdyn, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", false));
+      prbdyn, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", false));
   fluidadapter_ = fluid_->FluidField();
 
   return;

@@ -65,15 +65,15 @@ BACI_NAMESPACE_OPEN
 TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& sdynparams)
     : Algorithm(comm),
       solveradapttol_(INPUT::IntegralValue<int>(
-                          ((DRT::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC")),
+                          ((GLOBAL::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC")),
                           "ADAPTCONV") == 1),
-      solveradaptolbetter_(((DRT::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC"))
+      solveradaptolbetter_(((GLOBAL::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC"))
                                .get<double>("ADAPTCONV_BETTER")),
       printiter_(true),  // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
       strmethodname_(INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP")),
-      tsidyn_(DRT::Problem::Instance()->TSIDynamicParams()),
-      tsidynmono_((DRT::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC")),
+      tsidyn_(GLOBAL::Problem::Instance()->TSIDynamicParams()),
+      tsidynmono_((GLOBAL::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC")),
       blockrowdofmap_(Teuchos::null),
       systemmatrix_(Teuchos::null),
       k_st_(Teuchos::null),
@@ -125,7 +125,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     // get solver parameter list of linear TSI solver
     const int linsolvernumber = tsidynmono_.get<int>("LINEAR_SOLVER");
     const Teuchos::ParameterList& tsisolverparams =
-        DRT::Problem::Instance()->SolverParams(linsolvernumber);
+        GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     *solverparams = tsisolverparams;
@@ -260,7 +260,7 @@ void TSI::Monolithic::CreateLinearSolver()
 
   // get solver parameter list of linear TSI solver
   const Teuchos::ParameterList& tsisolverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(tsisolverparams, "SOLVER");
@@ -290,7 +290,7 @@ void TSI::Monolithic::CreateLinearSolver()
     case INPAR::SOLVER::PreconditionerType::cheap_simple:
     {
       // get parameter list of structural dynamics
-      const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+      const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
       // use solver blocks for structure
       // get the solver number used for structural solver
       const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -301,7 +301,7 @@ void TSI::Monolithic::CreateLinearSolver()
             "DYNAMIC to a valid number!");
 
       // get parameter list of thermal dynamics
-      const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+      const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->ThermalDynamicParams();
       // use solver blocks for temperature (thermal field)
       // get the solver number used for thermal solver
       const int tlinsolvernumber = tdyn.get<int>("LINEAR_SOLVER");
@@ -314,9 +314,9 @@ void TSI::Monolithic::CreateLinearSolver()
 
       // use solver blocks for structure and temperature (thermal field)
       const Teuchos::ParameterList& ssolverparams =
-          DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(slinsolvernumber);
       const Teuchos::ParameterList& tsolverparams =
-          DRT::Problem::Instance()->SolverParams(tlinsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(tlinsolvernumber);
 
       solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
       solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
@@ -1236,7 +1236,7 @@ void TSI::Monolithic::SetupRHS()
   // get the structural rhs
   Teuchos::RCP<Epetra_Vector> str_rhs = Teuchos::rcp(new Epetra_Vector(*StructureField()->RHS()));
   if (INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
-          DRT::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
+          GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
       INPAR::STR::int_standard)
     str_rhs->Scale(-1.);
 
@@ -1991,7 +1991,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   tparams.set("total time", Time());
 
   // create specific time integrator
-  const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+  const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->ThermalDynamicParams();
   tparams.set<int>(
       "time integrator", INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"));
   tparams.set<int>("structural time integrator", strmethodname_);
@@ -2114,7 +2114,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
     tparams.set("delta time", Dt());
     tparams.set("total time", Time());
     // create specific time integrator
-    const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+    const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->ThermalDynamicParams();
     tparams.set<int>(
         "time integrator", INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"));
     tparams.set<int>("structural time integrator", strmethodname_);
@@ -2371,7 +2371,7 @@ void TSI::Monolithic::SetDefaultParameters()
 {
   // time parameters
   // call the TSI parameter list
-  const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+  const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->ThermalDynamicParams();
 
   // get the parameters for the Newton iteration
   itermax_ = tsidyn_.get<int>("ITEMAX");
@@ -2847,11 +2847,11 @@ void TSI::Monolithic::ApplyStructCouplingState(
 void TSI::Monolithic::FixTimeIntegrationParams()
 {
   if (INPUT::IntegralValue<INPAR::THR::DynamicType>(
-          DRT::Problem::Instance()->ThermalDynamicParams(), "DYNAMICTYP") ==
+          GLOBAL::Problem::Instance()->ThermalDynamicParams(), "DYNAMICTYP") ==
       INPAR::THR::dyna_genalpha)
   {
     Teuchos::ParameterList& ga = const_cast<Teuchos::ParameterList&>(
-        DRT::Problem::Instance()->ThermalDynamicParams().sublist("GENALPHA"));
+        GLOBAL::Problem::Instance()->ThermalDynamicParams().sublist("GENALPHA"));
     double rhoinf = ga.get<double>("RHO_INF");
 
     if (rhoinf != -1.)
@@ -2867,11 +2867,11 @@ void TSI::Monolithic::FixTimeIntegrationParams()
   }
 
   if (INPUT::IntegralValue<INPAR::STR::DynamicType>(
-          DRT::Problem::Instance()->StructuralDynamicParams(), "DYNAMICTYP") ==
+          GLOBAL::Problem::Instance()->StructuralDynamicParams(), "DYNAMICTYP") ==
       INPAR::STR::dyna_genalpha)
   {
     Teuchos::ParameterList& ga = const_cast<Teuchos::ParameterList&>(
-        DRT::Problem::Instance()->StructuralDynamicParams().sublist("GENALPHA"));
+        GLOBAL::Problem::Instance()->StructuralDynamicParams().sublist("GENALPHA"));
     double rhoinf = ga.get<double>("RHO_INF");
 
     if (rhoinf != -1.)

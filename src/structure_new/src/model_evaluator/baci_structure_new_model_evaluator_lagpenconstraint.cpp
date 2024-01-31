@@ -71,8 +71,8 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
   // time-integration dies ...
   // initialize constraint manager
   constrman_ = Teuchos::rcp(new CONSTRAINTS::ConstrManager());
-  constrman_->Init(dis, DRT::Problem::Instance()->StructuralDynamicParams());
-  constrman_->Setup(disnp_ptr_, DRT::Problem::Instance()->StructuralDynamicParams());
+  constrman_->Init(dis, GLOBAL::Problem::Instance()->StructuralDynamicParams());
+  constrman_->Setup(disnp_ptr_, GLOBAL::Problem::Instance()->StructuralDynamicParams());
 
   // set flag
   issetup_ = true;

@@ -403,7 +403,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
     const Epetra_Map* fullnoderowmap, const std::map<int, int>* slavetomastercolnodesmap)
 {
   // get solver parameter list of linear solver
-  const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(solvernumber);
+  const Teuchos::ParameterList& solverparams =
+      GLOBAL::Problem::Instance()->SolverParams(solvernumber);
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
@@ -1173,7 +1174,7 @@ void DRT::UTILS::Random::SetMeanVariance(const double mean, const double var)
 
 
 DRT::UTILS::RestartManager::RestartManager()
-    : startwalltime_(DRT::Problem::Walltime()),
+    : startwalltime_(GLOBAL::Problem::Walltime()),
       restartevrytime_(-1.0),
       restartcounter_(0),
       lastacceptedstep_(-1),
@@ -1216,7 +1217,7 @@ bool DRT::UTILS::RestartManager::Restart(const int step, const Epetra_Comm& comm
     int restarttime = 0;
     if (comm.MyPID() == 0)
     {
-      const double elapsedtime = DRT::Problem::Walltime() - startwalltime_;
+      const double elapsedtime = GLOBAL::Problem::Walltime() - startwalltime_;
       const bool walltimerestart = (int)(elapsedtime / restartevrytime_) > restartcounter_;
 
       if (step > 0 and (((restartevrystep_ > 0) and (step % restartevrystep_ == 0)) or

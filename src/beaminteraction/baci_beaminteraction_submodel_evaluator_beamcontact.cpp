@@ -86,7 +86,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // build a new data container to manage geometric search parameters
   geometric_search_params_ptr_ = Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchParams(
-      DRT::Problem::Instance()->GeometricSearchParams(), DRT::Problem::Instance()->IOParams()));
+      GLOBAL::Problem::Instance()->GeometricSearchParams(),
+      GLOBAL::Problem::Instance()->IOParams()));
   if (beam_interaction_params_ptr_->GetSearchStrategy() ==
           INPAR::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy &&
       geometric_search_params_ptr_->GetWriteVisualizationFlag())
@@ -94,7 +95,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     geometric_search_visualization_ptr_ =
         Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchVisualization(
             IO::VisualizationParametersFactory(
-                DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
+                GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
             DiscretPtr()->Comm(), "beam-interaction-geometric-search"));
   }
 
@@ -103,7 +104,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // build runtime visualization writer if desired
   if ((bool)INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT"),
+          GLOBAL::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT"),
           "VTK_OUTPUT_BEAM_CONTACT"))
   {
     beam_contact_params_ptr_->BuildBeamContactRuntimeOutputParams();
@@ -115,7 +116,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   contactelementtypes_.clear();
 
   if (INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"),
+          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Beam);
@@ -132,7 +133,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   }
 
   if (INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
+          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::RigidSphere);
@@ -142,7 +143,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // Check if beam-to-solid volume mesh tying is present.
   const Teuchos::ParameterList& beam_to_solid_volume_parameters =
-      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID VOLUME MESHTYING");
+      GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
+          "BEAM TO SOLID VOLUME MESHTYING");
   if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
           beam_to_solid_volume_parameters, "CONTACT_DISCRETIZATION") !=
       INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
@@ -170,7 +172,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // Check if beam-to-solid surface mesh tying is present.
   const Teuchos::ParameterList& beam_to_solid_surface_parameters =
-      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE MESHTYING");
+      GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
+          "BEAM TO SOLID SURFACE MESHTYING");
   if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
           beam_to_solid_surface_parameters, "CONTACT_DISCRETIZATION") !=
       INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
@@ -198,7 +201,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // Check if beam-to-solid surface contact is present.
   const Teuchos::ParameterList& beam_to_solid_surface_contact_parameters =
-      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE CONTACT");
+      GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID SURFACE CONTACT");
   if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
           beam_to_solid_surface_contact_parameters, "CONTACT_DISCRETIZATION") !=
       INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)

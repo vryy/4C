@@ -48,7 +48,7 @@ ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> 
       stepmax_(params_->get<int>("NUMSTEP")),
       uprestart_(params_->get<int>("RESTARTEVRY", -1)),
       upres_(params_->get<int>("RESULTSEVRY", -1)),
-      numdim_(DRT::Problem::Instance()->NDim()),
+      numdim_(GLOBAL::Problem::Instance()->NDim()),
       dtp_(params_->get<double>("TIMESTEP")),
       tau_(params_->get<double>("TAU")),
       dtele_(0.0),

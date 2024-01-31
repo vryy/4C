@@ -28,14 +28,16 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
     : PartFS3I(comm),
-      itmax_(
-          DRT::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED").get<int>("ITEMAX")),
-      ittol_(DRT::Problem::Instance()
+      itmax_(GLOBAL::Problem::Instance()
+                 ->FS3IDynamicParams()
+                 .sublist("PARTITIONED")
+                 .get<int>("ITEMAX")),
+      ittol_(GLOBAL::Problem::Instance()
                  ->FS3IDynamicParams()
                  .sublist("PARTITIONED")
                  .get<double>("CONVTOL")),
       consthermpress_(
-          DRT::Problem::Instance()->FS3IDynamicParams().get<std::string>("CONSTHERMPRESS"))
+          GLOBAL::Problem::Instance()->FS3IDynamicParams().get<std::string>("CONSTHERMPRESS"))
 {
   // constructor is supposed to stay empty
   return;
@@ -75,9 +77,9 @@ void FS3I::PartFS3I_2WC::Timeloop()
   SetFSISolution();
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
-  if (DRT::Problem::Instance()->Restart() and
+  if (GLOBAL::Problem::Instance()->Restart() and
       INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
+          GLOBAL::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
     scatravec_[0]->ScaTraField()->PrepareFirstTimeStep();
     scatravec_[1]->ScaTraField()->PrepareFirstTimeStep();

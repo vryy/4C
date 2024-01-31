@@ -102,7 +102,7 @@ void CONTACT::NitscheStrategySsi::SetParentState(
     case MORTAR::state_elch:
     case MORTAR::state_scalar:
     {
-      auto scatra_dis = DRT::Problem::Instance()->GetDis("scatra");
+      auto scatra_dis = GLOBAL::Problem::Instance()->GetDis("scatra");
       if (scatra_dis == Teuchos::null) dserror("didn't get scatra discretization");
 
       auto scatra_dofcolmap = Teuchos::rcp(new Epetra_Vector(*scatra_dis->DofColMap(), true));
@@ -161,7 +161,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategySsi::SetupRhsBlockVec(
     case CONTACT::VecBlockType::elch:
     case CONTACT::VecBlockType::scatra:
       return Teuchos::rcp(
-          new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("scatra")->DofRowMap()));
+          new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("scatra")->DofRowMap()));
     default:
       return CONTACT::NitscheStrategy::SetupRhsBlockVec(bt);
   }
@@ -195,7 +195,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategySsi::SetupMatri
     case CONTACT::MatBlockType::displ_scatra:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     case CONTACT::MatBlockType::elch_displ:
     case CONTACT::MatBlockType::elch_elch:
@@ -203,7 +203,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategySsi::SetupMatri
     case CONTACT::MatBlockType::scatra_scatra:
       return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
-              *DRT::Problem::Instance()->GetDis("scatra")->DofRowMap()),
+              *GLOBAL::Problem::Instance()->GetDis("scatra")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
       return CONTACT::NitscheStrategy::SetupMatrixBlockPtr(bt);
@@ -220,8 +220,9 @@ void CONTACT::NitscheStrategySsi::CompleteMatrixBlockPtr(
     case CONTACT::MatBlockType::displ_elch:
     case CONTACT::MatBlockType::displ_scatra:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
-              .GlobalAssemble(*DRT::Problem::Instance()->GetDis("scatra")->DofRowMap(),  // col map
-                  *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),           // row map
+              .GlobalAssemble(
+                  *GLOBAL::Problem::Instance()->GetDis("scatra")->DofRowMap(),     // col map
+                  *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // row map
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
@@ -229,8 +230,8 @@ void CONTACT::NitscheStrategySsi::CompleteMatrixBlockPtr(
     case CONTACT::MatBlockType::scatra_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
-                  *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
-                  *DRT::Problem::Instance()->GetDis("scatra")->DofRowMap(),     // row map
+                  *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
+                  *GLOBAL::Problem::Instance()->GetDis("scatra")->DofRowMap(),     // row map
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;

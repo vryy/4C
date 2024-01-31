@@ -37,9 +37,9 @@ ALE::Meshsliding::Meshsliding(Teuchos::RCP<DRT::Discretization> dis, CORE::LINAL
 void ALE::Meshsliding::AdapterMortar(std::vector<int> coupleddof)
 {
   adaptermeshsliding_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(
-      DRT::Problem::Instance()->NDim(), DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
 
   // Setup and Output of Nonlinear meshtying adapter
   adaptermeshsliding_->Setup(discret_, discret_, coupleddof, "Mortar");

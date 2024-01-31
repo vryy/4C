@@ -26,7 +26,7 @@ using namespace DRT::UTILS;
 bool DRT::ELEMENTS::RedAirway::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   if (ndim != 3)
     dserror("Problem defined as %dd, but found Reduced dimensional AIRWAY element.", ndim);
 
@@ -110,7 +110,7 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(
 bool DRT::ELEMENTS::RedAcinus::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   if (ndim != 3)
     dserror("Problem defined as %dd, but found Reduced dimensional ACINUS element.", ndim);
 
@@ -160,7 +160,7 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(
 bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   if (ndim != 3)
     dserror(
         "Problem defined as %dd, but found Reduced dimensional INTER ACINAR DEPENDENCE element.",
@@ -186,7 +186,7 @@ bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(
 bool DRT::ELEMENTS::RedAirBloodScatra::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   if (ndim != 3)
     dserror("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
 
@@ -216,7 +216,7 @@ bool DRT::ELEMENTS::RedAirBloodScatra::ReadElement(
 bool DRT::ELEMENTS::RedAirBloodScatraLine3::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   if (ndim != 3)
     dserror("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
 

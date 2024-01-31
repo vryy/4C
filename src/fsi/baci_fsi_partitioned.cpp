@@ -69,7 +69,7 @@ void FSI::Partitioned::Setup()
   // call setup of base class
   FSI::Algorithm::Setup();
 
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   SetDefaultParameters(fsidyn, noxparameterlist_);
   SetupCoupling(fsidyn, Comm());
 }
@@ -82,19 +82,19 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
   if (Comm().MyPID() == 0) std::cout << "\n SetupCoupling in FSI::Partitioned ..." << std::endl;
 
   CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(DRT::Problem::Instance()->NDim(),
-      DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
+      GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
 
 
   if ((INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
           1)  // matching meshes
-      and (DRT::Problem::Instance()->GetProblemType() != ProblemType::fsi_xfem) and
-      (DRT::Problem::Instance()->GetProblemType() != ProblemType::fbi))
+      and (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fsi_xfem) and
+      (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fbi))
   {
     matchingnodes_ = true;
-    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
     coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
         StructureField()->Interface()->FSICondMap(), *MBFluidField()->Discretization(),
         MBFluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
@@ -104,12 +104,12 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
   }
   else if ((INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                1)  // matching meshes coupled via XFEM
-           and (DRT::Problem::Instance()->GetProblemType() == ProblemType::fsi_xfem) and
-           (DRT::Problem::Instance()->GetProblemType() != ProblemType::fbi))
+           and (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fsi_xfem) and
+           (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fbi))
   {
     matchingnodes_ = true;  // matching between structure and boundary dis! non-matching between
                             // boundary dis and fluid is handled bei XFluid itself
-    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
 
     Teuchos::RCP<ADAPTER::FluidXFEM> x_movingboundary =
         Teuchos::rcp_dynamic_cast<ADAPTER::FluidXFEM>(MBFluidField());
@@ -121,17 +121,17 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
-  else if ((DRT::Problem::Instance()->GetProblemType() == ProblemType::fbi))
+  else if ((GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fbi))
   {
     matchingnodes_ = true;
   }
   else if (INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                0  // mortar coupling
-           and (DRT::Problem::Instance()->GetProblemType() != ProblemType::fsi_xfem))
+           and (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fsi_xfem))
   {
     // coupling condition at the fsi interface: displacements (=number of spatial dimensions) are
     // coupled e.g.: 3D: coupleddof = [1, 1, 1]
-    std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(), 1);
+    std::vector<int> coupleddof(GLOBAL::Problem::Instance()->NDim(), 1);
 
     matchingnodes_ = false;
     coupsfm_->Setup(StructureField()->Discretization(), MBFluidField()->Discretization(),
@@ -383,7 +383,7 @@ void FSI::Partitioned::SetDefaultParameters(
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
 
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = noxparameterlist_;
@@ -406,7 +406,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
   Teuchos::RCP<std::ofstream> log;
   if (Comm().MyPID() == 0)
   {
-    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << Comm().NumProc() << "\n"
@@ -856,7 +856,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
     Teuchos::RCP<const Epetra_Vector> idispnp) const
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
 
   if (INPUT::IntegralValue<int>(fsidyn, "SECONDORDER") == 1)
@@ -940,7 +940,7 @@ void FSI::Partitioned::Output()
   // call base class version
   FSI::Algorithm::Output();
 
-  switch (INPUT::IntegralValue<int>(DRT::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
+  switch (INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
   {
     case fsi_iter_stagg_AITKEN_rel_param:
     {
@@ -970,7 +970,7 @@ void FSI::Partitioned::ReadRestart(int step)
   // call base class version
   FSI::Algorithm::ReadRestart(step);
 
-  switch (INPUT::IntegralValue<int>(DRT::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
+  switch (INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
   {
     case fsi_iter_stagg_AITKEN_rel_param:
     {

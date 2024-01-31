@@ -1293,7 +1293,7 @@ void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
   static CORE::LINALG::Matrix<NUMDOF_, NUMDOF_> lasttangent;
 
   const double time = params.get<double>("total time");
-  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   const std::string txtname = filebase + ".sosh8p8.txt";
 
   // store last converged state

@@ -48,15 +48,15 @@ void MORTAR::STRATEGY::FactoryMT::Setup()
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& params) const
 {
-  // read parameter lists from DRT::Problem
-  const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& meshtying = DRT::Problem::Instance()->ContactDynamicParams();
-  const Teuchos::ParameterList& wearlist = DRT::Problem::Instance()->WearParams();
+  // read parameter lists from GLOBAL::Problem
+  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& meshtying = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& wearlist = GLOBAL::Problem::Instance()->WearParams();
 
-  // read Problem Type and Problem Dimension from DRT::Problem
-  const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
-  int dim = DRT::Problem::Instance()->NDim();
-  CORE::FE::ShapeFunctionType distype = DRT::Problem::Instance()->SpatialApproximationType();
+  // read Problem Type and Problem Dimension from GLOBAL::Problem
+  const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
+  int dim = GLOBAL::Problem::Instance()->NDim();
+  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->SpatialApproximationType();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -256,16 +256,16 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   // *********************************************************************
   // poroelastic meshtying
   // *********************************************************************
-  if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
-          problemtype == ProblemType::fpsi_xfem) &&
+  if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
+          problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
       (INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
               INPAR::MORTAR::shape_dual &&
           INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
               INPAR::MORTAR::shape_petrovgalerkin))
     dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
-  if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
-          problemtype == ProblemType::fpsi_xfem) &&
+  if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
+          problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     dserror(
@@ -273,23 +273,23 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
                                                                        // Parent Elements, which are
                                                                        // not copied to other procs!
 
-  if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
-          problemtype == ProblemType::fpsi_xfem) &&
+  if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
+          problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
       INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
           INPAR::CONTACT::solution_lagmult)
     dserror("POROCONTACT: Use Lagrangean Strategy for poro meshtying!");
 
-  if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
-          problemtype == ProblemType::fpsi_xfem) &&
+  if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
+          problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
       INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") !=
           INPAR::CONTACT::system_condensed_lagmult)
     dserror("POROCONTACT: Just lagrange multiplier should be condensed for poro meshtying!");
 
-  if ((problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
-          problemtype == ProblemType::fpsi_xfem) &&
+  if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
+          problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
       (dim != 3) && (dim != 2))
   {
-    const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
     if (INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
       dserror("POROCONTACT: PoroMeshtying with no penetration just tested for 3d (and 2d)!");
   }
@@ -309,7 +309,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces, bool& poroslave,
     bool& poromaster) const
 {
-  int dim = DRT::Problem::Instance()->NDim();
+  int dim = GLOBAL::Problem::Instance()->NDim();
 
   // start building interfaces
   if (Comm().MyPID() == 0)

@@ -430,7 +430,7 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff->size() <= component || (*onoff)[component] == 0 ||
-          DRT::Problem::Instance(0)->GetProblemType() != ProblemType::fluid)
+          GLOBAL::Problem::Instance(0)->GetProblemType() != GLOBAL::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
       {
@@ -561,8 +561,8 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
     CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     DRT::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
-    if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::elemag or
-        DRT::Problem::Instance(0)->GetProblemType() == ProblemType::scatra)
+    if (GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::elemag or
+        GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::scatra)
     {
       initParams.set("hdg_action", true);
       DRT::UTILS::AddEnumClassToParameterList<DRT::HDGAction>(
@@ -594,7 +594,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff->size() <= component || (*onoff)[component] == 0 ||
-          DRT::Problem::Instance(0)->GetProblemType() != ProblemType::fluid)
+          GLOBAL::Problem::Instance(0)->GetProblemType() != GLOBAL::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
       {

@@ -223,9 +223,9 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
       if (curvenum >= 0)
-        curvefac =
-            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
-                time);
+        curvefac = GLOBAL::Problem::Instance()
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+                       .Evaluate(time);
 
       double diff = (curvefac * (*initerror_)[condID - 1] - (*acterror_)[condID - 1]);
 

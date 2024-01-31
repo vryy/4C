@@ -422,7 +422,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::E
 
     const double fac = shapesface_->jfac(q);
     // evaluate function at current Gauss point (provide always 3D coordinates!)
-    const double functfac = DRT::Problem::Instance()
+    const double functfac = GLOBAL::Problem::Instance()
                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*func)[0] - 1)
                                 .Evaluate(coordgp, time, 0);
 
@@ -1127,7 +1127,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSour
   shapes_->Evaluate(*ele);
 
   // CORE::LINALG::SerialDenseVector source(nsd_);
-  if (nsd_ != DRT::Problem::Instance()
+  if (nsd_ != GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcno - 1)
                   .NumberComponents())
     dserror(
@@ -1146,7 +1146,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSour
         for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->nodexyzreal(d, j);
         for (unsigned int d = 0; d < nsd_; ++d)
           source += shapes_->shderxy(j * nsd_ + d, q) *
-                    DRT::Problem::Instance()
+                    GLOBAL::Problem::Instance()
                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcno - 1)
                         .Evaluate(xyz.A(), time, d);
         elevec1(i) += shapes_->shfunct(i, q) * source * shapes_->jfac(q);
@@ -1349,7 +1349,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
       if (functnum > 0)
       {
         // evaluate function at current Gauss point (provide always 3D coordinates!)
-        functfac = DRT::Problem::Instance()
+        functfac = GLOBAL::Problem::Instance()
                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                        .Evaluate(coordgpref, time, 0);
       }
@@ -1653,10 +1653,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
       double gradphi[nsd_];
 
       dsassert(start_func != nullptr, "funct not set for initial value");
-      if (DRT::Problem::Instance()
+      if (GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                   .NumberComponents() != 1 &&
-          DRT::Problem::Instance()
+          GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                   .NumberComponents() != nsd_ + 2)
         dserror(
@@ -1664,11 +1664,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
             "field. Set the number of components to either 1 or nsd_ + 2.\nThe fields are ordered "
             "as:\n- phi\n- gradphi\n- tracephi");
 
-      phi = DRT::Problem::Instance()
+      phi = GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                 .Evaluate(xyz, 0, 0);
       for (unsigned int i = 0; i < nsd_; ++i)
-        gradphi[i] = DRT::Problem::Instance()
+        gradphi[i] = GLOBAL::Problem::Instance()
                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                          .Evaluate(xyz, 0, 1 + i);
 
@@ -1721,7 +1721,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
       for (unsigned int d = 0; d < nsd_; ++d) xyz[d] = shapesface_->xyzreal(d, q);
 
       double trphi;
-      trphi = DRT::Problem::Instance()
+      trphi = GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                   .Evaluate(xyz, 0, nsd_ + 1);
 
@@ -2158,7 +2158,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(const DRT::Elem
   const int func = params.get<int>("error function number");
   const double time = params.get<double>("time");
 
-  if (DRT::Problem::Instance()
+  if (GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func - 1)
           .NumberComponents() != 1)
     dserror(
@@ -2198,10 +2198,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(const DRT::Elem
     // Analytical function evaluation
     // Evaluate error function and its derivatives in the integration point (real) coordinates
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
-    double funct =
-        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func - 1).Evaluate(
-            xsi.A(), time, 0);
-    std::vector<double> deriv = DRT::Problem::Instance()
+    double funct = GLOBAL::Problem::Instance()
+                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func - 1)
+                       .Evaluate(xsi.A(), time, 0);
+    std::vector<double> deriv = GLOBAL::Problem::Instance()
                                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func - 1)
                                     .EvaluateSpatialDerivative(xsi.A(), time, 0);
 

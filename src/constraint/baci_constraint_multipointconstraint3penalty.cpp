@@ -412,9 +412,9 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Dis
       bool usetime = true;
       if (time < 0.0) usetime = false;
       if (curvenum >= 0 && usetime)
-        curvefac =
-            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
-                time);
+        curvefac = GLOBAL::Problem::Instance()
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+                       .Evaluate(time);
 
 
       double diff = (curvefac * (*initerror_)[eid] - (*acterror_)[eid]);

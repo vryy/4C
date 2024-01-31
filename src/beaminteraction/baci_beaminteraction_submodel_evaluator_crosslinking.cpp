@@ -196,7 +196,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PostSetup()
 {
   CheckInitSetup();
 
-  if (not DRT::Problem::Instance()->Restart())
+  if (not GLOBAL::Problem::Instance()->Restart())
   {
     // in case of initially set crosslinker
     if (crosslinking_params_ptr_->TotalNumInitCrosslinker() > 0) UpdateMyDoubleBondsRemoteIdList();
@@ -1875,7 +1875,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseUnboundCrosslinker
   double meanvalue = 0.0;
   // Set mean value and standard deviation of normal distribution
   // FixMe standard deviation = sqrt(variance) check this for potential error !!!
-  DRT::Problem::Instance()->Random()->SetMeanVariance(meanvalue, standarddev);
+  GLOBAL::Problem::Instance()->Random()->SetMeanVariance(meanvalue, standarddev);
 
   // diffuse crosslinker according to brownian dynamics
   CORE::LINALG::Matrix<3, 1> newclpos(true);
@@ -1883,7 +1883,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseUnboundCrosslinker
   int count = 3;
   // maximal diffusion given by cutoff radius (sqrt(3) = 1.73..)
   double const maxmov = BinStrategy().BinSizeLowerBound() / 1.74;
-  DRT::Problem::Instance()->Random()->Normal(randvec, count);
+  GLOBAL::Problem::Instance()->Random()->Normal(randvec, count);
   for (int dim = 0; dim < 3; ++dim)
   {
     if (abs(randvec[dim]) > maxmov)
@@ -1966,7 +1966,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetPositionOfNewlyFreeCro
   CORE::LINALG::Matrix<3, 1> cldeltapos_i;
   std::vector<double> randunivec(3);
   int count = 3;
-  DRT::Problem::Instance()->Random()->Uni(randunivec, count);
+  GLOBAL::Problem::Instance()->Random()->Uni(randunivec, count);
   for (unsigned int dim = 0; dim < 3; ++dim) cldeltapos_i(dim) = randunivec[dim];
 
   cldeltapos_i.Scale(crosslinker->GetMaterial()->LinkingLength() / cldeltapos_i.Norm2());
@@ -2231,7 +2231,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::BindCrosslinker()
 {
   CheckInit();
 
-  DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+  GLOBAL::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
 
   // intended bonds of row crosslinker on myrank (key is clgid)
   std::map<int, Teuchos::RCP<BEAMINTERACTION::DATA::BindEventData>> mybonds;
@@ -2528,7 +2528,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
   double plink = 1.0 - exp((-1.0) * crosslinking_params_ptr_->DeltaTime() *
                            crosslinker_i->GetMaterial()->KOn());
 
-  if (checklinkingprop and (DRT::Problem::Instance()->Random()->Uni() > plink)) return false;
+  if (checklinkingprop and (GLOBAL::Problem::Instance()->Random()->Uni() > plink)) return false;
 
   // criterion:
   // first check if binding spot has free bonds left
@@ -3225,7 +3225,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
 {
   CheckInit();
 
-  DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+  GLOBAL::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
 
   // data containing information about elements that need to be updated on
   // procs != myrank
@@ -3270,7 +3270,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
       case 1:
       {
         // if probability criterion is not met, we are done here
-        if (DRT::Problem::Instance()->Random()->Uni() > p_unlink) break;
+        if (GLOBAL::Problem::Instance()->Random()->Uni() > p_unlink) break;
 
         // dissolve bond and update states
         DissolveBond(linker, GetSingleOccupiedClBspot(cldata_i->GetBSpots()), 1, sendunbindevents,
@@ -3293,7 +3293,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
         for (auto const& clbspotiter : ro)
         {
           // if probability criterion isn't met, go to next spot
-          if (DRT::Problem::Instance()->Random()->Uni() > p_unlink_db[clbspotiter]) continue;
+          if (GLOBAL::Problem::Instance()->Random()->Uni() > p_unlink_db[clbspotiter]) continue;
 
           // dissolve bond and update states
           DissolveBond(linker, clbspotiter, 2, sendunbindevents, myrankunbindevents);
@@ -3855,9 +3855,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DecideBindingInParallel(
     if (myrankbond) numrequprocs += 1;
 
     // get random proc out of affected ones
-    DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+    GLOBAL::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
     // fixme: what if random number exactly = 1?
-    int rankwithpermission = std::floor(numrequprocs * DRT::Problem::Instance()->Random()->Uni());
+    int rankwithpermission =
+        std::floor(numrequprocs * GLOBAL::Problem::Instance()->Random()->Uni());
 
     // myrank is allowed to set link
     if (myrankbond and rankwithpermission == (numrequprocs - 1))

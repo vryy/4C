@@ -86,10 +86,10 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       uzawaparam_(sdynparams.get<double>("UZAWAPARAM")),
       uzawaitermax_(sdynparams.get<int>("UZAWAMAXITER")),
       tolcon_(sdynparams.get<double>("TOLCONSTR")),
-      tolcardvasc0d_(DRT::Problem::Instance()->Cardiovascular0DStructuralParams().get<double>(
+      tolcardvasc0d_(GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().get<double>(
           "TOL_CARDVASC0D_RES")),
       tolcardvasc0ddofincr_(
-          DRT::Problem::Instance()->Cardiovascular0DStructuralParams().get<double>(
+          GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().get<double>(
               "TOL_CARDVASC0D_DOFINCR")),
       iter_(-1),
       normcharforce_(0.0),
@@ -840,7 +840,7 @@ void STR::TimIntImpl::ApplyForceStiffExternal(const double time,  //!< evaluatio
 
   if (damping_ == INPAR::STR::damp_material) discret_->SetState(0, "velocity", vel);
   // get load vector
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   bool loadlin = (INPUT::IntegralValue<int>(sdyn, "LOADLIN") == 1);
 
   if (!loadlin)
@@ -1049,7 +1049,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying(
 
     // visualization of current Newton step
 #ifdef MORTARGMSH2
-    bool gmsh = INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
+    bool gmsh = INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
     if (gmsh) cmtbridge_->VisualizeGmsh(stepn_, iter_);
 #endif  // #ifdef MORTARGMSH2
   }
@@ -1466,7 +1466,7 @@ int STR::TimIntImpl::NewtonFull()
 
   if (outputeveryiter_)
   {
-    int restart = DRT::Problem::Instance()->Restart();
+    int restart = GLOBAL::Problem::Instance()->Restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -1849,7 +1849,7 @@ int STR::TimIntImpl::NewtonLS()
 
   if (outputeveryiter_)
   {
-    int restart = DRT::Problem::Instance()->Restart();
+    int restart = GLOBAL::Problem::Instance()->Restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -2663,7 +2663,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     double dti = cardvasc0dman_->Get_k_ptc();
 
     const bool ptc_3D0D = INPUT::IntegralValue<int>(
-        DRT::Problem::Instance()->Cardiovascular0DStructuralParams(), "PTC_3D0D");
+        GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams(), "PTC_3D0D");
 
     // equilibrium iteration loop
     while (((not Converged() and (not linsolve_error) and (not element_error)) and
@@ -3133,9 +3133,9 @@ void STR::TimIntImpl::CmtLinearSolve()
       Teuchos::RCP<CONTACT::AbstractStrategy> costrat =
           Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strat);
       if (costrat != Teuchos::null)
-        linSystemProps.set<std::string>("ProblemType", "contact");
+        linSystemProps.set<std::string>("GLOBAL::ProblemType", "contact");
       else
-        linSystemProps.set<std::string>("ProblemType", "meshtying");
+        linSystemProps.set<std::string>("GLOBAL::ProblemType", "meshtying");
       linSystemProps.set<int>("time step", step_);
       linSystemProps.set<int>("iter", iter_);
     }
@@ -3301,7 +3301,7 @@ int STR::TimIntImpl::PTC()
 
   if (outputeveryiter_)
   {
-    int restart = DRT::Problem::Instance()->Restart();
+    int restart = GLOBAL::Problem::Instance()->Restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -3565,7 +3565,7 @@ void STR::TimIntImpl::UpdateIterIncrementally(
 
   // recover contact / meshtying Lagrange multipliers (monolithic FSI)
   // not in the case of TSI with contact
-  if (DRT::Problem::Instance()->GetProblemType() != ProblemType::tsi)
+  if (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::tsi)
     if (HaveContactMeshtying() && disi != Teuchos::null) cmtbridge_->Recover(disi_);
 
   // Update using #disi_
@@ -3998,7 +3998,7 @@ void STR::TimIntImpl::ExportContactQuantities()
   // write number of active nodes for converged newton in textfile xx x.active
   FILE* MyFile = nullptr;
   std::ostringstream filename;
-  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   filename << filebase << ".active";
   MyFile = fopen(filename.str().c_str(), "at+");
 
@@ -4016,7 +4016,7 @@ void STR::TimIntImpl::ExportContactQuantities()
   // write required time
   FILE* MyFile2 = nullptr;
   std::ostringstream filename2;
-  const std::string filebase2 = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase2 = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   filename2 << filebase2 << ".time";
   MyFile2 = fopen(filename2.str().c_str(), "at+");
 
@@ -4303,7 +4303,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 #ifdef BACI_DEBUG
   if (iter_ == 1 && step_ == 0)
   {
-    std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+    std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
     fname += ".stcmatrix1.mtl";
     if (myrank_ == 0) std::cout << "Printing stcmatrix1 to file" << std::endl;
     CORE::LINALG::PrintMatrixInMatlabFormat(
@@ -4329,7 +4329,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 #ifdef BACI_DEBUG
     if (iter_ == 1 && step_ == 0)
     {
-      std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+      std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
       fname += ".stcmatrix2.mtl";
       if (myrank_ == 0) std::cout << "Printing stcmatrix2 to file" << std::endl;
       CORE::LINALG::PrintMatrixInMatlabFormat(fname,
@@ -4540,9 +4540,9 @@ int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
       Teuchos::RCP<CONTACT::AbstractStrategy> costrat =
           Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strat);
       if (costrat != Teuchos::null)
-        linSystemProps.set<std::string>("ProblemType", "contact");
+        linSystemProps.set<std::string>("GLOBAL::ProblemType", "contact");
       else
-        linSystemProps.set<std::string>("ProblemType", "meshtying");
+        linSystemProps.set<std::string>("GLOBAL::ProblemType", "meshtying");
       linSystemProps.set<int>("time step", step_);
       linSystemProps.set<int>("iter", iter_);
     }

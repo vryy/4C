@@ -163,7 +163,7 @@ std::string IO::ExtractFileName(const std::string& full_filename)
  *----------------------------------------------------------------------------*/
 std::string IO::RemoveRestartCountFromFileName(const std::string& filename)
 {
-  const int restart_count = DRT::Problem::Instance()->Restart();
+  const int restart_count = GLOBAL::Problem::Instance()->Restart();
   if (restart_count == 0) return filename;
 
   size_t pos = filename.rfind('-');

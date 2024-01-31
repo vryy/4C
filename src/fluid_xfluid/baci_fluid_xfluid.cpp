@@ -222,7 +222,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   //
   // REMARK: ivelnp_ and idispnp_ will be set again for the new time step in PrepareXFEMSolve()
 
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
 
   if (restart) condition_manager_->ReadRestart(restart);
 
@@ -272,7 +272,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   // -------------------------------------------------------------------
 
   // load GMSH output flags
-  if (INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
+  if (INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
   {
     output_service_ = Teuchos::rcp(new XFluidOutputServiceGmsh(
         params_->sublist("XFEM"), xdiscret_, condition_manager_, include_inner_));
@@ -323,18 +323,19 @@ void FLD::XFluid::SetupFluidDiscretization()
   // and xfluidfluid!!!
 
   // XFF-case
-  if (DRT::Problem::Instance()->DoesExistDis("xfluid"))
+  if (GLOBAL::Problem::Instance()->DoesExistDis("xfluid"))
   {
-    Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis(
+    Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis(
         "fluid");  // fluid dis is here the embedded mesh (required for XFFSI)
-    xfluiddis = DRT::Problem::Instance()->GetDis("xfluid");  // xfluid dis is here the cut mesh
+    xfluiddis = GLOBAL::Problem::Instance()->GetDis("xfluid");  // xfluid dis is here the cut mesh
     xdisbuilder.SetupXFEMDiscretization(
-        DRT::Problem::Instance()->XFEMGeneralParams(), xfluiddis, fluiddis, "FluidMesh");
+        GLOBAL::Problem::Instance()->XFEMGeneralParams(), xfluiddis, fluiddis, "FluidMesh");
   }
   else  // standard xfluid case
   {
-    xfluiddis = DRT::Problem::Instance()->GetDis("fluid");  // fluid dis is here the cut mesh
-    xdisbuilder.SetupXFEMDiscretization(DRT::Problem::Instance()->XFEMGeneralParams(), xfluiddis);
+    xfluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");  // fluid dis is here the cut mesh
+    xdisbuilder.SetupXFEMDiscretization(
+        GLOBAL::Problem::Instance()->XFEMGeneralParams(), xfluiddis);
   }
 }
 
@@ -345,7 +346,7 @@ void FLD::XFluid::SetXFluidParams()
 {
   omtheta_ = 1.0 - theta_;
 
-  numdim_ = DRT::Problem::Instance()->NDim();
+  numdim_ = GLOBAL::Problem::Instance()->NDim();
 
   Teuchos::ParameterList& params_xfem = params_->sublist("XFEM");
   Teuchos::ParameterList& params_xf_gen = params_->sublist("XFLUID DYNAMIC/GENERAL");
@@ -1834,7 +1835,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::EvaluateErrorComparedToAnalytical
       if ((step_ == stepmax_) or (time_ == maxtime_))  // write results to file
       {
         std::ostringstream temp;
-        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
         const std::string fname = simulation + ".xfem_abserror";
 
         std::ofstream f;
@@ -1869,7 +1870,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::EvaluateErrorComparedToAnalytical
       }
 
       std::ostringstream temp;
-      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
       const std::string fname = simulation + "_time.xfem_abserror";
 
       if (step_ == 1)
@@ -4420,7 +4421,7 @@ void FLD::XFluid::Output()
 void FLD::XFluid::SetInitialFlowField(
     const INPAR::FLUID::InitialField initfield, const int startfuncno)
 {
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
 
   if (restart) return;
 
@@ -4448,7 +4449,7 @@ void FLD::XFluid::SetInitialFlowField(
         {
           int gid = nodedofset[dof];
 
-          double initialval = DRT::Problem::Instance()
+          double initialval = GLOBAL::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X().data(), time_, dof % 4);
           state_->velnp_->ReplaceGlobalValues(1, &initialval, &gid);
@@ -4507,9 +4508,9 @@ void FLD::XFluid::SetInitialFlowField(
                       exp(a * xyz[1]) * cos(a * xyz[2] + d * xyz[0]));
 
       // compute initial pressure
-      int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+      int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
       if (id == -1) dserror("Newtonian fluid material could not be found");
-      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
       double dens = actmat->density_;
       p = -a * a / 2.0 * dens *
@@ -5254,7 +5255,7 @@ void FLD::XFluid::UpdateGridv()
 {
   // get order of accuracy of grid velocity determination
   // from input file data
-  const Teuchos::ParameterList& fluiddynparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluiddynparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   const int order = INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   Teuchos::RCP<Epetra_Vector> gridv = Teuchos::rcp(new Epetra_Vector(dispnp_->Map(), true));

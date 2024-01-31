@@ -119,7 +119,7 @@ void FLD::TimIntPoro::SetInitialPorosityField(
         std::vector<int> nodedofset = discret_->Dof(lnode);
 
         int numdofs = nodedofset.size();
-        double initialval = DRT::Problem::Instance()
+        double initialval = GLOBAL::Problem::Instance()
                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                 .Evaluate(lnode->X().data(), time_, 0);
 

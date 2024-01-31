@@ -43,11 +43,11 @@ BACI_NAMESPACE_OPEN
 void dyn_fluid_drt(const int restart)
 {
   // create a communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("fluid")->Comm();
 
   // access to some parameter lists
-  // const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  // const Teuchos::ParameterList& probtype = GLOBAL::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
 
   // prepares a turbulent flow simulation with generation of turbulent inflow during the
   // actual simulation
@@ -80,8 +80,8 @@ void dyn_fluid_drt(const int restart)
     turbfluidalgo->TimeLoop();
 
     // perform result tests if required
-    DRT::Problem::Instance()->AddFieldTest(turbfluidalgo->DoResultCheck());
-    DRT::Problem::Instance()->TestAll(comm);
+    GLOBAL::Problem::Instance()->AddFieldTest(turbfluidalgo->DoResultCheck());
+    GLOBAL::Problem::Instance()->TestAll(comm);
   }
   // solve a simple fluid problem
   else
@@ -98,8 +98,8 @@ void dyn_fluid_drt(const int restart)
     fluidalgo->FluidField()->Integrate();
 
     // perform result tests if required
-    DRT::Problem::Instance()->AddFieldTest(fluidalgo->FluidField()->CreateFieldTest());
-    DRT::Problem::Instance()->TestAll(comm);
+    GLOBAL::Problem::Instance()->AddFieldTest(fluidalgo->FluidField()->CreateFieldTest());
+    GLOBAL::Problem::Instance()->TestAll(comm);
   }
 
   // have fun with your results!

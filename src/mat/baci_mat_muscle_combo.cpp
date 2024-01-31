@@ -136,18 +136,18 @@ void MAT::Muscle_Combo::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
 
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
         params_ = static_cast<MAT::PAR::Muscle_Combo*>(mat);
         activationFunction_ =
-            &DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+            &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                 params_->actFunctId_ - 1);
       }
       else
@@ -167,8 +167,9 @@ void MAT::Muscle_Combo::Setup(int numgp, INPUT::LineDefinition* linedef)
   anisotropy_.SetNumberOfGaussPoints(numgp);
   anisotropy_.ReadAnisotropyFromElement(linedef);
 
-  activationFunction_ = &DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-      params_->actFunctId_ - 1);
+  activationFunction_ =
+      &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+          params_->actFunctId_ - 1);
 }
 
 void MAT::Muscle_Combo::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,

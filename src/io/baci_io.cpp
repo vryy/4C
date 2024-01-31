@@ -49,7 +49,7 @@ IO::DiscretizationReader::DiscretizationReader(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step)
-    : dis_(dis), input_(DRT::Problem::Instance()->InputControlFile())
+    : dis_(dis), input_(GLOBAL::Problem::Instance()->InputControlFile())
 {
   FindResultGroup(step, input_->ControlFile());
 }
@@ -526,8 +526,8 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
       resultgroup_(-1),
       resultfile_changed_(-1),
       meshfile_changed_(-1),
-      output_(DRT::Problem::Instance()->OutputControlFile()),
-      spatial_approx_(DRT::Problem::Instance()->SpatialApproximationType())
+      output_(GLOBAL::Problem::Instance()->OutputControlFile()),
+      spatial_approx_(GLOBAL::Problem::Instance()->SpatialApproximationType())
 {
   if (output_ != Teuchos::null) binio_ = output_->BinIO();
   // not nice, but needed in order to let pre_exodus read fields without output control file

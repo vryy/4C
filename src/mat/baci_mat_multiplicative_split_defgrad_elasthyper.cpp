@@ -134,12 +134,12 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-      auto* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+      auto* mat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper*>(mat);
       else
@@ -857,7 +857,7 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgrad_El
 
   // safety checks
   // get the scatra structure control parameter list
-  const auto& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
+  const auto& ssicontrol = GLOBAL::Problem::Instance()->SSIControlParams();
   if (Teuchos::getIntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
       INPAR::SSI::SolutionSchemeOverFields::ssi_Monolithic)
   {

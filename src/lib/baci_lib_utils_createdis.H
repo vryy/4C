@@ -295,7 +295,7 @@ namespace DRT
         if (matmap.size()) dserror("The input material map is supposed to be empty!");
 
         std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap =
-            DRT::Problem::Instance()->CloningMaterialMap();
+            GLOBAL::Problem::Instance()->CloningMaterialMap();
         if (clonefieldmatmap.size() < 1)
           dserror("At least one material pairing required in --CLONING MATERIAL MAP.");
 

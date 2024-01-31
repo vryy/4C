@@ -85,11 +85,11 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   btsolpairmap_.clear();
   oldbtsolpairmap_.clear();
 
-  // read parameter lists from DRT::Problem
-  sbeamcontact_ = DRT::Problem::Instance()->BeamContactParams();
-  sbeampotential_ = DRT::Problem::Instance()->BeamPotentialParams();
-  scontact_ = DRT::Problem::Instance()->ContactDynamicParams();
-  sstructdynamic_ = DRT::Problem::Instance()->StructuralDynamicParams();
+  // read parameter lists from GLOBAL::Problem
+  sbeamcontact_ = GLOBAL::Problem::Instance()->BeamContactParams();
+  sbeampotential_ = GLOBAL::Problem::Instance()->BeamPotentialParams();
+  scontact_ = GLOBAL::Problem::Instance()->ContactDynamicParams();
+  sstructdynamic_ = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // indicate if beam-to-solid contact is applied
   btsol_ = INPUT::IntegralValue<int>(BeamContactParameters(), "BEAMS_BTSOL");
@@ -433,7 +433,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
     elementpairs = tree_->OctTreeSearch(currentpositions);
 
     t_end = Teuchos::Time::wallTime() - t_start;
-    Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+    Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
     if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
       IO::cout(IO::standard) << "      OctTree Search (Contact): " << t_end << " seconds"
                              << IO::endl;
@@ -447,7 +447,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
 
     elementpairs = BruteForceSearch(currentpositions, searchradius_, sphericalsearchradius_);
     t_end = Teuchos::Time::wallTime() - t_start;
-    Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+    Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
     if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
       IO::cout(IO::standard) << "      Brute Force Search (Contact): " << t_end << " seconds"
                              << IO::endl;
@@ -469,7 +469,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
       elementpairspot = pottree_->OctTreeSearch(currentpositions);
 
       double t_end = Teuchos::Time::wallTime() - t_start;
-      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+      Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
       if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
         IO::cout(IO::standard) << "      OctTree Search (Potential): " << t_end << " seconds"
                                << IO::endl;
@@ -484,7 +484,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
       elementpairspot = BruteForceSearch(currentpositions, searchradiuspot_,
           searchradiuspot_);  // TODO do we need a sphericalsearchradius here as well?
       double t_end = Teuchos::Time::wallTime() - t_start;
-      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+      Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
       if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
         IO::cout(IO::standard) << "      Brute Force Search (Potential): " << t_end << " seconds"
                                << IO::endl;
@@ -2018,7 +2018,7 @@ void CONTACT::Beam3cmanager::Update(
         // afterwards. Otherwise the contact force would be applied in the wrong direction and the
         // beams could cross!
         pairs_[i]->InvertNormal();
-        Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+        Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
         if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
           std::cout << "      Warning: Penetration to large, choose higher penalty parameter!"
                     << std::endl;
@@ -3237,7 +3237,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
   btsolconstrnorm_ = 0.0;
 
   // print results to screen
-  Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+  Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
   if (Comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY", 0))
   {
     IO::cout(IO::debug)
@@ -3285,7 +3285,7 @@ void CONTACT::Beam3cmanager::UpdateAllPairs()
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ConsoleOutput()
 {
-  Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+  Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
   if (ioparams.get<int>("STDOUTEVRY", 0))
   {
     // begin output
@@ -3541,7 +3541,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
 #endif
 
     // print results to screen
-    Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+    Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
     if (Comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY", 0))
     {
       IO::cout(IO::standard) << "\n    Number of Point-to-Point Contact Pairs: " << sumpro_numperpc

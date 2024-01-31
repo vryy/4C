@@ -97,11 +97,12 @@ void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
 DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner)
     : DRT::ELEMENTS::So_pyramid5(id, owner)
 {
-  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  Teuchos::RCP<const Teuchos::ParameterList> params =
+      GLOBAL::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   if (PRESTRESS::IsMulf(pstype_))

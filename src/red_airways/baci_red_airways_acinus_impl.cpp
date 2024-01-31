@@ -294,7 +294,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
         double intSat = ele->Nodes()[sci]
                             ->GetCondition("RedAirwayScatraAirCond")
                             ->GetDouble("INITIAL_CONCENTRATION");
-        int id = DRT::Problem::Instance()->Materials()->FirstIdByType(
+        int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
             INPAR::MAT::m_0d_o2_air_saturation);
         // check if O2 properties material exists
         if (id == -1)
@@ -302,7 +302,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
           dserror("A material defining O2 properties in air could not be found");
           exit(1);
         }
-        const MAT::PAR::Parameter* smat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+        const MAT::PAR::Parameter* smat =
+            GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
         const MAT::PAR::Air_0d_O2_saturation* actmat =
             static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
 
@@ -399,7 +400,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double curvefac = 1.0;
           if ((*curve)[0] >= 0)
           {
-            curvefac = DRT::Problem::Instance()
+            curvefac = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                            .Evaluate(time);
             BCin = (*vals)[0] * curvefac;
@@ -420,7 +421,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double functionfac = 0.0;
           if (functnum > 0)
           {
-            functionfac = DRT::Problem::Instance()
+            functionfac = GLOBAL::Problem::Instance()
                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
           }
@@ -430,7 +431,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
-            curve2fac = DRT::Problem::Instance()
+            curve2fac = GLOBAL::Problem::Instance()
                             ->FunctionById<CORE::UTILS::FunctionOfTime>(curve2num)
                             .Evaluate(time);
 
@@ -540,7 +541,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           // Read in the value of the applied BC
           if ((*curve)[phase_number] >= 0)
           {
-            curvefac = DRT::Problem::Instance()
+            curvefac = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[phase_number])
                            .Evaluate(time);
             BCin = (*vals)[phase_number] * curvefac;
@@ -583,7 +584,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
               {
-                curvefac = DRT::Problem::Instance()
+                curvefac = GLOBAL::Problem::Instance()
                                ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
                                .Evaluate(time);
               }
@@ -1137,9 +1138,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       if (curvenum >= 0)
-        curvefac =
-            DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
-                time);
+        curvefac = GLOBAL::Problem::Instance()
+                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+                       .Evaluate(time);
 
       scnp = (*vals)[0] * curvefac;
 
@@ -1153,7 +1154,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       double functionfac = 0.0;
       if (functnum > 0)
       {
-        functionfac = DRT::Problem::Instance()
+        functionfac = GLOBAL::Problem::Instance()
                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                           .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
       }
@@ -1163,15 +1164,15 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       // convert O2 saturation to O2 concentration
       // ----------------------------------------------------
       // get O2 properties in air
-      int id =
-          DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
+      int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
+          INPAR::MAT::m_0d_o2_air_saturation);
       // check if O2 properties material exists
       if (id == -1)
       {
         dserror("A material defining O2 properties in air could not be found");
         exit(1);
       }
-      const MAT::PAR::Parameter* smat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::Air_0d_O2_saturation* actmat =
           static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
 
@@ -1420,14 +1421,14 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
     // -----------------------------------------------------------------
 
     int id =
-        DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
+        GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
     // check if O2 properties material exists
     if (id == -1)
     {
       dserror("A material defining O2 properties in air could not be found");
       exit(1);
     }
-    const MAT::PAR::Parameter* smat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::Air_0d_O2_saturation* actmat =
         static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
 

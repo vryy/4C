@@ -104,8 +104,9 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
   std::vector<double> funct(1);
 
   // get reference to function
-  const auto& function = DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-      heatsourcefctnumber_ - 1);
+  const auto& function =
+      GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+          heatsourcefctnumber_ - 1);
 
   // safety check
   if (function.NumberComponents() != 1)
@@ -278,8 +279,9 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
   std::vector<double> funct(1);
 
   // get reference to function
-  const auto& function = DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-      heatsourcefctnumber_ - 1);
+  const auto& function =
+      GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+          heatsourcefctnumber_ - 1);
 
   // safety check
   if (function.NumberComponents() != 1)

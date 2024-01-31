@@ -78,7 +78,7 @@ void LOMA::Algorithm::Init()
   consthermpress_ = probdyn_.get<std::string>("CONSTHERMPRESS");
 
   // flag for special flow and start of sampling period from fluid parameter list
-  const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluiddyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
   special_flow_ = fluiddyn.sublist("TURBULENCE MODEL").get<std::string>("CANONICAL_FLOW");
   samstart_ = fluiddyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START");
 
@@ -120,7 +120,7 @@ void LOMA::Algorithm::Setup()
   // call Setup() in base class
   ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
 
-  const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluiddyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
 
   // preparatives for monolithic solver
   if (monolithic_)
@@ -176,7 +176,7 @@ void LOMA::Algorithm::Setup()
     // create loma solver
     // get solver parameter list of linear LOMA solver
     const Teuchos::ParameterList& lomasolverparams =
-        DRT::Problem::Instance()->SolverParams(linsolvernumber);
+        GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
     const auto solvertype =
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(lomasolverparams, "SOLVER");
@@ -208,11 +208,11 @@ void LOMA::Algorithm::Setup()
           "(Inverse1 block) within BGS2x2 preconditioner.");
 
     lomasolver_->PutSolverParamsToSubParams(
-        "Inverse1", DRT::Problem::Instance()->SolverParams(fluidsolver));
+        "Inverse1", GLOBAL::Problem::Instance()->SolverParams(fluidsolver));
 
     // get linear solver id from SCALAR TRANSPORT DYNAMIC
     const Teuchos::ParameterList& scatradyn =
-        DRT::Problem::Instance()->ScalarTransportDynamicParams();
+        GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
     const int scalartransportsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
     if (scalartransportsolvernumber == (-1))
       dserror(
@@ -221,7 +221,7 @@ void LOMA::Algorithm::Setup()
           "(Inverse2 block) within BGS2x2 preconditioner.");
 
     lomasolver_->PutSolverParamsToSubParams(
-        "Inverse2", DRT::Problem::Instance()->SolverParams(scalartransportsolvernumber));
+        "Inverse2", GLOBAL::Problem::Instance()->SolverParams(scalartransportsolvernumber));
 
     FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
         lomasolver_->Params().sublist("Inverse1"));

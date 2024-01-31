@@ -31,7 +31,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTr
     const std::string& artcoupleddofname, const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplNonConforming(
           arterydis, contdis, couplingparams, condname, artcoupleddofname, contcoupleddofname),
-      maxnumsegperartele_(DRT::Problem::Instance()
+      maxnumsegperartele_(GLOBAL::Problem::Instance()
                               ->PoroFluidMultiPhaseDynamicParams()
                               .sublist("ARTERY COUPLING")
                               .get<int>("MAXNUMSEGPERARTELE"))

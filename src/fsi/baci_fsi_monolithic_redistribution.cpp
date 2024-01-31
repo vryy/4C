@@ -63,9 +63,9 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
 
 
   // access the discretizations
-  Teuchos::RCP<DRT::Discretization> structuredis = DRT::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<DRT::Discretization> structuredis = GLOBAL::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> aledis = GLOBAL::Problem::Instance()->GetDis("ale");
 
   // Fill maps based on condition for master side (masterdis != slavedis)
   DRT::UTILS::FindConditionObjects(
@@ -243,7 +243,7 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
 
   // Distribute dofs in time integration vectors to right procs by creating time integrators new.
   // The Control File has to be rewritten as well.
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
       Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
   Teuchos::RCP<IO::DiscretizationWriter> structureoutput = structuredis->Writer();
@@ -315,9 +315,9 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
 
 
   // access the discretizations
-  Teuchos::RCP<DRT::Discretization> structuredis = DRT::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<DRT::Discretization> structuredis = GLOBAL::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> aledis = GLOBAL::Problem::Instance()->GetDis("ale");
 
   // Fill maps based on condition for master side (masterdis != slavedis)
   DRT::UTILS::FindConditionObjects(
@@ -465,7 +465,7 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
 
   // Distribute dofs in time integration vectors to right procs by creating time integrators new.
   // The Control File has to be rewritten as well.
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
       Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
   Teuchos::RCP<IO::DiscretizationWriter> structureoutput = structuredis->Writer();
@@ -823,7 +823,7 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallPartitioner(
 
   // Set imbalance tolerance for relative subdomain sizes to avoid empty procs
   const Teuchos::ParameterList& fsimono =
-      DRT::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
+      GLOBAL::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
   const double imbalance_tol = fsimono.get<double>("HYBRID_IMBALANCE_TOL");
   paramlist.set("IMBALANCE_TOL", imbalance_tol);
 

@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create()
 {
-  static const int probdim = DRT::Problem::Instance()->NDim();
+  static const int probdim = GLOBAL::Problem::Instance()->NDim();
   switch (probdim)
   {
     case 2:

@@ -27,7 +27,7 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
 
   // initialize the parameter values
   visualization_parameters_ = IO::VisualizationParametersFactory(
-      DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"));
+      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"));
 
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
 

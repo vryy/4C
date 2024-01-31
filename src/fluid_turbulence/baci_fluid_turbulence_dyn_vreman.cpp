@@ -123,8 +123,8 @@ double FLD::Vreman::DynVremanComputeCv()
   double Cv = 0.0;
   double cv_numerator_volumeav = 0.0;
   double cv_denominator_volumeav = 0.0;
-  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
-  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+  const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
   const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
   double dens = actmat->density_;
   double visc = actmat->viscosity_ / dens;
@@ -179,9 +179,9 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList& extraparams)
   double Dt = 0.0;
   double dt_numerator_volumeav = 0.0;
   double dt_denominator_volumeav = 0.0;
-  int idscatra = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra);
+  int idscatra = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra);
   const MAT::PAR::Parameter* matscatra =
-      DRT::Problem::Instance()->Materials()->ParameterById(idscatra);
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(idscatra);
   const MAT::PAR::ScatraMat* actmatscatra = static_cast<const MAT::PAR::ScatraMat*>(matscatra);
   double diffus = MAT::PAR::ScatraMat(*actmatscatra)
                       .GetParameter(actmatscatra->diff, -1);  // actmatscatra->diffusivity_;

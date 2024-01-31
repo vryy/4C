@@ -128,7 +128,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> vel;
       std::vector<double> myvel(lm.size(), 0.0);
       myvel.clear();
-      const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+      const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
       if (INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
           INPAR::STR::dyna_statics)
@@ -260,7 +260,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // get element velocities only if it's not a static problem, otherwise a dynamics problem
   // (UNCOMMENT IF NEEDED)
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   if (INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") != INPAR::STR::dyna_statics)
   {
     Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
@@ -322,7 +322,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       if (tmp_funct) functnum = (*tmp_funct)[i];
 
       if (functnum >= 0)
-        functfac[i] = DRT::Problem::Instance()
+        functfac[i] = GLOBAL::Problem::Instance()
                           ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum - 1)
                           .Evaluate(time);
     }
@@ -511,7 +511,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
         if (functnum > 0)
         {
           // evaluate function at the position of the current node       --> dof here correct?
-          functionfac = DRT::Problem::Instance()
+          functionfac = GLOBAL::Problem::Instance()
                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                             .Evaluate(X_ref.data(), time, dof);
         }

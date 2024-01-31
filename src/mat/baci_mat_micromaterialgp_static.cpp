@@ -38,7 +38,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(
     const int gp, const int ele_ID, const bool eleowner, const int microdisnum, const double V0)
     : gp_(gp), ele_ID_(ele_ID), microdisnum_(microdisnum)
 {
-  DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
+  GLOBAL::Problem* microproblem = GLOBAL::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
   dis_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
   disn_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
@@ -49,7 +49,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(
   oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
 
   // data must be consistent between micro and macro input file
-  const Teuchos::ParameterList& sdyn_macro = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn_macro = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& sdyn_micro = microproblem->StructuralDynamicParams();
 
   dt_ = sdyn_macro.get<double>("TIMESTEP");
@@ -105,7 +105,7 @@ MAT::MicroMaterialGP::~MicroMaterialGP()
 
 void MAT::MicroMaterialGP::ReadRestart()
 {
-  step_ = DRT::Problem::Instance()->Restart();
+  step_ = GLOBAL::Problem::Instance()->Restart();
   microstaticmap_[microdisnum_]->ReadRestart(step_, dis_, lastalpha_, restartname_);
 
   *oldalpha_ = *lastalpha_;
@@ -125,11 +125,11 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   // OutputControl object below to act just like the macro (default)
   // OutputControl. In particular we assume that there are always micro and
   // macro control files on restart.
-  Teuchos::RCP<IO::OutputControl> macrocontrol = DRT::Problem::Instance(0)->OutputControlFile();
+  Teuchos::RCP<IO::OutputControl> macrocontrol = GLOBAL::Problem::Instance(0)->OutputControlFile();
   std::string microprefix = macrocontrol->RestartName();
   std::string micronewprefix = macrocontrol->NewOutputFileName();
 
-  DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
+  GLOBAL::Problem* microproblem = GLOBAL::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
 
   if (microdis->Comm().MyPID() == 0)
@@ -171,8 +171,8 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
   if (eleowner)
   {
-    const int ndim = DRT::Problem::Instance()->NDim();
-    const int restart = DRT::Problem::Instance()->Restart();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
+    const int restart = GLOBAL::Problem::Instance()->Restart();
     bool adaptname = true;
     // in case of restart, the new output file name is already adapted
     if (restart) adaptname = false;
@@ -228,7 +228,7 @@ std::string MAT::MicroMaterialGP::NewResultFilePath(const std::string& newprefix
 void MAT::MicroMaterialGP::EasInit()
 {
   Teuchos::RCP<DRT::Discretization> discret =
-      (DRT::Problem::Instance(microdisnum_))->GetDis("structure");
+      (GLOBAL::Problem::Instance(microdisnum_))->GetDis("structure");
 
   for (int lid = 0; lid < discret->ElementRowMap()->NumMyElements(); ++lid)
   {
@@ -313,7 +313,7 @@ void MAT::MicroMaterialGP::Update()
 
   dis_->Update(1.0, *disn_, 0.0);
 
-  DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
+  GLOBAL::Problem* microproblem = GLOBAL::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
   const Epetra_Map* elemap = microdis->ElementRowMap();
 

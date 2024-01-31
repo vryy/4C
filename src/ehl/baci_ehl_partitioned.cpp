@@ -34,9 +34,9 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
       dispincnp_(CORE::LINALG::CreateVector(*structure_->DofRowMap(0), true))
 {
   // call the EHL parameter lists
-  const Teuchos::ParameterList& ehlparams = DRT::Problem::Instance()->ElastoHydroDynamicParams();
+  const Teuchos::ParameterList& ehlparams = GLOBAL::Problem::Instance()->ElastoHydroDynamicParams();
   const Teuchos::ParameterList& ehlparamspart =
-      DRT::Problem::Instance()->ElastoHydroDynamicParams().sublist("PARTITIONED");
+      GLOBAL::Problem::Instance()->ElastoHydroDynamicParams().sublist("PARTITIONED");
 
   if (INPUT::IntegralValue<int>(ehlparams, "DIFFTIMESTEPSIZE"))
   {

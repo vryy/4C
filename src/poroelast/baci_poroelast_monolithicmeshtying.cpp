@@ -28,12 +28,12 @@ POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
     : Monolithic(comm, timeparams, porosity_splitter), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)
 {
   // Initialize mortar adapter for meshtying interface
-  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingPoroMortar(DRT::Problem::Instance()->NDim(),
-      DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingPoroMortar(
+      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
 
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   std::vector<int> coupleddof(ndim, 1);  // 1,1,1 should be in coupleddof
   // coupleddof[ndim]=0; // not necessary because structural discretization is used
   mortar_adapter_->Setup(
@@ -72,7 +72,7 @@ void POROELAST::MonolithicMeshtying::Evaluate(
   Teuchos::RCP<Epetra_Vector> modfpres =
       Teuchos::rcp(new Epetra_Vector(*FluidField()->VelocityRowMap(), true));
 
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   int* mygids = fpres->Map().MyGlobalElements();
   double* val = fpres->Values();
   for (int i = 0; i < fpres->MyLength(); ++i)
@@ -277,7 +277,8 @@ bool POROELAST::MonolithicMeshtying::SetupSolver()
   Monolithic::SetupSolver();
 
   // get dynamic section of poroelasticity
-  const Teuchos::ParameterList& poroelastdyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+  const Teuchos::ParameterList& poroelastdyn =
+      GLOBAL::Problem::Instance()->PoroelastDynamicParams();
 
   tolfres_ncoup_ = poroelastdyn.get<double>("TOLRES_NCOUP");
 

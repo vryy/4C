@@ -58,7 +58,7 @@ void printehlmixlogo()
  *----------------------------------------------------------------------*/
 void ehl_dyn()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // 1.- Initialization
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
@@ -86,7 +86,7 @@ void ehl_dyn()
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
   Teuchos::ParameterList& sdyn =
-      const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams());
+      const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->StructuralDynamicParams());
 
 
   //  //Modification of time parameter list

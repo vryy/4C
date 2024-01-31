@@ -94,11 +94,12 @@ DRT::ELEMENTS::So_hex18::So_hex18(int id, int owner) : So_base(id, owner)
   detJ_.resize(NUMGPT_SOH18, 0.0);
   InitGp();
 
-  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  Teuchos::RCP<const Teuchos::ParameterList> params =
+      GLOBAL::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+        GLOBAL::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;
@@ -602,7 +603,7 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
         // function evaluation
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
-            (functnum > 0) ? DRT::Problem::Instance()
+            (functnum > 0) ? GLOBAL::Problem::Instance()
                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;

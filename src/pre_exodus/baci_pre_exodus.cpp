@@ -169,10 +169,10 @@ int main(int argc, char** argv)
   GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
 
   // create a problem instance
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   // create default communicators
   Teuchos::RCP<CORE::COMM::Communicators> communicators = CORE::COMM::CreateComm({});
-  DRT::Problem::Instance()->SetCommunicators(communicators);
+  GLOBAL::Problem::Instance()->SetCommunicators(communicators);
   Teuchos::RCP<Epetra_Comm> comm = communicators->GlobalComm();
 
   try

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Bundle holds all read-in materials of a #DRT::Problem
+\brief Bundle holds all read-in materials of a #GLOBAL::Problem
 
 \level 1
 
@@ -43,7 +43,7 @@ namespace MAT
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
-    /// bundle holds all read-in materials of a #DRT::Problem
+    /// bundle holds all read-in materials of a #GLOBAL::Problem
     ///
     /// <h4>About</h4>
     /// The bundle provides an interface between unique material IDs and
@@ -52,12 +52,12 @@ namespace MAT
     /// Material ID and data are hold in #matmap_.
     ///
     /// <h4>Special issues for multi-problem-instance applications</h4>
-    /// We have for each DRT::Problem instance an individual material bundle.
+    /// We have for each GLOBAL::Problem instance an individual material bundle.
     /// However, this fact is not transparanet at the read time of the elements
     /// which are only aware of their material ID. The variable #materialreadfromproblem_
-    /// of the material bundle of the 0th DRT::Problem instance make it possible to switch
-    /// among different DRT::Problem. (The variable #materialreadfromproblem_ is redundant
-    /// in the material bundles of all non-0th DRT::Problem instances.)
+    /// of the material bundle of the 0th GLOBAL::Problem instance make it possible to switch
+    /// among different GLOBAL::Problem. (The variable #materialreadfromproblem_ is redundant
+    /// in the material bundles of all non-0th GLOBAL::Problem instances.)
     ///
     /// \author bborn
     /// \date 02/09
@@ -107,7 +107,7 @@ namespace MAT
       int GetReadFromProblem() const { return materialreadfromproblem_; }
 
       /// set problem index to read from
-      void SetReadFromProblem(const int p  ///< index of DRT::Problem instance to read for
+      void SetReadFromProblem(const int p  ///< index of GLOBAL::Problem instance to read for
       )
       {
         materialreadfromproblem_ = p;

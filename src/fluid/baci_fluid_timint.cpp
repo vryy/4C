@@ -53,7 +53,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
   // check for special fluid output which is to be handled by an own writer object
   Teuchos::RCP<const Teuchos::ParameterList> fluid_runtime_output_list =
       Teuchos::rcp(new Teuchos::ParameterList(
-          DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT").sublist("FLUID")));
+          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT").sublist("FLUID")));
 
   bool output_fluid = (bool)INPUT::IntegralValue<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
 
@@ -64,7 +64,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
     runtime_output_params_.Setup();
     runtime_output_writer_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
         discret_, IO::VisualizationParametersFactory(
-                      DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
+                      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
   }
 }
 

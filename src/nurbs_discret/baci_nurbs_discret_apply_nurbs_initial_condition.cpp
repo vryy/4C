@@ -338,7 +338,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
               {
                 // important: position has to have always three components!!
                 initialval(rr) =
-                    DRT::Problem::Instance()
+                    GLOBAL::Problem::Instance()
                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                         .Evaluate(position.values(), 0.0, rr);
               }
@@ -466,7 +466,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
               {
                 // important: position has to have always three components!!
                 initialval(rr) =
-                    DRT::Problem::Instance()
+                    GLOBAL::Problem::Instance()
                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                         .Evaluate(position.values(), 0.0, rr);
               }

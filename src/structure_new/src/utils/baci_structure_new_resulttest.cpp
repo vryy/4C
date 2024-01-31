@@ -109,8 +109,8 @@ void STR::ResultTest::Init(
   data_ = Teuchos::rcpFromRef(data);
   strudisc_ = gstate.GetDiscret();
 
-  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale and
-      (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::struct_ale and
+      (GLOBAL::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0)
     dserror("Material displ. are not yet considered!");
   else
     dismatn_ = Teuchos::null;
@@ -398,7 +398,7 @@ std::optional<int> STR::ResultTest::GetLastLinIterationNumber(
   {
     const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
-    const int restart = DRT::Problem::Instance()->Restart();
+    const int restart = GLOBAL::Problem::Instance()->Restart();
     if (stepn <= restart) return -1;
 
     special_status = Status::evaluated;
@@ -419,7 +419,7 @@ std::optional<int> STR::ResultTest::GetNlnIterationNumber(
   {
     const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
-    const int restart = DRT::Problem::Instance()->Restart();
+    const int restart = GLOBAL::Problem::Instance()->Restart();
     if (stepn <= restart) return -1;
 
     special_status = Status::evaluated;

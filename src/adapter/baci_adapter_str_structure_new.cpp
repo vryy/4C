@@ -148,7 +148,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   if (not IsInit()) dserror("You have to call Init() first!");
 
   // get the problem instance
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   // get the restart step
   const int restart = problem->Restart();
 
@@ -313,14 +313,14 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   if (ccond.size())
   {
     // what's the current problem type?
-    ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+    GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
     // ToDo: once the new structural time integration can handle
     //       condensed contact formulations, the model_evaluator
     //       can have its contact model. For now, the TSI Lagrange
     //       strategy resides in the TSI algorithm.
-    if (probtype == ProblemType::tsi)
+    if (probtype == GLOBAL::ProblemType::tsi)
     {
-      const Teuchos::ParameterList& contact = DRT::Problem::Instance()->ContactDynamicParams();
+      const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->ContactDynamicParams();
       if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_nitsche)
         modeltypes.insert(INPAR::STR::model_contact);
@@ -395,24 +395,24 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // check for coupled problems
   // ---------------------------------------------------------------------------
   // get the problem instance
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   // what's the current problem type?
-  ProblemType probtype = problem->GetProblemType();
+  GLOBAL::ProblemType probtype = problem->GetProblemType();
   switch (probtype)
   {
-    case ProblemType::fsi:
-    case ProblemType::immersed_fsi:
-    case ProblemType::fbi:
-    case ProblemType::fsi_redmodels:
-    case ProblemType::fsi_lung:
-    case ProblemType::gas_fsi:
-    case ProblemType::ac_fsi:
-    case ProblemType::biofilm_fsi:
-    case ProblemType::thermo_fsi:
-    case ProblemType::fsi_xfem:
-    case ProblemType::pasi:
-    case ProblemType::ssi:
-    case ProblemType::ssti:
+    case GLOBAL::ProblemType::fsi:
+    case GLOBAL::ProblemType::immersed_fsi:
+    case GLOBAL::ProblemType::fbi:
+    case GLOBAL::ProblemType::fsi_redmodels:
+    case GLOBAL::ProblemType::fsi_lung:
+    case GLOBAL::ProblemType::gas_fsi:
+    case GLOBAL::ProblemType::ac_fsi:
+    case GLOBAL::ProblemType::biofilm_fsi:
+    case GLOBAL::ProblemType::thermo_fsi:
+    case GLOBAL::ProblemType::fsi_xfem:
+    case GLOBAL::ProblemType::pasi:
+    case GLOBAL::ProblemType::ssi:
+    case GLOBAL::ProblemType::ssti:
     {
       if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
               "Partitioned Coupling Model"))
@@ -472,7 +472,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // check for beam interactions (either contact or potential-based)
   // ---------------------------------------------------------------------------
   // get beam contact strategy
-  const Teuchos::ParameterList& beamcontact = DRT::Problem::Instance()->BeamContactParams();
+  const Teuchos::ParameterList& beamcontact = GLOBAL::Problem::Instance()->BeamContactParams();
   INPAR::BEAMCONTACT::Strategy strategy =
       INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
@@ -494,34 +494,35 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // ---------------------------------------------------------------------------
   // check for brownian dynamics
   // ---------------------------------------------------------------------------
-  if (INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB"))
+  if (INPUT::IntegralValue<int>(
+          GLOBAL::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB"))
     modeltypes.insert(INPAR::STR::model_browniandyn);
 
   // ---------------------------------------------------------------------------
   // check for beam interaction
   // ---------------------------------------------------------------------------
   if (INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING"),
+          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING"),
           "CROSSLINKER") or
       INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist("SPHERE BEAM LINK"),
+          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("SPHERE BEAM LINK"),
           "SPHEREBEAMLINKING") or
       INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"),
+          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
       INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
+          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
       Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
           "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
       Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID SURFACE MESHTYING"),
           "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
       Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+          GLOBAL::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID SURFACE CONTACT"),
           "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
       beampotconditions.size() > 0 or beampenaltycouplingconditions.size() > 0)
@@ -629,8 +630,8 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
     Teuchos::ParameterList& xparams, Teuchos::ParameterList& time_adaptivity_params)
 {
   // get the problem instance and the problem type
-  DRT::Problem* problem = DRT::Problem::Instance();
-  ProblemType probtype = problem->GetProblemType();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  GLOBAL::ProblemType probtype = problem->GetProblemType();
 
   // ---------------------------------------------------------------------------
   // show default parameters
@@ -706,8 +707,8 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
   // ---------------------------------------------------------------------------
   switch (probtype)
   {
-    case ProblemType::fsi:
-    case ProblemType::fsi_redmodels:
+    case GLOBAL::ProblemType::fsi:
+    case GLOBAL::ProblemType::fsi_redmodels:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
@@ -799,19 +800,19 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(const Teuchos::Para
 void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   // get the problem instance and the problem type
-  DRT::Problem* problem = DRT::Problem::Instance();
-  ProblemType probtype = problem->GetProblemType();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  GLOBAL::ProblemType probtype = problem->GetProblemType();
 
   switch (probtype)
   {
-    case ProblemType::fsi:
-    case ProblemType::fsi_redmodels:
-    case ProblemType::fsi_lung:
-    case ProblemType::gas_fsi:
-    case ProblemType::ac_fsi:
-    case ProblemType::biofilm_fsi:
-    case ProblemType::thermo_fsi:
-    case ProblemType::fsi_xfem:
+    case GLOBAL::ProblemType::fsi:
+    case GLOBAL::ProblemType::fsi_redmodels:
+    case GLOBAL::ProblemType::fsi_lung:
+    case GLOBAL::ProblemType::gas_fsi:
+    case GLOBAL::ProblemType::ac_fsi:
+    case GLOBAL::ProblemType::biofilm_fsi:
+    case GLOBAL::ProblemType::thermo_fsi:
+    case GLOBAL::ProblemType::fsi_xfem:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -850,7 +851,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       }
       break;
     }
-    case ProblemType::fbi:
+    case GLOBAL::ProblemType::fbi:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       if (INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
@@ -860,30 +861,30 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
         dserror("Only DirichletNeumann is implemented for FBI so far");
       break;
     }
-    case ProblemType::immersed_fsi:
+    case GLOBAL::ProblemType::immersed_fsi:
     {
       str_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));
       break;
     }
-    case ProblemType::ssi:
-    case ProblemType::ssti:
+    case GLOBAL::ProblemType::ssi:
+    case GLOBAL::ProblemType::ssti:
     {
       str_wrapper_ = Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
       break;
     }
-    case ProblemType::pasi:
+    case GLOBAL::ProblemType::pasi:
     {
       str_wrapper_ = Teuchos::rcp(new PASIStructureWrapper(ti_strategy));
       break;
     }
-    case ProblemType::redairways_tissue:
+    case GLOBAL::ProblemType::redairways_tissue:
       str_wrapper_ = Teuchos::rcp(new StructureRedAirway(ti_strategy));
       break;
-    case ProblemType::poroelast:
-    case ProblemType::poroscatra:
-    case ProblemType::fpsi:
-    case ProblemType::fps3i:
-    case ProblemType::fpsi_xfem:
+    case GLOBAL::ProblemType::poroelast:
+    case GLOBAL::ProblemType::poroscatra:
+    case GLOBAL::ProblemType::fpsi:
+    case GLOBAL::ProblemType::fps3i:
+    case GLOBAL::ProblemType::fpsi_xfem:
     {
       const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =
@@ -906,10 +907,10 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       }
       break;
     }
-    case ProblemType::struct_ale:
+    case GLOBAL::ProblemType::struct_ale:
     {
       str_wrapper_ = Teuchos::rcp(new StructAleWrapper(ti_strategy));
-      dserror("ProblemType::struct_ale not supported, yet");
+      dserror("GLOBAL::ProblemType::struct_ale not supported, yet");
       break;
     }
     default:

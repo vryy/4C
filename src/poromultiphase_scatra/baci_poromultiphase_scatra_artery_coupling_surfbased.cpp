@@ -42,11 +42,11 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PoroMultiPhaseScaTr
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCouplingPairs()
 {
-  const int numpatch_axi = DRT::Problem::Instance()
+  const int numpatch_axi = GLOBAL::Problem::Instance()
                                ->PoroFluidMultiPhaseDynamicParams()
                                .sublist("ARTERY COUPLING")
                                .get<int>("NUMPATCH_AXI");
-  const int numpatch_rad = DRT::Problem::Instance()
+  const int numpatch_rad = GLOBAL::Problem::Instance()
                                ->PoroFluidMultiPhaseDynamicParams()
                                .sublist("ARTERY COUPLING")
                                .get<int>("NUMPATCH_RAD");

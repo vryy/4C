@@ -124,8 +124,8 @@ void STR::MODELEVALUATOR::Contact::PostSetup(Teuchos::ParameterList& cparams)
 void STR::MODELEVALUATOR::Contact::CheckPseudo2D() const
 {
   // print messages for multifield problems (e.g FSI)
-  const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
-  if ((probtype != ProblemType::structure) and (GState().GetMyRank() == 0))
+  const GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  if ((probtype != GLOBAL::ProblemType::structure) and (GState().GetMyRank() == 0))
   {
     // warnings
 #ifdef CONTACTPSEUDO2D
@@ -586,7 +586,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
 #ifdef MASTERNODESINCONTACT
   // BEGIN: to output the global ID's of the master nodes in contact - devaal 02.2011
 
-  int dim = DRT::Problem::Instance()->NDim();
+  int dim = GLOBAL::Problem::Instance()->NDim();
 
   if (dim == 2) dserror("Only working for 3D");
 
@@ -663,7 +663,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
     FILE* MyFile = nullptr;
     std::ostringstream filename;
     const std::string filebase =
-        DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+        GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
     filename << filebase << ".force";
     MyFile = fopen(filename.str().c_str(), "at+");
     if (MyFile)
@@ -763,7 +763,7 @@ const CONTACT::AbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy() const
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Contact::GetBlockDofRowMapPtr() const
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   CheckInitSetup();
   if (Strategy().LMDoFRowMapPtr(false) == Teuchos::null)
@@ -785,7 +785,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Contact::GetBlockDofRowMapPt
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::GetCurrentSolutionPtr() const
 {
   // TODO: this should be removed!
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   enum INPAR::CONTACT::SystemType systype =
       INPUT::IntegralValue<INPAR::CONTACT::SystemType>(problem->ContactDynamicParams(), "SYSTEM");
   if (systype == INPAR::CONTACT::system_condensed) return Teuchos::null;
@@ -808,7 +808,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::GetCurrentSoluti
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::GetLastTimeStepSolutionPtr() const
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   enum INPAR::CONTACT::SystemType systype =
       INPUT::IntegralValue<INPAR::CONTACT::SystemType>(problem->ContactDynamicParams(), "SYSTEM");
   if (systype == INPAR::CONTACT::system_condensed) return Teuchos::null;

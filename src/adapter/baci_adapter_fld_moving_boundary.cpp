@@ -27,24 +27,24 @@ BACI_NAMESPACE_OPEN
 ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, std::string condname)
 {
-  const ProblemType probtyp = DRT::Problem::Instance()->GetProblemType();
+  const GLOBAL::ProblemType probtyp = GLOBAL::Problem::Instance()->GetProblemType();
 
   // switch between moving domain fluid implementations
   switch (probtyp)
   {
-    case ProblemType::fsi:
-    case ProblemType::fluid_ale:
-    case ProblemType::freesurf:
-    case ProblemType::fsi_redmodels:
+    case GLOBAL::ProblemType::fsi:
+    case GLOBAL::ProblemType::fluid_ale:
+    case GLOBAL::ProblemType::freesurf:
+    case GLOBAL::ProblemType::fsi_redmodels:
     {
       // std::cout << "using FluidAle as FluidMovingBoundary" << std::endl;
       fluid_ = Teuchos::rcp(new FluidAle(prbdyn, condname));
       break;
     }
-    case ProblemType::fluid_xfem:
-    case ProblemType::fsi_xfem:
+    case GLOBAL::ProblemType::fluid_xfem:
+    case GLOBAL::ProblemType::fsi_xfem:
     {
-      const Teuchos::ParameterList xfluid = DRT::Problem::Instance()->XFluidDynamicParams();
+      const Teuchos::ParameterList xfluid = GLOBAL::Problem::Instance()->XFluidDynamicParams();
       bool alefluid = INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
       if (!alefluid)  // xfluid
       {
@@ -57,12 +57,12 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
       }
       break;
     }
-    case ProblemType::immersed_fsi:
+    case GLOBAL::ProblemType::immersed_fsi:
     {
       fluid_ = Teuchos::rcp(new FluidImmersed(prbdyn, condname));
       break;
     }
-    case ProblemType::fbi:
+    case GLOBAL::ProblemType::fbi:
     {
       fluid_ = Teuchos::rcp(new FBIFluidMB(prbdyn, condname));
       break;

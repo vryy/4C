@@ -30,12 +30,12 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(const Epetra
     const Teuchos::ParameterList& prbdyn, bool isale, const std::string scatra_disname,
     const Teuchos::ParameterList& solverparams)
     : AlgorithmBase(comm, prbdyn),
-      FluidBaseAlgorithm(prbdyn, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", isale,
+      FluidBaseAlgorithm(prbdyn, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", isale,
           false),  // false -> no immediate initialization of fluid time integration
-      ScaTraBaseAlgorithm(prbdyn, DRT::Problem::Instance()->ScalarTransportDynamicParams(),
+      ScaTraBaseAlgorithm(prbdyn, GLOBAL::Problem::Instance()->ScalarTransportDynamicParams(),
           solverparams, scatra_disname, isale),
       fieldcoupling_(INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(
-          DRT::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING")),
+          GLOBAL::Problem::Instance()->ScalarTransportDynamicParams(), "FIELDCOUPLING")),
       volcoupl_fluidscatra_(Teuchos::null),
       params_(prbdyn),
       scatra_disname_(scatra_disname),
@@ -77,12 +77,12 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
 
   // setup coupling adapter
   if (not volcoupl_fluidscatra_.is_null())
-    volcoupl_fluidscatra_->Setup(DRT::Problem::Instance()->VolmortarParams());
+    volcoupl_fluidscatra_->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
 
   // set also initial field
-  SetInitialFlowField(DRT::Problem::Instance()->FluidDynamicParams());
+  SetInitialFlowField(GLOBAL::Problem::Instance()->FluidDynamicParams());
 
-  if (DRT::Problem::Instance()->GetProblemType() != ProblemType::fluid_xfem_ls)
+  if (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fluid_xfem_ls)
   {
     // transfer the initial convective velocity from initial fluid field to scalar transport field
     // subgrid scales not transferred since they are zero at time t=0.0
@@ -166,7 +166,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
 void ADAPTER::ScaTraFluidCouplingAlgorithm::SetupFieldCoupling(
     const std::string fluid_disname, const std::string scatra_disname)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
 

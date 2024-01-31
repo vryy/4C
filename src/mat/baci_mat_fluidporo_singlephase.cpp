@@ -26,13 +26,13 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
     : Parameter(matdata), density_(matdata->GetDouble("DENSITY")), isinit_(false)
 {
   // retrieve problem instance to read from
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
     dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
     dserror("List of materials in the global problem instance is empty.");
 
   // create density law
@@ -48,7 +48,7 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
-      DRT::Problem::Instance(probinst)->Materials()->ById(matdata->GetInt("DOFTYPEID"));
+      GLOBAL::Problem::Instance(probinst)->Materials()->ById(matdata->GetInt("DOFTYPEID"));
 
   switch (curmat->Type())
   {
@@ -160,12 +160,12 @@ void MAT::FluidPoroSinglePhase::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroSinglePhase*>(mat);
       else
@@ -271,13 +271,13 @@ MAT::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Teuchos::RCP<MAT::PAR::
       isinit_(false)
 {
   // retrieve problem instance to read from
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
     dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
     dserror("List of materials in the global problem instance is empty.");
 
   // safety checks
@@ -384,12 +384,12 @@ void MAT::FluidPoroSingleVolFrac::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroSingleVolFrac*>(mat);
       else
@@ -420,13 +420,13 @@ MAT::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
       isinit_(false)
 {
   // retrieve problem instance to read from
-  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
     dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
     dserror("List of materials in the global problem instance is empty.");
 
   // create viscosity law
@@ -511,12 +511,12 @@ void MAT::FluidPoroVolFracPressure::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroVolFracPressure*>(mat);
       else

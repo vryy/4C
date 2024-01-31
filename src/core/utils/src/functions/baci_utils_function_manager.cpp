@@ -69,7 +69,7 @@ namespace
   // available.
   auto CreateBuiltinFunctionDispatch(const std::vector<INPUT::LineDefinition>& function_line_defs)
   {
-    switch (DRT::Problem::Instance()->NDim())
+    switch (GLOBAL::Problem::Instance()->NDim())
     {
       case 1:
         return CreateBuiltinFunction<1>(function_line_defs);
@@ -78,7 +78,7 @@ namespace
       case 3:
         return CreateBuiltinFunction<3>(function_line_defs);
       default:
-        dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+        dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
     }
   }
 }  // namespace

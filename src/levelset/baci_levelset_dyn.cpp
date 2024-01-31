@@ -31,7 +31,7 @@ BACI_NAMESPACE_OPEN
 void levelset_dyn(int restart)
 {
   // define abbreviation
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // access the scatra discretization
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
@@ -71,7 +71,7 @@ void levelset_dyn(int restart)
 
   // add proxy of velocity related degrees of freedom to scatra discretization
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
-      new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+      new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
   if (scatradis->AddDofSet(dofsetaux) != 1)
     dserror("Scatra discretization has illegal number of dofsets!");
   scatrabase->ScaTraField()->SetNumberOfDofSetVelocity(1);

@@ -31,18 +31,18 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::StructureALE::StructureALE(const Epetra_Comm& comm) : Algorithm(comm)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
 
   CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(DRT::Problem::Instance()->NDim(),
-      DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+  coupsfm_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
+      GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
 
   if (INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD"))
   {
     matchingnodes_ = true;
-    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
     coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
         StructureField()->Interface()->FSICondMap(), *MBFluidField()->Discretization(),
         MBFluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
@@ -63,7 +63,7 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm) : Algorithm(comm)
   {
     // coupling condition at the fsi interface: displacements (=number spacial dimensions) are
     // coupled) e.g.: 3D: coupleddof = [1, 1, 1]
-    std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(), 1);
+    std::vector<int> coupleddof(GLOBAL::Problem::Instance()->NDim(), 1);
 
     matchingnodes_ = false;
     coupsfm_->Setup(StructureField()->Discretization(), MBFluidField()->Discretization(),

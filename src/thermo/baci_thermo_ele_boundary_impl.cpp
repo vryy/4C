@@ -221,7 +221,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     if (curvenum >= 0)
     {
       curvefac =
-          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
               time);
     }
     // multiply heat convection coefficient with the timecurve factor
@@ -233,7 +233,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     // find out whether we shall use a time curve for T_oo and get the factor
     if (surtempcurvenum >= 0)
     {
-      surtempcurvefac = DRT::Problem::Instance()
+      surtempcurvefac = GLOBAL::Problem::Instance()
                             ->FunctionById<CORE::UTILS::FunctionOfTime>(surtempcurvenum)
                             .Evaluate(time);
     }
@@ -435,7 +435,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         double curvefac = 1.0;
         if (curvenum >= 0)
         {
-          curvefac = DRT::Problem::Instance()
+          curvefac = GLOBAL::Problem::Instance()
                          ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
                          .Evaluate(time);
         }
@@ -448,7 +448,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         // find out whether we shall use a time curve for T_oo and get the factor
         if (surtempcurvenum >= 0)
         {
-          surtempcurvefac = DRT::Problem::Instance()
+          surtempcurvefac = GLOBAL::Problem::Instance()
                                 ->FunctionById<CORE::UTILS::FunctionOfTime>(surtempcurvenum)
                                 .Evaluate(time);
         }
@@ -633,7 +633,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
           if (functnum > 0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()
+            functfac = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                            .Evaluate(coordgpref, time, dof);
           }

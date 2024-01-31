@@ -354,9 +354,10 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
   const int numdim = 3;
   // create output file name
   std::stringstream temp;
-  temp << DRT::Problem::Instance()->OutputControlFile()->FileName() << "_nonliniter_step" << Step();
+  temp << GLOBAL::Problem::Instance()->OutputControlFile()->FileName() << "_nonliniter_step"
+       << Step();
   std::string outname = temp.str();
-  std::string probtype = DRT::Problem::Instance()->ProblemName();
+  std::string probtype = GLOBAL::Problem::Instance()->ProblemName();
 
   Teuchos::RCP<IO::OutputControl> myoutputcontrol =
       Teuchos::rcp(new IO::OutputControl(ScaTraField().Discretization()->Comm(), probtype,
@@ -604,8 +605,8 @@ void SCATRA::ScaTraAlgorithm::ReadInflowRestart(int restart)
 /*----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::TestResults()
 {
-  DRT::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
-  DRT::Problem::Instance()->TestAll(Comm());
+  GLOBAL::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
+  GLOBAL::Problem::Instance()->TestAll(Comm());
 }
 BACI_NAMESPACE_CLOSE

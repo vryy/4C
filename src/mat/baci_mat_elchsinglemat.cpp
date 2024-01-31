@@ -37,7 +37,7 @@ MAT::PAR::ElchSingleMat::ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata)
           matdata->GetInt("COND_TEMP_SCALE_FUNCT_PARA_NUM")),
       conductivity_temp_scale_funct_params_(
           *matdata->Get<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA")),
-      R_(DRT::Problem::Instance()->ELCHControlParams().get<double>("GAS_CONSTANT"))
+      R_(GLOBAL::Problem::Instance()->ELCHControlParams().get<double>("GAS_CONSTANT"))
 {
   // safety checks
   if (number_diffusion_coefficent_params_ != static_cast<int>(diffusion_coefficent_params_.size()))
@@ -257,7 +257,7 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficientConcentrationDependent(
   // diffusion coefficient is a function of the concentration as defined in the input file
   else
   {
-    diffusionCoefficient = DRT::Problem::Instance()
+    diffusionCoefficient = GLOBAL::Problem::Instance()
                                ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                    DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
                                .Evaluate(concentration);
@@ -285,7 +285,7 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(const double t
   else if (functionNumber > 0)
   {
     temperatureDependentScaleFactor =
-        DRT::Problem::Instance()
+        GLOBAL::Problem::Instance()
             ->FunctionById<CORE::UTILS::FunctionOfTime>(functionNumber - 1)
             .Evaluate(temperature);
   }
@@ -327,7 +327,7 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfDiffusionCoefficient(
   // concentration as defined in the input file
   else
   {
-    diffusion_coeff_conc_deriv = (DRT::Problem::Instance()
+    diffusion_coeff_conc_deriv = (GLOBAL::Problem::Instance()
                                       ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                           DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
                                       .EvaluateDerivative(concentration));
@@ -377,7 +377,7 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactorDeriv(const dou
   else if (functionNumber > 0)
   {
     temperatureDependentScaleFactorDeriv =
-        DRT::Problem::Instance()
+        GLOBAL::Problem::Instance()
             ->FunctionById<CORE::UTILS::FunctionOfTime>(functionNumber - 1)
             .EvaluateDerivative(temperature);
   }
@@ -428,7 +428,7 @@ double MAT::ElchSingleMat::ComputeConductivityConcentrationDependent(
   // conductivity is a function of the concentration as defined in the input file
   else
   {
-    conductivity = DRT::Problem::Instance()
+    conductivity = GLOBAL::Problem::Instance()
                        ->FunctionById<CORE::UTILS::FunctionOfTime>(
                            ConductivityConcentrationDependenceFunctNum() - 1)
                        .Evaluate(concentration);
@@ -462,7 +462,7 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfConductivity(
   // concentration as defined in the input file
   else
   {
-    conductivity_conc_deriv = (DRT::Problem::Instance()
+    conductivity_conc_deriv = (GLOBAL::Problem::Instance()
                                    ->FunctionById<CORE::UTILS::FunctionOfTime>(
                                        ConductivityConcentrationDependenceFunctNum() - 1)
                                    .EvaluateDerivative(concentration));

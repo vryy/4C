@@ -89,12 +89,12 @@ void MAT::ScatraMatMultiPoroFluid::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatMultiPoroFluid*>(mat);
       else
@@ -178,12 +178,12 @@ void MAT::ScatraMatMultiPoroVolFrac::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatMultiPoroVolFrac*>(mat);
       else
@@ -262,12 +262,12 @@ void MAT::ScatraMatMultiPoroSolid::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatMultiPoroSolid*>(mat);
       else
@@ -356,12 +356,12 @@ void MAT::ScatraMatMultiPoroTemperature::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatMultiPoroTemperature*>(mat);
       else

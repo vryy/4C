@@ -42,9 +42,9 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector& x, Epetra_Vector& F, cons
 {
   // Check if the test case uses the new Structural time integration or if it is one of our legacy
   // test cases
-  if (INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),
+  if (INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->StructuralDynamicParams(),
           "INT_STRATEGY") == INPAR::STR::int_old &&
-      DRT::Problem::Instance()->OutputControlFile()->InputFileName().find("fs3i_ac_prestress") ==
+      GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName().find("fs3i_ac_prestress") ==
           std::string::npos)
   {
     dserror(

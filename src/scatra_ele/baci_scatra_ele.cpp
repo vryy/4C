@@ -68,7 +68,7 @@ void DRT::ELEMENTS::TransportType::NodalBlockInformation(
   dimns = numdf;
   nv = numdf;
 
-  if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::elch)
+  if (GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::elch)
   {
     if (nv > 1)  // only when we have more than 1 dof per node!
     {
@@ -343,7 +343,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
 
     // for problem type ELCH we have one additional degree of freedom per node
     // for the electric potential
-    if (DRT::Problem::Instance()->GetProblemType() == ProblemType::elch)
+    if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::elch)
     {
       for (int ii = 0; ii < numdofpernode_; ++ii)
       {
@@ -358,7 +358,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     // for problem type LOMA, only combination of Arrhenius-type species (first)
     // and temperature (last) equation possible in this specific order
     // in case of matlist
-    else if (DRT::Problem::Instance()->GetProblemType() == ProblemType::loma)
+    else if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::loma)
     {
       // only two-equation systems, for the time being: check!
       if (numdofpernode_ > 2)

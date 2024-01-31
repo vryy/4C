@@ -226,14 +226,14 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
   // Get O2 properties in air
   // --------------------------------
   int aid =
-      DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
+      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
   // check if O2 properties material exists
   if (aid == -1)
   {
     dserror("A material defining O2 properties in air could not be found");
     exit(1);
   }
-  const MAT::PAR::Parameter* amat = DRT::Problem::Instance()->Materials()->ParameterById(aid);
+  const MAT::PAR::Parameter* amat = GLOBAL::Problem::Instance()->Materials()->ParameterById(aid);
   const MAT::PAR::Air_0d_O2_saturation* aactmat =
       static_cast<const MAT::PAR::Air_0d_O2_saturation*>(amat);
 
@@ -245,7 +245,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
   // --------------------------------
   // Get O2 properties in Blood
   // --------------------------------
-  int bid = DRT::Problem::Instance()->Materials()->FirstIdByType(
+  int bid = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
       INPAR::MAT::m_0d_o2_hemoglobin_saturation);
 
   // check if O2 properties material exists
@@ -254,7 +254,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
     dserror("A material defining O2 properties in blood could not be found");
     exit(1);
   }
-  const MAT::PAR::Parameter* bmat = DRT::Problem::Instance()->Materials()->ParameterById(bid);
+  const MAT::PAR::Parameter* bmat = GLOBAL::Problem::Instance()->Materials()->ParameterById(bid);
   const MAT::PAR::Hemoglobin_0d_O2_saturation* bactmat =
       static_cast<const MAT::PAR::Hemoglobin_0d_O2_saturation*>(bmat);
 

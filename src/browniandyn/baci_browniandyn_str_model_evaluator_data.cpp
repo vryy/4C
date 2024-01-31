@@ -46,7 +46,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
   str_data_ptr_ = str_data_ptr;
 
   const Teuchos::ParameterList& browndyn_params_list =
-      DRT::Problem::Instance()->BrownianDynamicsParams();
+      GLOBAL::Problem::Instance()->BrownianDynamicsParams();
 
   // viscosity
   viscosity_ = browndyn_params_list.get<double>("VISCOSITY");

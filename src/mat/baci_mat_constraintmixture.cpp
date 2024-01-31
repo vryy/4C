@@ -80,7 +80,7 @@ MAT::PAR::ConstraintMixture::ConstraintMixture(Teuchos::RCP<MAT::PAR::Material> 
       storehistory_(matdata->GetInt("STOREHISTORY")),
       degtol_(1.0e-6)
 {
-  Epetra_Map dummy_map(1, 1, 0, *(DRT::Problem::Instance()->GetCommunicators()->LocalComm()));
+  Epetra_Map dummy_map(1, 1, 0, *(GLOBAL::Problem::Instance()->GetCommunicators()->LocalComm()));
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
@@ -190,12 +190,12 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ConstraintMixture*>(mat);
       else
@@ -464,7 +464,7 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
   homradius_ = params_->homradius_;
 
   // history
-  const Teuchos::ParameterList& timeintegr = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& timeintegr = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   double dt = timeintegr.get<double>("TIMESTEP");
   int firstiter = 0;
   if (*params_->integration_ == "Explicit") firstiter = 1;
@@ -486,9 +486,9 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
 
   {
     const INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+        GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
     const double pstime =
-        DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
 
     const double currentTime = params_->starttime_ + dt;
     // prestress time
@@ -741,7 +741,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 {
   // map in GetParameter can now calculate LID, so we do not need it here   05/2017 birzle
   // get element lID incase we have element specific material parameters
-  // int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+  // int eleID = GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
   const double growthfactor = params_->GetParameter(params_->growthfactor, eleGID);
 
   // get variables from params
@@ -978,7 +978,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       double curvefac = 1.0;
       // numbering starts from zero here, thus use curvenum-1
       if (curvenum)
-        curvefac = DRT::Problem::Instance()
+        curvefac = GLOBAL::Problem::Instance()
                        ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum - 1)
                        .Evaluate(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
@@ -1453,7 +1453,7 @@ void MAT::ConstraintMixture::EvaluateElastin(const CORE::LINALG::Matrix<NUM_STRE
     double curvefac = 1.0;
     // numbering starts from zero here, thus use curvenum-1
     if (curvenum)
-      curvefac = DRT::Problem::Instance()
+      curvefac = GLOBAL::Problem::Instance()
                      ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum - 1)
                      .Evaluate(time);
     if (curvefac > 1.0 || curvefac < 0.0)
@@ -3045,21 +3045,21 @@ bool MAT::ConstraintMixture::VisData(
   {
     if ((int)data.size() != 1) dserror("size mismatch");
     // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
-    // int eleLID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
+    // int eleLID = GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
     data[0] = params_->GetParameter(params_->growthfactor, eleID);
   }
   else if (name == "elastin_survival")
   {
     if ((int)data.size() != 1) dserror("size mismatch");
     // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
-    // int eleLID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
+    // int eleLID = GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
     if (*params_->elastindegrad_ == "InvEla")
       data[0] = params_->GetParameter(params_->elastin_survival, eleID);
     else if (*params_->elastindegrad_ == "Rectangle" ||
              *params_->elastindegrad_ == "RectanglePlate" || *params_->elastindegrad_ == "Wedge" ||
              *params_->elastindegrad_ == "Circles")
     {
-      DRT::Element* myele = DRT::Problem::Instance()->GetDis("structure")->gElement(eleID);
+      DRT::Element* myele = GLOBAL::Problem::Instance()->GetDis("structure")->gElement(eleID);
       DRT::Node** mynodes = myele->Nodes();
       for (int idnodes = 0; idnodes < myele->NumNode(); idnodes++)
       {
@@ -3097,7 +3097,7 @@ bool MAT::ConstraintMixture::VisData(
 void MAT::ConstraintMixtureOutputToGmsh(
     const Teuchos::RCP<DRT::Discretization> dis, const int timestep, const int iter)
 {
-  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   // file for stress
   std::stringstream filename;
   filename << filebase << "_massdensity" << std::setw(3) << std::setfill('0') << timestep

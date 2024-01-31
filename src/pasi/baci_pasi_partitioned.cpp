@@ -96,7 +96,7 @@ void PASI::PartitionedAlgo::ReadRestart(int restartstep)
 void PASI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
 {
   // get instance of global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // add structure field specific result test object
   problem->AddFieldTest(structurefield_->CreateFieldTest());
@@ -236,7 +236,7 @@ void PASI::PartitionedAlgo::ParticleOutput()
 void PASI::PartitionedAlgo::InitStructureField()
 {
   // get instance of global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // get parameter list
   const Teuchos::ParameterList& params = problem->StructuralDynamicParams();
@@ -267,7 +267,7 @@ void PASI::PartitionedAlgo::InitStructureField()
 void PASI::PartitionedAlgo::InitParticleAlgorithm()
 {
   // get instance of global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // get parameter list
   const Teuchos::ParameterList& params = problem->ParticleParams();

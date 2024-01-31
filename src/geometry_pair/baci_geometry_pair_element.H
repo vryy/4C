@@ -332,7 +332,8 @@ namespace GEOMETRYPAIR
       std::vector<CORE::LINALG::SerialDenseVector> myknots(2);
       const bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(face_element,
           face_element->FaceMasterNumber(), face_element->ParentElementId(),
-          *(DRT::Problem::Instance()->GetDis("structure")), mypknots, myknots, weights, normalfac);
+          *(GLOBAL::Problem::Instance()->GetDis("structure")), mypknots, myknots, weights,
+          normalfac);
       if (zero_size)
         dserror("GetKnotVectorAndWeightsForNurbsBoundary has to return a non zero size.");
 
@@ -367,7 +368,7 @@ namespace GEOMETRYPAIR
       CORE::LINALG::Matrix<base::n_nodes_, 1, double> weights(true);
       std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
       const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
-          *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
+          *(GLOBAL::Problem::Instance()->GetDis("structure")), element, myknots, weights);
       if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
@@ -408,7 +409,8 @@ namespace GEOMETRYPAIR
       std::vector<CORE::LINALG::SerialDenseVector> myknots(2);
       const bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(face_element,
           face_element->FaceMasterNumber(), face_element->ParentElementId(),
-          *(DRT::Problem::Instance()->GetDis("structure")), mypknots, myknots, weights, normalfac);
+          *(GLOBAL::Problem::Instance()->GetDis("structure")), mypknots, myknots, weights,
+          normalfac);
       if (zero_size)
         dserror("GetKnotVectorAndWeightsForNurbsBoundary has to return a non zero size.");
 
@@ -445,7 +447,7 @@ namespace GEOMETRYPAIR
       CORE::LINALG::Matrix<base::n_nodes_, 1, double> weights(true);
       std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
       const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
-          *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
+          *(GLOBAL::Problem::Instance()->GetDis("structure")), element, myknots, weights);
       if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
       // We need to redefine the discretization here, as otherwise the compiler has problems

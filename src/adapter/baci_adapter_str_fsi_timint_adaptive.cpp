@@ -31,7 +31,7 @@ ADAPTER::StructureFSITimIntAda::StructureFSITimIntAda(
     Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti)
     : FSIStructureWrapper(sti), StructureTimIntAda(sta, sti), str_time_integrator_(sti)
 {
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
 
   // type of error norm

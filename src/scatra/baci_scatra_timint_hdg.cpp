@@ -359,7 +359,7 @@ void SCATRA::TimIntHDG::OutputState()
   Teuchos::RCP<Epetra_MultiVector> interpolatedGradPhi;
   Teuchos::RCP<Epetra_Vector> interpolatedtracePhi;
   // get (averaged) values at element nodes
-  getNodeVectorsHDG(*discret_, intphinp_, phinp_, DRT::Problem::Instance()->NDim(),
+  getNodeVectorsHDG(*discret_, intphinp_, phinp_, GLOBAL::Problem::Instance()->NDim(),
       interpolatedPhinp_, interpolatedGradPhi, interpolatedtracePhi, nds_intvar_,
       discret_->NumDofSets());
 

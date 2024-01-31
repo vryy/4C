@@ -322,7 +322,7 @@ void XFEM::MeshVolCoupling::Init()
 
     traceEstimate_eigenvalue_update_ =
         INPUT::IntegralValue<INPAR::XFEM::TraceEstimate_eigenvalue_update>(
-            DRT::Problem::Instance()->XFluidDynamicParams().sublist("STABILIZATION"),
+            GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("STABILIZATION"),
             "UPDATE_EIGENVALUE_TRACE_ESTIMATE");
   }
 }
@@ -1938,7 +1938,7 @@ void XFEM::MeshCouplingFSI::LiftDrag(const int step, const double time) const
       << std::right << std::setw(16) << std::scientific << c(2);
 
     std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName() +
+    const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() +
                               ".liftdrag." + cond_name_ + ".txt";
     if (step <= 1)
     {

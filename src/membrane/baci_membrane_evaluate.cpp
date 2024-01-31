@@ -505,7 +505,7 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
   {
     const int functnum = (tmp_funct) ? (*tmp_funct)[i] : -1;
     if (functnum > 0)
-      functfacs[i] = DRT::Problem::Instance()
+      functfacs[i] = GLOBAL::Problem::Instance()
                          ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum - 1)
                          .Evaluate(time);
   }

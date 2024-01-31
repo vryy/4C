@@ -430,7 +430,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           "currently not possible, if you still want a varying diameter without any exchange "
           "terms, you can still define a zero exchange term");
     diam_funct_active_ = true;
-    artdiam_funct_ = &DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(
+    artdiam_funct_ = &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(
         diam_funct_num - 1);
     if (coupltype_ == type_porofluid)
     {
@@ -521,7 +521,7 @@ template <CORE::FE::CellType distypeArt, CORE::FE::CellType distypeCont, int dim
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
     dim>::PreEvaluateLateralSurfaceCoupling(Teuchos::RCP<Epetra_MultiVector> gp_vector)
 {
-  const int pid = DRT::Problem::Instance()->GetDis("artery")->Comm().MyPID();
+  const int pid = GLOBAL::Problem::Instance()->GetDis("artery")->Comm().MyPID();
   const int mylid = element1_->LID();
   if (element2_->Owner() != pid) return;
 
@@ -3570,7 +3570,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     if (funct_vec[i] >= 0 && abs(scale_vec[i]) > 0)
     {
       my_funct_vec.at(i) =
-          &DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(funct_vec[i]);
+          &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(funct_vec[i]);
       funct_coupl_active_ = true;
     }
     else

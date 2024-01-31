@@ -25,7 +25,7 @@ BACI_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::So_hex27::soh27_homog(Teuchos::ParameterList& params)
 {
-  if (DRT::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
+  if (GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = soh27_weights();
@@ -56,7 +56,8 @@ void DRT::ELEMENTS::So_hex27::soh27_read_restart_multi()
     auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
     int eleID = Id();
     bool eleowner = false;
-    if (DRT::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner()) eleowner = true;
+    if (GLOBAL::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
+      eleowner = true;
 
     for (int gp = 0; gp < NUMGPT_SOH27; ++gp) micro->ReadRestart(gp, eleID, eleowner);
   }

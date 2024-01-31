@@ -23,9 +23,9 @@ namespace
   bool PrestressIsActive(const double currentTime)
   {
     INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+        GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
     const double pstime =
-        DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+        GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
     return pstype != INPAR::STR::PreStress::none && currentTime <= pstime + 1.0e-15;
   }
 }  // namespace
@@ -38,13 +38,13 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
   // set-up FSI interface
   interface_ = Teuchos::rcp(new STR::MapExtractor);
 
-  if (DRT::Problem::Instance()->GetProblemType() != ProblemType::fpsi)
+  if (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fpsi)
     interface_->Setup(*Discretization(), *Discretization()->DofRowMap());
   else
     interface_->Setup(*Discretization(), *Discretization()->DofRowMap(),
         true);  // create overlapping maps for fpsi problem
 
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   predictor_ = INPUT::IntegralValue<int>(fsipart, "PREDICTOR");
 }
@@ -138,7 +138,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
       break;
     }
     default:
-      dserror("unknown interface displacement predictor '%s'", DRT::Problem::Instance()
+      dserror("unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
                                                                    ->FSIDynamicParams()
                                                                    .sublist("PARTITIONED SOLVER")
                                                                    .get<std::string>("PREDICTOR")

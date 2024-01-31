@@ -52,7 +52,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
 {
   // number of space dimensions
   const int ndim = disname != "scatra_micro"
-                       ? DRT::Problem::Instance(
+                       ? GLOBAL::Problem::Instance(
                              DRT::ELEMENTS::ScaTraEleParameterStd::Instance(disname)->ProbNum())
                              ->NDim()
                        : 1;
@@ -214,7 +214,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
 {
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  static const int ndim = DRT::Problem::Instance()->NDim();
+  static const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   switch (distype)
   {

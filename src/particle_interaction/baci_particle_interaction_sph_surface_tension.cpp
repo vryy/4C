@@ -783,7 +783,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
   // evaluate surface tension time ramp function
   double timefac = 1.0;
   if (timerampfct_ > 0)
-    timefac = DRT::Problem::Instance()
+    timefac = GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfTime>(timerampfct_ - 1)
                   .Evaluate(time_);
 
@@ -834,7 +834,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
   // evaluate surface tension time ramp function
   double timefac = 1.0;
   if (timerampfct_ > 0)
-    timefac = DRT::Problem::Instance()
+    timefac = GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfTime>(timerampfct_ - 1)
                   .Evaluate(time_);
 

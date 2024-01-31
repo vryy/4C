@@ -41,12 +41,12 @@ FSI::MonolithicBaseFS::MonolithicBaseFS(
 {
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(
-      timeparams, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", true));
+      timeparams, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", true));
   fluid_ = fluid->FluidField();
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new ADAPTER::AleBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));
+      new ADAPTER::AleBaseAlgorithm(timeparams, GLOBAL::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
   if (ale_ == Teuchos::null) dserror("cast from ADAPTER::Ale to ADAPTER::AleFluidWrapper failed");
 
@@ -161,7 +161,7 @@ void FSI::MonolithicMainFS::Timeloop(
   Teuchos::RCP<std::ofstream> log;
   if (Comm().MyPID() == 0)
   {
-    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << Comm().NumProc() << "\n"
@@ -425,7 +425,7 @@ bool FSI::BlockMonolithicFS::computePreconditioner(
     // the perfect place to initialize the block preconditioners.
     SystemMatrix()->SetupPreconditioner();
 
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     precondreusecount_ = fsimono.get<int>("PRECONDREUSE");
   }
@@ -457,7 +457,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
   fmiitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
   fmgitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
 
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
       INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
@@ -469,7 +469,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
   // fluid to ale at the free surface
 
   icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
       FluidField()->Interface()->FSCondMap(), *AleField()->Discretization(),
       AleField()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
@@ -702,7 +702,7 @@ void FSI::MonolithicFS::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 void FSI::MonolithicFS::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
@@ -735,7 +735,7 @@ void FSI::MonolithicFS::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Ep
 void FSI::MonolithicFS::UnscaleSolution(
     CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 

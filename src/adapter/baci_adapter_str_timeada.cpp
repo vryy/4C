@@ -77,7 +77,7 @@ void ADAPTER::StructureTimeAda::Setup()
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureTimeAda::SetupTimeAda()
 {
-  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdynparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // initialize the local variables
   timeinitial_ = 0.0;
@@ -126,7 +126,7 @@ void ADAPTER::StructureTimeAda::SetupTimeAda()
   locerrdisn_ = CORE::LINALG::CreateVector(*(stm_->DofRowMap()), true);
 
   // enable restart for adaptive timestepping
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop

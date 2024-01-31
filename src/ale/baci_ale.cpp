@@ -102,12 +102,12 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
   if (msht_ == INPAR::ALE::meshsliding)
   {
     meshtying_ = Teuchos::rcp(
-        new Meshsliding(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), nullptr));
+        new Meshsliding(discret_, *solver_, msht_, GLOBAL::Problem::Instance()->NDim(), nullptr));
   }
   else if (msht_ == INPAR::ALE::meshtying)
   {
     meshtying_ = Teuchos::rcp(
-        new Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), nullptr));
+        new Meshtying(discret_, *solver_, msht_, GLOBAL::Problem::Instance()->NDim(), nullptr));
   }
 
   // ---------------------------------------------------------------------
@@ -159,7 +159,7 @@ void ALE::Ale::SetInitialDisplacement(const INPAR::ALE::InitialDisp init, const 
           int doflid = dofrowmap->LID(dofgid);
 
           // evaluate component d of function
-          double initialval = DRT::Problem::Instance()
+          double initialval = GLOBAL::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X().data(), 0, d);
 
@@ -186,7 +186,7 @@ void ALE::Ale::CreateSystemMatrix(Teuchos::RCP<const ALE::UTILS::MapExtractor> i
 {
   if (msht_ != INPAR::ALE::no_meshtying)
   {
-    std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(), 1);
+    std::vector<int> coupleddof(GLOBAL::Problem::Instance()->NDim(), 1);
     sysmat_ = meshtying_->Setup(coupleddof, dispnp_);
     meshtying_->DirichletOnMaster(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
 
@@ -540,7 +540,7 @@ void ALE::Ale::OutputRestart(bool& datawritten)
   // info dedicated to user's eyes staring at standard out
   // Print restart info only in case of pure ALE problem. Coupled problems
   // print their own restart info.
-  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::ale)
+  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::ale)
   {
     if (discret_->Comm().MyPID() == 0)
       IO::cout << "====== Restart written in step " << step_ << IO::endl;
@@ -570,7 +570,8 @@ void ALE::Ale::PrepareTimeStep()
 
   // Print time step header only in case of pure ALE problem. Coupled problems
   // print their own time step header.
-  if (DRT::Problem::Instance()->GetProblemType() == ProblemType::ale) PrintTimeStepHeader();
+  if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::ale)
+    PrintTimeStepHeader();
 
   // Update local coordinate systems (which may be time dependent)
   if (locsysman_ != Teuchos::null)

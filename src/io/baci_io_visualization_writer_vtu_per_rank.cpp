@@ -26,12 +26,12 @@ IO::VisualizationWriterVtuPerRank::VisualizationWriterVtuPerRank(
     std::string visualization_data_name)
     : VisualizationWriterBase(parameters, comm, std::move(visualization_data_name))
 {
-  const auto& output_control = DRT::Problem::Instance()->OutputControlFile();
+  const auto& output_control = GLOBAL::Problem::Instance()->OutputControlFile();
   vtu_writer_.Initialize(comm_.MyPID(), comm_.NumProc(),
       std::pow(10, IO::GetTotalDigitsToReserveInTimeStep(parameters)),
       output_control->DirectoryName(), (output_control->FileNameOnlyPrefix() + "-vtk-files"),
       visualization_data_name_, output_control->RestartName(),
-      DRT::Problem::Instance()->RestartTime(),
+      GLOBAL::Problem::Instance()->RestartTime(),
       parameters.data_format_ == INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat::binary);
 }
 
@@ -101,7 +101,7 @@ void IO::VisualizationWriterVtuPerRank::FinalizeTimeStep()
 
   // Write a collection file summarizing all previously written files
   vtu_writer_.WriteVtkCollectionFileForAllWrittenMasterFiles(
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" +
+      GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" +
       visualization_data_name_);
 }
 BACI_NAMESPACE_CLOSE

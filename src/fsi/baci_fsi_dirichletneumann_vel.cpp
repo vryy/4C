@@ -38,7 +38,8 @@ BACI_NAMESPACE_OPEN
 FSI::DirichletNeumannVel::DirichletNeumannVel(const Epetra_Comm& comm)
     : DirichletNeumann(comm),
       constraint_manager_(ADAPTER::ConstraintEnforcerFactory::CreateEnforcer(
-          DRT::Problem::Instance()->FSIDynamicParams(), DRT::Problem::Instance()->FBIParams()))
+          GLOBAL::Problem::Instance()->FSIDynamicParams(),
+          GLOBAL::Problem::Instance()->FBIParams()))
 {
   // empty constructor
 }
@@ -48,7 +49,7 @@ void FSI::DirichletNeumannVel::Setup()
 {
   // call setup of base class
   FSI::DirichletNeumann::Setup();
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   if (INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp)
     dserror("Please set the fsi coupling variable to Velocity or Force!\n");
@@ -69,7 +70,7 @@ void FSI::DirichletNeumannVel::Setup()
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
     Teuchos::RCP<Epetra_Vector> ivel, const FillType fillFlag)
 {
-  const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
+  const Teuchos::ParameterList& fbi = GLOBAL::Problem::Instance()->FBIParams();
 
   FSI::Partitioned::FluidOp(ivel, fillFlag);
 
@@ -106,7 +107,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
 {
   FSI::Partitioned::StructOp(iforce, fillFlag);
 
-  const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
+  const Teuchos::ParameterList& fbi = GLOBAL::Problem::Instance()->FBIParams();
   if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
           INPAR::FBI::BeamToFluidCoupling::fluid) &&
       fbi.get<int>("STARTSTEP") < Step())
@@ -148,7 +149,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::InitialGuess()
   }
   else
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
     if (INPUT::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {

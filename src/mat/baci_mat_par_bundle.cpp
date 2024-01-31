@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Bundle holds all read-in materials of a #DRT::Problem
+\brief Bundle holds all read-in materials of a #GLOBAL::Problem
 
 \level 1
 

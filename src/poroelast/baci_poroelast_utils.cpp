@@ -63,7 +63,7 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm, bool setup_solver,
     Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& poroelastdyn = problem->PoroelastDynamicParams();
@@ -145,7 +145,7 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(
   if (glonumporop1 > 0)
   {
     porositysplitter = Teuchos::rcp(new CORE::LINALG::MapExtractor());
-    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
     CORE::LINALG::CreateMapExtractorFromDiscretization(*dis, ndim, *porositysplitter);
   }
 
@@ -184,7 +184,7 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
   // We get the discretizations from the global problem, as the contact does not have
   // both structural and porofluid discretization, but we should guarantee consistent ghosting!
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   std::vector<Teuchos::RCP<DRT::Discretization>> voldis;
   voldis.push_back(problem->GetDis("structure"));

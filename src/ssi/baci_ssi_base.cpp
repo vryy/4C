@@ -14,6 +14,7 @@
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_adapter_str_structure_new.H"
 #include "baci_global_data.H"
+#include "baci_global_data_read.H"
 #include "baci_inpar_ssi.H"
 #include "baci_inpar_volmortar.H"
 #include "baci_io_control.H"
@@ -43,25 +44,25 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       diff_time_step_size_(
           static_cast<int>(INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))),
       fieldcoupling_(Teuchos::getIntegralValue<INPAR::SSI::FieldCoupling>(
-          DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
+          GLOBAL::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
       is_scatra_manifold_(
           INPUT::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
       is_manifold_meshtying_(
           INPUT::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
       is_s2i_kinetic_with_pseudo_contact_(CheckS2IKineticsConditionForPseudoContact("structure")),
-      macro_scale_(DRT::Problem::Instance()->Materials()->FirstIdByType(
+      macro_scale_(GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
                        INPAR::MAT::m_scatra_multiscale) != -1 or
-                   DRT::Problem::Instance()->Materials()->FirstIdByType(
+                   GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
                        INPAR::MAT::m_newman_multiscale) != -1),
       ssiinterfacecontact_(
-          DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
+          GLOBAL::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
           nullptr),
       ssiinterfacemeshtying_(
-          DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceMeshtying") !=
+          GLOBAL::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceMeshtying") !=
           nullptr),
       temperature_funct_num_(
-          DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
-      use_old_structure_(DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>(
+          GLOBAL::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
+      use_old_structure_(GLOBAL::Problem::Instance()->StructuralDynamicParams().get<std::string>(
                              "INT_STRATEGY") == "Old")
 {
   // Keep this constructor empty!
@@ -113,7 +114,7 @@ void SSI::SSIBase::Setup()
 
   // in case of an ssi  multi scale formulation we need to set the displacement here
   auto dummy_vec = Teuchos::rcp(
-      new Epetra_Vector(*DRT::Problem::Instance()->GetDis("structure")->DofRowMap(), true));
+      new Epetra_Vector(*GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(), true));
   ssicoupling_->SetMeshDisp(ScaTraBaseAlgorithm(), dummy_vec);
 
   // set up scalar transport field
@@ -130,31 +131,31 @@ void SSI::SSIBase::Setup()
     // pass initial scalar field to structural discretization to correctly compute initial
     // accelerations
     if (Teuchos::getIntegralValue<INPAR::SSI::SolutionSchemeOverFields>(
-            DRT::Problem::Instance()->SSIControlParams(), "COUPALGO") !=
+            GLOBAL::Problem::Instance()->SSIControlParams(), "COUPALGO") !=
         INPAR::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra)
       ssicoupling_->SetScalarField(
-          *DRT::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp(), 1);
+          *GLOBAL::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp(), 1);
 
     if (macro_scale_)
     {
       ScaTraField()->CalcMeanMicroConcentration();
       ssicoupling_->SetScalarFieldMicro(
-          *DRT::Problem::Instance()->GetDis("structure"), ScaTraField()->PhinpMicro(), 2);
+          *GLOBAL::Problem::Instance()->GetDis("structure"), ScaTraField()->PhinpMicro(), 2);
     }
 
     //   temperature is non primary variable. Only set, if function for temperature is given
     if (temperature_funct_num_ != -1)
     {
       temperature_vector_ = Teuchos::rcp(
-          new Epetra_Vector(*DRT::Problem::Instance()->GetDis("structure")->DofRowMap(2), true));
+          new Epetra_Vector(*GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(2), true));
 
       temperature_vector_->PutScalar(
-          DRT::Problem::Instance()
+          GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
               .Evaluate(Time()));
 
       ssicoupling_->SetTemperatureField(
-          *DRT::Problem::Instance()->GetDis("structure"), temperature_vector_);
+          *GLOBAL::Problem::Instance()->GetDis("structure"), temperature_vector_);
     }
 
     // set up structural base algorithm
@@ -224,7 +225,7 @@ void SSI::SSIBase::Setup()
 void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::string& struct_disname,
     const std::string& scatra_disname, bool redistribute_struct_dis)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   auto structdis = problem->GetDis(struct_disname);
   auto scatradis = problem->GetDis(scatra_disname);
@@ -361,7 +362,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
   // read in the micro field, has to be done after cloning of the scatra discretization
   auto input_file_name = problem->OutputControlFile()->InputFileName();
   INPUT::DatFileReader local_reader(input_file_name);
-  problem->ReadMicroFields(local_reader);
+  GLOBAL::ReadMicroFields(*problem, local_reader);
 }
 
 /*----------------------------------------------------------------------*
@@ -391,7 +392,8 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
 
     if (fieldcoupling_ == INPAR::SSI::FieldCoupling::volume_nonmatch)
     {
-      const Teuchos::ParameterList& volmortarparams = DRT::Problem::Instance()->VolmortarParams();
+      const Teuchos::ParameterList& volmortarparams =
+          GLOBAL::Problem::Instance()->VolmortarParams();
       if (INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(volmortarparams, "COUPLINGTYPE") !=
           INPAR::VOLMORTAR::couplingtype_coninter)
       {
@@ -431,7 +433,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
   }
 
   // initialize coupling objects including dof sets
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   ssicoupling_->Init(problem->NDim(), problem->GetDis(struct_disname), Teuchos::rcp(this, false));
 
   return redistribution_required;
@@ -446,7 +448,7 @@ void SSI::SSIBase::ReadRestart(int restart)
   {
     structure_->ReadRestart(restart);
 
-    const Teuchos::ParameterList& ssidyn = DRT::Problem::Instance()->SSIControlParams();
+    const Teuchos::ParameterList& ssidyn = GLOBAL::Problem::Instance()->SSIControlParams();
     const bool restartfromstructure = INPUT::IntegralValue<int>(ssidyn, "RESTART_FROM_STRUCTURE");
 
     if (not restartfromstructure)  // standard restart
@@ -486,7 +488,7 @@ void SSI::SSIBase::ReadRestartfromTime(double restarttime)
 
     structure_->ReadRestart(restartstructure);
 
-    const Teuchos::ParameterList& ssidyn = DRT::Problem::Instance()->SSIControlParams();
+    const Teuchos::ParameterList& ssidyn = GLOBAL::Problem::Instance()->SSIControlParams();
     const bool restartfromstructure = INPUT::IntegralValue<int>(ssidyn, "RESTART_FROM_STRUCTURE");
 
     if (not restartfromstructure)  // standard restart
@@ -516,7 +518,7 @@ void SSI::SSIBase::ReadRestartfromTime(double restarttime)
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::TestResults(const Epetra_Comm& comm) const
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(ScaTraBaseAlgorithm()->CreateScaTraFieldTest());
@@ -573,7 +575,7 @@ void SSI::SSIBase::EvaluateAndSetTemperatureField()
   {
     // evaluate temperature at current time and put to scalar
     const double temperature =
-        DRT::Problem::Instance()
+        GLOBAL::Problem::Instance()
             ->FunctionById<CORE::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
             .Evaluate(Time());
     temperature_vector_->PutScalar(temperature);
@@ -636,7 +638,7 @@ void SSI::SSIBase::CheckSSIFlags() const
   }
 
   const bool is_nitsche_penalty_adaptive(INPUT::IntegralValue<int>(
-      DRT::Problem::Instance()->ContactDynamicParams(), "NITSCHE_PENALTY_ADAPTIVE"));
+      GLOBAL::Problem::Instance()->ContactDynamicParams(), "NITSCHE_PENALTY_ADAPTIVE"));
 
   if (SSIInterfaceContact() and is_nitsche_penalty_adaptive)
     dserror("Adaptive nitsche penalty parameter currently not supported!");
@@ -676,7 +678,7 @@ void SSI::SSIBase::SetDtFromScaTraToSSI()
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   auto structdis = problem->GetDis("structure");
   auto scatradis = problem->GetDis("scatra");
@@ -725,7 +727,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
     const std::string& struct_disname, const std::string& scatra_disname, const bool isAle)
 {
   // get the global problem
-  auto* problem = DRT::Problem::Instance();
+  auto* problem = GLOBAL::Problem::Instance();
 
   // time parameter handling
   // In case of different time stepping, time params have to be read from single field sections.
@@ -804,7 +806,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
 /*----------------------------------------------------------------------*/
 bool SSI::SSIBase::DoCalculateInitialPotentialField() const
 {
-  const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
+  const auto ssi_params = GLOBAL::Problem::Instance()->SSIControlParams();
   const bool init_pot_calc = INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
 
   return init_pot_calc and IsElchScaTraTimIntType();
@@ -814,7 +816,7 @@ bool SSI::SSIBase::DoCalculateInitialPotentialField() const
 /*----------------------------------------------------------------------*/
 bool SSI::SSIBase::IsElchScaTraTimIntType() const
 {
-  const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
+  const auto ssi_params = GLOBAL::Problem::Instance()->SSIControlParams();
   const auto scatra_type =
       Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
 
@@ -826,7 +828,7 @@ bool SSI::SSIBase::IsElchScaTraTimIntType() const
 bool SSI::SSIBase::IsRestart() const
 {
   // get the global problem
-  const auto* problem = DRT::Problem::Instance();
+  const auto* problem = GLOBAL::Problem::Instance();
 
   const int restartstep = problem->Restart();
   const double restarttime = problem->RestartTime();
@@ -860,7 +862,7 @@ bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
 {
   bool is_s2i_kinetic_with_pseudo_contact = false;
 
-  auto structdis = DRT::Problem::Instance()->GetDis(struct_disname);
+  auto structdis = GLOBAL::Problem::Instance()->GetDis(struct_disname);
   // get all s2i kinetics conditions
   std::vector<DRT::Condition*> s2ikinetics_conditons(0, nullptr);
   structdis->GetCondition("S2IKinetics", s2ikinetics_conditons);
@@ -891,7 +893,7 @@ bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
 
   const bool do_output_cauchy_stress =
       INPUT::IntegralValue<INPAR::STR::StressType>(
-          DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") == INPAR::STR::stress_cauchy;
+          GLOBAL::Problem::Instance()->IOParams(), "STRUCT_STRESS") == INPAR::STR::stress_cauchy;
 
   if (is_s2i_kinetic_with_pseudo_contact and !do_output_cauchy_stress)
   {
@@ -908,7 +910,7 @@ bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
 void SSI::SSIBase::CheckSSIInterfaceConditions(const std::string& struct_disname) const
 {
   // access the structural discretization
-  auto structdis = DRT::Problem::Instance()->GetDis(struct_disname);
+  auto structdis = GLOBAL::Problem::Instance()->GetDis(struct_disname);
 
   if (SSIInterfaceMeshtying())
     SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(

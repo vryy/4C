@@ -720,7 +720,7 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
 {
   if (dis_tar.size() == 0) return;
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   std::vector<Teuchos::RCP<DRT::Discretization>> voldis;
   for (int name = 0; name < (int)dis_tar.size(); ++name)
     voldis.push_back(problem->GetDis(dis_tar.at(name)));

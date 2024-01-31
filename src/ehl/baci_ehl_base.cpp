@@ -42,11 +42,11 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
       structure_(Teuchos::null),
       lubrication_(Teuchos::null),
       fieldcoupling_(INPUT::IntegralValue<INPAR::EHL::FieldCoupling>(
-          DRT::Problem::Instance()->ElastoHydroDynamicParams(), "FIELDCOUPLING")),
+          GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "FIELDCOUPLING")),
       dry_contact_(INPUT::IntegralValue<bool>(
-          DRT::Problem::Instance()->ElastoHydroDynamicParams(), "DRY_CONTACT_MODEL"))
+          GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "DRY_CONTACT_MODEL"))
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // get the solver number used for Lubrication solver
   const int linsolvernumber = lubricationparams.get<int>("LINEAR_SOLVER");
@@ -58,7 +58,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
 
   // 3.- Create the two uncoupled subproblems.
   // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis(struct_disname);
+  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis(struct_disname);
 
   // set moving grid
   bool isale = true;
@@ -70,7 +70,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   const Teuchos::ParameterList* structtimeparams = &globaltimeparams;
   const Teuchos::ParameterList* lubricationtimeparams = &globaltimeparams;
   if (INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ElastoHydroDynamicParams(), "DIFFTIMESTEPSIZE"))
+          GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "DIFFTIMESTEPSIZE"))
   {
     structtimeparams = &structparams;
     lubricationtimeparams = &lubricationparams;
@@ -160,7 +160,7 @@ void EHL::Base::ReadRestartfromTime(double restarttime)
  *----------------------------------------------------------------------*/
 void EHL::Base::TestResults(const Epetra_Comm& comm)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(lubrication_->CreateLubricationFieldTest());
@@ -176,7 +176,7 @@ void EHL::Base::SetupDiscretizations(const Epetra_Comm& comm, const std::string 
   // Scheme   : the structure discretization is received from the input. Then, an ale-lubrication
   // disc. is cloned.
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // 1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
@@ -389,7 +389,7 @@ void EHL::Base::AddPoiseuilleForce(
 void EHL::Base::AddCouetteForce(
     Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce)
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   const Teuchos::RCP<const Epetra_Vector> relVel = mortaradapter_->RelTangVel();
   Teuchos::RCP<Epetra_Vector> height =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
@@ -533,7 +533,7 @@ void EHL::Base::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
 void EHL::Base::SetupUnprojectableDBC()
 {
   if (not INPUT::IntegralValue<int>(
-          ((DRT::Problem::Instance()->ElastoHydroDynamicParams())), "UNPROJ_ZERO_DBC"))
+          ((GLOBAL::Problem::Instance()->ElastoHydroDynamicParams())), "UNPROJ_ZERO_DBC"))
     return;
 
   Teuchos::RCP<Epetra_FEVector> inf_gap_toggle =
@@ -605,14 +605,14 @@ void EHL::Base::SetupUnprojectableDBC()
 void EHL::Base::SetupFieldCoupling(
     const std::string struct_disname, const std::string lubrication_disname)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   Teuchos::RCP<DRT::Discretization> lubricationdis = problem->GetDis(lubrication_disname);
 
   if (structdis.is_null()) dserror("structure dis does not exist");
   if (lubricationdis.is_null()) dserror("lubrication dis does not exist");
 
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   //------------------------------------------------------------------
   // 1. Mortar coupling: Slave-side structure <-> Master-side structure
@@ -625,10 +625,10 @@ void EHL::Base::SetupFieldCoupling(
   // matching node coupling is defined below.
 
   std::vector<int> coupleddof(ndim, 1);
-  mortaradapter_ = Teuchos::rcp(new ADAPTER::CouplingEhlMortar(DRT::Problem::Instance()->NDim(),
-      DRT::Problem::Instance()->MortarCouplingParams(),
-      DRT::Problem::Instance()->ContactDynamicParams(),
-      DRT::Problem::Instance()->SpatialApproximationType()));
+  mortaradapter_ = Teuchos::rcp(new ADAPTER::CouplingEhlMortar(GLOBAL::Problem::Instance()->NDim(),
+      GLOBAL::Problem::Instance()->MortarCouplingParams(),
+      GLOBAL::Problem::Instance()->ContactDynamicParams(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType()));
   mortaradapter_->Setup(structdis, structdis, coupleddof, "EHLCoupling");
 
   if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
@@ -815,7 +815,7 @@ void EHL::Base::Output(bool forced_writerestart)
 
     // output for viscosity
 
-    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndim = GLOBAL::Problem::Instance()->NDim();
     Teuchos::RCP<Epetra_Vector> visc_vec =
         Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->DofRowMap(1)));
     for (int i = 0;

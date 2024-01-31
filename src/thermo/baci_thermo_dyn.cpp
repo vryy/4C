@@ -26,19 +26,19 @@ void thr_dyn_drt()
 {
   // access the discretization
   Teuchos::RCP<DRT::Discretization> thermodis = Teuchos::null;
-  thermodis = DRT::Problem::Instance()->GetDis("thermo");
+  thermodis = GLOBAL::Problem::Instance()->GetDis("thermo");
 
   // set degrees of freedom in the discretization
   if (not thermodis->Filled()) thermodis->FillComplete();
 
-  const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+  const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->ThermalDynamicParams();
 
   // create instance of thermo basis algorithm (no structure discretization)
   Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermoonly =
       Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(tdyn, thermodis));
 
   // do restart if demanded from input file
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     thermoonly->ThermoField().ReadRestart(restart);
@@ -48,8 +48,8 @@ void thr_dyn_drt()
   (thermoonly->ThermoField()).Integrate();
 
   // perform the result test if required
-  DRT::Problem::Instance()->AddFieldTest(thermoonly->ThermoField().CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(thermodis->Comm());
+  GLOBAL::Problem::Instance()->AddFieldTest(thermoonly->ThermoField().CreateFieldTest());
+  GLOBAL::Problem::Instance()->TestAll(thermodis->Comm());
 
   // done
   return;

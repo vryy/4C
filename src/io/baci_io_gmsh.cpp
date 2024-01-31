@@ -728,7 +728,7 @@ std::string IO::GMSH::GetNewFileNameAndDeleteOldFiles(const std::string& filenam
 {
   std::ostringstream filename;
   std::ostringstream filenamedel;
-  const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
+  const std::string filebase(GLOBAL::Problem::Instance()->OutputControlFile()->FileName());
 
   std::ostringstream pid_stream;
   pid_stream << ".p" << std::setw(2) << std::setfill('0') << pid;
@@ -750,7 +750,7 @@ std::string IO::GMSH::GetFileName(const std::string& filename_base,
 {
   std::ostringstream filename;
 
-  const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
+  const std::string filebase(GLOBAL::Problem::Instance()->OutputControlFile()->FileName());
 
   std::ostringstream pid_stream;
   pid_stream << ".p" << std::setw(2) << std::setfill('0') << pid;

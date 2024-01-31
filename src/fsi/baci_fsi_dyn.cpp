@@ -81,7 +81,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void fluid_ale_drt()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   const Epetra_Comm& comm = problem->GetDis("fluid")->Comm();
 
@@ -135,8 +135,8 @@ void fluid_ale_drt()
   }
   fluid->Timeloop();
 
-  DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField()->CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
+  GLOBAL::Problem::Instance()->AddFieldTest(fluid->MBFluidField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->TestAll(comm);
 }
 
 /*----------------------------------------------------------------------*/
@@ -144,9 +144,9 @@ void fluid_ale_drt()
 /*----------------------------------------------------------------------*/
 void fluid_xfem_drt()
 {
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("structure")->Comm();
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
@@ -188,7 +188,7 @@ void fluid_xfem_drt()
     Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo =
         Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
 
-    const int restart = DRT::Problem::Instance()->Restart();
+    const int restart = GLOBAL::Problem::Instance()->Restart();
     if (restart)
     {
       // read the restart information, set vectors and variables
@@ -206,14 +206,14 @@ void fluid_xfem_drt()
   {
     //--------------------------------------------------------------
     // create instance of fluid basis algorithm
-    const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+    const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
 
     Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo =
         Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
 
     //--------------------------------------------------------------
     // restart the simulation
-    const int restart = DRT::Problem::Instance()->Restart();
+    const int restart = GLOBAL::Problem::Instance()->Restart();
     if (restart)
     {
       // read the restart information, set vectors and variables
@@ -236,9 +236,9 @@ void fluid_xfem_drt()
 /*----------------------------------------------------------------------*/
 void fluid_freesurf_drt()
 {
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("fluid")->Comm();
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with
@@ -287,7 +287,7 @@ void fluid_freesurf_drt()
 
       fsi = Teuchos::rcp(new FSI::MonolithicFS(comm, fsidyn));
 
-      const int restart = DRT::Problem::Instance()->Restart();
+      const int restart = GLOBAL::Problem::Instance()->Restart();
       if (restart)
       {
         // read the restart information, set vectors and variables
@@ -296,8 +296,8 @@ void fluid_freesurf_drt()
 
       fsi->Timeloop(fsi);
 
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->TestAll(comm);
       break;
     }
     default:
@@ -309,8 +309,8 @@ void fluid_freesurf_drt()
 
       fluid->Timeloop();
 
-      DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->AddFieldTest(fluid->MBFluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->TestAll(comm);
       break;
     }
   }
@@ -320,7 +320,7 @@ void fluid_freesurf_drt()
 /*----------------------------------------------------------------------*/
 void fsi_immersed_drt()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   const Epetra_Comm& comm = structdis->Comm();
@@ -390,7 +390,7 @@ void fsi_immersed_drt()
     Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannVel>(fsi, true)->SetBinning(binningstrategy);
   }
 
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = GLOBAL::Problem::Instance()->Restart();
   if (restart)
   {
     // read the restart information, set vectors and variables
@@ -400,11 +400,11 @@ void fsi_immersed_drt()
   fsi->Timeloop(fsi);
 
   // create result tests for single fields
-  DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
+  GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
   // do the actual testing
-  DRT::Problem::Instance()->TestAll(comm);
+  GLOBAL::Problem::Instance()->TestAll(comm);
   Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 }
 /*----------------------------------------------------------------------*/
@@ -412,7 +412,7 @@ void fsi_immersed_drt()
 /*----------------------------------------------------------------------*/
 void fsi_ale_drt()
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   const Epetra_Comm& comm = structdis->Comm();
@@ -502,7 +502,7 @@ void fsi_ale_drt()
 
       Teuchos::RCP<FSI::StructureALE> fsi = Teuchos::rcp(new FSI::StructureALE(comm));
 
-      const int restart = DRT::Problem::Instance()->Restart();
+      const int restart = GLOBAL::Problem::Instance()->Restart();
       if (restart)
       {
         // read the restart information, set vectors and variables
@@ -511,8 +511,8 @@ void fsi_ale_drt()
 
       fsi->Timeloop();
 
-      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->TestAll(comm);
       break;
     }
     case fsi_iter_monolithicfluidsplit:
@@ -598,7 +598,7 @@ void fsi_ale_drt()
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a Redistribute call
-      const int restart = DRT::Problem::Instance()->Restart();
+      const int restart = GLOBAL::Problem::Instance()->Restart();
       if (restart)
       {
         fsi->ReadRestart(restart);
@@ -670,16 +670,16 @@ void fsi_ale_drt()
       fsi->FluidField()->CalculateError();
 
       // create result tests for single fields
-      DRT::Problem::Instance()->AddFieldTest(fsi->AleField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->AleField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // create fsi specific result test
       Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi, fsidyn));
-      DRT::Problem::Instance()->AddFieldTest(fsitest);
+      GLOBAL::Problem::Instance()->AddFieldTest(fsitest);
 
       // do the actual testing
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->TestAll(comm);
 
       break;
     }
@@ -700,7 +700,7 @@ void fsi_ale_drt()
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a Redistribute call
-      const int restart = DRT::Problem::Instance()->Restart();
+      const int restart = GLOBAL::Problem::Instance()->Restart();
       if (restart)
       {
         fsi->ReadRestart(restart);
@@ -716,15 +716,15 @@ void fsi_ale_drt()
       fsi->FluidField()->CalculateError();
 
       // create result tests for single fields
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // create fsi specific result test
       Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi, fsidyn));
-      DRT::Problem::Instance()->AddFieldTest(fsitest);
+      GLOBAL::Problem::Instance()->AddFieldTest(fsitest);
 
       // do the actual testing
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->TestAll(comm);
 
       break;
     }
@@ -750,7 +750,7 @@ void fsi_ale_drt()
           dserror("unsupported partitioned FSI scheme");
           break;
       }
-      const int restart = DRT::Problem::Instance()->Restart();
+      const int restart = GLOBAL::Problem::Instance()->Restart();
       if (restart)
       {
         // read the restart information, set vectors and variables
@@ -760,11 +760,11 @@ void fsi_ale_drt()
       fsi->Timeloop(fsi);
 
       // create result tests for single fields
-      DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // do the actual testing
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->TestAll(comm);
 
       break;
     }
@@ -778,7 +778,7 @@ void fsi_ale_drt()
 /*----------------------------------------------------------------------*/
 void xfsi_drt()
 {
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("structure")->Comm();
 
   if (comm.MyPID() == 0)
   {
@@ -793,7 +793,7 @@ void xfsi_drt()
     std::cout << std::endl << std::endl;
   }
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
@@ -801,7 +801,7 @@ void xfsi_drt()
 
   FLD::XFluid::SetupFluidDiscretization();
 
-  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis(
+  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis(
       "fluid");  // at the moment, 'fluid'-discretization is used for ale!!!
 
   // CREATE ALE
@@ -854,7 +854,7 @@ void xfsi_drt()
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a Redistribute call
-      const int restart = DRT::Problem::Instance()->Restart();
+      const int restart = GLOBAL::Problem::Instance()->Restart();
       if (restart)
       {
         fsi->ReadRestart(restart);
@@ -866,15 +866,15 @@ void xfsi_drt()
       // here we go...
       fsi->Timeloop();
 
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-      fsi->StructurePoro()->TestResults(DRT::Problem::Instance());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      fsi->StructurePoro()->TestResults(GLOBAL::Problem::Instance());
 
       //    // create FSI specific result test
       //    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new
-      //    FSI::FSIResultTest(fsi,fsidyn)); DRT::Problem::Instance()->AddFieldTest(fsitest);
+      //    FSI::FSIResultTest(fsi,fsidyn)); GLOBAL::Problem::Instance()->AddFieldTest(fsitest);
 
       // do the actual testing
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->TestAll(comm);
 
       break;
     }
@@ -904,7 +904,7 @@ void xfsi_drt()
           break;
       }
 
-      const int restart = DRT::Problem::Instance()->Restart();
+      const int restart = GLOBAL::Problem::Instance()->Restart();
       if (restart)
       {
         // read the restart information, set vectors and variables
@@ -913,9 +913,9 @@ void xfsi_drt()
 
       fsi->Timeloop(fsi);
 
-      DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      GLOBAL::Problem::Instance()->TestAll(comm);
 
       break;
     }
@@ -929,7 +929,7 @@ void xfsi_drt()
 /*----------------------------------------------------------------------*/
 void xfpsi_drt()
 {
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("structure")->Comm();
 
   if (comm.MyPID() == 0)
   {
@@ -943,7 +943,7 @@ void xfpsi_drt()
     std::cout << "     _/  \\\\_ |       ||       ______| __|__" << std::endl;
     std::cout << std::endl << std::endl;
   }
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
 
   // 1.-Initialization.
   // setup of the discretizations, including clone strategy
@@ -951,7 +951,7 @@ void xfpsi_drt()
 
   // setup of discretization for xfluid
   FLD::XFluid::SetupFluidDiscretization();
-  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis(
+  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis(
       "fluid");  // at the moment, 'fluid'-discretization is used for ale!!!
 
   Teuchos::RCP<DRT::Discretization> aledis;
@@ -1010,7 +1010,7 @@ void xfpsi_drt()
 
       // be careful, dofmaps might be changed here in a Redistribute call
       const int restart =
-          DRT::Problem::Instance()
+          GLOBAL::Problem::Instance()
               ->Restart();  // not adapated at the moment .... Todo check it .. ChrAg
       if (restart)
       {
@@ -1027,11 +1027,11 @@ void xfpsi_drt()
       // here we go...
       fsi->Timeloop();
 
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-      fsi->StructurePoro()->TestResults(DRT::Problem::Instance());
+      GLOBAL::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      fsi->StructurePoro()->TestResults(GLOBAL::Problem::Instance());
 
       // do the actual testing
-      DRT::Problem::Instance()->TestAll(comm);
+      GLOBAL::Problem::Instance()->TestAll(comm);
       break;
     }
     case fsi_pseudo_structureale:

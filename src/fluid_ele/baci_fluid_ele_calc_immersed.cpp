@@ -55,7 +55,7 @@ int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*
 {
   // get integration rule for fluid elements cut by structural boundary
   int num_gp_fluid_bound =
-      DRT::Problem::Instance()->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND");
+      GLOBAL::Problem::Instance()->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND");
   int degree_gp_fluid_bound = 3;
   if (num_gp_fluid_bound == 8)
     degree_gp_fluid_bound = 3;

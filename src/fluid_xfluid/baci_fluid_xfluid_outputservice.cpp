@@ -46,7 +46,7 @@ void FLD::XFluidOutputService::PrepareOutput()
 {
   dofset_out_->Reset();
   dofset_out_->AssignDegreesOfFreedom(*discret_, 0, 0);
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   // split based on complete fluid field (standard splitter that handles one dofset)
   CORE::LINALG::CreateMapExtractorFromDiscretization(
       *discret_, *dofset_out_, ndim, *velpressplitter_out_);
@@ -262,7 +262,7 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
           INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
       include_inner_(include_inner)
 {
-  if (!(bool)INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
+  if (!(bool)INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
     dserror(
         "If GMSH output is globally deactivated, don't create an instance of "
         "XFluidOutputServiceGmsh!");

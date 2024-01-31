@@ -44,7 +44,7 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
   if (strategy_ != INPAR::FSI::HybridSchwarz)
     dserror("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   additiveschwarzeverywhere_ = INPUT::IntegralValue<bool>(fsimono, "HYBRIDFULL");
@@ -71,7 +71,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   Teuchos::ParameterList ifpacklist;
   Teuchos::ParameterList azlist;
 
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // ---------------------------------------------------------------------------

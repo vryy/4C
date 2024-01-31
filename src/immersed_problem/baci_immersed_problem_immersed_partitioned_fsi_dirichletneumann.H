@@ -199,7 +199,7 @@ namespace IMMERSED
     //@}
 
     /// pointer to global problem
-    DRT::Problem* globalproblem_;
+    GLOBAL::Problem* globalproblem_;
 
     //! @name various bools and switches
     //@{

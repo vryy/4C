@@ -34,7 +34,7 @@ void FSI::DirichletNeumannDisp::Setup()
 {
   // call setup of base class
   FSI::DirichletNeumann::Setup();
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   SetKinematicCoupling(
       INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
@@ -105,7 +105,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::InitialGuess()
   }
   else
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
     if (INPUT::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {

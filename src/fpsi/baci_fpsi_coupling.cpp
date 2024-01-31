@@ -106,7 +106,7 @@ void FPSI::FPSICoupling::InitCouplingMatrixesRHS()
 /----------------------------------------------------------------------*/
 void FPSI::FPSICoupling::SetupInterfaceCoupling()
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();
   Teuchos::RCP<DRT::Discretization> porofluiddis = PoroField()->FluidField()->Discretization();
@@ -245,7 +245,7 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
   const CORE::ADAPTER::Coupling& coupsf_fpsi = *icoup_ps_f_;
   const CORE::ADAPTER::Coupling& coup_ps_a_fpsi = *icoup_ps_a_;
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
   INPAR::FPSI::PartitionedCouplingMethod method =
       INPUT::IntegralValue<INPAR::FPSI::PartitionedCouplingMethod>(fpsidynparams, "PARTITIONED");
@@ -300,9 +300,9 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
           Teuchos::null, Teuchos::null, Teuchos::null);
 
       // what's the current problem type? Is it a fps3i problem?
-      ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+      GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
 
-      if (probtype == ProblemType::fps3i)
+      if (probtype == GLOBAL::ProblemType::fps3i)
       {
         if (conductivity_ == 0.0)
         {

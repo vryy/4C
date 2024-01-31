@@ -2742,7 +2742,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     dsassert(funct->size() == 1, "Need exactly one function.");
     const int functnum = (funct) ? (*funct)[0] : -1;
     const double functfac = (functnum > 0)
-                                ? DRT::Problem::Instance()
+                                ? GLOBAL::Problem::Instance()
                                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                       .Evaluate(xrefegp.A(), time, 0)
                                 : 1.0;
@@ -3274,14 +3274,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
         for (int dim = 0; dim < nsd_; ++dim) position[dim] = xyzint(dim);
 
         const double T_exact =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                 .Evaluate(position, t, 0);
 
         T_analytical(0, 0) = T_exact;
 
         std::vector<double> Tder_exact =
-            DRT::Problem::Instance()
+            GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                 .EvaluateSpatialDerivative(position, t, 0);
 

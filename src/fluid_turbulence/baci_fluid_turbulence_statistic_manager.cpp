@@ -145,7 +145,8 @@ namespace FLD
 
       // do the time integration independent setup
       Setup();
-      if (DRT::Problem::Instance()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg)
+      if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
+          CORE::FE::ShapeFunctionType::hdg)
       {
         TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*>(&fluid);
         if (hdgfluid == nullptr) dserror("this should be a hdg time integer");

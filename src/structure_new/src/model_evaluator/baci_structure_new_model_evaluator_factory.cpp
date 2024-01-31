@@ -127,10 +127,10 @@ Teuchos::RCP<STR::MODELEVALUATOR::Generic>
 STR::MODELEVALUATOR::Factory::BuildStructureModelEvaluator() const
 {
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> structure_model_ptr = Teuchos::null;
-  ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
+  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
   switch (probtype)
   {
-    case ProblemType::struct_ale:
+    case GLOBAL::ProblemType::struct_ale:
     {
       structure_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::StructAle());
       break;

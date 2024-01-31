@@ -585,7 +585,7 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSolver()
   // create a linear solver
   // get dynamic section of poroelasticity
   const Teuchos::ParameterList& poromultdyn =
-      DRT::Problem::Instance()->PoroMultiPhaseDynamicParams();
+      GLOBAL::Problem::Instance()->PoroMultiPhaseDynamicParams();
   // get the solver number used for linear poroelasticity solver
   const int linsolvernumber = poromultdyn.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER");
   // check if the poroelasticity solver has a valid solver number
@@ -594,7 +594,7 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSolver()
         "no linear solver defined for poromultiphaseflow. Please set LINEAR_SOLVER in "
         "POROMULTIPHASE DYNAMIC to a valid number!");
   const Teuchos::ParameterList& solverparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 

@@ -25,7 +25,7 @@ void CONTACT::AnalyticalSolutions2D(const CORE::LINALG::Matrix<2, 1>& pos,
     CORE::LINALG::Matrix<2, 2>& derivanalyt)
 {
   // get corresponding input parameter
-  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& listcmt = GLOBAL::Problem::Instance()->ContactDynamicParams();
   INPAR::CONTACT::ErrorNorms entype =
       INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
 
@@ -194,7 +194,7 @@ void CONTACT::AnalyticalSolutions3D(const CORE::LINALG::Matrix<3, 1>& pos,
     CORE::LINALG::Matrix<3, 3>& derivanalyt)
 {
   // get corresponding input parameter
-  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& listcmt = GLOBAL::Problem::Instance()->ContactDynamicParams();
   INPAR::CONTACT::ErrorNorms entype =
       INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
 

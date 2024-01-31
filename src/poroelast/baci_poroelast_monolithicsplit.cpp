@@ -178,7 +178,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
 
 void POROELAST::MonolithicSplit::SetupCouplingAndMatrices()
 {
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
   icoupfs_->SetupConditionCoupling(*StructureField()->Discretization(),
       StructureField()->Interface()->FSICondMap(), *FluidField()->Discretization(),
       FluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);

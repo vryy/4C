@@ -61,12 +61,12 @@ FSI::MonolithicBase::MonolithicBase(
       isadafluid_(false),
       isadasolver_(false),
       verbosity_(INPUT::IntegralValue<INPAR::FSI::Verbosity>(
-          DRT::Problem::Instance()->FSIDynamicParams(), "VERBOSITY"))
+          GLOBAL::Problem::Instance()->FSIDynamicParams(), "VERBOSITY"))
 {
   // access the discretizations
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> aledis = GLOBAL::Problem::Instance()->GetDis("ale");
 
   CreateStructureTimeIntegrator(timeparams, structdis);
   CreateFluidAndALETimeIntegrator(timeparams, fluiddis, aledis);
@@ -99,7 +99,7 @@ void FSI::MonolithicBase::CreateStructureTimeIntegrator(
   structure_ = Teuchos::null;
 
   // access structural dynamic params
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // ask base algorithm for the structural time integrator
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
@@ -127,7 +127,7 @@ void FSI::MonolithicBase::CreateFluidAndALETimeIntegrator(const Teuchos::Paramet
 
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(
-      timeparams, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", true));
+      timeparams, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", true));
   fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fluid->FluidField());
 
   if (fluid_ == Teuchos::null) dserror("Cast from ADAPTER::Fluid to ADAPTER::FluidFSI failed");
@@ -322,7 +322,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       log_(Teuchos::null),
       logada_(Teuchos::null)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
 
   // enable debugging
   if (INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
@@ -332,14 +332,14 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   }
 
   // write iterations-file
-  std::string fileiter = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string fileiter = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
   fileiter.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
   // write energy-file
   if (INPUT::IntegralValue<int>(fsidyn.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
   {
-    std::string fileiter2 = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    std::string fileiter2 = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     fileiter2.append(".fsienergy");
     logenergy_ = Teuchos::rcp(new std::ofstream(fileiter2.c_str()));
   }
@@ -365,7 +365,7 @@ void FSI::Monolithic::SetupSystem()
 {
   // right now we use matching meshes at the interface
 
-  const int ndim = DRT::Problem::Instance()->NDim();
+  const int ndim = GLOBAL::Problem::Instance()->NDim();
 
   CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   CORE::ADAPTER::Coupling& coupsa = StructureAleCoupling();
@@ -416,7 +416,7 @@ void FSI::Monolithic::SetupSystem()
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const bool timeadapton =
       INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
@@ -515,9 +515,9 @@ void FSI::Monolithic::PrepareTimeloop()
   // do not allow monolithic in the pre-phase
   // allow monolithic in the post-phase
   const INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-      DRT::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
+      GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
   const double pstime =
-      DRT::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
+      GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
   if (pstype != INPAR::STR::PreStress::none && Time() + Dt() <= pstime + 1.0e-15)
     dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
 
@@ -682,7 +682,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::Update()
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   bool timeadapton = INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (not timeadapton)
@@ -717,7 +717,7 @@ void FSI::Monolithic::NonLinErrorCheck()
   // that depends on the user's will given in the input file
 
   // get the FSI parameter list
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
 
   // get the user's will
   const INPAR::FSI::DivContAct divcontype =
@@ -1110,7 +1110,7 @@ bool FSI::BlockMonolithic::computePreconditioner(
     // the perfect place to initialize the block preconditioners.
     SystemMatrix()->SetupPreconditioner();
 
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     precondreusecount_ = fsimono.get<int>("PRECONDREUSE");
   }
@@ -1130,7 +1130,7 @@ bool FSI::BlockMonolithic::computePreconditioner(
 void FSI::BlockMonolithic::PrepareTimeStepPreconditioner()
 {
   const Teuchos::ParameterList& fsimono =
-      DRT::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
+      GLOBAL::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
 
   if (INPUT::IntegralValue<int>(fsimono, "REBUILDPRECEVERYSTEP")) precondreusecount_ = 0;
 }
@@ -1140,7 +1140,7 @@ void FSI::BlockMonolithic::PrepareTimeStepPreconditioner()
 void FSI::BlockMonolithic::CreateSystemMatrix(
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat, bool structuresplit)
 {
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   std::vector<int> pciter;
@@ -1252,7 +1252,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSyst
   const Teuchos::RCP<Epetra_Operator> J = SystemMatrix();
   const Teuchos::RCP<Epetra_Operator> M = SystemMatrix();
 
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   INPAR::FSI::LinearBlockSolver linearsolverstrategy =
       INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
@@ -1275,7 +1275,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSyst
             "DYNAMIC/MONOLITHIC SOLVER to a valid number!");
 
       const Teuchos::ParameterList& fsisolverparams =
-          DRT::Problem::Instance()->SolverParams(linsolvernumber);
+          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
       auto solver = Teuchos::rcp(new CORE::LINALG::Solver(fsisolverparams, Comm()));
 

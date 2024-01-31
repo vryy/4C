@@ -65,7 +65,7 @@ int ADAPTER::StructureTimeLoop::Integrate()
     }
     // todo: remove this as soon as old structure time integration is gone
     else if (INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
-                 DRT::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
+                 GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
              INPAR::STR::int_old)
     {
       convergencestatus =

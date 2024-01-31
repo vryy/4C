@@ -157,7 +157,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
   if (curvenum >= 0)
   {
     const double curvefac =
-        DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
             time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
@@ -260,7 +260,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinea
     if (curvenum >= 0)
     {
       const double curvefac =
-          DRT::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
               time);
       // adjust potential at metal side accordingly
       pot0 *= curvefac;

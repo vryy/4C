@@ -39,7 +39,7 @@ namespace
       container->Add("ETABAR", 1.);
       container->Add("MAXITER", 50);
       container->SetParameter(new MAT::PAR::PlasticDruckerPrager(container));
-      DRT::Problem& problem = (*DRT::Problem::Instance());
+      GLOBAL::Problem& problem = (*GLOBAL::Problem::Instance());
       problem.Materials()->SetReadFromProblem(0);
       problem.Materials()->Insert(1, container);
       problem.Materials().assert_not_null();
@@ -48,10 +48,10 @@ namespace
     };
     void TearDown() override
     {
-      // We need to make sure the DRT::Problem instance created in SetUp is deleted again. If this
-      // is not done, some troubles arise where unit tests influence each other on some
+      // We need to make sure the GLOBAL::Problem instance created in SetUp is deleted again. If
+      // this is not done, some troubles arise where unit tests influence each other on some
       // configurations. We suspect that missing singleton destruction might be the reason for that.
-      DRT::Problem::Done();
+      GLOBAL::Problem::Done();
     };
     Teuchos::RCP<MAT::PAR::PlasticDruckerPrager> param_druckprag_;
     CORE::COMM::PackBuffer data;

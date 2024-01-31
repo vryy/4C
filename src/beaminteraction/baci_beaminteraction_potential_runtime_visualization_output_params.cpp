@@ -22,7 +22,7 @@ BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::BeamToBeamPotentialRunt
     : isinit_(false),
       issetup_(false),
       visualization_parameters_(IO::VisualizationParametersFactory(
-          DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))),
+          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))),
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_forces_(false),

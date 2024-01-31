@@ -65,7 +65,7 @@ void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::DiscretizationF
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff->size() <= component || (*onoff)[component] == 0 ||
-          DRT::Problem::Instance(0)->GetProblemType() != ProblemType::fluid)
+          GLOBAL::Problem::Instance(0)->GetProblemType() != GLOBAL::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
       {
@@ -196,8 +196,8 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
     CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     DRT::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
-    if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::elemag or
-        DRT::Problem::Instance(0)->GetProblemType() == ProblemType::scatra)
+    if (GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::elemag or
+        GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::scatra)
       DRT::UTILS::AddEnumClassToParameterList<DRT::HDGAction>(
           "action", DRT::HDGAction::project_dirich_field, initParams);
     else
@@ -227,7 +227,7 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff->size() <= component || (*onoff)[component] == 0 ||
-          DRT::Problem::Instance(0)->GetProblemType() != ProblemType::fluid)
+          GLOBAL::Problem::Instance(0)->GetProblemType() != GLOBAL::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
       {
@@ -244,7 +244,7 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
 
           // --------------------------------------------------------------------------------------
           // get parameters
-          Teuchos::ParameterList params = DRT::Problem::Instance()->FluidDynamicParams();
+          Teuchos::ParameterList params = GLOBAL::Problem::Instance()->FluidDynamicParams();
 
           // check whether the imposition of the average pressure is requested
           const int dopressavgbc =

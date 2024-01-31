@@ -229,7 +229,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::SetMaterial(int matnum)
   so3_ele::SetMaterial(matnum);
 
   // get the scatra structure control parameter list
-  const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
+  const Teuchos::ParameterList& ssicontrol = GLOBAL::Problem::Instance()->SSIControlParams();
   // get the material
   Teuchos::RCP<MAT::Material> mat = Material();
 

@@ -32,7 +32,7 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
     : Cardiovascular0D(discr, conditionname, curID)
 {
   Teuchos::ParameterList artvensyspulpar =
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
           "SYS-PUL CIRCULATION PARAMETERS");
 
   num_dof_cardio_ = 34;
@@ -142,7 +142,7 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
 
   // now set the parameters for the 0D respiratory model
   Teuchos::ParameterList respirpar =
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
           "RESPIRATORY PARAMETERS");
 
   // set number of degrees of freedom
@@ -282,11 +282,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
   double y_at_l_np = 0.0;
   double y_at_r_np = 0.0;
   if (Atrium_act_curve_l_ >= 0 && usetime)
-    y_at_l_np = DRT::Problem::Instance()
+    y_at_l_np = GLOBAL::Problem::Instance()
                     ->FunctionById<CORE::UTILS::FunctionOfTime>(Atrium_act_curve_l_ - 1)
                     .Evaluate(tim);
   if (Atrium_act_curve_r_ >= 0 && usetime)
-    y_at_r_np = DRT::Problem::Instance()
+    y_at_r_np = GLOBAL::Problem::Instance()
                     ->FunctionById<CORE::UTILS::FunctionOfTime>(Atrium_act_curve_r_ - 1)
                     .Evaluate(tim);
   // 0D time-varying atrial elastance
@@ -297,11 +297,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
   double y_v_l_np = 0.0;
   double y_v_r_np = 0.0;
   if (Ventricle_act_curve_l_ >= 0 && usetime)
-    y_v_l_np = DRT::Problem::Instance()
+    y_v_l_np = GLOBAL::Problem::Instance()
                    ->FunctionById<CORE::UTILS::FunctionOfTime>(Ventricle_act_curve_l_ - 1)
                    .Evaluate(tim);
   if (Ventricle_act_curve_r_ >= 0 && usetime)
-    y_v_r_np = DRT::Problem::Instance()
+    y_v_r_np = GLOBAL::Problem::Instance()
                    ->FunctionById<CORE::UTILS::FunctionOfTime>(Ventricle_act_curve_r_ - 1)
                    .Evaluate(tim);
   // 0D time-varying ventricular elastance
@@ -312,11 +312,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
   double E_at_l_prescr_np = 0.0;
   double E_at_r_prescr_np = 0.0;
   if (Atrium_prescr_E_curve_l_ >= 0 && usetime)
-    E_at_l_prescr_np = DRT::Problem::Instance()
+    E_at_l_prescr_np = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfTime>(Atrium_prescr_E_curve_l_ - 1)
                            .Evaluate(tim);
   if (Atrium_prescr_E_curve_r_ >= 0 && usetime)
-    E_at_r_prescr_np = DRT::Problem::Instance()
+    E_at_r_prescr_np = GLOBAL::Problem::Instance()
                            ->FunctionById<CORE::UTILS::FunctionOfTime>(Atrium_prescr_E_curve_r_ - 1)
                            .Evaluate(tim);
   // prescribed ventricular elastances
@@ -324,12 +324,12 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
   double E_v_r_prescr_np = 0.0;
   if (Ventricle_prescr_E_curve_l_ >= 0 && usetime)
     E_v_l_prescr_np =
-        DRT::Problem::Instance()
+        GLOBAL::Problem::Instance()
             ->FunctionById<CORE::UTILS::FunctionOfTime>(Ventricle_prescr_E_curve_l_ - 1)
             .Evaluate(tim);
   if (Ventricle_prescr_E_curve_r_ >= 0 && usetime)
     E_v_r_prescr_np =
-        DRT::Problem::Instance()
+        GLOBAL::Problem::Instance()
             ->FunctionById<CORE::UTILS::FunctionOfTime>(Ventricle_prescr_E_curve_r_ - 1)
             .Evaluate(tim);
 
@@ -1105,7 +1105,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
   // find out whether we will use a time curve and get the factor
   double U_t = 0.0;
   if (U_t_curve_ >= 0 && usetime)
-    U_t = DRT::Problem::Instance()
+    U_t = GLOBAL::Problem::Instance()
               ->FunctionById<CORE::UTILS::FunctionOfTime>(U_t_curve_ - 1)
               .Evaluate(tim);
 
@@ -8961,11 +8961,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
   std::vector<double> initvals(num_dof_);
 
   Teuchos::ParameterList artvensyspulpar =
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
           "SYS-PUL CIRCULATION PARAMETERS");
 
   Teuchos::ParameterList respirpar =
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
+      GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams().sublist(
           "RESPIRATORY PARAMETERS");
 
   initvals[0] = artvensyspulpar.get("p_at_l_0", 0.0);
@@ -9014,7 +9014,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
       // initial value of time-varying pleural pressure
       double U_t_0 = 0.0;
       if (U_t_curve_ >= 0)
-        U_t_0 = DRT::Problem::Instance()
+        U_t_0 = GLOBAL::Problem::Instance()
                     ->FunctionById<CORE::UTILS::FunctionOfTime>(U_t_curve_ - 1)
                     .Evaluate(0);
 

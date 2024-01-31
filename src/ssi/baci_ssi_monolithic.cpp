@@ -61,7 +61,7 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       relax_lin_solver_iter_step_(
           globaltimeparams.sublist("MONOLITHIC").get<int>("RELAX_LIN_SOLVER_STEP")),
       solver_(Teuchos::rcp(new CORE::LINALG::Solver(
-          DRT::Problem::Instance()->SolverParams(
+          GLOBAL::Problem::Instance()->SolverParams(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
           comm))),
       timer_(Teuchos::rcp(new Teuchos::Time("SSI_Mono", true)))
@@ -114,7 +114,7 @@ bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
     // check for first iteration in restart simulations
     if (IsRestart())
     {
-      auto* problem = DRT::Problem::Instance();
+      auto* problem = GLOBAL::Problem::Instance();
       // restart based on time step
       if (Step() == problem->Restart() + 1) return true;
       // restart based on time
@@ -479,12 +479,12 @@ void SSI::SSIMono::SetupContactStrategy()
 {
   // get the contact solution strategy
   auto contact_solution_type = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-      DRT::Problem::Instance()->ContactDynamicParams(), "STRATEGY");
+      GLOBAL::Problem::Instance()->ContactDynamicParams(), "STRATEGY");
 
   if (contact_solution_type == INPAR::CONTACT::solution_nitsche)
   {
     if (INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
-            DRT::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") !=
+            GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") !=
         INPAR::STR::int_standard)
       dserror("ssi contact only with new structural time integration");
 
@@ -689,10 +689,10 @@ void SSI::SSIMono::Setup()
         "one transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
   }
-  const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
+  const auto ssi_params = GLOBAL::Problem::Instance()->SSIControlParams();
 
   const bool calc_initial_pot_elch =
-      INPUT::IntegralValue<bool>(DRT::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
+      INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
   const bool calc_initial_pot_ssi =
       INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
 
@@ -714,7 +714,7 @@ void SSI::SSIMono::Setup()
     dserror("Block based equilibration only for block matrices");
 
   if (!INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ScalarTransportDynamicParams(), "SKIPINITDER"))
+          GLOBAL::Problem::Instance()->ScalarTransportDynamicParams(), "SKIPINITDER"))
   {
     dserror(
         "Initial derivatives are already calculated in monolithic SSI. Enable 'SKIPINITDER' in the "
@@ -1221,7 +1221,7 @@ void SSI::SSIMono::DistributeSolutionAllFields(const bool restore_velocity)
 void SSI::SSIMono::CalcInitialPotentialField()
 {
   const auto equpot = INPUT::IntegralValue<INPAR::ELCH::EquPot>(
-      DRT::Problem::Instance()->ELCHControlParams(), "EQUPOT");
+      GLOBAL::Problem::Instance()->ELCHControlParams(), "EQUPOT");
   if (equpot != INPAR::ELCH::equpot_divi and equpot != INPAR::ELCH::equpot_enc_pde and
       equpot != INPAR::ELCH::equpot_enc_pde_elim)
   {
@@ -1660,7 +1660,7 @@ void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
         for (int col = 0; col < block_matrix->Cols(); ++col)
         {
           std::ostringstream filename;
-          filename << DRT::Problem::Instance()->OutputControlFile()->FileName()
+          filename << GLOBAL::Problem::Instance()->OutputControlFile()->FileName()
                    << "_block_system_matrix_" << row << "_" << col << ".csv";
 
           CORE::LINALG::PrintMatrixInMatlabFormat(
@@ -1675,8 +1675,8 @@ void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
       auto sparse_matrix =
           CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(ssi_matrices_->SystemMatrix());
 
-      const std::string filename =
-          DRT::Problem::Instance()->OutputControlFile()->FileName() + "_sparse_system_matrix.csv";
+      const std::string filename = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() +
+                                   "_sparse_system_matrix.csv";
 
       CORE::LINALG::PrintMatrixInMatlabFormat(filename, *sparse_matrix->EpetraMatrix(), true);
       break;
@@ -1692,14 +1692,14 @@ void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
   // print rhs
   {
     const std::string filename =
-        DRT::Problem::Instance()->OutputControlFile()->FileName() + "_system_vector.csv";
+        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + "_system_vector.csv";
     CORE::LINALG::PrintVectorInMatlabFormat(filename, *ssi_vectors_->Residual(), true);
   }
 
   // print full map
   {
     const std::string filename =
-        DRT::Problem::Instance()->OutputControlFile()->FileName() + "_full_map.csv";
+        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + "_full_map.csv";
     CORE::LINALG::PrintMapInMatlabFormat(filename, *ssi_maps_->MapSystemMatrix(), true);
   }
 }

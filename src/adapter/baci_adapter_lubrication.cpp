@@ -37,7 +37,7 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
   // access the discretization
   // -------------------------------------------------------------------
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->GetDis(disname);
+  actdis = GLOBAL::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization

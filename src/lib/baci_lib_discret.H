@@ -61,11 +61,15 @@ namespace IO
   class DiscretizationWriter;
 }  // namespace IO
 
+namespace GLOBAL
+{
+  class Problem;
+}
+
 namespace DRT
 {
   class AssembleStrategy;
   class DofSetProxy;
-  class Problem;
 
   /*!
   \brief A class to manage a discretization in parallel
@@ -2272,7 +2276,7 @@ namespace DRT
   };  // class Discretization
 
   //! distribute discretizations from one group to the others with ponzi scheme
-  void BroadcastDiscretizations(DRT::Problem& problem);
+  void BroadcastDiscretizations(GLOBAL::Problem& problem);
 
   //! distribute a discretization from one group to one other
   void NPDuplicateDiscretization(const int sgroup, const int rgroup,

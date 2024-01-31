@@ -33,8 +33,8 @@ MAT::PAR::Scl::Scl(Teuchos::RCP<MAT::PAR::Material> matdata)
       cbulk_(matdata->GetDouble("BULK_CONC")),
       susceptibility_(matdata->GetDouble("SUSCEPT")),
       delta_nu_(matdata->GetDouble("DELTA_NU")),
-      faraday_(DRT::Problem::Instance()->ELCHControlParams().get<double>("FARADAY_CONSTANT")),
-      epsilon_0_(DRT::Problem::Instance()
+      faraday_(GLOBAL::Problem::Instance()->ELCHControlParams().get<double>("FARADAY_CONSTANT")),
+      epsilon_0_(GLOBAL::Problem::Instance()
                      ->ELCHControlParams()
                      .sublist("DIFFCOND")
                      .get<double>("PERMITTIVITY_VACUUM"))
@@ -102,13 +102,13 @@ void MAT::Scl::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Scl*>(mat);
       else
@@ -130,7 +130,7 @@ double MAT::Scl::ComputeTransferenceNumber(const double cint) const
     return EvalPreDefinedFunct(-1, cint, TransNrParams());
   else
   {
-    return DRT::Problem::Instance()
+    return GLOBAL::Problem::Instance()
         ->FunctionById<CORE::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
         .Evaluate(cint);
   }
@@ -146,7 +146,7 @@ double MAT::Scl::ComputeFirstDerivTrans(const double cint) const
     return EvalFirstDerivPreDefinedFunct(-1, cint, TransNrParams());
   else
   {
-    return DRT::Problem::Instance()
+    return GLOBAL::Problem::Instance()
         ->FunctionById<CORE::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
         .EvaluateDerivative(cint, 1);
   }

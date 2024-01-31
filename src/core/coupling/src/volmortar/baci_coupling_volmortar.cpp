@@ -1021,7 +1021,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments3D(DRT::Element* Aele, DRT
 void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
 {
   // read input parameters
-  const Teuchos::ParameterList& volmortar = DRT::Problem::Instance()->VolmortarParams();
+  const Teuchos::ParameterList& volmortar = GLOBAL::Problem::Instance()->VolmortarParams();
 
   // check validity
   if (INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar, "INTTYPE") ==
