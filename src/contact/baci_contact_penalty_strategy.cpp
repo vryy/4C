@@ -541,7 +541,7 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(
   {
     for (int j = 0; j < interface_[i]->SlaveColNodesBound()->NumMyElements(); ++j)
     {
-      int gid = interface_[i]->SlaveColNodesBound()->GID(i);
+      int gid = interface_[i]->SlaveColNodesBound()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
