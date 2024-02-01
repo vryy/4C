@@ -362,12 +362,15 @@ namespace MIXTURE
       const double time, const double begin_time, const double end_time, const Number tolerance)
   {
     const double dt = (end_time - begin_time) / 2;
-    const Number numerical_integration = CORE::UTILS::IntegrateSimpsonStep(dt,
-        growth_evolution.EvaluateSurvivalFunction(time - begin_time),
-        growth_evolution.EvaluateSurvivalFunction(time - (begin_time + end_time) / 2),
-        growth_evolution.EvaluateSurvivalFunction(time - end_time));
+    const Number numerical_integration =
+        CORE::UTILS::IntegrateSimpsonStep(dt,
+            growth_evolution.EvaluateSurvivalFunction(time - begin_time),
+            growth_evolution.EvaluateSurvivalFunction(time - (begin_time + end_time) / 2),
+            growth_evolution.EvaluateSurvivalFunction(time - end_time)) /
+        growth_evolution.decay_time_;
     const Number exact_integration =
-        growth_evolution.EvaluateSurvivalFunctionIntegration(time, begin_time, end_time);
+        growth_evolution.EvaluateSurvivalFunctionIntegration(time, begin_time, end_time) /
+        growth_evolution.decay_time_;
 
     return CORE::FADUTILS::Norm<Number>(numerical_integration - exact_integration) <= tolerance ||
            (CORE::FADUTILS::Norm<Number>(numerical_integration) <= tolerance &&
