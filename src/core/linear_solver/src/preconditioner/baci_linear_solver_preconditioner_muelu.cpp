@@ -18,7 +18,7 @@
 #include <MueLu_CoalesceDropFactory.hpp>
 #include <MueLu_CreateXpetraPreconditioner.hpp>
 #include <MueLu_EpetraOperator.hpp>
-#include <MueLu_MLParameterListInterpreter_decl.hpp>
+#include <MueLu_ML2MueLuParameterTranslator.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_RAPFactory.hpp>
 #include <MueLu_SaPFactory.hpp>
@@ -146,10 +146,11 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
   }    // if (xmlfile)
   else
   {
-    // Standard case: use ML parameters from dat file
-    // Setup MueLu Hierarchy
-    MueLu::MLParameterListInterpreter<Scalar, LocalOrdinal, GlobalOrdinal, Node> mueLuFactory(
-        muelulist_);
+    // Default: setup MueLu hierarchy from an ML-style parameter list from the dat-file
+    Teuchos::RCP<Teuchos::ParameterList> muelu_params_from_ml = Teuchos::getParametersFromXmlString(
+        MueLu::ML2MueLuParameterTranslator::translate(muelulist_));
+    MueLu::ParameterListInterpreter<Scalar, LocalOrdinal, GlobalOrdinal, Node> mueLuFactory(
+        *muelu_params_from_ml);
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H =
         mueLuFactory.CreateHierarchy();
     H->GetLevel(0)->Set("A", mueluOp);
