@@ -15,6 +15,8 @@
 
 #include "baci_config.H"
 
+#include "baci_io_visualization_parameters.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include <map>
@@ -28,13 +30,10 @@ namespace BEAMINTERACTION
 {
   class BeamToSolidOutputWriterVisualization;
 }
-namespace STR
+namespace STR::TIMINT
 {
-  namespace TIMINT
-  {
-    class ParamsRuntimeOutput;
-  }
-}  // namespace STR
+  class ParamsRuntimeOutput;
+}
 
 
 namespace BEAMINTERACTION
@@ -52,11 +51,11 @@ namespace BEAMINTERACTION
      * \brief Empty constructor, set the class variables.
      * @param base_output_name (in) Base name for the created output files.
      * @param visualization_output_params (in) RCP to the global visualization parameter list.
-     * @param restart_time (in) Time at creation of this object.
+     * @param visualization_params (in) visualization parameters
      */
     BeamToSolidVisualizationOutputWriterBase(const std::string& base_output_name,
         Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
-        double restart_time);
+        IO::VisualizationParameters visualization_params);
 
     /**
      * \brief Destructor.
@@ -107,8 +106,8 @@ namespace BEAMINTERACTION
     //! Pointer to the global visualization input file options.
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params_;
 
-    //! Time at which a restart simulation is started.
-    const double restart_time_;
+    //! visualization parameters
+    const IO::VisualizationParameters visualization_params_;
   };
 
 }  // namespace BEAMINTERACTION

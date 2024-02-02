@@ -429,7 +429,6 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
       break;
     default:
       dserror("unknown type of field coupling for SSI!");
-      break;
   }
 
   // initialize coupling objects including dof sets
@@ -465,47 +464,6 @@ void SSI::SSIBase::ReadRestart(int restart)
     }
 
     SetTimeStep(structure_->TimeOld(), restart);
-  }
-
-  // Material pointers to other field were deleted during ReadRestart().
-  // They need to be reset.
-  ssicoupling_->AssignMaterialPointers(
-      structure_->Discretization(), ScaTraField()->Discretization());
-}
-
-/*----------------------------------------------------------------------*
- | read restart information for given time (public)        AN, JH 10/14 |
- *----------------------------------------------------------------------*/
-void SSI::SSIBase::ReadRestartfromTime(double restarttime)
-{
-  if (restarttime > 0.0)
-  {
-    const int restartstructure = SSI::UTILS::CheckTimeStepping(structure_->Dt(), restarttime);
-    const int restartscatra = SSI::UTILS::CheckTimeStepping(ScaTraField()->Dt(), restarttime);
-    const int restartscatramanifold =
-        IsScaTraManifold() ? SSI::UTILS::CheckTimeStepping(ScaTraManifold()->Dt(), restarttime)
-                           : -1;
-
-    structure_->ReadRestart(restartstructure);
-
-    const Teuchos::ParameterList& ssidyn = GLOBAL::Problem::Instance()->SSIControlParams();
-    const bool restartfromstructure = INPUT::IntegralValue<int>(ssidyn, "RESTART_FROM_STRUCTURE");
-
-    if (not restartfromstructure)  // standard restart
-    {
-      ScaTraField()->ReadRestart(restartscatra);
-      if (IsScaTraManifold()) ScaTraManifold()->ReadRestart(restartscatramanifold);
-    }
-    else  // restart from structure simulation
-    {
-      // Since there is no restart output for the scatra fiels available, we only have to fix the
-      // time and step counter
-      ScaTraField()->SetTimeStep(structure_->TimeOld(), restartscatra);
-      if (IsScaTraManifold())
-        ScaTraManifold()->SetTimeStep(structure_->TimeOld(), restartscatramanifold);
-    }
-
-    SetTimeStep(structure_->TimeOld(), restartstructure);
   }
 
   // Material pointers to other field were deleted during ReadRestart().
@@ -831,9 +789,8 @@ bool SSI::SSIBase::IsRestart() const
   const auto* problem = GLOBAL::Problem::Instance();
 
   const int restartstep = problem->Restart();
-  const double restarttime = problem->RestartTime();
 
-  return ((restartstep > 0) or (restarttime > 0.0));
+  return (restartstep > 0);
 }
 
 /*----------------------------------------------------------------------*/

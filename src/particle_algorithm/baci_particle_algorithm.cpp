@@ -105,7 +105,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   particleengine_->Setup(particlestatestotypes_);
 
   // setup wall handler
-  if (particlewall_) particlewall_->Setup(particleengine_);
+  if (particlewall_) particlewall_->Setup(particleengine_, Time());
 
   // setup rigid body handler
   if (particlerigidbody_) particlerigidbody_->Setup(particleengine_);

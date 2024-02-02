@@ -19,7 +19,6 @@
 #include "baci_beaminteraction_potential_runtime_visualization_output_params.H"
 #include "baci_beaminteraction_str_model_evaluator_datastate.H"
 #include "baci_io.H"
-#include "baci_io_control.H"
 #include "baci_io_pstream.H"
 #include "baci_io_visualization_manager.H"
 #include "baci_linalg_serialdensematrix.H"
@@ -50,7 +49,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Setup()
 
   // init and setup beam to beam contact data container
   beam_potential_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamPotentialParams());
-  BeamPotentialParams().Init();
+  BeamPotentialParams().Init(GState().GetTimeN());
   BeamPotentialParams().Setup();
 
   PrintConsoleWelcomeMessage(std::cout);

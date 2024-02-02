@@ -38,12 +38,7 @@ void ssti_drt()
   ssti->Setup();
 
   const int restart = problem->Restart();
-  const double restarttime = problem->RestartTime();
-
-  if (restarttime > 0.0)
-    dserror("Restart from time is not supported.");
-  else if (restart)
-    ssti->ReadRestart(restart);
+  if (restart) ssti->ReadRestart(restart);
 
   ssti->SetupSystem();
 

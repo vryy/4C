@@ -26,9 +26,8 @@ EVERY_ITERATION                 No
 OWNER                           Yes
 ORIENTATIONANDLENGTH            Yes
 NUMBEROFBONDS                   Yes
-//DISPLACEMENT                    Yes
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
-OUTPUT_DATA_FORMAT              binary
+OUTPUT_DATA_FORMAT              ascii
 INTERVAL_STEPS                  1
 EVERY_ITERATION                 No
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE

@@ -1124,8 +1124,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::InitOutputRuntimeStructur
 {
   CheckInit();
 
-  visualization_output_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterNodes(
-      BinDiscretPtr(), GInOutput().GetRuntimeVtpOutputParams()->GetVisualizationParameters()));
+  visualization_output_writer_ptr_ =
+      Teuchos::rcp(new IO::DiscretizationVisualizationWriterNodes(BinDiscretPtr(),
+          IO::VisualizationParametersFactory(
+              GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+              *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
 }
 
 /*----------------------------------------------------------------------------*

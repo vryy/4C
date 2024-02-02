@@ -56,7 +56,7 @@ namespace BEAMINTERACTION
     void BuildBeamToSolidSurfaceContactParams();
 
     //! builds a new BeamContactRuntimeOutputParams object
-    void BuildBeamContactRuntimeOutputParams();
+    void BuildBeamContactRuntimeOutputParams(double restart_time);
 
 
     inline Teuchos::RCP<BEAMINTERACTION::BeamToBeamContactParams> BeamToBeamContactParams() const

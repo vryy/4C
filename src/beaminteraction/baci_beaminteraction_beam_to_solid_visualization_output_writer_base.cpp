@@ -11,9 +11,9 @@
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
 
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
 #include "baci_utils_exceptions.H"
+
+#include <utility>
 
 BACI_NAMESPACE_OPEN
 
@@ -24,10 +24,10 @@ BACI_NAMESPACE_OPEN
 BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::BeamToSolidVisualizationOutputWriterBase(
     const std::string& base_output_name,
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
-    double restart_time)
+    IO::VisualizationParameters visualization_params)
     : base_output_name_(base_output_name),
       visualization_output_params_(visualization_output_params),
-      restart_time_(restart_time)
+      visualization_params_(std::move(visualization_params))
 {
 }
 
@@ -42,15 +42,13 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::AddVisualizationWrite
   if (it != visualization_writers_.end())
   {
     dserror("The output writer key '%s' you want to add already exists.", writer_name_key.c_str());
-    return Teuchos::null;
   }
   else
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> new_writer =
-        Teuchos::rcp<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>(
-            new BEAMINTERACTION::BeamToSolidOutputWriterVisualization(
-                base_output_name_ + "-" + writer_name, visualization_output_params_,
-                restart_time_));
+    auto new_writer = Teuchos::rcp<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>(
+        new BEAMINTERACTION::BeamToSolidOutputWriterVisualization(
+            base_output_name_ + "-" + writer_name, visualization_params_,
+            visualization_output_params_));
     visualization_writers_[writer_name_key] = new_writer;
     return new_writer;
   }

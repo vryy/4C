@@ -10,6 +10,8 @@
 
 #include "baci_io_visualization_writer_base.H"
 
+#include <utility>
+
 BACI_NAMESPACE_OPEN
 
 
@@ -18,7 +20,7 @@ BACI_NAMESPACE_OPEN
  */
 IO::VisualizationWriterBase::VisualizationWriterBase(IO::VisualizationParameters parameters,
     const Epetra_Comm& comm, std::string visualization_data_name)
-    : parameters_(parameters),
+    : parameters_(std::move(parameters)),
       comm_(comm),
       visualization_data_name_(std::move(visualization_data_name))
 {

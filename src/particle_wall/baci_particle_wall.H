@@ -102,9 +102,11 @@ namespace PARTICLEWALL
      * \author Sebastian Fuchs \date 10/2018
      *
      * \param[in] particlestatestotypes particle types and corresponding particle states
+     * \param[in] restart_time          restart time of the simulation
      */
     virtual void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        double restart_time);
 
     /*!
      * \brief write restart of wall handler
@@ -246,11 +248,15 @@ namespace PARTICLEWALL
     virtual void InitWallDataState() final;
 
     /*!
-     * \brief init wall discretization runtime vtu writer
+     * \brief create wall discretization runtime vtu writer
      *
      * \author Sebastian Fuchs \date 11/2018
+     *
+     * \note this has to be called during Setup() as it requires the restart to be read already
+     *
+     * \param[in] restart_time   restart time of the simulation
      */
-    virtual void InitWallDiscretizationRuntimeVtuWriter() final;
+    virtual void CreateWallDiscretizationRuntimeVtuWriter(double restart_time) final;
 
     //! @}
 

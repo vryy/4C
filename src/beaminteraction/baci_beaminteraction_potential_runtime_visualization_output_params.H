@@ -26,7 +26,7 @@ namespace BEAMINTERACTION
   {
    public:
     //! constructor
-    BeamToBeamPotentialRuntimeOutputParams();
+    explicit BeamToBeamPotentialRuntimeOutputParams(double restart_time);
 
     //! destructor
     virtual ~BeamToBeamPotentialRuntimeOutputParams() = default;

@@ -23,6 +23,8 @@ BACI_NAMESPACE_OPEN
 
 namespace IO
 {
+  class OutputControl;
+
   /**
    * @brief This struct holds parameters for visualization output
    */
@@ -31,17 +33,29 @@ namespace IO
     //! Enum containing the type of output data format, i.e., binary or ascii.
     INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat data_format_;
 
+    //! Base output directory
+    std::string directory_name_;
+
     //! Flag if output should be written for each nonlinear iteration
     bool every_iteration_;
-
-    //! Number of digits in the final "time_step_index" reserved for the nonlinear iteration
-    int digits_for_time_step_;
 
     //! We need to add a small time increment for each iteration to avoid having "double" time steps
     double every_iteration_virtual_time_increment_;
 
+    //! Only the prefix of the file name, without the directory
+    std::string file_name_prefix_;
+
     //! Number of digits in the final "time_step_index" reserved for the nonlinear iteration
     int digits_for_iteration_;
+
+    //! Number of digits in the final "time_step_index" reserved for the nonlinear iteration
+    int digits_for_time_step_;
+
+    //! Time the simulation is restarted from
+    double restart_time_;
+
+    //! In case of restart this prefix specifies the control file we read which might contain a path
+    std::string restart_from_name_;
 
     //! Enum containing the output writer that shall be used
     INPAR::IO_RUNTIME_OUTPUT::OutputWriter writer_;
@@ -51,7 +65,8 @@ namespace IO
    * @brief Create a container containing all visualization output parameters
    */
   [[nodiscard]] VisualizationParameters VisualizationParametersFactory(
-      const Teuchos::ParameterList& visualization_ouput_parameter_list);
+      const Teuchos::ParameterList& visualization_ouput_parameter_list,
+      const IO::OutputControl& output_control, double restart_time);
 
   /**
    * @brief Return the total number of digits to reserve in the time step numbering

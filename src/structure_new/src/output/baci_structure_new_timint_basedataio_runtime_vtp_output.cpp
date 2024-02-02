@@ -25,10 +25,6 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
   // We have to call Setup() after Init()
   issetup_ = false;
 
-  // initialize the parameter values
-  visualization_parameters_ = IO::VisualizationParametersFactory(
-      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"));
-
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
 
   output_step_offset_ = IO_vtp_structure_paramslist.get<int>("STEP_OFFSET");
@@ -36,14 +32,8 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
   output_every_iteration_ =
       (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
 
-  // Overwrite non default values in the visualization parameters
-  visualization_parameters_.every_iteration_ = output_every_iteration_;
-
   if (output_every_iteration_)
     dserror("Every iteration output not implemented for structure vtp output!");
-
-  /*  output_displacement_state_ =
-        (bool) INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "DISPLACEMENT");*/
 
   output_owner_ = (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
 

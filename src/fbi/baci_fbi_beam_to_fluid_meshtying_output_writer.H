@@ -14,30 +14,29 @@
 
 #include "baci_config.H"
 
+#include "baci_io_visualization_parameters.H"
+
 #include <Teuchos_RCP.hpp>
 
 BACI_NAMESPACE_OPEN
 
 
 // Forward declarations.
-namespace BEAMINTERACTION
-{
-  class BeamToSolidVisualizationOutputWriterBase;
-}  // namespace BEAMINTERACTION
-namespace STR
-{
-  namespace TIMINT
-  {
-    class ParamsRuntimeOutput;
-  }
-}  // namespace STR
 namespace ADAPTER
 {
   class FBIConstraintenforcer;
 }
+namespace BEAMINTERACTION
+{
+  class BeamToSolidVisualizationOutputWriterBase;
+}
 namespace FBI
 {
   class BeamToFluidMeshtyingVtkOutputParams;
+}
+namespace STR::TIMINT
+{
+  class ParamsRuntimeOutput;
 }
 
 namespace BEAMINTERACTION
@@ -69,11 +68,10 @@ namespace BEAMINTERACTION
      * @param visualization_output_params (in) RCP to parameter container for global visualization
      * output options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
-     * @param restart_time (in) This is needed in case the simulation is a restart.
      */
-    void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
-        Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr,
-        double restart_time);
+    void Setup(const IO::VisualizationParameters& visualization_params,
+        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+        Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr);
 
     /**
      * \brief Setup time step output creation, and call WriteOutputData.
@@ -130,6 +128,9 @@ namespace BEAMINTERACTION
 
     //! Pointer to the output writer, which handles the actual output data for this object.
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
+
+    //! visualization parameters
+    IO::VisualizationParameters visualization_params_;
   };
 
 }  // namespace BEAMINTERACTION

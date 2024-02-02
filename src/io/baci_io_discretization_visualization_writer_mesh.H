@@ -13,6 +13,8 @@ to disk
 
 #include "baci_config.H"
 
+#include "baci_io_control.H"
+
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
@@ -44,8 +46,8 @@ namespace IO
     /**
      * @brief Constructor
      *
-     * @param discretization (in) Pointer to the discretization
-     * @param parameters (in) Visualization parameters
+     * @param discretization (in)  Pointer to the discretization
+     * @param parameters (in)      Visualization parameters
      */
     DiscretizationVisualizationWriterMesh(
         const Teuchos::RCP<const DRT::Discretization>& discretization,

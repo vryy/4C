@@ -23,8 +23,6 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::
     BeamToSolidSurfaceVisualizationOutputParams()
     : isinit_(false),
       issetup_(false),
-      visualization_parameters_(IO::VisualizationParametersFactory(
-          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))),
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_flag_(false),
@@ -69,7 +67,6 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::Setup()
   output_interval_steps_ = global_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
   output_every_iteration_ =
       (bool)INPUT::IntegralValue<int>(global_visualization_output_paramslist, "EVERY_ITERATION");
-  visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   // Get beam to solid surface specific parameters.
   output_flag_ = (bool)INPUT::IntegralValue<int>(

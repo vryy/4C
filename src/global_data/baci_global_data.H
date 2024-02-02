@@ -210,10 +210,7 @@ namespace GLOBAL
     std::string ProblemName() const;
 
     /// return restart step
-    int Restart() const;
-
-    /// return restart time
-    double RestartTime() const;
+    [[nodiscard]] int Restart() const;
 
     /// number of space dimensions (as specified in the input file)
     int NDim() const;
@@ -603,9 +600,6 @@ namespace GLOBAL
 
     /// the restart step (given by command line or input file)
     int restartstep_;
-
-    /// the restart time (given by command line or input file)
-    double restarttime_;
 
     /// discretizations of this problem
     std::map<std::string, Teuchos::RCP<DRT::Discretization>> discretizationmap_;

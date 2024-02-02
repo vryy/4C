@@ -13,7 +13,6 @@ DIM           3
 
 PROBLEMTYP                      Electromagnetics
 RESTART                         0
-RESTARTTIME                     -1
 SHAPEFCT                        HDG
 RANDSEED                        -1
 

@@ -16,6 +16,7 @@
 #include "baci_global_data.H"
 #include "baci_inpar_particle.H"
 #include "baci_io.H"
+#include "baci_io_discretization_visualization_writer_mesh.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
@@ -23,13 +24,14 @@
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_particle_engine_container.H"
-#include "baci_particle_engine_container_bundle.H"
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_interface.H"
 #include "baci_particle_wall_datastate.H"
 #include "baci_particle_wall_discretization_runtime_vtu_writer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <memory>
 
 BACI_NAMESPACE_OPEN
 
@@ -60,19 +62,20 @@ void PARTICLEWALL::WallHandlerBase::Init(
 
   // init wall data state container
   InitWallDataState();
-
-  // init wall discretization runtime vtu writer
-  InitWallDiscretizationRuntimeVtuWriter();
 }
 
 void PARTICLEWALL::WallHandlerBase::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const double restart_time)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
 
   // setup wall discretization
   SetupWallDiscretization();
+
+  // create wall discretization runtime vtu writer
+  CreateWallDiscretizationRuntimeVtuWriter(restart_time);
 
   // setup wall data state container
   walldatastate_->Setup();
@@ -428,15 +431,13 @@ void PARTICLEWALL::WallHandlerBase::InitWallDataState()
   walldatastate_->Init(walldiscretization_);
 }
 
-void PARTICLEWALL::WallHandlerBase::InitWallDiscretizationRuntimeVtuWriter()
+void PARTICLEWALL::WallHandlerBase::CreateWallDiscretizationRuntimeVtuWriter(
+    const double restart_time)
 {
   // create wall discretization runtime vtu writer
   walldiscretizationruntimevtuwriter_ =
-      std::unique_ptr<PARTICLEWALL::WallDiscretizationRuntimeVtuWriter>(
-          new PARTICLEWALL::WallDiscretizationRuntimeVtuWriter());
-
-  // init wall discretization runtime vtu writer
-  walldiscretizationruntimevtuwriter_->Init(walldiscretization_, walldatastate_);
+      std::make_unique<PARTICLEWALL::WallDiscretizationRuntimeVtuWriter>(
+          walldiscretization_, walldatastate_, restart_time);
 }
 
 void PARTICLEWALL::WallHandlerBase::CreateWallDiscretization()

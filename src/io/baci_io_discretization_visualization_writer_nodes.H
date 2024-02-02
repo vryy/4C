@@ -45,7 +45,7 @@ namespace IO
      * @brief Constructor
      *
      * @param discretization (in) Pointer to the discretization
-     * @param parameters (in) Visualization parameters
+     * @param parameters (in)     Visualization parameters
      */
     DiscretizationVisualizationWriterNodes(
         const Teuchos::RCP<const DRT::Discretization>& discretization,

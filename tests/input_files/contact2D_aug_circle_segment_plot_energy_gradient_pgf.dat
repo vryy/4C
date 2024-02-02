@@ -16,7 +16,6 @@ NUMSTRUCDIS                     1
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
-RESTARTTIME                     -1
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO
 OUTPUT_GMSH                     No

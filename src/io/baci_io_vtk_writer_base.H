@@ -103,19 +103,14 @@ class VtkWriterBase
 {
  public:
   //! constructor
-  VtkWriterBase();
-
-  //! destructor
-  virtual ~VtkWriterBase() = default;
-  /** \brief initialize object with required input data
-   *
-   *  \author grill
-   *  \date 03/17 */
-  void Initialize(unsigned int myrank, unsigned int num_processors,
+  VtkWriterBase(unsigned int myrank, unsigned int num_processors,
       unsigned int max_number_timesteps_to_be_written,
       const std::string& path_existing_working_directory,
       const std::string& name_new_vtk_subdirectory, const std::string& geometry_name,
       const std::string& restart_name, double restart_time, bool write_binary_output);
+
+  //! destructor
+  virtual ~VtkWriterBase() = default;
 
   /** \brief set class variable storing working directory and create it if not existing
    *
@@ -129,12 +124,6 @@ class VtkWriterBase
    *  \author grill
    *  \date 03/17 */
   void ResetTimeAndTimeStep(double time, unsigned int timestepnumber);
-
-  /** \brief reset geometry name
-   *
-   *  \author grill
-   *  \date 04/17 */
-  void ResetGeometryName(const std::string& geometryname);
 
   /** \brief initialize the required file streams for processor individual file and master file
    *
@@ -301,7 +290,6 @@ class VtkWriterBase
   // current phase
   Phase currentPhase_;
 
-
   //! Output stream for current processor-specific file
   std::ofstream currentout_;
 
@@ -317,42 +305,40 @@ class VtkWriterBase
   std::string working_directory_full_path_;
 
   //! Part of the current filename w/ timestep w/out processor id
-  //  processor-specific files and master file share this part of the filename
+  //!  processor-specific files and master file share this part of the filename
   std::string filename_base_;
 
 
   //! number of digits (i.e. field width) which is reserved for time step number in file names
-  unsigned int num_timestep_digits_;
+  const unsigned int num_timestep_digits_;
 
   //! number of digits (i.e. field width) which is reserved for number of processors in file names
-  unsigned int num_processor_digits_;
-
+  const unsigned int num_processor_digits_;
 
   //! name of the geometry
-  std::string geometry_name_;
+  const std::string geometry_name_;
 
   //! Time value for the current time step
   double time_;
 
   //! output step
-  int timestep_;
+  unsigned int timestep_;
 
-  //! restart step
-  int restart_;
+  //! flag indicating if simulation is restarted
+  const bool is_restart_;
 
   //! Current cycle step (e.g. in nonlinear iteration, not used yet)
   int cycle_;
 
-
   //! toggle between ascii and binary output
-  bool write_binary_output_;
+  const bool write_binary_output_;
 
 
   //! global processor id of this processor
-  unsigned int myrank_;
+  const unsigned int myrank_;
 
   //! number of involved processors
-  unsigned int numproc_;
+  const unsigned int numproc_;
 };
 
 
@@ -365,7 +351,6 @@ template <typename T>
 std::string ScalarTypeToVtkType()
 {
   dserror("The scalar type has to be specialized in vtk_writer_base.H");
-  return "";
 }
 template <>
 inline std::string ScalarTypeToVtkType<int>()

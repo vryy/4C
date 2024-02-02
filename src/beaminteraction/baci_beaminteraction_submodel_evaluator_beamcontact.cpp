@@ -95,7 +95,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     geometric_search_visualization_ptr_ =
         Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchVisualization(
             IO::VisualizationParametersFactory(
-                GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
+                GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN()),
             DiscretPtr()->Comm(), "beam-interaction-geometric-search"));
   }
 
@@ -107,7 +108,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           GLOBAL::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT"),
           "VTK_OUTPUT_BEAM_CONTACT"))
   {
-    beam_contact_params_ptr_->BuildBeamContactRuntimeOutputParams();
+    beam_contact_params_ptr_->BuildBeamContactRuntimeOutputParams(GState().GetTimeN());
 
     InitOutputRuntimeBeamContact();
   }
@@ -160,13 +161,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     {
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ =
           Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
-              new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter);
+              new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
+                  IO::VisualizationParametersFactory(
+                      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                      *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Init();
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Setup(
           GInOutput().GetRuntimeVtkOutputParams(),
           beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()
-              ->GetVisualizationOutputParamsPtr(),
-          GState().GetTimeN());
+              ->GetVisualizationOutputParamsPtr());
     }
   }
 
@@ -189,13 +192,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     {
       beam_to_solid_surface_visualization_output_writer_ptr_ =
           Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
-              new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter);
+              new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter(
+                  IO::VisualizationParametersFactory(
+                      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                      *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
       beam_to_solid_surface_visualization_output_writer_ptr_->Init();
       beam_to_solid_surface_visualization_output_writer_ptr_->Setup(
           GInOutput().GetRuntimeVtkOutputParams(),
           beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()
-              ->GetVisualizationOutputParamsPtr(),
-          GState().GetTimeN());
+              ->GetVisualizationOutputParamsPtr());
     }
   }
 

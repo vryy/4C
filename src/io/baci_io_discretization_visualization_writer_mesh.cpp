@@ -13,7 +13,7 @@ to disk
 #include "baci_io_discretization_visualization_writer_mesh.H"
 
 #include "baci_beam3_base.H"
-#include "baci_global_data.H"
+#include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_visualization_manager.H"
 #include "baci_lib_discret.H"
@@ -22,6 +22,8 @@ to disk
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_FEVector.h>
+
+#include <utility>
 
 BACI_NAMESPACE_OPEN
 
@@ -34,8 +36,8 @@ namespace IO
       const Teuchos::RCP<const DRT::Discretization>& discretization,
       VisualizationParameters parameters)
       : discretization_(discretization),
-        visualization_manager_(Teuchos::rcp(
-            new VisualizationManager(parameters, discretization->Comm(), discretization->Name())))
+        visualization_manager_(Teuchos::rcp(new VisualizationManager(
+            std::move(parameters), discretization->Comm(), discretization->Name())))
   {
     SetGeometryFromDiscretization();
   }

@@ -18,11 +18,13 @@ BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::BeamToBeamPotentialRuntimeOutputParams()
+BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::BeamToBeamPotentialRuntimeOutputParams(
+    const double restart_time)
     : isinit_(false),
       issetup_(false),
       visualization_parameters_(IO::VisualizationParametersFactory(
-          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))),
+          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+          *GLOBAL::Problem::Instance()->OutputControlFile(), restart_time)),
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_forces_(false),

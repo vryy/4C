@@ -15,7 +15,6 @@
 
 #include "baci_config.H"
 
-#include "baci_io_visualization_parameters.H"
 #include "baci_utils_exceptions.H"
 
 #include <memory>
@@ -47,14 +46,6 @@ namespace BEAMINTERACTION
      * \brief Setup member variables.
      */
     void Setup();
-
-    /**
-     * \brief Return the container holding the general output parameters
-     */
-    const IO::VisualizationParameters& GetVisualizationParameters() const
-    {
-      return visualization_parameters_;
-    }
 
     /**
      * \brief Return the output every iteration flag.
@@ -135,9 +126,6 @@ namespace BEAMINTERACTION
 
     //! Flag if object is set up.
     bool issetup_;
-
-    //! General visualization parameters
-    IO::VisualizationParameters visualization_parameters_;
 
     //! Output interval regarding steps: write output every INTERVAL_STEPS steps.
     int output_interval_steps_;

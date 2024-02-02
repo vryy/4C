@@ -23,7 +23,14 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-VtuWriter::VtuWriter() : VtkWriterBase()
+VtuWriter::VtuWriter(unsigned int myrank, unsigned int num_processors,
+    unsigned int max_number_timesteps_to_be_written,
+    const std::string& path_existing_working_directory,
+    const std::string& name_new_vtk_subdirectory, const std::string& geometry_name,
+    const std::string& restart_name, const double restart_time, bool write_binary_output)
+    : VtkWriterBase(myrank, num_processors, max_number_timesteps_to_be_written,
+          path_existing_working_directory, name_new_vtk_subdirectory, geometry_name, restart_name,
+          restart_time, write_binary_output)
 {
   // empty constructor
 }

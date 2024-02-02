@@ -94,6 +94,7 @@ macro(baci_test name_of_input_file num_proc restart_step)
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
     set_processors(${name_of_test}-restart ${num_proc})
+    define_setup_fixture(${name_of_test}-restart ${name_of_test}-restart)
     set_timeout(${name_of_test}-restart)
   endif(${restart_step})
 endmacro(baci_test)
@@ -140,6 +141,7 @@ macro(
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
     set_processors(${name_of_test}-restart ${num_proc})
+    define_setup_fixture(${name_of_test}-restart ${name_of_test}-restart)
     set_timeout(${name_of_test}-restart ${actualtesttimeout})
   endif(${restart_step})
 endmacro(baci_test_extended_timeout)
@@ -193,6 +195,7 @@ macro(
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
     set_processors(${name_of_test}-restart ${total_num_proc})
+    define_setup_fixture(${name_of_test}-restart ${name_of_test}-restart)
     set_timeout(${name_of_test}-restart)
   endif(${restart_step})
 endmacro(baci_omp_test)
@@ -689,7 +692,7 @@ macro(
 
   require_fixture(
     ${name_of_test}-p${num_proc_base_run}
-    "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
+    "${name_of_input_file}-p${num_proc_base_run};${name_of_input_file}-p${num_proc_base_run}-restart;test_cleanup"
     )
   set_processors(${name_of_test}-p${num_proc_base_run} 1)
   set_timeout(${name_of_test}-p${num_proc_base_run})

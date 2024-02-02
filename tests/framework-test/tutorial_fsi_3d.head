@@ -67,9 +67,6 @@ PROBLEMTYP                      Fluid_Structure_Interaction
 //
 RESTART                         0
 //
-// Used defined restart time
-RESTARTTIME                     -1
-//
 // Defines the function spaces for the spatial approximation
 //     Polynomial,Nurbs,HDG
 SHAPEFCT                        Polynomial

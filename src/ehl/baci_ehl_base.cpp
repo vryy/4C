@@ -137,25 +137,6 @@ Teuchos::RCP<Epetra_Vector> EHL::Base::CalcVelocity(Teuchos::RCP<const Epetra_Ve
 }  // CalcVelocity()
 
 /*----------------------------------------------------------------------*
- | read restart information for given time        (public) wirtz 12/15 |
- *----------------------------------------------------------------------*/
-void EHL::Base::ReadRestartfromTime(double restarttime)
-{
-  if (restarttime > 0.0)
-  {
-    int restartstructure = EHL::Utils::CheckTimeStepping(structure_->Dt(), restarttime);
-    int restartlubrication =
-        EHL::Utils::CheckTimeStepping(lubrication_->LubricationField()->Dt(), restarttime);
-
-    lubrication_->LubricationField()->ReadRestart(restartlubrication);
-    structure_->ReadRestart(restartstructure);
-    SetTimeStep(structure_->TimeOld(), restartstructure);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | test results (if necessary)                     (public) wirtz 12/15 |
  *----------------------------------------------------------------------*/
 void EHL::Base::TestResults(const Epetra_Comm& comm)

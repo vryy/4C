@@ -62,9 +62,15 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
   {
     runtime_output_params_.Init(*fluid_runtime_output_list);
     runtime_output_params_.Setup();
+
+    // TODO This does not work for restarted simulations as the time_ is not yet correctly set.
+    // However, this is called before the restart is read and someone with knowledge on the module
+    // has to refactor the code. The only implication is that in restarted simulations the .pvd file
+    // does not contain the steps of the simulation that is restarted from
     runtime_output_writer_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
         discret_, IO::VisualizationParametersFactory(
-                      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
+                      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                      *GLOBAL::Problem::Instance()->OutputControlFile(), time_)));
   }
 }
 

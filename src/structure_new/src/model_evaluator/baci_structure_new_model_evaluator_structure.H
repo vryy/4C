@@ -13,7 +13,8 @@
 
 #include "baci_config.H"
 
-#include "baci_inpar_structure.H"                         // enumerators
+#include "baci_inpar_structure.H"  // enumerators
+#include "baci_io_visualization_parameters.H"
 #include "baci_structure_new_elements_paramsinterface.H"  // interface to the element evaluation
 #include "baci_structure_new_model_evaluator_generic.H"   // base class
 
@@ -522,6 +523,9 @@ namespace STR
        *  etc.. */
       Teuchos::RCP<Epetra_Vector> dis_incr_ptr_;
 
+      //! visualization parameters
+      IO::VisualizationParameters visualization_params_;
+
       //! structure discretization runtime vtu writer
       Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
 
@@ -536,4 +540,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_H
+#endif  // BACI_STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_H

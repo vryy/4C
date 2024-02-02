@@ -117,8 +117,6 @@ bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
       auto* problem = GLOBAL::Problem::Instance();
       // restart based on time step
       if (Step() == problem->Restart() + 1) return true;
-      // restart based on time
-      if (Time() == problem->RestartTime() + Dt()) return true;
     }
   }
 
@@ -578,21 +576,6 @@ void SSI::SSIMono::ReadRestart(int restart)
 {
   // call base class
   SSIBase::ReadRestart(restart);
-
-  // do ssi contact specific tasks
-  if (SSIInterfaceContact())
-  {
-    SetupContactStrategy();
-    SetSSIContactStates(ScaTraField()->Phinp());
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::SSIMono::ReadRestartfromTime(double restarttime)
-{
-  // call base class
-  SSIBase::ReadRestartfromTime(restarttime);
 
   // do ssi contact specific tasks
   if (SSIInterfaceContact())

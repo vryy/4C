@@ -26,8 +26,8 @@ namespace IO
     /**
      * @brief Default constructor
      */
-    VisualizationWriterVtuPerRank(IO::VisualizationParameters parameters, const Epetra_Comm& comm,
-        std::string visualization_data_name);
+    VisualizationWriterVtuPerRank(const IO::VisualizationParameters& parameters,
+        const Epetra_Comm& comm, std::string visualization_data_name);
 
     /**
      * @brief Default destructor

@@ -24,6 +24,7 @@
 #include "baci_inpar_fbi.H"
 #include "baci_inpar_fsi.H"
 #include "baci_io_control.H"
+#include "baci_io_visualization_parameters.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -201,8 +202,11 @@ void FSI::DirichletNeumannVel::Timeloop(
       Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
   visualization_output_writer_->Init();
   visualization_output_writer_->Setup(
+      IO::VisualizationParametersFactory(
+          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+          *GLOBAL::Problem::Instance()->OutputControlFile(), Time()),
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true)->GetIOData(),
-      constraint_manager_->GetBridge()->GetParams()->GetVisualizationOuputParamsPtr(), Time());
+      constraint_manager_->GetBridge()->GetParams()->GetVisualizationOuputParamsPtr());
   constraint_manager_->Evaluate();
   if (GetKinematicCoupling()) StructToFluid(Teuchos::null);
 

@@ -56,7 +56,6 @@ void INPAR::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   }
 
   IntParameter("RESTART", 0, "", &type);
-  DoubleParameter("RESTARTTIME", -1.0, "Used defined restart time", &type);
   IntParameter("RANDSEED", -1, "Set the random seed. If < 0 use current time.", &type);
 }
 

@@ -119,15 +119,7 @@ void ssi_drt()
     ssi->Setup();
 
     // 3.2- Read restart if needed. (Discretization called inside)
-    if (ssi->IsRestart())
-    {
-      const int restart = problem->Restart();
-      const double restarttime = problem->RestartTime();
-      if (restarttime > 0.0)
-        ssi->ReadRestartfromTime(restarttime);
-      else if (restart)
-        ssi->ReadRestart(restart);
-    }
+    if (ssi->IsRestart()) ssi->ReadRestart(problem->Restart());
 
     // 3.3 AFTER restart: reset input filename of the problem so that results from other runs can be
     // read

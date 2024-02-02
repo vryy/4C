@@ -18,6 +18,8 @@
 #include "baci_lib_node.H"
 #include "baci_utils_exceptions.H"
 
+#include <utility>
+
 BACI_NAMESPACE_OPEN
 
 
@@ -30,7 +32,7 @@ namespace IO
       VisualizationParameters parameters)
       : discretization_(discretization),
         visualization_manager_(Teuchos::rcp(new IO::VisualizationManager(
-            parameters, discretization->Comm(), discretization->Name())))
+            std::move(parameters), discretization->Comm(), discretization->Name())))
   {
   }
 

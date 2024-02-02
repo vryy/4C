@@ -34,7 +34,7 @@ namespace BEAMINTERACTION
     virtual ~BeamPotentialParams() = default;
 
     //! initialize with the stuff coming from input file
-    void Init();
+    void Init(double restart_time);
 
     //! setup member variables
     void Setup();

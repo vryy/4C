@@ -30,6 +30,7 @@
 #include <Epetra_MpiComm.h>
 
 #include <unordered_set>
+#include <utility>
 
 BACI_NAMESPACE_OPEN
 
@@ -38,11 +39,12 @@ BACI_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
-    BeamToSolidSurfaceVisualizationOutputWriter()
+    BeamToSolidSurfaceVisualizationOutputWriter(IO::VisualizationParameters visualization_params)
     : isinit_(false),
       issetup_(false),
       output_params_ptr_(Teuchos::null),
-      output_writer_base_ptr_(Teuchos::null)
+      output_writer_base_ptr_(Teuchos::null),
+      visualization_params_(std::move(visualization_params))
 {
 }
 
@@ -61,8 +63,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Init()
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Setup(
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
-        output_params_ptr,
-    double restart_time)
+        output_params_ptr)
 {
   CheckInit();
 
@@ -72,7 +73,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Setup(
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
-          "beam-to-solid-surface", visualization_output_params, restart_time));
+          "beam-to-solid-surface", visualization_output_params, visualization_params_));
 
   // Whether or not to write unique cell and node IDs.
   const bool write_unique_ids = output_params_ptr_->GetWriteUniqueIDsFlag();
@@ -184,9 +185,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputRu
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the next
   // step.
-  auto [output_time, output_step] =
-      IO::GetTimeAndTimeStepIndexForOutput(output_params_ptr_->GetVisualizationParameters(),
-          beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN());
+  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
+      visualization_params_, beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN());
   WriteOutputBeamToSolidSurface(beam_contact, output_step, output_time);
 }
 
@@ -200,9 +200,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputRu
 
   if (output_params_ptr_->GetOutputEveryIteration())
   {
-    auto [output_time, output_step] =
-        IO::GetTimeAndTimeStepIndexForOutput(output_params_ptr_->GetVisualizationParameters(),
-            beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
+    auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
+        beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
     WriteOutputBeamToSolidSurface(beam_contact, output_step, output_time);
   }
 }

@@ -23,7 +23,9 @@ BACI_NAMESPACE_OPEN
  */
 IO::VisualizationManager::VisualizationManager(
     IO::VisualizationParameters parameters, const Epetra_Comm& comm, std::string base_output_name)
-    : parameters_(parameters), comm_(comm), base_output_name_(std::move(base_output_name))
+    : parameters_(std::move(parameters)),
+      comm_(comm),
+      base_output_name_(std::move(base_output_name))
 {
 }
 

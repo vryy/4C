@@ -614,9 +614,16 @@ void CORE::GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
  *----------------------------------------------------------------------------*/
 void CORE::GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
 {
+  // TODO This does not work for restarted simulations as the time is obviously wrong. However, this
+  // is called before the restart is read and someone with knowledge on the module has to refactor
+  // the code. The only implication is that in restarted simulations the .pvd file does not contain
+  // the steps of the simulation that is restarted from
+  const double restart_time(0.0);
+
   visualization_output_writer_ptr_ = Teuchos::rcp(new IO::DiscretizationVisualizationWriterMesh(
       boxdiscret_, IO::VisualizationParametersFactory(
-                       GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
+                       GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                       *GLOBAL::Problem::Instance()->OutputControlFile(), restart_time)));
 }
 
 /*----------------------------------------------------------------------------*

@@ -111,8 +111,6 @@ namespace SSI
 
     void ReadRestart(int restart) override;
 
-    void ReadRestartfromTime(double restarttime) override;
-
     void Setup() override;
 
     void SetupSystem() override;

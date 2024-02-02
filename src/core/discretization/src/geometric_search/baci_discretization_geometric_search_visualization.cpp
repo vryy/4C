@@ -13,13 +13,15 @@
 #include "baci_discretization_geometric_search_utils.H"
 #include "baci_io_visualization_utils.H"
 
+#include <utility>
+
 BACI_NAMESPACE_OPEN
 
 namespace CORE::GEOMETRICSEARCH
 {
   GeometricSearchVisualization::GeometricSearchVisualization(
       IO::VisualizationParameters parameters, const Epetra_Comm& comm, std::string base_output_name)
-      : IO::VisualizationManager(parameters, comm, base_output_name)
+      : IO::VisualizationManager(std::move(parameters), comm, std::move(base_output_name))
   {
     my_rank_ = comm.MyPID();
     this->GetVisualizationData().RegisterCellData<int>("element_id", 1);
