@@ -22,7 +22,6 @@
 #include "baci_cut_volumecell.H"
 #include "baci_discretization_geometry_searchtree.H"
 #include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_global_data.H"
 #include "baci_inpar_volmortar.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
@@ -47,13 +46,14 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
-CORE::VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,  // problem dimension
-    Teuchos::RCP<DRT::Discretization> dis1,               // on Omega_1
-    Teuchos::RCP<DRT::Discretization> dis2,               // on Omega_2
-    std::vector<int>* coupleddof12,                       // 2-->1
-    std::vector<int>* coupleddof21,                       // 1-->2
-    std::pair<int, int>* dofset12,                        // 2-->1
-    std::pair<int, int>* dofset21,                        // 1-->2
+CORE::VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,
+    Teuchos::RCP<DRT::Discretization> dis1,  // on Omega_1
+    Teuchos::RCP<DRT::Discretization> dis2,  // on Omega_2
+    const Teuchos::ParameterList& volmortar_parameters,
+    std::vector<int>* coupleddof12,  // 2-->1
+    std::vector<int>* coupleddof21,  // 1-->2
+    std::pair<int, int>* dofset12,   // 2-->1
+    std::pair<int, int>* dofset21,   // 1-->2
     Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy>
         materialstrategy  // strategy for element information transfer
     )
@@ -106,7 +106,7 @@ CORE::VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,  // problem dimension
   BuildMaps(dis2, P12_dofcolmap_, coupleddof12, colnodes2, numcolnode2, dofset12_.second);
 
   // get required parameter list
-  ReadAndCheckInput();
+  ReadAndCheckInput(volmortar_parameters);
 
   // init dop normals
   InitDopNormals();
@@ -1018,13 +1018,11 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments3D(DRT::Element* Aele, DRT
 /*----------------------------------------------------------------------*
  |  get parameters and check for validity                    farah 04/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
+void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput(
+    const Teuchos::ParameterList& volmortar_parameters)
 {
-  // read input parameters
-  const Teuchos::ParameterList& volmortar = GLOBAL::Problem::Instance()->VolmortarParams();
-
   // check validity
-  if (INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar, "INTTYPE") ==
+  if (INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar_parameters, "INTTYPE") ==
       INPAR::VOLMORTAR::inttype_segments)
   {
     if (myrank_ == 0)
@@ -1038,25 +1036,23 @@ void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
     }
   }
 
-  if (INPUT::IntegralValue<int>(volmortar, "MESH_INIT") and
-      INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar, "INTTYPE") ==
+  if (INPUT::IntegralValue<int>(volmortar_parameters, "MESH_INIT") and
+      INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar_parameters, "INTTYPE") ==
           INPAR::VOLMORTAR::inttype_segments)
   {
     dserror("ERROR: MeshInit only for ele-based integration!!!");
   }
 
-  if (INPUT::IntegralValue<int>(volmortar, "SHAPEFCN") == INPAR::VOLMORTAR::shape_std)
+  if (INPUT::IntegralValue<int>(volmortar_parameters, "SHAPEFCN") == INPAR::VOLMORTAR::shape_std)
   {
     std::cout << "WARNING: Standard shape functions are employed! D is lumped!" << std::endl;
   }
 
   // merge to global parameter list
-  params_.setParameters(volmortar);
+  params_.setParameters(volmortar_parameters);
 
   // get specific and frequently reused parameters
   dualquad_ = INPUT::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params_, "DUALQUAD");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

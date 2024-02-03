@@ -81,9 +81,9 @@ namespace CORE::VOLMORTAR
 
      */
     VolMortarCoupl(int dim, Teuchos::RCP<DRT::Discretization> dis1,
-        Teuchos::RCP<DRT::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
-        std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofset12 = nullptr,
-        std::pair<int, int>* dofset21 = nullptr,
+        Teuchos::RCP<DRT::Discretization> dis2, const Teuchos::ParameterList& volmortar_parameters,
+        std::vector<int>* coupleddof12 = nullptr, std::vector<int>* coupleddof21 = nullptr,
+        std::pair<int, int>* dofset12 = nullptr, std::pair<int, int>* dofset21 = nullptr,
         Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy =
             Teuchos::null);
 
@@ -374,7 +374,7 @@ namespace CORE::VOLMORTAR
      \brief Get required parameters and check for validity
 
      */
-    virtual void ReadAndCheckInput();
+    virtual void ReadAndCheckInput(const Teuchos::ParameterList& volmortar_parameters);
 
     /*!
      \brief search algorithm
