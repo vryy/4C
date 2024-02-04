@@ -30,18 +30,34 @@
 #include <cfenv>
 #endif /* BACI_TRAP_FE */
 
-#ifdef TOL_N
-#undef TOL_N
-#endif
-#define TOL_N 1.0e-14
 
 BACI_NAMESPACE_OPEN
 
+namespace
+{
+  constexpr double tolerance_n = 1.0e-14;
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& FindSublist(std::string name, Teuchos::ParameterList& list)
+  {
+    Teuchos::ParameterList* sublist = &list;
+
+    for (std::string::size_type pos = name.find('/'); pos != std::string::npos;
+         pos = name.find('/'))
+    {
+      sublist = &sublist->sublist(name.substr(0, pos));
+      name = name.substr(pos + 1);
+    }
+
+    return sublist->sublist(name);
+  }
+
+
+}  // namespace
 
 namespace INPUT
 {
-  DatFileReader::DatFileReader() : filename_(""), comm_(Teuchos::null), numrows_(0), outflag_(0) {}
-
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   DatFileReader::DatFileReader(std::string filename)
@@ -137,7 +153,7 @@ namespace INPUT
 
     std::vector<const char*> sec;
 
-    std::map<std::string, unsigned int>::const_iterator i = positions_.find(name);
+    auto i = positions_.find(name);
     if (i != positions_.end())
     {
       for (size_t pos = i->second + 1; pos < lines_.size(); ++pos)
@@ -257,9 +273,7 @@ namespace INPUT
               // get original domain section from the *.dat-file
               std::string dommarker = "--" + disname + " DOMAIN";
               std::transform(dommarker.begin(), dommarker.end(), dommarker.begin(), ::toupper);
-              std::map<std::string,
-                  std::pair<std::ifstream::pos_type, unsigned int>>::const_iterator di =
-                  excludepositions_.find(dommarker);
+              auto di = excludepositions_.find(dommarker);
               if (di != excludepositions_.end())
               {
                 std::ifstream tmpfile(filename_.c_str());
@@ -325,12 +339,12 @@ namespace INPUT
                 bbox[i + 3] = -std::numeric_limits<double>::max();
                 break;
               case -1:
-                bbox[i] += TOL_N;
+                bbox[i] += tolerance_n;
                 bbox[i + 3] = std::numeric_limits<double>::max();
                 break;
               case 1:
                 bbox[i] = -std::numeric_limits<double>::max();
-                bbox[i + 3] -= TOL_N;
+                bbox[i + 3] -= tolerance_n;
                 break;
               default:
                 dserror("Invalid BC specification");
@@ -378,9 +392,9 @@ namespace INPUT
               }
             }
 
-            if (!((coords[0] > bbox[0] && coords[0] < bbox[3]) ||
-                    (coords[1] > bbox[1] && coords[1] < bbox[4]) ||
-                    (coords[2] > bbox[2] && coords[2] < bbox[5])))
+            if ((coords[0] <= bbox[0] || coords[0] >= bbox[3]) &&
+                (coords[1] <= bbox[1] || coords[1] >= bbox[4]) &&
+                (coords[2] <= bbox[2] || coords[2] >= bbox[5]))
               dnodes.insert(node->Id());
           }
           CORE::LINALG::GatherAll(dnodes, *comm_);
@@ -818,23 +832,6 @@ namespace INPUT
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& DatFileReader::FindSublist(std::string name, Teuchos::ParameterList& list)
-  {
-    Teuchos::ParameterList* sublist = &list;
-
-    for (std::string::size_type pos = name.find('/'); pos != std::string::npos;
-         pos = name.find('/'))
-    {
-      sublist = &sublist->sublist(name.substr(0, pos));
-      name = name.substr(pos + 1);
-    }
-
-    return sublist->sublist(name);
-  }
-
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
   void DatFileReader::AddEntry(
       const std::string& key, const std::string& value, Teuchos::ParameterList& list)
   {
@@ -1017,9 +1014,9 @@ namespace INPUT
       lines_.reserve(numrows_ + 1);
 
       lines_.push_back(inputfile_.data());
-      for (std::list<std::string>::const_iterator i = content.begin(); i != content.end(); ++i)
+      for (auto& i : content)
       {
-        inputfile_.insert(inputfile_.end(), i->begin(), i->end());
+        inputfile_.insert(inputfile_.end(), i.begin(), i.end());
         inputfile_.push_back('\0');
         lines_.push_back(&(inputfile_.back()) + 1);
       }
@@ -1148,18 +1145,9 @@ namespace INPUT
     // This function shell be called only after all reading with DatFileReader
     // is finished. Only then we have a proper protocol of (in-)valid section names
 
-    bool printout(false);
+    const bool printout = std::any_of(
+        knownsections_.begin(), knownsections_.end(), [](const auto& kv) { return !kv.second; });
 
-    std::map<std::string, bool>::iterator iter;
-    // is there at least one unknown section?
-    for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
-    {
-      if (!iter->second)
-      {
-        printout = true;
-        break;
-      }
-    }
     // now it's time to create noise on the screen
     if (printout and (Comm()->MyPID() == 0))
     {
@@ -1167,9 +1155,9 @@ namespace INPUT
                << "\n--------"
                << "\nThe following input file sections remained unused (obsolete or typo?):"
                << IO::endl;
-      for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
+      for (const auto& [section_name, known] : knownsections_)
       {
-        if (!iter->second) IO::cout << iter->first << IO::endl;
+        if (!known) IO::cout << section_name << IO::endl;
       }
       IO::cout << IO::endl;
     }
