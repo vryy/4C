@@ -71,8 +71,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
   const CORE::FE::ShapeFunctionType distype = problem.SpatialApproximationType();
 
   // the basic mesh reader. now add desired node and element readers to it!
-  INPUT::MeshReader meshreader(reader.Comm());
-  meshreader.SetNodeReader(Teuchos::rcp(new INPUT::NodeReader(reader, "--NODE COORDS")));
+  INPUT::MeshReader meshreader(reader, "--NODE COORDS");
 
   switch (problem.GetProblemType())
   {
@@ -1454,9 +1453,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
 
         ReadMaterials(*micro_problem, micro_reader);
 
-        INPUT::MeshReader micromeshreader(micro_reader.Comm());
-        micromeshreader.SetNodeReader(
-            Teuchos::rcp(new INPUT::NodeReader(micro_reader, "--NODE COORDS")));
+        INPUT::MeshReader micromeshreader(micro_reader, "--NODE COORDS");
 
         if (micro_dis_name == "structure")
         {
@@ -1585,9 +1582,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
 
     ReadMaterials(*micro_problem, micro_reader);
 
-    INPUT::MeshReader micromeshreader(micro_reader.Comm());
-    micromeshreader.SetNodeReader(
-        Teuchos::rcp(new INPUT::NodeReader(micro_reader, "--NODE COORDS")));
+    INPUT::MeshReader micromeshreader(micro_reader, "--NODE COORDS");
     micromeshreader.AddElementReader(
         INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
     micromeshreader.ReadAndPartition();

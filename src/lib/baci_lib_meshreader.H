@@ -34,8 +34,11 @@ namespace INPUT
   class MeshReader
   {
    public:
-    /// construct a mesh reader
-    MeshReader(const Teuchos::RCP<Epetra_Comm> comm);
+    /**
+     * Construct a mesh reader. Read nodes from the given @p reader under section
+     * @p node_section_name.
+     */
+    MeshReader(INPUT::DatFileReader& reader, std::string node_section_name);
 
     /// add an element reader for each discretization
     /*!
@@ -45,14 +48,6 @@ namespace INPUT
       \param er (i) a reader of one discretization that uses (a fraction of) our nodes
      */
     void AddElementReader(const ElementReader& er) { element_readers_.emplace_back(er); }
-
-    /// add an node reader
-    /*!
-      The reader has to be registered at the MeshReader.
-
-    \param nr a node reader of the overall problem
-    */
-    void SetNodeReader(Teuchos::RCP<NodeReader> nr) { node_reader_ = nr; }
 
     /*!
      * \brief Adds the selected reader to this meshreader
@@ -146,8 +141,11 @@ namespace INPUT
     /// my domain readers
     std::vector<DomainReader> domain_readers_;
 
-    /// my node reader
-    Teuchos::RCP<NodeReader> node_reader_;
+    /// Input file contents
+    INPUT::DatFileReader& reader_;
+
+    /// The name of the section under which we will read the nodes.
+    std::string node_section_name_;
   };
 }  // namespace INPUT
 

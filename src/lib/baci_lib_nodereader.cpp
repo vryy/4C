@@ -10,43 +10,49 @@
 
 #include "baci_lib_nodereader.H"
 
-#include "baci_comm_utils_factory.H"
 #include "baci_fiber_node.H"
 #include "baci_global_data.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_elementdefinition.H"
 #include "baci_lib_immersed_node.H"
-#include "baci_lib_utils_parallel.H"
 #include "baci_nurbs_discret_control_point.H"
 
 #include <istream>
-#include <string>
+#include <utility>
 
 BACI_NAMESPACE_OPEN
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-INPUT::NodeReader::NodeReader(const INPUT::DatFileReader& reader, std::string sectionname)
-    : reader_(reader), comm_(reader.Comm()), sectionname_(sectionname)
+namespace
 {
-}
+  std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(
+      const std::vector<INPUT::ElementReader>& element_readers, int global_node_id)
+  {
+    std::vector<Teuchos::RCP<DRT::Discretization>> list_of_discretizations;
+    for (const auto& element_reader : element_readers)
+      if (element_reader.HasNode(global_node_id))
+        list_of_discretizations.emplace_back(element_reader.GetDis());
+
+    return list_of_discretizations;
+  }
+
+}  // namespace
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void INPUT::NodeReader::Read(const std::vector<ElementReader>& element_readers, int& max_node_id)
+void INPUT::ReadNodes(const DatFileReader& reader, const std::string& node_section_name,
+    std::vector<ElementReader>& element_readers, int& max_node_id)
 {
   // Check if there are any nodes to be read. If not, leave right away.
-  const int numnodes = reader_.ExcludedSectionLength(sectionname_);
+  const int numnodes = reader.ExcludedSectionLength(node_section_name);
+  const auto& comm = reader.Comm();
 
   if (numnodes == 0) return;
-  const int myrank = comm_->MyPID();
+  const int myrank = comm->MyPID();
 
   // We will read the nodes block wise. We will use one block per processor
   // so the number of blocks is numproc
   // OR number of blocks is numnodes if less nodes than procs are read in
   // determine a rough blocksize
-  int number_of_blocks = std::min(comm_->NumProc(), numnodes);
+  int number_of_blocks = std::min(comm->NumProc(), numnodes);
   int blocksize = std::max(numnodes / number_of_blocks, 1);
 
   // an upper limit for blocksize
@@ -63,12 +69,12 @@ void INPUT::NodeReader::Read(const std::vector<ElementReader>& element_readers, 
 
   // open input file at the right position
   // note that stream is valid on proc 0 only!
-  const std::string inputfile_name = reader_.MyInputfileName();
+  const std::string inputfile_name = reader.MyInputfileName();
   std::ifstream file;
   if (myrank == 0)
   {
     file.open(inputfile_name.c_str());
-    file.seekg(reader_.ExcludedSectionPosition(sectionname_));
+    file.seekg(reader.ExcludedSectionPosition(node_section_name));
   }
   std::string tmp;
   std::string tmp2;
@@ -90,36 +96,18 @@ void INPUT::NodeReader::Read(const std::vector<ElementReader>& element_readers, 
           int nodeid;
           // read in the node coordinates
           file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
-          // store current position of file reader
-          int length = file.tellg();
-          file >> tmp2;
+
           nodeid--;
           max_node_id = std::max(max_node_id, nodeid) + 1;
           std::vector<Teuchos::RCP<DRT::Discretization>> dis = FindDisNode(element_readers, nodeid);
-          if (tmp2 != "ROTANGLE")  // Common (Boltzmann) Nodes with 3 DoFs
+
+          for (const auto& di : dis)
           {
-            // go back with file reader in order to make the expression in tmp2 available to
-            // tmp in the next iteration step
-            file.seekg(length);
-            for (unsigned i = 0; i < dis.size(); ++i)
-            {
-              // create node and add to discretization
-              Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid, coords, myrank));
-              dis[i]->AddNode(node);
-            }
+            // create node and add to discretization
+            Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid, coords, myrank));
+            di->AddNode(node);
           }
-          else  // Cosserat Nodes with 6 DoFs
-          {
-            coords.resize(6);
-            // read in the node rotations in case of cosserat nodes
-            file >> coords[3] >> coords[4] >> coords[5];
-            for (unsigned i = 0; i < dis.size(); ++i)
-            {
-              // create node and add to discretization
-              Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid, coords, myrank));
-              dis[i]->AddNode(node);
-            }
-          }
+
           ++block_counter;
           if (block != number_of_blocks - 1)  // last block takes all the rest
             if (block_counter == blocksize)   // block is full
@@ -135,31 +123,20 @@ void INPUT::NodeReader::Read(const std::vector<ElementReader>& element_readers, 
           int nodeid;
           // read in the node coordinates
           file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
-          // store current position of file reader
-          int length = file.tellg();
-          file >> tmp2;
+
           nodeid--;
           max_node_id = std::max(max_node_id, nodeid) + 1;
           std::vector<Teuchos::RCP<DRT::Discretization>> diss =
               FindDisNode(element_readers, nodeid);
 
-          if (tmp2 != "ROTANGLE")  // Common (Boltzmann) Nodes with 3 DoFs
+          for (const auto& dis : diss)
           {
-            // go back with file reader in order to make the expression in tmp2 available to
-            // tmp in the next iteration step
-            file.seekg(length);
-            for (unsigned i = 0; i < diss.size(); ++i)
-            {
-              // create node and add to discretization
-              Teuchos::RCP<DRT::Node> node =
-                  Teuchos::rcp(new DRT::ImmersedNode(nodeid, coords, myrank));
-              diss[i]->AddNode(node);
-            }
+            // create node and add to discretization
+            Teuchos::RCP<DRT::Node> node =
+                Teuchos::rcp(new DRT::ImmersedNode(nodeid, coords, myrank));
+            dis->AddNode(node);
           }
-          else  // Cosserat Nodes with 6 DoFs
-          {
-            dserror("no valid immersed node definition");
-          }
+
           ++block_counter;
           if (block != number_of_blocks - 1)  // last block takes all the rest
             if (block_counter == blocksize)   // block is full
@@ -183,14 +160,15 @@ void INPUT::NodeReader::Read(const std::vector<ElementReader>& element_readers, 
             dserror("Reading of control points failed: They must be numbered consecutive!!");
           if (tmp != "COORD") dserror("failed to read control point %d", cpid);
           std::vector<Teuchos::RCP<DRT::Discretization>> diss = FindDisNode(element_readers, cpid);
-          for (unsigned i = 0; i < diss.size(); ++i)
+
+          for (auto& dis : diss)
           {
-            Teuchos::RCP<DRT::Discretization> dis = diss[i];
             // create node/control point and add to discretization
             Teuchos::RCP<DRT::NURBS::ControlPoint> node =
                 Teuchos::rcp(new DRT::NURBS::ControlPoint(cpid, coords, weight, myrank));
             dis->AddNode(node);
           }
+
           ++block_counter;
           if (block != number_of_blocks - 1)  // last block takes all the rest
             if (block_counter == blocksize)   // block is full
@@ -329,31 +307,6 @@ void INPUT::NodeReader::Read(const std::vector<ElementReader>& element_readers, 
       }
     }
   }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void INPUT::NodeReader::ThrowIfNotEnoughNodes(int max_node_id) const
-{
-  int local_max_node_id = max_node_id;
-  comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
-
-  if ((max_node_id < comm_->NumProc()) && (reader_.ExcludedSectionLength(sectionname_) != 0))
-    dserror("Bad idea: Simulation with %d procs for problem with %d nodes", comm_->NumProc(),
-        max_node_id);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Discretization>> INPUT::NodeReader::FindDisNode(
-    const std::vector<ElementReader>& element_readers, int global_node_id)
-{
-  std::vector<Teuchos::RCP<DRT::Discretization>> list_of_discretizations;
-  for (const auto& element_reader : element_readers)
-    if (element_reader.HasNode(global_node_id))
-      list_of_discretizations.emplace_back(element_reader.GetDis());
-
-  return list_of_discretizations;
 }
 
 BACI_NAMESPACE_CLOSE

@@ -17,49 +17,21 @@
 #include "baci_io_inputreader.H"
 #include "baci_lib_elementreader.H"
 
-#include <Epetra_Map.h>
+#include <string>
+#include <vector>
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT
-{
-  class Discretization;
-}
-
 namespace INPUT
 {
-  class DatFileReader;
+  /**
+   * Read all nodes that are defined in section @p node_section_name in the @p reader.
+   * Nodes are added to the Discretization objects associated with the @p element_readers.
+   * The @p max_node_id is tracked for consistency checks.
+   */
+  void ReadNodes(const DatFileReader& reader, const std::string& node_section_name,
+      std::vector<ElementReader>& element_readers, int& max_node_id);
 
-  class NodeReader
-  {
-   public:
-    /*!
-    \brief Construct node reader for a given field that reads a given section
-
-    Create empty discretization and append it to given field.
-
-    \param comm (i) our communicator
-    \param sectionname (i) the section that contains the node lines
-    */
-    NodeReader(const DatFileReader& reader, std::string sectionname);
-
-    void Read(const std::vector<ElementReader>& element_readers, int& max_node_id);
-
-    void ThrowIfNotEnoughNodes(int max_node_id) const;
-
-    std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(
-        const std::vector<ElementReader>& element_readers, int global_node_id);
-
-   private:
-    /// the main dat file reader
-    const DatFileReader& reader_;
-
-    /// my comm
-    Teuchos::RCP<Epetra_Comm> comm_;
-
-    /// my section to read
-    std::string sectionname_;
-  };
 }  // namespace INPUT
 
 BACI_NAMESPACE_CLOSE
