@@ -17,6 +17,8 @@ if(BACI_BUILD_READTHEDOCS)
   set(READTHEDOCS_HTML_DIR ${READTHEDOCS_OUT_DIR}/html)
 
   file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/doc/tmp)
+  file(MAKE_DIRECTORY ${READTHEDOCS_OUT_DIR}/reference_docs)
+  file(MAKE_DIRECTORY ${READTHEDOCS_OUT_DIR}/reference_docs/reference_images)
 
   #install the python virtual environment with sphinx
   find_package(Sphinx REQUIRED)
@@ -32,11 +34,13 @@ if(BACI_BUILD_READTHEDOCS)
   add_custom_target(
     readthedocs ALL
     COMMAND create_rtd
-    COMMAND ${baciname} -h > baci-help.txt
-    COMMAND cmake ${PROJECT_SOURCE_DIR} --list-presets > baci-cmake-presets.txt
+    COMMAND ${baciname} -h > ${READTHEDOCS_OUT_DIR}/reference_docs/baci-help.txt
+    COMMAND
+      cmake ${PROJECT_SOURCE_DIR} --list-presets >
+      ${READTHEDOCS_OUT_DIR}/reference_docs/baci-cmake-presets.txt
     COMMAND
       ${SPHINX_EXECUTABLE} -q -b html # -W turns warnings into errors!
-      -i "${CMAKE_CURRENT_SOURCE_DIR}" -i "${READTHEDOCS_OUT_DIR}" -i
+      -i "${CMAKE_CURRENT_SOURCE_DIR}" -i "${READTHEDOCS_OUT_DIR}/reference_docs" -i
       "${PROJECT_SOURCE_DIR}/tests/framework-test" -i "${READTHEDOCS_TPLDEPEND_DIR}" -o
       "${READTHEDOCS_HTML_DIR}" -c "${READTHEDOCS_OUT_DIR}" -s "${PROJECT_BINARY_DIR}/doc/tmp"
     DEPENDS create_rtd ${baciname}

@@ -9,10 +9,12 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-# import sys
-# sys.path.append(os.path.abspath('.../site-packages/sphinx/ext'))
-#
+import sys
 import os
+# sys.path.append(os.path.abspath('.../site-packages/sphinx/ext'))
+sys.path.append('@PROJECT_BINARY_DIR@/doc/tmp/python')
+#
+import plot
 
 
 
@@ -98,3 +100,8 @@ myst_heading_anchors = 4
 mathjax_path = (
     "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 )
+
+# -- Additional scripts to generate more fancy output -------------------------------------------------
+# as soon as the yaml file is created automatically:
+plot.generate_figures("@READTHEDOCS_OUT_DIR@/reference_docs/elementinformation.yaml",
+    "@READTHEDOCS_OUT_DIR@/reference_docs/reference_images")

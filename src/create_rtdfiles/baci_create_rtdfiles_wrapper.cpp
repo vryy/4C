@@ -33,6 +33,21 @@ namespace RTD
 {
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
+  void WriteCellTypeInformation(const std::string& elementinformationfilename)
+  {
+    // open ascii file for writing the cell type information
+    std::ofstream elementinformationfile(elementinformationfilename.c_str());
+    if (!elementinformationfile)
+      dserror("failed to open file: %s", elementinformationfilename.c_str());
+    elementinformationfile << "# yaml file created using baci version (git SHA1):\n";
+    elementinformationfile << "# " << BaciGitHash.c_str() << "\n#\n";
+
+    WriteYamlCellTypeInformation(elementinformationfile);
+  }
+
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
   void WriteReadTheDocsHeader(const std::string& headerdocumentationfilename)
   {
     // open ascii file for writing all header parameters
@@ -41,7 +56,6 @@ namespace RTD
       dserror("failed to open file: %s", headerdocumentationfilename.c_str());
     headerdocumentationfile << "..\n   Created using baci version (git SHA1):\n";
     headerdocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
-
     headerdocumentationfile << ".. _headerparameters:\n\n";
     headerdocumentationfile << "Header parameters\n";
     headerdocumentationfile << "=================\n\n";
@@ -97,7 +111,7 @@ namespace RTD
   void WriteReadTheDocsVarious(const std::string& variousdocumentationfilename)
   {
     //
-    // open ascii file for writing all constrains / conditions parameters
+    // open ascii file for writing other (non header) parameters
     std::ofstream variousdocumentationfile(variousdocumentationfilename.c_str());
     if (!variousdocumentationfile)
       dserror("failed to open file: %s", variousdocumentationfilename.c_str());
@@ -108,7 +122,10 @@ namespace RTD
 
   void PrintHelpMessage()
   {
-    std::cout << "This program writes all necessary reference files for readthedocs";
+    std::cout << "This program writes all necessary reference files for readthedocs\n";
+    std::cout << "Usage:\n    create_rtd [pathanem]\n";
+    std::cout << " Parameter:\n   pathname (str) path where the reference files are stored.\n";
+    std::cout << "                   Default: reference_docs";
   }
 
 }  // namespace RTD

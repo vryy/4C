@@ -21,10 +21,16 @@ BACI_NAMESPACE_OPEN
 namespace RTD
 {
   /*!
+    \brief Create a yaml file containing the cell type information
+
+    \param[in] string: filename for the the yaml file, should be elementinformation.yaml
+  */
+  void WriteCellTypeInformation(const std::string& elementinformationfilename);
+
+  /*!
     \brief Create a restructuredText file containing all header sections and parameters
 
     \param[in] string: filename for the the header parameters, should be headerreference.rst
-
   */
   void WriteReadTheDocsHeader(const std::string& headerdocumentationfilename);
 

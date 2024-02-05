@@ -9,8 +9,9 @@ Analysis Guide
 
    workflow
    problemtypes
-   functions
+   geometrydefinition
    elements
+   functions
    boundaryconditions
    contact
    materials

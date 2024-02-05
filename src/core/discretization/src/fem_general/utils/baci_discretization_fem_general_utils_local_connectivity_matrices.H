@@ -32,6 +32,7 @@ namespace CORE::FE
   //! 2 surfaces on a Hex16 element with 8 nodes per surface
   const int eleNodeNumbering_hex16_surfaces_q8[2][8] = {
       {0, 3, 2, 1, 7, 6, 5, 4}, {8, 9, 10, 11, 12, 13, 14, 15}};
+
   //! 4 surfaces on a Hex16 element with 6 nodes per surface
   const int eleNodeNumbering_hex16_surfaces_q6[4][6] = {
       {0, 1, 4, 8, 9, 12}, {1, 2, 5, 9, 10, 13}, {2, 3, 6, 10, 11, 14}, {3, 0, 7, 11, 8, 15}};
@@ -93,12 +94,17 @@ namespace CORE::FE
   const int eleNodeNumbering_pyramid5_trisurfaces[4][3] = {
       {0, 1, 4}, {1, 2, 4}, {2, 3, 4}, {0, 4, 3}};
 
-  //! 9 lines of a wedge15 element with 3 nodes per line
+  //! 9 lines of a pyramid5 element with 2 nodes per line
   const int eleNodeNumbering_pyramid5_lines[8][2] = {
       {0, 1}, {1, 2}, {2, 3}, {3, 0}, {0, 4}, {1, 4}, {2, 4}, {3, 4}};
 
   //! 4 lines of a Quad9 element with 3 nodes per line
   const int eleNodeNumbering_quad9_lines[4][3] = {{0, 1, 4}, {1, 2, 5}, {2, 3, 6}, {3, 0, 7}};
+
+  //! 2 lines of a Quad6 element with 2 nodes per line
+  const int eleNodeNumbering_quad6_lines_lin[2][2] = {{1, 2}, {3, 0}};
+  //! 2 lines of a Quad6 element with 2 nodes per line
+  const int eleNodeNumbering_quad6_lines_quad[2][3] = {{0, 1, 4}, {2, 3, 5}};
 
   //! 4 lines of a nurbs4 element with 2 control points per line
   //! we apply the nurbs specific cartesian numbering
@@ -115,7 +121,7 @@ namespace CORE::FE
   //!
   //! \endverbatim
 
-  const int eleNodeNumbering_nurbs4_lines[4][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}};
+  const int eleNodeNumbering_nurbs4_lines[4][2] = {{0, 1}, {1, 3}, {2, 3}, {2, 0}};
 
 
   //! 4 lines of a nurbs9 element with 3 control points per line
@@ -151,9 +157,35 @@ namespace CORE::FE
   //! for each of the 4 corner nodes, tell me the 3 neighbouring lines
   const int eleNodeNumbering_tet10_nodes_lines[4][3] = {{0, 2, 3}, {0, 1, 4}, {1, 2, 5}, {3, 4, 5}};
 
-  //! for each node the reference coordinates are stored for quad9
+  //! for each node of the linear and quadratic quads, the reference coordinates are stored for
+  //! quad9
   const double eleNodeNumbering_quad9_nodes_reference[9][2] = {{-1.0, -1.0}, {1.0, -1.0},
       {1.0, 1.0}, {-1.0, 1.0}, {0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0}, {-1.0, 0.0}, {0.0, 0.0}};
+
+  //! for each node the reference coordinates are stored for nurbs4
+  const double eleNodeNumbering_nurbs4_nodes_reference[4][2] = {
+      {-1.0, -1.0}, {1.0, -1.0}, {-1.0, 1.0}, {1.0, 1.0}};
+
+  //! for each node the reference coordinates are stored for nurbs9
+  const double eleNodeNumbering_nurbs9_nodes_reference[9][2] = {{-1.0, -1.0}, {0.0, -1.0},
+      {1.0, -1.0}, {-1.0, 0.0}, {0.0, 0.0}, {1.0, 0.0}, {-1.0, 1.0}, {0.0, 1.0}, {1.0, 1.0}};
+
+  //! for each node the reference coordinates are stored for quad6
+  const double eleNodeNumbering_quad6_nodes_reference[6][2] = {
+      {-1.0, -1.0}, {1.0, -1.0}, {1.0, 1.0}, {-1.0, 1.0}, {0.0, -1.0}, {0.0, 1.0}};
+
+  //! for each node the reference coordinates are stored for hex16
+  const double eleNodeNumbering_hex16_nodes_reference[16][3] = {{-1.0, -1.0, -1.0},
+      {1.0, -1.0, -1.0}, {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0}, {0.0, -1.0, -1.0}, {1.0, 0.0, -1.0},
+      {0.0, 1.0, -1.0}, {-1.0, 0.0, -1.0}, {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, 1.0},
+      {-1.0, 1.0, 1.0}, {0.0, -1.0, 1.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0}, {-1.0, 0.0, 1.0}};
+
+  //! for each node the reference coordinates are stored for hex18
+  const double eleNodeNumbering_hex18_nodes_reference[18][3] = {{-1.0, -1.0, -1.0},
+      {1.0, -1.0, -1.0}, {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0}, {0.0, -1.0, -1.0}, {1.0, 0.0, -1.0},
+      {0.0, 1.0, -1.0}, {-1.0, 0.0, -1.0}, {0.0, 0.0, -1.0}, {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0},
+      {1.0, 1.0, 1.0}, {-1.0, 1.0, 1.0}, {0.0, -1.0, 1.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0},
+      {-1.0, 0.0, 1.0}, {0.0, 0.0, 1.0}};
 
   //! 6 surfaces of a nurbs8 element with 4 control points per surface
   //! we apply the nurbs specific cartesian numbering, only interpolated surfaces are valid!
@@ -188,6 +220,9 @@ namespace CORE::FE
 
   const int eleNodeNumbering_nurbs8_surfaces[6][4] = {
       {0, 1, 2, 3}, {4, 5, 6, 7}, {0, 1, 4, 5}, {2, 3, 6, 7}, {0, 2, 4, 6}, {1, 3, 5, 7}};
+  //!
+  const int eleNodeNumbering_nurbs8_lines[12][2] = {{0, 1}, {1, 3}, {3, 2}, {0, 2}, {0, 4}, {1, 5},
+      {3, 7}, {2, 6}, {4, 5}, {5, 7}, {7, 6}, {4, 6}};
 
   //! 6 surfaces of a nurbs27 element with 9 control points per surface
   //! we apply the nurbs specific cartesian numbering, only interpolated surfaces are valid!
@@ -226,7 +261,7 @@ namespace CORE::FE
       {6, 7, 8, 15, 16, 17, 24, 25, 26}, {2, 5, 8, 11, 14, 17, 20, 23, 26},
       {0, 3, 6, 9, 12, 15, 18, 21, 24}};
 
-  //! 12 lines of a Nurbs27 element with 3 control points per line
+  //! 12 lines of a Nurbs8 / Nurbs27 element with 3 control points per line
   //!                          v
   //!                         /
   //!                   10   /
@@ -270,10 +305,35 @@ namespace CORE::FE
       {0.0, -1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, 1.0},
       {0.0, 0.0, 0.0}};
 
+  //! for each node the reference coordinates are stored for nurbs8
+  const double eleNodeNumbering_nurbs8_nodes_reference[8][3] = {{-1.0, -1.0, -1.0},
+      {1.0, -1.0, -1.0}, {-1.0, 1.0, -1.0}, {1.0, 1.0, -1.0}, {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0},
+      {-1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}};
+
+  //! for each node the reference coordinates are stored for nurbs27
+  const double eleNodeNumbering_nurbs27_nodes_reference[27][3] = {{-1.0, -1.0, -1.0},
+      {0.0, -1.0, -1.0}, {1.0, -1.0, -1.0}, {-1.0, 0.0, -1.0}, {0.0, 0, -1.0}, {1.0, 0, -1.0},
+      {-1.0, 1.0, -1.0}, {0.0, 1.0, -1.0}, {1.0, 1.0, -1.0}, {-1.0, -1.0, 0.0}, {0.0, -1.0, 0.0},
+      {1.0, -1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0, 0.0}, {1.0, 0, 0.0}, {-1.0, 1.0, 0.0},
+      {0.0, 1.0, 0.0}, {1.0, 1.0, 0.0}, {-1.0, -1.0, 1.0}, {0.0, -1.0, 1.0}, {1.0, -1.0, 1.0},
+      {-1.0, 0.0, 1.0}, {0.0, 0, 1.0}, {1.0, 0, 1.0}, {-1.0, 1.0, 1.0}, {0.0, 1.0, 1.0},
+      {1.0, 1.0, 1.0}};
+
   //! reference parameter coordinates for a tet10
   const double eleNodeNumbering_tet10_nodes_reference[10][3] = {{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
       {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {0.5, 0.0, 0.0}, {0.5, 0.5, 0.0}, {0.0, 0.5, 0.0},
       {0.0, 0.0, 0.5}, {0.5, 0.0, 0.5}, {0.0, 0.5, 0.5}};
+
+  //! reference parameter coordinates for a pyramid5
+  const double eleNodeNumbering_pyramid5_nodes_reference[5][3] = {
+      {-1.0, -1.0, 0.0}, {1.0, -1.0, 0.0}, {1.0, 1.0, 0.0}, {-1.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
+
+  //! reference parameter coordinates for a wedge18
+  const double eleNodeNumbering_wedge18_nodes_reference[18][3] = {{0.0, 0.0, -1.0},
+      {1.0, 0.0, -1.0}, {0.0, 1.0, -1.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0},
+      {0.5, 0.0, -1.0}, {0.5, 0.5, -1.0}, {0.0, 0.5, -1.0}, {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0},
+      {0.0, 1.0, 0.0}, {0.5, 0.0, 1.0}, {0.5, 0.5, 1.0}, {0.0, 0.5, 1.0}, {0.5, 0.0, 0.0},
+      {0.5, 0.5, 0.0}, {0.0, 0.5, 0.0}};
 
   //! reference parameter coordinates for a line3
   const double eleNodeNumbering_line3_nodes_reference[3][1] = {{-1.0}, {1.0}, {0.0}};
@@ -286,6 +346,7 @@ namespace CORE::FE
    * @brief Returns the number of nodes for the given discretization type
    *
    * @param[in] distype discretization type
+   *
    * @return number of nodes
    */
   int getNumberOfElementNodes(const CORE::FE::CellType& distype);

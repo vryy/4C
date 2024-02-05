@@ -118,45 +118,55 @@ namespace RTD
   */
   void WriteLinktarget(std::ostream& stream, const std::string& line);
 
+  /*!
+   * \brief Create a yaml file containing the cell type information about
+   *
+   * - nodes incl. coordinates
+   * - lines
+   * - surfaces
+   *
+   * \param[in] stream: filename for the the yaml file, should be elementinformation.yaml
+   */
+  void WriteYamlCellTypeInformation(std::ostream& yamlfile);
+
   /*----------------------------------------------------------------------*/
   /*!
-    \brief Write a header of a specific level to the restructuredText stream
-
-    \param[in] stream: stream for the restructuredText file
-    \param[in] level: header level
-    \param[in] line: The link target to be printed
-
-  */
+   * \brief Write a header of a specific level to the restructuredText stream
+   *
+   * \param[in] stream: stream for the restructuredText file
+   * \param[in] level: header level
+   * \param[in] line: The link target to be printed
+   */
   void WriteHeader(std::ostream& stream, unsigned level, const std::string& line);
 
   /*----------------------------------------------------------------------*/
   /*!
-    \brief Write a paragraph to the restructuredText stream, with an optional additional
-    indentation
-
-    \param[in] stream: stream for the restructuredText file
-    \param[in] line: The link target to be printed
-    \param[in] indent: Optional indentation of the paragraph (default 0)
-
-  */
+   * \brief Write a paragraph to the restructuredText stream, with an optional additional
+   * indentation
+   *
+   * \param[in] stream: stream for the restructuredText file
+   * \param[in] line: The link target to be printed
+   * \param[in] indent: Optional indentation of the paragraph (default 0)
+   *
+   */
   void WriteParagraph(std::ostream& stream, std::string& paragraph, size_t indent = 0);
   /*----------------------------------------------------------------------*/
   /*!
-    \brief Write a code block to the restructuredText stream
-
-    \param[in] stream: stream for the restructuredText file
-    \param[in] lines: A vector of strings that make up the code
-
-  */
+   * \brief Write a code block to the restructuredText stream
+   *
+   * \param[in] stream: stream for the restructuredText file
+   * \param[in] lines: A vector of strings that make up the code
+   *
+   */
   void WriteCode(std::ostream& stream, const std::vector<std::string>& lines);
   /*----------------------------------------------------------------------*/
   /*!
-    \brief Write a note block to the restructuredText stream
-
-    \param[in] stream: stream for the restructuredText file
-    \param[in] line: The link target to be printed
-
-  */
+   * \brief Write a note block to the restructuredText stream
+   *
+   * \param[in] stream: stream for the restructuredText file
+   * \param[in] line: The link target to be printed
+   *
+   */
   void WriteNote(std::ostream& stream, const std::string& paragraph);
 
   /*!
