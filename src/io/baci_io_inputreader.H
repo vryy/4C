@@ -75,8 +75,8 @@ namespace INPUT
   class DatFileReader
   {
    public:
-    /// empty constructor, which avoids directly opening a file for reading
-    DatFileReader();
+    /// Empty constructor, which avoids directly opening a file for reading
+    DatFileReader() = default;
 
     //! constructs a dat file reader object and stores the file name handed in. The file specified
     //! by filename is not directly read
@@ -130,9 +130,6 @@ namespace INPUT
     bool PrintUnknownSections();
 
    private:
-    /// parse name string an get sublist of global input list
-    Teuchos::ParameterList& FindSublist(std::string name, Teuchos::ParameterList& list);
-
     /// parse the value and add the key,value pair to the list
     void AddEntry(const std::string& key, const std::string& value, Teuchos::ParameterList& list);
 
@@ -146,10 +143,10 @@ namespace INPUT
     Teuchos::RCP<Epetra_Comm> comm_;
 
     /// number of lines
-    int numrows_;
+    int numrows_{};
 
     /// flag for output (default: output should be written)
-    int outflag_;
+    int outflag_{};
 
     /// the whole input file, lines separated by 0
     std::vector<char> inputfile_;

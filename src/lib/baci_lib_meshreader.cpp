@@ -17,6 +17,7 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_domainreader.H"
 #include "baci_lib_elementreader.H"
+#include "baci_lib_nodereader.H"
 #include "baci_rebalance.H"
 #include "baci_rebalance_utils.H"
 
@@ -24,12 +25,16 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <string>
+#include <utility>
 
 BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-INPUT::MeshReader::MeshReader(const Teuchos::RCP<Epetra_Comm> comm) : comm_(comm) {}
+INPUT::MeshReader::MeshReader(INPUT::DatFileReader& reader, std::string node_section_name)
+    : comm_(reader.Comm()), reader_(reader), node_section_name_(std::move(node_section_name))
+{
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -91,7 +96,14 @@ void INPUT::MeshReader::ReadAndPartition()
   CreateInlineMesh(max_node_id);
 
   // last check if there are enough nodes
-  node_reader_->ThrowIfNotEnoughNodes(max_node_id);
+  {
+    int local_max_node_id = max_node_id;
+    comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
+
+    if (max_node_id < comm_->NumProc() && reader_.ExcludedSectionLength(node_section_name_) != 0)
+      dserror("Bad idea: Simulation with %d procs for problem with %d nodes", comm_->NumProc(),
+          max_node_id);
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -104,7 +116,7 @@ void INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
   for (auto& element_reader : element_readers_) element_reader.ReadAndDistribute();
 
   // read nodes based on the element information
-  node_reader_->Read(element_readers_, max_node_id);
+  ReadNodes(reader_, node_section_name_, element_readers_, max_node_id);
 }
 
 /*----------------------------------------------------------------------*/
