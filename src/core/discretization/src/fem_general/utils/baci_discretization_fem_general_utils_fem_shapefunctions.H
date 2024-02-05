@@ -25,9 +25,6 @@ BACI_NAMESPACE_OPEN
 
 namespace CORE::FE
 {
-  // use std::pow directly to allow resolving the overload with FAD types
-  using std::pow;
-
   /*!
    \brief Fill a vector of type VectorType with with 3D shape function
    */
@@ -326,7 +323,8 @@ namespace CORE::FE
 
         NumberType ration;
 
-        if (fabs(t - 1.0) > PY5TOL)
+        const NumberType check = t - 1.0;
+        if (CORE::MathOperations<NumberType>::abs(check) > PY5TOL)
         {
           ration = (r * s * t) / (1.0 - t);
         }
@@ -955,7 +953,8 @@ namespace CORE::FE
         NumberType rationds;
         NumberType rationdt;
 
-        if (fabs(t - 1.0) > PY5TOL)
+        const NumberType check = t - 1.0;
+        if (CORE::MathOperations<NumberType>::abs(check) > PY5TOL)
         {
           rationdr = s * t / (1.0 - t);
           rationds = r * t / (1.0 - t);
@@ -2604,22 +2603,34 @@ namespace CORE::FE
       case CORE::FE::CellType::line6:
       {
         funct(0) = -625.0 / 768.0 *
-                   (pow(r, 5) - pow(r, 4) - 2.0 / 5.0 * pow(r, 3) + 2.0 / 5.0 * r * r +
+                   (CORE::MathOperations<NumberType>::pow(r, 5) -
+                       CORE::MathOperations<NumberType>::pow(r, 4) -
+                       2.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) + 2.0 / 5.0 * r * r +
                        9.0 / 625.0 * r - 9.0 / 625.0);
         funct(1) = 625.0 / 768.0 *
-                   (pow(r, 5) + pow(r, 4) - 2.0 / 5.0 * pow(r, 3) - 2.0 / 5.0 * r * r +
+                   (CORE::MathOperations<NumberType>::pow(r, 5) +
+                       CORE::MathOperations<NumberType>::pow(r, 4) -
+                       2.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) - 2.0 / 5.0 * r * r +
                        9.0 / 625.0 * r + 9.0 / 625.0);
         funct(2) = 3125.0 / 768.0 *
-                   (pow(r, 5) - 3.0 / 5.0 * pow(r, 4) - 26.0 / 25.0 * pow(r, 3) +
+                   (CORE::MathOperations<NumberType>::pow(r, 5) -
+                       3.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
+                       26.0 / 25.0 * CORE::MathOperations<NumberType>::pow(r, 3) +
                        78.0 / 125.0 * r * r + 1.0 / 25.0 * r - 3.0 / 125.0);
         funct(3) = -3125.0 / 384.0 *
-                   (pow(r, 5) - 1.0 / 5.0 * pow(r, 4) - 34.0 / 25.0 * pow(r, 3) +
+                   (CORE::MathOperations<NumberType>::pow(r, 5) -
+                       1.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
+                       34.0 / 25.0 * CORE::MathOperations<NumberType>::pow(r, 3) +
                        34.0 / 125.0 * r * r + 9.0 / 25.0 * r - 9.0 / 125.0);
         funct(4) = 3125.0 / 384.0 *
-                   (pow(r, 5) + 1.0 / 5.0 * pow(r, 4) - 34.0 / 25.0 * pow(r, 3) -
+                   (CORE::MathOperations<NumberType>::pow(r, 5) +
+                       1.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
+                       34.0 / 25.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
                        34.0 / 125.0 * r * r + 9.0 / 25.0 * r + 9.0 / 125.0);
         funct(5) = -3125.0 / 768.0 *
-                   (pow(r, 5) + 3.0 / 5.0 * pow(r, 4) - 26.0 / 25.0 * pow(r, 3) -
+                   (CORE::MathOperations<NumberType>::pow(r, 5) +
+                       3.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
+                       26.0 / 25.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
                        78.0 / 125.0 * r * r + 1.0 / 25.0 * r + 3.0 / 125.0);
         break;
         /*
@@ -2685,11 +2696,15 @@ namespace CORE::FE
       }
       case CORE::FE::CellType::line5:
       {
-        deriv1(dr, 0) = (1.0 / 6.0) - (1.0 / 3.0) * r - 2.0 * r * r + (8.0 / 3.0) * pow(r, 3);
-        deriv1(dr, 1) = -(1.0 / 6.0) - (1.0 / 3.0) * r + 2.0 * r * r + (8.0 / 3.0) * pow(r, 3);
-        deriv1(dr, 2) = -(4.0 / 3.0) + (16.0 / 3.0) * r + 4.0 * r * r - (32.0 / 3.0) * pow(r, 3);
-        deriv1(dr, 3) = -10.0 * r + 16.0 * pow(r, 3);
-        deriv1(dr, 4) = (4.0 / 3.0) + (16.0 / 3.0) * r - 4.0 * r * r - (32.0 / 3.0) * pow(r, 3);
+        deriv1(dr, 0) = (1.0 / 6.0) - (1.0 / 3.0) * r - 2.0 * r * r +
+                        (8.0 / 3.0) * CORE::MathOperations<NumberType>::pow(r, 3);
+        deriv1(dr, 1) = -(1.0 / 6.0) - (1.0 / 3.0) * r + 2.0 * r * r +
+                        (8.0 / 3.0) * CORE::MathOperations<NumberType>::pow(r, 3);
+        deriv1(dr, 2) = -(4.0 / 3.0) + (16.0 / 3.0) * r + 4.0 * r * r -
+                        (32.0 / 3.0) * CORE::MathOperations<NumberType>::pow(r, 3);
+        deriv1(dr, 3) = -10.0 * r + 16.0 * CORE::MathOperations<NumberType>::pow(r, 3);
+        deriv1(dr, 4) = (4.0 / 3.0) + (16.0 / 3.0) * r - 4.0 * r * r -
+                        (32.0 / 3.0) * CORE::MathOperations<NumberType>::pow(r, 3);
         break;
         /*
          *nodegeometry    x-------x-------x-------x-------x-----> xi
@@ -2699,24 +2714,30 @@ namespace CORE::FE
       }
       case CORE::FE::CellType::line6:
       {
-        deriv1(dr, 0) =
-            -625.0 / 768.0 *
-            (5.0 * pow(r, 4) - 4.0 * pow(r, 3) - 6.0 / 5.0 * r * r + 4.0 / 5.0 * r + 9.0 / 625.0);
-        deriv1(dr, 1) =
-            625.0 / 768.0 *
-            (5.0 * pow(r, 4) + 4.0 * pow(r, 3) - 6.0 / 5.0 * r * r - 4.0 / 5.0 * r + 9.0 / 625.0);
+        deriv1(dr, 0) = -625.0 / 768.0 *
+                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
+                            4.0 * CORE::MathOperations<NumberType>::pow(r, 3) - 6.0 / 5.0 * r * r +
+                            4.0 / 5.0 * r + 9.0 / 625.0);
+        deriv1(dr, 1) = 625.0 / 768.0 *
+                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) +
+                            4.0 * CORE::MathOperations<NumberType>::pow(r, 3) - 6.0 / 5.0 * r * r -
+                            4.0 / 5.0 * r + 9.0 / 625.0);
         deriv1(dr, 2) = 3125.0 / 768.0 *
-                        (5.0 * pow(r, 4) - 12.0 / 5.0 * pow(r, 3) - 78.0 / 25.0 * r * r +
-                            156.0 / 125.0 * r + 1.0 / 25.0);
+                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
+                            12.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
+                            78.0 / 25.0 * r * r + 156.0 / 125.0 * r + 1.0 / 25.0);
         deriv1(dr, 3) = -3125.0 / 384.0 *
-                        (5.0 * pow(r, 4) - 4.0 / 5.0 * pow(r, 3) - 102.0 / 25.0 * r * r +
-                            68.0 / 125.0 * r + 9.0 / 25.0);
+                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
+                            4.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
+                            102.0 / 25.0 * r * r + 68.0 / 125.0 * r + 9.0 / 25.0);
         deriv1(dr, 4) = 3125.0 / 384.0 *
-                        (5.0 * pow(r, 4) + 4.0 / 5.0 * pow(r, 3) - 102.0 / 25.0 * r * r -
-                            68.0 / 125.0 * r + 9.0 / 25.0);
+                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) +
+                            4.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
+                            102.0 / 25.0 * r * r - 68.0 / 125.0 * r + 9.0 / 25.0);
         deriv1(dr, 5) = -3125.0 / 768.0 *
-                        (5.0 * pow(r, 4) + 12.0 / 5.0 * pow(r, 3) - 78.0 / 25.0 * r * r -
-                            156.0 / 125.0 * r + 1.0 / 25.0);
+                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) +
+                            12.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
+                            78.0 / 25.0 * r * r - 156.0 / 125.0 * r + 1.0 / 25.0);
         break;
         /*
          *nodegeometry    x-------x-------x-------x-------x-------x-----> xi

@@ -34,7 +34,7 @@ double base_func_surfX(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     basef_surf = pt(0, 0);
     return basef_surf;
   }
-  double y = pt(0, 0), y2 = pow(pt(0, 0), 2), z = pt(1, 0);
+  double y = pt(0, 0), y2 = std::pow(pt(0, 0), 2), z = pt(1, 0);
   double a0 = alfa[0], a1 = alfa[1], a2 = alfa[2];
   if (inte_num == 2)  // f(x,y,z) = x
   {
@@ -52,8 +52,8 @@ double base_func_surfX(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double a22 = pow(a2, 2), a02 = pow(a0, 2), a12 = pow(a1, 2);
-  double z2 = pow(z, 2), y3 = pow(y, 3);
+  double a22 = std::pow(a2, 2), a02 = std::pow(a0, 2), a12 = std::pow(a1, 2);
+  double z2 = std::pow(z, 2), y3 = std::pow(y, 3);
   if (inte_num == 5)  // f(x,y,z) = x^2
   {
     basef_surf = a22 * y * z2 + 2 * a0 * (a2 * y * z + 0.5 * a1 * y2) + a1 * a2 * y2 * z +
@@ -86,8 +86,8 @@ double base_func_surfX(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double a03 = pow(a0, 3), a13 = pow(a1, 3), a23 = pow(a2, 3);
-  double y4 = pow(y, 4), z3 = pow(z, 3);
+  double a03 = std::pow(a0, 3), a13 = std::pow(a1, 3), a23 = std::pow(a2, 3);
+  double y4 = std::pow(y, 4), z3 = std::pow(z, 3);
   if (inte_num == 11)  // f(x,y,z) = x^3
   {
     basef_surf = a23 * y * z3 + 3.0 * a0 * (a22 * y * z2 + a1 * a2 * y2 * z + a12 * y3 / 3.0) +
@@ -143,8 +143,8 @@ double base_func_surfX(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double a04 = pow(a0, 4), a14 = pow(a1, 4), a24 = pow(a2, 4);
-  double y5 = pow(y, 5), z4 = pow(z, 4);
+  double a04 = std::pow(a0, 4), a14 = std::pow(a1, 4), a24 = std::pow(a2, 4);
+  double y5 = std::pow(y, 5), z4 = std::pow(z, 4);
   if (inte_num == 21)  // f(x,y,z) = x^4
   {
     basef_surf =
@@ -233,8 +233,8 @@ double base_func_surfX(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double a05 = pow(a0, 5), a15 = pow(a1, 5), a25 = pow(a2, 5);
-  double y6 = pow(y, 6), z5 = pow(z, 5);
+  double a05 = std::pow(a0, 5), a15 = std::pow(a1, 5), a25 = std::pow(a2, 5);
+  double y6 = std::pow(y, 6), z5 = std::pow(z, 5);
   if (inte_num == 36)  // f(x,y,z) = x^5
   {
     basef_surf =
@@ -377,7 +377,7 @@ double base_func_surfX(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double y7 = pow(y, 7), z6 = pow(z, 6);
+  double y7 = std::pow(y, 7), z6 = std::pow(z, 6);
   if (inte_num == 57)  // f(x,y,z) = x^6
   {
     if (fabs(a1) > 0.00000001)
@@ -599,7 +599,7 @@ double base_func_surfY(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
   }
 
   double a0 = alfa[0], a1 = alfa[1], a2 = alfa[2];
-  double z = pt(0, 0), x = pt(1, 0), z2 = pow(pt(0, 0), 2);
+  double z = pt(0, 0), x = pt(1, 0), z2 = std::pow(pt(0, 0), 2);
   if (inte_num == 2)  // f(x,y,z) = x
   {
     basef_surf = x * z;
@@ -616,8 +616,8 @@ double base_func_surfY(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double a22 = pow(a2, 2), a02 = pow(a0, 2), a12 = pow(a1, 2);
-  double x2 = pow(x, 2), z3 = pow(z, 3);
+  double a22 = std::pow(a2, 2), a02 = std::pow(a0, 2), a12 = std::pow(a1, 2);
+  double x2 = std::pow(x, 2), z3 = std::pow(z, 3);
   if (inte_num == 5)  // f(x,y,z) = x^2
   {
     basef_surf = x2 * z;
@@ -650,8 +650,8 @@ double base_func_surfY(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double a03 = pow(a0, 3), a13 = pow(a1, 3), a23 = pow(a2, 3);
-  double x3 = pow(x, 3), z4 = pow(z, 4);
+  double a03 = std::pow(a0, 3), a13 = std::pow(a1, 3), a23 = std::pow(a2, 3);
+  double x3 = std::pow(x, 3), z4 = std::pow(z, 4);
   if (inte_num == 11)  // f(x,y,z) = x^3
   {
     basef_surf = x3 * z;
@@ -707,8 +707,8 @@ double base_func_surfY(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double a04 = pow(a0, 4), a14 = pow(a1, 4), a24 = pow(a2, 4);
-  double x4 = pow(x, 4), z5 = pow(z, 5);
+  double a04 = std::pow(a0, 4), a14 = std::pow(a1, 4), a24 = std::pow(a2, 4);
+  double x4 = std::pow(x, 4), z5 = std::pow(z, 5);
   if (inte_num == 21)  // f(x,y,z) = x^4
   {
     basef_surf = x4 * z;
@@ -798,8 +798,8 @@ double base_func_surfY(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double a05 = pow(a0, 5), a15 = pow(a1, 5), a25 = pow(a2, 5);
-  double x5 = pow(x, 5), z6 = pow(z, 6);
+  double a05 = std::pow(a0, 5), a15 = std::pow(a1, 5), a25 = std::pow(a2, 5);
+  double x5 = std::pow(x, 5), z6 = std::pow(z, 6);
   if (inte_num == 36)  // f(x,y,z) = x^5
   {
     basef_surf = x5 * z;
@@ -943,7 +943,7 @@ double base_func_surfY(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double x6 = pow(x, 6), z7 = pow(z, 7);
+  double x6 = std::pow(x, 6), z7 = std::pow(z, 7);
   if (inte_num == 57)  // f(x,y,z) = x^6
   {
     basef_surf = x6 * z;
@@ -1167,7 +1167,7 @@ double base_func_surfZ(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
   }
 
   double a0 = alfa[0], a1 = alfa[1], a2 = alfa[2];
-  double x = pt(0, 0), y = pt(1, 0), x2 = pow(pt(0, 0), 2);
+  double x = pt(0, 0), y = pt(1, 0), x2 = std::pow(pt(0, 0), 2);
   if (inte_num == 2)  // f(x,y,z) = x
   {
     basef_surf = 0.5 * x * x;
@@ -1184,8 +1184,8 @@ double base_func_surfZ(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double a22 = pow(a2, 2), a02 = pow(a0, 2), a12 = pow(a1, 2);
-  double x3 = pow(x, 3), y2 = pow(y, 2);
+  double a22 = std::pow(a2, 2), a02 = std::pow(a0, 2), a12 = std::pow(a1, 2);
+  double x3 = std::pow(x, 3), y2 = std::pow(y, 2);
   if (inte_num == 5)  // f(x,y,z) = x^2
   {
     basef_surf = x3 / 3.0;
@@ -1218,8 +1218,8 @@ double base_func_surfZ(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double x4 = pow(x, 4), y3 = pow(y, 3);
-  double a03 = pow(a0, 3), a13 = pow(a1, 3), a23 = pow(a2, 3);
+  double x4 = std::pow(x, 4), y3 = std::pow(y, 3);
+  double a03 = std::pow(a0, 3), a13 = std::pow(a1, 3), a23 = std::pow(a2, 3);
   if (inte_num == 11)  // f(x,y,z) = x^3
   {
     basef_surf = 0.25 * x4;
@@ -1275,8 +1275,8 @@ double base_func_surfZ(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double x5 = pow(x, 5), y4 = pow(y, 4);
-  double a04 = pow(a0, 4), a14 = pow(a1, 4), a24 = pow(a2, 4);
+  double x5 = std::pow(x, 5), y4 = std::pow(y, 4);
+  double a04 = std::pow(a0, 4), a14 = std::pow(a1, 4), a24 = std::pow(a2, 4);
   if (inte_num == 21)  // f(x,y,z) = x^4
   {
     basef_surf = 0.2 * x5;
@@ -1365,8 +1365,8 @@ double base_func_surfZ(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double x6 = pow(x, 6), y5 = pow(y, 5);
-  double a05 = pow(a0, 5), a15 = pow(a1, 5), a25 = pow(a2, 5);
+  double x6 = std::pow(x, 6), y5 = std::pow(y, 5);
+  double a05 = std::pow(a0, 5), a15 = std::pow(a1, 5), a25 = std::pow(a2, 5);
   if (inte_num == 36)  // f(x,y,z) = x^5
   {
     basef_surf = x6 / 6.0;
@@ -1509,7 +1509,7 @@ double base_func_surfZ(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  double x7 = pow(x, 7), y6 = pow(y, 6);
+  double x7 = std::pow(x, 7), y6 = std::pow(y, 6);
   if (inte_num == 57)  // f(x,y,z) = x^6
   {
     basef_surf = x7 / 7.0;

@@ -276,14 +276,14 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
 
 #ifdef CLN_CALC_OUTSIDE_KERNEL_POINT
 
-    CORE::LINALG::Matrix<3, 1, ClnWrapper> _cln;
-    int prec_old = ClnWrapper::precision_;
-    ClnWrapper::precision_ = 50;
-    int prec = ClnWrapper::GetPrecision();
+    CORE::LINALG::Matrix<3, 1, CORE::CLN::ClnWrapper> _cln;
+    int prec_old = CORE::CLN::ClnWrapper::precision_;
+    CORE::CLN::ClnWrapper::precision_ = 50;
+    int prec = CORE::CLN::ClnWrapper::GetPrecision();
     ConvDoulbeCLN(x, x_cln., prec);
 
-    CORE::LINALG::Matrix<3, 1, ClnWrapper> x1_cln;
-    CORE::LINALG::Matrix<3, 1, ClnWrapper> x2_cln;
+    CORE::LINALG::Matrix<3, 1, CORE::CLN::ClnWrapper> x1_cln;
+    CORE::LINALG::Matrix<3, 1, CORE::CLN::ClnWrapper> x2_cln;
 
     ConvDoulbeCLN(x1, x1_cln., prec);
     ConvDoulbeCLN(x2, x2_cln., prec);
@@ -291,16 +291,17 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
     x_cln.Update(-1.0, x1_cln, 1.0);
     x2_cln.Update(-1.0, x1_cln, 1.0);
 
-    ClnWrapper l1_cln = x_cln.Norm2();
-    ClnWrapper l2_cln = x2_cln.Norm2();
+    CORE::CLN::ClnWrapper l1_cln = x_cln.Norm2();
+    CORE::CLN::ClnWrapper l2_cln = x2_cln.Norm2();
 
-    if (cln::fabs(l2_cln) < (p1->Tolerance() + p2->Tolerance()))
+    if (CORE::MathOperations<CORE::CLN::ClnWrapper>::abs(l2_cln) <
+        (p1->Tolerance() + p2->Tolerance()))
     {
       dserror("edge with no length");
     }
 
 
-    ClnWrapper z_cln = l1_cln / l2_cln;
+    CORE::CLN::ClnWrapper z_cln = l1_cln / l2_cln;
 
     x_cln.Update(-z_cln, x2_cln, 1.0);
 
@@ -315,9 +316,9 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
       dserror(str.str());
     }
     // transformation to the parameter space coordinate t of the edge (between -1 and 1)
-    ClnWrapper t_cln = 2.0 * z_cln - 1.0;
-    double t = cln::double_approx(t_cln);
-    ClnWrapper::precision_ = prec_old;  // restoring previous cln precision
+    CORE::CLN::ClnWrapper t_cln = 2.0 * z_cln - 1.0;
+    double t = CORE::MathOperations<CORE::CLN::ClnWrapper>::GetDouble(t_cln);
+    CORE::CLN::ClnWrapper::precision_ = prec_old;  // restoring previous cln precision
 
 #else
     x.Update(-1, x1, 1);

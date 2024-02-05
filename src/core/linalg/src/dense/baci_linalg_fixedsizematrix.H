@@ -13,6 +13,7 @@
 
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_exceptions.H"
+#include "baci_utils_mathoperations.H"
 
 #include <Teuchos_BLAS.hpp>
 #include <Teuchos_LAPACK.hpp>
@@ -2747,18 +2748,18 @@ namespace CORE::LINALG
         ++mat;
         result += (*mat) * (*mat);
       }
-      return std::sqrt(result);
+      return CORE::MathOperations<value_type>::sqrt(result);
     }
 
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type normInf(const value_type* mat)
     {
-      value_type result = std::abs(*mat);
+      value_type result = CORE::MathOperations<value_type>::abs(*mat);
       value_type tmp;
       for (unsigned int c = 1; c < i * j; ++c)
       {
         ++mat;
-        tmp = std::abs(*mat);
+        tmp = CORE::MathOperations<value_type>::abs(*mat);
         result = std::max(result, tmp);
       }
       return result;

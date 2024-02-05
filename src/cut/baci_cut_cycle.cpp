@@ -13,53 +13,7 @@
 #include "baci_cut_edge.H"
 #include "baci_cut_output.H"
 
-std::ostream& operator<<(std::ostream& stream, const BACI::CORE::GEO::CUT::Cycle& cycle)
-{
-  std::copy(cycle.points_.begin(), cycle.points_.end(),
-      std::ostream_iterator<BACI::CORE::GEO::CUT::Point*>(stream, " "));
-  return stream << "\n";
-}
-
 BACI_NAMESPACE_OPEN
-
-bool CORE::GEO::CUT::Cycle::MakeCycle(const point_line_set& lines, Cycle& cycle)
-{
-  cycle.clear();
-  std::vector<Point*> frompoints;
-  std::vector<Point*> topoints;
-  frompoints.reserve(lines.size());
-  topoints.reserve(lines.size());
-  for (point_line_set::const_iterator i = lines.begin(); i != lines.end(); ++i)
-  {
-    frompoints.push_back(i->first);
-    topoints.push_back(i->second);
-  }
-
-  cycle.reserve(lines.size());
-
-  std::vector<int> done(lines.size(), false);
-
-  unsigned pos = 0;
-  while (not done[pos])
-  {
-    cycle.push_back(frompoints[pos]);
-    done[pos] = true;
-    std::vector<Point*>::iterator i =
-        std::find(frompoints.begin(), frompoints.end(), topoints[pos]);
-    if (i == frompoints.end())
-    {
-      dserror("no cycle: \"to point\" not in \"from list\"");
-    }
-    pos = std::distance(frompoints.begin(), i);
-  }
-
-  if (cycle.size() != lines.size())
-  {
-    cycle.clear();
-    return false;
-  }
-  return true;
-}
 
 bool CORE::GEO::CUT::Cycle::IsValid() const
 {
@@ -137,28 +91,6 @@ void CORE::GEO::CUT::Cycle::CommonEdges(plain_edge_set& edges) const
   else
   {
     edges.clear();
-  }
-}
-
-void CORE::GEO::CUT::Cycle::CommonSides(plain_side_set& sides) const
-{
-  std::vector<Point*>::const_iterator i = points_.begin();
-  if (i != points_.end())
-  {
-    sides = (*i)->CutSides();
-    for (++i; i != points_.end(); ++i)
-    {
-      Point* p = *i;
-      p->Intersection(sides);
-      if (sides.size() == 0)
-      {
-        break;
-      }
-    }
-  }
-  else
-  {
-    sides.clear();
   }
 }
 

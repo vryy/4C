@@ -13,10 +13,10 @@
 
 #include "baci_config.H"
 
-#include "baci_cut_clnwrapper.H"
 #include "baci_cut_tolerance.H"
 #include "baci_cut_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_utils_clnwrapper.H"
 
 #include <Teuchos_RCP.hpp>
 

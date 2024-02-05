@@ -613,7 +613,7 @@ namespace CORE::FE
 
   //! compute covariant metric tensor for surface/line element and optionally, the normalized
   //! normal vector at the Gauss-point (template)
-  template <CORE::FE::CellType DISTYPE, int probdim, typename valueType = double>
+  template <CORE::FE::CellType DISTYPE, int probdim, typename valueType>
   void ComputeMetricTensorForBoundaryEle(
       const CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<DISTYPE>, valueType>& xyze,
       const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::num_nodes<DISTYPE>, valueType>&
@@ -688,13 +688,10 @@ namespace CORE::FE
     */
     sqrtdetg = metrictensor.Determinant();
     if (sqrtdetg > 0.0)
-      sqrtdetg = std::sqrt(sqrtdetg);
+      sqrtdetg = CORE::MathOperations<valueType>::sqrt(sqrtdetg);
     else if (throw_error)
     {
-      dserror(
-          "--- ERROR DETECTED ---\n The determinant of the matrix is equal zero or negative!"
-          "(det( matrix ) = %lf)",
-          static_cast<double>(sqrtdetg));
+      dserror("--- ERROR DETECTED ---\n The determinant of the matrix is equal zero or negative!");
     }
 
     // Calculate outward pointing normal vector
@@ -715,7 +712,8 @@ namespace CORE::FE
       {
         // handle small normal vectors with dxyzdrs(0,0), dxyzdrs(0,1) < 1e-6
         // and other components = 0.0
-        if (std::abs(dxyzdrs(0, 0)) < 1.0e-6 and std::abs(dxyzdrs(0, 1)) < 1.0e-6 and
+        if (CORE::MathOperations<valueType>::abs(dxyzdrs(0, 0)) < 1.0e-6 and
+            CORE::MathOperations<valueType>::abs(dxyzdrs(0, 1)) < 1.0e-6 and
             (dxyzdrs(0, 2) != 0.0 or dxyzdrs(0, 1) != 0.0))
         {
           (*normalvec)(0) = 0.0;
@@ -738,8 +736,7 @@ namespace CORE::FE
         const valueType norm2 = normalvec->Norm2();
         if (norm2 < 0.0)
         {
-          dserror("The L2-norm of the normal vector is smaller than 0.0! ( norm2 = %e )",
-              static_cast<double>(norm2));
+          dserror("The L2-norm of the normal vector is smaller than 0.0!");
         }
         normalvec->Scale(1.0 / norm2);
       }
