@@ -202,11 +202,40 @@ std::vector<int> CORE::FE::getNumberOfFaceElementCornerNodes(const CORE::FE::Cel
       break;
     }
     case CORE::FE::CellType::hex8:
+    case CORE::FE::CellType::hex16:
+    case CORE::FE::CellType::hex18:
     case CORE::FE::CellType::hex20:
     case CORE::FE::CellType::hex27:
+    case CORE::FE::CellType::nurbs8:
+    case CORE::FE::CellType::nurbs27:
     {
       const int nFace = 6;
       const int nCornerNode = 4;
+      for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nCornerNode);
+      break;
+    }
+    case CORE::FE::CellType::wedge6:
+    case CORE::FE::CellType::wedge15:
+    {
+      // First we have 3 faces with 4 corner nodes each
+      int nFace = 3;
+      int nCornerNode = 4;
+      for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nCornerNode);
+      // then there are 2 faces with 3 corner nodes each
+      nFace = 2;
+      nCornerNode = 3;
+      for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nCornerNode);
+      break;
+    }
+    case CORE::FE::CellType::pyramid5:
+    {
+      // First we have 1 face with 4 corner nodes each
+      int nFace = 1;
+      int nCornerNode = 4;
+      for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nCornerNode);
+      // then there are 4 faces with 3 corner nodes each
+      nFace = 4;
+      nCornerNode = 3;
       for (int i = 0; i < nFace; i++) faceNodeMap.push_back(nCornerNode);
       break;
     }
@@ -223,7 +252,7 @@ std::vector<int> CORE::FE::getNumberOfFaceElementInternalNodes(const CORE::FE::C
   std::vector<int> faceNodeMap;
   switch (distype)
   {
-    // For 1D elements the faces are the veritices of the element
+    // For 1D elements the faces are the vertices of the element
     case CORE::FE::CellType::line2:
     case CORE::FE::CellType::line3:
     case CORE::FE::CellType::line4:
@@ -800,6 +829,19 @@ std::vector<std::vector<int>> CORE::FE::getEleNodeNumberingLines(const CORE::FE:
       }
       break;
     }
+    case CORE::FE::CellType::nurbs8:
+    {
+      const int nLine = 12;
+      const int nNode = 2;
+      std::vector<int> submap(nNode, -1);
+
+      for (int i = 0; i < nLine; i++)
+      {
+        map.push_back(submap);
+        for (int j = 0; j < nNode; j++) map[i][j] = eleNodeNumbering_nurbs8_lines[i][j];
+      }
+      break;
+    }
     case CORE::FE::CellType::nurbs27:
     {
       const int nLine = 12;
@@ -915,6 +957,27 @@ std::vector<std::vector<int>> CORE::FE::getEleNodeNumberingLines(const CORE::FE:
       {
         map.push_back(submap);
         for (int j = 0; j < nNode; j++) map[i][j] = eleNodeNumbering_nurbs4_lines[i][j];
+      }
+      break;
+    }
+    case CORE::FE::CellType::quad6:
+    {
+      const int nLine_lin = 2;
+      const int nNode_lin = 2;
+      const int nLine_quad = 2;
+      const int nNode_quad = 3;
+      std::vector<int> submap_lin(nNode_lin);
+      std::vector<int> submap_quad(nNode_quad);
+      for (int i = 0; i < nLine_lin; i++)
+      {
+        for (int j = 0; j < nNode_lin; j++) submap_lin[j] = eleNodeNumbering_quad6_lines_lin[i][j];
+        map.push_back(submap_lin);
+      }
+      for (int i = 0; i < nLine_quad; i++)
+      {
+        for (int j = 0; j < nNode_quad; j++)
+          submap_quad[j] = eleNodeNumbering_quad6_lines_quad[i][j];
+        map.push_back(submap_quad);
       }
       break;
     }
@@ -1069,6 +1132,24 @@ CORE::LINALG::SerialDenseMatrix CORE::FE::getEleNodeNumbering_nodes_paramspace(
       }
       break;
     }
+    case CORE::FE::CellType::nurbs4:
+    {
+      for (int inode = 0; inode < nNode; inode++)
+      {
+        for (int isd = 0; isd < dim; isd++)
+          map(isd, inode) = eleNodeNumbering_nurbs4_nodes_reference[inode][isd];
+      }
+      break;
+    }
+    case CORE::FE::CellType::quad6:
+    {
+      for (int inode = 0; inode < nNode; inode++)
+      {
+        for (int isd = 0; isd < dim; isd++)
+          map(isd, inode) = eleNodeNumbering_quad6_nodes_reference[inode][isd];
+      }
+      break;
+    }
     case CORE::FE::CellType::tri3:
     case CORE::FE::CellType::tri6:
     {
@@ -1090,6 +1171,54 @@ CORE::LINALG::SerialDenseMatrix CORE::FE::getEleNodeNumbering_nodes_paramspace(
       }
       break;
     }
+    case CORE::FE::CellType::nurbs8:
+    {
+      for (int inode = 0; inode < nNode; inode++)
+      {
+        for (int isd = 0; isd < dim; isd++)
+          map(isd, inode) = eleNodeNumbering_nurbs8_nodes_reference[inode][isd];
+      }
+      break;
+    }
+    case CORE::FE::CellType::nurbs27:
+    {
+      for (int inode = 0; inode < nNode; inode++)
+      {
+        for (int isd = 0; isd < dim; isd++)
+          map(isd, inode) = eleNodeNumbering_nurbs27_nodes_reference[inode][isd];
+      }
+      break;
+    }
+    case CORE::FE::CellType::hex16:
+    {
+      for (int inode = 0; inode < nNode; inode++)
+      {
+        for (int isd = 0; isd < dim; isd++)
+          map(isd, inode) = eleNodeNumbering_hex16_nodes_reference[inode][isd];
+      }
+      break;
+    }
+    case CORE::FE::CellType::hex18:
+    {
+      for (int inode = 0; inode < nNode; inode++)
+      {
+        for (int isd = 0; isd < dim; isd++)
+          map(isd, inode) = eleNodeNumbering_hex18_nodes_reference[inode][isd];
+      }
+      break;
+    }
+    case CORE::FE::CellType::wedge6:
+    case CORE::FE::CellType::wedge15:
+    {
+      for (int inode = 0; inode < nNode; inode++)
+      {
+        for (int isd = 0; isd < dim; isd++)
+        {
+          map(isd, inode) = eleNodeNumbering_wedge18_nodes_reference[inode][isd];
+        }
+      }
+      break;
+    }
     case CORE::FE::CellType::tet4:
     case CORE::FE::CellType::tet10:
     {
@@ -1097,6 +1226,15 @@ CORE::LINALG::SerialDenseMatrix CORE::FE::getEleNodeNumbering_nodes_paramspace(
       {
         for (int isd = 0; isd < dim; isd++)
           map(isd, inode) = eleNodeNumbering_tet10_nodes_reference[inode][isd];
+      }
+      break;
+    }
+    case CORE::FE::CellType::pyramid5:
+    {
+      for (int inode = 0; inode < nNode; inode++)
+      {
+        for (int isd = 0; isd < dim; isd++)
+          map(isd, inode) = eleNodeNumbering_pyramid5_nodes_reference[inode][isd];
       }
       break;
     }

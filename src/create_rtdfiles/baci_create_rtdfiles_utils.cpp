@@ -18,6 +18,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+#include <unistd.h>
 
 BACI_NAMESPACE_OPEN
 
@@ -205,25 +206,54 @@ namespace RTD
     WriteLinktarget(stream, "celltypes");
     WriteHeader(stream, 1, "Cell types");
 
-    for (auto celltype : CORE::FE::celltype_array<CORE::FE::all_physical_celltypes>)
+    // We run the loop over the cell types four times to sort the cell types after their dimension
+    for (unsigned outputdim = 0; outputdim < 4; ++outputdim)
     {
-      std::string celltypename = CORE::FE::CellTypeToString(celltype);
-      std::string celltypelinkname = boost::algorithm::to_lower_copy(celltypename);
-      WriteLinktarget(stream, celltypelinkname);
-      WriteHeader(stream, 2, celltypename);
+      WriteLinktarget(stream, boost::str(boost::format("%1dD_cell_types") % outputdim));
+      WriteHeader(stream, 2, boost::str(boost::format("%1dD cell types") % outputdim));
 
-      std::stringstream celltypeinfostream;
-      celltypeinfostream << "- Nodes: " << CORE::FE::getNumberOfElementNodes(celltype) << std::endl;
-      celltypeinfostream << "- Dimension: " << CORE::FE::getDimension(celltype) << std::endl;
-      if (CORE::FE::getOrder(celltype, -1) >= 0)
+      for (auto celltype : CORE::FE::celltype_array<CORE::FE::all_physical_celltypes>)
       {
-        celltypeinfostream << "- Shape function order (element): " << CORE::FE::getDegree(celltype)
+        std::string celltypename = CORE::FE::CellTypeToString(celltype);
+        // Skip the cell type if it has not the desired dimension
+        const unsigned celldimension = CORE::FE::getDimension(celltype);
+        if (celldimension != outputdim) continue;
+
+        std::string celltypelinkname = boost::algorithm::to_lower_copy(celltypename);
+        WriteLinktarget(stream, celltypelinkname);
+        WriteHeader(stream, 3, celltypename);
+
+        std::stringstream celltypeinfostream;
+        celltypeinfostream << "- Nodes: " << CORE::FE::getNumberOfElementNodes(celltype)
                            << std::endl;
-        celltypeinfostream << "- Shape function order (edges): " << CORE::FE::getOrder(celltype)
-                           << std::endl;
+        celltypeinfostream << "- Dimension: " << celldimension << std::endl;
+        if (CORE::FE::getOrder(celltype, -1) >= 0)
+        {
+          celltypeinfostream << "- Shape function order (element): "
+                             << CORE::FE::getDegree(celltype) << std::endl;
+          celltypeinfostream << "- Shape function order (edges): " << CORE::FE::getOrder(celltype)
+                             << std::endl;
+        }
+        std::string celltypeinformation = celltypeinfostream.str();
+        WriteParagraph(stream, celltypeinformation);
+
+        if (celldimension >= 2)
+        {
+          const std::string figurename("reference_images/" + celltypename + ".png");
+          std::string captionstring = "**" + celltypename + ":** ";
+          if (celldimension == 2)
+            captionstring += "Line and node numbering";
+          else
+            captionstring += "Left: Line and node numbering, right: Face numbering";
+          std::string figureincludestring = ".. figure:: " + figurename + "\n";
+          figureincludestring += "    :alt: Figure not available for " + celltypename + "\n";
+          figureincludestring += "    :width: ";
+          figureincludestring += (outputdim == 3) ? "100%" : "50%";
+          figureincludestring += "\n\n";
+          figureincludestring += "    " + captionstring;
+          WriteParagraph(stream, figureincludestring);
+        }
       }
-      std::string celltypeinformation = celltypeinfostream.str();
-      WriteParagraph(stream, celltypeinformation);
     }
   }
 
@@ -389,7 +419,7 @@ namespace RTD
             if (values != Teuchos::null)
             {
               stream << "   **Possible values:**\n\n";
-              for (const auto val : *values) stream << "   - " << val << "\n";
+              for (auto val : *values) stream << "   - " << val << "\n";
               stream << "\n";
             }
           }
@@ -685,6 +715,119 @@ namespace RTD
       WriteCode(stream, functionList);
     }
   }
+  void WriteYamlCellTypeInformation(std::ostream &yamlfile)
+  {
+    for (auto celltype : CORE::FE::celltype_array<CORE::FE::all_physical_celltypes>)
+    {
+      std::string celltypename = CORE::FE::CellTypeToString(celltype);
+      std::string yamlcelltypestring = celltypename + ":\n";
+      // 0. information: dimension of the element
+      yamlcelltypestring +=
+          "  dimension: " + std::to_string(CORE::FE::getDimension(celltype)) + "\n";
+      // 1. information: nodal coordinates
+      CORE::LINALG::SerialDenseMatrix coordmap;
+      try
+      {
+        coordmap = CORE::FE::getEleNodeNumbering_nodes_paramspace(celltype);
+      }
+      catch (...)
+      {
+        std::cout << "could not read coords\n";
+        continue;
+      }
+      const unsigned num_nodes = coordmap.numCols();
+      yamlcelltypestring += "  nodes:\n";
+      for (unsigned node = 0; node < num_nodes; ++node)
+      {
+        yamlcelltypestring += "    - [";
+        for (int indx = 0; indx < coordmap.numRows(); ++indx)
+        {
+          if (indx > 0) yamlcelltypestring += ",";
+          yamlcelltypestring += boost::str(boost::format("%6.2f") % coordmap[node][indx]);
+        }
+        yamlcelltypestring += "]\n";
+      }
+      // 2. information: line vectors of internal node numbers
+      bool nodes_exist = true;
+      std::vector<std::vector<int>> linevector;
+      try
+      {
+        linevector = CORE::FE::getEleNodeNumberingLines(celltype);
+      }
+      catch (...)
+      {
+        std::cout << "could not read lines\n";
+        continue;
+      }
+      yamlcelltypestring += "  lines:\n";
+      for (auto line : linevector)
+      {
+        yamlcelltypestring += "    - [";
+        for (size_t indx = 0; indx < line.size(); ++indx)
+        {
+          if (indx > 0) yamlcelltypestring += ",";
+          yamlcelltypestring += boost::str(boost::format("%3d") % line[indx]);
+          if ((unsigned int)line[indx] >= num_nodes) nodes_exist = false;
+        }
+        yamlcelltypestring += "]\n";
+      }
+      if (not nodes_exist)
+      {
+        std::cout << "line nodes are not contained\n";
+        continue;
+      }
+      // 3. information: surface vectors of internal node numbers (for 3D elements)
+      if (CORE::FE::getDimension(celltype) == 3)
+      {
+        std::vector<std::vector<int>> surfacevector;
+        try
+        {
+          surfacevector = CORE::FE::getEleNodeNumberingSurfaces(celltype);
+        }
+        catch (...)
+        {
+          std::cout << "could not read surfaces\n";
+          continue;
+        }
+        yamlcelltypestring += "  surfaces:\n";
+        for (auto surface : surfacevector)
+        {
+          yamlcelltypestring += "    - [";
+          for (size_t indx = 0; indx < surface.size(); ++indx)
+          {
+            if (indx > 0) yamlcelltypestring += ",";
+            yamlcelltypestring += boost::str(boost::format("%3d") % surface[indx]);
+            if ((unsigned)surface[indx] >= num_nodes) nodes_exist = false;
+          }
+          yamlcelltypestring += "]\n";
+        }
+        if (not nodes_exist)
+        {
+          std::cout << "surface nodes are not contained\n";
+          continue;
+        }
+        // 4. information: vector of number of nodes for all surfaces
+        std::vector<int> surfacecorners;
+        try
+        {
+          surfacecorners = CORE::FE::getNumberOfFaceElementCornerNodes(celltype);
+        }
+        catch (...)
+        {
+          std::cout << "could not read surface corners\n";
+          continue;
+        }
+        yamlcelltypestring += "  surfacecorners: [";
+        for (size_t indx = 0; indx < surfacecorners.size(); ++indx)
+        {
+          if (indx > 0) yamlcelltypestring += ",";
+          yamlcelltypestring += boost::str(boost::format("%3d") % surfacecorners[indx]);
+        }
+        yamlcelltypestring += "]\n";
+      }
+      std::cout << "Writing information on cell type " << celltypename << " to yaml file\n";
+      yamlfile << yamlcelltypestring;
+    }
+  }
 }  // namespace RTD
-
 BACI_NAMESPACE_CLOSE

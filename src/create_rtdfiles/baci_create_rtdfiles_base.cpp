@@ -14,6 +14,7 @@
 #include "baci_create_rtdfiles_wrapper.H"
 
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 
 
@@ -39,18 +40,25 @@ int main(int argc, char *argv[])
   }
   else
   {
-    RTD::WriteReadTheDocsHeader("headerreference.rst");
+    std::string reference_path = (argc == 2) ? argv[1] : "reference_docs";
+    if (not std::filesystem::exists(reference_path))
+      std::filesystem::create_directory(reference_path);
+
+    RTD::WriteCellTypeInformation(reference_path + "/elementinformation.yaml");
+    std::cout << "Writing cell type information to yaml finished\n";
+    RTD::WriteReadTheDocsHeader(reference_path + "/headerreference.rst");
     std::cout << "Writing headerreference.rst finished\n";
-    RTD::WriteReadTheDocsCelltypes("celltypereference.rst");
+    RTD::WriteReadTheDocsCelltypes(reference_path + "/celltypereference.rst");
     std::cout << "Writing celltypes.rst finished\n";
-    RTD::WriteReadTheDocsMaterial("materialreference.rst");
+    RTD::WriteReadTheDocsMaterial(reference_path + "/materialreference.rst");
     std::cout << "Writing materialreference.rst finished\n";
-    RTD::WriteReadTheDocsCondition("conditionreference.rst");
+    RTD::WriteReadTheDocsCondition(reference_path + "/conditionreference.rst");
     std::cout << "Writing conditionreference.rst finished\n";
-    RTD::WriteReadTheDocsVarious("furtherreference.rst");
+    RTD::WriteReadTheDocsVarious(reference_path + "/furtherreference.rst");
     std::cout << "Writing furtherreference.rst finished\n";
-    const std::string contactconstitivedocumentationfilename = "contactconstitutivereference.rst";
-    const std::string elementdocumentationfilename = "elementreference.rst";
+    const std::string contactconstitivedocumentationfilename =
+        reference_path + "/contactconstitutivereference.rst";
+    const std::string elementdocumentationfilename = reference_path + "/elementreference.rst";
     /*
      * TODO: Other files can be written as readthedocs Reference files (e.g. Element Reference)
      */
