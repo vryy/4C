@@ -3134,7 +3134,8 @@ void SCATRA::MeshtyingStrategyS2I::ReadRestart(
     // initialize reader
     Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
     if (input == Teuchos::null)
-      reader = Teuchos::rcp(new IO::DiscretizationReader(scatratimint_->Discretization(), step));
+      reader = Teuchos::rcp(new IO::DiscretizationReader(
+          scatratimint_->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step));
     else
       reader =
           Teuchos::rcp(new IO::DiscretizationReader(scatratimint_->Discretization(), input, step));

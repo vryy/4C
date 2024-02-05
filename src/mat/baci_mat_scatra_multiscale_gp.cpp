@@ -527,7 +527,8 @@ void MAT::ScatraMultiScaleGP::ReadRestart()
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (inputcontrol == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(microtimint->Discretization(), step_));
+    reader = Teuchos::rcp(new IO::DiscretizationReader(
+        microtimint->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step_));
   else
     reader = Teuchos::rcp(
         new IO::DiscretizationReader(microtimint->Discretization(), inputcontrol, step_));

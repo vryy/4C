@@ -69,7 +69,7 @@ void FLD::TimIntPoro::AssembleMatAndRHS()
 
 void FLD::TimIntPoro::ReadRestart(int step)
 {
-  IO::DiscretizationReader reader(discret_, step);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   reader.ReadVector(gridv_, "gridv");
 }
 

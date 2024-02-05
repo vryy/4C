@@ -909,7 +909,8 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
   isrestarting_ = true;
 
   // create an input/output reader
-  IO::DiscretizationReader ioreader(Discretization(), stepn);
+  IO::DiscretizationReader ioreader(
+      Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), stepn);
   dataglobalstate_->GetStepN() = stepn;
   dataglobalstate_->GetStepNp() = stepn + 1;
   dataglobalstate_->GetMultiTime() =

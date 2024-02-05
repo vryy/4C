@@ -9,6 +9,7 @@
 
 #include "baci_porofluidmultiphase_timint_ost.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_porofluidmultiphase_ele_action.H"
 
@@ -26,7 +27,6 @@ POROFLUIDMULTIPHASE::TimIntOneStepTheta::TimIntOneStepTheta(
     : TimIntImpl(dis, linsolvernumber, probparams, poroparams, output),
       theta_(poroparams.get<double>("THETA"))
 {
-  return;
 }
 
 
@@ -49,8 +49,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::SetElementTimeStepParameter() cons
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
-  return;
 }
 
 
@@ -61,7 +59,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::SetTimeForNeumannEvaluation(
     Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
-  return;
 }
 
 
@@ -78,9 +75,8 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::PrintTimeStepInfo()
               << "  "
               << "One-Step-Theta (theta = " << std::setw(3) << std::setprecision(2) << theta_
               << ") STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_
-              << "            |" << std::endl;
+              << "            |" << '\n';
   }
-  return;
 }
 
 
@@ -92,8 +88,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::SetOldPartOfRighthandside()
 {
   // hist_ = phin_ + dt*(1-Theta)*phidtn_
   hist_->Update(1.0, *phin_, dt_ * (1.0 - theta_), *phidtn_, 0.0);
-
-  return;
 }
 
 
@@ -103,8 +97,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::SetOldPartOfRighthandside()
 void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ExplicitPredictor()
 {
   phinp_->Update(dt_, *phidtn_, 1.0);
-
-  return;
 }
 
 
@@ -115,7 +107,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ExplicitPredictor()
 void POROFLUIDMULTIPHASE::TimIntOneStepTheta::AddNeumannToResidual()
 {
   residual_->Update(theta_ * dt_, *neumann_loads_, 1.0);
-  return;
 }
 
 
@@ -128,8 +119,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(
   discret_->SetState("phinp_fluid", phinp_);
   discret_->SetState("phin_fluid", phin_);
   discret_->SetState("phidtnp", phidtnp_);
-
-  return;
 }
 
 
@@ -144,15 +133,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ComputeTimeDerivative()
   const double fact2 = 1.0 - (1.0 / theta_);
   phidtnp_->Update(fact2, *phidtn_, 0.0);
   phidtnp_->Update(fact1, *phinp_, -fact1, *phin_, 1.0);
-
-  // We know the first time derivative on Dirichlet boundaries
-  // so we do not need an approximation of these values!
-  // However, we do not want to break the linear relationship
-  // as stated above. We do not want to set Dirichlet values for
-  // dependent values like phidtnp_. This turned out to be inconsistent.
-  // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
-
-  return;
 }
 
 
@@ -174,8 +154,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::Update()
   // time deriv. of this step becomes most recent time derivative of
   // last step
   phidtn_->Update(1.0, *phidtnp_, 0.0);
-
-  return;
 }
 
 
@@ -187,8 +165,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::OutputRestart()
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn_fluid", phidtn_);
   output_->WriteVector("phin_fluid", phin_);
-
-  return;
 }
 
 
@@ -201,22 +177,20 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ReadRestart(const int step)
   POROFLUIDMULTIPHASE::TimIntImpl::ReadRestart(step);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
-  reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
+  reader = Teuchos::rcp(new IO::DiscretizationReader(
+      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
 
   time_ = reader->ReadDouble("time");
   step_ = reader->ReadInt("step");
 
   if (myrank_ == 0)
     std::cout << "Reading POROFLUIDMULTIPHASE restart data (time=" << time_ << " ; step=" << step_
-              << ")" << std::endl;
+              << ")" << '\n';
 
   // read state vectors that are needed for One-Step-Theta restart
   reader->ReadVector(phinp_, "phinp_fluid");
   reader->ReadVector(phin_, "phin_fluid");
   reader->ReadVector(phidtn_, "phidtn_fluid");
-
-
-  return;
 }
 
 /*--------------------------------------------------------------------*
@@ -239,8 +213,6 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::CalcInitialTimeDerivative()
   // and finally undo our temporary settings
   SetElementGeneralParameters();
   SetElementTimeStepParameter();
-
-  return;
 }
 
 BACI_NAMESPACE_CLOSE

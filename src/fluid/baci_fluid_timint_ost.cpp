@@ -13,6 +13,7 @@
 
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_utils.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
@@ -32,7 +33,6 @@ FLD::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::RCP<DRT::Discretizati
       external_loadsn_(Teuchos::null),
       external_loadsnp_(Teuchos::null)
 {
-  return;
 }
 
 
@@ -55,8 +55,6 @@ void FLD::TimIntOneStepTheta::Init()
   SetElementTimeParameter();
 
   CompleteGeneralInit();
-
-  return;
 }
 
 
@@ -70,7 +68,6 @@ void FLD::TimIntOneStepTheta::PrintTimeStepInfo()
     printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta (theta = %0.2f)   STEP = %4d/%4d \n",
         time_, maxtime_, dta_, theta_, step_, stepmax_);
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -89,9 +86,6 @@ void FLD::TimIntOneStepTheta::SetOldPartOfRighthandside()
   */
 
   hist_->Update(1.0, *veln_, dta_ * (1.0 - theta_), *accn_, 0.0);
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -104,7 +98,6 @@ void FLD::TimIntOneStepTheta::SetStateTimInt()
   {
     if (alefluid_) discret_->SetState("gridvn", gridvn_);
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -131,8 +124,6 @@ void FLD::TimIntOneStepTheta::CalculateAcceleration(const Teuchos::RCP<const Epe
   accnp->Update(fact1, *velnp, 0.0);
   accnp->Update(-fact1, *veln, 1.0);
   accnp->Update(fact2, *accn, 1.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -141,17 +132,12 @@ void FLD::TimIntOneStepTheta::CalculateAcceleration(const Teuchos::RCP<const Epe
 void FLD::TimIntOneStepTheta::SetGamma(Teuchos::ParameterList& eleparams)
 {
   eleparams.set("gamma", theta_);
-  return;
 }
 
 /*----------------------------------------------------------------------*
 | scale separation                                             bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::Sep_Multiply()
-{
-  Sep_->Multiply(false, *velnp_, *fsvelaf_);
-  return;
-}
+void FLD::TimIntOneStepTheta::Sep_Multiply() { Sep_->Multiply(false, *velnp_, *fsvelaf_); }
 
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
@@ -173,8 +159,6 @@ void FLD::TimIntOneStepTheta::OutputofFilteredVel(
   outvec->Update(1.0, *velnp_, -1.0, *row_finescaleveltmp, 0.0);
 
   fsoutvec->Update(1.0, *row_finescaleveltmp, 0.0);
-
-  return;
 }
 
 // -------------------------------------------------------------------
@@ -205,7 +189,6 @@ void FLD::TimIntOneStepTheta::SetElementTimeParameter()
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  return;
 }
 
 void FLD::TimIntOneStepTheta::SetTheta()
@@ -220,7 +203,7 @@ void FLD::TimIntOneStepTheta::SetTheta()
       {
         std::cout << "Starting algorithm for OST active. "
                   << "Performing step " << step_ << " of " << numstasteps_
-                  << " Backward Euler starting steps" << std::endl;
+                  << " Backward Euler starting steps" << '\n';
       }
       theta_ = 1.0;
     }
@@ -232,8 +215,6 @@ void FLD::TimIntOneStepTheta::SetTheta()
       startalgo_ = false;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -250,17 +231,17 @@ void FLD::TimIntOneStepTheta::ApplyExternalForces(Teuchos::RCP<Epetra_MultiVecto
   }
 
   if (external_loadsn_ == Teuchos::null)
+  {
     dserror(
         "Starting algorithm for OST missing: Increase number of start steps"
         "or perform initialization of external forces");
+  }
 
   // set external force for t_{n+1}
   external_loadsnp_->Update(1.0, *fext, 0.0);
 
   // compute interpolated external force at t_{n+\theta}
   external_loads_->Update(theta_, *external_loadsnp_, (1.0 - theta_), *external_loadsn_, 0.0);
-
-  return;
 }
 
 
@@ -276,8 +257,6 @@ void FLD::TimIntOneStepTheta::OutputExternalForces()
   {
     output_->WriteVector("fexternal_n", external_loadsn_);
   }
-
-  return;
 }
 
 
@@ -289,7 +268,7 @@ void FLD::TimIntOneStepTheta::ReadRestart(int step)
   // call base class
   FLD::FluidImplicitTimeInt::ReadRestart(step);
 
-  IO::DiscretizationReader reader(discret_, step);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   // check whether external forces were written
   const int have_fexternal = reader.ReadInt("have_fexternal");
   if (have_fexternal != -1)
@@ -303,8 +282,6 @@ void FLD::TimIntOneStepTheta::ReadRestart(int step)
         dserror("reading of external loads failed");
     }
   }
-
-  return;
 }
 
 
@@ -314,8 +291,6 @@ void FLD::TimIntOneStepTheta::ReadRestart(int step)
 void FLD::TimIntOneStepTheta::TimeUpdateExternalForces()
 {
   if (external_loadsn_ != Teuchos::null) external_loadsn_->Update(1.0, *external_loadsnp_, 0.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*|
@@ -332,7 +307,6 @@ void FLD::TimIntOneStepTheta::TreatTurbulenceModels(Teuchos::ParameterList& elep
       FLD::UTILS::ProjectGradientAndSetParam(discret_, eleparams, veln_, "velngrad", alefluid_);
     }
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*

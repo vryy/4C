@@ -296,7 +296,8 @@ void SCATRA::TimIntLomaGenAlpha::ReadRestart(const int step, Teuchos::RCP<IO::In
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
+    reader = Teuchos::rcp(new IO::DiscretizationReader(
+        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
   else
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 

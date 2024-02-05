@@ -3842,7 +3842,7 @@ void FLD::FluidImplicitTimeInt::OutputExternalForces()
  -----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 {
-  IO::DiscretizationReader reader(discret_, step);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 

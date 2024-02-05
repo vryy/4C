@@ -15,6 +15,7 @@
 #include "baci_fluid_coupling_red_models.H"
 #include "baci_fluid_meshtying.H"
 #include "baci_fluid_volumetric_surfaceFlow_condition.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_locsys.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
@@ -40,7 +41,6 @@ FLD::TimIntRedModels::TimIntRedModels(const Teuchos::RCP<DRT::Discretization>& a
       vol_flow_rates_bc_extractor_(Teuchos::null),
       strong_redD_3d_coupling_(false)
 {
-  return;
 }
 
 
@@ -128,8 +128,6 @@ void FLD::TimIntRedModels::Init()
       dserror("No problem types involving airways are supported for use with locsys conditions!");
     }
   }
-
-  return;
 }
 
 
@@ -158,8 +156,6 @@ void FLD::TimIntRedModels::DoProblemSpecificBoundaryConditions()
 
   // Evaluate the womersley velocities
   vol_surf_flow_bc_->EvaluateVelocities(velnp_, time_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -209,7 +205,6 @@ void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
   traction_vel_comp_adder_bc_->UpdateResidual(residual_);
 
   discret_->ClearState();
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -220,8 +215,6 @@ void FLD::TimIntRedModels::SetCustomEleParamsAssembleMatAndRHS(Teuchos::Paramete
   // these are the only routines that have to be called in AssembleMatAndRHS
   // before Evaluate in the RedModels case
   Update3DToReducedMatAndRHS();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -261,7 +254,6 @@ void FLD::TimIntRedModels::OutputReducedD()
       airway_imp_timeInt_->Output(true, redD_export_params);
     }
   }
-  return;
 }  // FLD::TimIntRedModels::OutputReducedD
 
 /*----------------------------------------------------------------------*
@@ -269,7 +261,7 @@ void FLD::TimIntRedModels::OutputReducedD()
  *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::ReadRestart(int step)
 {
-  IO::DiscretizationReader reader(discret_, step);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   vol_surf_flow_bc_->ReadRestart(reader);
 
@@ -287,8 +279,6 @@ void FLD::TimIntRedModels::ReadRestart(int step)
   }
 
   ReadRestartReducedD(step);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -328,7 +318,6 @@ void FLD::TimIntRedModels::SetupMeshtying()
     meshtying_->CheckOverlappingBC(vol_surf_flow_bc_maps_);
     meshtying_->DirichletOnMaster(vol_surf_flow_bc_maps_);
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -375,8 +364,6 @@ void FLD::TimIntRedModels::Output()
   }
 
   OutputReducedD();
-
-  return;
 }  // TimIntRedModels::Output
 
 /*----------------------------------------------------------------------*
@@ -393,8 +380,6 @@ void FLD::TimIntRedModels::InsertVolumetricSurfaceFlowCondVector(
   // -------------------------------------------------------------------
   vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
       vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(vel), res);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -428,8 +413,6 @@ void FLD::TimIntRedModels::AVM3Preparation()
 
   // get scale-separation matrix
   AVM3GetScaleSeparationMatrix();
-
-  return;
 }  // TimIntRedModels::AVM3Preparation
 
 /*----------------------------------------------------------------------*
@@ -442,8 +425,6 @@ void FLD::TimIntRedModels::CustomSolve(Teuchos::RCP<Epetra_Vector> relax)
 
   // apply Womersley as a Dirichlet BC
   sysmat_->ApplyDirichlet(*(vol_surf_flow_bc_maps_));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -477,8 +458,6 @@ void FLD::TimIntRedModels::PrepareTimeStep()
   }
 
   discret_->ClearState();
-
-  return;
 }
 
 
@@ -494,8 +473,6 @@ void FLD::TimIntRedModels::AssembleMatAndRHS()
     // apply the womersley bc as a dirichlet bc
     shapederivatives_->ApplyDirichlet(*(vol_surf_flow_bc_maps_), false);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -517,7 +494,6 @@ void FLD::TimIntRedModels::ApplyDirichletToSystem()
     CORE::LINALG::ApplyDirichletToSystem(
         *sysmat_, *incvel_, *residual_, *zeros_, *(vol_surf_flow_bc_maps_));
   }
-  return;
 }
 
 BACI_NAMESPACE_CLOSE

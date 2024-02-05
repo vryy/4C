@@ -11,6 +11,7 @@
 #include "baci_pasi_partitioned_twowaycoup.H"
 
 #include "baci_adapter_str_pasiwrapper.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -87,7 +88,8 @@ void PASI::PASI_PartTwoWayCoup::ReadRestart(int restartstep)
   // call base class read restart
   PASI::PartitionedAlgo::ReadRestart(restartstep);
 
-  IO::DiscretizationReader reader(structurefield_->Discretization(), restartstep);
+  IO::DiscretizationReader reader(structurefield_->Discretization(),
+      GLOBAL::Problem::Instance()->InputControlFile(), restartstep);
   if (restartstep != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
 
   // get interface force from restart
@@ -603,7 +605,8 @@ void PASI::PASI_PartTwoWayCoup_DispRelaxAitken::ReadRestart(int restartstep)
   // call base class read restart
   PASI::PASI_PartTwoWayCoup_DispRelax::ReadRestart(restartstep);
 
-  IO::DiscretizationReader reader(structurefield_->Discretization(), restartstep);
+  IO::DiscretizationReader reader(structurefield_->Discretization(),
+      GLOBAL::Problem::Instance()->InputControlFile(), restartstep);
   if (restartstep != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
 
   // get relaxation parameter from restart

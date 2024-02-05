@@ -36,7 +36,6 @@
 #include "baci_structure_new_predict_generic.H"
 #include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
 #include "baci_structure_new_timint_implicit.H"
-#include "baci_structure_new_utils.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_MultiVector.h>
@@ -394,7 +393,7 @@ bool STR::MODELEVALUATOR::Structure::PreApplyForceStiffExternal(
 {
   CheckInitSetup();
 
-  const STR::TIMINT::Implicit* impl_ptr = dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
+  const auto* impl_ptr = dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
   if (impl_ptr) return impl_ptr->Predictor().PreApplyForceExternal(fextnp);
 
   return false;
@@ -636,7 +635,7 @@ void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkStructure() co
   CheckInitSetup();
 
   // export displacement state to column format
-  const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
+  const auto& discret = dynamic_cast<const DRT::Discretization&>(Discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   CORE::LINALG::Export(*GState().GetDisN(), *disn_col);
@@ -656,7 +655,7 @@ void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkStructure() c
   CheckInitSetup();
 
   // export displacement state to column format
-  const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
+  const auto& discret = dynamic_cast<const DRT::Discretization&>(Discret());
   Teuchos::RCP<Epetra_Vector> disnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   CORE::LINALG::Export(*GState().GetDisNp(), *disnp_col);
@@ -713,7 +712,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
 
   // append stress if desired
   if (structure_vtu_output_params.OutputStressStrain() and
-      not(GInOutput().GetStressOutputType() == INPAR::STR::stress_none))
+      GInOutput().GetStressOutputType() != INPAR::STR::stress_none)
   {
     std::string name_nodal = "";
     std::string name_element = "";
@@ -740,7 +739,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
 
   // append strain if desired.
   if (structure_vtu_output_params.OutputStressStrain() and
-      not(GInOutput().GetStrainOutputType() == INPAR::STR::strain_none))
+      GInOutput().GetStrainOutputType() != INPAR::STR::strain_none)
   {
     std::string name_nodal = "";
     std::string name_element = "";
@@ -905,7 +904,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     const auto* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
 
     // Postprocess the result vectors.
-    if (not(GInOutput().GetStressOutputType() == INPAR::STR::stress_none))
+    if (GInOutput().GetStressOutputType() != INPAR::STR::stress_none)
     {
       std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> gp_stress_data =
           EvaluateGaussPointData(*EvalData().GetStressData());
@@ -927,7 +926,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
       PostprocessGaussPointDataToElementCenter(
           gp_stress_data, *EvalData().GetStressDataElementPostprocessed());
     }
-    if (not(GInOutput().GetStrainOutputType() == INPAR::STR::strain_none))
+    if (GInOutput().GetStrainOutputType() != INPAR::STR::strain_none)
     {
       std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> gp_strain_data =
           EvaluateGaussPointData(*EvalData().GetStrainData());
@@ -995,7 +994,7 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
       *GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams();
 
   // export displacement state to column format
-  const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
+  const auto& discret = dynamic_cast<const DRT::Discretization&>(Discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   CORE::LINALG::Export(*GState().GetDisN(), *disn_col);
@@ -1017,7 +1016,7 @@ void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkBeams() const
   CheckInitSetup();
 
   // export displacement state to column format
-  const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
+  const auto& discret = dynamic_cast<const DRT::Discretization&>(Discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   CORE::LINALG::Export(*GState().GetDisN(), *disn_col);
@@ -1034,7 +1033,7 @@ void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkBeams() const
   CheckInitSetup();
 
   // export displacement state to column format
-  const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
+  const auto& discret = dynamic_cast<const DRT::Discretization&>(Discret());
   Teuchos::RCP<Epetra_Vector> disnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   CORE::LINALG::Export(*GState().GetDisNp(), *disnp_col);
@@ -1142,9 +1141,11 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(Teuchos::ParameterList& p,
     Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   if (p.numParams() > 1)
+  {
     dserror(
         "Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
+  }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>(
           "interface"))
     dserror("The given parameter has the wrong type!");
@@ -1164,9 +1165,11 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternalSpecifiedElements(Teuchos::
     const Epetra_Map* ele_map_to_be_evaluated)
 {
   if (p.numParams() > 1)
+  {
     dserror(
         "Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
+  }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>(
           "interface"))
     dserror("The given parameter has the wrong type!");
@@ -1197,9 +1200,11 @@ void STR::MODELEVALUATOR::Structure::EvaluateNeumann(Teuchos::ParameterList& p,
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat)
 {
   if (p.numParams() > 1)
+  {
     dserror(
         "Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
+  }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>(
           "interface"))
     dserror("The given parameter has the wrong type!");
@@ -1598,7 +1603,7 @@ bool STR::MODELEVALUATOR::Structure::DetermineElementVolumes(
   Teuchos::RCP<const Epetra_Vector> disnp = GState().ExtractDisplEntries(x);
   Discret().SetState(0, "displacement", disnp);
 
-  DRT::Discretization& discret = dynamic_cast<DRT::Discretization&>(Discret());
+  auto& discret = dynamic_cast<DRT::Discretization&>(Discret());
 
   // start evaluation
   const Epetra_Map* relemap = Discret().ElementRowMap();

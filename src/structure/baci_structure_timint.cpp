@@ -1698,7 +1698,7 @@ void STR::TimInt::ResetStep()
 /* Read and set restart values */
 void STR::TimInt::ReadRestart(const int step)
 {
-  IO::DiscretizationReader reader(discret_, step);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   if (step != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
 
   step_ = step;
@@ -1756,7 +1756,7 @@ void STR::TimInt::SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> 
 /* Read and set restart state */
 void STR::TimInt::ReadRestartState()
 {
-  IO::DiscretizationReader reader(discret_, step_);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
 
   reader.ReadVector(disn_, "displacement");
   dis_->UpdateSteps(*disn_);
@@ -1803,7 +1803,8 @@ void STR::TimInt::ReadRestartConstraint()
 {
   if (conman_->HaveConstraint())
   {
-    IO::DiscretizationReader reader(discret_, step_);
+    IO::DiscretizationReader reader(
+        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
     double uzawatemp = reader.ReadDouble("uzawaparameter");
     consolv_->SetUzawaParameter(uzawatemp);
 
@@ -1817,7 +1818,8 @@ void STR::TimInt::ReadRestartCardiovascular0D()
 {
   if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    IO::DiscretizationReader reader(discret_, step_);
+    IO::DiscretizationReader reader(
+        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
     cardvasc0dman_->ReadRestart(reader, (*time_)[0]);
   }
 }
@@ -1828,7 +1830,8 @@ void STR::TimInt::ReadRestartSpringDashpot()
 {
   if (springman_->HaveSpringDashpot())
   {
-    IO::DiscretizationReader reader(discret_, step_);
+    IO::DiscretizationReader reader(
+        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
     springman_->ReadRestart(reader, (*time_)[0]);
   }
 }
@@ -1845,7 +1848,7 @@ void STR::TimInt::ReadRestartContactMeshtying()
   // Thus, both dis_ (current displacement state) and zero_ are handed
   // in and contact / meshtying managers choose the correct state.
   //**********************************************************************
-  IO::DiscretizationReader reader(discret_, step_);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
 
   if (HaveContactMeshtying()) cmtbridge_->ReadRestart(reader, (*dis_)(0), zeros_);
 }
@@ -1856,7 +1859,8 @@ void STR::TimInt::ReadRestartBeamContact()
 {
   if (HaveBeamContact())
   {
-    IO::DiscretizationReader reader(discret_, step_);
+    IO::DiscretizationReader reader(
+        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
     beamcman_->ReadRestart(reader);
   }
 }

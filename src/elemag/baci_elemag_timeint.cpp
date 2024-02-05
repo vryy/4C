@@ -1032,7 +1032,7 @@ void ELEMAG::ElemagTimeInt::WriteRestart()
  *----------------------------------------------------------------------*/
 void ELEMAG::ElemagTimeInt::ReadRestart(int step)
 {
-  IO::DiscretizationReader reader(discret_, step);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
   Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));

@@ -720,8 +720,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ReadRestart(int step)
   {
     Teuchos::RCP<Epetra_Vector> lambdafull =
         Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
-    IO::DiscretizationReader reader =
-        IO::DiscretizationReader(StructureField()->Discretization(), step);
+    IO::DiscretizationReader reader = IO::DiscretizationReader(
+        StructureField()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
     reader.ReadVector(lambdafull, "fsilambda");
     lambda_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
   }

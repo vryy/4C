@@ -2563,8 +2563,8 @@ void FSI::MonolithicXFEM::ReadRestart(int step)
 
   // read Lagrange multiplier (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
-  IO::DiscretizationReader reader =
-      IO::DiscretizationReader(StructurePoro()->Discretization(), step);
+  IO::DiscretizationReader reader = IO::DiscretizationReader(
+      StructurePoro()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
   for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->ReadRestart(reader);

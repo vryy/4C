@@ -11,6 +11,7 @@
 /* headers */
 #include "baci_structure_timint_gemm.H"
 
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_locsys.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -46,7 +47,6 @@ STR::TimIntGEMM::TimIntGEMM(const Teuchos::ParameterList& timeparams,
   // redistribution of elements. Only then call the setup to this class. This will call the setup to
   // all classes in the inheritance hierarchy. This way, this class may also override a method that
   // is called during Setup() in a base class.
-  return;
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -62,17 +62,14 @@ void STR::TimIntGEMM::Init(const Teuchos::ParameterList& timeparams,
   // info to user about current time integration scheme and its parametrization
   if (myrank_ == 0)
   {
-    std::cout << "with generalised energy-momentum method" << std::endl
-              << "   alpha_f = " << alphaf_ << std::endl
-              << "   alpha_m = " << alpham_ << std::endl
-              << "   xi = " << xi_ << std::endl
-              << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
-              << "   p_vel = " << MethodOrderOfAccuracyVel() << std::endl
-              << std::endl;
+    std::cout << "with generalised energy-momentum method" << '\n'
+              << "   alpha_f = " << alphaf_ << '\n'
+              << "   alpha_m = " << alpham_ << '\n'
+              << "   xi = " << xi_ << '\n'
+              << "   p_dis = " << MethodOrderOfAccuracyDis() << '\n'
+              << "   p_vel = " << MethodOrderOfAccuracyVel() << '\n'
+              << '\n';
   }
-
-  // have a nice day
-  return;
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -116,12 +113,11 @@ void STR::TimIntGEMM::Setup()
 
   // GEMM time integrator cannot handle nonlinear inertia forces
   if (HaveNonlinearMass())
+  {
     dserror(
         "Gemm time integrator cannot handle nonlinear inertia forces "
         "(flag: MASSLIN)");
-
-
-  return;
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -144,9 +140,6 @@ void STR::TimIntGEMM::PredictConstDisConsistVelAcc()
 
   // reset the residual displacement
   disi_->PutScalar(0.0);
-
-  // watch out
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -170,9 +163,6 @@ void STR::TimIntGEMM::PredictConstVelConsistAcc()
 
   // reset the residual displacement
   disi_->PutScalar(0.0);
-
-  // That's it!
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -194,9 +184,6 @@ void STR::TimIntGEMM::PredictConstAcc()
 
   // reset the residual displacement
   disi_->PutScalar(0.0);
-
-  // That's it!
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -302,9 +289,6 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
 
   // close stiffness matrix
   stiff_->Complete();
-
-  // hallelujah
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -376,8 +360,6 @@ void STR::TimIntGEMM::EvaluateForceResidual()
     fres_->Update(1.0, *fviscm_, 1.0);
   }
   fres_->Update(1.0, *finertm_, 1.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -395,9 +377,6 @@ void STR::TimIntGEMM::EvaluateMidState()
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
   accm_->Update(1. - alpham_, *accn_, alpham_, (*acc_)[0], 0.0);
-
-  // jump
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -473,9 +452,6 @@ void STR::TimIntGEMM::UpdateIterIteratively()
 
   // new end-point accelerations
   accn_->Update(1.0 / (beta_ * (*dt_)[0] * (*dt_)[0]), *disi_, 1.0);
-
-  // bye
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -517,9 +493,6 @@ void STR::TimIntGEMM::UpdateStepState()
 
   // update contact  /meshtying
   UpdateStepContactMeshtying();
-
-  // look out
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -580,8 +553,6 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid(const double time, const double
   // *********** time measurement ***********
   dtele_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -618,17 +589,14 @@ void STR::TimIntGEMM::ApplyForceInternalMid(const double time, const double dt,
   // *********** time measurement ***********
   dtele_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */
 void STR::TimIntGEMM::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_, step_);
+  IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(fext_, "fexternal");
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -636,7 +604,6 @@ void STR::TimIntGEMM::ReadRestartForce()
 void STR::TimIntGEMM::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   output->WriteVector("fexternal", fext_);
-  return;
 }
 
 BACI_NAMESPACE_CLOSE

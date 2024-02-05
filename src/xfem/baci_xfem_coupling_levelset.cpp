@@ -350,7 +350,8 @@ void XFEM::LevelSetCoupling::ReadRestart(const int step, const int lsc_idx)
   //  dserror is removed.");
 
   //-------- boundary discretization
-  IO::DiscretizationReader boundaryreader(cutter_dis_, step);
+  IO::DiscretizationReader boundaryreader(
+      cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
 

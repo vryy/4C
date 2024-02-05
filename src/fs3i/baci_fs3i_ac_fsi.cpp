@@ -180,10 +180,12 @@ void FS3I::ACFSI::ReadRestart()
     const Teuchos::ParameterList& fs3idynac = GLOBAL::Problem::Instance()->FS3IDynamicParams();
     const bool restartfrompartfsi = INPUT::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
 
+    auto input_control_file = GLOBAL::Problem::Instance()->InputControlFile();
+
     if (not restartfrompartfsi)  // standard restart
     {
-      IO::DiscretizationReader fluidreader =
-          IO::DiscretizationReader(fsi_->FluidField()->Discretization(), restart);
+      IO::DiscretizationReader fluidreader = IO::DiscretizationReader(
+          fsi_->FluidField()->Discretization(), input_control_file, restart);
       meanmanager_->ReadRestart(fluidreader);
 
       fsiisperiodic_ = (bool)fluidreader.ReadInt("fsi_periodic_flag");
@@ -196,8 +198,8 @@ void FS3I::ACFSI::ReadRestart()
         // reconstruct WallShearStress_lp_
         const int beginnperiodstep = GetStepOfBeginnOfThisPeriodAndPrepareReading(
             fsi_->FluidField()->Step(), fsi_->FluidField()->Time(), fsi_->FluidField()->Dt());
-        IO::DiscretizationReader fluidreaderbeginnperiod =
-            IO::DiscretizationReader(fsi_->FluidField()->Discretization(), beginnperiodstep);
+        IO::DiscretizationReader fluidreaderbeginnperiod = IO::DiscretizationReader(
+            fsi_->FluidField()->Discretization(), input_control_file, beginnperiodstep);
 
         // some safety check:
         Teuchos::RCP<Epetra_Vector> WallShearStress_lp_new =
@@ -228,8 +230,8 @@ void FS3I::ACFSI::ReadRestart()
           // from a partitioned FSI
     {
       // AC-FSI specific input
-      IO::DiscretizationReader reader =
-          IO::DiscretizationReader(fsi_->FluidField()->Discretization(), restart);
+      IO::DiscretizationReader reader = IO::DiscretizationReader(
+          fsi_->FluidField()->Discretization(), input_control_file, restart);
       reader.ReadVector(WallShearStress_lp_, "wss");
     }
   }
@@ -751,8 +753,8 @@ double FS3I::ACFSI::GetStepOfOnePeriodAgoAndPrepareReading(const int actstep, co
     GLOBAL::Problem::Instance()->SetInputControlFile(inputreader);
 
     // AC-FSI specific input
-    IO::DiscretizationReader reader =
-        IO::DiscretizationReader(fsi_->FluidField()->Discretization(), previousperiodstep);
+    IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),
+        GLOBAL::Problem::Instance()->InputControlFile(), previousperiodstep);
 
     double previousperiodtime = reader.ReadDouble("time");
 
@@ -793,8 +795,8 @@ double FS3I::ACFSI::GetStepOfBeginnOfThisPeriodAndPrepareReading(
     GLOBAL::Problem::Instance()->SetInputControlFile(inputreader);
 
     // AC-FSI specific input
-    IO::DiscretizationReader reader =
-        IO::DiscretizationReader(fsi_->FluidField()->Discretization(), teststep);
+    IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),
+        GLOBAL::Problem::Instance()->InputControlFile(), teststep);
 
     double testtime = reader.ReadDouble("time");
 

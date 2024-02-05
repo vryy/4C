@@ -458,7 +458,8 @@ void ADAPTER::StructureLung::ReadVolConRestart(const int step,
     Teuchos::RCP<Epetra_Vector> OldFlowRatesRed, Teuchos::RCP<Epetra_Vector> OldVolsRed,
     Teuchos::RCP<Epetra_Vector> OldLagrMultRed)
 {
-  IO::DiscretizationReader reader(Discretization(), step);
+  IO::DiscretizationReader reader(
+      Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
   if (step != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
   std::stringstream stream1;
   stream1 << "OldVols";

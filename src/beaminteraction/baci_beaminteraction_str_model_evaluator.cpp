@@ -711,6 +711,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader&
   CheckInitSetup();
 
   int const stepn = GState().GetStepN();
+  auto input_control_file = GLOBAL::Problem::Instance()->InputControlFile();
 
   // pre sub model loop
   Vector::iterator sme_iter;
@@ -718,14 +719,14 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader&
     (*sme_iter)->PreReadRestart();
 
   // read interaction discretization
-  IO::DiscretizationReader ia_reader(ia_discret_, stepn);
+  IO::DiscretizationReader ia_reader(ia_discret_, input_control_file, stepn);
   // includes FillComplete()
   ia_reader.ReadHistoryData(stepn);
 
   // rebuild bin discret correctly in case crosslinker were present
   // Fixme: do just read history data like with ia discret
   // read correct nodes
-  IO::DiscretizationReader bin_reader(bindis_, stepn);
+  IO::DiscretizationReader bin_reader(bindis_, input_control_file, stepn);
   bin_reader.ReadNodesOnly(stepn);
   bindis_->FillComplete(false, false, false);
 

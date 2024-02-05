@@ -12,10 +12,10 @@
 
 #include "baci_binstrategy.H"
 #include "baci_comm_utils_factory.H"
+#include "baci_global_data.H"
 #include "baci_inpar_particle.H"
 #include "baci_io.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
 #include "baci_particle_algorithm_utils.H"
 #include "baci_particle_engine_communication_utils.H"
 #include "baci_particle_engine_container.H"
@@ -873,7 +873,8 @@ void PARTICLEENGINE::ParticleEngine::DistanceBetweenParticles(
 std::shared_ptr<IO::DiscretizationReader> PARTICLEENGINE::ParticleEngine::BinDisReader(
     int restartstep) const
 {
-  return std::make_shared<IO::DiscretizationReader>(binstrategy_->BinDiscret(), restartstep);
+  return std::make_shared<IO::DiscretizationReader>(
+      binstrategy_->BinDiscret(), GLOBAL::Problem::Instance()->InputControlFile(), restartstep);
 }
 
 int PARTICLEENGINE::ParticleEngine::GetNumberOfParticles() const

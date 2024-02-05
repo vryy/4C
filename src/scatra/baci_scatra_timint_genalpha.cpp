@@ -12,6 +12,7 @@
 
 #include "baci_fluid_turbulence_dyn_smag.H"
 #include "baci_fluid_turbulence_dyn_vreman.H"
+#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_scatra_ele_action.H"
@@ -398,7 +399,10 @@ void SCATRA::TimIntGenAlpha::ReadRestart(const int step, Teuchos::RCP<IO::InputC
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
+  {
+    reader = Teuchos::rcp(new IO::DiscretizationReader(
+        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+  }
   else
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 
@@ -407,7 +411,7 @@ void SCATRA::TimIntGenAlpha::ReadRestart(const int step, Teuchos::RCP<IO::InputC
 
   if (myrank_ == 0)
     std::cout << "Reading ScaTra restart data (time=" << time_ << " ; step=" << step_ << ")"
-              << std::endl;
+              << '\n';
 
   // read state vectors that are needed for generalized-alpha restart
   reader->ReadVector(phinp_, "phinp");
