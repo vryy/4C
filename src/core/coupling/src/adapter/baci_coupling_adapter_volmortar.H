@@ -118,7 +118,7 @@ namespace CORE::ADAPTER
 
     //! assign materials
     void AssignMaterials(Teuchos::RCP<DRT::Discretization> dis1,
-        Teuchos::RCP<DRT::Discretization> dis2,
+        Teuchos::RCP<DRT::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
         Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
 
 

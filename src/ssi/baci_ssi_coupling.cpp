@@ -380,7 +380,8 @@ void SSI::SSICouplingNonMatchingVolume::Setup()
 void SSI::SSICouplingNonMatchingVolume::AssignMaterialPointers(
     Teuchos::RCP<DRT::Discretization> structdis, Teuchos::RCP<DRT::Discretization> scatradis)
 {
-  volcoupl_structurescatra_->AssignMaterials(structdis, scatradis);
+  volcoupl_structurescatra_->AssignMaterials(
+      structdis, scatradis, GLOBAL::Problem::Instance()->VolmortarParams());
 }
 
 /*----------------------------------------------------------------------*/

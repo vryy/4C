@@ -272,8 +272,8 @@ void POROELAST::PoroBase::ReadRestart(const int step)
       Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy =
           Teuchos::rcp(new UTILS::PoroMaterialStrategy());
 
-      volcoupl_->AssignMaterials(
-          StructureField()->Discretization(), FluidField()->Discretization(), materialstrategy);
+      volcoupl_->AssignMaterials(StructureField()->Discretization(), FluidField()->Discretization(),
+          GLOBAL::Problem::Instance()->VolmortarParams(), materialstrategy);
     }
   }
 }

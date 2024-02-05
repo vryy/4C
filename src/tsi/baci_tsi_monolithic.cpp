@@ -202,8 +202,8 @@ void TSI::Monolithic::ReadRestart(int step)
   {
     Teuchos::RCP<TSI::UTILS::TSIMaterialStrategy> strategy =
         Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy());
-    volcoupl_->AssignMaterials(
-        StructureField()->Discretization(), ThermoField()->Discretization(), strategy);
+    volcoupl_->AssignMaterials(StructureField()->Discretization(), ThermoField()->Discretization(),
+        GLOBAL::Problem::Instance()->VolmortarParams(), strategy);
   }
 
   Teuchos::ParameterList p;
