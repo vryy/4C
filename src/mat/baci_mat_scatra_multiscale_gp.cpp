@@ -425,7 +425,8 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
             GLOBAL::Problem::Instance(microdisnum_)->IOParams(), "OUTPUT_BIN"),
         adaptname));
 
-    micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(microdis));
+    micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(
+        microdis, microcontrol, microproblem->SpatialApproximationType()));
     micro_output_->SetOutput(microcontrol);
     micro_output_->WriteMesh(
         step_, DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());

@@ -447,7 +447,9 @@ void PARTICLEWALL::WallHandlerBase::CreateWallDiscretization()
       Teuchos::rcp(new DRT::Discretization("particlewalls", Teuchos::rcp(comm_.Clone())));
 
   // create wall discretization writer
-  walldiscretization_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(walldiscretization_)));
+  walldiscretization_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(walldiscretization_,
+      GLOBAL::Problem::Instance()->OutputControlFile(),
+      GLOBAL::Problem::Instance()->SpatialApproximationType())));
 }
 
 PARTICLEWALL::WallHandlerDiscretCondition::WallHandlerDiscretCondition(

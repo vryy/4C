@@ -12,7 +12,6 @@
 #include "baci_io.H"
 
 #include "baci_fluid_ele_immersed_base.H"
-#include "baci_global_data.H"
 #include "baci_io_control.H"
 #include "baci_io_legacy_table.H"
 #include "baci_lib_discret.H"
@@ -505,7 +504,9 @@ IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis)
+IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
+    Teuchos::RCP<OutputControl> output_control,
+    const CORE::FE::ShapeFunctionType shape_function_type)
     : dis_(Teuchos::rcp(dis.get(), false)),  // no ownership to break circle discretization<>writer
       step_(-1),
       time_(-1.0),
@@ -517,8 +518,8 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
       resultgroup_(-1),
       resultfile_changed_(-1),
       meshfile_changed_(-1),
-      output_(GLOBAL::Problem::Instance()->OutputControlFile()),
-      spatial_approx_(GLOBAL::Problem::Instance()->SpatialApproximationType())
+      output_(output_control),
+      spatial_approx_(shape_function_type)
 {
   if (output_ != Teuchos::null) binio_ = output_->BinIO();
   // not nice, but needed in order to let pre_exodus read fields without output control file

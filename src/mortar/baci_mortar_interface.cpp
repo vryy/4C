@@ -254,7 +254,9 @@ void MORTAR::Interface::CreateInterfaceDiscretization()
   }
 
   // Prepare discretization writer
-  idiscret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(idiscret_)));
+  idiscret_->SetWriter(Teuchos::rcp(
+      new IO::DiscretizationWriter(idiscret_, GLOBAL::Problem::Instance()->OutputControlFile(),
+          GLOBAL::Problem::Instance()->SpatialApproximationType())));
   dsassert(not idiscret_->Writer().is_null(), "Setup of discretization writer failed.");
 }
 

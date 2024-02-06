@@ -204,7 +204,11 @@ void XFEM::LevelSetCoupling::PrepareCutterOutput()
   cutter_output_ = cutter_dis_->Writer();
 
   if (cutter_output_ == Teuchos::null)
-    cutter_dis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cutter_dis_)));
+  {
+    cutter_dis_->SetWriter(Teuchos::rcp(
+        new IO::DiscretizationWriter(cutter_dis_, GLOBAL::Problem::Instance()->OutputControlFile(),
+            GLOBAL::Problem::Instance()->SpatialApproximationType())));
+  }
 
   bg_output_ = bg_dis_->Writer();
 }

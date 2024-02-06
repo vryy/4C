@@ -79,7 +79,9 @@ void FLD::TimIntRedModels::Init()
     // Check if one-dimensional artery network problem exist
     if (ART_timeInt_ != Teuchos::null)
     {
-      IO::DiscretizationWriter output_redD(ART_timeInt_->Discretization());
+      IO::DiscretizationWriter output_redD(ART_timeInt_->Discretization(),
+          GLOBAL::Problem::Instance()->OutputControlFile(),
+          GLOBAL::Problem::Instance()->SpatialApproximationType());
       discret_->ClearState();
       discret_->SetState("velaf", zeros_);
       if (alefluid_)
@@ -96,7 +98,9 @@ void FLD::TimIntRedModels::Init()
     // Check if one-dimensional artery network problem exist
     if (airway_imp_timeInt_ != Teuchos::null)
     {
-      IO::DiscretizationWriter output_redD(airway_imp_timeInt_->Discretization());
+      IO::DiscretizationWriter output_redD(airway_imp_timeInt_->Discretization(),
+          GLOBAL::Problem::Instance()->OutputControlFile(),
+          GLOBAL::Problem::Instance()->SpatialApproximationType());
       discret_->ClearState();
       discret_->SetState("velaf", zeros_);
       if (alefluid_)

@@ -69,6 +69,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
   // decide which kind of spatial representation is required
   const CORE::FE::ShapeFunctionType distype = problem.SpatialApproximationType();
+  auto output_control = problem.OutputControlFile();
 
   // the basic mesh reader. now add desired node and element readers to it!
   INPUT::MeshReader meshreader(reader, "--NODE COORDS");
@@ -103,11 +104,15 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
       if (xfluiddis != Teuchos::null)
-        xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+        xfluiddis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis, output_control, distype)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
@@ -150,11 +155,16 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
-      fluidscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluidscatradis)));
-      structscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structscatradis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
+      fluidscatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluidscatradis, output_control, distype)));
+      structscatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structscatradis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
@@ -195,10 +205,14 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
-      structaledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structaledis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
+      structaledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structaledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
@@ -216,13 +230,15 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       // fluid scatra field
       fluidscatradis = Teuchos::rcp(new DRT::Discretization("scatra1", reader.Comm()));
       // create discretization writer - in constructor set into and owned by corresponding discret
-      fluidscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluidscatradis)));
+      fluidscatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluidscatradis, output_control, distype)));
       problem.AddDis("scatra1", fluidscatradis);
 
       // structure scatra field
       structscatradis = Teuchos::rcp(new DRT::Discretization("scatra2", reader.Comm()));
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structscatradis)));
+      structscatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structscatradis, output_control, distype)));
       problem.AddDis("scatra2", structscatradis);
 
       break;
@@ -232,7 +248,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
     {
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
       problem.AddDis("structure", structdis);
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
           INPUT::IntegralValue<INPAR::GeometryType>(problem.StructuralDynamicParams(), "GEOMETRY"),
@@ -242,11 +259,13 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
               problem.XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
       {
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
-        fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+        fluiddis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
         problem.AddDis("fluid", fluiddis);
 
         xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid", reader.Comm()));
-        xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
+        xfluiddis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis, output_control, distype)));
         problem.AddDis("xfluid", xfluiddis);
 
         meshreader.AddElementReader(
@@ -255,7 +274,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       else
       {
         fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid", reader.Comm()));
-        fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+        fluiddis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
         problem.AddDis("fluid", fluiddis);
 
         meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
@@ -264,7 +284,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
       problem.AddDis("ale", aledis);
       meshreader.AddElementReader(INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
       break;
@@ -277,10 +298,14 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
+      porofluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
@@ -314,7 +339,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("ale", aledis);
 
@@ -330,7 +356,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         fluiddis = Teuchos::rcp(new DRT::DiscretizationHDG("fluid", reader.Comm()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret
-        fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+        fluiddis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
       }
       else if (distype == CORE::FE::ShapeFunctionType::nurbs)
       {
@@ -338,7 +365,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
         // create discretization writer - in constructor set ingto and owned by corresponding
         // discret
-        fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+        fluiddis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
       }
       else if (INPUT::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
@@ -346,7 +374,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         fluiddis = Teuchos::rcp(new DRT::DiscretizationXWall("fluid", reader.Comm()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret
-        fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+        fluiddis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
       }
       else
       {
@@ -354,7 +383,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret
-        fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+        fluiddis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
       }
 
       problem.AddDis("fluid", fluiddis);
@@ -371,7 +401,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       lubricationdis = Teuchos::rcp(new DRT::Discretization("lubrication", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      lubricationdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(lubricationdis)));
+      lubricationdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(lubricationdis, output_control, distype)));
 
       problem.AddDis("lubrication", lubricationdis);
 
@@ -406,8 +437,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
+      scatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
 
 
       problem.AddDis("fluid", fluiddis);
@@ -429,8 +462,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm()));
 
       // create discretization writers
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-      thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));
+      scatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
+      thermdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(thermdis, output_control, distype)));
 
       // add empty discretizations to global problem
       problem.AddDis("scatra", scatradis);
@@ -471,12 +506,15 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
       if (xfluiddis != Teuchos::null)
       {
-        xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
+        xfluiddis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis, output_control, distype)));
       }
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
 
 
       problem.AddDis("fluid", fluiddis);
@@ -516,8 +554,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      thermdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(thermdis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("thermo", thermdis);
@@ -548,7 +588,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));
+      thermdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(thermdis, output_control, distype)));
 
       problem.AddDis("thermo", thermdis);
 
@@ -574,7 +615,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
 
@@ -592,8 +634,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       pboxdis = Teuchos::rcp(new DRT::Discretization("boundingbox", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      pboxdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(pboxdis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      pboxdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(pboxdis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("boundingbox", pboxdis);
@@ -612,8 +656,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
+      scatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("scatra", scatradis);
@@ -635,9 +681,12 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
+      scatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
@@ -678,10 +727,14 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
-      scatra_micro_dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatra_micro_dis)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
+      scatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
+      scatra_micro_dis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatra_micro_dis, output_control, distype)));
 
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("scatra", scatradis);
@@ -720,8 +773,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("artery_scatra", scatradis);
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+      arterydis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(arterydis, output_control, distype)));
+      scatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       meshreader.AddElementReader(INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
@@ -734,7 +789,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      airwaydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(airwaydis)));
+      airwaydis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(airwaydis, output_control, distype)));
 
       problem.AddDis("red_airway", airwaydis);
 
@@ -750,8 +806,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("ale", aledis);
@@ -783,8 +841,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      porofluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
@@ -795,7 +855,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       if (INPUT::IntegralValue<bool>(problem.PoroMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
-        arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
+        arterydis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
         meshreader.AddElementReader(INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       }
@@ -825,9 +886,12 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      porofluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+      scatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
@@ -841,12 +905,14 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
               problem.PoroMultiPhaseScatraDynamicParams(), "ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
-        arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
+        arterydis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
         meshreader.AddElementReader(INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
 
         artscatradis = Teuchos::rcp(new DRT::Discretization("artery_scatra", reader.Comm()));
-        artscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(artscatradis)));
+        artscatradis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(artscatradis, output_control, distype)));
         problem.AddDis("artery_scatra", artscatradis);
         meshreader.AddElementReader(
             INPUT::ElementReader(artscatradis, reader, "--TRANSPORT ELEMENTS"));
@@ -873,7 +939,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
+      porofluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis, output_control, distype)));
 
       problem.AddDis("porofluid", porofluiddis);
 
@@ -882,7 +949,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       if (INPUT::IntegralValue<bool>(problem.PoroFluidMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
-        arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
+        arterydis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
         meshreader.AddElementReader(INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       }
@@ -897,10 +965,14 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      porofluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
@@ -919,8 +991,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
@@ -939,8 +1013,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
@@ -959,10 +1035,14 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      porofluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+      fluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
+      aledis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
@@ -976,13 +1056,15 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       // fluid scatra field
       fluidscatradis = Teuchos::rcp(new DRT::Discretization("scatra1", reader.Comm()));
       // create discretization writer - in constructor set into and owned by corresponding discret
-      fluidscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluidscatradis)));
+      fluidscatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(fluidscatradis, output_control, distype)));
       problem.AddDis("scatra1", fluidscatradis);
 
       // poro structure scatra field
       structscatradis = Teuchos::rcp(new DRT::Discretization("scatra2", reader.Comm()));
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structscatradis)));
+      structscatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structscatradis, output_control, distype)));
       problem.AddDis("scatra2", structscatradis);
 
       break;
@@ -995,9 +1077,12 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      porofluiddis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+      scatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
@@ -1015,8 +1100,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       lubricationdis = Teuchos::rcp(new DRT::Discretization("lubrication", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      lubricationdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(lubricationdis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      lubricationdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(lubricationdis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("lubrication", lubricationdis);
@@ -1035,8 +1122,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      scatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("scatra", scatradis);
@@ -1047,8 +1136,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       {
         auto scatra_manifold_dis =
             Teuchos::rcp(new DRT::Discretization("scatra_manifold", reader.Comm()));
-        scatra_manifold_dis->SetWriter(
-            Teuchos::rcp(new IO::DiscretizationWriter(scatra_manifold_dis)));
+        scatra_manifold_dis->SetWriter(Teuchos::rcp(
+            new IO::DiscretizationWriter(scatra_manifold_dis, output_control, distype)));
         problem.AddDis("scatra_manifold", scatra_manifold_dis);
       }
 
@@ -1058,7 +1147,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       if (problem.GetProblemType() == GLOBAL::ProblemType::ssti)
       {
         thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm()));
-        thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));
+        thermdis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(thermdis, output_control, distype)));
         problem.AddDis("thermo", thermdis);
         meshreader.AddElementReader(INPUT::ElementReader(thermdis, reader, "--TRANSPORT ELEMENTS"));
       }
@@ -1072,7 +1162,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
 
@@ -1086,7 +1177,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+      scatradis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("scatra", scatradis);
 
@@ -1104,7 +1196,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       elemagdis = Teuchos::rcp(new DRT::DiscretizationHDG("elemag", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      elemagdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(elemagdis)));
+      elemagdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(elemagdis, output_control, distype)));
 
       problem.AddDis("elemag", elemagdis);
 
@@ -1124,8 +1217,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      airwaydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(airwaydis)));
+      structdis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
+      airwaydis->SetWriter(
+          Teuchos::rcp(new IO::DiscretizationWriter(airwaydis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("red_airway", airwaydis);
@@ -1153,13 +1248,15 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         // create empty discretizations
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
         // create discretization writer - in constructor set into and owned by corresponding discret
-        arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
+        arterydis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
         meshreader.AddElementReader(INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
 
         airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm()));
         // create discretization writer - in constructor set into and owned by corresponding discret
-        airwaydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(airwaydis)));
+        airwaydis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(airwaydis, output_control, distype)));
         problem.AddDis("red_airway", airwaydis);
         meshreader.AddElementReader(
             INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
@@ -1436,7 +1533,8 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
 
         // create discretization writer - in constructor set into and owned by corresponding
         // discret
-        dis_micro->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis_micro)));
+        dis_micro->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis_micro,
+            micro_problem->OutputControlFile(), micro_problem->SpatialApproximationType())));
 
         micro_problem->AddDis(micro_dis_name, dis_micro);
 
@@ -1565,7 +1663,8 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
         Teuchos::rcp(new DRT::Discretization("structure", micro_reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
-    structdis_micro->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis_micro)));
+    structdis_micro->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis_micro,
+        micro_problem->OutputControlFile(), micro_problem->SpatialApproximationType())));
 
     micro_problem->AddDis("structure", structdis_micro);
 

@@ -456,7 +456,8 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
         CORE::REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
 
     dis->Redistribute(*rownodes, *colnodes, false, false, false);
-    dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis)));
+    dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(
+        dis, GLOBAL::Problem::Instance()->OutputControlFile(), distype)));
   }
   icomm->Barrier();
 }
@@ -697,10 +698,10 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
   if (group->GroupId() == rgroup)
   {
     dis->SetupGhosting(true, true, true);
-    dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis)));
+    dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(
+        dis, GLOBAL::Problem::Instance()->OutputControlFile(), distype)));
   }
   icomm->Barrier();
-  return;
 }
 
 BACI_NAMESPACE_CLOSE

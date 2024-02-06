@@ -183,13 +183,12 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
             newfilename, ndim, restart, macrocontrol->FileSteps(),
             INPUT::IntegralValue<int>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
 
-    micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(microdis));
+    micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(
+        microdis, microcontrol, microproblem->SpatialApproximationType()));
     micro_output_->SetOutput(microcontrol);
 
     micro_output_->WriteMesh(step_, time_);
   }
-
-  return;
 }
 
 std::string MAT::MicroMaterialGP::NewResultFilePath(const std::string& newprefix)

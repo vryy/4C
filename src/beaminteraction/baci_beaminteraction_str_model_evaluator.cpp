@@ -115,7 +115,9 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   ia_discret_ = discloner->CreateMatchingDiscretization(
       discret_ptr_, "ia_structure", true, true, false, true);
   // create discretization writer
-  ia_discret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(ia_discret_)));
+  ia_discret_->SetWriter(Teuchos::rcp(
+      new IO::DiscretizationWriter(ia_discret_, GLOBAL::Problem::Instance()->OutputControlFile(),
+          GLOBAL::Problem::Instance()->SpatialApproximationType())));
 
   // init data container
   ia_state_ptr_ = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteractionDataState());
