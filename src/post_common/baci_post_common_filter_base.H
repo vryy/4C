@@ -51,9 +51,6 @@ class PostFilterBase
   //! Writes the whole thing by invoking writer->WriteFiles()
   void WriteFiles();
 
-  //! write the whole thing for changing geometries
-  void WriteFilesChangingGeom();
-
   //! get the underlying writer object
   PostWriterBase& GetWriter()
   {

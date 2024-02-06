@@ -81,9 +81,6 @@ class EnsightWriter : public PostWriterBase
   //! write the whole thing
   void WriteFiles(PostFilterBase& filter) override;
 
-  //! write the whole thing for changing geometries
-  void WriteFilesChangingGeom(PostFilterBase& filter) override;
-
  protected:
   /*!
    \brief write all time steps of a result

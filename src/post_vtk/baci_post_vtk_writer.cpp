@@ -358,61 +358,6 @@ void PostVtkWriter::WriteFiles(PostFilterBase &filter)
 }
 
 
-
-void PostVtkWriter::WriteFilesChangingGeom(PostFilterBase &filter)
-{
-  using namespace BACI;
-
-  std::vector<int> solstep;
-  std::vector<double> soltime;
-  {
-    PostResult result = PostResult(field_);
-    result.get_result_timesandsteps(field_->name(), soltime, solstep);
-  }
-
-  unsigned int ntdigits = LIBB64::ndigits(soltime.size());
-  unsigned int npdigits = LIBB64::ndigits(field_->discretization()->Comm().NumProc());
-  std::vector<std::pair<double, std::string>> filenames;
-
-  const std::string dirname = filename_ + "-files";
-  std::filesystem::create_directories(dirname);
-
-  for (timestep_ = 0; timestep_ < (int)soltime.size(); ++timestep_)
-  {
-    filenamebase_ = field_->name() + "-" + LIBB64::int2string(timestep_, ntdigits);
-    time_ = soltime[timestep_];
-    filenames.push_back(
-        std::pair<double, std::string>(time_, filenamebase_ + this->WriterPSuffix()));
-
-    currentout_.close();
-    currentout_.open((dirname + "/" + filenamebase_ + "-" + LIBB64::int2string(myrank_, npdigits) +
-                      this->WriterSuffix())
-                         .c_str());
-
-    if (myrank_ == 0)
-    {
-      currentmasterout_.close();
-      currentmasterout_.open((dirname + "/" + filenamebase_ + this->WriterPSuffix()).c_str());
-    }
-
-    int fieldpos = field_->field_pos();
-    std::string fieldname = field_->name();
-    field_->problem()->re_read_mesh(fieldpos, fieldname, solstep[timestep_]);
-
-    WriteVtkHeader();
-
-    WriteGeo();
-
-    filter.WriteAllResults(field_);
-
-    WriteVtkFooter();
-  }
-
-  WriteVtkMasterFile(filenames, dirname);
-}
-
-
-
 void PostVtkWriter::WriteVtkMasterFile(
     const std::vector<std::pair<double, std::string>> &filenames, const std::string &dirname) const
 {
