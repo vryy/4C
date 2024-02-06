@@ -179,11 +179,11 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     }
 
     std::string damping = sdyn.get<std::string>("DAMPING");
-    if (damping != "Material")
+    if (damping != "Material" && structtimealgo != INPAR::STR::dyna_statics)
     {
       dserror(
-          "Material damping has to be used for porous media! Set DAMPING to 'Material' in the "
-          "STRUCTURAL DYNAMIC section.");
+          "Material damping has to be used for dynamic porous media simulations! Set DAMPING to "
+          "'Material' in the STRUCTURAL DYNAMIC section.");
     }
 
     // access the problem-specific parameter lists
@@ -192,8 +192,8 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     if (porosity_dof_ and physicaltype != INPAR::FLUID::poro_p1)
     {
       dserror(
-          "Poro P1 elements need a special fluid. Set 'PHYSICAL_TYPE' to 'Poro_P1' in the FLUID "
-          "DYNAMIC section!");
+          "Poro P1 elements need a special fluid. Set 'PHYSICAL_TYPE' to 'Poro_P1' in the "
+          "POROELASTICITY DYNAMIC section!");
     }
 
     auto transientfluid = INPUT::IntegralValue<INPAR::POROELAST::TransientEquationsOfPoroFluid>(

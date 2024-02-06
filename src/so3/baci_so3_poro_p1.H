@@ -272,6 +272,7 @@ namespace DRT
           CORE::LINALG::Matrix<Base::numnod_, Base::numnod_>& ecoupl_p1,
           CORE::LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>* sub_stiff);
 
+      //! Initial porosity at the nodes of the element
       Teuchos::RCP<CORE::LINALG::Matrix<Base::numnod_, 1>> init_porosity_;
 
       bool is_init_porosity_;
