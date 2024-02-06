@@ -13,7 +13,7 @@
 #include "baci_beam3_discretization_runtime_output_params.H"
 #include "baci_global_data.H"
 #include "baci_inpar_parameterlist_utils.H"
-#include "baci_structure_new_discretization_runtime_vtu_output_params.H"
+#include "baci_structure_new_discretization_runtime_output_params.H"
 #include "baci_utils_exceptions.H"
 
 BACI_NAMESPACE_OPEN
@@ -36,14 +36,14 @@ void STR::TIMINT::ParamsRuntimeOutput::Init(
   output_structure_ = (bool)INPUT::IntegralValue<int>(
       IO_vtk_structure_paramslist.sublist("STRUCTURE"), "OUTPUT_STRUCTURE");
 
-  // create and initialize parameter container object for structure specific runtime vtk output
+  // create and initialize parameter container object for structure specific runtime output
   if (output_structure_)
   {
-    params_runtime_vtu_output_structure_ =
-        Teuchos::rcp(new DRT::ELEMENTS::StructureRuntimeVtuOutputParams());
+    params_runtime_output_structure_ =
+        Teuchos::rcp(new DRT::ELEMENTS::StructureRuntimeOutputParams());
 
-    params_runtime_vtu_output_structure_->Init(IO_vtk_structure_paramslist.sublist("STRUCTURE"));
-    params_runtime_vtu_output_structure_->Setup();
+    params_runtime_output_structure_->Init(IO_vtk_structure_paramslist.sublist("STRUCTURE"));
+    params_runtime_output_structure_->Setup();
   }
 
 
@@ -51,13 +51,13 @@ void STR::TIMINT::ParamsRuntimeOutput::Init(
   output_beams_ =
       (bool)INPUT::IntegralValue<int>(IO_vtk_structure_paramslist.sublist("BEAMS"), "OUTPUT_BEAMS");
 
-  // create and initialize parameter container object for beam specific runtime vtk output
+  // create and initialize parameter container object for beam specific runtime output
   if (output_beams_)
   {
-    params_runtime_vtu_output_beams_ = Teuchos::rcp(new DRT::ELEMENTS::BeamRuntimeOutputParams());
+    params_runtime_output_beams_ = Teuchos::rcp(new DRT::ELEMENTS::BeamRuntimeOutputParams());
 
-    params_runtime_vtu_output_beams_->Init(IO_vtk_structure_paramslist.sublist("BEAMS"));
-    params_runtime_vtu_output_beams_->Setup();
+    params_runtime_output_beams_->Init(IO_vtk_structure_paramslist.sublist("BEAMS"));
+    params_runtime_output_beams_->Setup();
   }
 
 

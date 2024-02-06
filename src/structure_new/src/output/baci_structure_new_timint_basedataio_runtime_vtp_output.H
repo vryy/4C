@@ -25,14 +25,6 @@ namespace Teuchos
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT
-{
-  namespace ELEMENTS
-  {
-    class BeamRuntimeVtpOutputParams;
-  }
-}  // namespace DRT
-
 
 namespace STR
 {
@@ -52,26 +44,6 @@ namespace STR
 
       /// setup new class variables
       void Setup();
-
-      /// output interval regarding steps: write output every INTERVAL_STEPS steps
-      int OutputIntervalInSteps() const
-      {
-        CheckInitSetup();
-        return output_interval_steps_;
-      };
-
-      [[nodiscard]] int OutputStepOffset() const
-      {
-        CheckInitSetup();
-        return output_step_offset_;
-      }
-
-      /// whether to write output in every iteration of the nonlinear solver
-      bool OutputEveryIteration() const
-      {
-        CheckInitSetup();
-        return output_every_iteration_;
-      };
 
       /// whether to write owner at visualization point
       bool OutputOwner() const
@@ -111,7 +83,7 @@ namespace STR
           Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
           {
             CheckInitSetup();
-            return params_runtime_vtu_output_beams_;
+            return params_runtime_output_beams_;
           };*/
 
 
@@ -141,9 +113,6 @@ namespace STR
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
       int output_interval_steps_ = -1;
 
-      /// An offset added to the current step to shift the steps to be written
-      int output_step_offset_ = 0;
-
       /// whether to write output in every iteration of the nonlinear solver
       bool output_every_iteration_ = false;
 
@@ -162,9 +131,9 @@ namespace STR
       /*    /// whether to write displacement output
           bool output_displacement_state_;*/
 
-      /*    /// data container for input parameters related to VTU output of beams at runtime
+      /*    /// data container for input parameters related to output of beams at runtime
           Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeOutputParams>
-         params_runtime_vtu_output_beams_;*/
+         params_runtime_output_beams_;*/
 
 
       //@}

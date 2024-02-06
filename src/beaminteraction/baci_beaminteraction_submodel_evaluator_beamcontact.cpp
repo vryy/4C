@@ -167,7 +167,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
                       *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Init();
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Setup(
-          GInOutput().GetRuntimeVtkOutputParams(),
+          GInOutput().GetRuntimeOutputParams(),
           beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()
               ->GetVisualizationOutputParamsPtr());
     }
@@ -198,7 +198,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
                       *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
       beam_to_solid_surface_visualization_output_writer_ptr_->Init();
       beam_to_solid_surface_visualization_output_writer_ptr_->Setup(
-          GInOutput().GetRuntimeVtkOutputParams(),
+          GInOutput().GetRuntimeOutputParams(),
           beam_contact_params_ptr_->BeamToSolidSurfaceMeshtyingParams()
               ->GetVisualizationOutputParamsPtr());
     }

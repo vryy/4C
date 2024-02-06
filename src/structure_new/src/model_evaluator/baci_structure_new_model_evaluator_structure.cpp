@@ -29,7 +29,7 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_new_dbc.H"
-#include "baci_structure_new_discretization_runtime_vtu_output_params.H"
+#include "baci_structure_new_discretization_runtime_output_params.H"
 #include "baci_structure_new_gauss_point_data_output_manager.H"
 #include "baci_structure_new_integrator.H"
 #include "baci_structure_new_model_evaluator_data.H"
@@ -92,7 +92,7 @@ void STR::MODELEVALUATOR::Structure::Setup()
 
   // setup output writers
   {
-    if (GInOutput().GetRuntimeVtkOutputParams() != Teuchos::null)
+    if (GInOutput().GetRuntimeOutputParams() != Teuchos::null)
     {
       visualization_params_ = IO::VisualizationParametersFactory(
           GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
@@ -113,12 +113,12 @@ void STR::MODELEVALUATOR::Structure::Setup()
       discretization->Comm().MaxAll(&number_my_solid_elements, &number_global_solid_elements, 1);
       discretization->Comm().MaxAll(&number_my_beam_elements, &number_global_beam_elements, 1);
 
-      if (GInOutput().GetRuntimeVtkOutputParams()->OutputStructure() &&
+      if (GInOutput().GetRuntimeOutputParams()->OutputStructure() &&
           number_global_solid_elements > 0)
-        InitOutputRuntimeVtkStructure();
+        InitOutputRuntimeStructure();
 
-      if (GInOutput().GetRuntimeVtkOutputParams()->OutputBeams() && number_global_beam_elements > 0)
-        InitOutputRuntimeVtkBeams();
+      if (GInOutput().GetRuntimeOutputParams()->OutputBeams() && number_global_beam_elements > 0)
+        InitOutputRuntimeBeams();
     }
   }
 
@@ -590,7 +590,7 @@ Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::GetInertialForce()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructure()
+void STR::MODELEVALUATOR::Structure::InitOutputRuntimeStructure()
 {
   CheckInit();
   const auto discretization = Teuchos::rcp_dynamic_cast<const DRT::Discretization>(
@@ -598,19 +598,19 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructure()
   vtu_writer_ptr_ = Teuchos::rcp(
       new IO::DiscretizationVisualizationWriterMesh(discretization, visualization_params_));
 
-  if (GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams()->GaussPointDataOutput() !=
+  if (GInOutput().GetRuntimeOutputParams()->GetStructureParams()->GaussPointDataOutput() !=
       INPAR::STR::GaussPointDataOutputType::none)
   {
-    InitOutputRuntimeVtkStructureGaussPointData();
+    InitOutputRuntimeStructureGaussPointData();
   }
 }
 
-void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructureGaussPointData()
+void STR::MODELEVALUATOR::Structure::InitOutputRuntimeStructureGaussPointData()
 {
   // Set all parameters in the evaluation data container.
   EvalData().SetActionType(DRT::ELEMENTS::struct_init_gauss_point_data_output);
   EvalData().SetGaussPointDataOutputManagerPtr(Teuchos::rcp(new GaussPointDataOutputManager(
-      GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams()->GaussPointDataOutput())));
+      GInOutput().GetRuntimeOutputParams()->GetStructureParams()->GaussPointDataOutput())));
   EvalData().SetTotalTime(GState().GetTimeNp());
   EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
 
@@ -630,7 +630,7 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructureGaussPointData
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkStructure() const
+void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeStructure() const
 {
   CheckInitSetup();
 
@@ -645,12 +645,12 @@ void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkStructure() co
 
   auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, GState().GetTimeN(), GState().GetStepN());
-  WriteOutputRuntimeVtkStructure(disn_col, veln_col, output_step, output_time);
+  WriteOutputRuntimeStructure(disn_col, veln_col, output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkStructure() const
+void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeStructure() const
 {
   CheckInitSetup();
 
@@ -665,12 +665,12 @@ void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkStructure() c
 
   auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, GState().GetTimeN(), GState().GetStepN(), EvalData().GetNlnIter());
-  WriteOutputRuntimeVtkStructure(disnp_col, velnp_col, output_step, output_time);
+  WriteOutputRuntimeStructure(disnp_col, velnp_col, output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
+void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeStructure(
     const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
     const Teuchos::RCP<Epetra_Vector>& velocity_state_vector, int timestep_number,
     double time) const
@@ -678,8 +678,8 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   CheckInitSetup();
 
   // get the parameter container object
-  const DRT::ELEMENTS::StructureRuntimeVtuOutputParams& structure_vtu_output_params =
-      *GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams();
+  const DRT::ELEMENTS::StructureRuntimeOutputParams& structure_output_params =
+      *GInOutput().GetRuntimeOutputParams()->GetStructureParams();
 
   // reset time and time step of the writer object
   vtu_writer_ptr_->Reset();
@@ -687,31 +687,30 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   // append all desired output data to the writer object's storage
 
   // append displacement if desired
-  if (structure_vtu_output_params.OutputDisplacementState())
+  if (structure_output_params.OutputDisplacementState())
     vtu_writer_ptr_->AppendDofBasedResultDataVector(
         displacement_state_vector, 3, 0, "displacement");
 
   // append velocity if desired
-  if (structure_vtu_output_params.OutputVelocityState())
+  if (structure_output_params.OutputVelocityState())
     vtu_writer_ptr_->AppendDofBasedResultDataVector(velocity_state_vector, 3, 0, "velocity");
 
   // append element owner if desired
-  if (structure_vtu_output_params.OutputElementOwner())
+  if (structure_output_params.OutputElementOwner())
     vtu_writer_ptr_->AppendElementOwner("element_owner");
 
   // append element GIDs if desired
-  if (structure_vtu_output_params.OutputElementGID())
-    vtu_writer_ptr_->AppendElementGID("element_gid");
+  if (structure_output_params.OutputElementGID()) vtu_writer_ptr_->AppendElementGID("element_gid");
 
   // append element ghosting information if desired
-  if (structure_vtu_output_params.OutputElementGhosting())
+  if (structure_output_params.OutputElementGhosting())
     vtu_writer_ptr_->AppendElementGhostingInformation();
 
   // append node GIDs if desired
-  if (structure_vtu_output_params.OutputNodeGID()) vtu_writer_ptr_->AppendNodeGID("node_gid");
+  if (structure_output_params.OutputNodeGID()) vtu_writer_ptr_->AppendNodeGID("node_gid");
 
   // append stress if desired
-  if (structure_vtu_output_params.OutputStressStrain() and
+  if (structure_output_params.OutputStressStrain() and
       GInOutput().GetStressOutputType() != INPAR::STR::stress_none)
   {
     std::string name_nodal = "";
@@ -738,7 +737,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   }
 
   // append strain if desired.
-  if (structure_vtu_output_params.OutputStressStrain() and
+  if (structure_output_params.OutputStressStrain() and
       GInOutput().GetStrainOutputType() != INPAR::STR::strain_none)
   {
     std::string name_nodal = "";
@@ -770,8 +769,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   }
 
   // Add gauss point data if desired
-  if (structure_vtu_output_params.GaussPointDataOutput() !=
-      INPAR::STR::GaussPointDataOutputType::none)
+  if (structure_output_params.GaussPointDataOutput() != INPAR::STR::GaussPointDataOutputType::none)
   {
     const GaussPointDataOutputManager& elementDataManager =
         *EvalData().GetGaussPointDataOutputManagerPtr();
@@ -820,7 +818,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressStrain()
+void STR::MODELEVALUATOR::Structure::OutputRuntimeStructurePostprocessStressStrain()
 {
   CheckInitSetup();
 
@@ -950,12 +948,11 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
   }
 }
 
-void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructureGaussPointData()
+void STR::MODELEVALUATOR::Structure::OutputRuntimeStructureGaussPointData()
 {
-  const DRT::ELEMENTS::StructureRuntimeVtuOutputParams& structure_vtu_output_params =
-      *GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams();
-  if (structure_vtu_output_params.GaussPointDataOutput() !=
-      INPAR::STR::GaussPointDataOutputType::none)
+  const DRT::ELEMENTS::StructureRuntimeOutputParams& structure_output_params =
+      *GInOutput().GetRuntimeOutputParams()->GetStructureParams();
+  if (structure_output_params.GaussPointDataOutput() != INPAR::STR::GaussPointDataOutputType::none)
   {
     CheckInitSetup();
 
@@ -984,14 +981,14 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructureGaussPointData()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
+void STR::MODELEVALUATOR::Structure::InitOutputRuntimeBeams()
 {
-  beam_vtu_writer_ptr_ =
-      Teuchos::rcp(new BeamDiscretizationRuntimeVtuWriter(visualization_params_, DisNp().Comm()));
+  beam_vtu_writer_ptr_ = Teuchos::rcp(
+      new BeamDiscretizationRuntimeOutputWriter(visualization_params_, DisNp().Comm()));
 
   // get the parameter container object
-  const DRT::ELEMENTS::BeamRuntimeOutputParams& beam_vtu_output_params =
-      *GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams();
+  const DRT::ELEMENTS::BeamRuntimeOutputParams& beam_output_params =
+      *GInOutput().GetRuntimeOutputParams()->GetBeamParams();
 
   // export displacement state to column format
   const auto& discret = dynamic_cast<const DRT::Discretization&>(Discret());
@@ -1005,13 +1002,13 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
 
   // initialize the writer object with current displacement state
   beam_vtu_writer_ptr_->Initialize(const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(),
-      beam_vtu_output_params.UseAbsolutePositions(),
-      beam_vtu_output_params.GetNumberVisualizationSubsegments(), bounding_box_ptr);
+      beam_output_params.UseAbsolutePositions(),
+      beam_output_params.GetNumberVisualizationSubsegments(), bounding_box_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkBeams() const
+void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeBeams() const
 {
   CheckInitSetup();
 
@@ -1023,12 +1020,12 @@ void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkBeams() const
 
   auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, GState().GetTimeN(), GState().GetStepN());
-  WriteOutputRuntimeVtkBeams(disn_col, output_step, output_time);
+  WriteOutputRuntimeBeams(disn_col, output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkBeams() const
+void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeBeams() const
 {
   CheckInitSetup();
 
@@ -1040,20 +1037,20 @@ void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkBeams() const
 
   auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, GState().GetTimeN(), GState().GetStepN(), EvalData().GetNlnIter());
-  WriteOutputRuntimeVtkBeams(disnp_col, output_step, output_time);
+  WriteOutputRuntimeBeams(disnp_col, output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
+void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeBeams(
     const Teuchos::RCP<Epetra_Vector>& displacement_state_vector, int timestep_number,
     double time) const
 {
   CheckInitSetup();
 
   // get the parameter container object
-  const DRT::ELEMENTS::BeamRuntimeOutputParams& beam_vtu_output_params =
-      *GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams();
+  const DRT::ELEMENTS::BeamRuntimeOutputParams& beam_output_params =
+      *GInOutput().GetRuntimeOutputParams()->GetBeamParams();
 
   // set geometry
   beam_vtu_writer_ptr_->SetGeometryFromBeamDiscretization(displacement_state_vector);
@@ -1065,57 +1062,57 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
   beam_vtu_writer_ptr_->AppendElementCircularCrossSectionRadius();
 
   // append displacement if desired
-  if (beam_vtu_output_params.IsWriteInternalEnergyElement())
+  if (beam_output_params.IsWriteInternalEnergyElement())
     beam_vtu_writer_ptr_->AppendElementInternalEnergy();
 
   // append displacement if desired
-  if (beam_vtu_output_params.IsWriteKineticEnergyElement())
+  if (beam_output_params.IsWriteKineticEnergyElement())
     beam_vtu_writer_ptr_->AppendElementKineticEnergy();
 
   // append displacement if desired
-  if (beam_vtu_output_params.OutputDisplacementState())
+  if (beam_output_params.OutputDisplacementState())
     beam_vtu_writer_ptr_->AppendDisplacementField(displacement_state_vector);
 
   // append triads if desired
-  if (beam_vtu_output_params.IsWriteTriadVisualizationPoints())
+  if (beam_output_params.IsWriteTriadVisualizationPoints())
     beam_vtu_writer_ptr_->AppendTriadField(displacement_state_vector);
 
   // append material cross-section strain resultants if desired
-  if (beam_vtu_output_params.IsWriteMaterialStrainsGaussPoints())
+  if (beam_output_params.IsWriteMaterialStrainsGaussPoints())
     beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStrainResultants();
 
   // append material cross-section strain resultants if desired
-  if (beam_vtu_output_params.IsWriteMaterialStrainsContinuous())
+  if (beam_output_params.IsWriteMaterialStrainsContinuous())
     beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStrainResultantsContinuous();
 
   // append material cross-section stress resultants if desired
-  if (beam_vtu_output_params.IsWriteMaterialStressesGaussPoints())
+  if (beam_output_params.IsWriteMaterialStressesGaussPoints())
     beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStressResultants();
 
   // append material cross-section stress resultants if desired
-  if (beam_vtu_output_params.IsWriteMaterialStressContinuous())
+  if (beam_output_params.IsWriteMaterialStressContinuous())
     beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStressResultantsContinuous();
 
   // append filament id and type if desired
-  if (beam_vtu_output_params.IsWriteElementFilamentCondition())
+  if (beam_output_params.IsWriteElementFilamentCondition())
     beam_vtu_writer_ptr_->AppendElementFilamentIdAndType();
 
   // append filament id and type if desired
-  if (beam_vtu_output_params.IsWriteOrientationParamter())
+  if (beam_output_params.IsWriteOrientationParamter())
     beam_vtu_writer_ptr_->AppendElementOrientationParamater(displacement_state_vector);
 
   // append reference length if desired.
-  if (beam_vtu_output_params.IsWriteRefLength()) beam_vtu_writer_ptr_->AppendRefLength();
+  if (beam_output_params.IsWriteRefLength()) beam_vtu_writer_ptr_->AppendRefLength();
 
   // export displacement state to column format
-  if (beam_vtu_output_params.IsWriteRVECrosssectionForces())
+  if (beam_output_params.IsWriteRVECrosssectionForces())
     beam_vtu_writer_ptr_->AppendRVECrosssectionForces(displacement_state_vector);
 
   // export beam element IDs
-  if (beam_vtu_output_params.IsWriteElementGID()) beam_vtu_writer_ptr_->AppendElementGID();
+  if (beam_output_params.IsWriteElementGID()) beam_vtu_writer_ptr_->AppendElementGID();
 
   // Ghosting information
-  if (beam_vtu_output_params.IsWriteElementGhosting())
+  if (beam_output_params.IsWriteElementGhosting())
     beam_vtu_writer_ptr_->AppendElementGhostingInformation();
 
   // finalize everything and write all required VTU files to filesystem
@@ -1304,17 +1301,17 @@ void STR::MODELEVALUATOR::Structure::RunPostIterate(const ::NOX::Solver::Generic
   CheckInitSetup();
 
   if (vtu_writer_ptr_ != Teuchos::null and
-      GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration())
+      GInOutput().GetRuntimeOutputParams()->OutputEveryIteration())
   {
-    OutputRuntimeVtkStructurePostprocessStressStrain();
-    OutputRuntimeVtkStructureGaussPointData();
-    WriteIterationOutputRuntimeVtkStructure();
+    OutputRuntimeStructurePostprocessStressStrain();
+    OutputRuntimeStructureGaussPointData();
+    WriteIterationOutputRuntimeStructure();
   }
 
   // write special output for beams if desired
   if (beam_vtu_writer_ptr_ != Teuchos::null and
-      GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration())
-    WriteIterationOutputRuntimeVtkBeams();
+      GInOutput().GetRuntimeOutputParams()->OutputEveryIteration())
+    WriteIterationOutputRuntimeBeams();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1694,8 +1691,8 @@ void STR::MODELEVALUATOR::Structure::RuntimePreOutputStepState()
 
   if (vtu_writer_ptr_ != Teuchos::null)
   {
-    OutputRuntimeVtkStructurePostprocessStressStrain();
-    OutputRuntimeVtkStructureGaussPointData();
+    OutputRuntimeStructurePostprocessStressStrain();
+    OutputRuntimeStructureGaussPointData();
   }
 }
 
@@ -1705,10 +1702,10 @@ void STR::MODELEVALUATOR::Structure::RuntimeOutputStepState() const
 {
   CheckInitSetup();
 
-  if (vtu_writer_ptr_ != Teuchos::null) WriteTimeStepOutputRuntimeVtkStructure();
+  if (vtu_writer_ptr_ != Teuchos::null) WriteTimeStepOutputRuntimeStructure();
 
   // write special output for beams if desired
-  if (beam_vtu_writer_ptr_ != Teuchos::null) WriteTimeStepOutputRuntimeVtkBeams();
+  if (beam_vtu_writer_ptr_ != Teuchos::null) WriteTimeStepOutputRuntimeBeams();
 }
 
 /*----------------------------------------------------------------------------*

@@ -98,21 +98,21 @@ namespace STR
         return output_;
       }
 
-      /// get the data container for parameters regarding VTK output at runtime
-      Teuchos::RCP<const ParamsRuntimeOutput> GetRuntimeVtkOutputParams() const
+      /// get the data container for parameters regarding output at runtime
+      Teuchos::RCP<const ParamsRuntimeOutput> GetRuntimeOutputParams() const
       {
         CheckInitSetup();
         return params_runtime_vtk_output_;
       };
 
-      /// get the data container for parameters regarding VTK output at runtime
+      /// get the data container for parameters regarding output at runtime
       Teuchos::RCP<const ParamsRuntimeVtpOutput> GetRuntimeVtpOutputParams() const
       {
         CheckInitSetup();
         return params_runtime_vtp_output_;
       };
 
-      /// get the data container for parameters regarding VTK output at runtime
+      /// get the data container for parameters regarding output at runtime
       Teuchos::RCP<const ParamsMonitorDBC> GetMonitorDBCParams() const
       {
         CheckInitSetup();
@@ -127,7 +127,7 @@ namespace STR
       /// \brief return TRUE if runtime vtk results shall be written for this load/time \c step
       bool WriteRuntimeVtkResultsForThisStep(const int step) const;
 
-      [[nodiscard]] bool IsRuntimeVtkOutputEnabled() const;
+      [[nodiscard]] bool IsRuntimeOutputEnabled() const;
 
       /// \brief return TRUE if runtime vtp results shall be written for this load/time \c step
       bool WriteRuntimeVtpResultsForThisStep(const int step) const;

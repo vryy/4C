@@ -65,15 +65,15 @@ namespace DRT
  * \author grill
  * \date 03/17
  */
-class BeamDiscretizationRuntimeVtuWriter
+class BeamDiscretizationRuntimeOutputWriter
 {
  public:
   /// Constructor
-  BeamDiscretizationRuntimeVtuWriter(
+  BeamDiscretizationRuntimeOutputWriter(
       IO::VisualizationParameters parameters, const Epetra_Comm& comm);
 
   /// Destructor
-  virtual ~BeamDiscretizationRuntimeVtuWriter() = default;
+  virtual ~BeamDiscretizationRuntimeOutputWriter() = default;
   /** \brief initialize object with all required data
    *
    *  \author grill

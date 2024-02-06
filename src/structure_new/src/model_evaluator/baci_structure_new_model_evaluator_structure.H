@@ -27,7 +27,7 @@ namespace IO
 {
   class DiscretizationVisualizationWriterMesh;
 }
-class BeamDiscretizationRuntimeVtuWriter;
+class BeamDiscretizationRuntimeOutputWriter;
 
 namespace CORE::LINALG
 {
@@ -358,74 +358,70 @@ namespace STR
        *  \author hiermeier */
       Teuchos::RCP<Epetra_Vector> GetInertialForce();
 
-      /*! \brief writes output for discretization structure in VTK format
+      /*! \brief writes output for discretization structure
        *
        *  \date 04/17
        *  \author eichinger */
-      void InitOutputRuntimeVtkStructure();
+      void InitOutputRuntimeStructure();
 
       /*!
        * \brief Initialize the gauss point data output routine
        *
        * This method must be called once after the input of all data.
        */
-      void InitOutputRuntimeVtkStructureGaussPointData();
+      void InitOutputRuntimeStructureGaussPointData();
 
-      /*! \brief writes output for discretization structure in VTK format
-       *         at the end of a time step
+      /*! \brief writes output for discretization structure at the end of a time step
        *
        *  \date 04/17
        *  \author grill */
-      void WriteTimeStepOutputRuntimeVtkStructure() const;
+      void WriteTimeStepOutputRuntimeStructure() const;
 
-      /*! \brief writes output for discretization structure in VTK format
+      /*! \brief writes output for discretization structure
        *         at the end of a nonlinear iteration
        *
        *  \date 10/17
        *  \author grill */
-      void WriteIterationOutputRuntimeVtkStructure() const;
+      void WriteIterationOutputRuntimeStructure() const;
 
-      /*! \brief writes output for discretization structure in VTK format
+      /*! \brief writes output for discretization structure
        *
        *  \date 10/17
        *  \author grill */
-      void WriteOutputRuntimeVtkStructure(
-          const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
+      void WriteOutputRuntimeStructure(const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
           const Teuchos::RCP<Epetra_Vector>& velocity_state_vector, int timestep_number,
           double time) const;
 
       /**
        * \brief Calculate the stress and / or strains for runtime output.
        */
-      void OutputRuntimeVtkStructurePostprocessStressStrain();
+      void OutputRuntimeStructurePostprocessStressStrain();
 
-      void OutputRuntimeVtkStructureGaussPointData();
+      void OutputRuntimeStructureGaussPointData();
 
-      /*! \brief writes special output for beam elements in VTK format
+      /*! \brief writes special output for beam elements
        *
        *  \date 04/17
        *  \author eichinger */
-      void InitOutputRuntimeVtkBeams();
+      void InitOutputRuntimeBeams();
 
-      /*! \brief writes special output for beam elements in VTK format
-       *         at the end of a time step
+      /*! \brief writes special output for beam elements at the end of a time step
        *
        *  \date 04/17
        *  \author grill */
-      void WriteTimeStepOutputRuntimeVtkBeams() const;
+      void WriteTimeStepOutputRuntimeBeams() const;
 
-      /*! \brief writes special output for beam elements in VTK format
-       *         at the end of a nonlinear iteration
+      /*! \brief writes special output for beam elements at the end of a nonlinear iteration
        *
        *  \date 10/17
        *  \author grill */
-      void WriteIterationOutputRuntimeVtkBeams() const;
+      void WriteIterationOutputRuntimeBeams() const;
 
-      /*! \brief writes special output for beam elements in VTK format
+      /*! \brief writes special output for beam elements
        *
        *  \date 10/17
        *  \author grill */
-      void WriteOutputRuntimeVtkBeams(const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
+      void WriteOutputRuntimeBeams(const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
           int timestep_number, double time) const;
 
       /*! \brief Write the parameters from the STR::MODELEVALUATOR::Data
@@ -526,11 +522,10 @@ namespace STR
       //! visualization parameters
       IO::VisualizationParameters visualization_params_;
 
-      //! structure discretization runtime vtu writer
       Teuchos::RCP<IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
 
-      //! beam discretization runtime vtu writer
-      Teuchos::RCP<BeamDiscretizationRuntimeVtuWriter> beam_vtu_writer_ptr_;
+      //! beam discretization runtime output writer
+      Teuchos::RCP<BeamDiscretizationRuntimeOutputWriter> beam_vtu_writer_ptr_;
 
       //! @}
     };

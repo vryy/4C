@@ -27,7 +27,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    class StructureRuntimeVtuOutputParams;
+    class StructureRuntimeOutputParams;
     class BeamRuntimeOutputParams;
   }  // namespace ELEMENTS
 }  // namespace DRT
@@ -37,7 +37,7 @@ namespace STR
 {
   namespace TIMINT
   {
-    /** \brief Input data container for VTK output at runtime for the structural (time) integration
+    /** \brief Input data container for output at runtime for the structural (time) integration
      *
      * \author Maximilian Grill */
     class ParamsRuntimeOutput
@@ -87,17 +87,17 @@ namespace STR
       };
 
       /// get the data container for parameters regarding beams
-      Teuchos::RCP<const DRT::ELEMENTS::StructureRuntimeVtuOutputParams> GetStructureParams() const
+      Teuchos::RCP<const DRT::ELEMENTS::StructureRuntimeOutputParams> GetStructureParams() const
       {
         CheckInitSetup();
-        return params_runtime_vtu_output_structure_;
+        return params_runtime_output_structure_;
       };
 
       /// get the data container for parameters regarding beams
       Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
       {
         CheckInitSetup();
-        return params_runtime_vtu_output_beams_;
+        return params_runtime_output_beams_;
       };
 
 
@@ -139,12 +139,12 @@ namespace STR
       /// whether to write special output for beam elements
       bool output_beams_ = false;
 
-      /// data container for input parameters related to VTU output of structure at runtime
-      Teuchos::RCP<DRT::ELEMENTS::StructureRuntimeVtuOutputParams>
-          params_runtime_vtu_output_structure_ = Teuchos::null;
+      /// data container for input parameters related to output of structure at runtime
+      Teuchos::RCP<DRT::ELEMENTS::StructureRuntimeOutputParams> params_runtime_output_structure_ =
+          Teuchos::null;
 
-      /// data container for input parameters related to VTU output of beams at runtime
-      Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeOutputParams> params_runtime_vtu_output_beams_ =
+      /// data container for input parameters related to output of beams at runtime
+      Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeOutputParams> params_runtime_output_beams_ =
           Teuchos::null;
 
 

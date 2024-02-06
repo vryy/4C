@@ -438,7 +438,7 @@ void STR::TIMINT::Base::PrepareOutput(bool force_prepare_timestep)
       int_ptr_->EvalData().SetElementVolumeData(elevolumes);
     }
   }
-  if ((dataio_->IsRuntimeVtkOutputEnabled() && force_prepare_timestep) ||
+  if ((dataio_->IsRuntimeOutputEnabled() && force_prepare_timestep) ||
       dataio_->WriteRuntimeVtkResultsForThisStep(dataglobalstate_->GetStepNp()) ||
       dataio_->WriteRuntimeVtpResultsForThisStep(dataglobalstate_->GetStepNp()))
   {

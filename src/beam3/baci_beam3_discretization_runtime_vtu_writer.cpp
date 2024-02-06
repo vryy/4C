@@ -31,7 +31,7 @@ BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BeamDiscretizationRuntimeVtuWriter::BeamDiscretizationRuntimeVtuWriter(
+BeamDiscretizationRuntimeOutputWriter::BeamDiscretizationRuntimeOutputWriter(
     IO::VisualizationParameters parameters, const Epetra_Comm& comm)
     : visualization_manager_(Teuchos::rcp(
           new IO::VisualizationManager(std::move(parameters), comm, "structure-beams"))),
@@ -42,7 +42,7 @@ BeamDiscretizationRuntimeVtuWriter::BeamDiscretizationRuntimeVtuWriter(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::Initialize(
+void BeamDiscretizationRuntimeOutputWriter::Initialize(
     Teuchos::RCP<DRT::Discretization> discretization,
     bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
     Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> const& periodic_boundingbox)
@@ -55,7 +55,7 @@ void BeamDiscretizationRuntimeVtuWriter::Initialize(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
+void BeamDiscretizationRuntimeOutputWriter::SetGeometryFromBeamDiscretization(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
   /*  Note:
@@ -141,7 +141,7 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
     std::vector<double> beamelement_displacement_vector;
 
@@ -249,7 +249,7 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
+void BeamDiscretizationRuntimeOutputWriter::AppendDisplacementField(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
   auto& visualization_data = visualization_manager_->GetVisualizationData();
@@ -281,7 +281,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     // get the displacement state vector for this element
@@ -338,7 +338,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
+void BeamDiscretizationRuntimeOutputWriter::AppendTriadField(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
   auto& visualization_data = visualization_manager_->GetVisualizationData();
@@ -376,7 +376,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     // get the displacement state vector for this element
@@ -439,7 +439,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
+void BeamDiscretizationRuntimeOutputWriter::AppendElementOwningProcessor()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -459,7 +459,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i) owner.push_back(ele->Owner());
@@ -471,7 +471,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
+void BeamDiscretizationRuntimeOutputWriter::AppendElementGID()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -491,7 +491,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i) gid.push_back(ele->Id());
@@ -503,7 +503,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendElementGhostingInformation()
+void BeamDiscretizationRuntimeOutputWriter::AppendElementGhostingInformation()
 {
   constexpr bool is_beam = true;
   IO::AppendElementGhostingInformation(*discretization_, *visualization_manager_, is_beam);
@@ -511,7 +511,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementGhostingInformation()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendElementInternalEnergy()
+void BeamDiscretizationRuntimeOutputWriter::AppendElementInternalEnergy()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -534,7 +534,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementInternalEnergy()
 #ifdef BACI_DEBUG
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
@@ -548,7 +548,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementInternalEnergy()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendElementKineticEnergy()
+void BeamDiscretizationRuntimeOutputWriter::AppendElementKineticEnergy()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -571,7 +571,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementKineticEnergy()
 #ifdef BACI_DEBUG
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
@@ -585,7 +585,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementKineticEnergy()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendElementFilamentIdAndType()
+void BeamDiscretizationRuntimeOutputWriter::AppendElementFilamentIdAndType()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -607,7 +607,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementFilamentIdAndType()
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
     // get filament number (note so far only one filament for each element and node)
     DRT::Condition* cond = ele->Nodes()[0]->GetCondition("BeamLineFilamentCondition");
@@ -633,7 +633,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementFilamentIdAndType()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendElementCircularCrossSectionRadius()
+void BeamDiscretizationRuntimeOutputWriter::AppendElementCircularCrossSectionRadius()
 {
   // Todo we assume a circular cross-section shape here; generalize this to other shapes
 
@@ -656,7 +656,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementCircularCrossSectionRadius
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     // this needs to be done for all cells that make up a cut element
@@ -671,7 +671,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementCircularCrossSectionRadius
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformationVector(
+void BeamDiscretizationRuntimeOutputWriter::AppendPointCircularCrossSectionInformationVector(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
   auto& visualization_data = visualization_manager_->GetVisualizationData();
@@ -712,7 +712,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformat
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     const double circular_cross_section_radius =
@@ -771,7 +771,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformat
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStrainResultants()
+void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSectionStrainResultants()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -814,7 +814,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     axial_strain_GPs_current_element.clear();
@@ -935,7 +935,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::
+void BeamDiscretizationRuntimeOutputWriter::
     AppendGaussPointMaterialCrossSectionStrainResultantsContinuous()
 {
   AppendContinuousStressStrainResultants(StressStrainField::material_strain);
@@ -944,7 +944,7 @@ void BeamDiscretizationRuntimeVtuWriter::
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStressResultants()
+void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSectionStressResultants()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -987,7 +987,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     material_axial_force_GPs_current_element.clear();
@@ -1122,7 +1122,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::
+void BeamDiscretizationRuntimeOutputWriter::
     AppendGaussPointMaterialCrossSectionStressResultantsContinuous()
 {
   AppendContinuousStressStrainResultants(StressStrainField::material_stress);
@@ -1130,7 +1130,7 @@ void BeamDiscretizationRuntimeVtuWriter::
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointSpatialCrossSectionStressResultants()
+void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointSpatialCrossSectionStressResultants()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -1173,7 +1173,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointSpatialCrossSectionStre
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     spatial_axial_force_GPs_current_element.clear();
@@ -1307,7 +1307,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointSpatialCrossSectionStre
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendElementOrientationParamater(
+void BeamDiscretizationRuntimeOutputWriter::AppendElementOrientationParamater(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
   /*
@@ -1415,7 +1415,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOrientationParamater(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendRVECrosssectionForces(
+void BeamDiscretizationRuntimeOutputWriter::AppendRVECrosssectionForces(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
   // NOTE: so far force in node 0 is written
@@ -1520,7 +1520,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendRVECrosssectionForces(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendElementElasticEnergy()
+void BeamDiscretizationRuntimeOutputWriter::AppendElementElasticEnergy()
 {
   dserror("not implemented yet");
 
@@ -1559,7 +1559,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementElasticEnergy()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendRefLength()
+void BeamDiscretizationRuntimeOutputWriter::AppendRefLength()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -1577,7 +1577,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendRefLength()
     auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
     // this needs to be done for all cells that make up a cut element
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
@@ -1590,7 +1590,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendRefLength()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::WriteToDisk(
+void BeamDiscretizationRuntimeOutputWriter::WriteToDisk(
     const double visualization_time, const int visualization_step)
 {
   visualization_manager_->WriteToDisk(visualization_time, visualization_step);
@@ -1598,7 +1598,7 @@ void BeamDiscretizationRuntimeVtuWriter::WriteToDisk(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::InsertVectorValuesAtBackOfOtherVector(
+void BeamDiscretizationRuntimeOutputWriter::InsertVectorValuesAtBackOfOtherVector(
     const std::vector<double>& vector_input, std::vector<double>& vector_output)
 {
   vector_output.reserve(vector_output.size() + vector_input.size());
@@ -1608,7 +1608,7 @@ void BeamDiscretizationRuntimeVtuWriter::InsertVectorValuesAtBackOfOtherVector(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-int BeamDiscretizationRuntimeVtuWriter::GetGlobalNumberOfGaussPointsPerBeam(
+int BeamDiscretizationRuntimeOutputWriter::GetGlobalNumberOfGaussPointsPerBeam(
     unsigned int my_num_gp) const
 {
   int my_num_gp_signed = (int)my_num_gp;
@@ -1626,7 +1626,7 @@ int BeamDiscretizationRuntimeVtuWriter::GetGlobalNumberOfGaussPointsPerBeam(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients(
+void BeamDiscretizationRuntimeOutputWriter::CalcInterpolationPolynomialCoefficients(
     const CORE::FE::GaussRule1D& gauss_rule, const std::vector<double>& gauss_point_values,
     std::vector<double>& polynomial_coefficients) const
 {
@@ -1680,7 +1680,7 @@ void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double BeamDiscretizationRuntimeVtuWriter::EvaluatePolynomialCoefficients(
+double BeamDiscretizationRuntimeOutputWriter::EvaluatePolynomialCoefficients(
     const std::vector<double>& polynomial_coefficients, const double& xi) const
 {
   double interpolated_value = 0.0;
@@ -1691,7 +1691,7 @@ double BeamDiscretizationRuntimeVtuWriter::EvaluatePolynomialCoefficients(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
+void BeamDiscretizationRuntimeOutputWriter::AppendContinuousStressStrainResultants(
     const StressStrainField stress_strain_field)
 {
   // storage for stress / strain measures at all GPs of current element

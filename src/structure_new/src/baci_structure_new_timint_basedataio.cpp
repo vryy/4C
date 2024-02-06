@@ -221,14 +221,14 @@ bool STR::TIMINT::BaseDataIO::IsWriteResultsEnabled() const
 bool STR::TIMINT::BaseDataIO::WriteRuntimeVtkResultsForThisStep(const int step) const
 {
   if (step < 0) dserror("The variable step is not allowed to be negative.");
-  return (IsRuntimeVtkOutputEnabled() &&
-          DetermineWriteOutput(step, GetRuntimeVtkOutputParams()->OutputStepOffset(),
-              GetRuntimeVtkOutputParams()->OutputIntervalInSteps()));
+  return (IsRuntimeOutputEnabled() &&
+          DetermineWriteOutput(step, GetRuntimeOutputParams()->OutputStepOffset(),
+              GetRuntimeOutputParams()->OutputIntervalInSteps()));
 }
 
-bool STR::TIMINT::BaseDataIO::IsRuntimeVtkOutputEnabled() const
+bool STR::TIMINT::BaseDataIO::IsRuntimeOutputEnabled() const
 {
-  return GetRuntimeVtkOutputParams() != Teuchos::null;
+  return GetRuntimeOutputParams() != Teuchos::null;
 }
 
 /*----------------------------------------------------------------------------*
@@ -237,8 +237,8 @@ bool STR::TIMINT::BaseDataIO::WriteRuntimeVtpResultsForThisStep(const int step) 
 {
   if (step < 0) dserror("The variable step is not allowed to be negative.");
   return (GetRuntimeVtpOutputParams() != Teuchos::null &&
-          DetermineWriteOutput(step, GetRuntimeVtkOutputParams()->OutputStepOffset(),
-              GetRuntimeVtkOutputParams()->OutputIntervalInSteps()));
+          DetermineWriteOutput(step, GetRuntimeOutputParams()->OutputStepOffset(),
+              GetRuntimeOutputParams()->OutputIntervalInSteps()));
 }
 
 

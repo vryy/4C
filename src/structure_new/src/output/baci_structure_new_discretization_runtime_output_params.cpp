@@ -1,14 +1,14 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*! \file
 
-\brief input parameters related to VTU output at runtime for beams
+\brief input parameters related to output at runtime for beams
 
 \level 3
 
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_structure_new_discretization_runtime_vtu_output_params.H"
+#include "baci_structure_new_discretization_runtime_output_params.H"
 
 #include "baci_global_data.H"
 #include "baci_inpar_parameterlist_utils.H"
@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-DRT::ELEMENTS::StructureRuntimeVtuOutputParams::StructureRuntimeVtuOutputParams()
+DRT::ELEMENTS::StructureRuntimeOutputParams::StructureRuntimeOutputParams()
     : isinit_(false),
       issetup_(false),
       output_displacement_state_(false),
@@ -37,7 +37,7 @@ DRT::ELEMENTS::StructureRuntimeVtuOutputParams::StructureRuntimeVtuOutputParams(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
+void DRT::ELEMENTS::StructureRuntimeOutputParams::Init(
     const Teuchos::ParameterList& IO_vtk_structure_structure_paramslist)
 {
   // We have to call Setup() after Init()
@@ -80,7 +80,7 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Setup()
+void DRT::ELEMENTS::StructureRuntimeOutputParams::Setup()
 {
   dsassert(IsInit(), "Init() has not been called, yet!");
 
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::CheckInitSetup() const
+void DRT::ELEMENTS::StructureRuntimeOutputParams::CheckInitSetup() const
 {
   dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
