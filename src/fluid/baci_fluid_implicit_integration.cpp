@@ -34,7 +34,6 @@
 #include "baci_fluid_ele_intfaces_calc.H"
 #include "baci_fluid_impedancecondition.H"
 #include "baci_fluid_meshtying.H"
-#include "baci_fluid_MHD_evaluate.H"
 #include "baci_fluid_result_test.H"
 #include "baci_fluid_turbulence_boxfilter.H"
 #include "baci_fluid_turbulence_dyn_smag.H"
@@ -338,17 +337,6 @@ void FLD::FluidImplicitTimeInt::Init()
 
   // set gas constant to 1.0 for incompressible flow
   gasconstant_ = 1.0;
-
-  // object for a redistributed evaluation of the mixed-hybrid Dirichlet condition
-  MHD_evaluator_ = Teuchos::null;
-
-  std::vector<DRT::Condition*> MHDcndSurf;
-  discret_->GetCondition("SurfaceMixHybDirichlet", MHDcndSurf);
-  if (MHDcndSurf.size() != 0)  // redistributed evaluation currently only for surface conditions!
-  {
-    bool mhd_redis_eval = false;  // get this info from the input file
-    if (mhd_redis_eval) MHD_evaluator_ = Teuchos::rcp(new FLD::FluidMHDEvaluate(discret_));
-  }
 
   if (params_->get<bool>("INFNORMSCALING"))
   {
@@ -1688,15 +1676,8 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
         Teuchos::null, "LineMixHybDirichlet");
 
     // evaluate all surface mixed/hybrid Dirichlet boundary conditions
-    // with checking of parallel redistribution of boundary elements
-    if (MHD_evaluator_ != Teuchos::null)
-    {
-      dserror("Redistributed MHD evaluation needs to be verified");
-      MHD_evaluator_->BoundaryElementLoop(mhdbcparams, velaf_, velnp_, residual_, SystemMatrix());
-    }
-    else
-      discret_->EvaluateCondition(mhdbcparams, sysmat_, Teuchos::null, residual_, Teuchos::null,
-          Teuchos::null, "SurfaceMixHybDirichlet");
+    discret_->EvaluateCondition(mhdbcparams, sysmat_, Teuchos::null, residual_, Teuchos::null,
+        Teuchos::null, "SurfaceMixHybDirichlet");
 
     // clear state
     discret_->ClearState();
