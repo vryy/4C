@@ -86,7 +86,6 @@ namespace FLD
   class Meshtying;
   class XWall;
   class TransferTurbulentInflowCondition;
-  class FluidMHDEvaluate;
   namespace UTILS
   {
     class FluidInfNormScaling;
@@ -1318,13 +1317,6 @@ namespace FLD
     Teuchos::RCP<FLD::Vreman> Vrem_;
     Teuchos::RCP<FLD::Boxfilter> Boxf_;
 
-    //@}
-
-    //! @name Mixed-hybrid Dirichlet condition
-    //        --------------------------------
-    //
-    //! object for a redistributed evaluation of the mixed-hybrid Dirichlet condition
-    Teuchos::RCP<FLD::FluidMHDEvaluate> MHD_evaluator_;
     //@}
 
     //! Extractor to split velnp_ into velocities and pressure DOFs
