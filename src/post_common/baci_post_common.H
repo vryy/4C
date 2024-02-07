@@ -175,12 +175,6 @@ class PostProblem
 
   //@}
 
-  //! read in new mesh for given step and field
-  void re_read_mesh(int fieldpos,  ///< [in] ??
-      std::string fieldname,       ///< [in] Name of field
-      int step                     ///< [in] Time step index
-  );
-
  private:
   /*! brief Initializes all the data a filter needs.
    *

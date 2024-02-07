@@ -46,14 +46,6 @@ void PostFilterBase::WriteFiles()
 
 
 
-void PostFilterBase::WriteFilesChangingGeom()
-{
-  dsassert(writer_ != Teuchos::null, "No writer has been set! Fatal error");
-  writer_->WriteFilesChangingGeom(*this);
-}
-
-
-
 void PostFilterBase::WriteAnyResults(PostField* field, const char* type, const ResultType restype)
 {
   PostResult result = PostResult(field);

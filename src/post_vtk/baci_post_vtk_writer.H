@@ -57,9 +57,6 @@ class PostVtkWriter : public PostWriterBase
   //! write the whole thing
   void WriteFiles(PostFilterBase& filter) override;
 
-  //! write the whole thing for changing geometries
-  void WriteFilesChangingGeom(PostFilterBase& filter) override;
-
  protected:
   //! Return the opening xml tag for this writer type
   virtual const std::string& WriterOpeningTag() const = 0;

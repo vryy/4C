@@ -61,9 +61,6 @@ class PostWriterBase
 
   virtual void WriteFiles(PostFilterBase& filter) = 0;
 
-  //! write the whole thing for changing geometries
-  virtual void WriteFilesChangingGeom(PostFilterBase& filter) = 0;
-
   /*!
    \brief write all time steps of a result
 
