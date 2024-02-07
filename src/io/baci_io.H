@@ -238,7 +238,11 @@ namespace IO
   {
    public:
     /*!
-      Writer constructor always needs a discretization
+     * @brief construct a discretization writer object to output the mesh and results
+     *
+     * @param[in] dis                   discretization
+     * @param[in] output_control        output control file
+     * @param[in] shape_function_type   shape function type of the underlying fe discretization
      */
     DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<OutputControl> output_control,

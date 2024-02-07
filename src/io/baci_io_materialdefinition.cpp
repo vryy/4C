@@ -14,11 +14,9 @@
 /* headers */
 #include "baci_io_materialdefinition.H"
 
-#include "baci_global_data.H"
 #include "baci_mat_material.H"
 
 #include <iostream>
-#include <iterator>
 #include <string>
 #include <utility>
 #include <vector>
@@ -47,8 +45,8 @@ void INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<INPUT::LineCompo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void INPUT::MaterialDefinition::Read(const GLOBAL::Problem& problem, DatFileReader& reader,
-    const Teuchos::RCP<MAT::PAR::Bundle>& mmap)
+void INPUT::MaterialDefinition::Read(
+    DatFileReader& reader, const Teuchos::RCP<MAT::PAR::Bundle>& mmap)
 {
   std::string name = "--MATERIALS";
   std::vector<const char*> section = reader.Section(name);
