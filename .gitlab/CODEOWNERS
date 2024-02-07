@@ -245,13 +245,11 @@ poromultiphase/            @baci/team_poro
 
 poromultiphase_scatra/     @baci/team_poro
 
-post_common/               @baci/team_output
+post/                      @baci/team_output
 
-post_ensight/              @baci/team_output
+post_processor/              @baci/team_output
 
 post_monitor/              @baci/team_output
-
-post_vtk/                  @baci/team_output
 
 pre_exodus/                @baci/team_input
 

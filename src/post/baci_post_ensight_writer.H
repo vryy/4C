@@ -13,8 +13,8 @@
 
 #include "baci_config.H"
 
-#include "baci_lib_element.H"              // due to DiscretizationType
-#include "baci_post_common_writer_base.H"  // base class PostWriterBase
+#include "baci_lib_element.H"       // due to DiscretizationType
+#include "baci_post_writer_base.H"  // base class PostWriterBase
 
 #include <cstdio>
 #include <fstream>

@@ -120,8 +120,6 @@ if(BACI_WITH_ADDRESS_SANITIZER)
   set(BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
 endif()
 
-set(FILTER_LIBRARIES post_common -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group)
-
 # hide libraries
 
 if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
@@ -130,11 +128,6 @@ endif(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 set(baciname baci-${BUILD_TYPE})
-
-add_custom_target(post DEPENDS post_processor post_monitor)
-add_custom_target(post_ensight DEPENDS post_processor)
-add_custom_target(post_vtk DEPENDS post_processor)
-add_custom_target(framework DEPENDS pre_exodus post)
 
 set(FULL_TARGETS
     post_processor
@@ -149,8 +142,9 @@ add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
 
 include(cmake/setup_tests.cmake)
 
-# Read in the source directory which defines all modules and executables
+# Read in the source directory which defines all modules
 add_subdirectory(src)
+add_subdirectory(apps)
 
 # Process documentation
 add_subdirectory(doc/doxygen EXCLUDE_FROM_ALL)

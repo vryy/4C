@@ -14,7 +14,7 @@
 #include "baci_config.H"
 
 #include "baci_io_vtk_writer_base.H"  // LIBB64
-#include "baci_post_common_writer_base.H"
+#include "baci_post_writer_base.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>

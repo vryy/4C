@@ -8,13 +8,13 @@
  */
 
 
-#ifndef BACI_POST_COMMON_SINGLE_FIELD_WRITERS_H
-#define BACI_POST_COMMON_SINGLE_FIELD_WRITERS_H
+#ifndef BACI_POST_PROCESSOR_SINGLE_FIELD_WRITERS_H
+#define BACI_POST_PROCESSOR_SINGLE_FIELD_WRITERS_H
 
 #include "baci_config.H"
 
-#include "baci_post_common_filter_base.H"
-#include "baci_post_common_writer_base.H"
+#include "baci_post_filter_base.H"
+#include "baci_post_writer_base.H"
 
 #include <Epetra_MultiVector.h>
 
@@ -267,4 +267,4 @@ class AnyFilter : public PostFilterBase
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POST_COMMON_SINGLE_FIELD_WRITERS_H
+#endif

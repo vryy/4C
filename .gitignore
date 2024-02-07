@@ -11,22 +11,6 @@
 # Other build
 DartConfiguration.tcl
 
-# Executables
-baci-release
-baci-debug
-post_ensight
-post_generic
-post_gid
-post_monitor
-pre_exodus
-!src/post_ensight
-!src/post_generic
-!src/post_gid
-!src/post_monitor
-!src/post_common/scripts/post_ensight
-!src/post_common/scripts/post_gid
-!src/pre_exodus
-
 # Eclipse
 .cproject
 .project

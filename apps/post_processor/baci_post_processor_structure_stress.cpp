@@ -15,8 +15,8 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_post_common.H"
-#include "baci_post_common_single_field_writers.H"
-#include "baci_post_common_writer_base.H"
+#include "baci_post_processor_single_field_writers.H"
+#include "baci_post_writer_base.H"
 
 #include <string>
 
