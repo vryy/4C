@@ -23,10 +23,7 @@ void DRT::ELEMENTS::So_sh8p8::EasInit()
   // specials
   // EAS matrix K_{alpha pres}
   CORE::LINALG::SerialDenseMatrix Kap(neas_, NUMPRES_);
-  data_.Add("Kap", Kap);
-
-  // quit
-  return;
+  easdata_.Kap = Kap;
 }
 
 /*----------------------------------------------------------------------*/

@@ -20,9 +20,6 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_easinit()
 {
-  // all parameters are stored in CORE::LINALG::SerialDenseMatrix as only
-  // those can be added to DRT::Container
-
   // EAS enhanced strain parameters at currently investigated load/time step
   CORE::LINALG::SerialDenseMatrix alpha(neas_, 1);
   // EAS enhanced strain parameters of last converged load/time step
@@ -40,17 +37,15 @@ void DRT::ELEMENTS::So_hex8::soh8_easinit()
   // EAS increment over last Newton step
   CORE::LINALG::SerialDenseMatrix eas_inc(neas_, 1);
 
-  // save EAS data into element container
-  data_.Add("alpha", alpha);
-  data_.Add("alphao", alphao);
-  data_.Add("feas", feas);
-  data_.Add("invKaa", invKaa);
-  data_.Add("invKaao", invKaao);
-  data_.Add("Kda", Kda);
-  data_.Add("Kdao", Kdao);
-  data_.Add("eas_inc", eas_inc);
-
-  return;
+  // save EAS data into eas data
+  easdata_.alpha = alpha;
+  easdata_.alphao = alphao;
+  easdata_.feas = feas;
+  easdata_.invKaa = invKaa;
+  easdata_.invKaao = invKaao;
+  easdata_.Kda = Kda;
+  easdata_.Kdao = Kdao;
+  easdata_.eas_inc = eas_inc;
 }
 
 /*----------------------------------------------------------------------*
@@ -78,22 +73,23 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   }
   eastype_ = EASType;
   if (eastype_ == DRT::ELEMENTS::So_hex8::soh8_easnone) return;
-  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;               // EAS alphas
-  CORE::LINALG::SerialDenseMatrix* alphao = nullptr;              // EAS alphas
-  CORE::LINALG::SerialDenseMatrix* feas = nullptr;                // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kaainv = nullptr;              // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kaainvo = nullptr;             // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kda = nullptr;                 // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kdao = nullptr;                // EAS history
-  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;             // EAS history
-  alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");    // get alpha of previous iteration
-  alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // get alpha of previous iteration
-  feas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
-  Kaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
-  Kaainvo = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaao");
-  Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
-  Kdao = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kdao");
-  eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;    // EAS alphas
+  CORE::LINALG::SerialDenseMatrix* alphao = nullptr;   // EAS alphas
+  CORE::LINALG::SerialDenseMatrix* feas = nullptr;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kaainv = nullptr;   // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kaainvo = nullptr;  // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kda = nullptr;      // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kdao = nullptr;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;  // EAS history
+  alpha = &easdata_.alpha;                             // get alpha of previous iteration
+  alphao = &easdata_.alphao;                           // get alpha of previous iteration
+  feas = &easdata_.feas;
+  Kaainv = &easdata_.invKaa;
+  Kaainvo = &easdata_.invKaao;
+  Kda = &easdata_.Kda;
+  Kdao = &easdata_.Kdao;
+  eas_inc = &easdata_.eas_inc;
+
   if (!alpha || !Kaainv || !Kda || !feas || !eas_inc) dserror("Missing EAS history-data");
 
   alpha->reshape(neas_, 1);
@@ -104,8 +100,6 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   Kda->reshape(neas_, NUMDOF_SOH8);
   Kdao->reshape(neas_, NUMDOF_SOH8);
   eas_inc->reshape(neas_, 1);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -377,12 +371,13 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_easupdate()
 {
-  const auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-  auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");        // Alpha_n
-  const auto* Kaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");  // Kaa^{-1}_{n+1}
-  auto* Kaainvo = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaao");      // Kaa^{-1}_{n}
-  const auto* Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");        // Kda_{n+1}
-  auto* Kdao = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kdao");            // Kda_{n}
+  const auto* alpha = &easdata_.alpha;    // Alpha_{n+1}
+  auto* alphao = &easdata_.alphao;        // Alpha_n
+  const auto* Kaainv = &easdata_.invKaa;  // Kaa^{-1}_{n+1}
+  auto* Kaainvo = &easdata_.invKaao;      // Kaa^{-1}_{n}
+  const auto* Kda = &easdata_.Kda;        // Kda_{n+1}
+  auto* Kdao = &easdata_.Kdao;            // Kda_{n}
+
   switch (eastype_)
   {
     case DRT::ELEMENTS::So_hex8::soh8_easfull:
@@ -413,12 +408,13 @@ void DRT::ELEMENTS::So_hex8::soh8_easupdate()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_easrestore()
 {
-  auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");            // Alpha_{n+1}
-  const auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");    // Alpha_n
-  auto* Kaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");          // Kaa^{-1}_{n+1}
-  const auto* Kaainvo = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
-  auto* Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");                // Kda_{n+1}
-  const auto* Kdao = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kdao");        // Kda_{n}
+  auto* alpha = &easdata_.alpha;            // Alpha_{n+1}
+  const auto* alphao = &easdata_.alphao;    // Alpha_n
+  auto* Kaainv = &easdata_.invKaa;          // Kaa^{-1}_{n+1}
+  const auto* Kaainvo = &easdata_.invKaao;  // Kaa^{-1}_{n}
+  auto* Kda = &easdata_.Kda;                // Kda_{n+1}
+  const auto* Kdao = &easdata_.Kdao;        // Kda_{n}
+
   switch (eastype_)
   {
     case DRT::ELEMENTS::So_hex8::soh8_easfull:

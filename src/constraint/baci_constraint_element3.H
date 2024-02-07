@@ -203,9 +203,6 @@ namespace DRT
         calc_MPC_state
       };
 
-      //! container containing all kind of constraint element data
-      DRT::Container data_;
-
       //! vector of surfaces of this element (length 1)
       std::vector<DRT::Element*> surface_;
 

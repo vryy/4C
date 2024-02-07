@@ -679,8 +679,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         soh8_easrestore();
 
         // reset EAS internal force
-        CORE::LINALG::SerialDenseMatrix* oldfeas =
-            data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+        CORE::LINALG::SerialDenseMatrix* oldfeas = &easdata_.feas;
         oldfeas->putScalar(0.0);
       }
       // Reset of history (if needed)
@@ -761,8 +760,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> T0invT;  // trafo matrix
       if (eastype_ != soh8_easnone)
       {
-        alpha =
-            data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get alpha of previous iteration
+        alpha = &easdata_.alpha;  // get alpha of previous iteration
         soh8_eassetup(&M_GP, detJ0, T0invT, xrefe);
       }
 
@@ -1707,9 +1705,9 @@ void DRT::ELEMENTS::So_hex8::soh8_error_handling(const double& det_curr,
 void DRT::ELEMENTS::So_hex8::soh8_computeEASInc(
     const std::vector<double>& residual, CORE::LINALG::SerialDenseMatrix* const eas_inc)
 {
-  auto* oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
-  auto* oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
-  auto* oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+  auto* oldKaainv = &easdata_.invKaa;
+  auto* oldKda = &easdata_.Kda;
+  auto* oldfeas = &easdata_.feas;
   if (!oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history data");
 
   // we need the (residual) displacement at the previous step
@@ -1743,9 +1741,9 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
   {
     // access general eas history stuff stored in element
     // get alpha of previous iteration
-    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
+    alpha = &easdata_.alpha;
     // get the old eas increment
-    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    eas_inc = &easdata_.eas_inc;
     if (!alpha || !eas_inc) dserror("Missing EAS history data (eas_inc and/or alpha)");
   }
 
@@ -1900,11 +1898,11 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get alpha of previous iteration
-    oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
-    oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
-    oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
-    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    alpha = &easdata_.alpha;  // get alpha of previous iteration
+    oldfeas = &easdata_.feas;
+    oldKaainv = &easdata_.invKaa;
+    oldKda = &easdata_.Kda;
+    eas_inc = &easdata_.eas_inc;
 
     if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
       dserror("Missing EAS history-data");
@@ -1978,7 +1976,6 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
 
     // EAS matrix K_{d alpha}
     Kda.shape(neas_, NUMDOF_SOH8);
-
 
     /* evaluation of EAS variables (which are constant for the following):
     ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
@@ -3169,14 +3166,14 @@ void DRT::ELEMENTS::So_hex8::soh8_create_eas_backup_state(const std::vector<doub
 
   // --- create EAS state backup ----------------------------------------------
   {
-    const auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
+    const auto* alpha = &easdata_.alpha;
     if (not alpha) dserror("Can't access the current enhanced strain state.");
 
-    auto* alpha_backup_ptr = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha_backup");
+    auto* alpha_backup_ptr = &easdata_.alpha_backup;
     if (alpha_backup_ptr)
       *alpha_backup_ptr = *alpha;
     else
-      data_.Add("alpha_backup", *alpha);
+      easdata_.alpha_backup = *alpha;
   }
 
   // --- create EAS increment backup ------------------------------------------
@@ -3185,11 +3182,11 @@ void DRT::ELEMENTS::So_hex8::soh8_create_eas_backup_state(const std::vector<doub
     CORE::LINALG::SerialDenseMatrix eas_inc(neas_, 1);
     soh8_computeEASInc(displ_incr, &eas_inc);
 
-    auto* eas_inc_backup_ptr = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc_backup");
+    auto* eas_inc_backup_ptr = &easdata_.eas_inc_backup;
     if (eas_inc_backup_ptr)
       *eas_inc_backup_ptr = eas_inc;
     else
-      data_.Add("eas_inc_backup", eas_inc);
+      easdata_.eas_inc_backup = eas_inc;
   }
 }
 
@@ -3204,13 +3201,13 @@ void DRT::ELEMENTS::So_hex8::soh8_recover_from_eas_backup_state()
 
   // --- recover state from EAS backup ----------------------------------------
   {
-    const auto* alpha_backup = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha_backup");
+    const auto* alpha_backup = &easdata_.alpha_backup;
     if (not alpha_backup)
       dserror(
           "Can't access the enhanced strain backup state. Did you "
           "create a backup? See soh8_create_eas_backup_state().");
 
-    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
+    alpha = &easdata_.alpha;
     if (not alpha) dserror("Can't access the enhanced strain state.");
 
     *alpha = *alpha_backup;
@@ -3218,13 +3215,13 @@ void DRT::ELEMENTS::So_hex8::soh8_recover_from_eas_backup_state()
 
   // --- recover increment from EAS backup ------------------------------------
   {
-    const auto* eas_inc_backup = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc_backup");
+    const auto* eas_inc_backup = &easdata_.eas_inc_backup;
     if (not eas_inc_backup)
       dserror(
           "Can't access the enhanced strain increment backup. Did you "
           "create a backup? See soh8_create_eas_backup_state().");
 
-    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    eas_inc = &easdata_.eas_inc;
     if (not eas_inc) dserror("Can't access the enhanced strain increment.");
 
     *eas_inc = *eas_inc_backup;
@@ -3394,7 +3391,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
     soh8_easupdate();
 
     // reset EAS internal force
-    CORE::LINALG::SerialDenseMatrix* oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+    CORE::LINALG::SerialDenseMatrix* oldfeas = &easdata_.feas;
     oldfeas->putScalar(0.0);
   }
   SolidMaterial()->Update();

@@ -28,8 +28,7 @@ CORE::COMM::ParObject* DRT::ContainerType::Create(const std::vector<char>& data)
   return object;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 std::ostream& operator<<(std::ostream& os, const DRT::Container& cont)
 {
   cont.Print(os);
@@ -37,8 +36,6 @@ std::ostream& operator<<(std::ostream& os, const DRT::Container& cont)
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Container::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
@@ -64,8 +61,7 @@ void DRT::Container::Pack(CORE::COMM::PackBuffer& data) const
   pack_map(data, matdata_);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 void DRT::Container::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -97,9 +93,9 @@ void DRT::Container::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
+
 namespace
 {
-
   //! Print various types that occurr in the Container
   struct PrintHelper
   {
@@ -135,8 +131,7 @@ namespace
   };
 }  // namespace
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 void DRT::Container::Print(std::ostream& os) const
 {
   PrintHelper printer{os};
@@ -147,42 +142,31 @@ void DRT::Container::Print(std::ostream& os) const
   printer(matdata_);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 void DRT::Container::Add(const std::string& name, const int* data, const std::size_t num)
 {
   intdata_[name] = std::vector<int>(data, data + num);
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Container::Add(const std::string& name, const double* data, const std::size_t num)
 {
   doubledata_[name] = std::vector<double>(data, data + num);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Container::Add(const std::string& name, const std::map<int, std::vector<double>>& data)
 {
   mapdata_[name] = data;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Container::Add(const std::string& name, const std::string& data)
 {
   stringdata_[name] = data;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Container::Add(const std::string& name, const CORE::LINALG::SerialDenseMatrix& matrix)
 {
   matdata_[name] = matrix;
 }
-
 
 void DRT::Container::Add(const std::string& name, const std::vector<int>& data)
 {
@@ -199,8 +183,6 @@ void DRT::Container::Add(const std::string& name, const int& data) { Add(name, &
 void DRT::Container::Add(const std::string& name, const double& data) { Add(name, &data, 1); }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Container::Delete(const std::string& name)
 {
   [[maybe_unused]] const unsigned n_erased_entries =
@@ -210,43 +192,6 @@ void DRT::Container::Delete(const std::string& name)
 }
 
 
-template <typename T>
-const T* DRT::Container::Get(const std::string& name) const
-{
-  const auto access = [](const auto& map, const std::string& name) -> const T*
-  {
-    const auto it = map.find(name);
-    if (it != map.end())
-      return std::addressof(it->second);
-    else
-      return nullptr;
-  };
-
-  if constexpr (std::is_same_v<T, std::vector<int>>)
-    return access(intdata_, name);
-  else if constexpr (std::is_same_v<T, std::vector<double>>)
-    return access(doubledata_, name);
-  else if constexpr (std::is_same_v<T, std::map<int, std::vector<double>>>)
-    return access(mapdata_, name);
-  else if constexpr (std::is_same_v<T, std::string>)
-    return access(stringdata_, name);
-  else if constexpr (std::is_same_v<T, CORE::LINALG::SerialDenseMatrix>)
-    return access(matdata_, name);
-  else
-    static_assert(!sizeof(T), "The Get function does not support this type.");
-}
-
-
-
-template <typename T>
-T* DRT::Container::Get(const std::string& name)
-{
-  return const_cast<T*>(const_cast<const Container*>(this)->Get<T>(name));
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 int DRT::Container::GetInt(const std::string& name) const
 {
   const std::vector<int>* vecptr = Get<std::vector<int>>(name);
@@ -255,8 +200,7 @@ int DRT::Container::GetInt(const std::string& name) const
   return (*vecptr)[0];
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 double DRT::Container::GetDouble(const std::string& name) const
 {
   const std::vector<double>* vecptr = Get<std::vector<double>>(name);
@@ -265,10 +209,12 @@ double DRT::Container::GetDouble(const std::string& name) const
   return (*vecptr)[0];
 }
 
+
 int DRT::Container::UniqueParObjectId() const
 {
   return ContainerType::Instance().UniqueParObjectId();
 }
+
 
 void DRT::Container::Clear()
 {
@@ -278,19 +224,5 @@ void DRT::Container::Clear()
   stringdata_.clear();
   matdata_.clear();
 }
-
-// --- explicit instantiations --- //
-
-template const std::vector<int>* DRT::Container::Get(const std::string&) const;
-template const std::vector<double>* DRT::Container::Get(const std::string&) const;
-template const std::string* DRT::Container::Get(const std::string&) const;
-template const CORE::LINALG::SerialDenseMatrix* DRT::Container::Get(const std::string&) const;
-template const std::map<int, std::vector<double>>* DRT::Container::Get(const std::string&) const;
-
-template std::vector<int>* DRT::Container::Get(const std::string&);
-template std::vector<double>* DRT::Container::Get(const std::string&);
-template std::string* DRT::Container::Get(const std::string&);
-template CORE::LINALG::SerialDenseMatrix* DRT::Container::Get(const std::string&);
-template std::map<int, std::vector<double>>* DRT::Container::Get(const std::string&);
 
 BACI_NAMESPACE_CLOSE

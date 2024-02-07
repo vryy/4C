@@ -266,9 +266,7 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
     theta_->at(gp) = a;
   }
 
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  histdata_.Unpack(tmp);
+  ExtractfromPack(position, data, histdata_);
 
   // Unpack data of elastic material (these lines are copied from element.cpp)
   std::vector<char> dataelastic;
@@ -305,10 +303,6 @@ void MAT::Growth::Setup(int numgp, INPUT::LineDefinition* linedef)
       Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->idmatelastic_));
   matelastic_->Setup(numgp, linedef);
 
-  // Setup of history container with empty data
-  std::map<int, std::vector<double>> data;
-  histdata_.Add("thetaold", data);
-
   isinit_ = true;
 }
 
@@ -338,23 +332,9 @@ void MAT::Growth::ResetStep()
   matelastic_->ResetStep();
 }
 
-void MAT::Growth::StoreHistory(int timestep)
-{
-  std::map<int, std::vector<double>>* access;
-  access = histdata_.Get<std::map<int, std::vector<double>>>("thetaold");
-  (*access)[timestep] = *thetaold_;
-}
+void MAT::Growth::StoreHistory(int timestep) { histdata_[timestep] = *thetaold_; }
 
-void MAT::Growth::SetHistory(int timestep)
-{
-  const std::map<int, std::vector<double>>* read;
-  read = histdata_.Get<std::map<int, std::vector<double>>>("thetaold");
-
-  if (read->find(timestep) != read->end())
-    *thetaold_ = read->at(timestep);
-  else
-    dserror("there is no data to reset for step %d", timestep);
-}
+void MAT::Growth::SetHistory(int timestep) { *thetaold_ = histdata_.at(timestep); }
 
 /*----------------------------------------------------------------------------*/
 void MAT::Growth::EvaluateElastic(const CORE::LINALG::Matrix<3, 3>* defgrd,

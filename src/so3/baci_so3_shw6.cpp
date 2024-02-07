@@ -141,6 +141,8 @@ void DRT::ELEMENTS::So_shw6::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, eastype_);
   // neas_
   AddtoPack(data, neas_);
+  // easdata_
+  PackEasData(data);
   // reordering
   AddtoPack(data, optimal_parameterspace_map_);
   AddtoPack(data, nodes_rearranged_);
@@ -167,6 +169,8 @@ void DRT::ELEMENTS::So_shw6::Unpack(const std::vector<char>& data)
   eastype_ = static_cast<EASType>(ExtractInt(position, data));
   // neas_
   ExtractfromPack(position, data, neas_);
+  // easdata_
+  UnpackEasData(position, data);
   // reordering
   optimal_parameterspace_map_ = ExtractInt(position, data);
   nodes_rearranged_ = ExtractInt(position, data);
@@ -186,7 +190,6 @@ void DRT::ELEMENTS::So_shw6::Print(std::ostream& os) const
   os << "So_shw6 ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }
 

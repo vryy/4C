@@ -79,23 +79,15 @@ void DRT::ELEMENTS::RedInterAcinarDepType::SetupElementDefinition(
  |  ctor (public)                                           ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(int id, int owner)
-    : DRT::Element(id, owner), data_()
-{
-  return;
-}
+DRT::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(int id, int owner) : DRT::Element(id, owner) {}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(const DRT::ELEMENTS::RedInterAcinarDep& old)
-    : DRT::Element(old),
-      data_(old.data_),
-      elemParams_(old.elemParams_),
-      generation_(old.generation_)
+    : DRT::Element(old), elemParams_(old.elemParams_), generation_(old.generation_)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*

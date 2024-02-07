@@ -180,7 +180,6 @@ void DRT::ELEMENTS::So_tet4av::Print(std::ostream& os) const
   os << "So_tet4av ";
   Element::Print(os);
   std::cout << std::endl;
-  // std::cout << data_;
   return;
 }
 

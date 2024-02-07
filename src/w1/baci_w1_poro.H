@@ -304,8 +304,6 @@ namespace DRT
       std::vector<CORE::LINALG::Matrix<numdim_, numdim_>> invJ_;
       //! determinant of Jacobian in material frame
       std::vector<double> detJ_;
-      //! container containing all kind of solid3 thisandthat
-      DRT::Container data_;
       //! vector of coordinates of current integration point in reference coordinates
       std::vector<CORE::LINALG::Matrix<numdim_, 1>> xsi_;
 

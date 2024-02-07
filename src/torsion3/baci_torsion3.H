@@ -300,9 +300,6 @@ namespace DRT
        *  data exchange between the element and the time integrator. */
       Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
-      // container containing all kind of Torsion3 thisandthat
-      DRT::Container data_;
-
       //! Bending potential
       BendingPotential bendingpotential_;
 

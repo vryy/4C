@@ -82,7 +82,6 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::Print(std::ostream& os) const
   os << "Wall1_PoroP1 ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << Base::data_;
 }
 
 template <CORE::FE::CellType distype>

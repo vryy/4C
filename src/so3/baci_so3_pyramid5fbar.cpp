@@ -178,7 +178,6 @@ void DRT::ELEMENTS::So_pyramid5fbar::Print(std::ostream& os) const
   os << "So_pyramid5fbar ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }
 

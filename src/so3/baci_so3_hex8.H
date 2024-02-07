@@ -466,12 +466,29 @@ namespace DRT
         soh8_easa = 1000    //!< A-type EAS for sosh8p8
                             //!< NOTE: not the actual number of EAS parameters
       };
+
       //! type of EAS technology
       EASType eastype_;
       //! number of EAS parameters (alphas), defined by 'EASType'
       int neas_;
-      //! container containing all kind of solid3 thisandthat
-      DRT::Container data_;
+
+      struct EASData
+      {
+        CORE::LINALG::SerialDenseMatrix alpha = {};
+        CORE::LINALG::SerialDenseMatrix alpha_backup = {};
+        CORE::LINALG::SerialDenseMatrix alphao = {};
+        CORE::LINALG::SerialDenseMatrix feas = {};
+        CORE::LINALG::SerialDenseMatrix invKaa = {};
+        CORE::LINALG::SerialDenseMatrix invKaao = {};
+        CORE::LINALG::SerialDenseMatrix Kda = {};
+        CORE::LINALG::SerialDenseMatrix Kdao = {};
+        CORE::LINALG::SerialDenseMatrix eas_inc = {};
+        CORE::LINALG::SerialDenseMatrix eas_inc_backup = {};
+        CORE::LINALG::SerialDenseMatrix Kap = {};
+      };
+      //! EAS data
+      EASData easdata_;
+
       //! vector of inverses of the jacobian in material frame
       std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJ_;
       //! vector of inverses of the jacobian in material frame
@@ -716,6 +733,36 @@ namespace DRT
           Teuchos::ParameterList& params);
 
      private:
+      void PackEasData(CORE::COMM::PackBuffer& data) const
+      {
+        AddtoPack(data, easdata_.alpha);
+        AddtoPack(data, easdata_.alpha_backup);
+        AddtoPack(data, easdata_.alphao);
+        AddtoPack(data, easdata_.feas);
+        AddtoPack(data, easdata_.invKaa);
+        AddtoPack(data, easdata_.invKaao);
+        AddtoPack(data, easdata_.Kda);
+        AddtoPack(data, easdata_.Kdao);
+        AddtoPack(data, easdata_.eas_inc);
+        AddtoPack(data, easdata_.eas_inc_backup);
+        AddtoPack(data, easdata_.Kap);
+      };
+
+      void UnpackEasData(std::vector<char>::size_type& position, const std::vector<char>& data)
+      {
+        ExtractfromPack(position, data, easdata_.alpha);
+        ExtractfromPack(position, data, easdata_.alpha_backup);
+        ExtractfromPack(position, data, easdata_.alphao);
+        ExtractfromPack(position, data, easdata_.feas);
+        ExtractfromPack(position, data, easdata_.invKaa);
+        ExtractfromPack(position, data, easdata_.invKaao);
+        ExtractfromPack(position, data, easdata_.Kda);
+        ExtractfromPack(position, data, easdata_.Kdao);
+        ExtractfromPack(position, data, easdata_.eas_inc);
+        ExtractfromPack(position, data, easdata_.eas_inc_backup);
+        ExtractfromPack(position, data, easdata_.Kap);
+      };
+
       /** recover elementwise stored stuff
        *
        * \author hiermeier

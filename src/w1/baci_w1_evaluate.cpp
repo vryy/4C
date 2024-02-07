@@ -315,10 +315,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (iseas_)
       {
-        CORE::LINALG::SerialDenseMatrix* alpha =
-            data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-        CORE::LINALG::SerialDenseMatrix* alphao =
-            data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+        CORE::LINALG::SerialDenseMatrix* alpha = &easdata_.alpha;    // Alpha_{n+1}
+        CORE::LINALG::SerialDenseMatrix* alphao = &easdata_.alphao;  // Alpha_n
         Teuchos::BLAS<unsigned int, double> blas;
         blas.COPY((*alphao).numRows() * (*alphao).numCols(), (*alpha).values(), 1,
             (*alphao).values(),
@@ -333,10 +331,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (iseas_)
       {
-        CORE::LINALG::SerialDenseMatrix* alpha =
-            data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-        CORE::LINALG::SerialDenseMatrix* alphao =
-            data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+        CORE::LINALG::SerialDenseMatrix* alpha = &easdata_.alpha;    // Alpha_{n+1}
+        CORE::LINALG::SerialDenseMatrix* alphao = &easdata_.alphao;  // Alpha_n
         Teuchos::BLAS<unsigned int, double> blas;
         blas.COPY((*alphao).numRows() * (*alphao).numCols(), (*alphao).values(), 1,
             (*alpha).values(),
@@ -1105,9 +1101,9 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
   {
     // access general eas history stuff stored in element
     // get alpha of previous iteration
-    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
+    alpha = &easdata_.alpha;
     // get the old eas increment
-    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    eas_inc = &easdata_.eas_inc;
     if (!alpha || !eas_inc) dserror("Missing EAS history data (eas_inc and/or alpha)");
   }
 
@@ -1124,10 +1120,9 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
           NOX::NLN::StatusTest::quantity_eas, w1_neas(), (*alpha)[0], Owner());
 
       // get stored EAS history
-      CORE::LINALG::SerialDenseMatrix* oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
-      CORE::LINALG::SerialDenseMatrix* oldKaainv =
-          data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
-      CORE::LINALG::SerialDenseMatrix* oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+      CORE::LINALG::SerialDenseMatrix* oldfeas = &easdata_.feas;
+      CORE::LINALG::SerialDenseMatrix* oldKaainv = &easdata_.invKaa;
+      CORE::LINALG::SerialDenseMatrix* oldKda = &easdata_.Kda;
       if (!oldKaainv or !oldKda or !oldfeas) dserror("Missing EAS history-data");
 
       // we need the (residual) displacement at the previous step
@@ -1314,12 +1309,12 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get alpha of previous iteration
+    alpha = &easdata_.alpha;  // get alpha of previous iteration
 
     // get stored EAS history
-    oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
-    oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
-    oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+    oldfeas = &easdata_.feas;
+    oldKaainv = &easdata_.invKaa;
+    oldKda = &easdata_.Kda;
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
     // FixMe deprecated implementation
     if (not IsParamsInterface())
@@ -1555,7 +1550,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
   if (force != nullptr && stiffmatrix != nullptr)
   {
-    if (iseas_ == true)
+    if (iseas_)
     {
       // we need the inverse of Kaa
       using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
@@ -2208,7 +2203,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
     Z.shape(edof, Wall1::neas_);
 
     // get alpha of last converged state
-    alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");
+    alphao = &easdata_.alphao;
 
     // derivatives at origin
     CORE::FE::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
@@ -2275,9 +2270,6 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
 
     (*energies)(0) += internal_energy;
   }
-
-  // bye
-  return;
 }
 
 BACI_NAMESPACE_CLOSE

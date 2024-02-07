@@ -300,9 +300,6 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix,
           CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector& DummyForce);
 
-      //! container containing all kind of Truss3 thisandthat
-      DRT::Container data_;
-
       //! reference tangent position
       CORE::LINALG::Matrix<1, 3> diff_disp_ref_;
 

@@ -110,13 +110,13 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
       CORE::LINALG::SerialDenseMatrix eas_inc(Wall1::neas_, 1);
 
       // save EAS data into element container easdata_
-      data_.Add("alpha", alpha);
-      data_.Add("alphao", alphao);
-      data_.Add("feas", feas);
-      data_.Add("invKaa", invKaa);
-      data_.Add("Kda", Kda);
-      data_.Add("Kad", Kad);  // ONLY NEEDED FOR GENERALISED ENERGY-MOMENTUM METHOD
-      data_.Add("eas_inc", eas_inc);
+      easdata_.alpha = alpha;
+      easdata_.alphao = alphao;
+      easdata_.feas = feas;
+      easdata_.invKaa = invKaa;
+      easdata_.Kda = Kda;
+      easdata_.Kad = Kad;  // ONLY NEEDED FOR GENERALISED ENERGY-MOMENTUM METHOD
+      easdata_.eas_inc = eas_inc;
     }
   }
   else

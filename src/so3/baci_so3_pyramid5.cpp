@@ -99,7 +99,7 @@ void DRT::ELEMENTS::So_pyramid5Type::SetupElementDefinition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_pyramid5::So_pyramid5(int id, int owner)
-    : So_base(id, owner), data_(), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
+    : So_base(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
   kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   invJ_.resize(NUMGPT_SOP5, CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>(true));
@@ -128,7 +128,6 @@ DRT::ELEMENTS::So_pyramid5::So_pyramid5(int id, int owner)
 DRT::ELEMENTS::So_pyramid5::So_pyramid5(const DRT::ELEMENTS::So_pyramid5& old)
     : So_base(old),
       kintype_(old.kintype_),
-      data_(old.data_),
       detJ_(old.detJ_),
       pstype_(old.pstype_),
       pstime_(old.pstime_),
@@ -179,8 +178,6 @@ void DRT::ELEMENTS::So_pyramid5::Pack(CORE::COMM::PackBuffer& data) const
   Element::Pack(data);
   // kintype_
   AddtoPack(data, kintype_);
-  // data_
-  AddtoPack(data, data_);
 
   // detJ_
   AddtoPack(data, detJ_);
@@ -218,9 +215,6 @@ void DRT::ELEMENTS::So_pyramid5::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
   // kintype_
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
 
   // detJ_
   ExtractfromPack(position, data, detJ_);
@@ -265,7 +259,6 @@ void DRT::ELEMENTS::So_pyramid5::Print(std::ostream& os) const
   os << "So_pyramid5 ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }
 

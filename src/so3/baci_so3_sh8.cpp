@@ -194,7 +194,6 @@ void DRT::ELEMENTS::So_sh8::Print(std::ostream& os) const
   os << "So_sh8 ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }
 

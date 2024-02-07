@@ -64,8 +64,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ConstraintElement3Type::ComputeNu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(int id, int owner)
-    : DRT::Element(id, owner), data_()
+DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(int id, int owner) : DRT::Element(id, owner)
 {
   return;
 }
@@ -73,7 +72,7 @@ DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(int id, int owner)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(const DRT::ELEMENTS::ConstraintElement3& old)
-    : DRT::Element(old), data_(old.data_)
+    : DRT::Element(old)
 {
   return;
 }
@@ -99,9 +98,6 @@ void DRT::ELEMENTS::ConstraintElement3::Pack(CORE::COMM::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  // data_
-  AddtoPack(data, data_);
-
   return;
 }
 
@@ -118,11 +114,6 @@ void DRT::ELEMENTS::ConstraintElement3::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
-
-  // data_
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);

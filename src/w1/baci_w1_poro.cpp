@@ -22,11 +22,7 @@ BACI_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
-    : DRT::ELEMENTS::Wall1(id, owner),
-      data_(),
-      intpoints_(distype),
-      weights_(true),
-      myknots_(numdim_)
+    : DRT::ELEMENTS::Wall1(id, owner), intpoints_(distype), weights_(true), myknots_(numdim_)
 {
   numgpt_ = intpoints_.NumPoints();
 
@@ -46,7 +42,6 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(const DRT::ELEMENTS::Wall1_Poro<d
     : DRT::ELEMENTS::Wall1(old),
       invJ_(old.invJ_),
       detJ_(old.detJ_),
-      data_(old.data_),
       xsi_(old.xsi_),
       intpoints_(distype),
       init_(old.init_),
@@ -75,8 +70,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(CORE::COMM::PackBuffer& data) cons
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
-  // data_
-  AddtoPack(data, data_);
 
   // detJ_
   AddtoPack(data, detJ_);
@@ -114,11 +107,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
-
-  // data_
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
 
   // detJ_
   ExtractfromPack(position, data, detJ_);
@@ -182,7 +170,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
   os << "Wall1_Poro ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
 }
 
 template <CORE::FE::CellType distype>

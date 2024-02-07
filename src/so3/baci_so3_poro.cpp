@@ -22,7 +22,6 @@ BACI_NAMESPACE_OPEN
 template <class so3_ele, CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(int id, int owner)
     : so3_ele(id, owner),
-      data_(),
       intpoints_(distype),
       init_(false),
       scatra_coupling_(false),
@@ -46,7 +45,6 @@ template <class so3_ele, CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(
     const DRT::ELEMENTS::So3_Poro<so3_ele, distype>& old)
     : so3_ele(old),
-      data_(old.data_),
       invJ_(old.invJ_),
       detJ_(old.detJ_),
       xsi_(old.xsi_),
@@ -81,9 +79,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& dat
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   so3_ele::AddtoPack(data, type);
-
-  // data_
-  so3_ele::AddtoPack(data, data_);
 
   // detJ_
   so3_ele::AddtoPack(data, detJ_);
@@ -125,11 +120,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& 
   std::vector<char>::size_type position = 0;
 
   CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
-
-  // data_
-  std::vector<char> tmp(0);
-  so3_ele::ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
 
   // detJ_
   so3_ele::ExtractfromPack(position, data, detJ_);

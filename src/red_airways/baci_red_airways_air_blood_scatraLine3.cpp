@@ -75,9 +75,8 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Type::SetupElementDefinition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirBloodScatraLine3::RedAirBloodScatraLine3(int id, int owner)
-    : DRT::Element(id, owner), data_()
+    : DRT::Element(id, owner)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -86,12 +85,8 @@ DRT::ELEMENTS::RedAirBloodScatraLine3::RedAirBloodScatraLine3(int id, int owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirBloodScatraLine3::RedAirBloodScatraLine3(
     const DRT::ELEMENTS::RedAirBloodScatraLine3& old)
-    : DRT::Element(old),
-      data_(old.data_),
-      elemParams_(old.elemParams_),
-      generation_(old.generation_)
+    : DRT::Element(old), elemParams_(old.elemParams_), generation_(old.generation_)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*

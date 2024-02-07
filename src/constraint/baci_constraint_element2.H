@@ -207,9 +207,6 @@ namespace DRT
         calc_MPC_angle_stiff
       };
 
-      //! container containing all kind of constraint element data
-      DRT::Container data_;
-
       //! vector of surfaces of this element (length 1)
       std::vector<DRT::Element*> surface_;
 

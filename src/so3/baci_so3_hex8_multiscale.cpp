@@ -73,10 +73,10 @@ void DRT::ELEMENTS::So_hex8::soh8_set_eas_multi(Teuchos::ParameterList& params)
         oldKda == Teuchos::null)
       dserror("Cannot get EAS internal data from parameter list for multi-scale problems");
 
-    data_.Add("alpha", *(*oldalpha)[Id()]);
-    data_.Add("feas", *(*oldfeas)[Id()]);
-    data_.Add("invKaa", *(*oldKaainv)[Id()]);
-    data_.Add("Kda", *(*oldKda)[Id()]);
+    easdata_.alpha = *(*oldalpha)[Id()];
+    easdata_.feas = *(*oldfeas)[Id()];
+    easdata_.invKaa = *(*oldKaainv)[Id()];
+    easdata_.Kda = *(*oldKda)[Id()];
   }
 }
 

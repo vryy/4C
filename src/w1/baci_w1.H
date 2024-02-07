@@ -303,9 +303,6 @@ namespace DRT
         eas_q1et4   ///< Q1ET4 formulation due to Glaser and Armero [2]
       };
 
-      /// container containing all kind of wall1 thisandthat
-      DRT::Container data_;
-
       /// number of the material law
       int material_;
       /// element thickness
@@ -322,6 +319,21 @@ namespace DRT
       bool iseas_;
       /// EAS type
       enum EasType eastype_;
+
+      struct EASData
+      {
+        CORE::LINALG::SerialDenseMatrix alpha{};
+        CORE::LINALG::SerialDenseMatrix alphao{};
+        CORE::LINALG::SerialDenseMatrix feas{};
+        CORE::LINALG::SerialDenseMatrix invKaa{};
+        CORE::LINALG::SerialDenseMatrix Kda{};
+        CORE::LINALG::SerialDenseMatrix Kad{};
+        CORE::LINALG::SerialDenseMatrix eas_inc{};
+      };
+
+      // EAS data
+      EASData easdata_;
+
       //! struct_ale
       bool structale_;
 
@@ -587,6 +599,27 @@ namespace DRT
           const double fac                        ///< integration factor
       );
 
+      void PackEasData(CORE::COMM::PackBuffer& data) const
+      {
+        AddtoPack(data, easdata_.alpha);
+        AddtoPack(data, easdata_.alphao);
+        AddtoPack(data, easdata_.feas);
+        AddtoPack(data, easdata_.invKaa);
+        AddtoPack(data, easdata_.Kda);
+        AddtoPack(data, easdata_.Kad);
+        AddtoPack(data, easdata_.eas_inc);
+      };
+
+      void UnpackEasData(std::vector<char>::size_type& position, const std::vector<char>& data)
+      {
+        ExtractfromPack(position, data, easdata_.alpha);
+        ExtractfromPack(position, data, easdata_.alphao);
+        ExtractfromPack(position, data, easdata_.feas);
+        ExtractfromPack(position, data, easdata_.invKaa);
+        ExtractfromPack(position, data, easdata_.Kda);
+        ExtractfromPack(position, data, easdata_.Kad);
+        ExtractfromPack(position, data, easdata_.eas_inc);
+      };
       //@}
 
       /// @name Material matters

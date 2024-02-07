@@ -86,7 +86,6 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
       eint_(0.0),
       lrefe_(0.0),
       gaussrule_(CORE::FE::GaussRule1D::line_2point),
-      data_(),
       diff_disp_ref_(CORE::LINALG::Matrix<1, 3>(true)),
       interface_ptr_(Teuchos::null),
       isinit_(false),
@@ -106,7 +105,6 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
       eint_(old.eint_),
       lrefe_(old.lrefe_),
       gaussrule_(old.gaussrule_),
-      data_(old.data_),
       diff_disp_ref_(old.diff_disp_ref_),
       interface_ptr_(old.interface_ptr_),
       isinit_(old.isinit_),
@@ -158,7 +156,6 @@ void DRT::ELEMENTS::Truss3::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, crosssec_);
   AddtoPack(data, gaussrule_);
   AddtoPack(data, kintype_);
-  AddtoPack(data, data_);
 }
 
 
@@ -187,9 +184,6 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, gaussrule_);
   // kinematic type
   kintype_ = static_cast<KinematicType>(ExtractInt(position, data));
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);

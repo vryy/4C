@@ -440,9 +440,6 @@ namespace DRT
       //! current membrane thickness at gauss point
       std::vector<double> cur_thickness_;
 
-      //! container containing all kind of membrane thisandthat
-      DRT::Container data_;
-
       //! membrane stress/strain state
       DimensionalReduction planetype_;
 

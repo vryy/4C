@@ -268,12 +268,6 @@ namespace DRT
       //! \param data (out):  data to be filled by element if element recognizes the name
       bool VisData(const std::string& name, std::vector<double>& data) override;
 
-      //! \brief Add values to the data_ container
-      virtual void AddToData(const std::string& name, std::vector<double> data)
-      {
-        data_.Add(name, data);
-      };
-
       //@}
 
       //! @name Input and Creation
@@ -356,8 +350,6 @@ namespace DRT
       static constexpr int numdofpernode_ = 1;
       //! the element discretization type
       CORE::FE::CellType distype_;
-      //! container containing all kind of element this-and-that
-      DRT::Container data_;
 
       //! don't want = operator
       Thermo& operator=(const Thermo& old);

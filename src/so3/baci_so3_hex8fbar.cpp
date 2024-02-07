@@ -175,7 +175,6 @@ void DRT::ELEMENTS::So_hex8fbar::Print(std::ostream& os) const
   os << "So_hex8fbar ";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << data_;
   return;
 }
 

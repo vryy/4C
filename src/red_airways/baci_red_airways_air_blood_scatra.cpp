@@ -72,23 +72,15 @@ void DRT::ELEMENTS::RedAirBloodScatraType::SetupElementDefinition(
  |  ctor (public)                                           ismail 05/13|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(int id, int owner)
-    : DRT::Element(id, owner), data_()
-{
-  return;
-}
+DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(int id, int owner) : DRT::Element(id, owner) {}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      ismail 05/13|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(const DRT::ELEMENTS::RedAirBloodScatra& old)
-    : DRT::Element(old),
-      data_(old.data_),
-      elemParams_(old.elemParams_),
-      generation_(old.generation_)
+    : DRT::Element(old), elemParams_(old.elemParams_), generation_(old.generation_)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -178,6 +178,18 @@ namespace DRT
       //! type of EAS technology
       EASType eastype_;
 
+      struct EASData
+      {
+        CORE::LINALG::SerialDenseMatrix alpha;
+        CORE::LINALG::SerialDenseMatrix alphao;
+        CORE::LINALG::SerialDenseMatrix feas;
+        CORE::LINALG::SerialDenseMatrix invKaa;
+        CORE::LINALG::SerialDenseMatrix Kda;
+        CORE::LINALG::SerialDenseMatrix eas_inc;
+      };
+      //! EAS data
+      EASData easdata_;
+
       //! number of EAS parameters (alphas), defined by 'EASType"
       int neas_{};
       // line search parameter (old step length)
@@ -279,6 +291,26 @@ namespace DRT
 
       //! recover condensed EAS variables
       void soshw6_recover(const std::vector<double>& residual);
+
+      void PackEasData(CORE::COMM::PackBuffer& data) const
+      {
+        AddtoPack(data, easdata_.alpha);
+        AddtoPack(data, easdata_.alphao);
+        AddtoPack(data, easdata_.feas);
+        AddtoPack(data, easdata_.invKaa);
+        AddtoPack(data, easdata_.Kda);
+        AddtoPack(data, easdata_.eas_inc);
+      };
+
+      void UnpackEasData(std::vector<char>::size_type& position, const std::vector<char>& data)
+      {
+        ExtractfromPack(position, data, easdata_.alpha);
+        ExtractfromPack(position, data, easdata_.alphao);
+        ExtractfromPack(position, data, easdata_.feas);
+        ExtractfromPack(position, data, easdata_.invKaa);
+        ExtractfromPack(position, data, easdata_.Kda);
+        ExtractfromPack(position, data, easdata_.eas_inc);
+      };
 
      private:
       std::string GetElementTypeString() const { return "SOLIDSHW6"; }

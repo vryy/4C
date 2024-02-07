@@ -502,7 +502,7 @@ namespace DRT
           Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kap,  ///< current tangent k_ap
           CORE::LINALG::SerialDenseMatrix*& alpha,             ///< EAS parameters
           Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M,    ///< EAS shape functions
-          DRT::Container& data,                                ///< (input) data
+          EASData& data,                                       ///< (input) data
           const CORE::LINALG::Matrix<NUMDISP_, 1>& dispi,      ///< current residual displacements
           const CORE::LINALG::Matrix<NUMPRES_, 1>& presi       ///< current residual pressures
       );
