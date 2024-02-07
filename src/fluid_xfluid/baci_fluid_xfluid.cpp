@@ -12,7 +12,6 @@ interface
 
 #include "baci_fluid_xfluid.H"
 
-#include "baci_comm_parobjectfactory.H"
 #include "baci_cut_cutwizard.H"
 #include "baci_cut_elementhandle.H"
 #include "baci_cut_sidehandle.H"
@@ -31,8 +30,6 @@ interface
 #include "baci_inpar_parameterlist_utils.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_io_gmsh.H"
-#include "baci_io_linedefinition.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_xfem.H"
@@ -101,11 +98,6 @@ FLD::XFluid::XFluid(const Teuchos::RCP<DRT::Discretization>& actdis,
     dserror("so far the framework is tested just for one level-set coupling object");
 
   return;
-}
-
-void FLD::XFluid::SetDofSetCouplingMap(const std::map<std::string, int>& dofset_coupling_map)
-{
-  dofset_coupling_map_ = dofset_coupling_map;
 }
 
 void FLD::XFluid::AddAdditionalScalarDofsetAndCoupling()
@@ -4739,16 +4731,6 @@ void FLD::XFluid::SetInitialFlowField(
 
   return;
 }  // end SetInitialFlowField
-
-
-void FLD::XFluid::WriteAccess_GeometricQuantities(Teuchos::RCP<Epetra_Vector>& scalaraf,
-    Teuchos::RCP<Epetra_MultiVector>& smoothed_gradphiaf, Teuchos::RCP<Epetra_Vector>& curvatureaf)
-{
-  condition_manager_->WriteAccess_GeometricQuantities(scalaraf, smoothed_gradphiaf, curvatureaf);
-}
-
-void FLD::XFluid::ExportGeometricQuantities() { condition_manager_->ExportGeometricQuantities(); }
-
 
 // -------------------------------------------------------------------
 // set general fluid parameter (AE 01/2011)

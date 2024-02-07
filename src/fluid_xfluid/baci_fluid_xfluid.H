@@ -124,8 +124,6 @@ namespace FLD
     void Init() override { Init(true); }
     virtual void Init(bool createinitialstate);
 
-    void SetDofSetCouplingMap(const std::map<std::string, int>& dofset_coupling_map);
-
     void AddAdditionalScalarDofsetAndCoupling();
 
     void CheckInitializedDofSetCouplingMap();
@@ -273,8 +271,6 @@ namespace FLD
       return state_->velpressplitter_->CondMap();
     }
 
-    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitterStd() { return velpressplitter_std_; }
-
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
       return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(state_->sysmat_);
@@ -344,14 +340,6 @@ namespace FLD
     virtual void CreateInitialState();
 
     virtual void UpdateALEStateVectors(Teuchos::RCP<FLD::XFluidState> state = Teuchos::null);
-
-    void WriteAccess_GeometricQuantities(Teuchos::RCP<Epetra_Vector>& scalaraf,
-        Teuchos::RCP<Epetra_MultiVector>& smoothed_gradphiaf,
-        Teuchos::RCP<Epetra_Vector>& curvatureaf);
-
-    void ExportGeometricQuantities();
-
-    const Teuchos::RCP<const Epetra_Vector> GetTransportVelocity();
 
     void UpdateGridv() override;
 
@@ -664,16 +652,6 @@ namespace FLD
     INPAR::XFEM::CouplingMethod CouplingMethod() const { return coupling_method_; }
 
     //@}
-
-    /// Takes DofRowMap with just one xfem-Dofset and duplicates the dof gids for export of
-    /// gridvelocity!
-    Teuchos::RCP<Epetra_Map> ExtendMap(
-        Teuchos::RCP<Epetra_Map> srcmap, int numdofspernode, int numdofsets, bool copy);
-
-    /// Export XFluid Vector to State Vector
-    void GetStateVectorXFluid(
-        Teuchos::RCP<Epetra_Vector>& xfluidvec, Teuchos::RCP<Epetra_Vector>& statevec);
-
 
     //    //! @name Get material properties for the Volume Cell
     //    /*!
