@@ -215,18 +215,14 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case ELEMENTS::struct_calc_recover:
-    {
-      // do nothing here
-      break;
-    }
-
     case ELEMENTS::struct_calc_predict:
+    case ELEMENTS::struct_calc_recover:
+    case ELEMENTS::struct_gauss_point_data_output:
+    case ELEMENTS::struct_init_gauss_point_data_output:
     {
-      // do nothing here
+      // do nothing in this cases
       break;
     }
-
     default:
       std::cout << "\ncalled element with action type " << ActionType2String(act);
       dserror("This action type is not implemented for Beam3eb");
