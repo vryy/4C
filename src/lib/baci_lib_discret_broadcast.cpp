@@ -21,6 +21,50 @@
 
 BACI_NAMESPACE_OPEN
 
+
+namespace
+{
+  void UnPackCondition(const Teuchos::RCP<std::vector<char>> e, const std::string& condname,
+      Teuchos::RCP<DRT::Discretization>& dis)
+  {
+    std::vector<char>::size_type index = 0;
+    while (index < e->size())
+    {
+      std::vector<char> data;
+      CORE::COMM::ParObject::ExtractfromPack(index, *e, data);
+      CORE::COMM::ParObject* o = CORE::COMM::Factory(data);
+      auto* cond = dynamic_cast<DRT::Condition*>(o);
+      if (cond == nullptr)
+      {
+        dserror("Failed to build boundary condition from the stored data %s", condname.c_str());
+      }
+      dis->SetCondition(condname, Teuchos::rcp(cond));
+    }
+  }
+
+  Teuchos::RCP<std::vector<char>> PackCondition(
+      const std::string& condname, Teuchos::RCP<DRT::Discretization>& dis)
+  {
+    if (!dis->Filled()) dserror("FillComplete was not called on this discretization");
+
+    // get boundary conditions
+    std::vector<DRT::Condition*> cond;
+    dis->GetCondition(condname, cond);
+
+    CORE::COMM::PackBuffer buffer;
+
+    for (auto* c : cond) c->Pack(buffer);
+
+    buffer.StartPacking();
+
+    for (auto* c : cond) c->Pack(buffer);
+
+    Teuchos::RCP<std::vector<char>> block = Teuchos::rcp(new std::vector<char>);
+    std::swap(*block, buffer());
+    return block;
+  }
+}  // namespace
+
 /*----------------------------------------------------------------------*
  | broadcast all discretizations from group 0 to all other groups using
  | a ponzi scheme                                          biehler 05/13 |
@@ -254,14 +298,14 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     {
       std::vector<DRT::Condition*> conds;
       dis->GetCondition(condnames[i], conds);
-      Teuchos::RCP<std::vector<char>> data = dis->PackCondition(condnames[i]);
+      Teuchos::RCP<std::vector<char>> data = PackCondition(condnames[i], dis);
       if (lcomm->MyPID() == 0)
       {
         condmap[i] = *data;
         std::vector<char> char_condname(condnames[i].begin(), condnames[i].end());
         condnamemap[i] = char_condname;
       }
-      commondis->UnPackCondition(data, condnames[i]);
+      UnPackCondition(data, condnames[i], commondis);
     }
   }  // if (group->GroupId()==sgroup)
 
@@ -290,8 +334,9 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     {
       auto charname = fool2->second;
       const std::string name = std::string(charname.begin(), charname.end());
-      commondis->UnPackCondition(Teuchos::rcp(&(fool1->second), false), name);
-      dis->UnPackCondition(Teuchos::rcp(&(fool1->second), false), name);
+
+      UnPackCondition(Teuchos::rcp(&(fool1->second), false), name, commondis);
+      UnPackCondition(Teuchos::rcp(&(fool1->second), false), name, dis);
       ++fool2;
     }
   }
@@ -536,14 +581,14 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
     {
       std::vector<DRT::Condition*> conds;
       dis->GetCondition(condnames[i], conds);
-      Teuchos::RCP<std::vector<char>> data = dis->PackCondition(condnames[i]);
+      Teuchos::RCP<std::vector<char>> data = PackCondition(condnames[i], dis);
       if (lcomm->MyPID() == 0)
       {
         condmap[i] = *data;
         std::vector<char> char_condname(condnames[i].begin(), condnames[i].end());
         condnamemap[i] = char_condname;
       }
-      commondis->UnPackCondition(data, condnames[i]);
+      UnPackCondition(data, condnames[i], commondis);
     }
   }  // if (group->GroupId()==sgroup)
 
@@ -572,8 +617,8 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
       auto charname = fool2->second;
       const std::string name = std::string(charname.begin(), charname.end());
 
-      commondis->UnPackCondition(Teuchos::rcp(&(fool1->second), false), name);
-      dis->UnPackCondition(Teuchos::rcp(&(fool1->second), false), name);
+      UnPackCondition(Teuchos::rcp(&(fool1->second), false), name, commondis);
+      UnPackCondition(Teuchos::rcp(&(fool1->second), false), name, dis);
       ++fool2;
     }
   }

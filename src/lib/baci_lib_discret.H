@@ -1978,18 +1978,6 @@ namespace DRT
     Teuchos::RCP<std::vector<char>> PackMyNodes() const;
 
     /*!
-    \brief Pack condition (this is done by one processor, since data is redundant).
-
-    Call Pack on the condition with the given name and put the results into
-    a common vector. This is used to output the allow working with conditions in the post filter.
-
-    \note Filled()=true is a prerequisite
-   */
-    Teuchos::RCP<std::vector<char>> PackCondition(const std::string&
-            condname  ///< name of condition as it is used in GetCondition() or SetCondition()
-    ) const;
-
-    /*!
       \brief Unpack element buffer and create local elements.
 
       Interprets the argument as packed elements and unpacks them on the
@@ -2012,19 +2000,6 @@ namespace DRT
       \note Sets Filled()=false
      */
     void UnPackMyNodes(Teuchos::RCP<std::vector<char>> e);
-
-    /*!
-      \brief Unpack one condition.
-
-      Interprets the argument as packed condition and unpacks them on the
-      local processor. At the moment, the conditions are redundant on all processors
-
-      \param e        (in): buffer of packed nodes
-      \param condname (in): name of the condition
-
-      \note Sets Filled()=false
-     */
-    void UnPackCondition(const Teuchos::RCP<std::vector<char>> e, const std::string& condname);
 
     //@}
 

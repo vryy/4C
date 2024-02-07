@@ -748,31 +748,6 @@ Teuchos::RCP<std::vector<char>> DRT::Discretization::PackMyNodes() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> DRT::Discretization::PackCondition(
-    const std::string& condname) const
-{
-  if (!Filled()) dserror("FillComplete was not called on this discretization");
-
-  // get boundary conditions
-  std::vector<DRT::Condition*> cond;
-  GetCondition(condname, cond);
-
-  CORE::COMM::PackBuffer buffer;
-
-  for (auto* c : cond) c->Pack(buffer);
-
-  buffer.StartPacking();
-
-  for (auto* c : cond) c->Pack(buffer);
-
-  Teuchos::RCP<std::vector<char>> block = Teuchos::rcp(new std::vector<char>);
-  std::swap(*block, buffer());
-  return block;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> e)
 {
   std::vector<char>::size_type index = 0;
@@ -815,26 +790,6 @@ void DRT::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
   Reset();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::Discretization::UnPackCondition(
-    const Teuchos::RCP<std::vector<char>> e, const std::string& condname)
-{
-  std::vector<char>::size_type index = 0;
-  while (index < e->size())
-  {
-    std::vector<char> data;
-    CORE::COMM::ParObject::ExtractfromPack(index, *e, data);
-    CORE::COMM::ParObject* o = CORE::COMM::Factory(data);
-    auto* cond = dynamic_cast<DRT::Condition*>(o);
-    if (cond == nullptr)
-    {
-      dserror("Failed to build boundary condition from the stored data %s", condname.c_str());
-    }
-    SetCondition(condname, Teuchos::rcp(cond));
-  }
-  Reset();
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

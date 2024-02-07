@@ -414,9 +414,6 @@ namespace IO
     /// access the Epetra_Comm object
     virtual const Epetra_Comm& Comm() const;
 
-    //! write a condition identified by its name
-    void WriteCondition(const std::string condname) const;
-
     /*!
       \brief write a knotvector for a nurbs discretisation
 
