@@ -22,7 +22,7 @@ baci_auto_define_module()
 
 # Manually add the configured headers to the config target
 target_sources(
-  ${AUTO_DEFINED_MODULE_NAME}
+  ${AUTO_DEFINED_MODULE_NAME}_deps
   INTERFACE FILE_SET
             HEADERS
             BASE_DIRS

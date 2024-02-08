@@ -9,5 +9,3 @@ baci_add_google_test_executable(
   SOURCE
   ${SOURCE_LIST}
   )
-
-baci_link_google_test_necessary_libraries(${TESTNAME} core)

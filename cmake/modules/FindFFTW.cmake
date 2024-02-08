@@ -22,5 +22,5 @@ if(FFTW_FOUND)
   message(STATUS "FFTW include directory: ${FFTW_INCLUDE_DIR}")
   message(STATUS "FFTW libraries: ${FFTW_LIBRARY}")
 
-  baci_add_dependency(baci_all_enabled_external_dependencies fftw::fftw)
+  target_link_libraries(baci_all_enabled_external_dependencies INTERFACE fftw::fftw)
 endif()

@@ -33,7 +33,7 @@ if(Backtrace_FOUND AND NOT TARGET Backtrace::Backtrace)
 endif()
 
 if(Backtrace_FOUND)
-  baci_add_dependency(baci_all_enabled_external_dependencies Backtrace::Backtrace)
+  target_link_libraries(baci_all_enabled_external_dependencies INTERFACE Backtrace::Backtrace)
   message(STATUS "Backtrace include directory: ${Backtrace_INCLUDE_DIR}")
   message(STATUS "Backtrace library directory: ${Backtrace_LIBRARY}")
 endif(Backtrace_FOUND)

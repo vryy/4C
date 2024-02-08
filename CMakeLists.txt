@@ -120,12 +120,6 @@ if(BACI_WITH_ADDRESS_SANITIZER)
   set(BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
 endif()
 
-# hide libraries
-
-if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src)
-endif(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 set(baciname baci-${BUILD_TYPE})
 
@@ -142,6 +136,10 @@ add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
 
 include(cmake/setup_tests.cmake)
 
+# Create one large library: every module adds itself to this target
+set(BACI_LIBRARY_NAME baci_lib)
+add_library(${BACI_LIBRARY_NAME})
+
 # Read in the source directory which defines all modules
 add_subdirectory(src)
 add_subdirectory(apps)
@@ -155,15 +153,3 @@ add_subdirectory(doc/readthedocs EXCLUDE_FROM_ALL)
 add_subdirectory(unittests)
 add_subdirectory(tests/cut_test)
 include(TestingFramework.cmake)
-
-# Store the defined modules in a variable for consumption by baci_link_executable_with_all()
-get_property(BACI_ALL_DEFINED_MODULE_TARGETS GLOBAL PROPERTY BACI_ALL_DEFINED_MODULE_TARGETS)
-
-## After we defined all targets, we can now resolve the legacy linking
-get_property(
-  BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING GLOBAL
-  PROPERTY BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING
-  )
-foreach(target ${BACI_TARGETS_REQUIRING_CYCLIC_LEGACY_LINKING})
-  baci_link_executable_with_all(${target})
-endforeach()

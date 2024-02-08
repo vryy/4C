@@ -24,20 +24,20 @@ function(baci_add_library _target)
     message(FATAL_ERROR "There are unparsed arguments: ${_parsed_UNPARSED_ARGUMENTS}")
   endif()
 
+  # Define an interface library for usage requirements only
+  add_library(${_target}_deps INTERFACE)
+
   # See if there are any sources and headers and define appropriate targets.
   if(NOT _parsed_SOURCES)
-    set(_target_link_type INTERFACE)
-    add_library(${_target} INTERFACE)
-
     if(_parsed_HEADERS)
       message(DEBUG "${_target} is a header-only target")
     else()
       message(DEBUG "${_target} is a pure interface target without headers or sources")
     endif()
   else()
-    set(_target_link_type PUBLIC)
     message(DEBUG "${_target} is a target with sources")
-    add_library(${_target} ${_parsed_SOURCES})
+    add_library(${_target}_objs OBJECT ${_parsed_SOURCES})
+    target_link_libraries(${_target}_objs PUBLIC ${_target}_deps)
   endif()
 
   # Check that every header includes baci_config.H
@@ -53,18 +53,11 @@ function(baci_add_library _target)
   endforeach()
 
   # Add the headers as a file set, which will automatically add the current directory as a search directory
-  target_sources(
-    ${_target}
-    ${_target_link_type}
-    FILE_SET
-    HEADERS
-    FILES
-    ${_parsed_HEADERS}
-    )
+  target_sources(${_target}_deps INTERFACE FILE_SET HEADERS FILES ${_parsed_HEADERS})
 
   # Add all global compile definitions
-  target_link_libraries(${_target} ${_target_link_type} baci_global_compile_settings)
+  target_link_libraries(${_target}_deps INTERFACE baci_global_compile_settings)
 
   # Link against all default external libraries
-  baci_link_default_external_libraries(${_target} ${_target_link_type})
+  baci_link_default_external_libraries(${_target}_deps INTERFACE)
 endfunction()

@@ -26,5 +26,5 @@ if(Boost_FOUND)
               "-DBOOST_MINOR_VERSION=${Boost_MINOR_VERSION}"
     )
 
-  baci_add_dependency(baci_all_enabled_external_dependencies Boost::system Boost::graph)
+  target_link_libraries(baci_all_enabled_external_dependencies INTERFACE Boost::system Boost::graph)
 endif()

@@ -52,6 +52,14 @@ function(baci_add_google_test_executable TESTNAME)
     )
   target_include_directories(${TESTNAME} PRIVATE ${PROJECT_SOURCE_DIR})
 
+  # All libraries are linked as PRIVATE since a unit test executable cannot be used as a dependency itself.
+  target_link_libraries(${TESTNAME} PRIVATE gtest gmock)
+
+  # Link to common helpers for unit tests
+  target_link_libraries(${TESTNAME} PRIVATE unittests_common)
+
+  target_link_libraries(${TESTNAME} PRIVATE baci_lib)
+
   # the first process will write a unit test report
   separate_arguments(
     MPIEXEC_EXTRA_OPTS_FOR_TESTING_LIST UNIX_COMMAND ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}
