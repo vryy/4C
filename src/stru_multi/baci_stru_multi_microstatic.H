@@ -16,6 +16,8 @@
 
 #include "baci_config.H"
 
+#include "baci_comm_parobject.H"
+#include "baci_comm_parobjectfactory.H"
 #include "baci_inpar_structure.H"
 #include "baci_linalg_fixedsizematrix.H"
 
@@ -326,7 +328,52 @@ namespace STRUMULTI
   };
 
 
+  class MicroStaticParObjectType : public CORE::COMM::ParObjectType
+  {
+   public:
+    [[nodiscard]] std::string Name() const override { return "MicroStaticParObjectType"; }
 
+    static MicroStaticParObjectType& Instance() { return instance_; };
+
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+
+   private:
+    static MicroStaticParObjectType instance_;
+  };
+
+  class MicroStaticParObject : public CORE::COMM::ParObject
+  {
+   public:
+    [[nodiscard]] inline int UniqueParObjectId() const override
+    {
+      return STRUMULTI::MicroStaticParObjectType::Instance().UniqueParObjectId();
+    };
+
+    void Pack(CORE::COMM::PackBuffer& data) const override;
+
+    void Unpack(const std::vector<char>& data) override;
+
+    struct MicroStaticData
+    {
+      int gp_{};
+      int microdisnum_{};
+      int eleowner_{};
+      double V0_{};
+      CORE::LINALG::SerialDenseMatrix defgrd_;
+      CORE::LINALG::SerialDenseMatrix stress_;
+      CORE::LINALG::SerialDenseMatrix cmat_;
+    };
+
+    [[nodiscard]] inline const MicroStaticData* GetMicroStaticDataPtr() const
+    {
+      return std::addressof(microstatic_data_);
+    };
+
+    inline void SetMicroStaticData(MicroStaticData& micro_data) { microstatic_data_ = micro_data; };
+
+   private:
+    MicroStaticData microstatic_data_{};
+  };
 }  // namespace STRUMULTI
 BACI_NAMESPACE_CLOSE
 

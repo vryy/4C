@@ -20,6 +20,7 @@
 #include "baci_lib_condition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_elementtype.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -753,8 +754,6 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
         break;
     }
   }
-
-  return;
 }  // STRUMULTI::MicroStatic::Output()
 
 
@@ -1117,9 +1116,8 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
     // macroscale until the next update of macroscopic time step, when
     // build_stiff is set to true in the micromaterialgp again!
 
-    if (mod_newton == true) build_stiff = false;
+    if (mod_newton) build_stiff = false;
   }
-  return;
 }
 
 
@@ -1128,7 +1126,53 @@ void STRUMULTI::stop_np_multiscale()
   Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
   int task[2] = {9, 0};
   subcomm->Broadcast(task, 2, 0);
-  return;
+}
+
+
+void STRUMULTI::MicroStaticParObject::Pack(CORE::COMM::PackBuffer& data) const
+{
+  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  sm.Insert();
+
+  AddtoPack(data, UniqueParObjectId());
+
+  const auto* micro_data = STRUMULTI::MicroStaticParObject::GetMicroStaticDataPtr();
+  AddtoPack(data, micro_data->gp_);
+  AddtoPack(data, micro_data->eleowner_);
+  AddtoPack(data, micro_data->microdisnum_);
+  AddtoPack(data, micro_data->V0_);
+  AddtoPack(data, micro_data->defgrd_);
+  AddtoPack(data, micro_data->stress_);
+  AddtoPack(data, micro_data->cmat_);
+}
+
+void STRUMULTI::MicroStaticParObject::Unpack(const std::vector<char>& data)
+{
+  std::vector<char>::size_type position = 0;
+
+  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+
+  STRUMULTI::MicroStaticParObject::MicroStaticData micro_data{};
+  ExtractfromPack(position, data, micro_data.gp_);
+  ExtractfromPack(position, data, micro_data.eleowner_);
+  ExtractfromPack(position, data, micro_data.microdisnum_);
+  ExtractfromPack(position, data, micro_data.V0_);
+  ExtractfromPack(position, data, micro_data.defgrd_);
+  ExtractfromPack(position, data, micro_data.stress_);
+  ExtractfromPack(position, data, micro_data.cmat_);
+  SetMicroStaticData(micro_data);
+
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+}
+
+STRUMULTI::MicroStaticParObjectType STRUMULTI::MicroStaticParObjectType::instance_;
+
+CORE::COMM::ParObject* STRUMULTI::MicroStaticParObjectType::Create(const std::vector<char>& data)
+{
+  auto* micro = new STRUMULTI::MicroStaticParObject();
+  micro->Unpack(data);
+  return micro;
 }
 
 BACI_NAMESPACE_CLOSE

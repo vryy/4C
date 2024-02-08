@@ -15,10 +15,8 @@ analysis for supporting processors
 #include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
 #include "baci_global_data.H"
-#include "baci_lib_container.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_mat_micromaterial.H"
+#include "baci_stru_multi_microstatic.H"
 
 #include <hdf5.h>
 
@@ -85,26 +83,24 @@ void STRUMULTI::np_support_drt()
         Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
         // create an exporter object that will figure out the communication pattern
         CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
-        std::map<int, Teuchos::RCP<DRT::Container>> condnamemap;
-        exporter.Export<DRT::Container>(condnamemap);
+        std::map<int, Teuchos::RCP<STRUMULTI::MicroStaticParObject>> condnamemap;
+        exporter.Export<STRUMULTI::MicroStaticParObject>(condnamemap);
 
+        const auto* micro_data = condnamemap[0]->GetMicroStaticDataPtr();
         // extract received data from the container
-        const CORE::LINALG::SerialDenseMatrix* defgrdcopy =
-            condnamemap[0]->Get<CORE::LINALG::SerialDenseMatrix>("defgrd");
+        const CORE::LINALG::SerialDenseMatrix* defgrdcopy = &micro_data->defgrd_;
         CORE::LINALG::Matrix<3, 3> defgrd(
             *(const_cast<CORE::LINALG::SerialDenseMatrix*>(defgrdcopy)), true);
-        const CORE::LINALG::SerialDenseMatrix* cmatcopy =
-            condnamemap[0]->Get<CORE::LINALG::SerialDenseMatrix>("cmat");
+        const CORE::LINALG::SerialDenseMatrix* cmatcopy = &micro_data->cmat_;
         CORE::LINALG::Matrix<6, 6> cmat(
             *(const_cast<CORE::LINALG::SerialDenseMatrix*>(cmatcopy)), true);
-        const CORE::LINALG::SerialDenseMatrix* stresscopy =
-            condnamemap[0]->Get<CORE::LINALG::SerialDenseMatrix>("stress");
+        const CORE::LINALG::SerialDenseMatrix* stresscopy = &micro_data->stress_;
         CORE::LINALG::Matrix<6, 1> stress(
             *(const_cast<CORE::LINALG::SerialDenseMatrix*>(stresscopy)), true);
-        int gp = condnamemap[0]->GetInt("gp");
-        int microdisnum = condnamemap[0]->GetInt("microdisnum");
-        double V0 = condnamemap[0]->GetDouble("V0");
-        bool eleowner = condnamemap[0]->GetInt("eleowner");
+        int gp = micro_data->gp_;
+        int microdisnum = micro_data->microdisnum_;
+        double V0 = micro_data->V0_;
+        bool eleowner = (bool)micro_data->eleowner_;
 
         // dummy material is used to evaluate the micro material
         dummymaterials[eleID]->Evaluate(
@@ -137,18 +133,19 @@ void STRUMULTI::np_support_drt()
         Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
         // create an exporter object that will figure out the communication pattern
         CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
-        std::map<int, Teuchos::RCP<DRT::Container>> condnamemap;
-        exporter.Export<DRT::Container>(condnamemap);
+        std::map<int, Teuchos::RCP<STRUMULTI::MicroStaticParObject>> condnamemap;
+        exporter.Export<STRUMULTI::MicroStaticParObject>(condnamemap);
+        const auto* micro_data = condnamemap[0]->GetMicroStaticDataPtr();
 
         // extract received data from the container
-        int gp = condnamemap[0]->GetInt("gp");
-        int microdisnum = condnamemap[0]->GetInt("microdisnum");
-        double V0 = condnamemap[0]->GetDouble("V0");
-        bool eleowner = condnamemap[0]->GetInt("eleowner");
+        int gp = micro_data->gp_;
+        int microdisnum = micro_data->microdisnum_;
+        double V0 = micro_data->V0_;
+        bool eleowner = micro_data->eleowner_;
 
         // the material is replaced in read mesh within restart on macro scale; this is done here
         // manually one-time
-        if (restart == false)
+        if (!restart)
         {
           restart = true;
           dummymaterials.clear();
@@ -175,8 +172,6 @@ void STRUMULTI::np_support_drt()
     }
 
   }  // end while(true) loop
-
-  return;
 }
 
 BACI_NAMESPACE_CLOSE

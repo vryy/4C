@@ -11,12 +11,12 @@
 #include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
 #include "baci_global_data.H"
-#include "baci_lib_container.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_densematrix_svd.H"
 #include "baci_mat_micromaterial.H"
 #include "baci_mat_micromaterialgp_static.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_stru_multi_microstatic.H"
 
 BACI_NAMESPACE_OPEN
 
@@ -101,8 +101,8 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   subcomm->Broadcast(task, 2, 0);
 
   // container is filled with data for supporting procs
-  std::map<int, Teuchos::RCP<DRT::Container>> condnamemap;
-  condnamemap[0] = Teuchos::rcp(new DRT::Container());
+  std::map<int, Teuchos::RCP<STRUMULTI::MicroStaticParObject>> condnamemap;
+  condnamemap[0] = Teuchos::rcp(new STRUMULTI::MicroStaticParObject());
 
   const auto convert_to_serial_dense_matrix = [](const auto& matrix)
   {
@@ -115,20 +115,22 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     return data;
   };
 
-  condnamemap[0]->Add("defgrd", convert_to_serial_dense_matrix(*defgrd_enh));
-  condnamemap[0]->Add("cmat", convert_to_serial_dense_matrix(*cmat));
-  condnamemap[0]->Add("stress", convert_to_serial_dense_matrix(*stress));
-  condnamemap[0]->Add("gp", gp);
-  condnamemap[0]->Add("microdisnum", microdisnum);
-  condnamemap[0]->Add("V0", V0);
-  condnamemap[0]->Add("eleowner", eleowner);
+  STRUMULTI::MicroStaticParObject::MicroStaticData microdata{};
+  microdata.defgrd_ = convert_to_serial_dense_matrix(*defgrd_enh);
+  microdata.cmat_ = convert_to_serial_dense_matrix(*cmat);
+  microdata.stress_ = convert_to_serial_dense_matrix(*stress);
+  microdata.gp_ = gp;
+  microdata.microdisnum_ = microdisnum;
+  microdata.V0_ = V0;
+  microdata.eleowner_ = eleowner;
+  condnamemap[0]->SetMicroStaticData(microdata);
 
   // maps are created and data is broadcast to the supporting procs
   int tag = 0;
   Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
-  exporter.Export<DRT::Container>(condnamemap);
+  exporter.Export<STRUMULTI::MicroStaticParObject>(condnamemap);
 
   // standard evaluation of the micro material
   if (matgp_.find(gp) == matgp_.end())
@@ -153,8 +155,6 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // reactivate macroscale material
   GLOBAL::Problem::Instance()->Materials()->ResetReadFromProblem();
-
-  return;
 }
 
 double MAT::MicroMaterial::Density() const { return density_; }
@@ -180,8 +180,6 @@ void MAT::MicroMaterial::Evaluate(CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // reactivate macroscale material
   GLOBAL::Problem::Instance()->Materials()->ResetReadFromProblem();
-
-  return;
 }
 
 
@@ -266,20 +264,22 @@ void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool e
   subcomm->Broadcast(task, 2, 0);
 
   // container is filled with data for supporting procs
-  std::map<int, Teuchos::RCP<DRT::Container>> condnamemap;
-  condnamemap[0] = Teuchos::rcp(new DRT::Container());
+  std::map<int, Teuchos::RCP<STRUMULTI::MicroStaticParObject>> condnamemap;
+  condnamemap[0] = Teuchos::rcp(new STRUMULTI::MicroStaticParObject());
 
-  condnamemap[0]->Add("gp", gp);
-  condnamemap[0]->Add("microdisnum", microdisnum);
-  condnamemap[0]->Add("V0", V0);
-  condnamemap[0]->Add("eleowner", eleowner);
+  STRUMULTI::MicroStaticParObject::MicroStaticData microdata{};
+  microdata.gp_ = gp;
+  microdata.microdisnum_ = microdisnum;
+  microdata.V0_ = V0;
+  microdata.eleowner_ = eleowner;
+  condnamemap[0]->SetMicroStaticData(microdata);
 
   // maps are created and data is broadcast to the supporting procs
   int tag = 0;
   Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
-  exporter.Export<DRT::Container>(condnamemap);
+  exporter.Export<STRUMULTI::MicroStaticParObject>(condnamemap);
 
   if (matgp_.find(gp) == matgp_.end())
   {
