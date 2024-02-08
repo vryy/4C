@@ -493,6 +493,8 @@ void ScaTraFilter::WriteAllResults(PostField* field)
   // oxygen output for poromultiphase-scatra problems with artery coupling
   writer_->WriteResult("oxypartpress", "oxypartpress", nodebased, 1);
 
+  writer_->WriteResult("micro_conc", "micro_conc", nodebased, 1);
+
   // write element results (e.g. element owner)
   WriteElementResults(field);
 }
@@ -581,6 +583,8 @@ void ElchFilter::WriteAllResults(PostField* field)
 
   // write scatra-scatra interface layer thickness
   writer_->WriteResult("intlayerthickness", "thickness_plating", nodebased, 1);
+
+  writer_->WriteResult("micro_conc", "micro_conc", nodebased, 1);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);

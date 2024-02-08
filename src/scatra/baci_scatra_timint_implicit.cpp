@@ -2958,6 +2958,17 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 
     output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
   }
+
+  if (NdsMicro() != -1)
+  {
+    // convert vector to multi vector
+    auto micro_conc_multi = Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), 1, true));
+
+    for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
+      (*micro_conc_multi)[0][inode] = (*phinp_micro_)[inode];
+
+    output_->WriteVector("micro_conc", micro_conc_multi, IO::nodevector);
+  }
 }
 
 /*----------------------------------------------------------------------*
