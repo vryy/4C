@@ -7,12 +7,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_POST_COMMON_WRITER_BASE_H
-#define BACI_POST_COMMON_WRITER_BASE_H
+#ifndef BACI_POST_WRITER_BASE_H
+#define BACI_POST_WRITER_BASE_H
 
 #include "baci_config.H"
 
-#include "baci_post_common_filter_base.H"
+#include "baci_post_filter_base.H"
 
 #include <fstream>
 #include <string>
@@ -140,4 +140,4 @@ class PostWriterBase
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POST_COMMON_WRITER_BASE_H
+#endif

@@ -19,8 +19,8 @@
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_post_common.H"
-#include "baci_post_common_single_field_writers.H"
-#include "baci_post_common_writer_base.H"
+#include "baci_post_processor_single_field_writers.H"
+#include "baci_post_writer_base.H"
 #include "baci_thermo_ele_action.H"
 
 #include <string>

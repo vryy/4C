@@ -8,8 +8,8 @@
  \level 1
  */
 
-#ifndef BACI_POST_COMMON_FILTER_BASE_H
-#define BACI_POST_COMMON_FILTER_BASE_H
+#ifndef BACI_POST_FILTER_BASE_H
+#define BACI_POST_FILTER_BASE_H
 
 #include "baci_config.H"
 
@@ -102,4 +102,4 @@ class PostFilterBase
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POST_COMMON_FILTER_BASE_H
+#endif

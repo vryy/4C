@@ -1,0 +1,6 @@
+add_subdirectory(create_rtdfiles)
+add_subdirectory(global_full)
+add_subdirectory(post_monitor)
+add_subdirectory(post_processor)
+add_subdirectory(pre_exodus)
+add_subdirectory(pre_locsys)
