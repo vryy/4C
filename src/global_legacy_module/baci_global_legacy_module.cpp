@@ -159,6 +159,7 @@
 #include "baci_so3_weg6.H"
 #include "baci_solid_ele.H"
 #include "baci_solid_poro_ele.H"
+#include "baci_stru_multi_microstatic.H"
 #include "baci_structure_new_functions.H"
 #include "baci_thermo_element.H"
 #include "baci_torsion3.H"
@@ -374,7 +375,8 @@ namespace
       << BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::Instance().Name() << " "
       << BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::Instance().Name() << " "
       << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " "
-      << PARTICLEENGINE::ParticleObjectType::Instance().Name() << " ";
+      << PARTICLEENGINE::ParticleObjectType::Instance().Name() << " "
+      << STRUMULTI::MicroStaticParObjectType::Instance().Name() << " ";
   }
 
   void AttachFunctionDefinitions(CORE::UTILS::FunctionManager& function_manager)
