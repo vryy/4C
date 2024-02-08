@@ -274,11 +274,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportBoundaryType::Create(
 DRT::ELEMENTS::Transport::Transport(int id, int owner)
     : DRT::Element(id, owner),
       distype_(CORE::FE::CellType::dis_none),
-      data_(),
+      name_(),
+      vis_map_(),
       numdofpernode_(-1),
       impltype_(INPAR::SCATRA::impltype_undefined)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -287,11 +287,11 @@ DRT::ELEMENTS::Transport::Transport(int id, int owner)
 DRT::ELEMENTS::Transport::Transport(const DRT::ELEMENTS::Transport& old)
     : DRT::Element(old),
       distype_(old.distype_),
-      data_(old.data_),
+      name_(old.name_),
+      vis_map_(old.vis_map_),
       numdofpernode_(old.numdofpernode_),
       impltype_(old.impltype_)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -570,8 +570,6 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum, DRT::Element* oldele)
     somat->GetFiberVecs(fibervecs);
     actmat->Setup(fibervecs[0]);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -597,12 +595,11 @@ void DRT::ELEMENTS::Transport::Pack(CORE::COMM::PackBuffer& data) const
   Element::Pack(data);
 
   // add internal data
-  AddtoPack(data, data_);
+  AddtoPack(data, name_);
+  AddtoPack(data, vis_map_);
   AddtoPack(data, numdofpernode_);
   AddtoPack(data, distype_);
   AddtoPack(data, impltype_);
-
-  return;
 }
 
 
@@ -622,17 +619,14 @@ void DRT::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // extract internal data
-  std::vector<char> tmp(0);
-  ExtractfromPack(position, data, tmp);
-  data_.Unpack(tmp);
+  ExtractfromPack(position, data, name_);
+  ExtractfromPack(position, data, vis_map_);
   ExtractfromPack(position, data, numdofpernode_);
   distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -677,9 +671,6 @@ void DRT::ELEMENTS::Transport::Print(std::ostream& os) const
   std::cout << std::endl;
   std::cout << "Type of scalar transport: " << SCATRA::ImplTypeToString(impltype_) << std::endl;
   std::cout << std::endl;
-  std::cout << data_;
-
-  return;
 }
 
 
@@ -713,27 +704,25 @@ void DRT::ELEMENTS::Transport::VisNames(std::map<std::string, int>& names)
 
     // element Peclet number
     std::string name = "Pe_" + temp.str();
-    const std::vector<double>* Pe = data_.Get<std::vector<double>>(name);
+    const std::vector<double>* Pe = &vis_map_[name];
     if (Pe) names.insert(std::pair<std::string, int>(name, 1));
 
     // element Peclet number (only migration term)
     name = "Pe_mig_" + temp.str();
-    const std::vector<double>* Pe_mig = data_.Get<std::vector<double>>(name);
+    const std::vector<double>* Pe_mig = &vis_map_[name];
     if (Pe_mig) names.insert(std::pair<std::string, int>(name, 1));
 
     // characteristic element length
     name = "hk_" + temp.str();
-    const std::vector<double>* hk = data_.Get<std::vector<double>>(name);
+    const std::vector<double>* hk = &vis_map_[name];
     if (hk) names.insert(std::pair<std::string, int>(name, 1));
 
     // Stabilization parameter at element center
     name = "tau_" + temp.str();
-    const std::vector<double>* tau = data_.Get<std::vector<double>>(name);
+    const std::vector<double>* tau = &vis_map_[name];
     if (tau) names.insert(std::pair<std::string, int>(name, 1));
 
   }  // loop over transported scalars
-
-  return;
 }
 
 
@@ -753,8 +742,7 @@ bool DRT::ELEMENTS::Transport ::VisData(const std::string& name, std::vector<dou
         (name == "hk_" + temp.str()) || (name == "tau_" + temp.str()))
     {
       if ((int)data.size() != 1) dserror("size mismatch");
-      const double value = data_.GetDouble(name);
-      data[0] = value;
+      data[0] = name_;
       return true;
     }
   }  // loop over transported scalars
@@ -770,8 +758,6 @@ void DRT::ELEMENTS::Transport ::SetImplType(const INPAR::SCATRA::ImplType implty
 {
   // set implementation type
   impltype_ = impltype;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

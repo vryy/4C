@@ -272,14 +272,6 @@ namespace DRT
       */
       bool VisData(const std::string& name, std::vector<double>& data) override;
 
-      /*!
-      \brief Add values to the data_ container
-      */
-      virtual void AddToData(const std::string& name, std::vector<double> data)
-      {
-        data_.Add(name, data);
-      };
-
       //! set implementation type
       void SetImplType(const INPAR::SCATRA::ImplType impltype);
 
@@ -401,8 +393,11 @@ namespace DRT
 
 
      private:
-      //! container containing all kind of element thisandthat
-      DRT::Container data_;
+      /// data used for visualization purposes
+      double name_{};
+
+      /// data used for visualization purposes
+      std::map<std::string, std::vector<double>> vis_map_{};
 
       /*!
        * \brief number of dofs per node (for systems of transport equations)
