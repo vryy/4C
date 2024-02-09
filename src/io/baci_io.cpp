@@ -521,7 +521,7 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
       output_(output_control),
       spatial_approx_(shape_function_type)
 {
-  if (output_ != Teuchos::null) binio_ = output_->BinIO();
+  if (output_ != Teuchos::null) binio_ = output_->WriteBinaryOutput();
   // not nice, but needed in order to let pre_exodus read fields without output control file
   else
     binio_ = false;
@@ -547,7 +547,7 @@ IO::DiscretizationWriter::DiscretizationWriter(const IO::DiscretizationWriter& w
       spatial_approx_(writer.spatial_approx_)
 {
   output_ = (control.is_null() ? writer.output_ : control);
-  if (not output_.is_null()) binio_ = output_->BinIO();
+  if (not output_.is_null()) binio_ = output_->WriteBinaryOutput();
 
   if (type == CopyType::deep)
   {
@@ -1657,8 +1657,7 @@ void IO::DiscretizationWriter::WriteRedundantIntVector(
 void IO::DiscretizationWriter::SetOutput(Teuchos::RCP<OutputControl> output)
 {
   output_ = output;
-  binio_ = output_->BinIO();
-  return;
+  binio_ = output_->WriteBinaryOutput();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1668,7 +1667,6 @@ void IO::DiscretizationWriter::ClearMapCache()
 {
   mapcache_.clear();
   mapstack_.clear();
-  return;
 }
 
 /*----------------------------------------------------------------------------*

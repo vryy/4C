@@ -28,15 +28,43 @@ namespace IO
   class OutputControl
   {
    public:
+    /*!
+     * @brief construct output control object
+     *
+     * @param[in] comm                    communicator
+     * @param[in] problemtype             problem type
+     * @param[in] type_of_spatial_approx  spatial approximation type of the fe discretization
+     * @param[in] inputfile               file name of input file
+     * @param[in] outputname           output file name prefix
+     * @param[in] ndim                 number of space dimensions
+     * @param[in] restart_step         step from which restart is performed
+     * @param[in] filesteps            number of output steps per binary file
+     * @param[in] write_binary_output  flag indicating if output is written in binary format
+     */
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
         CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
-        const std::string& outputname, int ndim, int restart, int filesteps,
-        int create_controlfile);
+        const std::string& outputname, int ndim, int restart_step, int filesteps,
+        bool write_binary_output);
 
+    /*!
+     * @brief construct output control object
+     *
+     * @param[in] comm                    communicator
+     * @param[in] problemtype             problem type
+     * @param[in] type_of_spatial_approx  spatial approximation type of the fe discretization
+     * @param[in] inputfile               file name of input file
+     * @param[in] restartname          file name prefix for restart
+     * @param[in] outputname           output file name prefix
+     * @param[in] ndim                 number of space dimensions
+     * @param[in] restart_step         step from which restart is performed
+     * @param[in] filesteps            number of output steps per binary file
+     * @param[in] write_binary_output  flag indicating if output is written in binary format
+     * @param[in] adaptname            flag indicating if output name is adapted
+     */
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
         CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
-        const std::string& restartname, std::string outputname, int ndim, int restart,
-        int filesteps, int create_controlfile, bool adaptname = true);
+        const std::string& restartname, std::string outputname, int ndim, int restart_step,
+        int filesteps, bool write_binary_output, bool adaptname = true);
 
     /// \brief copy constructor
     /** \param[in] ocontrol   Copy this object of same type
@@ -79,6 +107,9 @@ namespace IO
     /// number of output steps per binary file
     int FileSteps() const { return filesteps_; }
 
+    /// time step the simulation is restarted from
+    int RestartStep() const { return restart_step_; }
+
     // modify the number of output steps per binary file
     // (necessary for the structural debugging option "OUTPUTEVERYITER")
     void SetFileSteps(int filesteps) { filesteps_ = filesteps; }
@@ -86,7 +117,7 @@ namespace IO
     /// input filename
     std::string InputFileName() const { return inputfile_; }
 
-    int BinIO() const { return create_controlfile_; }
+    bool WriteBinaryOutput() const { return write_binary_output_; }
 
     /// overwrites result files
     void OverwriteResultFile(const CORE::FE::ShapeFunctionType& spatial_approx);
@@ -111,13 +142,14 @@ namespace IO
    private:
     std::string problemtype_;
     std::string inputfile_;  ///< input file name
-    int ndim_;
+    const int ndim_;
     std::string filename_;  ///< prefix of outputfiles (might contain path)
     std::string restartname_;
     std::fstream controlfile_;
     int filesteps_;
-    int create_controlfile_;
-    int myrank_;
+    const int restart_step_;
+    const int myrank_;
+    const bool write_binary_output_;
   };
 
 

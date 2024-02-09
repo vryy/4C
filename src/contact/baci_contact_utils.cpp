@@ -354,8 +354,9 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
   static std::vector<std::string> done_prefixes;
 
   const std::string path(IO::ExtractPath(ofile_path));
-  const std::string dir_name(
-      IO::RemoveRestartCountFromFileName(IO::ExtractFileName(ofile_path)) + "_conservation");
+  const std::string dir_name(IO::RemoveRestartStepFromFileName(IO::ExtractFileName(ofile_path),
+                                 GLOBAL::Problem::Instance()->Restart()) +
+                             "_conservation");
 
   std::string full_filepath(path + dir_name);
   IO::CreateDirectory(full_filepath, mypid);

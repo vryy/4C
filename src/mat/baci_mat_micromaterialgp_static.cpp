@@ -181,7 +181,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
         Teuchos::rcp(new IO::OutputControl(microdis->Comm(), "Structure",
             microproblem->SpatialApproximationType(), "micro-input-file-not-known", restartname_,
             newfilename, ndim, restart, macrocontrol->FileSteps(),
-            INPUT::IntegralValue<int>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
+            INPUT::IntegralValue<bool>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
 
     micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(
         microdis, microcontrol, microproblem->SpatialApproximationType()));
