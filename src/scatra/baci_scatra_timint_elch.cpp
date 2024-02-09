@@ -2844,8 +2844,8 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
           }
 
           // extract nodal cloud of current condition and perform safety check
-          const std::vector<int>* nodegids = cccvhalfcyclecondition->GetNodes();
-          if (!nodegids or nodegids->empty())
+          const auto nodegids = cccvhalfcyclecondition->GetNodes();
+          if (nodegids->empty())
           {
             dserror(
                 "Constant-current constant-voltage (CCCV) cell cycling boundary condition does "
@@ -2859,7 +2859,7 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
             if (discret_->HaveGlobalNode(nodegid))
             {
               // extract current node
-              const DRT::Node* const node = discret_->gNode(nodegid);
+              auto* const node = discret_->gNode(nodegid);
 
               // consider only nodes owned by current processor
               if (node->Owner() == discret_->Comm().MyPID())
@@ -2884,9 +2884,8 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
 
       // transform set into vector and then into Epetra map
       std::vector<int> dbcgidsvec(dbcgids.begin(), dbcgids.end());
-      const Teuchos::RCP<const Epetra_Map> dbcmap =
-          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(dbcgids.size()), dbcgidsvec.data(),
-              DofRowMap()->IndexBase(), DofRowMap()->Comm()));
+      auto dbcmap = Teuchos::rcp(new const Epetra_Map(-1, static_cast<int>(dbcgids.size()),
+          dbcgidsvec.data(), DofRowMap()->IndexBase(), DofRowMap()->Comm()));
 
       // merge map with existing map for Dirichlet boundary conditions
       // Note: the dbcmaps_ internal member is reset every time EvaluateDirichlet() is called on the
@@ -2916,30 +2915,24 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
       discret_->GetCondition("CCCVHalfCycle", cccvhalfcycleconditions);
 
       // loop over all conditions
-      for (const auto& cccvhalfcyclecondition : cccvhalfcycleconditions)
+      for (const auto& condition : cccvhalfcycleconditions)
       {
         // check relevance of current condition
-        if (cccvhalfcyclecondition->GetInt("ConditionID") ==
-            cccv_condition_->GetHalfCycleConditionID())
+        if (condition->GetInt("ConditionID") == cccv_condition_->GetHalfCycleConditionID())
         {
-          // extract condition
-          DRT::Condition& condition = *cccvhalfcyclecondition;
-
-          if (condition.GType() != DRT::Condition::Point)
+          if (condition->GType() != DRT::Condition::Point)
           {
             // To avoid code redundancy, we evaluate the condition using the element-based algorithm
             // for standard Neumann boundary conditions. For this purpose, we must provide the
             // condition with some features to make it look like a standard Neumann boundary
             // condition.
-            std::vector<int> onoff(2, 0);
-            std::vector<double> val(2, 0.);
-            onoff[1] =
-                1;  // activate Neumann boundary condition for electric potential degree of freedom
-            val[1] = condition.GetDouble("Current");  // set value of Neumann boundary condition
-            condition.Add("numdof", 2);
-            condition.Add("funct", std::vector<int>(2, 0));
-            condition.Add("onoff", onoff);
-            condition.Add("val", val);
+            const std::vector<int> onoff = {0, 1};
+            const std::vector<double> val = {0.0, condition->GetDouble("Current")};
+            const std::vector<int> funct = {0, 0};
+            condition->Add("numdof", 2);
+            condition->Add("funct", funct);
+            condition->Add("onoff", onoff);
+            condition->Add("val", val);
 
             // create parameter list for elements
             Teuchos::ParameterList params;
@@ -2949,36 +2942,35 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
                 "action", SCATRA::BoundaryAction::calc_Neumann, params);
 
             // loop over all conditioned elements
-            std::map<int, Teuchos::RCP<DRT::Element>>& geometry = condition.Geometry();
-            std::map<int, Teuchos::RCP<DRT::Element>>::iterator iterator;
-            for (iterator = geometry.begin(); iterator != geometry.end(); ++iterator)
+            for (const auto& [ele_gid, ele] : condition->Geometry())
             {
               // get location vector of current element
               std::vector<int> lm;
               std::vector<int> lmowner;
               std::vector<int> lmstride;
-              iterator->second->LocationVector(*discret_, lm, lmowner, lmstride);
+              ele->LocationVector(*discret_, lm, lmowner, lmstride);
 
               // initialize element-based vector of Neumann loads
               CORE::LINALG::SerialDenseVector elevector(static_cast<int>(lm.size()));
 
               // evaluate Neumann boundary condition
-              iterator->second->EvaluateNeumann(params, *discret_, condition, lm, elevector);
+              ele->EvaluateNeumann(params, *discret_, *condition, lm, elevector);
 
-              // assemble element-based vector of Neumann loads into global vector of Neumann loads
+              // assemble element-based vector of Neumann loads into global vector of Neumann
+              // loads
               CORE::LINALG::Assemble(*neumann_loads, elevector, lm, lmowner);
             }  // loop over all conditioned elements
           }
           else
           {
-            for (int node_gid : *condition.GetNodes())
+            for (int node_gid : *condition->GetNodes())
             {
               auto* node = discret_->gNode(node_gid);
               auto dofs = discret_->Dof(0, node);
               const int dof_gid = dofs[2];
               const int dof_lid = DofRowMap()->LID(dof_gid);
 
-              const double neumann_value = condition.GetDouble("Current");
+              const double neumann_value = condition->GetDouble("Current");
 
               constexpr double four_pi = 4.0 * M_PI;
               const double fac =
