@@ -8,7 +8,6 @@
 /* headers */
 #include "baci_io_runtime_csv_writer.H"
 
-#include "baci_global_data.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_utils_exceptions.H"
@@ -48,7 +47,7 @@ namespace IO
   class RuntimeCsvWriterProc0 : public RuntimeCsvWriterImpl
   {
    public:
-    explicit RuntimeCsvWriterProc0(std::string outputname);
+    explicit RuntimeCsvWriterProc0(const IO::OutputControl& output_control, std::string outputname);
 
     void RegisterDataVector(
         const std::string& dataname, unsigned int numcomponents, int precision) override;
@@ -123,22 +122,26 @@ namespace IO
 
   void RuntimeCsvWriter::WriteFile() { implementation_->WriteFile(); }
 
-  RuntimeCsvWriter::RuntimeCsvWriter(int myrank, std::string outputname)
+  RuntimeCsvWriter::RuntimeCsvWriter(
+      int myrank, const IO::OutputControl& output_control, std::string outputname)
   {
     if (myrank == 0)
-      implementation_ = std::make_unique<RuntimeCsvWriterProc0>(std::move(outputname));
+    {
+      implementation_ =
+          std::make_unique<RuntimeCsvWriterProc0>(output_control, std::move(outputname));
+    }
     else
       implementation_ = std::make_unique<RuntimeCsvWriterOtherProcs>();
   }
 
   RuntimeCsvWriter::~RuntimeCsvWriter() = default;
 
-  RuntimeCsvWriterProc0::RuntimeCsvWriterProc0(std::string outputname)
+  RuntimeCsvWriterProc0::RuntimeCsvWriterProc0(
+      const IO::OutputControl& output_control, std::string outputname)
       : header_line_written_(false), outputname_(std::move(outputname)), time_(0.0), timestep_(-1)
   {
     // determine full path to output prefix
-    const std::string fullpathoutputprefix =
-        (GLOBAL::Problem::Instance()->OutputControlFile()->FileName());
+    const std::string fullpathoutputprefix = output_control.FileName();
 
     // set full path to output file
     fullpathoutputfile_ = fullpathoutputprefix + "-" + outputname_ + ".csv";
@@ -150,12 +153,11 @@ namespace IO
     }
 
     // in case of restart copy content of restart file to output file prior to restart time step
-    const int restart = GLOBAL::Problem::Instance()->Restart();
-    if (restart)
+    const int restart_step = output_control.RestartStep();
+    if (restart_step)
     {
       // determine full path to restart prefix
-      const std::string fullpathrestartprefix =
-          GLOBAL::Problem::Instance()->OutputControlFile()->RestartName();
+      const std::string fullpathrestartprefix = output_control.RestartName();
 
       // set full path to restart file
       const std::string fullpathrestartfile = fullpathrestartprefix + "-" + outputname_ + ".csv";
@@ -188,7 +190,7 @@ namespace IO
         const int timestep = std::stoi(word);
 
         // append current line
-        if (timestep <= restart) sectionpriorrestart << line << "\n";
+        if (timestep <= restart_step) sectionpriorrestart << line << "\n";
       }
 
       restartfile.close();

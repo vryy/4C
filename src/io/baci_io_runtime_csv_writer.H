@@ -22,6 +22,7 @@ BACI_NAMESPACE_OPEN
 
 namespace IO
 {
+  class OutputControl;
   class RuntimeCsvWriterImpl;
 
   /*!
@@ -36,7 +37,7 @@ namespace IO
   class RuntimeCsvWriter
   {
    public:
-    RuntimeCsvWriter(int myrank, std::string outputname);
+    RuntimeCsvWriter(int myrank, const IO::OutputControl& output_control, std::string outputname);
 
     ~RuntimeCsvWriter();
 
