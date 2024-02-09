@@ -49,6 +49,7 @@
 # the directory baci/src/<dir> but also baci/unittests/<dir>
 
 # Note: stick to alphabetical order
+adapt_file_extensions.py                    @baci/team_infrastructure
 
 adapter/                                    @baci/team_discretization
 adapter/baci_adapter_ale*                        @baci/team_fluid
