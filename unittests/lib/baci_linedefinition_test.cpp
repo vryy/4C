@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_io_linedefinition.H"
+#include "baci_io_linedefinition.hpp"
 
 #include <sstream>
 

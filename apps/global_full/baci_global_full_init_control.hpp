@@ -7,11 +7,11 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_GLOBAL_FULL_INIT_CONTROL_H
-#define BACI_GLOBAL_FULL_INIT_CONTROL_H
+#ifndef BACI_GLOBAL_FULL_INIT_CONTROL_HPP
+#define BACI_GLOBAL_FULL_INIT_CONTROL_HPP
 
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
 #include <string>
 

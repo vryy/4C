@@ -10,9 +10,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_CREATE_RTDFILES_WRAPPER_H
-#define BACI_CREATE_RTDFILES_WRAPPER_H
-#include "baci_config.H"
+#ifndef BACI_CREATE_RTDFILES_WRAPPER_HPP
+#define BACI_CREATE_RTDFILES_WRAPPER_HPP
+#include "baci_config.hpp"
 
 #include <string>
 

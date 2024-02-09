@@ -9,21 +9,21 @@
 \level 0
 */
 
-#include "baci_config_revision.H"
+#include "baci_config_revision.hpp"
 
-#include "baci_create_rtdfiles_wrapper.H"
+#include "baci_create_rtdfiles_wrapper.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_create_rtdfiles_utils.H"
-#include "baci_global_data.H"
-#include "baci_inpar_validconditions.H"
-#include "baci_inpar_validcontactconstitutivelaw.H"
-#include "baci_inpar_validmaterials.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_elementdefinition.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
+#include "baci_comm_utils.hpp"
+#include "baci_create_rtdfiles_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validconditions.hpp"
+#include "baci_inpar_validcontactconstitutivelaw.hpp"
+#include "baci_inpar_validmaterials.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_elementdefinition.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
 
 #include <iostream>
 

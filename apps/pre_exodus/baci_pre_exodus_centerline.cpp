@@ -9,9 +9,9 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include "baci_pre_exodus_centerline.H"
+#include "baci_pre_exodus_centerline.hpp"
 
-#include "baci_pre_exodus_soshextrusion.H"  // for Gmsh plot
+#include "baci_pre_exodus_soshextrusion.hpp"  // for Gmsh plot
 
 #include <iostream>
 #include <list>

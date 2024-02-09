@@ -8,7 +8,7 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_io_string_converter.H"
+#include "baci_io_string_converter.hpp"
 
 #include <map>
 #include <stdexcept>

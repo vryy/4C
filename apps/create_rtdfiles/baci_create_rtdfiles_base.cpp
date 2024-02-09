@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 
 #
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_create_rtdfiles_wrapper.H"
+#include "baci_create_rtdfiles_wrapper.hpp"
 
 #include <cstring>
 #include <filesystem>

@@ -13,13 +13,13 @@
 \addtogroup Monitoring
 *//*! @{ (documentation module open)*/
 
-#ifndef BACI_POST_MONITOR_H
-#define BACI_POST_MONITOR_H
+#ifndef BACI_POST_MONITOR_HPP
+#define BACI_POST_MONITOR_HPP
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_post_common.H"
+#include "baci_lib_discret.hpp"
+#include "baci_post_common.hpp"
 
 #include <Teuchos_CommandLineProcessor.hpp>
 

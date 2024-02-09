@@ -11,11 +11,11 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_anisotropy.H"
-#include "baci_matelast_coupanisoexpo.H"
-#include "baci_matelast_coupanisoexposhear.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_anisotropy.hpp"
+#include "baci_matelast_coupanisoexpo.hpp"
+#include "baci_matelast_coupanisoexposhear.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 namespace
 {

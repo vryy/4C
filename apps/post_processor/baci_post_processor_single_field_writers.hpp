@@ -8,13 +8,13 @@
  */
 
 
-#ifndef BACI_POST_PROCESSOR_SINGLE_FIELD_WRITERS_H
-#define BACI_POST_PROCESSOR_SINGLE_FIELD_WRITERS_H
+#ifndef BACI_POST_PROCESSOR_SINGLE_FIELD_WRITERS_HPP
+#define BACI_POST_PROCESSOR_SINGLE_FIELD_WRITERS_HPP
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_post_filter_base.H"
-#include "baci_post_writer_base.H"
+#include "baci_post_filter_base.hpp"
+#include "baci_post_writer_base.hpp"
 
 #include <Epetra_MultiVector.h>
 

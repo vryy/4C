@@ -10,13 +10,13 @@ Here everything related with the exodus format and the accessible data
 is handed to a c++ object mesh.
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_PRE_EXODUS_READER_H
-#define BACI_PRE_EXODUS_READER_H
+#ifndef BACI_PRE_EXODUS_READER_HPP
+#define BACI_PRE_EXODUS_READER_HPP
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_lib_element.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_element.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <iostream>
 #include <string>

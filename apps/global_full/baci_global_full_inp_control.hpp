@@ -8,10 +8,10 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_GLOBAL_FULL_INP_CONTROL_H
-#define BACI_GLOBAL_FULL_INP_CONTROL_H
+#ifndef BACI_GLOBAL_FULL_INP_CONTROL_HPP
+#define BACI_GLOBAL_FULL_INP_CONTROL_HPP
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>

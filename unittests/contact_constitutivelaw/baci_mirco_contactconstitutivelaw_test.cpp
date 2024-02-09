@@ -10,9 +10,9 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #ifdef BACI_WITH_MIRCO
 

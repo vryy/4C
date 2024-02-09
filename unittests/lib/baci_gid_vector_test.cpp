@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_lib_utils_gid_vector.H"
+#include "baci_lib_utils_gid_vector.hpp"
 
 #include <Epetra_MpiComm.h>
 

@@ -13,14 +13,14 @@
 \addtogroup Monitoring
 *//*! @{ (documentation module open)*/
 
-#include "baci_post_monitor.H"
+#include "baci_post_monitor.hpp"
 
-#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "baci_global_data.H"
-#include "baci_io_legacy_table.H"
-#include "baci_lib_discret.H"
-#include "baci_post_common.H"
-#include "baci_thermo_ele_action.H"
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_legacy_table.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_post_common.hpp"
+#include "baci_thermo_ele_action.hpp"
 
 #include <Teuchos_CommandLineProcessor.hpp>
 

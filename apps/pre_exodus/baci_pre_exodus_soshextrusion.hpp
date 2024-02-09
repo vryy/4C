@@ -9,13 +9,13 @@
 Here everything related with solid-shell body extrusion
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_PRE_EXODUS_SOSHEXTRUSION_H
-#define BACI_PRE_EXODUS_SOSHEXTRUSION_H
+#ifndef BACI_PRE_EXODUS_SOSHEXTRUSION_HPP
+#define BACI_PRE_EXODUS_SOSHEXTRUSION_HPP
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_pre_exodus_reader.H"
-#include "baci_utils_exceptions.H"
+#include "baci_pre_exodus_reader.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
 

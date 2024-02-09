@@ -8,10 +8,10 @@ interactions
 
 #include <gtest/gtest.h>
 
-#include "baci_particle_interaction_sph_artificialviscosity.H"
+#include "baci_particle_interaction_sph_artificialviscosity.hpp"
 
-#include "baci_particle_interaction_utils.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_particle_interaction_utils.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 namespace
 {

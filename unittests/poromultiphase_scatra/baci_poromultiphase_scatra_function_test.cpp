@@ -8,7 +8,7 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_poromultiphase_scatra_function.H"
+#include "baci_poromultiphase_scatra_function.hpp"
 
 #include <memory>
 #include <string>

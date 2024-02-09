@@ -6,12 +6,12 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_cut_element.H"
-#include "baci_cut_mesh.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-#include "baci_global_data.H"
+#include "baci_cut_element.hpp"
+#include "baci_cut_mesh.hpp"
+#include "baci_discretization_fem_general_utils_gausspoints.hpp"
+#include "baci_global_data.hpp"
 
 #include <fenv.h>
 #include <Teuchos_CommandLineProcessor.hpp>
@@ -20,7 +20,7 @@
 #include <sstream>
 #include <string>
 
-#include "cut_test_utils.H"
+#include "cut_test_utils.hpp"
 
 void test_bacigenerated_26182();
 void test_bacigenerated_238343();

@@ -8,14 +8,14 @@
 // End doxygen header.
 
 
-#ifndef BACI_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_TEST_H
-#define BACI_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_TEST_H
+#ifndef BACI_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_TEST_HPP
+#define BACI_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_TEST_HPP
 
 
-#include "baci_geometry_pair_element_faces.H"
-#include "baci_lib_discret.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_surface.H"
+#include "baci_geometry_pair_element_faces.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_surface.hpp"
 
 #include <Teuchos_RCP.hpp>
 

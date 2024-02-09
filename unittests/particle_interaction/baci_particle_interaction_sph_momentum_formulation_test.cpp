@@ -6,9 +6,9 @@
 /*---------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_particle_interaction_sph_momentum_formulation.H"
+#include "baci_particle_interaction_sph_momentum_formulation.hpp"
 
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 #include <cmath>
 

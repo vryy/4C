@@ -9,12 +9,12 @@
 Here is everything related with writing a dat-file
  */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_PRE_EXODUS_WRITEDAT_H
-#define BACI_PRE_EXODUS_WRITEDAT_H
+#ifndef BACI_PRE_EXODUS_WRITEDAT_HPP
+#define BACI_PRE_EXODUS_WRITEDAT_HPP
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_pre_exodus_readbc.H"
+#include "baci_pre_exodus_readbc.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -10,10 +10,10 @@ Here everything related with the exodus format and the accessible data
 is handed to a c++ object mesh.
 */
 /*----------------------------------------------------------------------*/
-#include "baci_pre_exodus_reader.H"
+#include "baci_pre_exodus_reader.hpp"
 
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_pre_exodus_soshextrusion.H"  //for gmsh plot
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_pre_exodus_soshextrusion.hpp"  //for gmsh plot
 
 #include <Epetra_SerialComm.h>
 #include <exodusII.h>

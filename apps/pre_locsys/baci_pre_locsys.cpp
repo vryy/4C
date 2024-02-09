@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_linalg_fixedsizematrix.H"
+#include "baci_discretization_fem_general_largerotations.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
 
 #include <Teuchos_RCP.hpp>
 

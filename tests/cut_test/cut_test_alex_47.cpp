@@ -6,19 +6,19 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_meshintersection.H"
-#include "baci_cut_options.H"
-#include "baci_cut_side.H"
-#include "baci_cut_tetmeshintersection.H"
-#include "baci_cut_volumecell.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_cut_meshintersection.hpp"
+#include "baci_cut_options.hpp"
+#include "baci_cut_side.hpp"
+#include "baci_cut_tetmeshintersection.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "cut_test_utils.H"
+#include "cut_test_utils.hpp"
 
 void test_alex47()
 {

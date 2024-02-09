@@ -3,15 +3,15 @@
 \brief special assertions for BACI code
 \level 1
 *----------------------------------------------------------------------*/
-#ifndef BACI_UNITTEST_UTILS_ASSERTIONS_TEST_H
-#define BACI_UNITTEST_UTILS_ASSERTIONS_TEST_H
+#ifndef BACI_UNITTEST_UTILS_ASSERTIONS_TEST_HPP
+#define BACI_UNITTEST_UTILS_ASSERTIONS_TEST_HPP
 
 #include <gtest/gtest.h>
 
 #include <gmock/gmock.h>
 
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
 
 #include <type_traits>
 

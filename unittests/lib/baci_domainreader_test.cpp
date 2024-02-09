@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_lib_discret.H"
-#include "baci_lib_domainreader.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_domainreader.hpp"
 
 #include <Epetra_SerialComm.h>
 

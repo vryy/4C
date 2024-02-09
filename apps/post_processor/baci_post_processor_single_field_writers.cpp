@@ -9,11 +9,11 @@
 
 
 
-#include "baci_post_processor_single_field_writers.H"
+#include "baci_post_processor_single_field_writers.hpp"
 
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_post_common.H"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_post_common.hpp"
 
 #include <string>
 

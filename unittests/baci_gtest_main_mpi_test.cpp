@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
 int main(int argc, char* argv[])
 {

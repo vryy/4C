@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_particle_engine_container_bundle.H"
+#include "baci_particle_engine_container_bundle.hpp"
 
 
 namespace

@@ -14,10 +14,10 @@ or the well-known .dat file is created.
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_PRE_EXODUS_H
-#define BACI_PRE_EXODUS_H
+#ifndef BACI_PRE_EXODUS_HPP
+#define BACI_PRE_EXODUS_HPP
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
 BACI_NAMESPACE_OPEN
 

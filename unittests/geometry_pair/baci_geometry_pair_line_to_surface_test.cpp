@@ -10,15 +10,15 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_geometry_pair_line_to_surface.H"
+#include "baci_geometry_pair_line_to_surface.hpp"
 
-#include "baci_beam3_reissner.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_line_to_surface_evaluation_data.H"
-#include "baci_geometry_pair_line_to_surface_geometry_test.H"
-#include "baci_geometry_pair_utility_classes.H"
-#include "baci_inpar_beam_to_solid.H"
-#include "baci_so3_surface.H"
+#include "baci_beam3_reissner.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_line_to_surface_evaluation_data.hpp"
+#include "baci_geometry_pair_line_to_surface_geometry_test.hpp"
+#include "baci_geometry_pair_utility_classes.hpp"
+#include "baci_inpar_beam_to_solid.hpp"
+#include "baci_so3_surface.hpp"
 
 using namespace GEOMETRYPAIR;
 

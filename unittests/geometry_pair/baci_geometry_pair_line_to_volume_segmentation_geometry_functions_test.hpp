@@ -8,14 +8,14 @@
 // End doxygen header.
 
 
-#ifndef BACI_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_GEOMETRY_FUNCTIONS_TEST_H
-#define BACI_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_GEOMETRY_FUNCTIONS_TEST_H
+#ifndef BACI_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_GEOMETRY_FUNCTIONS_TEST_HPP
+#define BACI_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_GEOMETRY_FUNCTIONS_TEST_HPP
 
 
-#include "baci_so3_hex27.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_nurbs27.H"
-#include "baci_so3_tet10.H"
+#include "baci_so3_hex27.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_nurbs27.hpp"
+#include "baci_so3_tet10.hpp"
 
 
 namespace

@@ -9,11 +9,11 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_contact_element.H"
-#include "baci_lib_utils_reference_configuration.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_tet4.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_contact_element.hpp"
+#include "baci_lib_utils_reference_configuration.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_tet4.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 #include <Epetra_SerialComm.h>
 

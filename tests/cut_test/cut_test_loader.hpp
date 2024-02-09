@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef CUT_TEST_LOADER_H
-#define CUT_TEST_LOADER_H
+#ifndef CUT_TEST_LOADER_HPP
+#define CUT_TEST_LOADER_HPP
 
-#include "baci_cut_meshintersection.H"
+#include "baci_cut_meshintersection.hpp"
 
 #include <map>
 #include <vector>

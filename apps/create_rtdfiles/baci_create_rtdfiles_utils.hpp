@@ -8,14 +8,14 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_CREATE_RTDFILES_UTILS_H
-#define BACI_CREATE_RTDFILES_UTILS_H
-#include "baci_config.H"
+#ifndef BACI_CREATE_RTDFILES_UTILS_HPP
+#define BACI_CREATE_RTDFILES_UTILS_HPP
+#include "baci_config.hpp"
 
-#include "baci_contact_constitutivelaw_constitutivelaw_definition.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_materialdefinition.H"
-#include "baci_lib_conditiondefinition.H"
+#include "baci_contact_constitutivelaw_constitutivelaw_definition.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_materialdefinition.hpp"
+#include "baci_lib_conditiondefinition.hpp"
 
 #include <Teuchos_RCP.hpp>
 

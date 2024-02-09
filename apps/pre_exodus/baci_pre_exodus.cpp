@@ -17,24 +17,24 @@ its parameters and conditions.
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_pre_exodus.H"
+#include "baci_pre_exodus.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_global_legacy_module.H"
-#include "baci_inpar_validconditions.H"
-#include "baci_inpar_validmaterials.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_conditiondefinition.H"
-#include "baci_lib_elementdefinition.H"
-#include "baci_lib_resulttest.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_pre_exodus_centerline.H"
-#include "baci_pre_exodus_readbc.H"
-#include "baci_pre_exodus_reader.H"
-#include "baci_pre_exodus_soshextrusion.H"
-#include "baci_pre_exodus_validate.H"
-#include "baci_pre_exodus_writedat.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_global_legacy_module.hpp"
+#include "baci_inpar_validconditions.hpp"
+#include "baci_inpar_validmaterials.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_conditiondefinition.hpp"
+#include "baci_lib_elementdefinition.hpp"
+#include "baci_lib_resulttest.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_pre_exodus_centerline.hpp"
+#include "baci_pre_exodus_readbc.hpp"
+#include "baci_pre_exodus_reader.hpp"
+#include "baci_pre_exodus_soshextrusion.hpp"
+#include "baci_pre_exodus_validate.hpp"
+#include "baci_pre_exodus_writedat.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_CommandLineProcessor.hpp>

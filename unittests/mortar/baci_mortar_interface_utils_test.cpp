@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_mortar_interface_utils.H"
+#include "baci_mortar_interface_utils.hpp"
 
 namespace
 {

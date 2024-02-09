@@ -8,10 +8,10 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_so3_hex8.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_so3_hex8.hpp"
 
 #include <Epetra_SerialComm.h>
 

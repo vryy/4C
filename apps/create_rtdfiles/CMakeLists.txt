@@ -8,8 +8,8 @@ baci_add_library(
   SOURCES
   ${OBJS_CREATERTD_LIB}
   HEADERS
-  baci_create_rtdfiles_utils.H
-  baci_create_rtdfiles_wrapper.H
+  baci_create_rtdfiles_utils.hpp
+  baci_create_rtdfiles_wrapper.hpp
   )
 
 baci_add_dependency(create_rtdfiles config lib)

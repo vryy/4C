@@ -9,10 +9,10 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_beam3_euler_bernoulli.H"
+#include "baci_beam3_euler_bernoulli.hpp"
 
-#include "baci_lib_element.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_lib_element.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 #include <Epetra_SerialComm.h>
 

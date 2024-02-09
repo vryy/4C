@@ -9,7 +9,7 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_poromultiphase_scatra_utils.H"
+#include "baci_poromultiphase_scatra_utils.hpp"
 
 namespace
 {

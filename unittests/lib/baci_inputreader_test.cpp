@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_io_inputreader.H"
+#include "baci_io_inputreader.hpp"
 
 namespace
 {

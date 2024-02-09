@@ -6,12 +6,12 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_element.H"
-#include "baci_cut_mesh.H"
-#include "baci_cut_options.H"
-#include "baci_cut_triangulateFacet.H"
+#include "baci_cut_element.hpp"
+#include "baci_cut_mesh.hpp"
+#include "baci_cut_options.hpp"
+#include "baci_cut_triangulateFacet.hpp"
 
-#include "cut_test_utils.H"
+#include "cut_test_utils.hpp"
 
 void check4nodedInline(
     CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::Element* e, CORE::GEO::CUT::Side* s);

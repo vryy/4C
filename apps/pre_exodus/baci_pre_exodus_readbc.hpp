@@ -9,13 +9,13 @@
 Here is everything related with reading a bc file
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_PRE_EXODUS_READBC_H
-#define BACI_PRE_EXODUS_READBC_H
+#ifndef BACI_PRE_EXODUS_READBC_HPP
+#define BACI_PRE_EXODUS_READBC_HPP
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_pre_exodus_reader.H"
-#include "baci_utils_exceptions.H"
+#include "baci_pre_exodus_reader.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
 

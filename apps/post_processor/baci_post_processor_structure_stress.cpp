@@ -9,14 +9,14 @@
 
 
 
-#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "baci_io_legacy_table.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
-#include "baci_post_common.H"
-#include "baci_post_processor_single_field_writers.H"
-#include "baci_post_writer_base.H"
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.hpp"
+#include "baci_io_legacy_table.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
+#include "baci_post_common.hpp"
+#include "baci_post_processor_single_field_writers.hpp"
+#include "baci_post_writer_base.hpp"
 
 #include <string>
 

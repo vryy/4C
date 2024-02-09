@@ -8,13 +8,13 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_create_rtdfiles_utils.H"
+#include "baci_create_rtdfiles_utils.hpp"
 
-#include "baci_discretization_fem_general_cell_type_traits.H"
-#include "baci_io_linedefinition.H"
-#include "baci_io_utils_reader.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_utils_exceptions.H"
+#include "baci_discretization_fem_general_cell_type_traits.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_io_utils_reader.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>

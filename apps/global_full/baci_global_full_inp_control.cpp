@@ -7,14 +7,14 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_global_data_read.H"
-#include "baci_global_legacy_module.H"
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_io_inputreader.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_global_data_read.hpp"
+#include "baci_global_legacy_module.hpp"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_io_inputreader.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <utility>
 

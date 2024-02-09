@@ -6,7 +6,7 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_io_pstream.H"
+#include "baci_io_pstream.hpp"
 
 #include <Epetra_SerialComm.h>
 

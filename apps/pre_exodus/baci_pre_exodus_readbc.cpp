@@ -9,9 +9,9 @@
 Here is everything related with reading a bc file
 */
 /*----------------------------------------------------------------------*/
-#include "baci_pre_exodus_readbc.H"
+#include "baci_pre_exodus_readbc.hpp"
 
-#include "baci_pre_exodus_reader.H"
+#include "baci_pre_exodus_reader.hpp"
 
 #include <fstream>
 

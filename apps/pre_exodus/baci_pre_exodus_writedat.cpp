@@ -9,13 +9,13 @@
 Here is everything related with writing a dat-file
  */
 /*----------------------------------------------------------------------*/
-#include "baci_pre_exodus_writedat.H"
+#include "baci_pre_exodus_writedat.hpp"
 
-#include "baci_discretization_fem_general_cell_type_traits.H"
-#include "baci_inpar_validconditions.H"
-#include "baci_lib_conditiondefinition.H"
-#include "baci_pre_exodus_reader.H"
-#include "baci_pre_exodus_soshextrusion.H"  // to calculate normal
+#include "baci_discretization_fem_general_cell_type_traits.hpp"
+#include "baci_inpar_validconditions.hpp"
+#include "baci_lib_conditiondefinition.hpp"
+#include "baci_pre_exodus_reader.hpp"
+#include "baci_pre_exodus_soshextrusion.hpp"  // to calculate normal
 
 BACI_NAMESPACE_OPEN
 

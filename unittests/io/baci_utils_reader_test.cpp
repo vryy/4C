@@ -8,7 +8,7 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_io_utils_reader.H"
+#include "baci_io_utils_reader.hpp"
 
 #include <map>
 #include <stdexcept>

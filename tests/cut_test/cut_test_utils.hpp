@@ -5,12 +5,12 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef CUT_TEST_UTILS_H
-#define CUT_TEST_UTILS_H
+#ifndef CUT_TEST_UTILS_HPP
+#define CUT_TEST_UTILS_HPP
 
-#include "baci_lib_element.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_serialdensematrix.H"
+#include "baci_lib_element.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
 
 #include <map>
 #include <vector>

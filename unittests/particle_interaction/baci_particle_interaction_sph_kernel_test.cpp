@@ -7,11 +7,11 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_particle_interaction_sph_kernel.H"
+#include "baci_particle_interaction_sph_kernel.hpp"
 
-#include "baci_inpar_validparameters.H"
-#include "baci_particle_interaction_utils.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_particle_interaction_utils.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

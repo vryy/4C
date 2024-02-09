@@ -9,13 +9,13 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_PRE_EXODUS_CENTERLINE_H
-#define BACI_PRE_EXODUS_CENTERLINE_H
+#ifndef BACI_PRE_EXODUS_CENTERLINE_HPP
+#define BACI_PRE_EXODUS_CENTERLINE_HPP
 
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_pre_exodus_reader.H"  //contains class Mesh (necessary for method - element_cosys)
+#include "baci_pre_exodus_reader.hpp"  //contains class Mesh (necessary for method - element_cosys)
 
 #include <fstream>
 #include <iostream>
