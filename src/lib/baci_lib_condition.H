@@ -452,11 +452,6 @@ namespace DRT
     inline virtual ConditionType Type() const { return type_; }
 
     /*!
-    \brief Return communicator
-    */
-    inline Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
-
-    /*!
     \brief Get a reference to the geometry description of the condition
 
     */
@@ -474,16 +469,6 @@ namespace DRT
 
    protected:
     //! @name Construction methods
-
-    /*!
-    \brief Set a communicator
-    */
-    inline void SetComm(Teuchos::RCP<Epetra_Comm> comm)
-    {
-      comm_ = comm;
-      return;
-    }
-
     /*!
     \brief Add a geometry description to the condition
 
@@ -547,10 +532,7 @@ namespace DRT
 
     //! Geometry description of this condition
     Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geometry_;
-
-    //! A communicator
-    Teuchos::RCP<Epetra_Comm> comm_;  // a communicator
-  };                                  // class Condition
+  };  // class Condition
 
 
   /// Predicate used to sort a list of conditions

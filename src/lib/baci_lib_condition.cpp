@@ -37,8 +37,7 @@ DRT::Condition::Condition(
       buildgeometry_(buildgeometry),
       type_(type),
       gtype_(gtype),
-      geometry_(Teuchos::null),
-      comm_(Teuchos::null)
+      geometry_(Teuchos::null)
 {
 }
 
@@ -51,8 +50,7 @@ DRT::Condition::Condition()
       buildgeometry_(false),
       type_(none),
       gtype_(NoGeom),
-      geometry_(Teuchos::null),
-      comm_(Teuchos::null)
+      geometry_(Teuchos::null)
 {
 }
 
@@ -65,8 +63,7 @@ DRT::Condition::Condition(const DRT::Condition& old)
       buildgeometry_(old.buildgeometry_),
       type_(old.type_),
       gtype_(old.gtype_),
-      geometry_(Teuchos::null),  // since it wasn't even initialized before change to Teuchos::RCP
-      comm_(old.comm_)
+      geometry_(Teuchos::null)  // since it wasn't even initialized before change to Teuchos::RCP
 {
 }
 

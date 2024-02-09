@@ -35,7 +35,6 @@ void DRT::Discretization::BoundaryConditionsGeometry()
   for (auto& [name, condition] : condition_)
   {
     condition->ClearGeometry();
-    condition->SetComm(comm_);
   }
 
   // for all conditions, we set a ptr in the nodes to the condition
@@ -353,17 +352,6 @@ bool DRT::Discretization::BuildSurfacesinCondition(
   else if (cond->Type() == DRT::Condition::RedAirwayTissue)
     FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
 
-  // Just for information - remove later
-  if ((cond->Type() == DRT::Condition::StructFluidSurfCoupling) or
-      (cond->Type() == DRT::Condition::RedAirwayTissue))
-  {
-    if (cond->comm_->MyPID() == 0)
-    {
-      std::cout << "Volume Coupling Condition ID: " << cond->Id() + 1 << " found and checked..."
-                << std::endl;
-    }
-  }
-
   /* First: Create the surface objects that belong to the condition. */
 
   // get ptrs to all node ids that have this condition
@@ -552,15 +540,6 @@ bool DRT::Discretization::BuildSurfacesinCondition(
       }            // loop over all element surfaces
     }              // loop over all adjacent elements of conditioned row node
   }                // loop over all conditioned row nodes
-
-  // Write output for Gmsh format for debugging of StructFluidSurfCoupling surface correction,
-  // note that this can only be done on one proc
-  if ((cond->Type() == DRT::Condition::StructFluidSurfCoupling) or
-      (cond->Type() == DRT::Condition::RedAirwayTissue))
-  {
-    DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(
-        surfmap, cond->Id(), cond->comm_->NumProc(), cond->comm_->MyPID());
-  }
 
   // surfaces be added to the condition: (surf_id) -> (surface).
   Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> final_geometry =
