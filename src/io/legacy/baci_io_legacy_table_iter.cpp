@@ -9,9 +9,9 @@ Iterate the symbol table and visit all entries.
 
 ---------------------------------------------------------------------*/
 
-#include "baci_io_legacy_table_iter.H"
+#include "baci_io_legacy_table_iter.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

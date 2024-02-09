@@ -8,20 +8,20 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_scatra_ele_calc_poro.H"
+#include "baci_scatra_ele_calc_poro.hpp"
 
-#include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_list.H"
-#include "baci_mat_scatra_mat.H"
-#include "baci_mat_structporo.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_fluid_rotsym_periodicbc.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

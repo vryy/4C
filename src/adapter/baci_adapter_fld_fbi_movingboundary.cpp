@@ -7,13 +7,13 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_adapter_fld_fbi_movingboundary.H"
+#include "baci_adapter_fld_fbi_movingboundary.hpp"
 
-#include "baci_adapter_fld_base_algorithm.H"
-#include "baci_adapter_fld_fbi_wrapper.H"
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_linalg_sparseoperator.H"
+#include "baci_adapter_fld_base_algorithm.hpp"
+#include "baci_adapter_fld_fbi_wrapper.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_linalg_sparseoperator.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

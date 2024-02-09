@@ -8,10 +8,10 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_w1_poro_p1.H"
+#include "baci_w1_poro_p1.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_w1_poro_p1_eletypes.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_w1_poro_p1_eletypes.hpp"
 
 BACI_NAMESPACE_OPEN
 

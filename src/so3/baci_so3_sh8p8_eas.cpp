@@ -9,7 +9,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_so3_sh8p8.H"
+#include "baci_so3_sh8p8.hpp"
 
 BACI_NAMESPACE_OPEN
 

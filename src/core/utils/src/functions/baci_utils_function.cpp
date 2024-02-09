@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_utils_function.H"
+#include "baci_utils_function.hpp"
 
-#include "baci_io.H"
-#include "baci_io_linedefinition.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function_manager.H"
-#include "baci_utils_functionvariables.H"
+#include "baci_io.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function_manager.hpp"
+#include "baci_utils_functionvariables.hpp"
 
 #include <Sacado.hpp>
 

@@ -12,10 +12,10 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fluid_ele_calc_xfem_coupling.H"
+#include "baci_fluid_ele_calc_xfem_coupling.hpp"
 
-#include "baci_bele_bele3.H"
-#include "baci_fluid_ele_calc_xfem_coupling_impl.H"
+#include "baci_bele_bele3.hpp"
+#include "baci_fluid_ele_calc_xfem_coupling_impl.hpp"
 
 BACI_NAMESPACE_OPEN
 

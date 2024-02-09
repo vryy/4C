@@ -10,17 +10,17 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_red_airways_tissue.H"
+#include "baci_red_airways_tissue.hpp"
 
-#include "baci_adapter_str_redairway.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_condition.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_resulttest.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_red_airways_implicitintegration.H"
+#include "baci_adapter_str_redairway.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_condition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_resulttest.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_red_airways_implicitintegration.hpp"
 
 #include <stdio.h>
 

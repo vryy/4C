@@ -5,11 +5,11 @@
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_timint_stat_hdg.H"
+#include "baci_scatra_timint_stat_hdg.hpp"
 
-#include "baci_io.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_scatra_ele_action.H"
+#include "baci_io.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_scatra_ele_action.hpp"
 
 BACI_NAMESPACE_OPEN
 

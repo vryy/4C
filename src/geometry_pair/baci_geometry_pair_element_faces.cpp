@@ -8,11 +8,11 @@
 // End doxygen header.
 
 
-#include "baci_geometry_pair_element_faces.H"
+#include "baci_geometry_pair_element_faces.hpp"
 
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_geometry_pair_scalar_types.H"
-#include "baci_inpar_geometry_pair.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_geometry_pair_scalar_types.hpp"
+#include "baci_inpar_geometry_pair.hpp"
 
 BACI_NAMESPACE_OPEN
 

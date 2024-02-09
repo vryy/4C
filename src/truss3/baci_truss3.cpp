@@ -8,13 +8,13 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_truss3.H"
+#include "baci_truss3.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_node.H"
-#include "baci_so3_nullspace.H"
-#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_so3_nullspace.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
 
 BACI_NAMESPACE_OPEN
 

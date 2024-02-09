@@ -8,10 +8,10 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_struct_ale_str_model_evaluator.H"
+#include "baci_struct_ale_str_model_evaluator.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
+#include "baci_lib_discret.hpp"
+#include "baci_structure_new_timint_basedataglobalstate.hpp"
 
 BACI_NAMESPACE_OPEN
 

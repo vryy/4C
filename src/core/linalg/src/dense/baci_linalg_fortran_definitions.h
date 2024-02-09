@@ -12,7 +12,7 @@
 #ifndef BACI_LINALG_FORTRAN_DEFINITIONS_H
 #define BACI_LINALG_FORTRAN_DEFINITIONS_H
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
 // append underscores, if necessary. Important for linking to fortran routines
 #undef CCA_APPEND_U

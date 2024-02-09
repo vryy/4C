@@ -8,10 +8,10 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_beamcontact_beam3contactvariables.H"
+#include "baci_beamcontact_beam3contactvariables.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_utils_exceptions.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

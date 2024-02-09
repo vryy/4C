@@ -7,17 +7,17 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 \level 2
 
 *----------------------------------------------------------------------*/
-#include "baci_fbi_adapter_constraintbridge.H"
+#include "baci_fbi_adapter_constraintbridge.hpp"
 
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_fbi_beam_to_fluid_meshtying_pair_factory.H"
-#include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_fbi_fluid_assembly_strategy.H"
-#include "baci_fbi_fluidblockmatrix_assembly_strategy.H"
-#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fbi.H"
-#include "baci_linalg_sparseoperator.H"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_pair_factory.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_params.hpp"
+#include "baci_fbi_fluid_assembly_strategy.hpp"
+#include "baci_fbi_fluidblockmatrix_assembly_strategy.hpp"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fbi.hpp"
+#include "baci_linalg_sparseoperator.hpp"
 
 BACI_NAMESPACE_OPEN
 

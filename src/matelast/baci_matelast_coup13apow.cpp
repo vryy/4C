@@ -7,9 +7,9 @@ and the Jacobi determinant
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coup13apow.H"
+#include "baci_matelast_coup13apow.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

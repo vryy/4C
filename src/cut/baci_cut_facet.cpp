@@ -7,15 +7,15 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_kernel.H"
-#include "baci_cut_mesh.H"
-#include "baci_cut_options.H"
-#include "baci_cut_output.H"
-#include "baci_cut_side.H"
-#include "baci_cut_triangulateFacet.H"
-#include "baci_cut_volumecell.H"
-#include "baci_linalg_gauss.H"
+#include "baci_cut_boundarycell.hpp"
+#include "baci_cut_kernel.hpp"
+#include "baci_cut_mesh.hpp"
+#include "baci_cut_options.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_side.hpp"
+#include "baci_cut_triangulateFacet.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_linalg_gauss.hpp"
 
 BACI_NAMESPACE_OPEN
 

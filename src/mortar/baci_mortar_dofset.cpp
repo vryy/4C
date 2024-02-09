@@ -7,10 +7,10 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_mortar_dofset.H"
+#include "baci_mortar_dofset.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_mortar_node.H"
+#include "baci_lib_discret.hpp"
+#include "baci_mortar_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

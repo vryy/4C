@@ -7,9 +7,9 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_scatra_ele_calc_std.H"
+#include "baci_scatra_ele_calc_std.hpp"
 
-#include "baci_utils_singleton_owner.H"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,9 +9,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_timint_red_ost.H"
+#include "baci_fluid_timint_red_ost.hpp"
 
-#include "baci_io.H"
+#include "baci_io.hpp"
 
 BACI_NAMESPACE_OPEN
 

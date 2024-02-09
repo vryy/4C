@@ -11,10 +11,10 @@
 /*----------------------------------------------------------------------------*/
 
 
-#include "baci_xfem_xfield_field_coupling.H"
+#include "baci_xfem_xfield_field_coupling.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_coupling_adapter.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_coupling_adapter.hpp"
 
 #include <Epetra_Export.h>
 

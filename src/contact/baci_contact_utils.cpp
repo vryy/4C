@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_contact_utils.H"
+#include "baci_contact_utils.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_contact.H"
-#include "baci_inpar_mortar.H"
-#include "baci_io_every_iteration_writer.H"
-#include "baci_lib_discret.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_inpar_mortar.hpp"
+#include "baci_io_every_iteration_writer.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <fstream>
 

@@ -8,14 +8,14 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_timint_convcheck_strategies.H"
+#include "baci_scatra_timint_convcheck_strategies.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_scatra_timint_elch.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_artery.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_scatra_timint_elch.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_scatra_timint_meshtying_strategy_artery.hpp"
+#include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
 
 #include <Epetra_Vector.h>
 

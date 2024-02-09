@@ -6,23 +6,23 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_porofluidmultiphase_utils.H"
+#include "baci_porofluidmultiphase_utils.hpp"
 
-#include "baci_adapter_porofluidmultiphase.H"
-#include "baci_discretization_geometry_intersection_service.H"
-#include "baci_discretization_geometry_intersection_service_templates.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_discretization_geometry_searchtree.H"
-#include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_global_data.H"
-#include "baci_inpar_bio.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_mat_cnst_1d_art.H"
-#include "baci_mat_material.H"
-#include "baci_porofluidmultiphase_timint_ost.H"
-#include "baci_rebalance_utils.H"
+#include "baci_adapter_porofluidmultiphase.hpp"
+#include "baci_discretization_geometry_intersection_service.hpp"
+#include "baci_discretization_geometry_intersection_service_templates.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_discretization_geometry_searchtree.hpp"
+#include "baci_discretization_geometry_searchtree_service.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_bio.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_lib_utils_parallel.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_mat_cnst_1d_art.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_porofluidmultiphase_timint_ost.hpp"
+#include "baci_rebalance_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

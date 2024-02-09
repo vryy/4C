@@ -7,20 +7,20 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_adapter_fld_fluid_fsi.H"
+#include "baci_adapter_fld_fluid_fsi.hpp"
 
-#include "baci_adapter_fld_fluid.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_implicit_integration.H"
-#include "baci_fluid_utils.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fsi.H"
-#include "baci_io_control.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_adapter_fld_fluid.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_implicit_integration.hpp"
+#include "baci_fluid_utils.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fsi.hpp"
+#include "baci_io_control.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

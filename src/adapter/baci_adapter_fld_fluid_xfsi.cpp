@@ -9,16 +9,16 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_adapter_fld_fluid_xfsi.H"
+#include "baci_adapter_fld_fluid_xfsi.hpp"
 
-#include "baci_adapter_fld_fluid.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_fluid_xfluid.H"
-#include "baci_fluid_xfluid_fluid.H"
-#include "baci_lib_discret_xfem.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_xfem_condition_manager.H"
+#include "baci_adapter_fld_fluid.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_fluid_xfluid.hpp"
+#include "baci_fluid_xfluid_fluid.hpp"
+#include "baci_lib_discret_xfem.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_xfem_condition_manager.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

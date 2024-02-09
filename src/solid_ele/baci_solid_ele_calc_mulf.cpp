@@ -6,15 +6,15 @@ based with MULF prestressing
 \level 1
 */
 
-#include "baci_solid_ele_calc_mulf.H"
+#include "baci_solid_ele_calc_mulf.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_linalg_fixedsizematrix_generators.H"
-#include "baci_mat_so3_material.H"
-#include "baci_solid_ele_calc_lib.H"
-#include "baci_solid_ele_calc_lib_integration.H"
-#include "baci_solid_ele_calc_lib_io.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_linalg_fixedsizematrix_generators.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_solid_ele_calc_lib.hpp"
+#include "baci_solid_ele_calc_lib_integration.hpp"
+#include "baci_solid_ele_calc_lib_io.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

@@ -8,15 +8,15 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_integrationcellcreator.H"
+#include "baci_cut_integrationcellcreator.hpp"
 
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_integrationcell.H"
-#include "baci_cut_mesh.H"
-#include "baci_cut_options.H"
-#include "baci_cut_pointgraph_simple.H"
-#include "baci_cut_position.H"
-#include "baci_cut_side.H"
+#include "baci_cut_boundarycell.hpp"
+#include "baci_cut_integrationcell.hpp"
+#include "baci_cut_mesh.hpp"
+#include "baci_cut_options.hpp"
+#include "baci_cut_pointgraph_simple.hpp"
+#include "baci_cut_position.hpp"
+#include "baci_cut_side.hpp"
 
 BACI_NAMESPACE_OPEN
 

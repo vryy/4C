@@ -8,7 +8,7 @@
 #ifndef BACI_RED_AIRWAYS_EVALUATION_DATA_H
 #define BACI_RED_AIRWAYS_EVALUATION_DATA_H
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCPDecl.hpp>

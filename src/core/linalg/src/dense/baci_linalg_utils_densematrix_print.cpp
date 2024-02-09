@@ -7,7 +7,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linalg_utils_densematrix_print.H"
+#include "baci_linalg_utils_densematrix_print.hpp"
 
 #include <fstream>
 

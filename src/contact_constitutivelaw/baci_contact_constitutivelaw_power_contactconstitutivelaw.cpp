@@ -10,11 +10,11 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_contact_constitutivelaw_power_contactconstitutivelaw.H"
+#include "baci_contact_constitutivelaw_power_contactconstitutivelaw.hpp"
 
-#include "baci_global_data.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
 
 #include <math.h>
 

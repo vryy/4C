@@ -9,9 +9,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_timint_loma_genalpha.H"
+#include "baci_fluid_timint_loma_genalpha.hpp"
 
-#include "baci_io.H"
+#include "baci_io.hpp"
 
 BACI_NAMESPACE_OPEN
 

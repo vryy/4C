@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linear_solver_preconditioner_krylovprojection.H"
+#include "baci_linear_solver_preconditioner_krylovprojection.hpp"
 
-#include "baci_linalg_projected_precond.H"
+#include "baci_linalg_projected_precond.hpp"
 
 BACI_NAMESPACE_OPEN
 

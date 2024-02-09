@@ -8,10 +8,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_inner_statustest_armijo.H"  // class definition
+#include "baci_solver_nonlin_nox_inner_statustest_armijo.hpp"  // class definition
 
-#include "baci_solver_nonlin_nox_linesearch_generic.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_linesearch_generic.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>
 #include <NOX_Abstract_Group.H>

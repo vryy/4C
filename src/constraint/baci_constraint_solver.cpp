@@ -7,13 +7,13 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_constraint_solver.H"
+#include "baci_constraint_solver.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

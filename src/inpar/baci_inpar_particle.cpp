@@ -11,11 +11,11 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-#include "baci_inpar_particle.H"
+#include "baci_inpar_particle.hpp"
 
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_conditiondefinition.H"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_conditiondefinition.hpp"
 
 BACI_NAMESPACE_OPEN
 

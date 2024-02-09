@@ -8,12 +8,12 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_solver_prepostop_generic.H"  // class definition
+#include "baci_solver_nonlin_nox_solver_prepostop_generic.hpp"  // class definition
 
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_solver_linesearchbased.H"
-#include "baci_solver_nonlin_nox_statustest_normf.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_solver_nonlin_nox_solver_linesearchbased.hpp"
+#include "baci_solver_nonlin_nox_statustest_normf.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

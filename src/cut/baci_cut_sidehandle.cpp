@@ -9,10 +9,10 @@ subsides
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_sidehandle.H"
+#include "baci_cut_sidehandle.hpp"
 
-#include "baci_cut_mesh.H"
-#include "baci_cut_position.H"
+#include "baci_cut_mesh.hpp"
+#include "baci_cut_position.hpp"
 
 BACI_NAMESPACE_OPEN
 

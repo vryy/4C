@@ -10,15 +10,15 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_inner_statustest_factory.H"
+#include "baci_solver_nonlin_nox_inner_statustest_factory.hpp"
 
-#include "baci_solver_nonlin_nox_inner_statustest_armijo.H"
-#include "baci_solver_nonlin_nox_inner_statustest_combo.H"
-#include "baci_solver_nonlin_nox_inner_statustest_filter.H"
-#include "baci_solver_nonlin_nox_inner_statustest_upperbound.H"
-#include "baci_solver_nonlin_nox_inner_statustest_volume_change.H"
-#include "baci_solver_nonlin_nox_params_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_inner_statustest_armijo.hpp"
+#include "baci_solver_nonlin_nox_inner_statustest_combo.hpp"
+#include "baci_solver_nonlin_nox_inner_statustest_filter.hpp"
+#include "baci_solver_nonlin_nox_inner_statustest_upperbound.hpp"
+#include "baci_solver_nonlin_nox_inner_statustest_volume_change.hpp"
+#include "baci_solver_nonlin_nox_params_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Utils.H>

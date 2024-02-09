@@ -6,18 +6,18 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poromultiphase_base.H"
+#include "baci_poromultiphase_base.hpp"
 
-#include "baci_adapter_porofluidmultiphase_wrapper.H"
-#include "baci_adapter_str_factory.H"
-#include "baci_adapter_str_structure_new.H"
-#include "baci_global_data.H"
-#include "baci_inpar_porofluidmultiphase.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_porofluidmultiphase_utils.H"
+#include "baci_adapter_porofluidmultiphase_wrapper.hpp"
+#include "baci_adapter_str_factory.hpp"
+#include "baci_adapter_str_structure_new.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_porofluidmultiphase.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_porofluidmultiphase_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,14 +8,14 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_aug_interface.H"
-#include "baci_contact_aug_strategy.H"
-#include "baci_contact_node.H"
-#include "baci_contact_paramsinterface.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_contact_aug_interface.hpp"
+#include "baci_contact_aug_strategy.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_contact_paramsinterface.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

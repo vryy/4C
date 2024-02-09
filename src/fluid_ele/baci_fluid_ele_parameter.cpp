@@ -13,10 +13,10 @@ be set in problem specific parameter lists derived from this class.
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_parameter.H"
+#include "baci_fluid_ele_parameter.hpp"
 
-#include "baci_io_pstream.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io_pstream.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <iostream>
 #include <string>

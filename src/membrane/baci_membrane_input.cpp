@@ -8,9 +8,9 @@
 \brief Nonlinear Membrane Finite Element input
 
 *----------------------------------------------------------------------*/
-#include "baci_io_linedefinition.H"
-#include "baci_mat_so3_material.H"
-#include "baci_membrane.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_membrane.hpp"
 
 BACI_NAMESPACE_OPEN
 

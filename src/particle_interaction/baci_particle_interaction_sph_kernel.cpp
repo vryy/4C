@@ -8,10 +8,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_sph_kernel.H"
+#include "baci_particle_interaction_sph_kernel.hpp"
 
-#include "baci_particle_interaction_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_particle_interaction_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

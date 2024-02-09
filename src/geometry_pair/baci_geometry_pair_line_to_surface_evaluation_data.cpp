@@ -7,10 +7,10 @@
 */
 
 
-#include "baci_geometry_pair_line_to_surface_evaluation_data.H"
+#include "baci_geometry_pair_line_to_surface_evaluation_data.hpp"
 
-#include "baci_geometry_pair_element_faces.H"
-#include "baci_geometry_pair_utility_classes.H"
+#include "baci_geometry_pair_element_faces.hpp"
+#include "baci_geometry_pair_utility_classes.hpp"
 
 BACI_NAMESPACE_OPEN
 

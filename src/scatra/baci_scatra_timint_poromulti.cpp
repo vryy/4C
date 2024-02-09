@@ -7,11 +7,11 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_scatra_timint_poromulti.H"
+#include "baci_scatra_timint_poromulti.hpp"
 
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_poromultiphase_scatra_utils.H"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_poromultiphase_scatra_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

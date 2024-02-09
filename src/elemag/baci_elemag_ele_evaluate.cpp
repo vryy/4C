@@ -7,11 +7,11 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_elemag_diff_ele.H"
-#include "baci_elemag_ele.H"
-#include "baci_elemag_ele_factory.H"
-#include "baci_elemag_ele_interface.H"
-#include "baci_inpar_elemag.H"
+#include "baci_elemag_diff_ele.hpp"
+#include "baci_elemag_ele.hpp"
+#include "baci_elemag_ele_factory.hpp"
+#include "baci_elemag_ele_interface.hpp"
+#include "baci_inpar_elemag.hpp"
 
 BACI_NAMESPACE_OPEN
 

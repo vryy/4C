@@ -11,16 +11,16 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_art_net_dyn_drt.H"
+#include "baci_art_net_dyn_drt.hpp"
 
-#include "baci_adapter_art_net.H"
-#include "baci_art_net_artery_resulttest.H"
-#include "baci_art_net_utils.H"
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_control.H"
-#include "baci_lib_resulttest.H"
-#include "baci_lib_utils_createdis.H"
+#include "baci_adapter_art_net.hpp"
+#include "baci_art_net_artery_resulttest.hpp"
+#include "baci_art_net_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_resulttest.hpp"
+#include "baci_lib_utils_createdis.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

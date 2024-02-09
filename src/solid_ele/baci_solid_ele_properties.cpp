@@ -6,11 +6,11 @@
 */
 
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_solid_ele_properties.H"
+#include "baci_solid_ele_properties.hpp"
 
-#include "baci_comm_parobject.H"
+#include "baci_comm_parobject.hpp"
 
 BACI_NAMESPACE_OPEN
 

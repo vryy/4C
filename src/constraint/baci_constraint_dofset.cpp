@@ -6,7 +6,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_constraint_dofset.H"
+#include "baci_constraint_dofset.hpp"
 
 #include <algorithm>
 #include <iostream>

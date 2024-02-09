@@ -10,17 +10,17 @@
 */
 
 
-#include "baci_adapter_str_fsiwrapper_immersed.H"
+#include "baci_adapter_str_fsiwrapper_immersed.hpp"
 
-#include "baci_fsi_str_model_evaluator_partitioned.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_structure_aux.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_timint_implicit.H"
+#include "baci_fsi_str_model_evaluator_partitioned.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_structure_aux.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_structure_new_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

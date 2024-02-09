@@ -7,11 +7,11 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_mat_fluidporo_singlephaseDof.H"
+#include "baci_mat_fluidporo_singlephaseDof.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_fluidporo_singlephaselaw.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_fluidporo_singlephaselaw.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 BACI_NAMESPACE_OPEN
 

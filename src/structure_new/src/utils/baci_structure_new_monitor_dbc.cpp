@@ -9,21 +9,21 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_structure_new_monitor_dbc.H"
+#include "baci_structure_new_monitor_dbc.hpp"
 
-#include "baci_discretization_geometry_element_volume.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_every_iteration_writer.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
-#include "baci_structure_new_timint_basedataio.H"
-#include "baci_structure_new_timint_basedataio_monitor_dbc.H"
+#include "baci_discretization_geometry_element_volume.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_every_iteration_writer.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_structure_new_dbc.hpp"
+#include "baci_structure_new_timint_basedataglobalstate.hpp"
+#include "baci_structure_new_timint_basedataio.hpp"
+#include "baci_structure_new_timint_basedataio_monitor_dbc.hpp"
 
 BACI_NAMESPACE_OPEN
 

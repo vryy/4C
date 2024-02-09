@@ -12,9 +12,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_statustest_normwrms.H"
+#include "baci_solver_nonlin_nox_statustest_normwrms.hpp"
 
-#include "baci_solver_nonlin_nox_group.H"
+#include "baci_solver_nonlin_nox_group.hpp"
 
 #include <NOX_Solver_LineSearchBased.H>
 #include <NOX_Utils.H>

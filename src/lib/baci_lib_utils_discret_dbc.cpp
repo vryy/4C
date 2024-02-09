@@ -9,12 +9,12 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_global_data.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_utils_discret.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_nurbs_discret.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret_hdg.hpp"
+#include "baci_lib_utils_discret.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 

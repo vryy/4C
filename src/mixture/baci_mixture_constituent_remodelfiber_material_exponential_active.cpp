@@ -6,10 +6,10 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_mixture_constituent_remodelfiber_material_exponential_active.H"
+#include "baci_mixture_constituent_remodelfiber_material_exponential_active.hpp"
 
-#include "baci_mat_par_bundle.H"
-#include "baci_mixture_constituent_remodelfiber_lib.H"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mixture_constituent_remodelfiber_lib.hpp"
 
 #include <Sacado.hpp>
 

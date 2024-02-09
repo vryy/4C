@@ -8,11 +8,11 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beam3_kirchhoff.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_material.H"
-#include "baci_mat_par_parameter.H"
+#include "baci_beam3_kirchhoff.hpp"
+#include "baci_discretization_fem_general_largerotations.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_mat_par_parameter.hpp"
 
 BACI_NAMESPACE_OPEN
 

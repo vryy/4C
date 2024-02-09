@@ -8,10 +8,10 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_parameterlist_utils.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_parameterlist_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

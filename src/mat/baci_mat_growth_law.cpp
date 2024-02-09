@@ -12,15 +12,15 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_mat_growth_law.H"
+#include "baci_mat_growth_law.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_growth.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_service.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_growth.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

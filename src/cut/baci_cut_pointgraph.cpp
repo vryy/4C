@@ -8,12 +8,12 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_pointgraph.H"
+#include "baci_cut_pointgraph.hpp"
 
-#include "baci_cut_mesh.H"
-#include "baci_cut_output.H"
-#include "baci_cut_pointgraph_simple.H"
-#include "baci_cut_side.H"
+#include "baci_cut_mesh.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_pointgraph_simple.hpp"
+#include "baci_cut_side.hpp"
 
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 #include <boost/graph/graphviz.hpp>
@@ -26,7 +26,7 @@
 #define DEBUG_POINTGRAPH false
 // #define CLN_CALC_OUTSIDE_KERNEL
 #ifdef CLN_CALC_OUTSIDE_KERNEL
-#include "baci_cut_clnwrapper.H"
+#include "baci_cut_clnwrapper.hpp"
 #endif
 
 BACI_NAMESPACE_OPEN

@@ -8,12 +8,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_algorithm_viscous_damping.H"
+#include "baci_particle_algorithm_viscous_damping.hpp"
 
-#include "baci_particle_engine_container.H"
-#include "baci_particle_engine_container_bundle.H"
-#include "baci_particle_engine_enums.H"
-#include "baci_particle_engine_interface.H"
+#include "baci_particle_engine_container.hpp"
+#include "baci_particle_engine_container_bundle.hpp"
+#include "baci_particle_engine_enums.hpp"
+#include "baci_particle_engine_interface.hpp"
 
 BACI_NAMESPACE_OPEN
 

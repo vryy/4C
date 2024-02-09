@@ -5,12 +5,12 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#include "baci_structure_new_gauss_point_data_output_manager.H"
+#include "baci_structure_new_gauss_point_data_output_manager.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_structure_new_model_evaluator.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_structure_new_model_evaluator.hpp"
 
 #include <Epetra_IntVector.h>
 #include <Epetra_Map.h>

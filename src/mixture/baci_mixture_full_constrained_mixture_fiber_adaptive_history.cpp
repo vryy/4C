@@ -5,12 +5,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.H"
+#include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.hpp"
 
-#include "baci_comm_pack_buffer.H"
-#include "baci_comm_parobject.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_fad.H"
+#include "baci_comm_pack_buffer.hpp"
+#include "baci_comm_parobject.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_fad.hpp"
 
 #include <Sacado_Fad_DFad.hpp>
 

@@ -9,22 +9,22 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_factory.H"
+#include "baci_structure_new_factory.hpp"
 
-#include "baci_global_data.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_expl_ab2.H"
-#include "baci_structure_new_expl_abx.H"
-#include "baci_structure_new_expl_centrdiff.H"
-#include "baci_structure_new_expl_forwardeuler.H"
-#include "baci_structure_new_impl_gemm.H"
-#include "baci_structure_new_impl_genalpha.H"
-#include "baci_structure_new_impl_genalpha_liegroup.H"
-#include "baci_structure_new_impl_ost.H"        // derived from ost
-#include "baci_structure_new_impl_prestress.H"  // derived from statics
-#include "baci_structure_new_impl_statics.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_structure_new_dbc.hpp"
+#include "baci_structure_new_expl_ab2.hpp"
+#include "baci_structure_new_expl_abx.hpp"
+#include "baci_structure_new_expl_centrdiff.hpp"
+#include "baci_structure_new_expl_forwardeuler.hpp"
+#include "baci_structure_new_impl_gemm.hpp"
+#include "baci_structure_new_impl_genalpha.hpp"
+#include "baci_structure_new_impl_genalpha_liegroup.hpp"
+#include "baci_structure_new_impl_ost.hpp"        // derived from ost
+#include "baci_structure_new_impl_prestress.hpp"  // derived from statics
+#include "baci_structure_new_impl_statics.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

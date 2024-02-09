@@ -6,15 +6,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mixture_constituent_elasthyper_damage.H"
+#include "baci_mixture_constituent_elasthyper_damage.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_multiplicative_split_defgrad_elasthyper_service.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
-#include "baci_matelast_isoneohooke.H"
-#include "baci_mixture_elastin_membrane_prestress_strategy.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_matelast_aniso_structuraltensor_strategy.hpp"
+#include "baci_matelast_isoneohooke.hpp"
+#include "baci_mixture_elastin_membrane_prestress_strategy.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 

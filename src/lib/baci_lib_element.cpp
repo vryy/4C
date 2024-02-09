@@ -9,19 +9,19 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_element.H"
+#include "baci_lib_element.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_discretization_geometric_search_bounding_volume.H"
-#include "baci_discretization_geometric_search_params.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_condition.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element_append_visualization.H"
-#include "baci_lib_element_vtk_cell_type_register.H"
-#include "baci_lib_node.H"
-#include "baci_mat_material.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_discretization_geometric_search_bounding_volume.hpp"
+#include "baci_discretization_geometric_search_params.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_condition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element_append_visualization.hpp"
+#include "baci_lib_element_vtk_cell_type_register.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Shards_BasicTopologies.hpp>
 

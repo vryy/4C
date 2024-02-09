@@ -11,13 +11,13 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_lib_dofset_definedmapping_wrapper.H"
+#include "baci_lib_dofset_definedmapping_wrapper.hpp"
 
-#include "baci_coupling_matchingoctree.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_dofset_base.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_coupling_matchingoctree.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_dofset_base.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 BACI_NAMESPACE_OPEN
 

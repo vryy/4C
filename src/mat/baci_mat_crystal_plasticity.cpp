@@ -11,13 +11,13 @@ See the header file for a detailed description.
 /*----------------------------------------------------------------------*
  | headers                                                              |
  *----------------------------------------------------------------------*/
-#include "baci_mat_crystal_plasticity.H"
+#include "baci_mat_crystal_plasticity.hpp"
 
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix_generators.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix_generators.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

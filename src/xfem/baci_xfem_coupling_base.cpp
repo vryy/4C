@@ -10,14 +10,14 @@ thereby builds the bridge between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_xfem_coupling_base.H"
+#include "baci_xfem_coupling_base.hpp"
 
-#include "baci_fluid_ele_parameter_xfem.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_utils_function.H"
-#include "baci_xfem_interface_utils.H"
-#include "baci_xfem_utils.H"
+#include "baci_fluid_ele_parameter_xfem.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_xfem_interface_utils.hpp"
+#include "baci_xfem_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

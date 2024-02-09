@@ -5,25 +5,25 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#include "baci_ssti_monolithic_evaluate_OffDiag.H"
+#include "baci_ssti_monolithic_evaluate_OffDiag.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_sparseoperator.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-#include "baci_ssi_utils.H"
-#include "baci_structure_new_enum_lists.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_adapter_str_ssiwrapper.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_lib_assemblestrategy.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linalg_sparseoperator.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
+#include "baci_ssi_utils.hpp"
+#include "baci_structure_new_enum_lists.hpp"
 
 BACI_NAMESPACE_OPEN
 

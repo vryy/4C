@@ -10,13 +10,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_elemag_diff_ele.H"
+#include "baci_elemag_diff_ele.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_elemag_ele_boundary_calc.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_discret_faces.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_elemag_ele_boundary_calc.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_discret_faces.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -10,13 +10,13 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_linesearch_backtrack.H"  // class definition
+#include "baci_solver_nonlin_nox_linesearch_backtrack.hpp"  // class definition
 
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_linesearch_prepostoperator.H"
-#include "baci_solver_nonlin_nox_solver_linesearchbased.H"
-#include "baci_solver_nonlin_nox_statustest_normf.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_solver_nonlin_nox_linesearch_prepostoperator.hpp"
+#include "baci_solver_nonlin_nox_solver_linesearchbased.hpp"
+#include "baci_solver_nonlin_nox_statustest_normf.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>
 #include <NOX_GlobalData.H>

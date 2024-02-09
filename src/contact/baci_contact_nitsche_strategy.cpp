@@ -8,15 +8,15 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_nitsche_strategy.H"
+#include "baci_contact_nitsche_strategy.hpp"
 
-#include "baci_contact_interface.H"
-#include "baci_contact_nitsche_utils.H"
-#include "baci_contact_paramsinterface.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_so3_plast_ssn.H"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_nitsche_utils.hpp"
+#include "baci_contact_paramsinterface.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_so3_plast_ssn.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>

@@ -10,15 +10,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_turbulence_statistics_ccy.H"
+#include "baci_fluid_turbulence_statistics_ccy.hpp"
 
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_nurbs_discret.H"
-#include "baci_nurbs_discret_control_point.H"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_nurbs_discret_control_point.hpp"
 
 BACI_NAMESPACE_OPEN
 

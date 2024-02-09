@@ -9,10 +9,10 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
-#include "baci_coupling_volmortar_cell.H"
+#include "baci_coupling_volmortar_cell.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_linalg_serialdensematrix.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
 
 BACI_NAMESPACE_OPEN
 

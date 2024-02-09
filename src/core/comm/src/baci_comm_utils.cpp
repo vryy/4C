@@ -7,11 +7,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_comm_utils.H"
+#include "baci_comm_utils.hpp"
 
-#include "baci_io_pstream.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_io_pstream.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Import.h>

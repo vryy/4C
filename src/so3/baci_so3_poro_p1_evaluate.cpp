@@ -7,11 +7,11 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_global_data.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_structporo.H"
-#include "baci_so3_poro_p1.H"
-#include "baci_so3_poro_p1_eletypes.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_so3_poro_p1.hpp"
+#include "baci_so3_poro_p1_eletypes.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -6,11 +6,11 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_comm_utils.H"
+#include "baci_comm_utils.hpp"
 
-#include "baci_io_pstream.H"
-#include "baci_lib_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_CrsMatrix.h>

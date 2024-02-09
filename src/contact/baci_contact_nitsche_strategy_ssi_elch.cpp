@@ -7,7 +7,7 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_contact_nitsche_strategy_ssi_elch.H"
+#include "baci_contact_nitsche_strategy_ssi_elch.hpp"
 
 BACI_NAMESPACE_OPEN
 

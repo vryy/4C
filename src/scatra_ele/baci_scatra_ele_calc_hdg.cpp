@@ -8,24 +8,24 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_scatra_ele_calc_hdg.H"
+#include "baci_scatra_ele_calc_hdg.hpp"
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_discretization_fem_general_utils_polynomial.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_elementtype.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_mat_list.H"
-#include "baci_mat_scatra_mat.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_calc.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_function.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_discretization_fem_general_utils_polynomial.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_discret_hdg.hpp"
+#include "baci_lib_elementtype.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_scatra_mat.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_calc.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>

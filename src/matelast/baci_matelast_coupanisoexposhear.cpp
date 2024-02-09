@@ -6,11 +6,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coupanisoexposhear.H"
+#include "baci_matelast_coupanisoexposhear.hpp"
 
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_par_material.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,18 +8,18 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_output.H"
+#include "baci_cut_output.hpp"
 
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_cycle.H"
-#include "baci_cut_edge.H"
-#include "baci_cut_element.H"
-#include "baci_cut_facet.H"
-#include "baci_cut_kernel.H"
-#include "baci_cut_line.H"
-#include "baci_cut_point.H"
-#include "baci_cut_side.H"
-#include "baci_cut_volumecell.H"
+#include "baci_cut_boundarycell.hpp"
+#include "baci_cut_cycle.hpp"
+#include "baci_cut_edge.hpp"
+#include "baci_cut_element.hpp"
+#include "baci_cut_facet.hpp"
+#include "baci_cut_kernel.hpp"
+#include "baci_cut_line.hpp"
+#include "baci_cut_point.hpp"
+#include "baci_cut_side.hpp"
+#include "baci_cut_volumecell.hpp"
 
 #include <iosfwd>
 #include <vector>

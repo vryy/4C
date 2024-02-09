@@ -8,13 +8,13 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_levelset_timint_ost.H"
+#include "baci_levelset_timint_ost.hpp"
 
-#include "baci_inpar_validparameters.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_scatra_ele_action.H"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_scatra_ele_action.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

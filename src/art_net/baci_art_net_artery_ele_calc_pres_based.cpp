@@ -8,17 +8,17 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_art_net_artery_ele_calc_pres_based.H"
+#include "baci_art_net_artery_ele_calc_pres_based.hpp"
 
-#include "baci_art_net_art_junction.H"
-#include "baci_art_net_art_terminal_bc.H"
-#include "baci_art_net_artery_ele_calc.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_global_data.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_cnst_1d_art.H"
-#include "baci_utils_function.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_art_net_art_junction.hpp"
+#include "baci_art_net_art_terminal_bc.hpp"
+#include "baci_art_net_artery_ele_calc.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_cnst_1d_art.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 #include <fstream>
 #include <iomanip>

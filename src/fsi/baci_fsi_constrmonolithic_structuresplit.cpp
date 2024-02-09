@@ -8,25 +8,25 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_constrmonolithic_structuresplit.H"
+#include "baci_fsi_constrmonolithic_structuresplit.hpp"
 
-#include "baci_adapter_ale_fsi.H"
-#include "baci_adapter_fld_fluid.H"
-#include "baci_adapter_fld_fluid_fsi.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_str_structure.H"
-#include "baci_ale_utils_mapextractor.H"
-#include "baci_constraint_manager.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fsi.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_ale_fsi.hpp"
+#include "baci_adapter_fld_fluid.hpp"
+#include "baci_adapter_fld_fluid_fsi.hpp"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_adapter_str_structure.hpp"
+#include "baci_ale_utils_mapextractor.hpp"
+#include "baci_constraint_manager.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fsi.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_structure_aux.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

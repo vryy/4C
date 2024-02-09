@@ -8,22 +8,22 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_coupling_adapter_mortar.H"
+#include "baci_coupling_adapter_mortar.hpp"
 
-#include "baci_inpar_fluid.H"
-#include "baci_io.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_mortar_coupling3d_classes.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_interface.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_utils.H"
+#include "baci_inpar_fluid.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_mortar_coupling3d_classes.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_interface.hpp"
+#include "baci_mortar_node.hpp"
+#include "baci_mortar_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

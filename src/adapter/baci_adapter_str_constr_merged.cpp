@@ -10,16 +10,16 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_adapter_str_constr_merged.H"
+#include "baci_adapter_str_constr_merged.hpp"
 
-#include "baci_constraint_manager.H"
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_structure_aux.H"
-#include "baci_structure_timint_create.H"
+#include "baci_constraint_manager.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_structure_aux.hpp"
+#include "baci_structure_timint_create.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

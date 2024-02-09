@@ -8,9 +8,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_algorithm_input_generator.H"
+#include "baci_particle_algorithm_input_generator.hpp"
 
-#include "baci_particle_engine_object.H"
+#include "baci_particle_engine_object.hpp"
 
 BACI_NAMESPACE_OPEN
 

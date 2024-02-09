@@ -8,17 +8,17 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_pasi_partitioned_twowaycoup.H"
+#include "baci_pasi_partitioned_twowaycoup.hpp"
 
-#include "baci_adapter_str_pasiwrapper.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_particle_algorithm.H"
-#include "baci_particle_wall_datastate.H"
-#include "baci_particle_wall_interface.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_str_pasiwrapper.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_particle_algorithm.hpp"
+#include "baci_particle_wall_datastate.hpp"
+#include "baci_particle_wall_interface.hpp"
+#include "baci_structure_aux.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

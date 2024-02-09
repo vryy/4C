@@ -7,14 +7,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_so3_hex8p1j1.H"
+#include "baci_so3_hex8p1j1.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_nox_jacobian.H"
+#include "baci_fsi_nox_jacobian.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>

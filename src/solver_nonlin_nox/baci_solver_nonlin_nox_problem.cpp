@@ -15,18 +15,18 @@
 #ifndef SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP
 #define SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP
 
-#include "baci_solver_nonlin_nox_problem.H"  // class definition
+#include "baci_solver_nonlin_nox_problem.hpp"  // class definition
 
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_constraint_group.H"
-#include "baci_solver_nonlin_nox_constraint_interface_required.H"
-#include "baci_solver_nonlin_nox_globaldata.H"
-#include "baci_solver_nonlin_nox_inner_statustest_factory.H"
-#include "baci_solver_nonlin_nox_interface_jacobian.H"
-#include "baci_solver_nonlin_nox_linearsystem.H"
-#include "baci_solver_nonlin_nox_linearsystem_factory.H"
-#include "baci_solver_nonlin_nox_singlestep_group.H"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_solver_nonlin_nox_constraint_group.hpp"
+#include "baci_solver_nonlin_nox_constraint_interface_required.hpp"
+#include "baci_solver_nonlin_nox_globaldata.hpp"
+#include "baci_solver_nonlin_nox_inner_statustest_factory.hpp"
+#include "baci_solver_nonlin_nox_interface_jacobian.hpp"
+#include "baci_solver_nonlin_nox_linearsystem.hpp"
+#include "baci_solver_nonlin_nox_linearsystem_factory.hpp"
+#include "baci_solver_nonlin_nox_singlestep_group.hpp"
 
 #include <Epetra_Operator.h>
 #include <NOX_Epetra_Interface_Jacobian.H>

@@ -7,11 +7,11 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_sti_clonestrategy.H"
+#include "baci_sti_clonestrategy.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_scatra_ele.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_scatra_ele.hpp"
 
 BACI_NAMESPACE_OPEN
 

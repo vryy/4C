@@ -7,21 +7,21 @@
 */
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_structure_timint_create.H"
+#include "baci_structure_timint_create.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_structure_timint_ab2.H"
-#include "baci_structure_timint_centrdiff.H"
-#include "baci_structure_timint_expleuler.H"
-#include "baci_structure_timint_gemm.H"
-#include "baci_structure_timint_genalpha.H"
-#include "baci_structure_timint_ost.H"
-#include "baci_structure_timint_prestress.H"
-#include "baci_structure_timint_statics.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_structure_timint_ab2.hpp"
+#include "baci_structure_timint_centrdiff.hpp"
+#include "baci_structure_timint_expleuler.hpp"
+#include "baci_structure_timint_gemm.hpp"
+#include "baci_structure_timint_genalpha.hpp"
+#include "baci_structure_timint_ost.hpp"
+#include "baci_structure_timint_prestress.hpp"
+#include "baci_structure_timint_statics.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

@@ -10,25 +10,25 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_xfem_xfluid_timeInt_base.H"
+#include "baci_xfem_xfluid_timeInt_base.hpp"
 
-#include "baci_bele_bele3.H"
-#include "baci_comm_exporter.H"
-#include "baci_cut_cutwizard.H"
-#include "baci_cut_elementhandle.H"
-#include "baci_cut_intersection.H"
-#include "baci_cut_position.H"
-#include "baci_cut_sidehandle.H"
-#include "baci_cut_volumecell.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_inpar_xfem.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_gmsh.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_lib_xfem_dofset.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_bele_bele3.hpp"
+#include "baci_comm_exporter.hpp"
+#include "baci_cut_cutwizard.hpp"
+#include "baci_cut_elementhandle.hpp"
+#include "baci_cut_intersection.hpp"
+#include "baci_cut_position.hpp"
+#include "baci_cut_sidehandle.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_inpar_xfem.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_gmsh.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_lib_xfem_dofset.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 BACI_NAMESPACE_OPEN
 

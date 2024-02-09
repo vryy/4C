@@ -9,19 +9,19 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mixture_rule.H"
+#include "baci_mixture_rule.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_global_data.H"
-#include "baci_inpar_material.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_par_parameter.H"
-#include "baci_mat_service.H"
-#include "baci_mixture_rule_function.H"
-#include "baci_mixture_rule_growthremodel.H"
-#include "baci_mixture_rule_simple.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_material.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_par_parameter.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_mixture_rule_function.hpp"
+#include "baci_mixture_rule_growthremodel.hpp"
+#include "baci_mixture_rule_simple.hpp"
+#include "baci_utils_exceptions.hpp"
 
 namespace Teuchos
 {

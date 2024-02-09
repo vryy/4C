@@ -9,15 +9,15 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_functions.H"
+#include "baci_fluid_functions.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_fluid_linear_density_viscosity.H"
-#include "baci_mat_fluid_murnaghantait.H"
-#include "baci_mat_fluid_weakly_compressible.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_stvenantkirchhoff.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_fluid_linear_density_viscosity.hpp"
+#include "baci_mat_fluid_murnaghantait.hpp"
+#include "baci_mat_fluid_weakly_compressible.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_stvenantkirchhoff.hpp"
 
 #include <Teuchos_RCP.hpp>
 

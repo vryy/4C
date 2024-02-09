@@ -8,9 +8,9 @@ Mechanics, 2000"
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_vologden.H"
+#include "baci_matelast_vologden.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

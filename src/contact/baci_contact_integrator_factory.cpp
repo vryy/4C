@@ -8,17 +8,17 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_integrator_factory.H"
+#include "baci_contact_integrator_factory.hpp"
 
-#include "baci_contact_aug_integrator.H"
-#include "baci_contact_ehl_integrator.H"
-#include "baci_contact_nitsche_integrator.H"
-#include "baci_contact_nitsche_integrator_fpi.H"
-#include "baci_contact_nitsche_integrator_fsi.H"
-#include "baci_contact_nitsche_integrator_poro.H"
-#include "baci_contact_nitsche_integrator_ssi.H"
-#include "baci_contact_nitsche_integrator_ssi_elch.H"
-#include "baci_contact_nitsche_integrator_tsi.H"
+#include "baci_contact_aug_integrator.hpp"
+#include "baci_contact_ehl_integrator.hpp"
+#include "baci_contact_nitsche_integrator.hpp"
+#include "baci_contact_nitsche_integrator_fpi.hpp"
+#include "baci_contact_nitsche_integrator_fsi.hpp"
+#include "baci_contact_nitsche_integrator_poro.hpp"
+#include "baci_contact_nitsche_integrator_ssi.hpp"
+#include "baci_contact_nitsche_integrator_ssi_elch.hpp"
+#include "baci_contact_nitsche_integrator_tsi.hpp"
 
 BACI_NAMESPACE_OPEN
 

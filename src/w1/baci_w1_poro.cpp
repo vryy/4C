@@ -8,15 +8,15 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_w1_poro.H"
+#include "baci_w1_poro.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_fluidporo_multiphase.H"
-#include "baci_mat_structporo.H"
-#include "baci_poroelast_utils.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_fluidporo_multiphase.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_poroelast_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

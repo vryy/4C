@@ -6,20 +6,20 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_contact_aug_interface.H"
+#include "baci_contact_aug_interface.hpp"
 
-#include "baci_contact_aug_integrator.H"
-#include "baci_contact_coupling3d.H"
-#include "baci_contact_node.H"
-#include "baci_contact_paramsinterface.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_mortar_binarytree.H"
-#include "baci_mortar_element.H"
-#include "baci_utils_epetra_exceptions.H"
+#include "baci_contact_aug_integrator.hpp"
+#include "baci_contact_coupling3d.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_contact_paramsinterface.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_mortar_binarytree.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_utils_epetra_exceptions.hpp"
 
 #include <Epetra_IntVector.h>
 #include <Teuchos_TimeMonitor.hpp>

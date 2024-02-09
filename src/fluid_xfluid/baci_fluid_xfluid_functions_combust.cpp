@@ -7,10 +7,10 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_fluid_xfluid_functions_combust.H"
+#include "baci_fluid_xfluid_functions_combust.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_utils_function_manager.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_utils_function_manager.hpp"
 
 BACI_NAMESPACE_OPEN
 

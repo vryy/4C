@@ -8,18 +8,18 @@
 
 
 
-#include "baci_constraint_multipointconstraint3.H"
+#include "baci_constraint_multipointconstraint3.hpp"
 
-#include "baci_constraint_element3.H"
-#include "baci_global_data.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_dofset_transparent.H"
-#include "baci_lib_utils.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_constraint_element3.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_dofset_transparent.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_lib_utils_parallel.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <iostream>
 

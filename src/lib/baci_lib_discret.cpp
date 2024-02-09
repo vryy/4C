@@ -8,14 +8,14 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_discret.H"
+#include "baci_lib_discret.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_lib_dofset_pbc.H"
-#include "baci_lib_dofset_proxy.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_lib_dofset_pbc.hpp"
+#include "baci_lib_dofset_proxy.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

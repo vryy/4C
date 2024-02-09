@@ -11,9 +11,9 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_structure_timada_zienxie.H"
+#include "baci_structure_timada_zienxie.hpp"
 
-#include "baci_structure_timint.H"
+#include "baci_structure_timint.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

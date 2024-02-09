@@ -8,10 +8,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linear_solver_preconditioner_bgs2x2.H"
+#include "baci_linear_solver_preconditioner_bgs2x2.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
 
 #include <ml_MultiLevelPreconditioner.h>
 

@@ -3,9 +3,9 @@
 \level 0
 */
 
-#include "baci_so3_nullspace.H"
+#include "baci_so3_nullspace.hpp"
 
-#include "baci_lib_node.H"
+#include "baci_lib_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

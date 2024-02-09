@@ -9,11 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_elemag_resulttest.H"
+#include "baci_elemag_resulttest.hpp"
 
-#include "baci_elemag_timeint.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
+#include "baci_elemag_timeint.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

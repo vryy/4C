@@ -8,11 +8,11 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_w1_poro_eletypes.H"
+#include "baci_w1_poro_eletypes.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_w1_poro.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_w1_poro.hpp"
 
 BACI_NAMESPACE_OPEN
 

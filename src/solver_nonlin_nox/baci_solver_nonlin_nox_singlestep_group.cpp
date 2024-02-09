@@ -9,9 +9,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_singlestep_group.H"
+#include "baci_solver_nonlin_nox_singlestep_group.hpp"
 
-#include "baci_solver_nonlin_nox_group_prepostoperator.H"
+#include "baci_solver_nonlin_nox_group_prepostoperator.hpp"
 
 BACI_NAMESPACE_OPEN
 

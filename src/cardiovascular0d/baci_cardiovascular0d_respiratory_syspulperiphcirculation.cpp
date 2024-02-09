@@ -7,15 +7,15 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cardiovascular0d_respiratory_syspulperiphcirculation.H"
+#include "baci_cardiovascular0d_respiratory_syspulperiphcirculation.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_so3_surface.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_so3_surface.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <iostream>
 

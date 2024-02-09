@@ -8,11 +8,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_fluid_ale.H"
+#include "baci_fsi_fluid_ale.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_pstream.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_pstream.hpp"
 
 BACI_NAMESPACE_OPEN
 

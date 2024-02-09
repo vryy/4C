@@ -8,10 +8,10 @@ concentrations and with advanced reaction terms
  *----------------------------------------------------------------------*/
 
 
-#include "baci_scatra_ele_calc_refconc_reac.H"
+#include "baci_scatra_ele_calc_refconc_reac.hpp"
 
-#include "baci_mat_list_reactions.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_mat_list_reactions.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

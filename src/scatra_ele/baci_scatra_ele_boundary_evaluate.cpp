@@ -6,13 +6,13 @@
 \level 2
 
  *----------------------------------------------------------------------*/
-#include "baci_lib_discret.H"
-#include "baci_mat_elchmat.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_boundary_calc.H"
-#include "baci_scatra_ele_boundary_factory.H"
-#include "baci_scatra_ele_parameter_elch.H"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_elchmat.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_boundary_calc.hpp"
+#include "baci_scatra_ele_boundary_factory.hpp"
+#include "baci_scatra_ele_parameter_elch.hpp"
 
 BACI_NAMESPACE_OPEN
 

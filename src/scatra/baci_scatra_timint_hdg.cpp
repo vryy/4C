@@ -7,21 +7,21 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_scatra_timint_hdg.H"
+#include "baci_scatra_timint_hdg.hpp"
 
-#include "baci_binstrategy.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_dofset.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_hdg.H"
-#include "baci_scatra_resulttest_hdg.H"
+#include "baci_binstrategy.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_assemblestrategy.hpp"
+#include "baci_lib_discret_hdg.hpp"
+#include "baci_lib_dofset.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_hdg.hpp"
+#include "baci_scatra_resulttest_hdg.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

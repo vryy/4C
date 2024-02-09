@@ -6,16 +6,16 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_mat_aaaneohooke.H"
-#include "baci_mat_elasthyper.H"
-#include "baci_mat_micromaterial.H"
-#include "baci_mat_stvenantkirchhoff.H"
-#include "baci_so3_nstet5.H"
-#include "baci_so3_prestress.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
+#include "baci_mat_aaaneohooke.hpp"
+#include "baci_mat_elasthyper.hpp"
+#include "baci_mat_micromaterial.hpp"
+#include "baci_mat_stvenantkirchhoff.hpp"
+#include "baci_so3_nstet5.hpp"
+#include "baci_so3_prestress.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

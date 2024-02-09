@@ -8,13 +8,13 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_ehl_dyn.H"
+#include "baci_ehl_dyn.hpp"
 
-#include "baci_ehl_monolithic.H"
-#include "baci_ehl_partitioned.H"
-#include "baci_ehl_utils.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
+#include "baci_ehl_monolithic.hpp"
+#include "baci_ehl_partitioned.hpp"
+#include "baci_ehl_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -8,20 +8,20 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_aug_steepest_ascent_strategy.H"
+#include "baci_contact_aug_steepest_ascent_strategy.hpp"
 
-#include "baci_contact_aug_lagrange_multiplier_function.H"
-#include "baci_contact_aug_penalty_update.H"
-#include "baci_contact_aug_potential.H"
-#include "baci_contact_aug_steepest_ascent_interface.H"
-#include "baci_contact_paramsinterface.H"
-#include "baci_inpar_structure.H"
-#include "baci_io_pstream.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_mortar_matrix_transform.H"
-#include "baci_mortar_utils.H"
-#include "baci_utils_epetra_exceptions.H"
+#include "baci_contact_aug_lagrange_multiplier_function.hpp"
+#include "baci_contact_aug_penalty_update.hpp"
+#include "baci_contact_aug_potential.hpp"
+#include "baci_contact_aug_steepest_ascent_interface.hpp"
+#include "baci_contact_paramsinterface.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_mortar_matrix_transform.hpp"
+#include "baci_mortar_utils.hpp"
+#include "baci_utils_epetra_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -7,13 +7,13 @@ materials
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
+#include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_service.H"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

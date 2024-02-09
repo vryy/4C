@@ -9,12 +9,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_utils_discret.H"
+#include "baci_lib_utils_discret.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_node.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Epetra_Map.h>
 

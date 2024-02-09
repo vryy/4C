@@ -9,9 +9,9 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_art_net_art_write_gnuplot.H"
+#include "baci_art_net_art_write_gnuplot.hpp"
 
-#include "baci_lib_utils.H"
+#include "baci_lib_utils.hpp"
 
 #include <fstream>
 #include <sstream>

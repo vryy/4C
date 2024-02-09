@@ -10,9 +10,9 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager.H"
+#include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager.hpp"
 
-#include "baci_beaminteraction_contact_pair.H"
+#include "baci_beaminteraction_contact_pair.hpp"
 
 BACI_NAMESPACE_OPEN
 

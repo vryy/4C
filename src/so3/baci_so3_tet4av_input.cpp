@@ -4,9 +4,9 @@
 \level 3
 *----------------------------------------------------------------------*/
 
-#include "baci_io_linedefinition.H"
-#include "baci_mat_so3_material.H"
-#include "baci_so3_tet4av.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_so3_tet4av.hpp"
 
 BACI_NAMESPACE_OPEN
 

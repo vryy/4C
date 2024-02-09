@@ -9,7 +9,7 @@
 #ifndef BACI_LIB_DG_ELEMENT_H
 #define BACI_LIB_DG_ELEMENT_H
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
 BACI_NAMESPACE_OPEN
 

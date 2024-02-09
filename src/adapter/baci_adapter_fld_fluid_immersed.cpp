@@ -7,10 +7,10 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_adapter_fld_fluid_immersed.H"
+#include "baci_adapter_fld_fluid_immersed.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

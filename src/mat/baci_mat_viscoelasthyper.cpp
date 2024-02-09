@@ -15,16 +15,16 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
  */
 
 /*----------------------------------------------------------------------*/
-#include "baci_mat_viscoelasthyper.H"
+#include "baci_mat_viscoelasthyper.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
-#include "baci_matelast_summand.H"
-#include "baci_matelast_visco_generalizedgenmax.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_matelast_summand.hpp"
+#include "baci_matelast_visco_generalizedgenmax.hpp"
 
 BACI_NAMESPACE_OPEN
 

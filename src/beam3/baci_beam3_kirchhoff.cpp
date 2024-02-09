@@ -8,24 +8,24 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beam3_kirchhoff.H"
+#include "baci_beam3_kirchhoff.hpp"
 
-#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
-#include "baci_beaminteraction_periodic_boundingbox.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_fad.H"
+#include "baci_beam3_triad_interpolation_local_rotation_vectors.hpp"
+#include "baci_beaminteraction_periodic_boundingbox.hpp"
+#include "baci_discretization_fem_general_largerotations.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_fad.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -7,11 +7,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linalg_utils_densematrix_eigen.H"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
 
 #include "baci_linalg_fortran_definitions.h"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

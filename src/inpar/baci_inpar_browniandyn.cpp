@@ -9,9 +9,9 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_inpar_browniandyn.H"
+#include "baci_inpar_browniandyn.hpp"
 
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

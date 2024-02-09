@@ -9,14 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc_poro_p1.H"
+#include "baci_fluid_ele_calc_poro_p1.hpp"
 
-#include "baci_fluid_ele.H"
-#include "baci_fluid_ele_parameter_poro.H"
-#include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_structporo.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
+#include "baci_fluid_ele.hpp"
+#include "baci_fluid_ele_parameter_poro.hpp"
+#include "baci_fluid_rotsym_periodicbc.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

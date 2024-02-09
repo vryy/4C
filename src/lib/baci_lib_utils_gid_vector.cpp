@@ -9,9 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_utils_gid_vector.H"
+#include "baci_lib_utils_gid_vector.hpp"
 
-#include "baci_lib_discret.H"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

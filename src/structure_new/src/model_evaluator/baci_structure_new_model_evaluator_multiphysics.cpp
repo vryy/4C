@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_model_evaluator_multiphysics.H"
+#include "baci_structure_new_model_evaluator_multiphysics.hpp"
 
 BACI_NAMESPACE_OPEN
 

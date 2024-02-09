@@ -9,14 +9,14 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_structure_timint_expleuler.H"
+#include "baci_structure_timint_expleuler.hpp"
 
-#include "baci_contact_meshtying_contact_bridge.H"
-#include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_mortar_manager_base.H"
-#include "baci_mortar_strategy_base.H"
+#include "baci_contact_meshtying_contact_bridge.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_mortar_manager_base.hpp"
+#include "baci_mortar_strategy_base.hpp"
 
 BACI_NAMESPACE_OPEN
 

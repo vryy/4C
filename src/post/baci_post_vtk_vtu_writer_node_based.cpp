@@ -9,20 +9,20 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_post_vtk_vtu_writer_node_based.H"
+#include "baci_post_vtk_vtu_writer_node_based.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_lib_element_vtk_cell_type_register.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_nurbs_discret.H"
-#include "baci_post_common.H"
-#include "baci_post_vtk_vtu_writer.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_base.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_element_vtk_cell_type_register.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_post_common.hpp"
+#include "baci_post_vtk_vtu_writer.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <sstream>
 

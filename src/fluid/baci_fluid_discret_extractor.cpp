@@ -9,14 +9,14 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_discret_extractor.H"
+#include "baci_fluid_discret_extractor.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret_xwall.H"
-#include "baci_lib_dofset_transparent.H"
-#include "baci_lib_periodicbc.H"
-#include "baci_rebalance.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret_xwall.hpp"
+#include "baci_lib_dofset_transparent.hpp"
+#include "baci_lib_periodicbc.hpp"
+#include "baci_rebalance.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -6,20 +6,20 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poromultiphase_utils.H"
+#include "baci_poromultiphase_utils.hpp"
 
-#include "baci_adapter_poromultiphase.H"
-#include "baci_inpar_bio.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_poroelast_utils.H"
-#include "baci_porofluidmultiphase_ele.H"
-#include "baci_porofluidmultiphase_utils.H"
-#include "baci_poromultiphase_monolithic.H"
-#include "baci_poromultiphase_monolithic_twoway.H"
-#include "baci_poromultiphase_partitioned.H"
-#include "baci_poromultiphase_partitioned_twoway.H"
-#include "baci_poromultiphase_utils_clonestrategy.H"
+#include "baci_adapter_poromultiphase.hpp"
+#include "baci_inpar_bio.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_poroelast_utils.hpp"
+#include "baci_porofluidmultiphase_ele.hpp"
+#include "baci_porofluidmultiphase_utils.hpp"
+#include "baci_poromultiphase_monolithic.hpp"
+#include "baci_poromultiphase_monolithic_twoway.hpp"
+#include "baci_poromultiphase_partitioned.hpp"
+#include "baci_poromultiphase_partitioned_twoway.hpp"
+#include "baci_poromultiphase_utils_clonestrategy.hpp"
 
 BACI_NAMESPACE_OPEN
 

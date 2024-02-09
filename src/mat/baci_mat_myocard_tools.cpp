@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |
  *----------------------------------------------------------------------*/
-#include "baci_mat_myocard_tools.H"
+#include "baci_mat_myocard_tools.hpp"
 
 #include <math.h> /* tanh, log */
 

@@ -6,12 +6,12 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poromultiphase_scatra_dyn.H"
+#include "baci_poromultiphase_scatra_dyn.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_poromultiphase_scatra_base.H"
-#include "baci_poromultiphase_scatra_utils.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_poromultiphase_scatra_base.hpp"
+#include "baci_poromultiphase_scatra_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

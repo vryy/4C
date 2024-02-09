@@ -6,16 +6,16 @@
 
     */
 /*----------------------------------------------------------------------*/
-#include "baci_ssi_str_model_evaluator_base.H"
+#include "baci_ssi_str_model_evaluator_base.hpp"
 
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_comm_exporter.H"
-#include "baci_coupling_adapter.H"
-#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "baci_io.H"
-#include "baci_lib_utils_gid_vector.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
+#include "baci_adapter_str_ssiwrapper.hpp"
+#include "baci_comm_exporter.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_utils_gid_vector.hpp"
+#include "baci_structure_new_model_evaluator_data.hpp"
+#include "baci_structure_new_timint_basedataglobalstate.hpp"
 
 #include <Epetra_IntVector.h>
 #include <Epetra_Vector.h>

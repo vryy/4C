@@ -7,11 +7,11 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_mat_material.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_calc_elch_NP.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
+#include "baci_mat_material.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_calc_elch_NP.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
 
 BACI_NAMESPACE_OPEN
 

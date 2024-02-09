@@ -7,11 +7,11 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_contact_ehl_integrator.H"
+#include "baci_contact_ehl_integrator.hpp"
 
-#include "baci_contact_element.H"
-#include "baci_contact_nitsche_integrator.H"  // for CONTACT::UTILS:: functions
-#include "baci_contact_node.H"
+#include "baci_contact_element.hpp"
+#include "baci_contact_nitsche_integrator.hpp"  // for CONTACT::UTILS:: functions
+#include "baci_contact_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_post_vtk_vti_writer.H"
+#include "baci_post_vtk_vti_writer.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_post_common.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_post_common.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>
 

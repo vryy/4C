@@ -10,16 +10,16 @@ to disk
 /*-----------------------------------------------------------------------------------------------*/
 
 /* headers */
-#include "baci_io_discretization_visualization_writer_mesh.H"
+#include "baci_io_discretization_visualization_writer_mesh.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_visualization_manager.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_lib_element_vtk_cell_type_register.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_base.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_visualization_manager.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_element_vtk_cell_type_register.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
 

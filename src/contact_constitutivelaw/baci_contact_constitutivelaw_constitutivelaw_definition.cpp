@@ -13,11 +13,11 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 
-#include "baci_contact_constitutivelaw_constitutivelaw_definition.H"
+#include "baci_contact_constitutivelaw_constitutivelaw_definition.hpp"
 
-#include "baci_contact_constitutivelaw_bundle.H"
-#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
-#include "baci_io_inputreader.H"
+#include "baci_contact_constitutivelaw_bundle.hpp"
+#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
+#include "baci_io_inputreader.hpp"
 
 #include <utility>
 

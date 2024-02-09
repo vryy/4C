@@ -8,13 +8,13 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mat_anisotropy.H"
+#include "baci_mat_anisotropy.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_fiber_nodal_fiber_holder.H"
-#include "baci_mat_anisotropy_extension.H"
-#include "baci_mat_anisotropy_utils.H"
-#include "baci_mat_service.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_fiber_nodal_fiber_holder.hpp"
+#include "baci_mat_anisotropy_extension.hpp"
+#include "baci_mat_anisotropy_utils.hpp"
+#include "baci_mat_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

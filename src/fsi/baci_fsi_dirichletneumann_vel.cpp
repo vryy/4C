@@ -10,22 +10,22 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fsi_dirichletneumann_vel.H"
+#include "baci_fsi_dirichletneumann_vel.hpp"
 
-#include "baci_adapter_fld_fbi_movingboundary.H"
-#include "baci_adapter_str_fbiwrapper.H"
-#include "baci_binstrategy.H"
-#include "baci_fbi_adapter_constraintbridge.H"
-#include "baci_fbi_beam_to_fluid_meshtying_output_writer.H"
-#include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_fbi_constraintenforcer.H"
-#include "baci_fbi_constraintenforcer_factory.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fbi.H"
-#include "baci_inpar_fsi.H"
-#include "baci_io_control.H"
-#include "baci_io_visualization_parameters.H"
-#include "baci_utils_exceptions.H"
+#include "baci_adapter_fld_fbi_movingboundary.hpp"
+#include "baci_adapter_str_fbiwrapper.hpp"
+#include "baci_binstrategy.hpp"
+#include "baci_fbi_adapter_constraintbridge.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_output_writer.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_params.hpp"
+#include "baci_fbi_constraintenforcer.hpp"
+#include "baci_fbi_constraintenforcer_factory.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fbi.hpp"
+#include "baci_inpar_fsi.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_visualization_parameters.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

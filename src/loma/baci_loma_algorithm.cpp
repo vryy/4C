@@ -10,19 +10,19 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_loma_algorithm.H"
+#include "baci_loma_algorithm.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_timint_loma.H"
-#include "baci_global_data.H"
-#include "baci_inpar_solver.H"
-#include "baci_io_control.H"
-#include "baci_lib_assemblestrategy.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_scatra_timint_loma.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_timint_loma.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_solver.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_assemblestrategy.hpp"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_scatra_timint_loma.hpp"
 
 BACI_NAMESPACE_OPEN
 

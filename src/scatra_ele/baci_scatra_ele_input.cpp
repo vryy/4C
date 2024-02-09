@@ -6,10 +6,10 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_discretization_fem_general_cell_type_traits.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_myocard.H"
-#include "baci_scatra_ele.H"
+#include "baci_discretization_fem_general_cell_type_traits.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_myocard.hpp"
+#include "baci_scatra_ele.hpp"
 
 BACI_NAMESPACE_OPEN
 

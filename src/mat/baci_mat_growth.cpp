@@ -8,14 +8,14 @@ growth laws.
  *----------------------------------------------------------------------*/
 
 
-#include "baci_mat_growth.H"
+#include "baci_mat_growth.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_growth_law.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_growth_law.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
 
 #include <utility>
 

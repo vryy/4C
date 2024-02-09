@@ -3,7 +3,7 @@
 \brief Util functions for tensor transformations
 */
 
-#include "baci_linalg_fixedsizematrix_tensor_transformation.H"
+#include "baci_linalg_fixedsizematrix_tensor_transformation.hpp"
 
 BACI_NAMESPACE_OPEN
 

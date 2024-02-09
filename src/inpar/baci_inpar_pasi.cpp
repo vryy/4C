@@ -10,10 +10,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_inpar_pasi.H"
+#include "baci_inpar_pasi.hpp"
 
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

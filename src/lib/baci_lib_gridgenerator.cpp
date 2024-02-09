@@ -10,14 +10,14 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_lib_gridgenerator.H"
+#include "baci_lib_gridgenerator.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_elementdefinition.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_rebalance.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_elementdefinition.hpp"
+#include "baci_lib_utils_parallel.hpp"
+#include "baci_rebalance.hpp"
 
 #include <algorithm>
 

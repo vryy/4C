@@ -7,9 +7,9 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_poromultiphase_monolithic.H"
+#include "baci_poromultiphase_monolithic.hpp"
 
-#include "baci_global_data.H"
+#include "baci_global_data.hpp"
 
 BACI_NAMESPACE_OPEN
 

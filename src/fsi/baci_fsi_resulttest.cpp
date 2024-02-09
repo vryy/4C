@@ -8,22 +8,22 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_resulttest.H"
+#include "baci_fsi_resulttest.hpp"
 
-#include "baci_adapter_fld_fluid_fsi.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
-#include "baci_fsi_fluidfluidmonolithic_structuresplit_nonox.H"
-#include "baci_fsi_monolithicfluidsplit.H"
-#include "baci_fsi_monolithicstructuresplit.H"
-#include "baci_fsi_mortarmonolithic_fluidsplit.H"
-#include "baci_fsi_mortarmonolithic_fluidsplit_sp.H"
-#include "baci_fsi_mortarmonolithic_structuresplit.H"
-#include "baci_fsi_slidingmonolithic_fluidsplit.H"
-#include "baci_fsi_slidingmonolithic_structuresplit.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
+#include "baci_adapter_fld_fluid_fsi.hpp"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_fsi_fluidfluidmonolithic_fluidsplit_nonox.hpp"
+#include "baci_fsi_fluidfluidmonolithic_structuresplit_nonox.hpp"
+#include "baci_fsi_monolithicfluidsplit.hpp"
+#include "baci_fsi_monolithicstructuresplit.hpp"
+#include "baci_fsi_mortarmonolithic_fluidsplit.hpp"
+#include "baci_fsi_mortarmonolithic_fluidsplit_sp.hpp"
+#include "baci_fsi_mortarmonolithic_structuresplit.hpp"
+#include "baci_fsi_slidingmonolithic_fluidsplit.hpp"
+#include "baci_fsi_slidingmonolithic_structuresplit.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <string>
 

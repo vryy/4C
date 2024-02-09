@@ -8,13 +8,13 @@
 \level 1
 */
 
-#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_adapter_str_fsiwrapper.hpp"
 
-#include "baci_fsi_str_model_evaluator_partitioned.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_structure_aux.H"
+#include "baci_fsi_str_model_evaluator_partitioned.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_structure_aux.hpp"
 
 BACI_NAMESPACE_OPEN
 

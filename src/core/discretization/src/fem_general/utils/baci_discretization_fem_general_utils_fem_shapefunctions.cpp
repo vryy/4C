@@ -11,7 +11,7 @@ the Baci guide in the Convention chapter.
 
 *----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 
 BACI_NAMESPACE_OPEN
 

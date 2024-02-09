@@ -8,14 +8,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_nodereader.H"
+#include "baci_lib_nodereader.hpp"
 
-#include "baci_fiber_node.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_elementdefinition.H"
-#include "baci_lib_immersed_node.H"
-#include "baci_nurbs_discret_control_point.H"
+#include "baci_fiber_node.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_elementdefinition.hpp"
+#include "baci_lib_immersed_node.hpp"
+#include "baci_nurbs_discret_control_point.hpp"
 
 #include <istream>
 #include <utility>

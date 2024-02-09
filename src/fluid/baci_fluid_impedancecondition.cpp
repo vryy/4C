@@ -9,16 +9,16 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_impedancecondition.H"
+#include "baci_fluid_impedancecondition.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_utils.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,19 +9,19 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_structure_timada.H"
+#include "baci_structure_timada.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_structure_aux.H"
-#include "baci_structure_timint.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_structure_aux.hpp"
+#include "baci_structure_timint.hpp"
 
 #include <Epetra_Vector.h>
 

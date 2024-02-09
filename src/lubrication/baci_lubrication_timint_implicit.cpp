@@ -11,20 +11,20 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_lubrication_timint_implicit.H"
+#include "baci_lubrication_timint_implicit.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_lubrication.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_gmsh.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_print.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_lubrication_ele_action.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_lubrication.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_gmsh.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_print.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_lubrication_ele_action.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

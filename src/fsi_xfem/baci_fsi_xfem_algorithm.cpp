@@ -9,18 +9,18 @@
 */
 
 
-#include "baci_fsi_xfem_algorithm.H"
+#include "baci_fsi_xfem_algorithm.hpp"
 
-#include "baci_adapter_ale.H"
-#include "baci_adapter_ale_fpsi.H"
-#include "baci_adapter_fld_base_algorithm.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_str_poro_wrapper.H"
-#include "baci_fluid_xfluid.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_poroelast_monolithic.H"
+#include "baci_adapter_ale.hpp"
+#include "baci_adapter_ale_fpsi.hpp"
+#include "baci_adapter_fld_base_algorithm.hpp"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_adapter_str_poro_wrapper.hpp"
+#include "baci_fluid_xfluid.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_poroelast_monolithic.hpp"
 
 BACI_NAMESPACE_OPEN
 

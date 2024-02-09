@@ -8,12 +8,12 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_inpar_levelset.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_calc_ls.H"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_inpar_levelset.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_calc_ls.hpp"
 
 BACI_NAMESPACE_OPEN
 

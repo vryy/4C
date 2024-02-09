@@ -7,9 +7,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_prestress.H"
+#include "baci_so3_prestress.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

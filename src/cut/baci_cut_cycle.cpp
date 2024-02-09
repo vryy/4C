@@ -8,10 +8,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_cycle.H"
+#include "baci_cut_cycle.hpp"
 
-#include "baci_cut_edge.H"
-#include "baci_cut_output.H"
+#include "baci_cut_edge.hpp"
+#include "baci_cut_output.hpp"
 
 BACI_NAMESPACE_OPEN
 

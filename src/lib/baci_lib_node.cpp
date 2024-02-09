@@ -9,9 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_node.H"
+#include "baci_lib_node.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

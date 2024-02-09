@@ -9,12 +9,12 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_beaminteraction_data.H"
+#include "baci_beaminteraction_data.hpp"
 
-#include "baci_comm_pack_buffer.H"
-#include "baci_comm_parobject.H"
-#include "baci_global_data.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_pack_buffer.hpp"
+#include "baci_comm_parobject.hpp"
+#include "baci_global_data.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -6,10 +6,10 @@
 \level 3
  *----------------------------------------------------------------------*/
 
-#include "baci_mat_structporo_reaction.H"
+#include "baci_mat_structporo_reaction.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <vector>
 

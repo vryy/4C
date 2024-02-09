@@ -8,24 +8,24 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_lagrange_strategy_tsi.H"
+#include "baci_contact_lagrange_strategy_tsi.hpp"
 
-#include "baci_contact_defines.H"
-#include "baci_contact_friction_node.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_tsi_interface.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_inpar_contact.H"
-#include "baci_inpar_thermo.H"
-#include "baci_io.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_mortar_utils.H"
+#include "baci_contact_defines.hpp"
+#include "baci_contact_friction_node.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_tsi_interface.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_inpar_thermo.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_mortar_utils.hpp"
 
 #include <Epetra_SerialComm.h>
 

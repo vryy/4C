@@ -10,19 +10,19 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 09/09 |
  *----------------------------------------------------------------------*/
-#include "baci_thermo_ele_boundary_impl.H"
+#include "baci_thermo_ele_boundary_impl.hpp"
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_global_data.H"
-#include "baci_inpar_thermo.H"
-#include "baci_lib_discret.H"
-#include "baci_nurbs_discret.H"
-#include "baci_thermo_ele_action.H"
-#include "baci_utils_function.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_thermo.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_thermo_ele_action.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 BACI_NAMESPACE_OPEN
 

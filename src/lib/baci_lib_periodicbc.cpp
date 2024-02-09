@@ -16,16 +16,16 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_periodicbc.H"
+#include "baci_lib_periodicbc.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_coupling_matchingoctree.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_dofset_pbc.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_print.H"
-#include "baci_rebalance.H"
+#include "baci_comm_utils.hpp"
+#include "baci_coupling_matchingoctree.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_dofset_pbc.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_print.hpp"
+#include "baci_rebalance.hpp"
 
 BACI_NAMESPACE_OPEN
 

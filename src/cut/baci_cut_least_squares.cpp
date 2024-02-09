@@ -8,7 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_least_squares.H"
+#include "baci_cut_least_squares.hpp"
 
 #include <cmath>
 #include <iostream>

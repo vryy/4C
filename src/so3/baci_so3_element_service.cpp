@@ -6,12 +6,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_so3_element_service.H"
+#include "baci_so3_element_service.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_tet10.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_tet10.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -12,9 +12,9 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_inpar_boolifyparameters.H"
+#include "baci_inpar_boolifyparameters.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

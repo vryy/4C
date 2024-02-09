@@ -8,19 +8,19 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_constraint_springdashpot.H"
+#include "baci_constraint_springdashpot.hpp"
 
-#include "baci_adapter_coupling_nonlin_mortar.H"
-#include "baci_contact_interface.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"  // has to go before io.H
-#include "baci_lib_condition_utils.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_truss3.H"
-#include "baci_utils_function.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_adapter_coupling_nonlin_mortar.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"  // has to go before io.hpp
+#include "baci_lib_condition_utils.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_truss3.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <iostream>
 #include <utility>

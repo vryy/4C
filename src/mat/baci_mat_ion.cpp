@@ -9,10 +9,10 @@ Bauer
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_mat_ion.H"
+#include "baci_mat_ion.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <vector>
 

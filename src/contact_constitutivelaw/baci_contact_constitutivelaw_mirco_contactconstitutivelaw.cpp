@@ -6,12 +6,12 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
+#include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"
 
-#include "baci_global_data.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #ifdef BACI_WITH_MIRCO
 

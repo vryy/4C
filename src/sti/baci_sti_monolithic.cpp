@@ -8,25 +8,25 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_sti_monolithic.H"
+#include "baci_sti_monolithic.hpp"
 
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_lib_assemblestrategy.H"
-#include "baci_linalg_equilibrate.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_method_parameters.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-#include "baci_sti_monolithic_evaluate_OffDiag.H"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_assemblestrategy.hpp"
+#include "baci_linalg_equilibrate.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_linear_solver_method_parameters.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
+#include "baci_sti_monolithic_evaluate_OffDiag.hpp"
 
 BACI_NAMESPACE_OPEN
 

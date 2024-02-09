@@ -10,10 +10,10 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_xfem_dofset.H"
+#include "baci_lib_xfem_dofset.hpp"
 
-#include "baci_cut_cutwizard.H"
-#include "baci_cut_node.H"
+#include "baci_cut_cutwizard.hpp"
+#include "baci_cut_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

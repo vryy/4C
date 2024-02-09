@@ -12,13 +12,13 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_list.H"
-#include "baci_red_airways_acinus_impl.H"
-#include "baci_red_airways_elementbase.H"
-#include "baci_utils_exceptions.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_red_airways_acinus_impl.hpp"
+#include "baci_red_airways_elementbase.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

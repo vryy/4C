@@ -8,18 +8,18 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_algorithm_timint.H"
+#include "baci_particle_algorithm_timint.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_io.H"
-#include "baci_particle_algorithm_dirichlet_bc.H"
-#include "baci_particle_algorithm_temperature_bc.H"
-#include "baci_particle_engine_container.H"
-#include "baci_particle_engine_container_bundle.H"
-#include "baci_particle_engine_enums.H"
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_rigidbody_interface.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_io.hpp"
+#include "baci_particle_algorithm_dirichlet_bc.hpp"
+#include "baci_particle_algorithm_temperature_bc.hpp"
+#include "baci_particle_engine_container.hpp"
+#include "baci_particle_engine_container_bundle.hpp"
+#include "baci_particle_engine_enums.hpp"
+#include "baci_particle_engine_interface.hpp"
+#include "baci_particle_rigidbody_interface.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

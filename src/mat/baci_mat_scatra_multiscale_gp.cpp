@@ -7,17 +7,17 @@ transport problems
 
  */
 /*----------------------------------------------------------------------*/
-#include "baci_mat_scatra_multiscale_gp.H"
+#include "baci_mat_scatra_multiscale_gp.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_scatra_timint_ost.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_scatra_timint_ost.hpp"
 
 #include <filesystem>
 

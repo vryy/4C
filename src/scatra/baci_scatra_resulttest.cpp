@@ -8,13 +8,13 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_resulttest.H"
+#include "baci_scatra_resulttest.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
 
 BACI_NAMESPACE_OPEN
 

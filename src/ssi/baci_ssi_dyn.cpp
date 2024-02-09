@@ -7,15 +7,15 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_ssi_dyn.H"
+#include "baci_ssi_dyn.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_rebalance_utils.H"
-#include "baci_ssi_monolithic.H"
-#include "baci_ssi_partitioned_1wc.H"
-#include "baci_ssi_partitioned_2wc.H"
-#include "baci_ssi_utils.H"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_rebalance_utils.hpp"
+#include "baci_ssi_monolithic.hpp"
+#include "baci_ssi_partitioned_1wc.hpp"
+#include "baci_ssi_partitioned_2wc.hpp"
+#include "baci_ssi_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -9,9 +9,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc_std.H"
+#include "baci_fluid_ele_calc_std.hpp"
 
-#include "baci_fluid_ele_parameter_std.H"
+#include "baci_fluid_ele_parameter_std.hpp"
 
 BACI_NAMESPACE_OPEN
 

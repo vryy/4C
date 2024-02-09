@@ -6,13 +6,13 @@
  \level 1
 
  */
-#include "baci_discretization_geometry_searchtree.H"
+#include "baci_discretization_geometry_searchtree.hpp"
 
-#include "baci_discretization_geometry_intersection_service.H"
-#include "baci_discretization_geometry_intersection_service_templates.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_io_gmsh.H"
+#include "baci_discretization_geometry_intersection_service.hpp"
+#include "baci_discretization_geometry_intersection_service_templates.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_discretization_geometry_searchtree_service.hpp"
+#include "baci_io_gmsh.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

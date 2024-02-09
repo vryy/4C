@@ -9,12 +9,12 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_mat_muscle_utils.H"
+#include "baci_mat_muscle_utils.hpp"
 
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
 
 #include <cmath>
 #include <functional>

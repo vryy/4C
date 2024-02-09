@@ -7,13 +7,13 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_immersed_problem_immersed_base.H"
+#include "baci_immersed_problem_immersed_base.hpp"
 
-#include "baci_adapter_fld_wrapper.H"
-#include "baci_adapter_str_fsiwrapper_immersed.H"
-#include "baci_io_control.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_adapter_fld_wrapper.hpp"
+#include "baci_adapter_str_fsiwrapper_immersed.hpp"
+#include "baci_io_control.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 BACI_NAMESPACE_OPEN
 

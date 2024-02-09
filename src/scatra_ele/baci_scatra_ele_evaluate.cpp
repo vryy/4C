@@ -8,19 +8,19 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_lib_discret.H"
-#include "baci_mat_elchmat.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_factory.H"
-#include "baci_scatra_ele_interface.H"
-#include "baci_scatra_ele_parameter_boundary.H"
-#include "baci_scatra_ele_parameter_elch.H"
-#include "baci_scatra_ele_parameter_elch_diffcond.H"
-#include "baci_scatra_ele_parameter_lsreinit.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_scatra_ele_parameter_turbulence.H"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_elchmat.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_factory.hpp"
+#include "baci_scatra_ele_interface.hpp"
+#include "baci_scatra_ele_parameter_boundary.hpp"
+#include "baci_scatra_ele_parameter_elch.hpp"
+#include "baci_scatra_ele_parameter_elch_diffcond.hpp"
+#include "baci_scatra_ele_parameter_lsreinit.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_scatra_ele_parameter_turbulence.hpp"
 
 BACI_NAMESPACE_OPEN
 

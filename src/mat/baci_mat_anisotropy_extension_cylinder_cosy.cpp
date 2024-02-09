@@ -10,11 +10,11 @@ materials with @MAT::Anisotropy
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_anisotropy_extension_cylinder_cosy.H"
+#include "baci_mat_anisotropy_extension_cylinder_cosy.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_mat_anisotropy.H"
-#include "baci_mat_anisotropy_coordinate_system_provider.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_mat_anisotropy.hpp"
+#include "baci_mat_anisotropy_coordinate_system_provider.hpp"
 
 BACI_NAMESPACE_OPEN
 

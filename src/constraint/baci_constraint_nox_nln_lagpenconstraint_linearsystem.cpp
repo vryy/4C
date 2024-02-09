@@ -12,12 +12,12 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_constraint_nox_nln_lagpenconstraint_linearsystem.H"
+#include "baci_constraint_nox_nln_lagpenconstraint_linearsystem.hpp"
 
-#include "baci_linalg_sparseoperator.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_solver_nonlin_nox_interface_jacobian.H"
-#include "baci_solver_nonlin_nox_interface_required.H"
+#include "baci_linalg_sparseoperator.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_solver_nonlin_nox_interface_jacobian.hpp"
+#include "baci_solver_nonlin_nox_interface_required.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

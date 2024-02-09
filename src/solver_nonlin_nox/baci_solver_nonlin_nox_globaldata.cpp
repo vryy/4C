@@ -12,17 +12,17 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_globaldata.H"  // class definition
+#include "baci_solver_nonlin_nox_globaldata.hpp"  // class definition
 
-#include "baci_inpar_boolifyparameters.H"
-#include "baci_inpar_structure.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_direction_factory.H"
-#include "baci_solver_nonlin_nox_linearsystem.H"
-#include "baci_solver_nonlin_nox_meritfunction_factory.H"
-#include "baci_solver_nonlin_nox_solver_prepostop_generic.H"
-#include "baci_utils_exceptions.H"
+#include "baci_inpar_boolifyparameters.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_solver_nonlin_nox_direction_factory.hpp"
+#include "baci_solver_nonlin_nox_linearsystem.hpp"
+#include "baci_solver_nonlin_nox_meritfunction_factory.hpp"
+#include "baci_solver_nonlin_nox_solver_prepostop_generic.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>

@@ -8,15 +8,15 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_comm_exporter.H"
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_densematrix_svd.H"
-#include "baci_mat_micromaterial.H"
-#include "baci_mat_micromaterialgp_static.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_stru_multi_microstatic.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_densematrix_svd.hpp"
+#include "baci_mat_micromaterial.hpp"
+#include "baci_mat_micromaterialgp_static.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_stru_multi_microstatic.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,12 +8,12 @@
 
     *----------------------------------------------------------------------*/
 
-#include "baci_poromultiphase_scatra_artery_coupling_nodetopoint.H"
+#include "baci_poromultiphase_scatra_artery_coupling_nodetopoint.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_condition_selector.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_poromultiphase_scatra_artery_coupling_pair.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_condition_selector.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_poromultiphase_scatra_artery_coupling_pair.hpp"
 
 BACI_NAMESPACE_OPEN
 

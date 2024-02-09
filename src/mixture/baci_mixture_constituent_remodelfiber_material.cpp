@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_mixture_constituent_remodelfiber_material_exponential.H"
+#include "baci_mixture_constituent_remodelfiber_material_exponential.hpp"
 
 #include <Sacado.hpp>
 

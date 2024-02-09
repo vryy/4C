@@ -8,9 +8,9 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_scatra_timint_meshtying_strategy_fluid_elch.H"
+#include "baci_scatra_timint_meshtying_strategy_fluid_elch.hpp"
 
-#include "baci_fluid_meshtying.H"
+#include "baci_fluid_meshtying.hpp"
 
 BACI_NAMESPACE_OPEN
 

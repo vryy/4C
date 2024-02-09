@@ -7,13 +7,13 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_porofluidmultiphase_ele.H"
+#include "baci_porofluidmultiphase_ele.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_fluid_ele_nullspace.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_fluidporo_multiphase.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_fluid_ele_nullspace.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_fluidporo_multiphase.hpp"
 
 BACI_NAMESPACE_OPEN
 

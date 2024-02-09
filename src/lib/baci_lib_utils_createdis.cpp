@@ -10,11 +10,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_utils_createdis.H"
+#include "baci_lib_utils_createdis.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_lib_dofset_transparent_independent.H"
-#include "baci_lib_utils_parallel.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_dofset_transparent_independent.hpp"
+#include "baci_lib_utils_parallel.hpp"
 
 BACI_NAMESPACE_OPEN
 

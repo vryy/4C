@@ -10,17 +10,17 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_timint_basedataio.H"
+#include "baci_structure_new_timint_basedataio.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_io_every_iteration_writer.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_linesearch_generic.H"
-#include "baci_solver_nonlin_nox_linesearch_prepostoperator.H"
-#include "baci_structure_new_timint_basedataio_monitor_dbc.H"
-#include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
-#include "baci_structure_new_timint_basedataio_runtime_vtp_output.H"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_every_iteration_writer.hpp"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_solver_nonlin_nox_linesearch_generic.hpp"
+#include "baci_solver_nonlin_nox_linesearch_prepostoperator.hpp"
+#include "baci_structure_new_timint_basedataio_monitor_dbc.hpp"
+#include "baci_structure_new_timint_basedataio_runtime_vtk_output.hpp"
+#include "baci_structure_new_timint_basedataio_runtime_vtp_output.hpp"
 
 #include <NOX_Solver_Generic.H>
 

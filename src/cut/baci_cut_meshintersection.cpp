@@ -6,9 +6,9 @@
 \level 3
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_cut_meshintersection.H"
+#include "baci_cut_meshintersection.hpp"
 
-#include "baci_cut_selfcut.H"
+#include "baci_cut_selfcut.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

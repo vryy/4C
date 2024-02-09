@@ -11,19 +11,19 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
-#include "baci_coupling_volmortar_integrator.H"
+#include "baci_coupling_volmortar_integrator.hpp"
 
-#include "baci_coupling_volmortar_cell.H"
-#include "baci_coupling_volmortar_defines.H"
-#include "baci_coupling_volmortar_shape.H"
-#include "baci_cut_volumecell.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_mortar_calc_utils.H"
-#include "baci_mortar_coupling3d_classes.H"
+#include "baci_coupling_volmortar_cell.hpp"
+#include "baci_coupling_volmortar_defines.hpp"
+#include "baci_coupling_volmortar_shape.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_mortar_calc_utils.hpp"
+#include "baci_mortar_coupling3d_classes.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,25 +8,25 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_lagrange_strategy.hpp"
 
-#include "baci_contact_defines.H"
-#include "baci_contact_element.H"
-#include "baci_contact_friction_node.H"
-#include "baci_contact_integrator.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_paramsinterface.H"
-#include "baci_contact_utils.H"
-#include "baci_inpar_contact.H"
-#include "baci_io.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_utils.H"
-#include "baci_structure_new_model_evaluator_contact.H"
-#include "baci_utils_epetra_exceptions.H"
+#include "baci_contact_defines.hpp"
+#include "baci_contact_element.hpp"
+#include "baci_contact_friction_node.hpp"
+#include "baci_contact_integrator.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_paramsinterface.hpp"
+#include "baci_contact_utils.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_utils.hpp"
+#include "baci_structure_new_model_evaluator_contact.hpp"
+#include "baci_utils_epetra_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
 #include <Teuchos_TimeMonitor.hpp>

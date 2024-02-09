@@ -10,12 +10,12 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_factory.H"
-#include "baci_fluid_ele_interface.H"
-#include "baci_fluid_ele_parameter_poro.H"
-#include "baci_fluid_ele_poro.H"
-#include "baci_global_data.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_factory.hpp"
+#include "baci_fluid_ele_interface.hpp"
+#include "baci_fluid_ele_parameter_poro.hpp"
+#include "baci_fluid_ele_poro.hpp"
+#include "baci_global_data.hpp"
 
 BACI_NAMESPACE_OPEN
 

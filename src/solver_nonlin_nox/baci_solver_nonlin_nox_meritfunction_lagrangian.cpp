@@ -11,10 +11,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_meritfunction_lagrangian.H"  // class header
+#include "baci_solver_nonlin_nox_meritfunction_lagrangian.hpp"  // class header
 
-#include "baci_linalg_serialdensevector.H"
-#include "baci_solver_nonlin_nox_constraint_group.H"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_solver_nonlin_nox_constraint_group.hpp"
 
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Utils.H>

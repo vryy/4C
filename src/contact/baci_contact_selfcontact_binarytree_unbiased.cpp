@@ -7,13 +7,13 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "baci_contact_selfcontact_binarytree_unbiased.H"
+#include "baci_contact_selfcontact_binarytree_unbiased.hpp"
 
-#include "baci_contact_element.H"
-#include "baci_contact_node.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_reference_configuration.H"
-#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_contact_element.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils_reference_configuration.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
 
 BACI_NAMESPACE_OPEN
 

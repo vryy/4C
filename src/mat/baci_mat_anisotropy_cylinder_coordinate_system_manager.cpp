@@ -9,13 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_anisotropy_cylinder_coordinate_system_manager.H"
+#include "baci_mat_anisotropy_cylinder_coordinate_system_manager.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_anisotropy.H"
-#include "baci_mat_anisotropy_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_anisotropy.hpp"
+#include "baci_mat_anisotropy_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

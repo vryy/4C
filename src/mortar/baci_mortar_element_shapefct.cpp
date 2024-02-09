@@ -7,15 +7,15 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_shape_utils.H"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_node.hpp"
+#include "baci_mortar_shape_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

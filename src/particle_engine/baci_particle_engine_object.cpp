@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_object.H"
+#include "baci_particle_engine_object.hpp"
 
 BACI_NAMESPACE_OPEN
 

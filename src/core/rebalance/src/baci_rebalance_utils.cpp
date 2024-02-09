@@ -8,10 +8,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_rebalance_utils.H"
+#include "baci_rebalance_utils.hpp"
 
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

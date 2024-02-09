@@ -11,20 +11,20 @@
 
 
 
-#include "baci_red_airways_air_blood_scatra_impl.H"
+#include "baci_red_airways_air_blood_scatra_impl.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_gder2.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_air_0d_O2_saturation.H"
-#include "baci_mat_hemoglobin_0d_O2_saturation.H"
-#include "baci_mat_list.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_gder2.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_air_0d_O2_saturation.hpp"
+#include "baci_mat_hemoglobin_0d_O2_saturation.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_mat_par_bundle.hpp"
 #include "baci_red_airways_evaluation_data.h"
-#include "baci_utils_function.H"
+#include "baci_utils_function.hpp"
 
 #include <fstream>
 #include <iomanip>

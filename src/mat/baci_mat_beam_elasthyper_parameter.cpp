@@ -7,10 +7,10 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_mat_beam_elasthyper_parameter.H"
+#include "baci_mat_beam_elasthyper_parameter.hpp"
 
-#include "baci_mat_beam_elasthyper.H"
-#include "baci_mat_par_material.H"
+#include "baci_mat_beam_elasthyper.hpp"
+#include "baci_mat_par_material.hpp"
 
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>

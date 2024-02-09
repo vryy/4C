@@ -5,13 +5,13 @@
 \level 3
 */
 
-#include "baci_shell7p_ele_neumann_evaluator.H"
+#include "baci_shell7p_ele_neumann_evaluator.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_shell7p_ele_calc_lib.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_shell7p_ele_calc_lib.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 

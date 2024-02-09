@@ -10,7 +10,7 @@ of dofs per node on a fluid discretization for xwall
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_lib_discret_xwall.H"
+#include "baci_lib_discret_xwall.hpp"
 
 BACI_NAMESPACE_OPEN
 

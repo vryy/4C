@@ -9,12 +9,12 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_functions.H"
+#include "baci_structure_new_functions.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_stvenantkirchhoff.H"
-#include "baci_utils_function_manager.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_stvenantkirchhoff.hpp"
+#include "baci_utils_function_manager.hpp"
 
 BACI_NAMESPACE_OPEN
 

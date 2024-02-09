@@ -7,16 +7,16 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_sti_algorithm.H"
+#include "baci_sti_algorithm.hpp"
 
-#include "baci_coupling_adapter.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
+#include "baci_coupling_adapter.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
 
 BACI_NAMESPACE_OPEN
 

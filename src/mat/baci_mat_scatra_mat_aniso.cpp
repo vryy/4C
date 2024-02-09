@@ -7,11 +7,11 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_mat_scatra_mat_aniso.H"
+#include "baci_mat_scatra_mat_aniso.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <vector>
 

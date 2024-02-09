@@ -7,12 +7,12 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include "baci_ssi_monolithic_contact_strategy.H"
+#include "baci_ssi_monolithic_contact_strategy.hpp"
 
-#include "baci_contact_nitsche_strategy_ssi.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_ssi_monolithic.H"
-#include "baci_ssi_utils.H"
+#include "baci_contact_nitsche_strategy_ssi.hpp"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_ssi_monolithic.hpp"
+#include "baci_ssi_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

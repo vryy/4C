@@ -7,16 +7,16 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poroelast_monolithicsplit.H"
+#include "baci_poroelast_monolithicsplit.hpp"
 
-#include "baci_adapter_fld_base_algorithm.H"
-#include "baci_adapter_fld_poro.H"
-#include "baci_adapter_str_fpsiwrapper.H"
-#include "baci_coupling_adapter.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_global_data.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_fld_base_algorithm.hpp"
+#include "baci_adapter_fld_poro.hpp"
+#include "baci_adapter_str_fpsiwrapper.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_structure_aux.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

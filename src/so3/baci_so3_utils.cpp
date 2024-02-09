@@ -6,13 +6,13 @@
 \level 1
  *-----------------------------------------------------------------------*/
 
-#include "baci_so3_utils.H"
+#include "baci_so3_utils.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_fiber_node.H"
-#include "baci_lib_element.H"
-#include "baci_linalg_utils_densematrix_svd.H"
-#include "baci_so3_prestress.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_fiber_node.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_linalg_utils_densematrix_svd.hpp"
+#include "baci_so3_prestress.hpp"
 
 #include <algorithm>
 

@@ -8,19 +8,19 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_scatra_ele_calc_multiporo_reac.H"
+#include "baci_scatra_ele_calc_multiporo_reac.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_fluidporo_multiphase.H"
-#include "baci_mat_list.H"
-#include "baci_mat_list_reactions.H"
-#include "baci_mat_scatra_mat.H"
-#include "baci_mat_scatra_mat_multiporo.H"
-#include "baci_mat_structporo.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_fluidporo_multiphase.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_list_reactions.hpp"
+#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra_mat_multiporo.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

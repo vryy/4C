@@ -7,13 +7,13 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poromultiphase_scatra_artery_coupling_nodebased.H"
+#include "baci_poromultiphase_scatra_artery_coupling_nodebased.hpp"
 
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_lib_condition_selector.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_matrixtransform.H"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_lib_condition_selector.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_matrixtransform.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,16 +9,16 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fbi_fluidblockmatrix_assembly_strategy.H"
+#include "baci_fbi_fluidblockmatrix_assembly_strategy.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_base.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

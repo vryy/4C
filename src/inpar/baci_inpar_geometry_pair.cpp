@@ -7,9 +7,9 @@
 */
 
 
-#include "baci_inpar_geometry_pair.H"
+#include "baci_inpar_geometry_pair.hpp"
 
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

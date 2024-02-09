@@ -8,12 +8,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_algorithm_result_test.H"
+#include "baci_particle_algorithm_result_test.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_particle_engine_container.H"
-#include "baci_particle_engine_container_bundle.H"
-#include "baci_particle_engine_interface.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_particle_engine_container.hpp"
+#include "baci_particle_engine_container_bundle.hpp"
+#include "baci_particle_engine_interface.hpp"
 
 BACI_NAMESPACE_OPEN
 

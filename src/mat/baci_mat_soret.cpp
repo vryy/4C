@@ -6,10 +6,10 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mat_soret.H"
+#include "baci_mat_soret.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 BACI_NAMESPACE_OPEN
 

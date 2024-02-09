@@ -7,17 +7,17 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_ele_boundary_calc_elch_electrode.H"
+#include "baci_scatra_ele_boundary_calc_elch_electrode.hpp"
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_mat_electrode.H"
-#include "baci_scatra_ele_boundary_calc_elch_electrode_utils.H"
-#include "baci_scatra_ele_parameter_boundary.H"
-#include "baci_scatra_ele_parameter_elch.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_so3_utils.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_mat_electrode.hpp"
+#include "baci_scatra_ele_boundary_calc_elch_electrode_utils.hpp"
+#include "baci_scatra_ele_parameter_boundary.hpp"
+#include "baci_scatra_ele_parameter_elch.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_so3_utils.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

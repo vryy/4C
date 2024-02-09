@@ -9,10 +9,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_impl_gemm.H"
+#include "baci_structure_new_impl_gemm.hpp"
 
-#include "baci_linalg_sparseoperator.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_sparseoperator.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>
 

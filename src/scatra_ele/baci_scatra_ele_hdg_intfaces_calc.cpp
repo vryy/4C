@@ -9,11 +9,11 @@ Integrate internal face terms on an internal faces element
 
 
 *----------------------------------------------------------------------*/
-#include "baci_scatra_ele_hdg_intfaces_calc.H"
+#include "baci_scatra_ele_hdg_intfaces_calc.hpp"
 
-#include "baci_lib_discret_faces.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_scatra_ele_action.H"
+#include "baci_lib_discret_faces.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_scatra_ele_action.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

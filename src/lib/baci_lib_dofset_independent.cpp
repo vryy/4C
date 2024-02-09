@@ -9,9 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_dofset_independent.H"
+#include "baci_lib_dofset_independent.hpp"
 
-#include "baci_lib_discret.H"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,9 +9,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele.H"
-#include "baci_fluid_ele_intfaces_calc.H"
-#include "baci_lib_discret.H"
+#include "baci_fluid_ele.hpp"
+#include "baci_fluid_ele_intfaces_calc.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -7,19 +7,19 @@
 \level 3
 *----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_global_data.H"
-#include "baci_lib_element_integration_select.H"
-#include "baci_linalg_utils_densematrix_determinant.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
-#include "baci_mat_fourieriso.H"
-#include "baci_mat_service.H"
-#include "baci_mat_so3_material.H"
-#include "baci_nurbs_discret.H"
-#include "baci_so3_surface.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_gausspoints.hpp"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_element_integration_select.hpp"
+#include "baci_linalg_utils_densematrix_determinant.hpp"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
+#include "baci_mat_fourieriso.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_so3_surface.hpp"
 
 BACI_NAMESPACE_OPEN
 

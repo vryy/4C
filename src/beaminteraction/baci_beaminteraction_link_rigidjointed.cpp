@@ -8,14 +8,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_link_rigidjointed.H"
+#include "baci_beaminteraction_link_rigidjointed.hpp"
 
-#include "baci_beaminteraction_link.H"
-#include "baci_beaminteraction_link_beam3_reissner_line2_rigidjointed.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beaminteraction_link.hpp"
+#include "baci_beaminteraction_link_beam3_reissner_line2_rigidjointed.hpp"
+#include "baci_discretization_fem_general_largerotations.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
 

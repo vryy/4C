@@ -7,15 +7,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_inelastic_defgrad_factors.H"
+#include "baci_mat_inelastic_defgrad_factors.hpp"
 
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_electrode.H"
-#include "baci_mat_multiplicative_split_defgrad_elasthyper.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_electrode.hpp"
+#include "baci_mat_multiplicative_split_defgrad_elasthyper.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <utility>
 

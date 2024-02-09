@@ -11,14 +11,14 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_group.H"
+#include "baci_solver_nonlin_nox_group.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_solver_nonlin_nox_group_prepostoperator.H"
-#include "baci_solver_nonlin_nox_interface_jacobian.H"
-#include "baci_solver_nonlin_nox_interface_required.H"
-#include "baci_solver_nonlin_nox_linearsystem.H"
-#include "baci_solver_nonlin_nox_solver_ptc.H"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_solver_nonlin_nox_group_prepostoperator.hpp"
+#include "baci_solver_nonlin_nox_interface_jacobian.hpp"
+#include "baci_solver_nonlin_nox_interface_required.hpp"
+#include "baci_solver_nonlin_nox_linearsystem.hpp"
+#include "baci_solver_nonlin_nox_solver_ptc.hpp"
 
 #include <NOX_StatusTest_NormF.H>
 

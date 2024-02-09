@@ -9,21 +9,21 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_nurbs_discret.H"
+#include "baci_nurbs_discret.hpp"
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-#include "baci_utils_function.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_Time.hpp>

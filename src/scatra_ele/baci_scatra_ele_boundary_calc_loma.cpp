@@ -7,24 +7,24 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_ele_boundary_calc_loma.H"
+#include "baci_scatra_ele_boundary_calc_loma.hpp"
 
-#include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_arrhenius_pv.H"
-#include "baci_mat_arrhenius_temp.H"
-#include "baci_mat_ferech_pv.H"
-#include "baci_mat_list.H"
-#include "baci_mat_material.H"
-#include "baci_mat_mixfrac.H"
-#include "baci_mat_sutherland.H"
-#include "baci_mat_tempdepwater.H"
-#include "baci_mat_thermostvenantkirchhoff.H"
-#include "baci_mat_yoghurt.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_fluid_rotsym_periodicbc.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_arrhenius_pv.hpp"
+#include "baci_mat_arrhenius_temp.hpp"
+#include "baci_mat_ferech_pv.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_mat_mixfrac.hpp"
+#include "baci_mat_sutherland.hpp"
+#include "baci_mat_tempdepwater.hpp"
+#include "baci_mat_thermostvenantkirchhoff.hpp"
+#include "baci_mat_yoghurt.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

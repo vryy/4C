@@ -8,17 +8,17 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beam3_base.H"
+#include "baci_beam3_base.hpp"
 
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_periodic_boundingbox.H"
-#include "baci_discretization_geometric_search_bounding_volume.H"
-#include "baci_discretization_geometric_search_params.H"
-#include "baci_global_data.H"
-#include "baci_inpar_browniandyn.H"  // enums
-#include "baci_mat_beam_templated_material_generic.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_utils_fad.H"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_periodic_boundingbox.hpp"
+#include "baci_discretization_geometric_search_bounding_volume.hpp"
+#include "baci_discretization_geometric_search_params.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_browniandyn.hpp"  // enums
+#include "baci_mat_beam_templated_material_generic.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_fad.hpp"
 
 #include <Sacado.hpp>
 

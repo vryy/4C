@@ -7,7 +7,7 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_contact_nitsche_utils.H"
+#include "baci_contact_nitsche_utils.hpp"
 
 #include <Epetra_FECrsMatrix.h>
 #include <Teuchos_RCP.hpp>

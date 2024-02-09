@@ -7,12 +7,12 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_truss3_scatra.H"
+#include "baci_truss3_scatra.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_mat_lin_elast_1D.H"
-#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_lin_elast_1D.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -6,11 +6,11 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_mat_fluidporo_multiphase_singlereaction.H"
+#include "baci_mat_fluidporo_multiphase_singlereaction.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_utils_function.hpp"
 
 #include <vector>
 

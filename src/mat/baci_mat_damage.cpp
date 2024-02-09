@@ -34,10 +34,10 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 09/13 |
  *----------------------------------------------------------------------*/
-#include "baci_mat_damage.H"
+#include "baci_mat_damage.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_inpar_solver.H"
+#include "baci_inpar_solver.hpp"
 
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_validparameters.hpp"
 
 #include <BelosTypes.hpp>
 

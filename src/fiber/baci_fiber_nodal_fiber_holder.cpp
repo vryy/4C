@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fiber_nodal_fiber_holder.H"
+#include "baci_fiber_nodal_fiber_holder.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_fiber_node.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_fiber_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,10 +8,10 @@
 *----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_linalg_utils_densematrix_svd.H"
+#include "baci_linalg_utils_densematrix_svd.hpp"
 
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 BACI_NAMESPACE_OPEN
 

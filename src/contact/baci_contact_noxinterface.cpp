@@ -9,11 +9,11 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_noxinterface.H"
+#include "baci_contact_noxinterface.hpp"
 
-#include "baci_contact_abstract_strategy.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_solver_nonlin_nox_aux.H"
+#include "baci_contact_abstract_strategy.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_solver_nonlin_nox_aux.hpp"
 
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>

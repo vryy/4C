@@ -6,11 +6,11 @@
 
 /*----------------------------------------------------------------------*/
 
-#include "baci_inpar_problemtype.H"
+#include "baci_inpar_problemtype.hpp"
 
-#include "baci_discretization_fem_general_shape_function_type.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_utils_exceptions.H"
+#include "baci_discretization_fem_general_shape_function_type.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

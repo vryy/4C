@@ -5,9 +5,9 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_io_csv_reader.H"
+#include "baci_io_csv_reader.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <algorithm>
 #include <fstream>

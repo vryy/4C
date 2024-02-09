@@ -7,18 +7,18 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_fluid_timint_hdg_weak_comp.H"
+#include "baci_fluid_timint_hdg_weak_comp.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_hdg_weak_comp.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_fluid_weakly_compressible.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_hdg_weak_comp.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret_hdg.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_fluid_weakly_compressible.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 BACI_NAMESPACE_OPEN
 

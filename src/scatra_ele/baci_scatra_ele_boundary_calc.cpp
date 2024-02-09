@@ -7,20 +7,20 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_ele_boundary_calc.H"
+#include "baci_scatra_ele_boundary_calc.hpp"
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_global_data.H"
-#include "baci_mat_fourieriso.H"
-#include "baci_mat_list.H"
-#include "baci_mat_scatra_mat.H"
-#include "baci_mat_thermostvenantkirchhoff.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-#include "baci_scatra_ele_parameter_boundary.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_function.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_fluid_rotsym_periodicbc.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_fourieriso.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_thermostvenantkirchhoff.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
+#include "baci_scatra_ele_parameter_boundary.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 

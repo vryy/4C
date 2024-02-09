@@ -6,9 +6,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_isoyeoh.H"
+#include "baci_matelast_isoyeoh.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

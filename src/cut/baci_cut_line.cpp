@@ -8,10 +8,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_line.H"
+#include "baci_cut_line.hpp"
 
-#include "baci_cut_element.H"
-#include "baci_cut_side.H"
+#include "baci_cut_element.hpp"
+#include "baci_cut_side.hpp"
 
 BACI_NAMESPACE_OPEN
 

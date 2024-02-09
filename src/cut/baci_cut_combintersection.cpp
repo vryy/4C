@@ -8,12 +8,12 @@
 \level 2
 */
 /*------------------------------------------------------------------------------------------------*/
-#include "baci_cut_combintersection.H"
+#include "baci_cut_combintersection.hpp"
 
-#include "baci_cut_levelsetintersection.H"
-#include "baci_cut_levelsetside.H"
-#include "baci_cut_meshintersection.H"
-#include "baci_cut_tolerance.H"  // for EXTENDED_CUT_DEBUG_OUTPUT
+#include "baci_cut_levelsetintersection.hpp"
+#include "baci_cut_levelsetside.hpp"
+#include "baci_cut_meshintersection.hpp"
+#include "baci_cut_tolerance.hpp"  // for EXTENDED_CUT_DEBUG_OUTPUT
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -9,12 +9,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_nox_mpe.H"
+#include "baci_fsi_nox_mpe.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>

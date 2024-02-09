@@ -7,15 +7,15 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_scatra_ele_calc_elch_NP.H"
+#include "baci_scatra_ele_calc_elch_NP.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_list.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_scatra_ele_utils_elch.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_scatra_ele_utils_elch.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

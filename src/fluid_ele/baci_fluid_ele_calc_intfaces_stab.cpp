@@ -20,17 +20,17 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc_intfaces_stab.H"
+#include "baci_fluid_ele_calc_intfaces_stab.hpp"
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_gder2.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fluid.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_list.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_utils_function.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_gder2.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fluid.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

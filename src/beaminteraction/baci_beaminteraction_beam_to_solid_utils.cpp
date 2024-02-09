@@ -9,22 +9,22 @@
 // End doxygen header.
 
 
-#include "baci_beaminteraction_beam_to_solid_utils.H"
+#include "baci_beaminteraction_beam_to_solid_utils.hpp"
 
-#include "baci_beam3_reissner.H"
-#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
-#include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
-#include "baci_beaminteraction_beam_to_solid_surface_contact_params.H"
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_geometry_pair.H"
-#include "baci_geometry_pair_element.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_scalar_types.H"
-#include "baci_inpar_beam_to_solid.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_utils_fad.H"
+#include "baci_beam3_reissner.hpp"
+#include "baci_beam3_triad_interpolation_local_rotation_vectors.hpp"
+#include "baci_beaminteraction_beam_to_solid_mortar_manager.hpp"
+#include "baci_beaminteraction_beam_to_solid_surface_contact_params.hpp"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_discretization_fem_general_largerotations.hpp"
+#include "baci_geometry_pair.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_scalar_types.hpp"
+#include "baci_inpar_beam_to_solid.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_utils_fad.hpp"
 
 #include <Epetra_FEVector.h>
 

@@ -8,9 +8,9 @@
 *----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_linalg_utils_densematrix_determinant.H"
+#include "baci_linalg_utils_densematrix_determinant.hpp"
 
-#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensematrix.hpp"
 
 BACI_NAMESPACE_OPEN
 

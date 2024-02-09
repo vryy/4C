@@ -8,12 +8,12 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_boundingbox.H"
+#include "baci_cut_boundingbox.hpp"
 
-#include "baci_cut_element.H"
-#include "baci_cut_side.H"
-#include "baci_cut_volumecell.H"
-#include "baci_global_data.H"
+#include "baci_cut_element.hpp"
+#include "baci_cut_side.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_global_data.hpp"
 
 BACI_NAMESPACE_OPEN
 

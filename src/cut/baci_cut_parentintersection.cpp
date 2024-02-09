@@ -8,10 +8,10 @@
 */
 /*------------------------------------------------------------------------------------------------*/
 
-#include "baci_cut_parentintersection.H"
+#include "baci_cut_parentintersection.hpp"
 
-#include "baci_cut_volumecell.H"
-#include "baci_lib_discret.H"
+#include "baci_cut_volumecell.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

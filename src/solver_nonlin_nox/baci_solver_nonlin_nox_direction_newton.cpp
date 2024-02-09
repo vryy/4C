@@ -8,9 +8,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_direction_newton.H"
+#include "baci_solver_nonlin_nox_direction_newton.hpp"
 
-#include "baci_solver_nonlin_nox_group.H"
+#include "baci_solver_nonlin_nox_group.hpp"
 
 #include <NOX_GlobalData.H>
 #include <NOX_Utils.H>

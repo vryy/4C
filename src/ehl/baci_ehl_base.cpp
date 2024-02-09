@@ -9,24 +9,24 @@ algorithms
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_ehl_base.H"
+#include "baci_ehl_base.hpp"
 
-#include "baci_adapter_coupling_ehl_mortar.H"
-#include "baci_adapter_lubrication.H"
-#include "baci_adapter_str_wrapper.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_node.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_matchingoctree.H"
-#include "baci_ehl_partitioned.H"
-#include "baci_ehl_utils.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_gmsh.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_lubrication_timint_implicit.H"
-#include "baci_mat_lubrication_mat.H"
+#include "baci_adapter_coupling_ehl_mortar.hpp"
+#include "baci_adapter_lubrication.hpp"
+#include "baci_adapter_str_wrapper.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_matchingoctree.hpp"
+#include "baci_ehl_partitioned.hpp"
+#include "baci_ehl_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_gmsh.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_lubrication_timint_implicit.hpp"
+#include "baci_mat_lubrication_mat.hpp"
 
 #include <Epetra_MultiVector.h>
 

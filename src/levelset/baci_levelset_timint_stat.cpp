@@ -9,7 +9,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_levelset_timint_stat.H"
+#include "baci_levelset_timint_stat.hpp"
 
 BACI_NAMESPACE_OPEN
 

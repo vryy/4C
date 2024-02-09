@@ -7,7 +7,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_mortar_manager_base.H"
+#include "baci_mortar_manager_base.hpp"
 
 #include <Epetra_SerialComm.h>
 

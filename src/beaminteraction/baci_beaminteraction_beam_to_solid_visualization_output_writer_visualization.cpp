@@ -8,14 +8,14 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_io_visualization_manager.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_visualization_manager.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_structure_new_timint_basedataio_runtime_vtk_output.hpp"
 
 BACI_NAMESPACE_OPEN
 

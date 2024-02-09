@@ -7,13 +7,13 @@
 */
 
 
-#include "baci_geometry_pair_line_to_volume_segmentation.H"
+#include "baci_geometry_pair_line_to_volume_segmentation.hpp"
 
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_line_projection.H"
-#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
-#include "baci_geometry_pair_utility_classes.H"
-#include "baci_utils_fad.H"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_line_projection.hpp"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
+#include "baci_geometry_pair_utility_classes.hpp"
+#include "baci_utils_fad.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,15 +9,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_link_beam3_reissner_line2_pinjointed.H"
+#include "baci_beaminteraction_link_beam3_reissner_line2_pinjointed.hpp"
 
-#include "baci_beam3_reissner.H"
-#include "baci_beaminteraction_link.H"
-#include "baci_comm_utils_factory.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_reissner.hpp"
+#include "baci_beaminteraction_link.hpp"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_discretization_fem_general_largerotations.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
 

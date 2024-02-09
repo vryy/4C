@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linear_solver_preconditioner_point.H"
+#include "baci_linear_solver_preconditioner_point.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_CrsMatrix.h>
 

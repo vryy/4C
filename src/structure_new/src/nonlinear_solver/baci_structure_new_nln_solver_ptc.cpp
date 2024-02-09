@@ -9,10 +9,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_nln_solver_ptc.H"  // class definition
+#include "baci_structure_new_nln_solver_ptc.hpp"  // class definition
 
-#include "baci_structure_new_nln_solver_utils.H"
-#include "baci_structure_new_timint_base.H"
+#include "baci_structure_new_nln_solver_utils.hpp"
+#include "baci_structure_new_timint_base.hpp"
 
 BACI_NAMESPACE_OPEN
 

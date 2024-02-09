@@ -10,9 +10,9 @@
 
 // #ifdef D_COUPLED_ARTNET
 
-#include "baci_fluid_coupling_red_models.H"
+#include "baci_fluid_coupling_red_models.hpp"
 
-#include "baci_fluid_ele_action.H"
+#include "baci_fluid_ele_action.hpp"
 
 #include <math.h>
 #include <stdio.h>

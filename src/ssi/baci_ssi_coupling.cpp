@@ -7,19 +7,19 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_ssi_coupling.H"
+#include "baci_ssi_coupling.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_wrapper.H"
-#include "baci_coupling_adapter_mortar.H"
-#include "baci_coupling_adapter_volmortar.H"
-#include "baci_coupling_volmortar_utils.H"
-#include "baci_global_data.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_dofset_definedmapping_wrapper.H"
-#include "baci_lib_dofset_gidbased_wrapper.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_adapter_str_wrapper.hpp"
+#include "baci_coupling_adapter_mortar.hpp"
+#include "baci_coupling_adapter_volmortar.hpp"
+#include "baci_coupling_volmortar_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_dofset_definedmapping_wrapper.hpp"
+#include "baci_lib_dofset_gidbased_wrapper.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 BACI_NAMESPACE_OPEN
 

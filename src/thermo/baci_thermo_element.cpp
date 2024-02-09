@@ -8,16 +8,16 @@
 /*----------------------------------------------------------------------*
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
-#include "baci_thermo_element.H"
+#include "baci_thermo_element.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_mat_fourieriso.H"
-#include "baci_mat_thermostvenantkirchhoff.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_mat_fourieriso.hpp"
+#include "baci_mat_thermostvenantkirchhoff.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

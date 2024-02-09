@@ -8,21 +8,21 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#include "baci_levelset_intersection_utils.H"
+#include "baci_levelset_intersection_utils.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_cut_integrationcell.H"
-#include "baci_cut_levelsetintersection.H"
-#include "baci_cut_volumecell.H"
-#include "baci_discretization_geometry_element_coordtrafo.H"
-#include "baci_discretization_geometry_element_volume.H"
-#include "baci_discretization_geometry_integrationcell.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_scatra_ele_parameter_std.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_cut_integrationcell.hpp"
+#include "baci_cut_levelsetintersection.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_discretization_geometry_element_coordtrafo.hpp"
+#include "baci_discretization_geometry_element_volume.hpp"
+#include "baci_discretization_geometry_integrationcell.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
 
 BACI_NAMESPACE_OPEN
 

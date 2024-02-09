@@ -6,13 +6,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mixture_growth_strategy_stiffness.H"
+#include "baci_mixture_growth_strategy_stiffness.hpp"
 
-#include "baci_linalg_fixedsizematrix_generators.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_service.H"
-#include "baci_mixture_growth_strategy.H"
+#include "baci_linalg_fixedsizematrix_generators.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_mixture_growth_strategy.hpp"
 
 BACI_NAMESPACE_OPEN
 

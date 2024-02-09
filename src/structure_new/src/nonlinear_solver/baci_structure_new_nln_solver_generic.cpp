@@ -9,11 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_nln_solver_generic.H"
+#include "baci_structure_new_nln_solver_generic.hpp"
 
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_timint_implicit.H"
-#include "baci_structure_new_timint_noxinterface.H"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_structure_new_timint_implicit.hpp"
+#include "baci_structure_new_timint_noxinterface.hpp"
 
 #include <NOX_Abstract_Group.H>
 

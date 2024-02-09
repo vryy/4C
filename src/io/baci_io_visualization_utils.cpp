@@ -9,7 +9,7 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#include "baci_io_visualization_utils.H"
+#include "baci_io_visualization_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

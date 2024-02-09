@@ -8,11 +8,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_contact_aug_lagrange_strategy.H"
+#include "baci_contact_aug_lagrange_strategy.hpp"
 
-#include "baci_contact_aug_lagrange_interface.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_utils_epetra_exceptions.H"
+#include "baci_contact_aug_lagrange_interface.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_utils_epetra_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

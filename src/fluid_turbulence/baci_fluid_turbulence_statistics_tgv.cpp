@@ -9,11 +9,11 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_fluid_turbulence_statistics_tgv.H"
+#include "baci_fluid_turbulence_statistics_tgv.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_utils.H"
-#include "baci_global_data.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_utils.hpp"
+#include "baci_global_data.hpp"
 
 #include <fstream>
 

@@ -8,17 +8,17 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_mesh.H"
-#include "baci_cut_output.H"
-#include "baci_cut_point_impl.H"
-#include "baci_cut_side.H"
-#include "baci_cut_tolerance.H"
-#include "baci_global_data.H"
+#include "baci_cut_mesh.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_point_impl.hpp"
+#include "baci_cut_side.hpp"
+#include "baci_cut_tolerance.hpp"
+#include "baci_global_data.hpp"
 
 #include <string>
 
 #ifdef CLN_CALC_OUTSIDE_KERNEL_POINT
-#include "baci_cut_clnwrapper.H"
+#include "baci_cut_clnwrapper.hpp"
 #endif
 
 BACI_NAMESPACE_OPEN

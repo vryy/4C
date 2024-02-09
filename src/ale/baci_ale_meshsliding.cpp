@@ -8,16 +8,16 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_ale_meshsliding.H"
+#include "baci_ale_meshsliding.hpp"
 
-#include "baci_adapter_coupling_nonlin_mortar.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_node.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_adapter_coupling_nonlin_mortar.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

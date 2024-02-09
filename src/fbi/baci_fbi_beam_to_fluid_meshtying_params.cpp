@@ -7,13 +7,13 @@
 */
 
 
-#include "baci_fbi_beam_to_fluid_meshtying_params.H"
+#include "baci_fbi_beam_to_fluid_meshtying_params.hpp"
 
-#include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fbi.H"
-#include "baci_inpar_geometry_pair.H"
-#include "baci_utils_exceptions.H"
+#include "baci_fbi_beam_to_fluid_meshtying_output_params.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fbi.hpp"
+#include "baci_inpar_geometry_pair.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

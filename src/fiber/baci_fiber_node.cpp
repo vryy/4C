@@ -6,9 +6,9 @@
 \level 2
 *----------------------------------------------------------------------*/
 
-#include "baci_fiber_node.H"
+#include "baci_fiber_node.hpp"
 
-#include "baci_fiber_nodal_fiber_holder.H"
+#include "baci_fiber_nodal_fiber_holder.hpp"
 
 #include <utility>
 

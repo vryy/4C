@@ -9,12 +9,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_inpar_io.H"
+#include "baci_inpar_io.hpp"
 
-#include "baci_inpar_structure.H"
-#include "baci_inpar_thermo.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_pstream.H"
+#include "baci_inpar_structure.hpp"
+#include "baci_inpar_thermo.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_pstream.hpp"
 
 BACI_NAMESPACE_OPEN
 

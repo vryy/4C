@@ -9,12 +9,12 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_lubrication_timint_stat.H"
+#include "baci_lubrication_timint_stat.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_lubrication_ele_action.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lubrication_ele_action.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

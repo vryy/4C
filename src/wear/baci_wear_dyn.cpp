@@ -11,16 +11,16 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  mgit 04/11 |
  *----------------------------------------------------------------------*/
-#include "baci_wear_dyn.H"
+#include "baci_wear_dyn.hpp"
 
-#include "baci_ale_utils_clonestrategy.H"
-#include "baci_fsi_utils.H"
-#include "baci_global_data.H"
-#include "baci_inpar_wear.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_wear_partitioned.H"
+#include "baci_ale_utils_clonestrategy.hpp"
+#include "baci_fsi_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_wear.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_lib_utils_parallel.hpp"
+#include "baci_wear_partitioned.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>

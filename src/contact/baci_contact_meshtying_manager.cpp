@@ -7,22 +7,22 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_contact_meshtying_manager.H"
+#include "baci_contact_meshtying_manager.hpp"
 
-#include "baci_contact_meshtying_defines.H"
-#include "baci_contact_meshtying_lagrange_strategy.H"
-#include "baci_contact_meshtying_penalty_strategy.H"
-#include "baci_contact_meshtying_poro_lagrange_strategy.H"
-#include "baci_global_data.H"
-#include "baci_inpar_contact.H"
-#include "baci_inpar_mortar.H"
-#include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_interface.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_utils.H"
+#include "baci_contact_meshtying_defines.hpp"
+#include "baci_contact_meshtying_lagrange_strategy.hpp"
+#include "baci_contact_meshtying_penalty_strategy.hpp"
+#include "baci_contact_meshtying_poro_lagrange_strategy.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_inpar_mortar.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_interface.hpp"
+#include "baci_mortar_node.hpp"
+#include "baci_mortar_utils.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

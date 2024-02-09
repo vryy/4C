@@ -5,16 +5,16 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mixture_full_constrained_mixture_fiber.H"
+#include "baci_mixture_full_constrained_mixture_fiber.hpp"
 
-#include "baci_comm_pack_buffer.H"
-#include "baci_comm_parobject.H"
-#include "baci_mixture_constituent_remodelfiber_material.H"
-#include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.H"
-#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_local_integration.H"
-#include "baci_utils_local_newton.H"
+#include "baci_comm_pack_buffer.hpp"
+#include "baci_comm_parobject.hpp"
+#include "baci_mixture_constituent_remodelfiber_material.hpp"
+#include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.hpp"
+#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_local_integration.hpp"
+#include "baci_utils_local_newton.hpp"
 
 #include <Sacado.hpp>
 

@@ -8,10 +8,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_sph_density_correction.H"
+#include "baci_particle_interaction_sph_density_correction.hpp"
 
-#include "baci_inpar_particle.H"
-#include "baci_utils_exceptions.H"
+#include "baci_inpar_particle.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -7,13 +7,13 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_poromultiphase_dyn.H"
+#include "baci_poromultiphase_dyn.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_poromultiphase.H"
-#include "baci_lib_discret.H"
-#include "baci_poromultiphase_base.H"
-#include "baci_poromultiphase_utils.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_poromultiphase.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_poromultiphase_base.hpp"
+#include "baci_poromultiphase_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

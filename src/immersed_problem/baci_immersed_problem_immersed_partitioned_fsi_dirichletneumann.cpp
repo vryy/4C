@@ -7,18 +7,18 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_immersed_problem_immersed_partitioned_fsi_dirichletneumann.H"
+#include "baci_immersed_problem_immersed_partitioned_fsi_dirichletneumann.hpp"
 
-#include "baci_adapter_fld_fluid_immersed.H"
-#include "baci_adapter_str_fsiwrapper_immersed.H"
-#include "baci_discretization_geometry_searchtree.H"
-#include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_global_data.H"
-#include "baci_immersed_problem_fsi_partitioned_immersed.H"
-#include "baci_inpar_immersed.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_fld_fluid_immersed.hpp"
+#include "baci_adapter_str_fsiwrapper_immersed.hpp"
+#include "baci_discretization_geometry_searchtree.hpp"
+#include "baci_discretization_geometry_searchtree_service.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_global_data.hpp"
+#include "baci_immersed_problem_fsi_partitioned_immersed.hpp"
+#include "baci_inpar_immersed.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_structure_aux.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

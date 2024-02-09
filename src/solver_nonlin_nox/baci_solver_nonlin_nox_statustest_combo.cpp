@@ -8,7 +8,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_statustest_combo.H"
+#include "baci_solver_nonlin_nox_statustest_combo.hpp"
 
 #include <NOX_Utils.H>
 

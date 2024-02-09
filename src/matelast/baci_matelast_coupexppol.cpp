@@ -6,10 +6,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coupexppol.H"
+#include "baci_matelast_coupexppol.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_material.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

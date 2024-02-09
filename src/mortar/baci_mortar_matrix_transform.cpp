@@ -9,9 +9,9 @@ distributions
 /*----------------------------------------------------------------------------*/
 
 
-#include "baci_mortar_matrix_transform.H"
+#include "baci_mortar_matrix_transform.hpp"
 
-#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_sparsematrix.hpp"
 
 #include <Epetra_Distributor.h>
 #include <Epetra_Export.h>

@@ -9,9 +9,9 @@ file as well as a quick access wrapper for those parameters
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
+#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
 

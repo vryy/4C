@@ -9,12 +9,12 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#include "baci_ale_dyn.H"
+#include "baci_ale_dyn.hpp"
 
-#include "baci_adapter_ale.H"
-#include "baci_ale_resulttest.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
+#include "baci_adapter_ale.hpp"
+#include "baci_ale_resulttest.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <Teuchos_RCP.hpp>
 

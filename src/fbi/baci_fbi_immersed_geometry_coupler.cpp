@@ -7,21 +7,21 @@ The current implementation does not scale at all!
 \level 3
 
 *----------------------------------------------------------------------*/
-#include "baci_fbi_immersed_geometry_coupler.H"
+#include "baci_fbi_immersed_geometry_coupler.hpp"
 
-#include "baci_binstrategy.H"
-#include "baci_binstrategy_utils.H"
-#include "baci_discretization_geometry_searchtree.H"
-#include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fluid.H"
-#include "baci_lib_discret_faces.H"
-#include "baci_lib_element.H"
-#include "baci_lib_node.H"
-#include "baci_lib_utils.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_binstrategy.hpp"
+#include "baci_binstrategy_utils.hpp"
+#include "baci_discretization_geometry_searchtree.hpp"
+#include "baci_discretization_geometry_searchtree_service.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fluid.hpp"
+#include "baci_lib_discret_faces.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_lib_utils_parallel.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>

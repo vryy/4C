@@ -9,22 +9,22 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_impl_genalpha.H"
+#include "baci_structure_new_impl_genalpha.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_model_evaluator.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_model_evaluator_structure.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_utils.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_structure_new_dbc.hpp"
+#include "baci_structure_new_model_evaluator.hpp"
+#include "baci_structure_new_model_evaluator_data.hpp"
+#include "baci_structure_new_model_evaluator_structure.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_structure_new_utils.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Epetra_Vector.h>
 

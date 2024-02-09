@@ -9,13 +9,13 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_structure_timada_create.H"
+#include "baci_structure_timada_create.hpp"
 
-#include "baci_structure_timada_joint.H"
-#include "baci_structure_timada_zienxie.H"
-#include "baci_structure_timint_ab2.H"
-#include "baci_structure_timint_centrdiff.H"
-#include "baci_structure_timint_expleuler.H"
+#include "baci_structure_timada_joint.hpp"
+#include "baci_structure_timada_zienxie.hpp"
+#include "baci_structure_timint_ab2.hpp"
+#include "baci_structure_timint_centrdiff.hpp"
+#include "baci_structure_timint_expleuler.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

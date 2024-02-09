@@ -14,25 +14,25 @@ overhead as possible from the time integration method.
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_turbulence_statistic_manager.H"
+#include "baci_fluid_turbulence_statistic_manager.hpp"
 
-#include "baci_fluid_implicit_integration.H"
-#include "baci_fluid_timint_hdg.H"
-#include "baci_fluid_turbulence_statistics_bfda.H"
-#include "baci_fluid_turbulence_statistics_bfs.H"
-#include "baci_fluid_turbulence_statistics_ccy.H"
-#include "baci_fluid_turbulence_statistics_cha.H"
-#include "baci_fluid_turbulence_statistics_hit.H"
-#include "baci_fluid_turbulence_statistics_ldc.H"
-#include "baci_fluid_turbulence_statistics_mean_general.H"
-#include "baci_fluid_turbulence_statistics_ph.H"
-#include "baci_fluid_turbulence_statistics_sqc.H"
-#include "baci_fluid_turbulence_statistics_tgv.H"
-#include "baci_fluid_utils.H"  // for LiftDrag
-#include "baci_fluid_xwall.H"
-#include "baci_global_data.H"
-#include "baci_io_pstream.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_fluid_implicit_integration.hpp"
+#include "baci_fluid_timint_hdg.hpp"
+#include "baci_fluid_turbulence_statistics_bfda.hpp"
+#include "baci_fluid_turbulence_statistics_bfs.hpp"
+#include "baci_fluid_turbulence_statistics_ccy.hpp"
+#include "baci_fluid_turbulence_statistics_cha.hpp"
+#include "baci_fluid_turbulence_statistics_hit.hpp"
+#include "baci_fluid_turbulence_statistics_ldc.hpp"
+#include "baci_fluid_turbulence_statistics_mean_general.hpp"
+#include "baci_fluid_turbulence_statistics_ph.hpp"
+#include "baci_fluid_turbulence_statistics_sqc.hpp"
+#include "baci_fluid_turbulence_statistics_tgv.hpp"
+#include "baci_fluid_utils.hpp"  // for LiftDrag
+#include "baci_fluid_xwall.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

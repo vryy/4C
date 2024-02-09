@@ -7,12 +7,12 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_scatra_timint_meshtying_strategy_fluid.H"
+#include "baci_scatra_timint_meshtying_strategy_fluid.hpp"
 
-#include "baci_fluid_meshtying.H"
-#include "baci_global_data.H"
-#include "baci_linalg_sparseoperator.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_fluid_meshtying.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_sparseoperator.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

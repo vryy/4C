@@ -8,20 +8,20 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_mat_aaaneohooke.H"
-#include "baci_mat_elasthyper.H"
-#include "baci_mat_micromaterial.H"
-#include "baci_mat_service.H"
-#include "baci_mat_stvenantkirchhoff.H"
-#include "baci_so3_nstet5.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_mat_aaaneohooke.hpp"
+#include "baci_mat_elasthyper.hpp"
+#include "baci_mat_micromaterial.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_mat_stvenantkirchhoff.hpp"
+#include "baci_so3_nstet5.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_FECrsMatrix.h>
 #include <Teuchos_SerialDenseSolver.hpp>

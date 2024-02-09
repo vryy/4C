@@ -6,13 +6,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_isoanisoexpo.H"
+#include "baci_matelast_isoanisoexpo.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_mat_material.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_service.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -10,10 +10,10 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_coupling_matchingoctree.H"
+#include "baci_coupling_matchingoctree.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_lib_discret.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

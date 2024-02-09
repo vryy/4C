@@ -8,9 +8,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_sph_equationofstate.H"
+#include "baci_particle_interaction_sph_equationofstate.hpp"
 
-#include "baci_particle_interaction_utils.H"
+#include "baci_particle_interaction_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

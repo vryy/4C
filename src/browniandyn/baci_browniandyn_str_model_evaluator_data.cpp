@@ -12,9 +12,9 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_global_data.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_timint_base.H"
+#include "baci_global_data.hpp"
+#include "baci_structure_new_model_evaluator_data.hpp"
+#include "baci_structure_new_timint_base.hpp"
 
 BACI_NAMESPACE_OPEN
 

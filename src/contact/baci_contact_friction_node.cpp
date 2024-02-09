@@ -5,11 +5,11 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "baci_contact_friction_node.H"
+#include "baci_contact_friction_node.hpp"
 
-#include "baci_contact_defines.H"
-#include "baci_contact_element.H"
-#include "baci_utils_exceptions.H"
+#include "baci_contact_defines.hpp"
+#include "baci_contact_element.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

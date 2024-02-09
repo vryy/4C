@@ -7,7 +7,7 @@
 */
 
 
-#include "baci_geometry_pair_evaluation_data_base.H"
+#include "baci_geometry_pair_evaluation_data_base.hpp"
 
 BACI_NAMESPACE_OPEN
 

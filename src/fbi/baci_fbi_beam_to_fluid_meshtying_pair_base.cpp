@@ -8,25 +8,25 @@
 */
 
 
-#include "baci_fbi_beam_to_fluid_meshtying_pair_base.H"
+#include "baci_fbi_beam_to_fluid_meshtying_pair_base.hpp"
 
-#include "baci_beam3_euler_bernoulli.H"
-#include "baci_beam3_kirchhoff.H"
-#include "baci_beam3_reissner.H"
-#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
-#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_factory.H"
-#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
-#include "baci_geometry_pair_line_to_volume.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
+#include "baci_beam3_euler_bernoulli.hpp"
+#include "baci_beam3_kirchhoff.hpp"
+#include "baci_beam3_reissner.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_factory.hpp"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
+#include "baci_geometry_pair_line_to_volume.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
 
 BACI_NAMESPACE_OPEN
 

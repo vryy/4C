@@ -11,18 +11,18 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_timint_noxinterface.H"
+#include "baci_structure_new_timint_noxinterface.hpp"
 
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_sparseoperator.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_constraint_group.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_impl_generic.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_utils.H"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_sparseoperator.hpp"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_solver_nonlin_nox_constraint_group.hpp"
+#include "baci_structure_new_dbc.hpp"
+#include "baci_structure_new_impl_generic.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_structure_new_utils.hpp"
 
 #include <NOX_Epetra_Vector.H>
 

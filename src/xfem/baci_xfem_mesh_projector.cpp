@@ -9,20 +9,20 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_xfem_mesh_projector.H"
+#include "baci_xfem_mesh_projector.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_cut_boundingbox.H"
-#include "baci_cut_position.H"
-#include "baci_discretization_geometry_searchtree.H"
-#include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_io_gmsh.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret_xfem.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_xfem_discretization_utils.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_cut_boundingbox.hpp"
+#include "baci_cut_position.hpp"
+#include "baci_discretization_geometry_searchtree.hpp"
+#include "baci_discretization_geometry_searchtree_service.hpp"
+#include "baci_io_gmsh.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret_xfem.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_xfem_discretization_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

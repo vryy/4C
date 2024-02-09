@@ -6,13 +6,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_io_gmsh.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_mat_material.H"
-#include "baci_mat_viscoanisotropic.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_sh8.H"
+#include "baci_io_gmsh.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_mat_viscoanisotropic.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_sh8.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

@@ -11,10 +11,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_constraint_group.H"
+#include "baci_solver_nonlin_nox_constraint_group.hpp"
 
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_interface_required.H"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_solver_nonlin_nox_interface_required.hpp"
 
 #include <NOX_Epetra_LinearSystem.H>
 

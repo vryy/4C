@@ -9,12 +9,12 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_utils_infnormscaling.H"
+#include "baci_fluid_utils_infnormscaling.hpp"
 
-#include "baci_inpar_fluid.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_sparsematrix.H"
+#include "baci_inpar_fluid.hpp"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_sparsematrix.hpp"
 
 #include <Epetra_Comm.h>
 #include <stdio.h>

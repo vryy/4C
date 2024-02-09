@@ -7,14 +7,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_scatra_timint_stat.H"
+#include "baci_scatra_timint_stat.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_timint_meshtying_strategy_base.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_timint_meshtying_strategy_base.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

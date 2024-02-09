@@ -6,10 +6,10 @@
 \level 0
 
 *----------------------------------------------------------------------*/
-#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_sparsematrix.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 #include <EpetraExt_MatrixMatrix.h>
 #include <EpetraExt_Transpose_RowMatrix.h>

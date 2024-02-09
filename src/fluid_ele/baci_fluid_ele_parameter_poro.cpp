@@ -12,7 +12,7 @@ set all general porofluid parameter once for all elements.
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_parameter_poro.H"
+#include "baci_fluid_ele_parameter_poro.hpp"
 
 BACI_NAMESPACE_OPEN
 

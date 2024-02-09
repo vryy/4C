@@ -8,11 +8,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_fsi_nox_aitken.H"
+#include "baci_fsi_nox_aitken.hpp"
 
-#include "baci_fsi_utils.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
+#include "baci_fsi_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>

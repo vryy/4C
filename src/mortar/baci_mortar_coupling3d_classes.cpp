@@ -8,16 +8,16 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "baci_mortar_coupling3d_classes.H"
+#include "baci_mortar_coupling3d_classes.hpp"
 
-#include "baci_lib_node.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_mortar_coupling3d.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_integrator.H"
-#include "baci_mortar_projector.H"
+#include "baci_lib_node.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_mortar_coupling3d.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_integrator.hpp"
+#include "baci_mortar_projector.hpp"
 
 BACI_NAMESPACE_OPEN
 

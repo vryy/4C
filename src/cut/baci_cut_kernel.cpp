@@ -12,11 +12,11 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#include "baci_cut_kernel.H"
+#include "baci_cut_kernel.hpp"
 
-#include "baci_cut_point.H"
-#include "baci_cut_position.H"
-#include "baci_io_pstream.H"
+#include "baci_cut_point.hpp"
+#include "baci_cut_position.hpp"
+#include "baci_io_pstream.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

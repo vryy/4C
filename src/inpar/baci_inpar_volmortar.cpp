@@ -11,9 +11,9 @@
 
 
 
-#include "baci_inpar_volmortar.H"
+#include "baci_inpar_volmortar.hpp"
 
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

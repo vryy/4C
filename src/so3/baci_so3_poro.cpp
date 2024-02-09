@@ -7,15 +7,15 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_poro.H"
+#include "baci_so3_poro.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_mat_structporo.H"
-#include "baci_so3_line.H"
-#include "baci_so3_poro_eletypes.H"
-#include "baci_so3_surface.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_so3_line.hpp"
+#include "baci_so3_poro_eletypes.hpp"
+#include "baci_so3_surface.hpp"
 
 BACI_NAMESPACE_OPEN
 

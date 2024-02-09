@@ -7,11 +7,11 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_ssti_resulttest.H"
+#include "baci_ssti_resulttest.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_ssti_algorithm.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_ssti_algorithm.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

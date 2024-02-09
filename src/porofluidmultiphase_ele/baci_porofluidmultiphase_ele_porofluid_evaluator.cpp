@@ -7,13 +7,13 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_porofluidmultiphase_ele_porofluid_evaluator.H"
+#include "baci_porofluidmultiphase_ele_porofluid_evaluator.hpp"
 
-#include "baci_global_data.H"
-#include "baci_porofluidmultiphase_ele_parameter.H"
-#include "baci_porofluidmultiphase_ele_porofluid_phasemanager.H"
-#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_porofluidmultiphase_ele_parameter.hpp"
+#include "baci_porofluidmultiphase_ele_porofluid_phasemanager.hpp"
+#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 

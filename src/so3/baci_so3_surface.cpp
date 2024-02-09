@@ -7,13 +7,13 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_surface.H"
+#include "baci_so3_surface.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_so3_line.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_so3_line.hpp"
 
 BACI_NAMESPACE_OPEN
 

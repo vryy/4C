@@ -12,12 +12,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_constraint_lagpenconstraint_noxinterface.H"
+#include "baci_constraint_lagpenconstraint_noxinterface.hpp"
 
-#include "baci_lib_condition.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_solver_nonlin_nox_aux.H"
+#include "baci_lib_condition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_solver_nonlin_nox_aux.hpp"
 
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>

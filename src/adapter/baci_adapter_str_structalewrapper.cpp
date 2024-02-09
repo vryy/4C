@@ -10,9 +10,9 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_adapter_str_structalewrapper.H"
+#include "baci_adapter_str_structalewrapper.hpp"
 
-#include "baci_adapter_str_structure_new.H"
+#include "baci_adapter_str_structure_new.hpp"
 
 BACI_NAMESPACE_OPEN
 

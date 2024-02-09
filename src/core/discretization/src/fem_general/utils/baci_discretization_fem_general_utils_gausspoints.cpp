@@ -8,7 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_discretization_fem_general_utils_gausspoints.hpp"
 
 #include <Intrepid_Cubature.hpp>
 #include <Intrepid_DefaultCubatureFactory.hpp>

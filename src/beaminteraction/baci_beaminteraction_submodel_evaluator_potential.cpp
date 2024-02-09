@@ -8,24 +8,24 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_submodel_evaluator_potential.H"
+#include "baci_beaminteraction_submodel_evaluator_potential.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_crosslinker_handler.H"
-#include "baci_beaminteraction_potential_pair.H"
-#include "baci_beaminteraction_potential_params.H"
-#include "baci_beaminteraction_potential_runtime_visualization_output_params.H"
-#include "baci_beaminteraction_str_model_evaluator_datastate.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_io_visualization_manager.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_base.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.hpp"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_crosslinker_handler.hpp"
+#include "baci_beaminteraction_potential_pair.hpp"
+#include "baci_beaminteraction_potential_params.hpp"
+#include "baci_beaminteraction_potential_runtime_visualization_output_params.hpp"
+#include "baci_beaminteraction_str_model_evaluator_datastate.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_io_visualization_manager.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_structure_new_timint_basedataglobalstate.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_TimeMonitor.hpp>

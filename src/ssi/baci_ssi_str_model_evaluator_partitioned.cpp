@@ -9,21 +9,21 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_ssi_str_model_evaluator_partitioned.H"
+#include "baci_ssi_str_model_evaluator_partitioned.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_ssi_partitioned.H"
-#include "baci_ssi_utils.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_impl_generic.H"
-#include "baci_structure_new_timint_implicit.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_adapter_str_ssiwrapper.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_ssi_partitioned.hpp"
+#include "baci_ssi_utils.hpp"
+#include "baci_structure_new_dbc.hpp"
+#include "baci_structure_new_impl_generic.hpp"
+#include "baci_structure_new_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

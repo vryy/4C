@@ -8,14 +8,14 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_linear_solver_method_belos.H"
+#include "baci_linear_solver_method_belos.hpp"
 
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_preconditioner_block.H"
-#include "baci_linear_solver_preconditioner_ifpack.H"
-#include "baci_linear_solver_preconditioner_krylovprojection.H"
-#include "baci_linear_solver_preconditioner_ml.H"
-#include "baci_linear_solver_preconditioner_point.H"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_linear_solver_preconditioner_block.hpp"
+#include "baci_linear_solver_preconditioner_ifpack.hpp"
+#include "baci_linear_solver_preconditioner_krylovprojection.hpp"
+#include "baci_linear_solver_preconditioner_ml.hpp"
+#include "baci_linear_solver_preconditioner_point.hpp"
 
 #include <BelosBiCGStabSolMgr.hpp>
 #include <BelosBlockCGSolMgr.hpp>

@@ -8,9 +8,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_membrane_scatra.H"
+#include "baci_membrane_scatra.hpp"
 
-#include "baci_io_linedefinition.H"
+#include "baci_io_linedefinition.hpp"
 
 BACI_NAMESPACE_OPEN
 

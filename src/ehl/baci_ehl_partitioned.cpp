@@ -9,14 +9,14 @@
 /*--------------------------------------------------------------------------*/
 
 
-#include "baci_ehl_partitioned.H"
+#include "baci_ehl_partitioned.hpp"
 
-#include "baci_adapter_coupling_ehl_mortar.H"
-#include "baci_adapter_lubrication.H"
-#include "baci_adapter_str_wrapper.H"
-#include "baci_global_data.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_lubrication_timint_implicit.H"
+#include "baci_adapter_coupling_ehl_mortar.hpp"
+#include "baci_adapter_lubrication.hpp"
+#include "baci_adapter_str_wrapper.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_lubrication_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

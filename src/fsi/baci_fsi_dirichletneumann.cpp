@@ -9,12 +9,12 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fsi_dirichletneumann.H"
+#include "baci_fsi_dirichletneumann.hpp"
 
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_fsi_debugwriter.H"
-#include "baci_global_data.H"  // todo remove as soon as possible, only needed for dserror
-#include "baci_io_control.H"   // todo remove as soon as possible, only needed for dserror
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_fsi_debugwriter.hpp"
+#include "baci_global_data.hpp"  // todo remove as soon as possible, only needed for dserror
+#include "baci_io_control.hpp"   // todo remove as soon as possible, only needed for dserror
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

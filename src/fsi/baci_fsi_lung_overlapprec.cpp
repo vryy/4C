@@ -8,16 +8,16 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fsi_lung_overlapprec.H"
+#include "baci_fsi_lung_overlapprec.hpp"
 
-#include "baci_adapter_fld_fluid.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_preconditioner_linalg.H"
+#include "baci_adapter_fld_fluid.hpp"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_linear_solver_preconditioner_linalg.hpp"
 
 BACI_NAMESPACE_OPEN
 

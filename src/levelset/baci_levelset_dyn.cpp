@@ -5,14 +5,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_levelset_dyn.H"
+#include "baci_levelset_dyn.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_global_data.H"
-#include "baci_inpar_scatra.H"
-#include "baci_levelset_algorithm.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_scatra.hpp"
+#include "baci_levelset_algorithm.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_ParameterList.hpp>

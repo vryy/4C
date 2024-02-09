@@ -9,14 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele.H"
+#include "baci_fluid_ele.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_fluid_ele_nullspace.H"
-#include "baci_fluid_ele_tds.H"
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_fluid_ele_nullspace.hpp"
+#include "baci_fluid_ele_tds.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

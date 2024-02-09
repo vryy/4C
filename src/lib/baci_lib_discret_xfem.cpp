@@ -9,11 +9,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_discret_xfem.H"
+#include "baci_lib_discret_xfem.hpp"
 
-#include "baci_lib_xfem_dofset.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_lib_xfem_dofset.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

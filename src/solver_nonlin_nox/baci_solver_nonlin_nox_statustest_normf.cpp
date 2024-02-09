@@ -12,9 +12,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_statustest_normf.H"  // class definition
+#include "baci_solver_nonlin_nox_statustest_normf.hpp"  // class definition
 
-#include "baci_solver_nonlin_nox_group.H"
+#include "baci_solver_nonlin_nox_group.hpp"
 
 #include <NOX_Solver_Generic.H>
 #include <NOX_Utils.H>

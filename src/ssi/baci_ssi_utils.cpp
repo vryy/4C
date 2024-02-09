@@ -7,21 +7,21 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_ssi_utils.H"
+#include "baci_ssi_utils.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_coupling_matchingoctree.H"
-#include "baci_inpar_s2i.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_utils_gid_vector.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-#include "baci_ssi_monolithic.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_adapter_str_ssiwrapper.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_coupling_matchingoctree.hpp"
+#include "baci_inpar_s2i.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_lib_utils_gid_vector.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
+#include "baci_ssi_monolithic.hpp"
 
 #include <utility>
 

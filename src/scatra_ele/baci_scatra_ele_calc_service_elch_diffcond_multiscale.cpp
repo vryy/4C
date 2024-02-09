@@ -8,14 +8,14 @@ multi-scale framework
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_mat_elchmat.H"
-#include "baci_mat_elchphase.H"
-#include "baci_mat_newman_multiscale.H"
-#include "baci_scatra_ele_calc_elch_diffcond_multiscale.H"
-#include "baci_scatra_ele_parameter_std.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_mat_elchmat.hpp"
+#include "baci_mat_elchphase.hpp"
+#include "baci_mat_newman_multiscale.hpp"
+#include "baci_scatra_ele_calc_elch_diffcond_multiscale.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

@@ -7,10 +7,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_elch_algorithm.H"
+#include "baci_elch_algorithm.hpp"
 
-#include "baci_linalg_mapextractor.H"
-#include "baci_scatra_timint_elch.H"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_scatra_timint_elch.hpp"
 
 BACI_NAMESPACE_OPEN
 

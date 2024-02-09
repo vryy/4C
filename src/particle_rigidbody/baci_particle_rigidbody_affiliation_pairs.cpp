@@ -8,13 +8,13 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_rigidbody_affiliation_pairs.H"
+#include "baci_particle_rigidbody_affiliation_pairs.hpp"
 
-#include "baci_comm_pack_buffer.H"
-#include "baci_comm_parobject.H"
-#include "baci_io.H"
-#include "baci_particle_engine_communication_utils.H"
-#include "baci_particle_engine_interface.H"
+#include "baci_comm_pack_buffer.hpp"
+#include "baci_comm_parobject.hpp"
+#include "baci_io.hpp"
+#include "baci_particle_engine_communication_utils.hpp"
+#include "baci_particle_engine_interface.hpp"
 
 BACI_NAMESPACE_OPEN
 

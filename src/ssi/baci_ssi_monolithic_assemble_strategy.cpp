@@ -5,17 +5,17 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "baci_ssi_monolithic_assemble_strategy.H"
+#include "baci_ssi_monolithic_assemble_strategy.hpp"
 
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_contact_nitsche_strategy_ssi.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_io_control.H"
-#include "baci_lib_locsys.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-#include "baci_ssi_monolithic.H"
+#include "baci_adapter_str_ssiwrapper.hpp"
+#include "baci_contact_nitsche_strategy_ssi.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_locsys.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
+#include "baci_ssi_monolithic.hpp"
 
 BACI_NAMESPACE_OPEN
 

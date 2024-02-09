@@ -10,13 +10,13 @@ conjunction with XFluidFluid!
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_adapter_fld_fluid_fluid_xfsi.H"
+#include "baci_adapter_fld_fluid_fluid_xfsi.hpp"
 
-#include "baci_fluid_xfluid_fluid.H"
-#include "baci_lib_discret_xfem.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_xfem_condition_manager.H"
+#include "baci_fluid_xfluid_fluid.hpp"
+#include "baci_lib_discret_xfem.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_xfem_condition_manager.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_cut_position.H"
-#include "baci_fluid_ele_calc_xfem_coupling_impl.H"
-#include "baci_lib_utils.H"
-#include "baci_xfem_interface_utils.H"
+#include "baci_cut_position.hpp"
+#include "baci_fluid_ele_calc_xfem_coupling_impl.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_xfem_interface_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -11,10 +11,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_statustest_activeset.H"
+#include "baci_solver_nonlin_nox_statustest_activeset.hpp"
 
-#include "baci_solver_nonlin_nox_constraint_group.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_constraint_group.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
 #include <NOX_Solver_Generic.H>

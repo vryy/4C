@@ -16,20 +16,20 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
  |  includes                                                  ager 10/15|
  *----------------------------------------------------------------------*/
 // lib
-#include "baci_adapter_coupling_poro_mortar.H"
+#include "baci_adapter_coupling_poro_mortar.hpp"
 
-#include "baci_contact_element.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_node.H"
-#include "baci_coupling_adapter.H"
-#include "baci_global_data.H"
-#include "baci_inpar_contact.H"
-#include "baci_inpar_structure.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_nurbs_discret.H"
-#include "baci_nurbs_discret_control_point.H"
-#include "baci_nurbs_discret_knotvector.H"
+#include "baci_contact_element.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_nurbs_discret_control_point.hpp"
+#include "baci_nurbs_discret_knotvector.hpp"
 
 BACI_NAMESPACE_OPEN
 

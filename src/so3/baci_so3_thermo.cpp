@@ -8,9 +8,9 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/12 |
  *----------------------------------------------------------------------*/
-#include "baci_so3_thermo.H"
+#include "baci_so3_thermo.hpp"
 
-#include "baci_io_linedefinition.H"
+#include "baci_io_linedefinition.hpp"
 
 BACI_NAMESPACE_OPEN
 

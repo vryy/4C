@@ -9,7 +9,7 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#include "baci_io_visualization_data.H"
+#include "baci_io_visualization_data.hpp"
 
 #include <algorithm>
 

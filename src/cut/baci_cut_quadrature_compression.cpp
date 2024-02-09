@@ -8,12 +8,12 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_cut_quadrature_compression.H"
+#include "baci_cut_quadrature_compression.hpp"
 
-#include "baci_cut_element.H"
-#include "baci_cut_volumecell.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_utils_exceptions.H"
+#include "baci_cut_element.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_SerialQRDenseSolver.hpp>

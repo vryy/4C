@@ -3,7 +3,7 @@
 \level 1
 */
 
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
 
 #include <Sacado.hpp>
 

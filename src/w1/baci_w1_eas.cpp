@@ -12,14 +12,14 @@
 
 /*----------------------------------------------------------------------*/
 // headers
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_stvenantkirchhoff.H"
-#include "baci_utils_exceptions.H"
-#include "baci_w1.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_stvenantkirchhoff.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_w1.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

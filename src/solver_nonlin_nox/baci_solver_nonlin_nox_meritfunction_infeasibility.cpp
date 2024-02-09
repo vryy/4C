@@ -12,10 +12,10 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_solver_nonlin_nox_meritfunction_infeasibility.H"
+#include "baci_solver_nonlin_nox_meritfunction_infeasibility.hpp"
 
-#include "baci_solver_nonlin_nox_constraint_group.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_constraint_group.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

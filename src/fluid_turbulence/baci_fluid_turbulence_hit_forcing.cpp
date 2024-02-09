@@ -9,15 +9,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_turbulence_hit_forcing.H"
+#include "baci_fluid_turbulence_hit_forcing.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_implicit_integration.H"
-#include "baci_fluid_timint_genalpha.H"
-#include "baci_fluid_timint_hdg.H"
-#include "baci_fluid_xwall.H"
-#include "baci_inpar_fluid.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_implicit_integration.hpp"
+#include "baci_fluid_timint_genalpha.hpp"
+#include "baci_fluid_timint_hdg.hpp"
+#include "baci_fluid_xwall.hpp"
+#include "baci_inpar_fluid.hpp"
 
 #include <complex>
 

@@ -9,15 +9,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_intfaces_calc.H"
+#include "baci_fluid_ele_intfaces_calc.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_calc_intfaces_stab.H"
-#include "baci_fluid_ele_parameter_intface.H"
-#include "baci_fluid_ele_parameter_std.H"
-#include "baci_fluid_ele_parameter_timint.H"
-#include "baci_lib_discret_faces.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_calc_intfaces_stab.hpp"
+#include "baci_fluid_ele_parameter_intface.hpp"
+#include "baci_fluid_ele_parameter_std.hpp"
+#include "baci_fluid_ele_parameter_timint.hpp"
+#include "baci_lib_discret_faces.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

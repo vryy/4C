@@ -6,10 +6,10 @@
 \level 2
  *----------------------------------------------------------------------*/
 
-#include "baci_mat_poro_law.H"
+#include "baci_mat_poro_law.hpp"
 
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_poro_density_law.H"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_poro_density_law.hpp"
 
 BACI_NAMESPACE_OPEN
 

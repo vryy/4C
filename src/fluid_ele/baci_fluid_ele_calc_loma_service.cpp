@@ -10,16 +10,16 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc.H"
-#include "baci_fluid_ele_parameter.H"
-#include "baci_fluid_ele_parameter_timint.H"
-#include "baci_mat_arrhenius_pv.H"
-#include "baci_mat_ferech_pv.H"
-#include "baci_mat_fluid_linear_density_viscosity.H"
-#include "baci_mat_fluid_murnaghantait.H"
-#include "baci_mat_mixfrac.H"
-#include "baci_mat_sutherland.H"
-#include "baci_mat_yoghurt.H"
+#include "baci_fluid_ele_calc.hpp"
+#include "baci_fluid_ele_parameter.hpp"
+#include "baci_fluid_ele_parameter_timint.hpp"
+#include "baci_mat_arrhenius_pv.hpp"
+#include "baci_mat_ferech_pv.hpp"
+#include "baci_mat_fluid_linear_density_viscosity.hpp"
+#include "baci_mat_fluid_murnaghantait.hpp"
+#include "baci_mat_mixfrac.hpp"
+#include "baci_mat_sutherland.hpp"
+#include "baci_mat_yoghurt.hpp"
 
 BACI_NAMESPACE_OPEN
 

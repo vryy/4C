@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#include "baci_ale_ale3_nurbs.H"
+#include "baci_ale_ale3_nurbs.hpp"
 
-#include "baci_so3_nullspace.H"
+#include "baci_so3_nullspace.hpp"
 
 BACI_NAMESPACE_OPEN
 

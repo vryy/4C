@@ -8,7 +8,7 @@ problems.
 */
 
 
-#include "baci_geometry_pair.H"
+#include "baci_geometry_pair.hpp"
 
 BACI_NAMESPACE_OPEN
 

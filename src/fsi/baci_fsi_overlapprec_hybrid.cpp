@@ -9,12 +9,12 @@
 /*----------------------------------------------------------------------------*/
 
 // Ifpack
-#include "baci_fsi_overlapprec_hybrid.H"
+#include "baci_fsi_overlapprec_hybrid.hpp"
 
-#include "baci_fsi_overlapprec_fsiamg.H"
-#include "baci_global_data.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"  // for debugging: print matrices ToDo (mayr) remove?
-#include "baci_linear_solver_preconditioner_ifpack.H"
+#include "baci_fsi_overlapprec_fsiamg.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"  // for debugging: print matrices ToDo (mayr) remove?
+#include "baci_linear_solver_preconditioner_ifpack.hpp"
 
 #include <Ifpack_LocalFilter.h>
 #include <Teuchos_Time.hpp>

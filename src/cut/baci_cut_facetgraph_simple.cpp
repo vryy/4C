@@ -9,12 +9,12 @@
 \level 2
 
  *------------------------------------------------------------------------------------------------*/
-#include "baci_cut_facetgraph_simple.H"
+#include "baci_cut_facetgraph_simple.hpp"
 
-#include "baci_cut_facet.H"
-#include "baci_cut_mesh.H"
-#include "baci_cut_pointgraph_simple.H"
-#include "baci_cut_side.H"
+#include "baci_cut_facet.hpp"
+#include "baci_cut_mesh.hpp"
+#include "baci_cut_pointgraph_simple.hpp"
+#include "baci_cut_side.hpp"
 
 BACI_NAMESPACE_OPEN
 

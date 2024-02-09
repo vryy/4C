@@ -10,13 +10,13 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_timint_factory.H"
+#include "baci_structure_new_timint_factory.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_structure_new_timint_basedatasdyn.H"
-#include "baci_structure_new_timint_explicit.H"
-#include "baci_structure_new_timint_implicit.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_structure_new_timint_basedatasdyn.hpp"
+#include "baci_structure_new_timint_explicit.hpp"
+#include "baci_structure_new_timint_implicit.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

@@ -7,19 +7,19 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_contact_meshtying_penalty_strategy.H"
+#include "baci_contact_meshtying_penalty_strategy.hpp"
 
-#include "baci_contact_meshtying_defines.H"
-#include "baci_inpar_contact.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"  // mesh initialization :-(
-#include "baci_mortar_defines.H"
-#include "baci_mortar_interface.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_utils.H"
+#include "baci_contact_meshtying_defines.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"  // mesh initialization :-(
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_interface.hpp"
+#include "baci_mortar_node.hpp"
+#include "baci_mortar_utils.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>

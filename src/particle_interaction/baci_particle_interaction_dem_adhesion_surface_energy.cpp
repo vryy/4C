@@ -8,11 +8,11 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_dem_adhesion_surface_energy.H"
+#include "baci_particle_interaction_dem_adhesion_surface_energy.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_particle.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_particle.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

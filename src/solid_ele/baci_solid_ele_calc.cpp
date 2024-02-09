@@ -6,16 +6,16 @@ formulation
 \level 1
 */
 
-#include "baci_solid_ele_calc.H"
+#include "baci_solid_ele_calc.hpp"
 
-#include "baci_discretization_fem_general_cell_type.H"
-#include "baci_mat_so3_material.H"
-#include "baci_solid_ele_calc_displacement_based.H"
-#include "baci_solid_ele_calc_displacement_based_linear_kinematics.H"
-#include "baci_solid_ele_calc_lib.H"
-#include "baci_solid_ele_calc_lib_integration.H"
-#include "baci_solid_ele_calc_lib_io.H"
-#include "baci_solid_ele_interface_serializable.H"
+#include "baci_discretization_fem_general_cell_type.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_solid_ele_calc_displacement_based.hpp"
+#include "baci_solid_ele_calc_displacement_based_linear_kinematics.hpp"
+#include "baci_solid_ele_calc_lib.hpp"
+#include "baci_solid_ele_calc_lib_integration.hpp"
+#include "baci_solid_ele_calc_lib_io.hpp"
+#include "baci_solid_ele_interface_serializable.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

@@ -9,16 +9,16 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#include "baci_ale_utils_clonestrategy.H"
+#include "baci_ale_utils_clonestrategy.hpp"
 
-#include "baci_ale_ale2.H"
-#include "baci_ale_ale2_nurbs.H"
-#include "baci_ale_ale3.H"
-#include "baci_ale_ale3_nurbs.H"
-#include "baci_fluid_ele.H"
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_material.H"
+#include "baci_ale_ale2.hpp"
+#include "baci_ale_ale2_nurbs.hpp"
+#include "baci_ale_ale3.hpp"
+#include "baci_ale_ale3_nurbs.hpp"
+#include "baci_fluid_ele.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

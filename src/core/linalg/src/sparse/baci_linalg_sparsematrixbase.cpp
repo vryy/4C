@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_linalg_sparsematrixbase.H"
+#include "baci_linalg_sparsematrixbase.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

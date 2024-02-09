@@ -11,11 +11,11 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_cut_pointgraph_simple.H"
+#include "baci_cut_pointgraph_simple.hpp"
 
-#include "baci_cut_facet.H"
-#include "baci_cut_line.H"
-#include "baci_cut_side.H"
+#include "baci_cut_facet.hpp"
+#include "baci_cut_line.hpp"
+#include "baci_cut_side.hpp"
 
 BACI_NAMESPACE_OPEN
 

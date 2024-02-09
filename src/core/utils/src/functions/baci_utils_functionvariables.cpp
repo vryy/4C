@@ -9,9 +9,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_utils_functionvariables.H"
+#include "baci_utils_functionvariables.hpp"
 
-#include "baci_utils_symbolic_expression.H"
+#include "baci_utils_symbolic_expression.hpp"
 
 #include <Sacado.hpp>
 

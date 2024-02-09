@@ -9,13 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_condition_utils.H"
+#include "baci_lib_condition_utils.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_lib_condition_selector.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_condition_selector.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
 
 #include <algorithm>
 #include <map>

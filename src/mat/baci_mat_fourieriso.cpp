@@ -12,10 +12,10 @@ the input line should read
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 09/09 |
  *----------------------------------------------------------------------*/
-#include "baci_mat_fourieriso.H"
+#include "baci_mat_fourieriso.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 BACI_NAMESPACE_OPEN
 

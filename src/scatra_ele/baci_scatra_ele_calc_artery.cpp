@@ -8,12 +8,12 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_scatra_ele_calc_artery.H"
+#include "baci_scatra_ele_calc_artery.hpp"
 
-#include "baci_mat_scatra_mat.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_mat_scatra_mat.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

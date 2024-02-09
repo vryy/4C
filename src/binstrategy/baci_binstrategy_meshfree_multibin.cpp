@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_binstrategy_meshfree_multibin.H"
+#include "baci_binstrategy_meshfree_multibin.hpp"
 
 BACI_NAMESPACE_OPEN
 

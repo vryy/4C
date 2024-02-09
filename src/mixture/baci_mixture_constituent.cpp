@@ -10,19 +10,19 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mixture_constituent.H"
+#include "baci_mixture_constituent.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_service.H"
-#include "baci_mixture_constituent_elasthyper.H"
-#include "baci_mixture_constituent_elasthyper_damage.H"
-#include "baci_mixture_constituent_elasthyper_elastin_membrane.H"
-#include "baci_mixture_constituent_full_constrained_mixture_fiber.H"
-#include "baci_mixture_constituent_remodelfiber_expl.H"
-#include "baci_mixture_constituent_remodelfiber_impl.H"
-#include "baci_mixture_constituent_solidmaterial.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_mixture_constituent_elasthyper.hpp"
+#include "baci_mixture_constituent_elasthyper_damage.hpp"
+#include "baci_mixture_constituent_elasthyper_elastin_membrane.hpp"
+#include "baci_mixture_constituent_full_constrained_mixture_fiber.hpp"
+#include "baci_mixture_constituent_remodelfiber_expl.hpp"
+#include "baci_mixture_constituent_remodelfiber_impl.hpp"
+#include "baci_mixture_constituent_solidmaterial.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -6,13 +6,13 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_shw6.H"
+#include "baci_so3_shw6.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_so3_nullspace.H"
-#include "baci_so3_utils.H"
-#include "baci_so3_weg6.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_so3_nullspace.hpp"
+#include "baci_so3_utils.hpp"
+#include "baci_so3_weg6.hpp"
 
 BACI_NAMESPACE_OPEN
 

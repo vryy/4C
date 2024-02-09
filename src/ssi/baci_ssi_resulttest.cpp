@@ -7,14 +7,14 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_ssi_resulttest.H"
+#include "baci_ssi_resulttest.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_io_linedefinition.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_ssi_monolithic.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_adapter_str_ssiwrapper.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_ssi_monolithic.hpp"
 
 BACI_NAMESPACE_OPEN
 

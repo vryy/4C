@@ -8,9 +8,9 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_adapter_str_redairway.H"
+#include "baci_adapter_str_redairway.hpp"
 
-#include "baci_lib_discret.H"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

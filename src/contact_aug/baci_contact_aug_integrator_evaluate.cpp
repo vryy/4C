@@ -9,9 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_aug_integrator.H"
-#include "baci_contact_element.H"
-#include "baci_contact_node.H"
+#include "baci_contact_aug_integrator.hpp"
+#include "baci_contact_element.hpp"
+#include "baci_contact_node.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -474,4 +474,4 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_WGa
 
 BACI_NAMESPACE_CLOSE
 
-#include "baci_contact_aug_integrator.inst.H"
+#include "baci_contact_aug_integrator.inst.hpp"

@@ -12,9 +12,9 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_io_materialdefinition.H"
+#include "baci_io_materialdefinition.hpp"
 
-#include "baci_mat_material.H"
+#include "baci_mat_material.hpp"
 
 #include <iostream>
 #include <string>

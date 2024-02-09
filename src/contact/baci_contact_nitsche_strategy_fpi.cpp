@@ -9,10 +9,10 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_nitsche_strategy_fpi.H"
+#include "baci_contact_nitsche_strategy_fpi.hpp"
 
-#include "baci_contact_interface.H"
-#include "baci_contact_nitsche_strategy_fsi.H"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_nitsche_strategy_fsi.hpp"
 
 BACI_NAMESPACE_OPEN
 

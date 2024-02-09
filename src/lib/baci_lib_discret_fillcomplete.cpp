@@ -9,11 +9,11 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_comm_parobjectfactory.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_parobjectfactory.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

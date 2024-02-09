@@ -8,19 +8,19 @@
 */
 
 
-#include "baci_fbi_beam_to_fluid_meshtying_output_writer.H"
+#include "baci_fbi_beam_to_fluid_meshtying_output_writer.hpp"
 
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_fbi_adapter_constraintbridge_penalty.H"
-#include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
-#include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_fbi_constraintenforcer.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_fbi_adapter_constraintbridge_penalty.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_output_params.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_params.hpp"
+#include "baci_fbi_constraintenforcer.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <Epetra_FEVector.h>
 

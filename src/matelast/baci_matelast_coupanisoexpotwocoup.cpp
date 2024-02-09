@@ -7,11 +7,11 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coupanisoexpotwocoup.H"
+#include "baci_matelast_coupanisoexpotwocoup.hpp"
 
-#include "baci_mat_anisotropy_extension.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_service.H"
+#include "baci_mat_anisotropy_extension.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

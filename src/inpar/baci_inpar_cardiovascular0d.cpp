@@ -11,10 +11,10 @@
 
 
 
-#include "baci_inpar_cardiovascular0d.H"
+#include "baci_inpar_cardiovascular0d.hpp"
 
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_conditiondefinition.H"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_conditiondefinition.hpp"
 
 BACI_NAMESPACE_OPEN
 

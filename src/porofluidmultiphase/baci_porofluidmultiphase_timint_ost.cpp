@@ -7,11 +7,11 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_porofluidmultiphase_timint_ost.H"
+#include "baci_porofluidmultiphase_timint_ost.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_porofluidmultiphase_ele_action.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_porofluidmultiphase_ele_action.hpp"
 
 BACI_NAMESPACE_OPEN
 

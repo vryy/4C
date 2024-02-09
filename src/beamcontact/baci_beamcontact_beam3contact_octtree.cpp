@@ -8,20 +8,20 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_beamcontact_beam3contact_octtree.H"
+#include "baci_beamcontact_beam3contact_octtree.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_beam3_euler_bernoulli.H"
-#include "baci_beam3_reissner.H"
-#include "baci_beamcontact_beam3contact_manager.H"
-#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
-#include "baci_global_data.H"
-#include "baci_inpar_beamcontact.H"
-#include "baci_inpar_contact.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_rigidsphere.H"
+#include "baci_beam3_base.hpp"
+#include "baci_beam3_euler_bernoulli.hpp"
+#include "baci_beam3_reissner.hpp"
+#include "baci_beamcontact_beam3contact_manager.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_beamcontact.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_rigidsphere.hpp"
 
 #include <math.h>
 #include <stdio.h>

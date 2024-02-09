@@ -9,16 +9,16 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_xfem_utils.H"
+#include "baci_xfem_utils.hpp"
 
-#include "baci_lib_discret_faces.H"
-#include "baci_lib_element.H"
-#include "baci_lib_utils.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_list.H"
-#include "baci_mat_material.H"
-#include "baci_mat_newtonianfluid.H"
+#include "baci_lib_discret_faces.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_lib_utils_parallel.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_mat_newtonianfluid.hpp"
 
 BACI_NAMESPACE_OPEN
 

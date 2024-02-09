@@ -7,9 +7,9 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_mat_lubrication_law.H"
+#include "baci_mat_lubrication_law.hpp"
 
-#include "baci_mat_par_bundle.H"
+#include "baci_mat_par_bundle.hpp"
 
 BACI_NAMESPACE_OPEN
 

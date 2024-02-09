@@ -13,9 +13,9 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
-#include "baci_thermo_resulttest.H"
+#include "baci_thermo_resulttest.hpp"
 
-#include "baci_io_linedefinition.H"
+#include "baci_io_linedefinition.hpp"
 
 #include <string>
 

@@ -6,13 +6,13 @@
 \level 2
  *-----------------------------------------------------------------------*/
 
-#include "baci_mat_structporo.H"
+#include "baci_mat_structporo.hpp"
 
-#include "baci_comm_utils_factory.H"  // for function Factory in Unpack
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_poro_law.H"
-#include "baci_mat_so3_material.H"
+#include "baci_comm_utils_factory.hpp"  // for function Factory in Unpack
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_poro_law.hpp"
+#include "baci_mat_so3_material.hpp"
 
 #include <vector>
 

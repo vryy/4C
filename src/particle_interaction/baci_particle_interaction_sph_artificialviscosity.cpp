@@ -8,10 +8,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_sph_artificialviscosity.H"
+#include "baci_particle_interaction_sph_artificialviscosity.hpp"
 
-#include "baci_particle_interaction_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_particle_interaction_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <cmath>
 

@@ -9,7 +9,7 @@ utils_std_cxx20_ranges.H
 
 #include <gtest/gtest.h>
 
-#include "baci_utils_std_cxx20_ranges.H"
+#include "baci_utils_std_cxx20_ranges.hpp"
 
 #include <list>
 

@@ -8,15 +8,15 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_sph_phase_change.H"
+#include "baci_particle_interaction_sph_phase_change.hpp"
 
-#include "baci_particle_engine_container.H"
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_engine_object.H"
-#include "baci_particle_interaction_material_handler.H"
-#include "baci_particle_interaction_sph_equationofstate.H"
-#include "baci_particle_interaction_sph_equationofstate_bundle.H"
-#include "baci_utils_exceptions.H"
+#include "baci_particle_engine_container.hpp"
+#include "baci_particle_engine_interface.hpp"
+#include "baci_particle_engine_object.hpp"
+#include "baci_particle_interaction_material_handler.hpp"
+#include "baci_particle_interaction_sph_equationofstate.hpp"
+#include "baci_particle_interaction_sph_equationofstate_bundle.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

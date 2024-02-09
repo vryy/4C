@@ -6,7 +6,7 @@
 
 */
 /*-----------------------------------------------------------------------*/
-#include "baci_mortar_interface_utils.H"
+#include "baci_mortar_interface_utils.hpp"
 
 #include <algorithm>
 #include <numeric>

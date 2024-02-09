@@ -9,21 +9,21 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_beaminteraction_periodic_boundingbox.H"
+#include "baci_beaminteraction_periodic_boundingbox.hpp"
 
-#include "baci_binstrategy_utils.H"
-#include "baci_comm_utils_factory.H"
-#include "baci_discretization_geometry_intersection_math.H"
-#include "baci_global_data.H"
-#include "baci_inpar_binningstrategy.H"
-#include "baci_io.H"
-#include "baci_io_discretization_visualization_writer_mesh.H"
-#include "baci_io_visualization_parameters.H"
-#include "baci_lib_dofset_independent.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_utils_exceptions.H"
+#include "baci_binstrategy_utils.hpp"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_discretization_geometry_intersection_math.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_binningstrategy.hpp"
+#include "baci_io.hpp"
+#include "baci_io_discretization_visualization_writer_mesh.hpp"
+#include "baci_io_visualization_parameters.hpp"
+#include "baci_lib_dofset_independent.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

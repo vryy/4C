@@ -8,11 +8,11 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_dem_contact_tangential.H"
+#include "baci_particle_interaction_dem_contact_tangential.hpp"
 
-#include "baci_inpar_particle.H"
-#include "baci_particle_interaction_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_inpar_particle.hpp"
+#include "baci_particle_interaction_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

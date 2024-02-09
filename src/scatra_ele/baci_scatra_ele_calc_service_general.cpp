@@ -9,19 +9,19 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_coupling_volmortar_shape.H"
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_global_data.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_scatra_mat_multiscale.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_calc.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_scatra_ele_parameter_turbulence.H"
-#include "baci_utils_function.H"
+#include "baci_coupling_volmortar_shape.hpp"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_fluid_rotsym_periodicbc.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_scatra_mat_multiscale.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_calc.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_scatra_ele_parameter_turbulence.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 

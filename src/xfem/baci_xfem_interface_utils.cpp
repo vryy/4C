@@ -8,15 +8,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_xfem_interface_utils.H"
+#include "baci_xfem_interface_utils.hpp"
 
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_volumecell.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_xfem_condition_manager.H"
+#include "baci_cut_boundarycell.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_xfem_condition_manager.hpp"
 
 BACI_NAMESPACE_OPEN
 //

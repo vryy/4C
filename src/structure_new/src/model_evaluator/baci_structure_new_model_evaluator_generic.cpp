@@ -10,13 +10,13 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_model_evaluator_generic.H"
+#include "baci_structure_new_model_evaluator_generic.hpp"
 
-#include "baci_solver_nonlin_nox_floating_point_exception.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_floating_point_exception.hpp"
+#include "baci_structure_new_model_evaluator_data.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_structure_new_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
 

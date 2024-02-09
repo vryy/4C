@@ -5,20 +5,20 @@
 \level 1
 */
 
-#include "baci_solid_poro_ele.H"
+#include "baci_solid_poro_ele.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_mat_fluidporo_multiphase.H"
-#include "baci_mat_structporo.H"
-#include "baci_so3_line.H"
-#include "baci_so3_nullspace.H"
-#include "baci_so3_surface.H"
-#include "baci_solid_ele_factory.H"
-#include "baci_solid_ele_interface_serializable.H"
-#include "baci_solid_ele_utils.H"
-#include "baci_solid_poro_ele_factory.H"
-#include "baci_solid_poro_ele_utils.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_mat_fluidporo_multiphase.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_so3_line.hpp"
+#include "baci_so3_nullspace.hpp"
+#include "baci_so3_surface.hpp"
+#include "baci_solid_ele_factory.hpp"
+#include "baci_solid_ele_interface_serializable.hpp"
+#include "baci_solid_ele_utils.hpp"
+#include "baci_solid_poro_ele_factory.hpp"
+#include "baci_solid_poro_ele_utils.hpp"
 
 #include <memory>
 

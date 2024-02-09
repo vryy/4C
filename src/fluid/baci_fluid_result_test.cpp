@@ -9,12 +9,12 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_result_test.H"
+#include "baci_fluid_result_test.hpp"
 
-#include "baci_fluid_implicit_integration.H"
-#include "baci_fluid_utils.H"
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
+#include "baci_fluid_implicit_integration.hpp"
+#include "baci_fluid_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
 
 #include <string>
 

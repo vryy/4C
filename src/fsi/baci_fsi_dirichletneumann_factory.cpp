@@ -8,15 +8,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_dirichletneumann_factory.H"
+#include "baci_fsi_dirichletneumann_factory.hpp"
 
-#include "baci_fsi_dirichletneumann.H"
-#include "baci_fsi_dirichletneumann_disp.H"
-#include "baci_fsi_dirichletneumann_vel.H"
-#include "baci_fsi_dirichletneumann_volcoupl.H"
-#include "baci_fsi_dirichletneumannslideale.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fsi.H"
+#include "baci_fsi_dirichletneumann.hpp"
+#include "baci_fsi_dirichletneumann_disp.hpp"
+#include "baci_fsi_dirichletneumann_vel.hpp"
+#include "baci_fsi_dirichletneumann_volcoupl.hpp"
+#include "baci_fsi_dirichletneumannslideale.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fsi.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

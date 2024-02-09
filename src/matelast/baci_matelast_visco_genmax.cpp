@@ -8,9 +8,9 @@ SLS-model
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_visco_genmax.H"
+#include "baci_matelast_visco_genmax.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,13 +8,13 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_beaminteraction_crosslinker_handler.H"
+#include "baci_beaminteraction_crosslinker_handler.hpp"
 
-#include "baci_binstrategy_meshfree_multibin.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_binstrategy_meshfree_multibin.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

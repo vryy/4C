@@ -9,10 +9,10 @@ lid-driven cavity.
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_fluid_turbulence_statistics_ldc.H"
+#include "baci_fluid_turbulence_statistics_ldc.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_io.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_io.hpp"
 
 #include <fstream>
 

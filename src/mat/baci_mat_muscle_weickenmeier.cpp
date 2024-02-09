@@ -9,15 +9,15 @@ approach)
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_muscle_weickenmeier.H"
+#include "baci_mat_muscle_weickenmeier.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_muscle_utils.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_muscle_utils.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
 BACI_NAMESPACE_OPEN
 

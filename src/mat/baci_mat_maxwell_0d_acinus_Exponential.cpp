@@ -21,13 +21,13 @@ E1_LIN 0 TAU 0
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_mat_maxwell_0d_acinus_Exponential.H"
+#include "baci_mat_maxwell_0d_acinus_Exponential.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_par_bundle.hpp"
 #include "baci_red_airways_elem_params.h"
-#include "baci_red_airways_elementbase.H"
+#include "baci_red_airways_elementbase.hpp"
 
 #include <vector>
 

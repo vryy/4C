@@ -8,7 +8,7 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_art_net_art_junction.H"
+#include "baci_art_net_art_junction.hpp"
 
 #include <stdio.h>
 

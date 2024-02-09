@@ -8,12 +8,12 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mat_anisotropy_extension_default.H"
+#include "baci_mat_anisotropy_extension_default.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_linalg_fixedsizematrix_generators.H"
-#include "baci_mat_anisotropy_extension.H"
-#include "baci_mat_service.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_linalg_fixedsizematrix_generators.hpp"
+#include "baci_mat_anisotropy_extension.hpp"
+#include "baci_mat_service.hpp"
 
 #include <algorithm>
 

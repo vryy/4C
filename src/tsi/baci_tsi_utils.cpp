@@ -12,19 +12,19 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 12/09 |
  *----------------------------------------------------------------------*/
-#include "baci_tsi_utils.H"
+#include "baci_tsi_utils.hpp"
 
-#include "baci_coupling_volmortar_utils.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_dofset.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_periodicbc.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_so3_plast_ssn.H"
-#include "baci_so3_thermo.H"
-#include "baci_thermo_ele_impl_utils.H"
-#include "baci_thermo_element.H"
+#include "baci_coupling_volmortar_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_dofset.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_lib_periodicbc.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_so3_plast_ssn.hpp"
+#include "baci_so3_thermo.hpp"
+#include "baci_thermo_ele_impl_utils.hpp"
+#include "baci_thermo_element.hpp"
 
 #include <Epetra_MpiComm.h>
 

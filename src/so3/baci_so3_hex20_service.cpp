@@ -4,9 +4,9 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_lib_node.H"
-#include "baci_so3_hex20.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_so3_hex20.hpp"
 
 BACI_NAMESPACE_OPEN
 

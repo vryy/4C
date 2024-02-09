@@ -7,10 +7,10 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_mat_spring.H"
+#include "baci_mat_spring.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <vector>
 

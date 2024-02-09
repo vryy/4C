@@ -6,24 +6,24 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_ssti_algorithm.H"
+#include "baci_ssti_algorithm.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_factory.H"
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_adapter_str_structure_new.H"
-#include "baci_global_data.H"
-#include "baci_inpar_ssti.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-#include "baci_scatra_utils.H"
-#include "baci_ssi_utils.H"
-#include "baci_ssti_monolithic.H"
-#include "baci_ssti_resulttest.H"
-#include "baci_ssti_utils.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_adapter_str_factory.hpp"
+#include "baci_adapter_str_ssiwrapper.hpp"
+#include "baci_adapter_str_structure_new.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_ssti.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
+#include "baci_scatra_utils.hpp"
+#include "baci_ssi_utils.hpp"
+#include "baci_ssti_monolithic.hpp"
+#include "baci_ssti_resulttest.hpp"
+#include "baci_ssti_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

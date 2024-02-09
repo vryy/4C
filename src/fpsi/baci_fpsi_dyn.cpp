@@ -7,13 +7,13 @@
 /*----------------------------------------------------------------------*
  |  headers                                                             |
  *----------------------------------------------------------------------*/
-#include "baci_fpsi_dyn.H"
+#include "baci_fpsi_dyn.hpp"
 
-#include "baci_fpsi.H"
-#include "baci_fpsi_utils.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fpsi.H"
-#include "baci_lib_discret.H"
+#include "baci_fpsi.hpp"
+#include "baci_fpsi_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fpsi.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

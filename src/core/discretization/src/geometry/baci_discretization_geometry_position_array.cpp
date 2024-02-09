@@ -9,9 +9,9 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_discretization_geometry_position_array.H"
+#include "baci_discretization_geometry_position_array.hpp"
 
-#include "baci_lib_element.H"
+#include "baci_lib_element.hpp"
 
 BACI_NAMESPACE_OPEN
 

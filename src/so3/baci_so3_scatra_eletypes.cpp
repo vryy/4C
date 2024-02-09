@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_io_linedefinition.H"
-#include "baci_so3_scatra.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_so3_scatra.hpp"
 
 BACI_NAMESPACE_OPEN
 

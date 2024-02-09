@@ -10,17 +10,17 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_adapter_str_timeada.H"
+#include "baci_adapter_str_timeada.hpp"
 
-#include "baci_adapter_str_timeada_joint.H"
-#include "baci_adapter_str_timeada_zienxie.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_timint_base.H"
+#include "baci_adapter_str_timeada_joint.hpp"
+#include "baci_adapter_str_timeada_zienxie.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_structure_new_dbc.hpp"
+#include "baci_structure_new_timint_base.hpp"
 
 BACI_NAMESPACE_OPEN
 

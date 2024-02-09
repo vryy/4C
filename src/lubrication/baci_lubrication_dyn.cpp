@@ -9,12 +9,12 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_lubrication_dyn.H"
+#include "baci_lubrication_dyn.hpp"
 
-#include "baci_adapter_lubrication.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lubrication_timint_implicit.H"
+#include "baci_adapter_lubrication.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_lubrication_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

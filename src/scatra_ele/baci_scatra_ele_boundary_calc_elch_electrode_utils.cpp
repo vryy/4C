@@ -8,10 +8,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_scatra_ele_boundary_calc_elch_electrode_utils.H"
+#include "baci_scatra_ele_boundary_calc_elch_electrode_utils.hpp"
 
-#include "baci_inpar_s2i.H"
-#include "baci_utils_exceptions.H"
+#include "baci_inpar_s2i.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -11,24 +11,24 @@
 
 
 
-#include "baci_stru_multi_microstatic.H"
+#include "baci_stru_multi_microstatic.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_condition.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_elementtype.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_shw6.H"
-#include "baci_structure_aux.H"
-#include "baci_structure_timint_impl.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_condition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_elementtype.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_shw6.hpp"
+#include "baci_structure_aux.hpp"
+#include "baci_structure_timint_impl.hpp"
 
 #include <Epetra_LinearProblem.h>
 

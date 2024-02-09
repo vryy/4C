@@ -9,10 +9,10 @@ created
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_pointpool.H"
+#include "baci_cut_pointpool.hpp"
 
-#include "baci_cut_output.H"
-#include "baci_global_data.H"
+#include "baci_cut_output.hpp"
+#include "baci_global_data.hpp"
 
 BACI_NAMESPACE_OPEN
 

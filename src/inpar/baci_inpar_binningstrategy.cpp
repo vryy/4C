@@ -10,9 +10,9 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_inpar_binningstrategy.H"
+#include "baci_inpar_binningstrategy.hpp"
 
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

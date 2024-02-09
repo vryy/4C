@@ -9,14 +9,14 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_timint_bdf2.H"
+#include "baci_fluid_timint_bdf2.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_turbulence_boxfilter.H"
-#include "baci_fluid_turbulence_dyn_smag.H"
-#include "baci_fluid_turbulence_dyn_vreman.H"
-#include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_turbulence_boxfilter.hpp"
+#include "baci_fluid_turbulence_dyn_smag.hpp"
+#include "baci_fluid_turbulence_dyn_vreman.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,14 +8,14 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_constraint_springdashpot_manager.H"
+#include "baci_constraint_springdashpot_manager.hpp"
 
-#include "baci_constraint_springdashpot.H"
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"  // has to go before io.H
-#include "baci_lib_discret.H"
+#include "baci_constraint_springdashpot.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"  // has to go before io.hpp
+#include "baci_lib_discret.hpp"
 
 #include <iostream>
 

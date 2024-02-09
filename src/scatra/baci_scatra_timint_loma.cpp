@@ -3,17 +3,17 @@
 \brief scatra time integration for loma
 \level 2
  *------------------------------------------------------------------------------------------------*/
-#include "baci_scatra_timint_loma.H"
+#include "baci_scatra_timint_loma.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_sutherland.H"
-#include "baci_scatra_ele_action.H"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_sutherland.hpp"
+#include "baci_scatra_ele_action.hpp"
 
 BACI_NAMESPACE_OPEN
 

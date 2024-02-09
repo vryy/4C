@@ -9,23 +9,23 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_timint_implicit.H"
+#include "baci_structure_new_timint_implicit.hpp"
 
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_print.H"
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_linearsystem.H"
-#include "baci_structure_new_impl_generic.H"
-#include "baci_structure_new_nln_solver_factory.H"
-#include "baci_structure_new_nln_solver_generic.H"
-#include "baci_structure_new_predict_factory.H"
-#include "baci_structure_new_predict_generic.H"
-#include "baci_structure_new_timint_noxinterface.H"
-#include "baci_structure_new_utils.H"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_print.hpp"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_solver_nonlin_nox_linearsystem.hpp"
+#include "baci_structure_new_impl_generic.hpp"
+#include "baci_structure_new_nln_solver_factory.hpp"
+#include "baci_structure_new_nln_solver_generic.hpp"
+#include "baci_structure_new_predict_factory.hpp"
+#include "baci_structure_new_predict_generic.hpp"
+#include "baci_structure_new_timint_noxinterface.hpp"
+#include "baci_structure_new_utils.hpp"
 
 #include <NOX_Abstract_Group.H>
 

@@ -7,11 +7,11 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_immersed_problem_fsi_partitioned_immersed.H"
+#include "baci_immersed_problem_fsi_partitioned_immersed.hpp"
 
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_fsi_debugwriter.H"
-#include "baci_global_data.H"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_fsi_debugwriter.hpp"
+#include "baci_global_data.hpp"
 
 BACI_NAMESPACE_OPEN
 

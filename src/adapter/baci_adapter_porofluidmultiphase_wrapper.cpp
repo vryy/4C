@@ -6,14 +6,14 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_adapter_porofluidmultiphase_wrapper.H"
+#include "baci_adapter_porofluidmultiphase_wrapper.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_discret.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_porofluidmultiphase_timint_implicit.H"
-#include "baci_porofluidmultiphase_timint_ost.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_porofluidmultiphase_timint_implicit.hpp"
+#include "baci_porofluidmultiphase_timint_ost.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

@@ -9,18 +9,18 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_cut_elementhandle.H"
+#include "baci_cut_elementhandle.hpp"
 
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_integrationcell.H"
-#include "baci_cut_mesh.H"
-#include "baci_cut_node.H"
-#include "baci_cut_point.H"
-#include "baci_cut_position.H"
-#include "baci_cut_quadrature_compression.H"
-#include "baci_cut_tolerance.H"
-#include "baci_cut_volumecell.H"
-#include "baci_inpar_xfem.H"
+#include "baci_cut_boundarycell.hpp"
+#include "baci_cut_integrationcell.hpp"
+#include "baci_cut_mesh.hpp"
+#include "baci_cut_node.hpp"
+#include "baci_cut_point.hpp"
+#include "baci_cut_position.hpp"
+#include "baci_cut_quadrature_compression.hpp"
+#include "baci_cut_tolerance.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_inpar_xfem.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

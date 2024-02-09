@@ -10,16 +10,16 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_model_evaluator.H"
+#include "baci_structure_new_model_evaluator.hpp"
 
-#include "baci_linalg_blocksparsematrix.H"  // debugging
-#include "baci_linalg_sparseoperator.H"
-#include "baci_structure_new_integrator.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_model_evaluator_factory.H"
-#include "baci_structure_new_model_evaluator_structure.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_blocksparsematrix.hpp"  // debugging
+#include "baci_linalg_sparseoperator.hpp"
+#include "baci_structure_new_integrator.hpp"
+#include "baci_structure_new_model_evaluator_data.hpp"
+#include "baci_structure_new_model_evaluator_factory.hpp"
+#include "baci_structure_new_model_evaluator_structure.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>
 

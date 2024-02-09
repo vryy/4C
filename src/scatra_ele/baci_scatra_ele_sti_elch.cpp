@@ -8,10 +8,10 @@ transport within electrochemical substances
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_scatra_ele_sti_elch.H"
+#include "baci_scatra_ele_sti_elch.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

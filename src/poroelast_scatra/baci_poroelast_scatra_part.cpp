@@ -13,7 +13,7 @@
  */
 
 
-#include "baci_poroelast_scatra_part.H"
+#include "baci_poroelast_scatra_part.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -10,10 +10,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_adapter_str_timeloop.H"
+#include "baci_adapter_str_timeloop.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
 
 BACI_NAMESPACE_OPEN
 

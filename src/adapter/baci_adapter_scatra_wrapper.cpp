@@ -6,11 +6,11 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_adapter_scatra_wrapper.H"
+#include "baci_adapter_scatra_wrapper.hpp"
 
-#include "baci_linalg_sparseoperator.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_sparseoperator.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

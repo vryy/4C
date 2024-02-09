@@ -7,14 +7,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mortar_strategy_base.H"
+#include "baci_mortar_strategy_base.hpp"
 
-#include "baci_inpar_mortar.H"
-#include "baci_inpar_structure.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mortar_defines.H"
+#include "baci_inpar_mortar.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mortar_defines.hpp"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

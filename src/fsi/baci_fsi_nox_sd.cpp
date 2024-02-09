@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_nox_sd.H"
+#include "baci_fsi_nox_sd.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>

@@ -6,7 +6,7 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#include "baci_linear_solver_preconditioner_linalg_ana.H"
+#include "baci_linear_solver_preconditioner_linalg_ana.hpp"
 
 BACI_NAMESPACE_OPEN
 

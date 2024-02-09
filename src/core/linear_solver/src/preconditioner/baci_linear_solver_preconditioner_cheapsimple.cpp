@@ -8,12 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linear_solver_preconditioner_cheapsimple.H"
+#include "baci_linear_solver_preconditioner_cheapsimple.hpp"
 
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_downwindmatrix.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linear_solver_preconditioner_linalg_ana.H"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_linalg_downwindmatrix.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linear_solver_preconditioner_linalg_ana.hpp"
 
 #include <EpetraExt_OperatorOut.h>
 #include <Ifpack.h>

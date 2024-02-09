@@ -8,11 +8,11 @@ transport
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_scatra_ele_sti_thermo.H"
+#include "baci_scatra_ele_sti_thermo.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_soret.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_soret.hpp"
 
 BACI_NAMESPACE_OPEN
 

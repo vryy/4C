@@ -33,14 +33,14 @@
 /*----------------------------------------------------------------------*
  | headers                                                hemmler 09/16 |
  *----------------------------------------------------------------------*/
-#include "baci_mat_superelastic_sma.H"
+#include "baci_mat_superelastic_sma.hpp"
 
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

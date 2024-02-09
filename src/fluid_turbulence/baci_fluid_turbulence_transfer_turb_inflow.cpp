@@ -11,12 +11,12 @@ boundary of the actual domain
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_turbulence_transfer_turb_inflow.H"
+#include "baci_fluid_turbulence_transfer_turb_inflow.hpp"
 
-#include "baci_coupling_matchingoctree.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_coupling_matchingoctree.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 BACI_NAMESPACE_OPEN
 

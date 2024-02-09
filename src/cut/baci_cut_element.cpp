@@ -8,16 +8,16 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_facetgraph.H"
-#include "baci_cut_integrationcellcreator.H"
-#include "baci_cut_intersection.H"
-#include "baci_cut_options.H"
-#include "baci_cut_output.H"
-#include "baci_cut_position.H"
-#include "baci_cut_tetmesh.H"
-#include "baci_discretization_geometry_element_volume.H"
-#include "baci_global_data.H"
-#include "baci_inpar_cut.H"
+#include "baci_cut_facetgraph.hpp"
+#include "baci_cut_integrationcellcreator.hpp"
+#include "baci_cut_intersection.hpp"
+#include "baci_cut_options.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_position.hpp"
+#include "baci_cut_tetmesh.hpp"
+#include "baci_discretization_geometry_element_volume.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_cut.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

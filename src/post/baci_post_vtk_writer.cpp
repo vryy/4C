@@ -8,11 +8,11 @@
 *-----------------------------------------------------------------------*/
 
 
-#include "baci_post_vtk_writer.H"
+#include "baci_post_vtk_writer.hpp"
 
-#include "baci_io_legacy_table.H"
-#include "baci_lib_discret.H"
-#include "baci_post_common.H"
+#include "baci_io_legacy_table.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_post_common.hpp"
 
 #include <filesystem>
 #include <iomanip>

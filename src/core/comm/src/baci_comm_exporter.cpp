@@ -8,9 +8,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_comm_exporter.H"
+#include "baci_comm_exporter.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <vector>
 

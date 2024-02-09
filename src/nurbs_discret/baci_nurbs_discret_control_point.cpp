@@ -13,7 +13,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_nurbs_discret_control_point.H"
+#include "baci_nurbs_discret_control_point.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,12 +8,12 @@
 \level 3
 */
 
-#include "baci_adapter_str_fpsiwrapper.H"
+#include "baci_adapter_str_fpsiwrapper.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_structure_aux.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_structure_aux.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,22 +8,22 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_rigidsphere.H"
+#include "baci_rigidsphere.hpp"
 
-#include "baci_beaminteraction_link_pinjointed.H"
-#include "baci_comm_utils_factory.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_global_data.H"
-#include "baci_inpar_browniandyn.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beaminteraction_link_pinjointed.hpp"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_discretization_fem_general_largerotations.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_browniandyn.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,23 +9,23 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc_poro.H"
+#include "baci_fluid_ele_calc_poro.hpp"
 
-#include "baci_discretization_fem_general_utils_gder2.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_parameter_poro.H"
-#include "baci_fluid_ele_poro.H"
-#include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_global_data.H"
-#include "baci_lib_element_integration_select.H"
-#include "baci_mat_elasthyper.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_structporo.H"
-#include "baci_mat_stvenantkirchhoff.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-#include "baci_utils_function.H"
+#include "baci_discretization_fem_general_utils_gder2.hpp"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_parameter_poro.hpp"
+#include "baci_fluid_ele_poro.hpp"
+#include "baci_fluid_rotsym_periodicbc.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_element_integration_select.hpp"
+#include "baci_mat_elasthyper.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_mat_stvenantkirchhoff.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 

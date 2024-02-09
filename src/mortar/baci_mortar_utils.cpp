@@ -7,18 +7,18 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "baci_mortar_utils.H"
+#include "baci_mortar_utils.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_global_data.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_nurbs_discret.H"
-#include "baci_nurbs_discret_control_point.H"
-#include "baci_nurbs_discret_knotvector.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_nurbs_discret_control_point.hpp"
+#include "baci_nurbs_discret_knotvector.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

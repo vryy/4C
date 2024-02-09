@@ -9,17 +9,17 @@ fluid meshes
  */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_xfluid_fluid_state.H"
+#include "baci_fluid_xfluid_fluid_state.hpp"
 
-#include "baci_fluid_utils.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_fluid_xfluid_state.H"
-#include "baci_global_data.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_xfem_condition_manager.H"
-#include "baci_xfem_xfield_state_utils.H"
+#include "baci_fluid_utils.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_fluid_xfluid_state.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_xfem_condition_manager.hpp"
+#include "baci_xfem_xfield_state_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

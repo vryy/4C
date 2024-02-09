@@ -9,13 +9,13 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_nitsche_strategy_fsi.H"
+#include "baci_contact_nitsche_strategy_fsi.hpp"
 
-#include "baci_contact_element.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_nitsche_integrator_fsi.H"
-#include "baci_lib_discret.H"
-#include "baci_mortar_projector.H"
+#include "baci_contact_element.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_nitsche_integrator_fsi.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mortar_projector.hpp"
 
 BACI_NAMESPACE_OPEN
 

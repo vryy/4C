@@ -6,24 +6,24 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_fsi_lungmonolithic.H"
+#include "baci_fsi_lungmonolithic.hpp"
 
-#include "baci_adapter_ale_fsi.H"
-#include "baci_adapter_fld_lung.H"
-#include "baci_adapter_str_lung.H"
-#include "baci_ale_utils_mapextractor.H"
-#include "baci_constraint_dofset.H"
-#include "baci_coupling_adapter.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_fsi_lung_overlapprec.H"
-#include "baci_fsi_monolithic_linearsystem.H"
-#include "baci_fsi_statustest.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_ale_fsi.hpp"
+#include "baci_adapter_fld_lung.hpp"
+#include "baci_adapter_str_lung.hpp"
+#include "baci_ale_utils_mapextractor.hpp"
+#include "baci_constraint_dofset.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_fsi_lung_overlapprec.hpp"
+#include "baci_fsi_monolithic_linearsystem.hpp"
+#include "baci_fsi_statustest.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_structure_aux.hpp"
 
 BACI_NAMESPACE_OPEN
 

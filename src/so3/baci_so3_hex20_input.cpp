@@ -5,9 +5,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_io_linedefinition.H"
-#include "baci_mat_so3_material.H"
-#include "baci_so3_hex20.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_so3_hex20.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,11 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_adapter_str_factory.H"
+#include "baci_adapter_str_factory.hpp"
 
-#include "baci_adapter_str_structure_new.H"
-#include "baci_inpar_structure.H"
-#include "baci_utils_exceptions.H"
+#include "baci_adapter_str_structure_new.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

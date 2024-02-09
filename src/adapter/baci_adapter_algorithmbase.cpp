@@ -8,12 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_adapter_algorithmbase.H"
+#include "baci_adapter_algorithmbase.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_pstream.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <iostream>
 

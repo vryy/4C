@@ -8,14 +8,14 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_calc_lsreinit.H"
-#include "baci_scatra_ele_parameter_lsreinit.H"
-#include "baci_scatra_ele_parameter_timint.H"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_calc_lsreinit.hpp"
+#include "baci_scatra_ele_parameter_lsreinit.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
 
 BACI_NAMESPACE_OPEN
 

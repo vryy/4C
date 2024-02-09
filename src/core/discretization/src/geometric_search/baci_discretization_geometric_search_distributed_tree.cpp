@@ -9,11 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_discretization_geometric_search_distributed_tree.H"
+#include "baci_discretization_geometric_search_distributed_tree.hpp"
 
-#include "baci_discretization_geometric_search_access_traits.H"
-#include "baci_discretization_geometric_search_bounding_volume.H"
-#include "baci_discretization_geometric_search_utils.H"
+#include "baci_discretization_geometric_search_access_traits.hpp"
+#include "baci_discretization_geometric_search_bounding_volume.hpp"
+#include "baci_discretization_geometric_search_utils.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>

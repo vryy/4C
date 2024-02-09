@@ -7,9 +7,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_art_net_artery.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_cnst_1d_art.H"
+#include "baci_art_net_artery.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_cnst_1d_art.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,7 +8,7 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_io_visualization_writer_base.H"
+#include "baci_io_visualization_writer_base.hpp"
 
 #include <utility>
 

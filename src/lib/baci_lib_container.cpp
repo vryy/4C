@@ -8,10 +8,10 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_container.H"
+#include "baci_lib_container.hpp"
 
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>
 

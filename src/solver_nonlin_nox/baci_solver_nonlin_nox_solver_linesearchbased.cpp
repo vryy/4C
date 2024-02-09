@@ -8,17 +8,17 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_solver_linesearchbased.H"  // class definition
+#include "baci_solver_nonlin_nox_solver_linesearchbased.hpp"  // class definition
 
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_direction_factory.H"
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_inner_statustest_generic.H"
-#include "baci_solver_nonlin_nox_linesearch_factory.H"
-#include "baci_solver_nonlin_nox_statustest_activeset.H"
-#include "baci_solver_nonlin_nox_statustest_normf.H"
-#include "baci_solver_nonlin_nox_statustest_normupdate.H"
-#include "baci_solver_nonlin_nox_statustest_normwrms.H"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_solver_nonlin_nox_direction_factory.hpp"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_solver_nonlin_nox_inner_statustest_generic.hpp"
+#include "baci_solver_nonlin_nox_linesearch_factory.hpp"
+#include "baci_solver_nonlin_nox_statustest_activeset.hpp"
+#include "baci_solver_nonlin_nox_statustest_normf.hpp"
+#include "baci_solver_nonlin_nox_statustest_normupdate.hpp"
+#include "baci_solver_nonlin_nox_statustest_normwrms.hpp"
 
 #include <NOX_Abstract_Group.H>
 #include <NOX_Direction_Factory.H>

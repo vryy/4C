@@ -8,17 +8,17 @@ multiplicatively into elastic and inelastic parts
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_multiplicative_split_defgrad_elasthyper.H"
+#include "baci_mat_multiplicative_split_defgrad_elasthyper.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_ssi.H"
-#include "baci_mat_anisotropy.H"
-#include "baci_mat_elasthyper_service.H"
-#include "baci_mat_inelastic_defgrad_factors.H"
-#include "baci_mat_multiplicative_split_defgrad_elasthyper_service.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
-#include "baci_structure_new_enum_lists.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_ssi.hpp"
+#include "baci_mat_anisotropy.hpp"
+#include "baci_mat_elasthyper_service.hpp"
+#include "baci_mat_inelastic_defgrad_factors.hpp"
+#include "baci_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_structure_new_enum_lists.hpp"
 
 BACI_NAMESPACE_OPEN
 

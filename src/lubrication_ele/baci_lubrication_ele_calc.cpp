@@ -9,21 +9,21 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_lubrication_ele_calc.H"
+#include "baci_lubrication_ele_calc.hpp"
 
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_global_data.H"
-#include "baci_inpar_lubrication.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_lubrication_ele_action.H"
-#include "baci_lubrication_ele_calc_utils.H"
-#include "baci_lubrication_ele_parameter.H"
-#include "baci_mat_lubrication_mat.H"
-#include "baci_utils_function.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_lubrication.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_lubrication_ele_action.hpp"
+#include "baci_lubrication_ele_calc_utils.hpp"
+#include "baci_lubrication_ele_parameter.hpp"
+#include "baci_mat_lubrication_mat.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

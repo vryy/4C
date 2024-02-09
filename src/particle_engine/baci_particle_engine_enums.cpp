@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_enums.H"
+#include "baci_particle_engine_enums.hpp"
 
 BACI_NAMESPACE_OPEN
 

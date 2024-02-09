@@ -5,15 +5,15 @@
 \level 2
  *----------------------------------------------------------------------*/
 
-#include "baci_mat_viscoplastic_no_yield_surface.H"
+#include "baci_mat_viscoplastic_no_yield_surface.hpp"
 
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
-#include "baci_so3_hex8.H"
-#include "baci_utils_fad.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_utils_fad.hpp"
 
 #include <vector>
 

@@ -8,19 +8,19 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc_xfem.H"
+#include "baci_fluid_ele_calc_xfem.hpp"
 
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_position.H"
-#include "baci_cut_volumecell.H"
-#include "baci_fluid_ele.H"
-#include "baci_fluid_ele_parameter_xfem.H"
-#include "baci_fluid_functions.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_cut_boundarycell.hpp"
+#include "baci_cut_position.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_fluid_ele.hpp"
+#include "baci_fluid_ele_parameter_xfem.hpp"
+#include "baci_fluid_functions.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>

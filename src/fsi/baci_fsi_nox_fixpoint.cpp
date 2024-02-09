@@ -8,7 +8,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_fsi_nox_fixpoint.H"
+#include "baci_fsi_nox_fixpoint.hpp"
 
 #include <NOX_Abstract_Group.H>
 #include <NOX_GlobalData.H>

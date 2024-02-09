@@ -7,12 +7,12 @@
 */
 
 
-#include "baci_geometry_pair_line_to_surface_segmentation.H"
+#include "baci_geometry_pair_line_to_surface_segmentation.hpp"
 
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_line_projection.H"
-#include "baci_geometry_pair_line_to_surface_evaluation_data.H"
-#include "baci_geometry_pair_scalar_types.H"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_line_projection.hpp"
+#include "baci_geometry_pair_line_to_surface_evaluation_data.hpp"
+#include "baci_geometry_pair_scalar_types.hpp"
 
 BACI_NAMESPACE_OPEN
 

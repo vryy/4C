@@ -8,20 +8,20 @@ fluid-beam interaction)
 
 *----------------------------------------------------------------------*/
 
-#include "baci_fbi_constraintenforcer_penalty.H"
+#include "baci_fbi_constraintenforcer_penalty.hpp"
 
-#include "baci_adapter_fld_fbi_movingboundary.H"
-#include "baci_adapter_str_fbiwrapper.H"
-#include "baci_fbi_adapter_constraintbridge_penalty.H"
-#include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
-#include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_fbi_constraintenforcer.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_sparseoperator.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_adapter_fld_fbi_movingboundary.hpp"
+#include "baci_adapter_str_fbiwrapper.hpp"
+#include "baci_fbi_adapter_constraintbridge_penalty.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_output_params.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_params.hpp"
+#include "baci_fbi_constraintenforcer.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_sparseoperator.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
 
 #include <Epetra_Vector.h>
 

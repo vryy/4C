@@ -6,11 +6,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_shapevalues_hdg.H"
+#include "baci_discretization_fem_general_utils_shapevalues_hdg.hpp"
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

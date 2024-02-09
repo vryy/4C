@@ -11,14 +11,14 @@ means are computed as time averages
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fluid_turbulence_statistics_mean_general.H"
+#include "baci_fluid_turbulence_statistics_mean_general.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_dofset.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_dofset.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 BACI_NAMESPACE_OPEN
 

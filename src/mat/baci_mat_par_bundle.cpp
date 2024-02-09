@@ -12,10 +12,10 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_mat_par_bundle.H"
+#include "baci_mat_par_bundle.hpp"
 
-#include "baci_mat_material.H"
-#include "baci_matelast_summand.H"
+#include "baci_mat_material.hpp"
+#include "baci_matelast_summand.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -7,13 +7,13 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_art_net_art_terminal_bc.H"
+#include "baci_art_net_art_terminal_bc.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_utils_function.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <stdio.h>
 

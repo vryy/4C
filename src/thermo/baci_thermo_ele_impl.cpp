@@ -7,26 +7,26 @@
 
 */
 
-#include "baci_thermo_ele_impl.H"
+#include "baci_thermo_ele_impl.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_inpar_thermo.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_mat_fourieriso.H"
-#include "baci_mat_plasticelasthyper.H"
-#include "baci_mat_thermoplastichyperelast.H"
-#include "baci_mat_thermoplasticlinelast.H"
-#include "baci_mat_thermostvenantkirchhoff.H"
-#include "baci_mat_trait_thermo_solid.H"
-#include "baci_nurbs_discret.H"
-#include "baci_thermo_ele_action.H"
-#include "baci_thermo_element.H"  // only for visualization of element data
-#include "baci_utils_function.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_inpar_thermo.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_fourieriso.hpp"
+#include "baci_mat_plasticelasthyper.hpp"
+#include "baci_mat_thermoplastichyperelast.hpp"
+#include "baci_mat_thermoplasticlinelast.hpp"
+#include "baci_mat_thermostvenantkirchhoff.hpp"
+#include "baci_mat_trait_thermo_solid.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_thermo_ele_action.hpp"
+#include "baci_thermo_element.hpp"  // only for visualization of element data
+#include "baci_utils_function.hpp"
 
 #include <algorithm>
 

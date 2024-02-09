@@ -7,14 +7,14 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_beam_contact_condition.H"
+#include "baci_beaminteraction_beam_to_beam_contact_condition.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam_to_beam_contact_pair.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_lib_condition.H"
-#include "baci_lib_discret.H"
+#include "baci_beam3_base.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_pair.hpp"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_beaminteraction_contact_params.hpp"
+#include "baci_lib_condition.hpp"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

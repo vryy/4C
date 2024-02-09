@@ -8,10 +8,10 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_structure_new_timint_basedataio_monitor_dbc.H"
+#include "baci_structure_new_timint_basedataio_monitor_dbc.hpp"
 
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

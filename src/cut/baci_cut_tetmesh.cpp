@@ -8,11 +8,11 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_cut_tetmesh.H"
+#include "baci_cut_tetmesh.hpp"
 
-#include "baci_cut_levelsetside.H"
-#include "baci_cut_tetmeshintersection.H"
-#include "baci_cut_volumecell.H"
+#include "baci_cut_levelsetside.hpp"
+#include "baci_cut_tetmeshintersection.hpp"
+#include "baci_cut_volumecell.hpp"
 
 #include <stack>
 

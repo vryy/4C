@@ -10,19 +10,19 @@
 /*----------------------------------------------------------------------*
  | headers                                                  seitz 07/13 |
  *----------------------------------------------------------------------*/
-#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_fourieriso.H"
-#include "baci_mat_plasticelasthyper.H"
-#include "baci_mat_service.H"
-#include "baci_nurbs_discret.H"
-#include "baci_so3_element_service.H"
-#include "baci_so3_plast_ssn.H"
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_fourieriso.hpp"
+#include "baci_mat_plasticelasthyper.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_so3_element_service.hpp"
+#include "baci_so3_plast_ssn.hpp"
 #include "baci_so3_ssn_plast_fwd.hpp"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_structure_new_gauss_point_data_output_manager.H"
-#include "baci_utils_function.H"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_structure_new_gauss_point_data_output_manager.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

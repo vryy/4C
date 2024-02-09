@@ -13,19 +13,19 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_art_net_explicitintegration.H"
+#include "baci_art_net_explicitintegration.hpp"
 
-#include "baci_art_net_art_junction.H"
-#include "baci_art_net_artery_ele_action.H"
-#include "baci_art_net_artery_resulttest.H"
-#include "baci_global_data.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
+#include "baci_art_net_art_junction.hpp"
+#include "baci_art_net_artery_ele_action.hpp"
+#include "baci_art_net_artery_resulttest.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
 
 #include <stdio.h>
 
