@@ -316,11 +316,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
             }
           }
 
-          // delete all nodes contained in actcond
-          // this are the nodes of the parent discretization
-          (*actcond[numactcond]).Delete("Node Ids");
-          // and replace them by the nodes of the child discretization only
-          (*actcond[numactcond]).Add("Node Ids", reduced_ids);
+          // replace the nodes of the parent discretization by the nodes of the child discretization
+          (*actcond[numactcond]).SetNodes(reduced_ids);
 
           // finally set condition
           childdiscret_->SetCondition(

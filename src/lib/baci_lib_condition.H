@@ -395,7 +395,12 @@ namespace DRT
     /*!
     \brief Return vector of my global node ids
     */
-    const std::vector<int>* Nodes() const { return Get<std::vector<int>>("Node Ids"); }
+    const std::vector<int>* Nodes() const { return &nodes_; }
+
+    /*!
+    \brief Set vector of my global node ids
+    */
+    void SetNodes(const std::vector<int>& nodes) { nodes_ = nodes; }
 
     /*!
       \brief Return if a node gid is contained in this condition
@@ -527,6 +532,9 @@ namespace DRT
 
     //! Unique id of this condition, no second condition of the same type with same id may exist
     int id_;
+
+    //! global node ids
+    std::vector<int> nodes_{};
 
     //! flag indicating whether this condition builds a geometry description or not
     bool buildgeometry_;

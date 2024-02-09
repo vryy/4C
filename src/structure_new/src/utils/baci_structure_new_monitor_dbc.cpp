@@ -117,7 +117,7 @@ void STR::MonitorDbc::CreateReactionForceCondition(
       new DRT::Condition(new_id, DRT::Condition::ElementTag, true, tagged_cond.GType()));
 
   rcond_ptr->Add("onoff", *(tagged_cond.Get<std::vector<int>>("onoff")));
-  rcond_ptr->Add("Node Ids", *tagged_cond.Nodes());
+  rcond_ptr->SetNodes(*tagged_cond.Nodes());
 
   dynamic_cast<DRT::Discretization&>(discret).SetCondition("ReactionForce", rcond_ptr);
 }
