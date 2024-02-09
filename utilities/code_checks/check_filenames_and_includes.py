@@ -52,7 +52,7 @@ def has_valid_filename(path, module_roots):
 
     if "tests" in abs_path.split("/") or "unittests" in abs_path.split("/"):
         return (
-            file.endswith("_test.cpp") or file.endswith("_test.H")
+            file.endswith("_test.cpp") or file.endswith("_test.hpp")
         ) and file.startswith("baci_")
 
     # If the file is not in a module, we do not require a specific prefix and return true.
@@ -205,7 +205,7 @@ def main():
     errors_include_style = check_include_style(look_cmd, module_roots)
 
     utils.pretty_print_error_report(
-        "A valid filename looks like this: baci_<module_name>_<detailed_name>[_test].(H|cpp). "
+        "A valid filename looks like this: baci_<module_name>_<detailed_name>[_test].(.hpp|cpp). "
         + "The following files have incorrect filenames:",
         errors_filename,
         errfile,

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef REVISION_H
-#define REVISION_H
+#ifndef REVISION_HPP
+#define REVISION_HPP
 
 #include <string>
 
