@@ -50,10 +50,14 @@ namespace CORE::LINALG
   class Solver;
 }  // namespace CORE::LINALG
 
+namespace MOR
+{
+  class ProperOrthogonalDecomposition;
+}
+
 namespace UTILS
 {
   // forward declarations
-  class MOR;
   class Cardiovascular0D;
   class Cardiovascular0DDofSet;
 
@@ -69,7 +73,7 @@ namespace UTILS
             strparams,  ///<  parameterlist from structural time integration algorithm
         Teuchos::ParameterList cv0dparams,  ///<  parameterlist from cardiovascular0d
         CORE::LINALG::Solver& solver,       ///< Solver to solve linear subproblem in iteration
-        Teuchos::RCP<UTILS::MOR> mor        ///< model order reduction
+        Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor  ///< model order reduction
     );
 
     /*!
@@ -405,9 +409,9 @@ namespace UTILS
     Teuchos::ParameterList strparams_;   ///< structure input parameters
     Teuchos::ParameterList cv0dparams_;  ///< 0D cardiovascular input parameters
     INPAR::STR::IntegrationStrategy
-        intstrat_;                  ///< structural time-integration strategy (old vs. standard)
-    Teuchos::RCP<UTILS::MOR> mor_;  ///< model order reduction
-    bool have_mor_;                 ///< model order reduction is used
+        intstrat_;  ///< structural time-integration strategy (old vs. standard)
+    Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor_;  ///< model order reduction
+    bool have_mor_;                                         ///< model order reduction is used
 
   };  // class
 }  // namespace UTILS

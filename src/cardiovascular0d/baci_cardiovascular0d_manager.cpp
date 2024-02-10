@@ -42,7 +42,8 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discretization> discr,
     Teuchos::RCP<const Epetra_Vector> disp, Teuchos::ParameterList strparams,
-    Teuchos::ParameterList cv0dparams, CORE::LINALG::Solver& solver, Teuchos::RCP<UTILS::MOR> mor)
+    Teuchos::ParameterList cv0dparams, CORE::LINALG::Solver& solver,
+    Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor)
     : actdisc_(discr),
       myrank_(actdisc_->Comm().MyPID()),
       dbcmaps_(Teuchos::rcp(new CORE::LINALG::MapExtractor())),

@@ -10,6 +10,8 @@
 
 #include "baci_cardiovascular0d_dofset.H"
 
+#include "baci_mor_pod.H"
+
 #include <algorithm>
 #include <iostream>
 #include <numeric>
@@ -39,7 +41,7 @@ void UTILS::Cardiovascular0DDofSet::Reset()
  *----------------------------------------------------------------------*/
 int UTILS::Cardiovascular0DDofSet::AssignDegreesOfFreedom(
     const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start,
-    const Teuchos::RCP<UTILS::MOR> mor)
+    const Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor)
 {
   // A definite offset is currently not supported.
   if (start != 0) dserror("right now user specified dof offsets are not supported");

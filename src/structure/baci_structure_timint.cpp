@@ -238,7 +238,7 @@ void STR::TimInt::Setup()
   conman_->Setup((*dis_)(0), sdynparams_);
 
   // model order reduction
-  mor_ = Teuchos::rcp(new UTILS::MOR(discret_));
+  mor_ = Teuchos::rcp(new MOR::ProperOrthogonalDecomposition(discret_));
 
   // initialize 0D cardiovascular manager
   cardvasc0dman_ =

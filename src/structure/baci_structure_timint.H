@@ -83,9 +83,9 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace UTILS
+namespace MOR
 {
-  class MOR;
+  class ProperOrthogonalDecomposition;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1241,7 +1241,7 @@ namespace STR
     Teuchos::RCP<CORE::LINALG::MapExtractor> porositysplitter_;
     //@}
 
-    Teuchos::RCP<UTILS::MOR> mor_;  //!< model order reduction
+    Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor_;  //!< model order reduction
 
    private:
     //! flag indicating if class is setup
