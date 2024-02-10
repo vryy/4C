@@ -27,7 +27,8 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                            pfaller Oct17 |
  *----------------------------------------------------------------------*/
-UTILS::MOR::MOR(Teuchos::RCP<DRT::Discretization> discr)
+MOR::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
+    Teuchos::RCP<DRT::Discretization> discr)
     : actdisc_(discr),
       myrank_(actdisc_->Comm().MyPID()),
       morparams_(GLOBAL::Problem::Instance()->MORParams()),
@@ -82,7 +83,7 @@ UTILS::MOR::MOR(Teuchos::RCP<DRT::Discretization> discr)
 /*----------------------------------------------------------------------*
  | M_red = V^T * M * V                                    pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> UTILS::MOR::ReduceDiagnoal(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> MOR::ProperOrthogonalDecomposition::ReduceDiagnoal(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> M)
 {
   // right multiply M * V
@@ -108,7 +109,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> UTILS::MOR::ReduceDiagnoal(
 /*----------------------------------------------------------------------*
  | M_red = V^T * M                                        pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> UTILS::MOR::ReduceOffDiagonal(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> MOR::ProperOrthogonalDecomposition::ReduceOffDiagonal(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> M)
 {
   // right multiply M * V
@@ -129,7 +130,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> UTILS::MOR::ReduceOffDiagonal(
 /*----------------------------------------------------------------------*
  | v_red = V^T * v                                        pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> UTILS::MOR::ReduceRHS(Teuchos::RCP<Epetra_MultiVector> v)
+Teuchos::RCP<Epetra_MultiVector> MOR::ProperOrthogonalDecomposition::ReduceRHS(
+    Teuchos::RCP<Epetra_MultiVector> v)
 {
   Teuchos::RCP<Epetra_MultiVector> v_red = Teuchos::rcp(new Epetra_Vector(*structmapr_, true));
   MultiplyEpetraMultiVectors(projmatrix_, 'T', v, 'N', redstructmapr_, structrimpo_, v_red);
@@ -140,7 +142,8 @@ Teuchos::RCP<Epetra_MultiVector> UTILS::MOR::ReduceRHS(Teuchos::RCP<Epetra_Multi
 /*----------------------------------------------------------------------*
  | v_red = V^T * v                                        pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> UTILS::MOR::ReduceResidual(Teuchos::RCP<Epetra_Vector> v)
+Teuchos::RCP<Epetra_Vector> MOR::ProperOrthogonalDecomposition::ReduceResidual(
+    Teuchos::RCP<Epetra_Vector> v)
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_));
   int err = v_tmp->Multiply('T', 'N', 1.0, *projmatrix_, *v, 0.0);
@@ -155,7 +158,8 @@ Teuchos::RCP<Epetra_Vector> UTILS::MOR::ReduceResidual(Teuchos::RCP<Epetra_Vecto
 /*----------------------------------------------------------------------*
  | v = V * v_red                                          pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> UTILS::MOR::ExtendSolution(Teuchos::RCP<Epetra_Vector> v_red)
+Teuchos::RCP<Epetra_Vector> MOR::ProperOrthogonalDecomposition::ExtendSolution(
+    Teuchos::RCP<Epetra_Vector> v_red)
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_, true));
   v_tmp->Import(*v_red, *structrinvimpo_, Insert, nullptr);
@@ -169,8 +173,9 @@ Teuchos::RCP<Epetra_Vector> UTILS::MOR::ExtendSolution(Teuchos::RCP<Epetra_Vecto
 /*----------------------------------------------------------------------*
  | multiply two Epetra MultiVectors                       pfaller Oct17 |
  *----------------------------------------------------------------------*/
-void UTILS::MOR::MultiplyEpetraMultiVectors(Teuchos::RCP<Epetra_MultiVector> multivect1,
-    char multivect1Trans, Teuchos::RCP<Epetra_MultiVector> multivect2, char multivect2Trans,
+void MOR::ProperOrthogonalDecomposition::MultiplyEpetraMultiVectors(
+    Teuchos::RCP<Epetra_MultiVector> multivect1, char multivect1Trans,
+    Teuchos::RCP<Epetra_MultiVector> multivect2, char multivect2Trans,
     Teuchos::RCP<Epetra_Map> redmap, Teuchos::RCP<Epetra_Import> impo,
     Teuchos::RCP<Epetra_MultiVector> result)
 {
@@ -192,9 +197,9 @@ void UTILS::MOR::MultiplyEpetraMultiVectors(Teuchos::RCP<Epetra_MultiVector> mul
 /*----------------------------------------------------------------------*
  | Epetra_MultiVector to CORE::LINALG::SparseMatrix             pfaller Oct17 |
  *----------------------------------------------------------------------*/
-void UTILS::MOR::EpetraMultiVectorToLINALGSparseMatrix(Teuchos::RCP<Epetra_MultiVector> multivect,
-    Teuchos::RCP<Epetra_Map> rangemap, Teuchos::RCP<Epetra_Map> domainmap,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsemat)
+void MOR::ProperOrthogonalDecomposition::EpetraMultiVectorToLINALGSparseMatrix(
+    Teuchos::RCP<Epetra_MultiVector> multivect, Teuchos::RCP<Epetra_Map> rangemap,
+    Teuchos::RCP<Epetra_Map> domainmap, Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsemat)
 {
   // pointer to values of the Epetra_MultiVector
   double *Values;
@@ -231,7 +236,8 @@ void UTILS::MOR::EpetraMultiVectorToLINALGSparseMatrix(Teuchos::RCP<Epetra_Multi
  |   fclose(fid);                                                       |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVector> &projmatrix)
+void MOR::ProperOrthogonalDecomposition::ReadMatrix(
+    std::string filename, Teuchos::RCP<Epetra_MultiVector> &projmatrix)
 {
   // ***************************
   // PART1: Read in Matrix Sizes
@@ -371,7 +377,7 @@ void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVecto
 /*----------------------------------------------------------------------*
  | check orthogonality with M^T * M - I == 0              pfaller Oct17 |
  *----------------------------------------------------------------------*/
-bool UTILS::MOR::IsOrthogonal(Teuchos::RCP<Epetra_MultiVector> M)
+bool MOR::ProperOrthogonalDecomposition::IsOrthogonal(Teuchos::RCP<Epetra_MultiVector> M)
 {
   const int n = M->NumVectors();
 

@@ -33,15 +33,15 @@ namespace CORE::LINALG
   //  class DefaultBlockMatrixStrategy;
   //  class BlockSparseMatrix;
 }  // namespace CORE::LINALG
-namespace UTILS
+namespace MOR
 {
-  class MOR
+  class ProperOrthogonalDecomposition
   {
    public:
     /*!
         \brief Constructor
      */
-    MOR(Teuchos::RCP<DRT::Discretization> discr);
+    ProperOrthogonalDecomposition(Teuchos::RCP<DRT::Discretization> discr);
 
 
     /*!
@@ -100,7 +100,7 @@ namespace UTILS
                                                   ///< dofs after POD-MOR into fully redundant one
 
   };  // class
-}  // namespace UTILS
+}  // namespace MOR
 BACI_NAMESPACE_CLOSE
 
 #endif
