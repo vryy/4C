@@ -117,3 +117,33 @@ for a dependency is sensible and then calls the respective configuration script.
 script the package search is started via `find_package` which will either look for a
 packaged config file or use our own finders defined in `cmake/modules`.
 
+Internal dependency management
+..............................
+
+The code base is split into multiple modules, that consist of several files. A module is built by compiling the
+source files (\*.cpp) into object files (\*.o). For building, information from other modules may be necessary. CMake calls this information
+"usage requirements" and it mainly consists of header files (*.hpp) and define flags from other modules. Notably,
+the compiled object files of a module are not needed to build another module. They only become necessary when an
+executable is built. This leads us to the following strategy:
+
+When defining a module `module_name`:
+
+- Define a CMake `INTERFACE` target conventionally called `module_name_deps` which contains all the headers and usage requirements of
+  the module.
+- If another module `module_other` is required for building `module_name`, this module is added as
+  `baci_add_dependency(module_name module_other)`. This step encodes internal dependencies.
+- Define a CMake `OBJECT` target conventionally called `module_name_objs` which contains the source files. If a module is
+  header-only, this target is not defined.
+- Add the `OBJECT` target to a central library which contains all compiled sources.
+
+Any executable links against the central library. Note that the central library may have a certain modules turned on or
+off, once that module is refactored enough to separate it from the rest of the library.
+
+This strategy comes with a number of useful properties:
+
+- We can build the central library as a shared or a static library.
+- All object targets can be built independently and simultaneously which offers a high degree of parallelism.
+- It allows cyclic dependencies between modules. Although we work towards removing cyclic dependencies, the code is not
+  there yet and we need to be able to build what we have.
+
+
