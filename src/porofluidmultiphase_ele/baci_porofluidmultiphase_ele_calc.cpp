@@ -154,6 +154,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(DRT::Elem
       EvaluateOnlyElement(ele, elemat, elevec, discretization, la);
       break;
     }
+    case POROFLUIDMULTIPHASE::calc_phase_velocities:
+    {
+      // loop over gauss points and average
+      GaussPointLoopAverage(ele, elemat, elevec, discretization, la);
+      break;
+    }
     default:
     {
       dserror("Not acting on this action. Forgot implementation?");
@@ -186,7 +192,29 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(DRT::Ele
 
   return;
 }
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <CORE::FE::CellType distype>
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopAverage(DRT::Element* ele,
+    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+    std::vector<CORE::LINALG::SerialDenseVector*>& elevec, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la)
+{
+  PrepareGaussPointLoop(ele);
 
+  const CORE::FE::IntPointsAndWeights<nsd_> intpoints(
+      POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
+
+  GaussPointLoop(intpoints, ele, elemat, elevec, discretization, la);
+
+  const auto number_gauss_points = 1.0 / (double)intpoints.IP().nquad;
+
+  (*elemat[0]).scale(number_gauss_points);
+  (*elemat[1]).scale(number_gauss_points);
+  (*elevec[0]).scale(number_gauss_points);
+  (*elevec[1]).scale(number_gauss_points);
+  (*elevec[2]).scale(number_gauss_points);
+}
 /*----------------------------------------------------------------------*
 | calculate off-diagonal fluid-struct-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/

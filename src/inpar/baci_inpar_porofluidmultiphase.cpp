@@ -86,6 +86,8 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       &porofluidmultiphasedyn);
   BoolParameter("OUTPUT_POROSITY", "yes", "Flag if output of porosity should be calculated",
       &porofluidmultiphasedyn);
+  BoolParameter("OUTPUT_PHASE_VELOCITIES", "yes",
+      "Flag if output of phase velocities should be calculated", &porofluidmultiphasedyn);
 
   // Biot stabilization
   BoolParameter(

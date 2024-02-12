@@ -152,6 +152,9 @@ namespace ADAPTER
     //! reconstruct flux from current solution
     void ReconstructFlux() override;
 
+    //! calculate phase velocities from current solution
+    void CalculatePhaseVelocities() override;
+
     //! build linear system tangent matrix, rhs/force residual
     void Evaluate() override;
 

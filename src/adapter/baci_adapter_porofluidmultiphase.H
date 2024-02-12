@@ -156,6 +156,9 @@ namespace ADAPTER
     //! reconstruct flux from current solution
     virtual void ReconstructFlux() = 0;
 
+    //! calculate phase velocities from current solution
+    virtual void CalculatePhaseVelocities() = 0;
+
     //! build linear system tangent matrix, rhs/force residual
     virtual void Evaluate() = 0;
 

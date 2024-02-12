@@ -56,6 +56,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       output_satpress_(INPUT::IntegralValue<int>(poroparams_, "OUTPUT_SATANDPRESS")),
       output_solidpress_(INPUT::IntegralValue<int>(poroparams_, "OUTPUT_SOLIDPRESS")),
       output_porosity_(INPUT::IntegralValue<int>(poroparams_, "OUTPUT_POROSITY")),
+      output_phase_velocities_(INPUT::IntegralValue<int>(poroparams_, "OUTPUT_PHASE_VELOCITIES")),
       output_bloodvesselvolfrac_(INPUT::IntegralValue<int>(
           poroparams_.sublist("ARTERY COUPLING"), "OUTPUT_BLOODVESSELVOLFRAC")),
       stab_biot_(INPUT::IntegralValue<int>(poroparams_, "STAB_BIOT")),
@@ -200,6 +201,13 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // porosity at time n+1 (lives on same dofset as solid pressure)
   if (output_porosity_)
     porosity_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
+
+  if (output_phase_velocities_)
+  {
+    const int num_poro_dof = discret_->NumDof(0, discret_->lRowNode(0));
+    const int num_rows = num_poro_dof * nsd_;
+    phase_velocities_ = CORE::LINALG::CreateMultiVector(*discret_->ElementRowMap(), num_rows, true);
+  }
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
@@ -584,6 +592,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
     // reconstruct porosity for output; porosity is only needed for output and does not have to be
     // transferred between fields
     if (output_porosity_) ReconstructPorosity();
+
+    if (output_phase_velocities_) CalculatePhaseVelocities();
 
     // evaluate domain integrals
     if (num_domainint_funct_ > 0) EvaluateDomainIntegrals();
@@ -1344,6 +1354,22 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
 }
 
 /*----------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::CalculatePhaseVelocities()
+{
+  phase_velocities_->PutScalar(0.0);
+
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_phase_velocities);
+
+  discret_->ClearState();
+
+  AddTimeIntegrationSpecificVectors();
+
+  discret_->EvaluateScalars(eleparams, phase_velocities_);
+}
+
+/*----------------------------------------------------------------------------*
  | reconstruct porosity from current solution                kremheller 04/17 |
  *---------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPorosity()
@@ -1629,23 +1655,50 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
     const Epetra_Map* noderowmap = discret_->NodeRowMap();
     for (int k = 0; k < numdof; k++)
     {
-      Teuchos::RCP<Epetra_MultiVector> velocity_k =
+      Teuchos::RCP<Epetra_MultiVector> flux_k =
           Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
 
       std::ostringstream temp;
       temp << k + 1;
       std::string name = "flux_" + temp.str();
-      for (int i = 0; i < velocity_k->MyLength(); ++i)
+      for (int i = 0; i < flux_k->MyLength(); ++i)
       {
-        // get value for each component of velocity vector
+        // get value for each component of flux vector
         for (int idim = 0; idim < dim; idim++)
         {
           double value = ((*flux_)[k * dim + idim])[i];
+          int err = flux_k->ReplaceMyValue(i, idim, value);
+          if (err != 0) dserror("Detected error in ReplaceMyValue");
+        }
+      }
+      output_->WriteVector(name, flux_k, IO::nodevector);
+    }
+  }
+
+  if (output_phase_velocities_)
+  {
+    const int num_dim = GLOBAL::Problem::Instance()->NDim();
+    const int num_poro_dof = discret_->NumDof(0, discret_->lRowNode(0));
+
+    const Epetra_Map* element_row_map = discret_->ElementRowMap();
+
+    for (int k = 0; k < num_poro_dof; k++)
+    {
+      Teuchos::RCP<Epetra_MultiVector> velocity_k =
+          Teuchos::rcp(new Epetra_MultiVector(*element_row_map, num_dim, true));
+
+      for (int i = 0; i < velocity_k->MyLength(); ++i)
+      {
+        for (int idim = 0; idim < num_dim; idim++)
+        {
+          double value = ((*phase_velocities_)[k * num_dim + idim])[i];
           int err = velocity_k->ReplaceMyValue(i, idim, value);
           if (err != 0) dserror("Detected error in ReplaceMyValue");
         }
       }
-      output_->WriteVector(name, velocity_k, IO::nodevector);
+
+      std::string output_name = "velocity_" + std::to_string(k + 1);
+      output_->WriteVector(output_name, velocity_k, IO::elementvector);
     }
   }
 

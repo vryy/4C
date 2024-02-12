@@ -83,7 +83,30 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
       }
       break;
     }
-    // reconstruct velocities
+    case POROFLUIDMULTIPHASE::calc_phase_velocities:
+    {
+      // derivatives needed
+      if (corephasemanager->NumFluidPhases() > 0)
+        phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
+      else
+        phasemanager = corephasemanager;
+      // enhance by diffusion tensor
+      switch (nsd)
+      {
+        case 1:
+          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<1>(phasemanager));
+          break;
+        case 2:
+          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<2>(phasemanager));
+          break;
+        case 3:
+          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
+          break;
+        default:
+          dserror("invalid dimension for creating phase manager!");
+      }
+      break;
+    }
     case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
     {
       // derivatives needed
