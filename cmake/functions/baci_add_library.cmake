@@ -40,7 +40,7 @@ function(baci_add_library _target)
     target_link_libraries(${_target}_objs PUBLIC ${_target}_deps)
   endif()
 
-  # Check that every header includes baci_config.H
+  # Check that every header includes baci_config.hpp
   foreach(_header ${_parsed_HEADERS})
     file(READ ${_header} _header_content)
     string(FIND "${_header_content}" "#include \"baci_config.hpp\"" _index)
