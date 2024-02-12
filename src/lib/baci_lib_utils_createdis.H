@@ -80,7 +80,7 @@ namespace DRT
                                                               ///< copied to the new discretization
       )
       {
-        if (cond.Nodes() == nullptr or cond.Nodes()->size() == 0)
+        if (cond.GetNodes() == nullptr or cond.GetNodes()->size() == 0)
           dserror("The condition has no nodes!");
 
         // make sure connectivity is all set
@@ -411,7 +411,7 @@ namespace DRT
         for (cit = conds.begin(); cit != conds.end(); ++cit)
         {
           // check the source condition
-          if ((*cit)->Nodes() == nullptr or (*cit)->Nodes()->size() == 0)
+          if ((*cit)->GetNodes() == nullptr or (*cit)->GetNodes()->size() == 0)
             dserror("The condition has no nodes!");
         }
 

@@ -530,7 +530,7 @@ Teuchos::RCP<DRT::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::SplitCondit
     const DRT::Condition* src_cond, const std::vector<int>& nodecolvec,
     const Epetra_Comm& comm) const
 {
-  const std::vector<int>* cond_node_gids = src_cond->Nodes();
+  const std::vector<int>* cond_node_gids = src_cond->GetNodes();
   std::set<int> nodecolset;
   nodecolset.insert(nodecolvec.begin(), nodecolvec.end());
 
@@ -550,42 +550,5 @@ Teuchos::RCP<DRT::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::SplitCondit
   // copy and keep this src condition
   return Teuchos::rcp(new DRT::Condition(*src_cond));
 }
-
-///*----------------------------------------------------------------------------*
-// *----------------------------------------------------------------------------*/
-// Teuchos::RCP<DRT::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::
-//    SplitCondition(
-//    const DRT::Condition& src_cond,
-//    const std::vector<int>& nodecolvec) const
-//{
-//  const std::vector<int>* cond_node_gids = src_cond.Nodes();
-//  std::set<int> nodecolset;
-//  nodecolset.insert(nodecolvec.begin(),nodecolvec.end());
-//
-//  Teuchos::RCP<std::vector<int> > keep_node_col_gids =
-//      Teuchos::rcp(new std::vector<int>(0));
-//  keep_node_col_gids->reserve(cond_node_gids->size());
-//
-//  for (unsigned i=0;i<cond_node_gids->size();++i)
-//  {
-//    int ngid = cond_node_gids->at(i);
-//    // add the node GID, if it is also a part of the new discretization
-//    if (nodecolset.find(ngid)!=nodecolset.end())
-//    {
-//      keep_node_col_gids->push_back(ngid);
-//    }
-//  }
-//  // return a Teuchos::null pointer, if there is nothing to copy
-//  if (keep_node_col_gids->size()==0)
-//    return Teuchos::null;
-//
-//  // create a new target condition from source condition
-//  Teuchos::RCP<DRT::Condition> target_cond =
-//      Teuchos::rcp(new DRT::Condition(src_cond));
-//  // overwrite node ids
-//  target_cond->Add("Node Ids",keep_node_col_gids);
-//
-//  return target_cond;
-//}
 
 BACI_NAMESPACE_CLOSE

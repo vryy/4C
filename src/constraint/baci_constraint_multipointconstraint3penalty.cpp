@@ -231,7 +231,7 @@ CONSTRAINTS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
     std::set<int> colnodeset;
     const Epetra_Map* actnoderowmap = actdisc->NodeRowMap();
     // get node IDs, this vector will only contain FREE nodes in the end
-    std::vector<int> ngid = *((*conditer)->Nodes());
+    std::vector<int> ngid = *((*conditer)->GetNodes());
     std::vector<int> defnv;
     switch (Type())
     {

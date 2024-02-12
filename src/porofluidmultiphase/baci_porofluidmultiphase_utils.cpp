@@ -45,7 +45,7 @@ namespace
     // get global element Ids from artery coupling nodes
     for (const auto& iter : artCoupcond)
     {
-      const std::vector<int>* ArteryNodeIds = iter->Nodes();
+      const std::vector<int>* ArteryNodeIds = iter->GetNodes();
 
       for (auto const nodeid : *ArteryNodeIds)
       {

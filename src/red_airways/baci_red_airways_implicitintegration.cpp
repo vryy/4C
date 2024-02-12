@@ -2465,7 +2465,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vecto
   {
     int condgid = coupmap_->GID(i);
     DRT::Condition* cond = coupcond_[condgid];
-    const std::vector<int>* nodes = cond->Nodes();
+    const std::vector<int>* nodes = cond->GetNodes();
     if (nodes->size() != 1)
       dserror("Too many nodes on coupling with tissue condition ID=[%d]\n", condgid);
 

@@ -212,7 +212,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
   if (dofrowmap->NumGlobalElements() == 0) return;  // no dbc gids ->leave
 
   // read information from condition
-  const std::vector<int>* nodeids = cond.Nodes();
+  const std::vector<int>* nodeids = cond.GetNodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
 
   const std::vector<int>* funct = cond.Get<std::vector<int>>("funct");

@@ -144,7 +144,7 @@ void DRT::UTILS::LocsysManager::Update(
                 ? currlocsys->Get<std::vector<int>>("useconsistentnodenormal")
                 : nullptr;
 
-        const std::vector<int>* nodes = currlocsys->Nodes();
+        const std::vector<int>* nodes = currlocsys->GetNodes();
 
         if (currlocsys->Type() == DRT::Condition::SurfaceLocsys or
             currlocsys->Type() == DRT::Condition::LineLocsys)
@@ -593,7 +593,7 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
   // *******************************************************************
   // Obtain desired locsys condition and its corresponding nodes
   DRT::Condition* currLocsysCond = locsysconds_[numLocsysCond];
-  const std::vector<int>* nodes = currLocsysCond->Nodes();
+  const std::vector<int>* nodes = currLocsysCond->GetNodes();
 
   // Obtain rank of calling processor
   int myrank = discret_.Comm().MyPID();

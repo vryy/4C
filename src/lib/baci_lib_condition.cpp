@@ -33,11 +33,11 @@ DRT::Condition::Condition(
     const int id, const ConditionType type, const bool buildgeometry, const GeometryType gtype)
     : Container(),
       id_(id),
+      nodes_(),
       buildgeometry_(buildgeometry),
       type_(type),
       gtype_(gtype),
-      geometry_(Teuchos::null),
-      comm_(Teuchos::null)
+      geometry_(Teuchos::null)
 {
 }
 
@@ -46,11 +46,11 @@ DRT::Condition::Condition(
 DRT::Condition::Condition()
     : Container(),
       id_(-1),
+      nodes_(),
       buildgeometry_(false),
       type_(none),
       gtype_(NoGeom),
-      geometry_(Teuchos::null),
-      comm_(Teuchos::null)
+      geometry_(Teuchos::null)
 {
 }
 
@@ -59,11 +59,11 @@ DRT::Condition::Condition()
 DRT::Condition::Condition(const DRT::Condition& old)
     : Container(old),
       id_(old.id_),
+      nodes_(old.nodes_),
       buildgeometry_(old.buildgeometry_),
       type_(old.type_),
       gtype_(old.gtype_),
-      geometry_(Teuchos::null),  // since it wasn't even initialized before change to Teuchos::RCP
-      comm_(old.comm_)
+      geometry_(Teuchos::null)  // since it wasn't even initialized before change to Teuchos::RCP
 {
 }
 
@@ -670,14 +670,11 @@ void DRT::Condition::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, type);
   // add base class container
   Container::Pack(data);
-  // id_
   AddtoPack(data, id_);
-  // buildgeometry_
   AddtoPack(data, buildgeometry_);
-  // type_
   AddtoPack(data, type_);
-  // gtype_
   AddtoPack(data, gtype_);
+  AddtoPack(data, nodes_);
 }
 
 
@@ -693,14 +690,12 @@ void DRT::Condition::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Container::Unpack(basedata);
-  // id_
+
   ExtractfromPack(position, data, id_);
-  // buildgeometry_
   buildgeometry_ = ExtractInt(position, data);
-  // type_
   type_ = static_cast<ConditionType>(ExtractInt(position, data));
-  // gtype_
   gtype_ = static_cast<GeometryType>(ExtractInt(position, data));
+  ExtractfromPack(position, data, nodes_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);

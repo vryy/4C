@@ -291,7 +291,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
           if (*mymasterslavetoggle == "Master")
           {
             // get global master node ids
-            const std::vector<int>* masteridstoadd = mypbcs[numcond]->Nodes();
+            const std::vector<int>* masteridstoadd = mypbcs[numcond]->GetNodes();
 
             // store them in list depending on the pbc id
             for (std::vector<int>::const_iterator idtoadd = (*masteridstoadd).begin();
@@ -303,7 +303,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
           else if (*mymasterslavetoggle == "Slave")
           {
             // get global slave node ids
-            const std::vector<int>* slaveidstoadd = mypbcs[numcond]->Nodes();
+            const std::vector<int>* slaveidstoadd = mypbcs[numcond]->GetNodes();
 
             // store them in list depending on the pbc id
             for (std::vector<int>::const_iterator idtoadd = (*slaveidstoadd).begin();

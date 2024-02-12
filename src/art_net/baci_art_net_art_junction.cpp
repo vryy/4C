@@ -103,7 +103,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
       for (int i = 0; i < numofcond; i++)
       {
         // get the node number connected to the condition
-        const std::vector<int> *nodes = myConditions[i]->Nodes();
+        const std::vector<int> *nodes = myConditions[i]->GetNodes();
 
         // The junction condition must be connected to one and only one node
         if (nodes->size() != 1)
@@ -210,7 +210,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
 
         for (unsigned int j = 0; j < SortedConds[i].size(); j++)
         {
-          const std::vector<int> *nodes = SortedConds[i][j]->Nodes();
+          const std::vector<int> *nodes = SortedConds[i][j]->GetNodes();
           Teuchos::RCP<JunctionNodeParams> nodeparams = Teuchos::rcp(new JunctionNodeParams);
 
           int local_id = discret_->NodeRowMap()->LID((*nodes)[0]);
@@ -299,7 +299,7 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdi
   //----------------------------------------------------------------------
   // Extracting the nodes to whome the junction is connected
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < conds.size(); i++) nodes_.push_back((*(conds[i]->Nodes()))[0]);
+  for (unsigned int i = 0; i < conds.size(); i++) nodes_.push_back((*(conds[i]->GetNodes()))[0]);
 }
 
 

@@ -253,7 +253,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
       bool specialtreatment = false;
       if (relevantcondid >= 0)
       {
-        const std::vector<int>* nodeids = couplingconditions[relevantcondid]->Nodes();
+        const std::vector<int>* nodeids = couplingconditions[relevantcondid]->GetNodes();
         if (!nodeids) dserror("ERROR: Condition does not have Node Ids");
 
         // check if all nodes in this condition are on same processor

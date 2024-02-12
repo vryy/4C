@@ -487,7 +487,7 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
 
     for (auto* const redistribute_cond : redistribute_conds)
     {
-      const std::vector<int>* redistribute_cond_nodes = redistribute_cond->Nodes();
+      const std::vector<int>* redistribute_cond_nodes = redistribute_cond->GetNodes();
       for (int redistribute_cond_node : *redistribute_cond_nodes)
       {
         if (dis_to_redistribute.HaveGlobalNode(redistribute_cond_node))

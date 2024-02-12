@@ -604,7 +604,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
     if (*ismaster == "Master")
     {
       const int masterid = surfacepbcs[i]->GetInt("Id of periodic boundary condition");
-      std::vector<int> nodeids(*(surfacepbcs[i]->Nodes()));
+      std::vector<int> nodeids(*(surfacepbcs[i]->GetNodes()));
       for (size_t j = 0; j < surfacepbcs.size(); ++j)
       {
         const int slaveid = surfacepbcs[j]->GetInt("Id of periodic boundary condition");
@@ -614,7 +614,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
               surfacepbcs[j]->Get<std::string>("Is slave periodic boundary condition");
           if (*isslave == "Slave")
           {
-            const std::vector<int>* slavenodeids = surfacepbcs[j]->Nodes();
+            const std::vector<int>* slavenodeids = surfacepbcs[j]->GetNodes();
             // append slave node Ids to node Ids for the complete condition
             for (size_t k = 0; k < slavenodeids->size(); ++k)
               nodeids.push_back(slavenodeids->at(k));

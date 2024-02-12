@@ -42,7 +42,7 @@ void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discr
       Teuchos::rcp(new DRT::Condition(id, condtype, buildgeometry, DRT::Condition::Volume));
 
   // add nodes to conditions
-  condition->Add("Node Ids", dvol_fenode);
+  condition->SetNodes(dvol_fenode);
 
   // add condition to discretization
   dis->SetCondition(condname, condition);
@@ -74,7 +74,7 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
 
   // get condition and conditioned nodes
   DRT::Condition* condition = dis->GetCondition(condname);
-  const std::vector<int>* cond_nodes = condition->Nodes();
+  const std::vector<int>* cond_nodes = condition->GetNodes();
   int cond_nodes_size = cond_nodes->size();
 
   if (cond_nodes_size == 0) dserror("No nodes in nodal cloud of condition %s", condname.c_str());

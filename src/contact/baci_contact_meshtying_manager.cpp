@@ -202,7 +202,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get all nodes and add them
-      const std::vector<int>* nodeids = currentgroup[j]->Nodes();
+      const std::vector<int>* nodeids = currentgroup[j]->GetNodes();
       if (!nodeids) dserror("Condition does not have Node Ids");
       for (unsigned k = 0; k < nodeids->size(); ++k)
       {

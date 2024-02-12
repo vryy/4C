@@ -289,7 +289,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 #endif
 
   // find out which node is correct
-  const std::vector<int>* nodeids = condition.Nodes();
+  const std::vector<int>* nodeids = condition.GetNodes();
 
   // if a point neumann condition needs to be linearized
   if (condition.Type() == DRT::Condition::PointNeumannEB)

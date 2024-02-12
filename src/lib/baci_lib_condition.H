@@ -17,7 +17,6 @@
 
 #include "baci_comm_parobjectfactory.H"
 #include "baci_lib_container.H"
-#include "baci_utils_exceptions.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
@@ -395,14 +394,19 @@ namespace DRT
     /*!
     \brief Return vector of my global node ids
     */
-    const std::vector<int>* Nodes() const { return Get<std::vector<int>>("Node Ids"); }
+    const std::vector<int>* GetNodes() const { return &nodes_; }
+
+    /*!
+    \brief Set vector of my global node ids
+    */
+    void SetNodes(const std::vector<int>& nodes) { nodes_ = nodes; }
 
     /*!
       \brief Return if a node gid is contained in this condition
      */
     bool ContainsNode(int ngid) const
     {
-      const std::vector<int>* n = Nodes();
+      const std::vector<int>* n = GetNodes();
       // DRT::Condition nodes are ordered by design! So we can perform a binary
       // search here.
       return std::binary_search(n->begin(), n->end(), ngid);
@@ -447,11 +451,6 @@ namespace DRT
     inline virtual ConditionType Type() const { return type_; }
 
     /*!
-    \brief Return communicator
-    */
-    inline Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
-
-    /*!
     \brief Get a reference to the geometry description of the condition
 
     */
@@ -469,16 +468,6 @@ namespace DRT
 
    protected:
     //! @name Construction methods
-
-    /*!
-    \brief Set a communicator
-    */
-    inline void SetComm(Teuchos::RCP<Epetra_Comm> comm)
-    {
-      comm_ = comm;
-      return;
-    }
-
     /*!
     \brief Add a geometry description to the condition
 
@@ -528,6 +517,9 @@ namespace DRT
     //! Unique id of this condition, no second condition of the same type with same id may exist
     int id_;
 
+    //! global node ids
+    std::vector<int> nodes_{};
+
     //! flag indicating whether this condition builds a geometry description or not
     bool buildgeometry_;
 
@@ -539,10 +531,7 @@ namespace DRT
 
     //! Geometry description of this condition
     Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geometry_;
-
-    //! A communicator
-    Teuchos::RCP<Epetra_Comm> comm_;  // a communicator
-  };                                  // class Condition
+  };  // class Condition
 
 
   /// Predicate used to sort a list of conditions

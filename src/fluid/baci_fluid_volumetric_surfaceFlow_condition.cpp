@@ -482,7 +482,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
   //--------------------------------------------------------------------
   // get the nodes of the condition
   //--------------------------------------------------------------------
-  const std::vector<int>* border_nodes = cond->Nodes();
+  const std::vector<int>* border_nodes = cond->GetNodes();
 
   //--------------------------------------------------------------------
   // Create a map of the border nodes
@@ -749,7 +749,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionNodeRowMap(
   //--------------------------------------------------------------------
   // get the nodes of the condition
   //--------------------------------------------------------------------
-  const std::vector<int>* nodes = cond->Nodes();
+  const std::vector<int>* nodes = cond->GetNodes();
   std::vector<int> nodeids;
 
   //--------------------------------------------------------------------
@@ -805,7 +805,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap(
   //--------------------------------------------------------------------
   // get the nodes of the condition
   //--------------------------------------------------------------------
-  const std::vector<int>* nodes = cond->Nodes();
+  const std::vector<int>* nodes = cond->GetNodes();
   std::vector<int> dofids;
 
   //--------------------------------------------------------------------

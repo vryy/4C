@@ -49,10 +49,11 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
 {
   std::vector<int> inodegidvec_manifold;
   DRT::UTILS::AddOwnedNodeGIDFromList(
-      *manifolddis, *condition_manifold->Nodes(), inodegidvec_manifold);
+      *manifolddis, *condition_manifold->GetNodes(), inodegidvec_manifold);
 
   std::vector<int> inodegidvec_scatra;
-  DRT::UTILS::AddOwnedNodeGIDFromList(*scatradis, *condition_kinetics->Nodes(), inodegidvec_scatra);
+  DRT::UTILS::AddOwnedNodeGIDFromList(
+      *scatradis, *condition_kinetics->GetNodes(), inodegidvec_scatra);
 
   coupling_adapter_->SetupCoupling(*scatradis, *manifolddis, inodegidvec_scatra,
       inodegidvec_manifold, ndof_per_node, true, 1.0e-8);

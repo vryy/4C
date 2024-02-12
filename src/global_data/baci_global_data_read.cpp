@@ -2186,7 +2186,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
                 "DPoint condition on non existent DPoint?",
                 curr->first, dnode_fenode.size());
           }
-          curr->second->Add("Node Ids", dnode_fenode[curr->first]);
+          curr->second->SetNodes(dnode_fenode[curr->first]);
           break;
         case DRT::Condition::Line:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dline_fenode.size())
@@ -2196,7 +2196,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
                 "DLine condition on non existent DLine?",
                 curr->first, dline_fenode.size());
           }
-          curr->second->Add("Node Ids", dline_fenode[curr->first]);
+          curr->second->SetNodes(dline_fenode[curr->first]);
           break;
         case DRT::Condition::Surface:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dsurf_fenode.size())
@@ -2206,7 +2206,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
                 "DSurface condition on non existent DSurface?",
                 curr->first, dsurf_fenode.size());
           }
-          curr->second->Add("Node Ids", dsurf_fenode[curr->first]);
+          curr->second->SetNodes(dsurf_fenode[curr->first]);
           break;
         case DRT::Condition::Volume:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dvol_fenode.size())
@@ -2216,7 +2216,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
                 "DVolume condition on non existent DVolume?",
                 curr->first, dvol_fenode.size());
           }
-          curr->second->Add("Node Ids", dvol_fenode[curr->first]);
+          curr->second->SetNodes(dvol_fenode[curr->first]);
           break;
         default:
           dserror("geometry type unspecified");
@@ -2228,7 +2228,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
 
       for (const auto& [name, dis] : problem.DiscretizationRange())
       {
-        const std::vector<int>* nodes = curr->second->Nodes();
+        const std::vector<int>* nodes = curr->second->GetNodes();
         if (nodes->size() == 0)
           dserror("%s condition %d has no nodal cloud", condition->Description().c_str(),
               curr->second->Id());

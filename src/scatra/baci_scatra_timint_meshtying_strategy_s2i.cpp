@@ -2027,15 +2027,15 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           if (kinetics_condition->GetInt("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
-            DRT::UTILS::AddOwnedNodeGIDFromList(
-                *scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
+            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+                *kinetics_condition->GetNodes(), islavenodegidvec);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               dserror("Could not find master condition");
 
             DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
-                *mastercondition->second->Nodes(), imasternodegidvec);
+                *mastercondition->second->GetNodes(), imasternodegidvec);
 
             islavenodegidvec_cond.push_back(islavenodegidvec);
             imasternodegidvec_cond.push_back(imasternodegidvec);
@@ -2065,15 +2065,15 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           if (kinetics_condition->GetInt("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
-            DRT::UTILS::AddOwnedNodeGIDFromList(
-                *scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidset);
+            DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+                *kinetics_condition->GetNodes(), islavenodegidset);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               dserror("Could not find master condition");
             else
               DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
-                  *mastercondition->second->Nodes(), imasternodegidset);
+                  *mastercondition->second->GetNodes(), imasternodegidset);
           }
         }
 
@@ -2818,7 +2818,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         const double initthickness = condition->GetDouble("initial thickness");
 
         // extract nodal cloud from condition
-        const std::vector<int>* nodegids = condition->Nodes();
+        const std::vector<int>* nodegids = condition->GetNodes();
 
         // loop over all nodes
         for (int nodegid : *nodegids)
@@ -3187,7 +3187,7 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
         scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
 
     // extract nodal cloud from condition
-    const std::vector<int>* nodegids = condition->Nodes();
+    const std::vector<int>* nodegids = condition->GetNodes();
 
     // loop over all nodes
     for (int nodegid : *nodegids)

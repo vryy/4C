@@ -57,15 +57,14 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   // to be part of the volume coupling, too
 
   std::map<int, std::set<int>> AllConstrDofMap;
-  for (unsigned int i = 0; i < constrcond_.size(); ++i)
+  for (auto& i : constrcond_)
   {
-    DRT::Condition& constrcond = *(constrcond_[i]);
+    DRT::Condition& constrcond = *i;
     int condID = constrcond.GetInt("coupling id");
-    const std::vector<int>* constrnodeIDs = constrcond.Nodes();
+    const std::vector<int>* constrnodeIDs = constrcond.GetNodes();
     std::set<int>& constrdofs = AllConstrDofMap[condID];
-    for (unsigned int j = 0; j < constrnodeIDs->size(); ++j)
+    for (int gid : *constrnodeIDs)
     {
-      int gid = (*constrnodeIDs)[j];
       if (Discretization()->HaveGlobalNode(gid))
       {
         DRT::Node* node = Discretization()->gNode(gid);
@@ -75,15 +74,13 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
     }
   }
   std::map<int, std::set<int>> AllAsiDofMap;
-  for (unsigned int i = 0; i < asicond_.size(); ++i)
+  for (auto& asicond : asicond_)
   {
-    DRT::Condition& asicond = *(asicond_[i]);
-    int asicondID = asicond.GetInt("coupling id");
+    int asicondID = asicond->GetInt("coupling id");
     std::set<int>& asidofs = AllAsiDofMap[asicondID];
-    const std::vector<int>* asinodeIDs = asicond.Nodes();
-    for (unsigned int j = 0; j < asinodeIDs->size(); ++j)
+    const std::vector<int>* asinodeIDs = asicond->GetNodes();
+    for (int gid : *asinodeIDs)
     {
-      int gid = (*asinodeIDs)[j];
       if (Discretization()->HaveGlobalNode(gid))
       {
         DRT::Node* node = Discretization()->gNode(gid);
@@ -92,11 +89,8 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
       }
     }
   }
-  for (std::map<int, std::set<int>>::const_iterator it = AllAsiDofMap.begin();
-       it != AllAsiDofMap.end(); ++it)
+  for (const auto& [condID, asidofs] : AllAsiDofMap)
   {
-    int condID = it->first;
-    const std::set<int>& asidofs = it->second;
     const std::set<int>& constrdofs = AllConstrDofMap[condID];
     std::set<int> intersection;
     std::set_intersection(asidofs.begin(), asidofs.end(), constrdofs.begin(), constrdofs.end(),
@@ -142,10 +136,9 @@ void ADAPTER::StructureLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& 
 {
   MinLungVolConID = 1;
 
-  for (unsigned int i = 0; i < constrcond_.size(); ++i)
+  for (auto& cond : constrcond_)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
-    int condID = cond.GetInt("coupling id");
+    int condID = cond->GetInt("coupling id");
     if (LungVolConIDs.find(condID) == LungVolConIDs.end())
     {
       if (condID < MinLungVolConID) MinLungVolConID = condID;

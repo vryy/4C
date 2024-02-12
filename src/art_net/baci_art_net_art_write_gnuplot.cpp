@@ -80,7 +80,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       // ---------------------------------------------------------------
       int Artery_Number;
       Artery_Number = myConditions[i]->GetInt("ArteryNumber");
-      const std::vector<int>* nodes = myConditions[i]->Nodes();
+      const std::vector<int>* nodes = myConditions[i]->GetNodes();
 
       // ---------------------------------------------------------------
       // Sort all nodes so such that inlet node is the first and outlet

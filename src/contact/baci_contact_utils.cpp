@@ -470,7 +470,7 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodes(
   std::vector<std::pair<int, int>> slnodeids;
   for (const auto& sl_cond : sl_conds)
   {
-    const auto* sl_nids = sl_cond->Get<std::vector<int>>("Node Ids");
+    const auto* sl_nids = sl_cond->GetNodes();
     slnodeids.reserve(slnodeids.size() + sl_nids->size());
     for (int sl_nid : *sl_nids) slnodeids.emplace_back(sl_nid, sl_cond->Id());
   }
@@ -483,7 +483,7 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodes(
 
     for (DRT::Condition* dcond : dconds)
     {
-      const auto* dnids = dcond->Get<std::vector<int>>("Node Ids");
+      const auto* dnids = dcond->GetNodes();
       for (int dnid : *dnids)
       {
         if (snid == dnid)

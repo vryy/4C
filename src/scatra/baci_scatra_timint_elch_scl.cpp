@@ -602,7 +602,7 @@ void SCATRA::ScaTraTimIntElchSCL::SetupCoupling()
   std::vector<int> my_macro_master_node_gids;
   for (auto* coupling_condition : macro_coupling_conditions)
   {
-    for (const int coupling_node_gid : *coupling_condition->Nodes())
+    for (const int coupling_node_gid : *coupling_condition->GetNodes())
     {
       // is this node owned by this proc?
       if (!DRT::UTILS::IsNodeGIDOnThisProc(*discret_, coupling_node_gid)) continue;
@@ -678,15 +678,15 @@ void SCATRA::ScaTraTimIntElchSCL::SetupCoupling()
   microdis->GetCondition("Dirichlet", micro_coupling_conditions);
 
   if (micro_coupling_conditions.size() != 2) dserror("only 2 DBCs allowed on micro dis");
-  if (micro_coupling_conditions[0]->Nodes()->size() !=
-      micro_coupling_conditions[1]->Nodes()->size())
+  if (micro_coupling_conditions[0]->GetNodes()->size() !=
+      micro_coupling_conditions[1]->GetNodes()->size())
     dserror("Number of nodes in micro DBCs are not equal");
 
   // get all micro coupling nodes
   std::vector<int> my_micro_node_gids;
   for (auto* micro_coupling_condition : micro_coupling_conditions)
   {
-    for (const int micro_node_gid : *micro_coupling_condition->Nodes())
+    for (const int micro_node_gid : *micro_coupling_condition->GetNodes())
     {
       // is this node owned by this proc?
       if (DRT::UTILS::IsNodeGIDOnThisProc(*microdis, micro_node_gid))
@@ -715,9 +715,10 @@ void SCATRA::ScaTraTimIntElchSCL::SetupCoupling()
   {
     const int macro_slave_gid = my_macro_slave_node_gids[i];
     const int macro_master_gid = glob_macro_slave_node_master_node_gids.at(macro_slave_gid);
-    const int micro_slave_gid = micro_coupling_conditions[0]->Nodes()->at(my_micro_problem_counter);
+    const int micro_slave_gid =
+        micro_coupling_conditions[0]->GetNodes()->at(my_micro_problem_counter);
     const int micro_master_gid =
-        micro_coupling_conditions[1]->Nodes()->at(my_micro_problem_counter);
+        micro_coupling_conditions[1]->GetNodes()->at(my_micro_problem_counter);
 
     my_macro_micro_coupled_node_gids.insert(std::make_pair(macro_slave_gid, micro_slave_gid));
     my_macro_micro_coupled_node_gids.insert(std::make_pair(macro_master_gid, micro_master_gid));
