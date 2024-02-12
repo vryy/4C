@@ -30,7 +30,6 @@ namespace CORE::COMM
    */
   enum class NestedParallelismType
   {
-    copy_dat_file,
     every_group_read_dat_file,
     separate_dat_files,
     no_nested_parallelism
