@@ -12,7 +12,6 @@
 #include "baci_comm_exporter.H"
 #include "baci_comm_utils.H"
 #include "baci_global_data.H"
-#include "baci_global_data_enums.H"
 #include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_nurbs_discret.H"
@@ -21,6 +20,50 @@
 #include <Epetra_FECrsGraph.h>
 
 BACI_NAMESPACE_OPEN
+
+
+namespace
+{
+  void UnPackCondition(const Teuchos::RCP<std::vector<char>> e, const std::string& condname,
+      Teuchos::RCP<DRT::Discretization>& dis)
+  {
+    std::vector<char>::size_type index = 0;
+    while (index < e->size())
+    {
+      std::vector<char> data;
+      CORE::COMM::ParObject::ExtractfromPack(index, *e, data);
+      CORE::COMM::ParObject* o = CORE::COMM::Factory(data);
+      auto* cond = dynamic_cast<DRT::Condition*>(o);
+      if (cond == nullptr)
+      {
+        dserror("Failed to build boundary condition from the stored data %s", condname.c_str());
+      }
+      dis->SetCondition(condname, Teuchos::rcp(cond));
+    }
+  }
+
+  Teuchos::RCP<std::vector<char>> PackCondition(
+      const std::string& condname, Teuchos::RCP<DRT::Discretization>& dis)
+  {
+    if (!dis->Filled()) dserror("FillComplete was not called on this discretization");
+
+    // get boundary conditions
+    std::vector<DRT::Condition*> cond;
+    dis->GetCondition(condname, cond);
+
+    CORE::COMM::PackBuffer buffer;
+
+    for (auto* c : cond) c->Pack(buffer);
+
+    buffer.StartPacking();
+
+    for (auto* c : cond) c->Pack(buffer);
+
+    Teuchos::RCP<std::vector<char>> block = Teuchos::rcp(new std::vector<char>);
+    std::swap(*block, buffer());
+    return block;
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------*
  | broadcast all discretizations from group 0 to all other groups using
@@ -60,21 +103,17 @@ void DRT::BroadcastDiscretizations(GLOBAL::Problem& problem)
   for (int i = 0; i < numfield; ++i)
   {
     Teuchos::RCP<DRT::Discretization> dis = Teuchos::null;
-    std::string name;
-    CORE::FE::ShapeFunctionType distype;
     std::vector<char> data;
     if (gcomm->MyPID() == bcaster)
     {
-      DRT::Container cont;
+      // pack information about the discretization
       dis = problem.GetDis(disnames[i]);
-      name = dis->Name();
-      distype = problem.SpatialApproximationType();
-      cont.Add("disname", name);
-      cont.Add("distype", (int)distype);
       CORE::COMM::PackBuffer buffer;
-      cont.Pack(buffer);
+      CORE::COMM::ParObject::AddtoPack(buffer, (int)problem.SpatialApproximationType());
+      CORE::COMM::ParObject::AddtoPack(buffer, dis->Name());
       buffer.StartPacking();
-      cont.Pack(buffer);
+      CORE::COMM::ParObject::AddtoPack(buffer, (int)problem.SpatialApproximationType());
+      CORE::COMM::ParObject::AddtoPack(buffer, dis->Name());
       std::swap(data, buffer());
     }
     // create map to export from proc 0 of group bgroup to all
@@ -91,14 +130,16 @@ void DRT::BroadcastDiscretizations(GLOBAL::Problem& problem)
       exporter.Export<char>(smap);
       data = smap[0];
     }
-    DRT::Container cont;
-    std::vector<char> singledata;
+
+    // extract information about discretization
     std::vector<char>::size_type index = 0;
-    cont.ExtractfromPack(index, data, singledata);
-    cont.Unpack(singledata);
-    const std::string* rname = cont.Get<std::string>("disname");
-    name = *rname;
-    distype = (CORE::FE::ShapeFunctionType)cont.GetInt("distype");
+
+    auto distype_integer = CORE::COMM::ParObject::ExtractInt(index, data);
+    auto distype = (CORE::FE::ShapeFunctionType)distype_integer;
+
+    std::string name;
+    CORE::COMM::ParObject::ExtractfromPack(index, data, name);
+
     // allocate or get the discretization
     if (group->GroupId() == bgroup)
     {
@@ -172,7 +213,6 @@ void DRT::BroadcastDiscretizations(GLOBAL::Problem& problem)
       gcomm->Barrier();
     }  // for (int k=numlevels; k>0; --k)
   }    // for (int i=0; i<numfield; ++i)
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -225,7 +265,7 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
   // sender group fills commondis with elements and nodes and conditions
   // note that conditions are fully redundant
   std::map<int, std::vector<char>> condmap;
-  std::map<int, Teuchos::RCP<DRT::Container>> condnamemap;
+  std::map<int, std::vector<char>> condnamemap;
   std::vector<int> myrowelements;
   if (group->GroupId() == sgroup)
   {
@@ -258,14 +298,14 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     {
       std::vector<DRT::Condition*> conds;
       dis->GetCondition(condnames[i], conds);
-      Teuchos::RCP<std::vector<char>> data = dis->PackCondition(condnames[i]);
+      Teuchos::RCP<std::vector<char>> data = PackCondition(condnames[i], dis);
       if (lcomm->MyPID() == 0)
       {
         condmap[i] = *data;
-        condnamemap[i] = Teuchos::rcp(new DRT::Container());
-        condnamemap[i]->Add("condname", condnames[i]);
+        std::vector<char> char_condname(condnames[i].begin(), condnames[i].end());
+        condnamemap[i] = char_condname;
       }
-      commondis->UnPackCondition(data, condnames[i]);
+      UnPackCondition(data, condnames[i], commondis);
     }
   }  // if (group->GroupId()==sgroup)
 
@@ -282,19 +322,21 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Epetra_Map rmap(-1, nummyelements, myelements.data(), 0, *icomm);
     CORE::COMM::Exporter exporter(smap, rmap, *icomm);
     exporter.Export<char>(condmap);
-    exporter.Export<DRT::Container>(condnamemap);
+    exporter.Export<char>(condnamemap);
   }
 
   // all rgroup procs loop and add condition to their dis and to the commondis
   if (group->GroupId() == rgroup)
   {
-    std::map<int, std::vector<char>>::iterator fool1 = condmap.begin();
-    std::map<int, Teuchos::RCP<DRT::Container>>::iterator fool2 = condnamemap.begin();
+    auto fool1 = condmap.begin();
+    auto fool2 = condnamemap.begin();
     for (; fool1 != condmap.end(); ++fool1)
     {
-      const std::string* name = fool2->second->Get<std::string>("condname");
-      commondis->UnPackCondition(Teuchos::rcp(&(fool1->second), false), *name);
-      dis->UnPackCondition(Teuchos::rcp(&(fool1->second), false), *name);
+      auto charname = fool2->second;
+      const std::string name = std::string(charname.begin(), charname.end());
+
+      UnPackCondition(Teuchos::rcp(&(fool1->second), false), name, commondis);
+      UnPackCondition(Teuchos::rcp(&(fool1->second), false), name, dis);
       ++fool2;
     }
   }
@@ -360,8 +402,6 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
         if (lcomm->MyPID() == lcomm->NumProc() - 1)
           for (int i = 0; i < rest; ++i)
             targetgids.push_back(recvbuff[lcomm->NumProc() * myshare + i]);
-        // printf("sendproc %d proc %d have %d gids\n",proc,icomm->MyPID(),(int)targetgids.size());
-        // fflush(stdout);
       }
     }  // for (int proc=0; proc<icomm->NumProc(); ++proc)
   }
@@ -411,8 +451,6 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
         if (lcomm->MyPID() == lcomm->NumProc() - 1)
           for (int i = 0; i < rest; ++i)
             targetgids.push_back(recvbuff[lcomm->NumProc() * myshare + i]);
-        // printf("sendproc %d proc %d have %d gids\n",proc,icomm->MyPID(),(int)targetgids.size());
-        // fflush(stdout);
       }
     }  // for (int proc=0; proc<icomm->NumProc(); ++proc)
   }
@@ -510,7 +548,7 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
   // sender group fills commondis with elements and nodes and conditions
   // note that conditions are fully redundant
   std::map<int, std::vector<char>> condmap;
-  std::map<int, Teuchos::RCP<DRT::Container>> condnamemap;
+  std::map<int, std::vector<char>> condnamemap;
   std::vector<int> myrowelements;
   if (group->GroupId() == sgroup)
   {
@@ -543,14 +581,14 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
     {
       std::vector<DRT::Condition*> conds;
       dis->GetCondition(condnames[i], conds);
-      Teuchos::RCP<std::vector<char>> data = dis->PackCondition(condnames[i]);
+      Teuchos::RCP<std::vector<char>> data = PackCondition(condnames[i], dis);
       if (lcomm->MyPID() == 0)
       {
         condmap[i] = *data;
-        condnamemap[i] = Teuchos::rcp(new DRT::Container());
-        condnamemap[i]->Add("condname", condnames[i]);
+        std::vector<char> char_condname(condnames[i].begin(), condnames[i].end());
+        condnamemap[i] = char_condname;
       }
-      commondis->UnPackCondition(data, condnames[i]);
+      UnPackCondition(data, condnames[i], commondis);
     }
   }  // if (group->GroupId()==sgroup)
 
@@ -567,18 +605,20 @@ void DRT::NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rg
     Epetra_Map rmap(-1, nummyelements, myelements.data(), 0, *icomm);
     CORE::COMM::Exporter exporter(smap, rmap, *icomm);
     exporter.Export<char>(condmap);
-    exporter.Export<DRT::Container>(condnamemap);
+    exporter.Export<char>(condnamemap);
   }
   // all rgroup procs loop and add condition to their dis and to the commondis
   if (group->GroupId() == rgroup)
   {
-    std::map<int, std::vector<char>>::iterator fool1 = condmap.begin();
-    std::map<int, Teuchos::RCP<DRT::Container>>::iterator fool2 = condnamemap.begin();
+    auto fool1 = condmap.begin();
+    auto fool2 = condnamemap.begin();
     for (; fool1 != condmap.end(); ++fool1)
     {
-      const std::string* name = fool2->second->Get<std::string>("condname");
-      commondis->UnPackCondition(Teuchos::rcp(&(fool1->second), false), *name);
-      dis->UnPackCondition(Teuchos::rcp(&(fool1->second), false), *name);
+      auto charname = fool2->second;
+      const std::string name = std::string(charname.begin(), charname.end());
+
+      UnPackCondition(Teuchos::rcp(&(fool1->second), false), name, commondis);
+      UnPackCondition(Teuchos::rcp(&(fool1->second), false), name, dis);
       ++fool2;
     }
   }

@@ -1060,32 +1060,6 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
   }
 }
 
-
-/*----------------------------------------------------------------------*
- *                                                          a.ger 11/07 *
- *----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteCondition(const std::string condname) const
-{
-  if (binio_)
-  {
-    // put condition into block
-    Teuchos::RCP<std::vector<char>> block = dis_->PackCondition(condname);
-
-    // write block to file. Note: Block can be empty, if the condition is not found,
-    // which means it is not used -> so no dserror() here
-    if (!block->empty())
-    {
-      if (Comm().MyPID() == 0) output_->ControlFile() << "    condition = \"" << condname << "\"\n";
-
-      hsize_t dim = static_cast<hsize_t>(block->size());
-      const herr_t status =
-          H5LTmake_dataset_char(meshgroup_, condname.c_str(), 1, &dim, block->data());
-
-      if (status < 0) dserror("Failed to create dataset in HDF-meshfile");
-    }
-  }
-}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
@@ -1156,9 +1130,6 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
                              << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements()
                              << "\n\n";
 
-      WriteCondition("SurfacePeriodic");
-      WriteCondition("LinePeriodic");
-
       // knotvectors for nurbs-discretisation
       WriteKnotvector();
 
@@ -1206,9 +1177,6 @@ void IO::DiscretizationWriter::WriteMesh(
                              << "    num_ele = " << dis_->NumGlobalElements() << "\n"
                              << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements()
                              << "\n\n";
-
-      // WriteCondition("SurfacePeriodic");
-      // WriteCondition("LinePeriodic");
 
       // knotvectors for nurbs-discretisation
       // WriteKnotvector();
