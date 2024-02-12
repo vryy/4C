@@ -101,6 +101,25 @@ namespace INPUT
        * Destructor.
        */
       ~Builder();
+      /**
+       * Copy constructor.
+       */
+      Builder(const Builder& other);
+
+      /**
+       * Copy assignment.
+       */
+      Builder& operator=(const Builder& other);
+
+      /**
+       * Move constructor.
+       */
+      Builder(Builder&& other) noexcept;
+
+      /**
+       * Move assignment.
+       */
+      Builder& operator=(Builder&& other) noexcept;
 
       /**
        * Initialize a Builder with all components from an existing LineDefinition.

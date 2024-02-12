@@ -24,6 +24,28 @@
 
 BACI_NAMESPACE_OPEN
 
+namespace
+{
+  template <CORE::FE::CellType celltype>
+  INPUT::LineDefinition::Builder GetDefaultLineDefinitionBuilder()
+  {
+    return INPUT::LineDefinition::Builder()
+        .AddIntVector(CORE::FE::CellTypeToString(celltype), CORE::FE::num_nodes<celltype>)
+        .AddNamedInt("MAT")
+        .AddNamedString("KINEM")
+        .AddOptionalNamedDoubleVector("RAD", 3)
+        .AddOptionalNamedDoubleVector("AXI", 3)
+        .AddOptionalNamedDoubleVector("CIR", 3)
+        .AddOptionalNamedDoubleVector("FIBER1", 3)
+        .AddOptionalNamedDoubleVector("FIBER2", 3)
+        .AddOptionalNamedDoubleVector("FIBER3", 3)
+        .AddOptionalNamedString("TYPE")
+        .AddOptionalNamedString("POROTYPE")
+        .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+        .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+        .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
+  }
+}  // namespace
 
 DRT::ELEMENTS::SolidPoroType DRT::ELEMENTS::SolidPoroType::instance_;
 
@@ -34,81 +56,28 @@ void DRT::ELEMENTS::SolidPoroType::SetupElementDefinition(
 {
   std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SOLIDPORO"];
 
-  defsgeneral["HEX8"] = INPUT::LineDefinition::Builder()
-                            .AddIntVector("HEX8", 8)
-                            .AddNamedInt("MAT")
-                            .AddNamedString("KINEM")
-                            .AddOptionalNamedString("EAS")
-                            .AddOptionalTag("FBAR")
-                            .AddOptionalNamedDoubleVector("RAD", 3)
-                            .AddOptionalNamedDoubleVector("AXI", 3)
-                            .AddOptionalNamedDoubleVector("CIR", 3)
-                            .AddOptionalNamedDoubleVector("FIBER1", 3)
-                            .AddOptionalNamedDoubleVector("FIBER2", 3)
-                            .AddOptionalNamedDoubleVector("FIBER3", 3)
-                            .AddOptionalNamedString("TYPE")
-                            .AddOptionalNamedString("POROTYPE")
-                            .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
-                            .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-                            .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
-                            .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 8)
-                            .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 8)
-                            .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 8)
-                            .Build();
+  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex8)] =
+      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex8>()
+          .AddOptionalNamedString("EAS")
+          .AddOptionalTag("FBAR")
+          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 8)
+          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 8)
+          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 8)
+          .Build();
 
-  defsgeneral["HEX27"] = INPUT::LineDefinition::Builder()
-                             .AddIntVector("HEX27", 27)
-                             .AddNamedInt("MAT")
-                             .AddNamedString("KINEM")
-                             .AddOptionalNamedDoubleVector("RAD", 3)
-                             .AddOptionalNamedDoubleVector("AXI", 3)
-                             .AddOptionalNamedDoubleVector("CIR", 3)
-                             .AddOptionalNamedDoubleVector("FIBER1", 3)
-                             .AddOptionalNamedDoubleVector("FIBER2", 3)
-                             .AddOptionalNamedDoubleVector("FIBER3", 3)
-                             .AddOptionalNamedString("TYPE")
-                             .AddOptionalNamedString("POROTYPE")
-                             .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
-                             .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-                             .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
-                             .Build();
+  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex27)] =
+      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex27>().Build();
 
-  defsgeneral["TET4"] = INPUT::LineDefinition::Builder()
-                            .AddIntVector("TET4", 4)
-                            .AddNamedInt("MAT")
-                            .AddNamedString("KINEM")
-                            .AddOptionalNamedDoubleVector("RAD", 3)
-                            .AddOptionalNamedDoubleVector("AXI", 3)
-                            .AddOptionalNamedDoubleVector("CIR", 3)
-                            .AddOptionalNamedDoubleVector("FIBER1", 3)
-                            .AddOptionalNamedDoubleVector("FIBER2", 3)
-                            .AddOptionalNamedDoubleVector("FIBER3", 3)
-                            .AddOptionalNamedString("TYPE")
-                            .AddOptionalNamedString("POROTYPE")
-                            .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
-                            .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-                            .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
-                            .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 8)
-                            .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 8)
-                            .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 8)
-                            .Build();
 
-  defsgeneral["TET10"] = INPUT::LineDefinition::Builder()
-                             .AddIntVector("TET10", 10)
-                             .AddNamedInt("MAT")
-                             .AddNamedString("KINEM")
-                             .AddOptionalNamedDoubleVector("RAD", 3)
-                             .AddOptionalNamedDoubleVector("AXI", 3)
-                             .AddOptionalNamedDoubleVector("CIR", 3)
-                             .AddOptionalNamedDoubleVector("FIBER1", 3)
-                             .AddOptionalNamedDoubleVector("FIBER2", 3)
-                             .AddOptionalNamedDoubleVector("FIBER3", 3)
-                             .AddOptionalNamedString("POROTYPE")
-                             .AddOptionalNamedString("TYPE")
-                             .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
-                             .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-                             .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
-                             .Build();
+  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::tet4)] =
+      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet4>()
+          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 8)
+          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 8)
+          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 8)
+          .Build();
+
+  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::tet10)] =
+      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet10>().Build();
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidPoroType::Create(

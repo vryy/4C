@@ -524,6 +524,22 @@ namespace INPUT
   // The PIMPL idiom forces us to default this in the implementation file.
   LineDefinition::Builder::~Builder() = default;
 
+  LineDefinition::Builder::Builder(LineDefinition::Builder&&) noexcept = default;
+
+  LineDefinition::Builder& LineDefinition::Builder::operator=(
+      LineDefinition::Builder&&) noexcept = default;
+
+  LineDefinition::Builder::Builder(const LineDefinition::Builder& other)
+      : pimpl_(std::make_unique<INTERNAL::LineDefinitionImplementation>(*other.pimpl_))
+  {
+  }
+
+  LineDefinition::Builder& LineDefinition::Builder::operator=(const LineDefinition::Builder& other)
+  {
+    pimpl_ = std::make_unique<INTERNAL::LineDefinitionImplementation>(*other.pimpl_);
+    return *this;
+  }
+
   LineDefinition::Builder::Builder(const LineDefinition& line_definition)
       : pimpl_(std::make_unique<INTERNAL::LineDefinitionImplementation>(*line_definition.pimpl_))
   {
