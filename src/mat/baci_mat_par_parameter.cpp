@@ -1,20 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Base object to hold 'quick' access to material parameters
+\brief A material parameter container
 
 \level 1
 
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "baci_mat_par_parameter.hpp"
 
 #include "baci_global_data.hpp"
-#include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_par_material.hpp"
@@ -23,8 +18,8 @@
 #include <Teuchos_RCP.hpp>
 
 BACI_NAMESPACE_OPEN
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+
+
 MAT::PAR::Parameter::Parameter(Teuchos::RCP<const MAT::PAR::Material> matdata)
     : id_(matdata->Id()), type_(matdata->Type()), name_(matdata->Name())
 {
@@ -78,25 +73,24 @@ void MAT::PAR::Parameter::SetParameter(int parametername, const double val, cons
   if (!matparams_.at(parametername)->Map().MyGID(eleGID)) dserror("I do not have this element");
 
   // otherwise set parameter for element
-  // calculate LID here, instead of before each call              01/2017 birzle
+  // calculate LID here, instead of before each call
   (*matparams_.at(parametername))[matparams_[parametername]->Map().LID(eleGID)] = val;
-  // old: (*matparams_.at(parametername))[eleLID]=val;
 }
 
 void MAT::PAR::Parameter::ExpandParametersToEleColLayout()
 {
-  for (unsigned int i = 0; i < matparams_.size(); i++)
+  for (auto& matparam : matparams_)
   {
     // only do this for vectors with one entry
-    if (matparams_.at(i)->GlobalLength() == 1)
+    if (matparam->GlobalLength() == 1)
     {
       // get value of element
-      double temp = (*matparams_.at(i))[0];
+      double temp = (*matparam)[0];
       // put new RCP<Epetra_Vector> in matparams struct
       Teuchos::RCP<Epetra_Vector> temp2 = Teuchos::rcp(new Epetra_Vector(
           *(GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()), true));
       temp2->PutScalar(temp);
-      matparams_.at(i) = temp2;
+      matparam = temp2;
     }
   }
 }
@@ -118,15 +112,11 @@ double MAT::PAR::Parameter::GetParameter(int parametername, const int EleId)
   // otherwise just return the element specific value
   else
   {
-    // calculate LID here, instead of before each call              01/2017 birzle
+    // calculate LID here, instead of before each call
     return (*matparams_[parametername])[matparams_[parametername]->Map().LID(EleId)];
   }
 }
-/*----------------------------------------------------------------------*/
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> matdata)
     : Parameter(matdata)
 {
@@ -138,24 +128,30 @@ MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> 
   // construct parameter class
   if (mat_str_tens->Parameter() == nullptr)
     mat_str_tens->SetParameter(new MAT::ELASTIC::PAR::StructuralTensorParameter(mat_str_tens));
-  MAT::ELASTIC::PAR::StructuralTensorParameter* params =
+  auto* params =
       static_cast<MAT::ELASTIC::PAR::StructuralTensorParameter*>(mat_str_tens->Parameter());
   // get type of strategy
   std::string strategy = *mat_str_tens->Get<std::string>("STRATEGY");
 
   // construct strategy
   if (strategy == "Standard")
+  {
     structural_tensor_strategy_ =
         Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(params));
+  }
   else if (strategy == "ByDistributionFunction")
+  {
     structural_tensor_strategy_ =
         Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction(params));
+  }
   else if (strategy == "DispersedTransverselyIsotropic")
+  {
     structural_tensor_strategy_ = Teuchos::rcp(
         new MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic(params));
+  }
   else
     dserror("Unknown type of structural tensor strategy for anisotropic material chosen.");
 }
-/*----------------------------------------------------------------------*/
+
 
 BACI_NAMESPACE_CLOSE

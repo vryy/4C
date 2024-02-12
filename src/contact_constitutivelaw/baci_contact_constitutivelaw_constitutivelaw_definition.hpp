@@ -39,13 +39,10 @@ namespace GLOBAL
   class Problem;
 }
 
-namespace INPAR
+namespace INPAR::CONTACT
 {
-  namespace CONTACT
-  {
-    enum class ConstitutiveLawType;
-  }
-}  // namespace INPAR
+  enum class ConstitutiveLawType;
+}
 
 namespace CONTACT
 {
@@ -100,16 +97,19 @@ namespace CONTACT
           const DRT::Discretization* dis = nullptr);
 
       /// get contact constitutive law name
-      std::string Name() const { return coconstlawname_; }
+      [[nodiscard]] std::string Name() const { return coconstlawname_; }
 
       // get contact constitutive law type
-      INPAR::CONTACT::ConstitutiveLawType Type() const { return coconstlawtype_; }
+      [[nodiscard]] INPAR::CONTACT::ConstitutiveLawType Type() const { return coconstlawtype_; }
 
       /// get contact constitutive law description
-      std::string Description() const { return description_; }
+      [[nodiscard]] std::string Description() const { return description_; }
 
       /// get contact constitutive law inputline
-      std::vector<Teuchos::RCP<INPUT::LineComponent>> Inputline() const { return inputline_; }
+      [[nodiscard]] std::vector<Teuchos::RCP<INPUT::LineComponent>> Inputline() const
+      {
+        return inputline_;
+      }
 
      private:
       /// name of ontact constitutive law
