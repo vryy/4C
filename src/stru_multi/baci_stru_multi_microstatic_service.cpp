@@ -31,7 +31,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
   discret_->GetCondition("MicroBoundary", conds);
   for (unsigned i = 0; i < conds.size(); ++i)
   {
-    const std::vector<int>* nodeids = conds[i]->Nodes();
+    const std::vector<int>* nodeids = conds[i]->GetNodes();
     if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
 
@@ -109,7 +109,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
   discret_->GetCondition("MicroBoundary", conds);
   for (unsigned i = 0; i < conds.size(); ++i)
   {
-    const std::vector<int>* nodeids = conds[i]->Nodes();
+    const std::vector<int>* nodeids = conds[i]->GetNodes();
     if (!nodeids) dserror("MicroBoundary condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
 

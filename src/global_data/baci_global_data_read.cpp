@@ -2228,7 +2228,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
 
       for (const auto& [name, dis] : problem.DiscretizationRange())
       {
-        const std::vector<int>* nodes = curr->second->Nodes();
+        const std::vector<int>* nodes = curr->second->GetNodes();
         if (nodes->size() == 0)
           dserror("%s condition %d has no nodal cloud", condition->Description().c_str(),
               curr->second->Id());

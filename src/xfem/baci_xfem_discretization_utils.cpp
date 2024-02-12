@@ -530,7 +530,7 @@ Teuchos::RCP<DRT::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::SplitCondit
     const DRT::Condition* src_cond, const std::vector<int>& nodecolvec,
     const Epetra_Comm& comm) const
 {
-  const std::vector<int>* cond_node_gids = src_cond->Nodes();
+  const std::vector<int>* cond_node_gids = src_cond->GetNodes();
   std::set<int> nodecolset;
   nodecolset.insert(nodecolvec.begin(), nodecolvec.end());
 

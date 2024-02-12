@@ -3138,7 +3138,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
   for (auto& condition : conditions)
   {
     // extract nodal cloud
-    const std::vector<int>* const nodeids = condition->Nodes();
+    const std::vector<int>* const nodeids = condition->GetNodes();
     if (nodeids == nullptr) dserror("Multi-scale coupling condition does not have nodal cloud!");
 
     // loop over all nodes in nodal cloud
@@ -3395,7 +3395,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
       // all dofs that form one block map
       std::vector<int> dofs;
 
-      for (int nodegid : *cond->Nodes())
+      for (int nodegid : *cond->GetNodes())
       {
         if (discret_->HaveGlobalNode(nodegid) and
             discret_->gNode(nodegid)->Owner() == discret_->Comm().MyPID())

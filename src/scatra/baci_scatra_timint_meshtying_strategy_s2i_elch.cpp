@@ -169,8 +169,8 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
     auto* cond_master = MasterConditions()[slave_condition.first];
 
     // extract nodal cloud
-    const std::vector<int>* const nodeids_slave = cond_slave->Nodes();
-    const std::vector<int>* const nodeids_master = cond_master->Nodes();
+    const std::vector<int>* const nodeids_slave = cond_slave->GetNodes();
+    const std::vector<int>* const nodeids_master = cond_master->GetNodes();
 
     if (nodeids_slave->size() != 1 or nodeids_master->size() != 1)
       dserror("only one node per condition allowed");
@@ -406,7 +406,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
                                       (condition->GetDouble("density") * faraday));
 
           // extract nodal cloud from current condition
-          const std::vector<int>* nodegids = condition->Nodes();
+          const std::vector<int>* nodegids = condition->GetNodes();
 
           // loop over all nodes
           for (int nodegid : *nodegids)
@@ -1208,14 +1208,14 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
     {
       case INPAR::S2I::side_slave:
       {
-        DRT::UTILS::AddOwnedNodeGIDFromList(
-            *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), islavenodegidset);
+        DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+            *s2imeshtying_condition->GetNodes(), islavenodegidset);
         break;
       }
       case INPAR::S2I::side_master:
       {
-        DRT::UTILS::AddOwnedNodeGIDFromList(
-            *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), imasternodegidset);
+        DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
+            *s2imeshtying_condition->GetNodes(), imasternodegidset);
         break;
       }
       default:

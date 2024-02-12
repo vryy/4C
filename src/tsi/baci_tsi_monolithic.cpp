@@ -2573,7 +2573,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   for (int i = 0; i < (int)dbc.size(); ++i)
   {
     // get nodes which have DBCs
-    const std::vector<int>* nodeids_withdbc = dbc[i]->Nodes();
+    const std::vector<int>* nodeids_withdbc = dbc[i]->GetNodes();
     if (!nodeids_withdbc) dserror("Condition does not have Node Ids");
 
     // loop over DBC nodes

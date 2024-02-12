@@ -240,7 +240,7 @@ namespace BEAMINTERACTION
       {
         // loop over all nodes of current filament, sort elements and calculate total filament
         // length
-        std::vector<int> const* nodeids = filamentconditions[filiter]->Nodes();
+        std::vector<int> const* nodeids = filamentconditions[filiter]->GetNodes();
         std::vector<DRT::Element*> sortedfilamenteles(0);
         double filreflength = 0.0;
         ComputeFilamentLengthAndSortItsElements(sortedfilamenteles, nodeids, filreflength, discret);
@@ -399,7 +399,7 @@ namespace BEAMINTERACTION
           relevantfilaments.insert(currfilnum);
 
         // loop over all nodes of current filament and store gids of nodes not owned by myrank
-        std::vector<int> const* nodeids = cond->Nodes();
+        std::vector<int> const* nodeids = cond->GetNodes();
         for (int i = 0; i < static_cast<int>(nodeids->size()); ++i)
           if (discret->NodeRowMap()->LID((*nodeids)[i]) < 0)
             setofrequirednodes.insert((*nodeids)[i]);

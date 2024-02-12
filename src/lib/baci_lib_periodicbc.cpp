@@ -339,7 +339,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                   // get global master node Ids
                   const std::vector<int>* masteridstoadd;
 
-                  masteridstoadd = mastercond->Nodes();
+                  masteridstoadd = mastercond->GetNodes();
 
                   for (std::vector<int>::const_iterator idtoadd = (*masteridstoadd).begin();
                        idtoadd != (*masteridstoadd).end(); ++idtoadd)
@@ -373,7 +373,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                   // get global slave node Ids
                   const std::vector<int>* slaveidstoadd;
 
-                  slaveidstoadd = slavecond->Nodes();
+                  slaveidstoadd = slavecond->GetNodes();
 
                   for (std::vector<int>::const_iterator idtoadd = (*slaveidstoadd).begin();
                        idtoadd != (*slaveidstoadd).end(); ++idtoadd)
@@ -1000,7 +1000,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
       {
         const std::vector<int>* slaveidstodel;
 
-        slaveidstodel = thiscond[numcond]->Nodes();
+        slaveidstodel = thiscond[numcond]->GetNodes();
 
         for (std::vector<int>::const_iterator idtodel = (*slaveidstodel).begin();
              idtodel != (*slaveidstodel).end(); ++idtodel)

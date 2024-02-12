@@ -334,7 +334,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
 
     // loop all nodes belonging to this condition
     // for these nodes, new values have to be set
-    const std::vector<int>* mynodes = mycondition->Nodes();
+    const std::vector<int>* mynodes = mycondition->GetNodes();
     for (std::size_t inode = 0; inode < mynodes->size(); inode++)
     {
       // for all nodes on this proc: is this check really necessary here
@@ -509,7 +509,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     if (*ismaster == "Master")
     {
       const int masterid = surfacepbcs[i]->GetInt("Id of periodic boundary condition");
-      std::vector<int> nodeids(*(surfacepbcs[i]->Nodes()));
+      std::vector<int> nodeids(*(surfacepbcs[i]->GetNodes()));
       for (size_t j = 0; j < surfacepbcs.size(); ++j)
       {
         const int slaveid = surfacepbcs[j]->GetInt("Id of periodic boundary condition");
@@ -519,7 +519,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
               surfacepbcs[j]->Get<std::string>("Is slave periodic boundary condition");
           if (*isslave == "Slave")
           {
-            const std::vector<int>* slavenodeids = surfacepbcs[j]->Nodes();
+            const std::vector<int>* slavenodeids = surfacepbcs[j]->GetNodes();
             // append slave node Ids to node Ids for the complete condition
             for (size_t k = 0; k < slavenodeids->size(); ++k)
               nodeids.push_back(slavenodeids->at(k));

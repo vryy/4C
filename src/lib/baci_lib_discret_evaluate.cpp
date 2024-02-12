@@ -184,7 +184,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
                    "PointNeumann conditions implemented. Did you set the LOADLIN-flag "
                    "accidentally?\n";
     }
-    const std::vector<int>* nodeids = cond->Nodes();
+    const std::vector<int>* nodeids = cond->GetNodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
     const auto* tmp_funct = cond->Get<std::vector<int>>("funct");
     const auto& onoff = *cond->Get<std::vector<int>>("onoff");
@@ -271,7 +271,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   for (const auto& [name, cond] : condition_)
   {
     if (name != (std::string) "PointNeumannEB") continue;
-    const std::vector<int>* nodeids = cond->Nodes();
+    const std::vector<int>* nodeids = cond->GetNodes();
     if (!nodeids) dserror("Point Moment condition does not have nodal cloud");
 
     for (const int nodeid : *nodeids)

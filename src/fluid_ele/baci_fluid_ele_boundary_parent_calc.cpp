@@ -4348,7 +4348,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   const std::vector<double>* val = (*hixhybdbc_cond).Get<std::vector<double>>("val");
 
   //
-  const int myid = (*((*hixhybdbc_cond).Nodes()))[0];
+  const int myid = (*((*hixhybdbc_cond).GetNodes()))[0];
 
   // TODO: which time (n+1) or (n+alphaF)
   // find out whether we will use a time curve

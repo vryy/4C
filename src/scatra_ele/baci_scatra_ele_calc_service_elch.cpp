@@ -497,7 +497,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
     dserror("Boundary porosity has to be between 0 and 1, or -1 by default!");
 
   // extract nodal cloud of current condition
-  const std::vector<int>* nodeids = cond->Nodes();
+  const std::vector<int>* nodeids = cond->GetNodes();
 
   // safety checks
   if (!nodeids) dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");
@@ -599,7 +599,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
   bool statistics = false;
 
   // extract nodal cloud of current condition
-  const std::vector<int>* nodeids = cond->Nodes();
+  const std::vector<int>* nodeids = cond->GetNodes();
 
   // safety checks
   if (!nodeids) dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");

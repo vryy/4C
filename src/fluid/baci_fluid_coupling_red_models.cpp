@@ -1181,7 +1181,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(
   std::cout << "velocity: " << std::endl;
   std::cout << "Dflowrate: " << Dflowrate << std::endl;
   std::cout << "area: " << area << std::endl;
-  const std::vector<int>* nodes = cond->Nodes();
+  const std::vector<int>* nodes = cond->GetNodes();
 
   for (unsigned int i = 0; i < nodes->size(); i++)
   {

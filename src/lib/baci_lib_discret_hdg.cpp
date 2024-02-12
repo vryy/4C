@@ -526,7 +526,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
   if (discret.FaceRowMap() == nullptr) return;
 
   // get ids of conditioned nodes
-  const std::vector<int>* nodeids = cond.Nodes();
+  const std::vector<int>* nodeids = cond.GetNodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
 
   // get curves, functs, vals, and onoff toggles from the condition

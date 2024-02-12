@@ -2133,7 +2133,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
     }
 
     // find out at which node the condition is applied
-    const std::vector<int>* nodeids = condition.Nodes();
+    const std::vector<int>* nodeids = condition.GetNodes();
     if (nodeids == nullptr) dserror("failed to retrieve node IDs from condition!");
 
     /* find out local node number --> this is done since the first element of a Neumann point

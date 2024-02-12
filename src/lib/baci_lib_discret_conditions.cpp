@@ -40,13 +40,13 @@ void DRT::Discretization::BoundaryConditionsGeometry()
   // for all conditions, we set a ptr in the nodes to the condition
   for (auto& [name, condition] : condition_)
   {
-    const std::vector<int>* nodes = condition->Nodes();
+    const std::vector<int>* nodes = condition->GetNodes();
     // There might be conditions that do not have a nodal cloud
     if (!nodes) continue;
-    for (unsigned i = 0; i < nodes->size(); ++i)
+    for (int node : *nodes)
     {
-      if (!NodeColMap()->MyGID((*nodes)[i])) continue;
-      DRT::Node* actnode = gNode((*nodes)[i]);
+      if (!NodeColMap()->MyGID(node)) continue;
+      DRT::Node* actnode = gNode(node);
       if (!actnode) dserror("Cannot find global node");
       actnode->SetCondition(name, condition);
     }
@@ -236,7 +236,7 @@ bool DRT::Discretization::BuildLinesinCondition(
   /* First: Create the line objects that belong to the condition. */
 
   // get ptrs to all node ids that have this condition
-  const std::vector<int>* nodeids = cond->Nodes();
+  const std::vector<int>* nodeids = cond->GetNodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // ptrs to my row/column nodes of those
@@ -355,7 +355,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
   /* First: Create the surface objects that belong to the condition. */
 
   // get ptrs to all node ids that have this condition
-  const std::vector<int>* nodeids = cond->Nodes();
+  const std::vector<int>* nodeids = cond->GetNodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // ptrs to my row/column nodes of those
@@ -565,7 +565,7 @@ bool DRT::Discretization::BuildVolumesinCondition(
     const std::string& name, Teuchos::RCP<DRT::Condition> cond)
 {
   // get ptrs to all node ids that have this condition
-  const std::vector<int>* nodeids = cond->Nodes();
+  const std::vector<int>* nodeids = cond->GetNodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // extract colnodes on this proc from condition
@@ -625,7 +625,7 @@ void DRT::Discretization::FindAssociatedEleIDs(
     if (actvolcond->GetInt("coupling id") == condID)
     {
       // get ptrs to all node ids that have this condition
-      const std::vector<int>* nodeids = actvolcond->Nodes();
+      const std::vector<int>* nodeids = actvolcond->GetNodes();
       if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
       // extract colnodes on this proc from condition

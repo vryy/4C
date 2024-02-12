@@ -155,7 +155,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::GetCouplin
 
   for (unsigned iter = 0; iter < artCoupcond.size(); ++iter)
   {
-    const std::vector<int>* ArteryNodeIds = (artCoupcond[iter])->Nodes();
+    const std::vector<int>* ArteryNodeIds = (artCoupcond[iter])->GetNodes();
     for (auto couplingids : *ArteryNodeIds)
     {
       couplingnodes_ntp_[iter] = couplingids;

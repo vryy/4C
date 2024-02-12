@@ -694,7 +694,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   for (int j = 0; j < (int)btscontactconditions.size(); ++j)
   {
     // get all nodes and add them
-    const std::vector<int>* nodeids = btscontactconditions[j]->Nodes();
+    const std::vector<int>* nodeids = btscontactconditions[j]->GetNodes();
     if (!nodeids) dserror("Condition does not have Node Ids");
     for (int k = 0; k < (int)(*nodeids).size(); ++k)
     {
@@ -772,7 +772,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   for (int j = 0; j < (int)btsmeshtyingconditions.size(); ++j)
   {
     // get all nodes and add them
-    const std::vector<int>* nodeids = btsmeshtyingconditions[j]->Nodes();
+    const std::vector<int>* nodeids = btsmeshtyingconditions[j]->GetNodes();
     if (!nodeids) dserror("Condition does not have Node Ids");
     for (int k = 0; k < (int)(*nodeids).size(); ++k)
     {
@@ -3754,19 +3754,6 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
                     << color << "};" << std::endl
                     << std::endl;
   }
-
-  // BEISPIEL: output nodal normals
-  /*for (int k=0;k<thisele->NumNode();++k)
-  {
-   // get nodal coordinates
-   DRT::Node* currnode = thisele->Nodes()[k];
-   double* coord = currnode->X();
-   gmshfilecontent << "VP(" << std::scientific << coord[0] << "," << coord[1] << "," << coord[2] <<
-  ")"; gmshfilecontent << "{" << std::scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" <<
-  std::endl;
-  }*/
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

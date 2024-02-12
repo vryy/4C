@@ -3056,7 +3056,7 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
   CheckIsSetup();
 
   // get all nodes in condition
-  const std::vector<int>* nodegids = condition.Nodes();
+  const std::vector<int>* nodegids = condition.GetNodes();
 
   // initialize set of all number of dofs per node on all procs
   std::set<int> numdofpernode;

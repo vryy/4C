@@ -143,7 +143,7 @@ void MAT::ScatraMultiScaleGP::Init()
     for (auto& condition : conditions)
     {
       // extract nodal cloud
-      const std::vector<int>* const nodeids = condition->Nodes();
+      const std::vector<int>* const nodeids = condition->GetNodes();
       if (nodeids == nullptr) dserror("Multi-scale coupling condition does not have nodal cloud!");
 
       // loop over all nodes in nodal cloud

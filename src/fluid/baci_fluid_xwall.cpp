@@ -323,7 +323,7 @@ void FLD::XWall::InitXWallMaps()
     int count = 0;
     for (unsigned numcond = 0; numcond < dircond.size(); ++numcond)
     {
-      const std::vector<int>* test = dircond[numcond]->Nodes();
+      const std::vector<int>* test = dircond[numcond]->GetNodes();
       int j = 0;
       for (std::vector<int>::const_iterator i = (*test).begin(); i != (*test).end(); ++i)
       {

@@ -74,7 +74,7 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
 
   // get condition and conditioned nodes
   DRT::Condition* condition = dis->GetCondition(condname);
-  const std::vector<int>* cond_nodes = condition->Nodes();
+  const std::vector<int>* cond_nodes = condition->GetNodes();
   int cond_nodes_size = cond_nodes->size();
 
   if (cond_nodes_size == 0) dserror("No nodes in nodal cloud of condition %s", condname.c_str());

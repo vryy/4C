@@ -96,7 +96,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
           // get global master node Ids
           const std::vector<int>* masteridstoadd;
 
-          masteridstoadd = (*cond)->Nodes();
+          masteridstoadd = (*cond)->GetNodes();
 
           for (std::vector<int>::const_iterator idtoadd = (*masteridstoadd).begin();
                idtoadd != (*masteridstoadd).end(); ++idtoadd)
@@ -115,7 +115,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
           // get global slave node Ids
           const std::vector<int>* slaveidstoadd;
 
-          slaveidstoadd = (*cond)->Nodes();
+          slaveidstoadd = (*cond)->GetNodes();
 
           for (std::vector<int>::const_iterator idtoadd = (*slaveidstoadd).begin();
                idtoadd != (*slaveidstoadd).end(); ++idtoadd)

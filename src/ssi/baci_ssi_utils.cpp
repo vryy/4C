@@ -1103,7 +1103,7 @@ void SSI::UTILS::SSIMeshTying::FindMatchingNodePairs(Teuchos::RCP<DRT::Discretiz
 
     // nodes of meshtying_condition_a owned by this proc
     std::vector<int> inodegidvec_a;
-    DRT::UTILS::AddOwnedNodeGIDFromList(*dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
+    DRT::UTILS::AddOwnedNodeGIDFromList(*dis, *meshtying_condition_a->GetNodes(), inodegidvec_a);
 
     // init node matching octree with nodes from condition a
     auto tree = CORE::COUPLING::NodeMatchingOctree();
@@ -1117,7 +1117,7 @@ void SSI::UTILS::SSIMeshTying::FindMatchingNodePairs(Teuchos::RCP<DRT::Discretiz
 
       // nodes of meshtying_condition_b owned by this proc
       std::vector<int> inodegidvec_b;
-      DRT::UTILS::AddOwnedNodeGIDFromList(*dis, *meshtying_condition_b->Nodes(), inodegidvec_b);
+      DRT::UTILS::AddOwnedNodeGIDFromList(*dis, *meshtying_condition_b->GetNodes(), inodegidvec_b);
 
       // key: master node gid, value: slave node gid and distance
       std::map<int, std::pair<int, double>> coupled_gid_nodes;
@@ -1258,7 +1258,7 @@ void SSI::UTILS::SSIMeshTying::DefineMasterSlavePairing(Teuchos::RCP<DRT::Discre
   dis->GetCondition("Dirichlet", dbc_conds);
   std::set<int> dbc_nodes;
   for (auto* dbc_cond : dbc_conds)
-    for (const int& dbc_node : *dbc_cond->Nodes()) dbc_nodes.insert(dbc_node);
+    for (const int& dbc_node : *dbc_cond->GetNodes()) dbc_nodes.insert(dbc_node);
 
   std::vector<int> my_master_gids;
   std::map<int, int> my_slave_master_pair;
@@ -1336,7 +1336,8 @@ void SSI::UTILS::SSIMeshTying::FindSlaveSlaveTransformationNodes(
   {
     if (meshtying_conditon->GetInt("interface side") == INPAR::S2I::side_slave)
     {
-      DRT::UTILS::AddOwnedNodeGIDFromList(*dis, *meshtying_conditon->Nodes(), original_slave_gids);
+      DRT::UTILS::AddOwnedNodeGIDFromList(
+          *dis, *meshtying_conditon->GetNodes(), original_slave_gids);
     }
   }
 

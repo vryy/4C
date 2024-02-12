@@ -78,7 +78,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       for (unsigned numcond = 0; numcond < sepcond.size(); ++numcond)
       {
         // get nodes ids of all nodes with separtion condition
-        const std::vector<int>* sepcondnodeids = (*sepcond[numcond]).Nodes();
+        const std::vector<int>* sepcondnodeids = (*sepcond[numcond]).GetNodes();
 
         // and store them
         allcnd_sepcondnodeids.reserve(allcnd_sepcondnodeids.size() + sepcondnodeids->size());
@@ -289,7 +289,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
           std::vector<int> reduced_ids;
 
           // get all nodes of parent discretization having this condition
-          const std::vector<int>* candidates = (*actcond[numactcond]).Nodes();
+          const std::vector<int>* candidates = (*actcond[numactcond]).GetNodes();
 
           std::vector<int> mytoggle(candidates->size(), 0);
           std::vector<int> toggle(candidates->size(), 0);

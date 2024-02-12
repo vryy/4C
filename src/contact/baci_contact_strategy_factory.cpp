@@ -856,7 +856,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     for (int j = 0; j < (int)currentgroup.size(); ++j)
     {
       // get all nodes and add them
-      const std::vector<int>* nodeids = currentgroup[j]->Nodes();
+      const std::vector<int>* nodeids = currentgroup[j]->GetNodes();
       if (!nodeids) dserror("Condition does not have Node Ids");
       for (int gid : *nodeids)
       {

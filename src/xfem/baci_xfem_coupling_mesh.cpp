@@ -357,31 +357,6 @@ void XFEM::MeshVolCoupling::GetCouplingEleLocationVector(const int sid, std::vec
  *--------------------------------------------------------------------------*/
 void XFEM::MeshVolCoupling::RedistributeEmbeddedDiscretization()
 {
-  // #ifdef BACI_DEBUG
-  //   // collect conditioned nodes and compare to the overall number of nodes in
-  //   // the surface discretization
-  //   std::vector<DRT::Condition*> cnd;
-  //   cond_dis_->GetCondition(cond_name_,cnd);
-  //
-  //   // get the set of ids of all xfem nodes
-  //   std::set<int> cond_nodeset;
-  //   {
-  //     for (size_t cond = 0; cond< cnd.size(); ++ cond)
-  //     {
-  //       // conditioned node ids
-  //       const std::vector<int>* nodeids_cnd = cnd[cond]->Nodes();
-  //       for (std::vector<int>::const_iterator c = nodeids_cnd->begin();
-  //            c != nodeids_cnd->end(); ++c)
-  //         cond_nodeset.insert(*c);
-  //     }
-  //   }
-  //
-  //   if (cond_nodeset.size() != static_cast<size_t>(cutter_dis_->NumGlobalNodes()))
-  //     dserror("Got %d %s nodes but have % dnodes in the boundary discretization created from the
-  //     condition",
-  //         cond_nodeset.size(), cond_name_.c_str(), cutter_dis_->NumGlobalNodes());
-  // #endif
-
   // get gids of elements (and associated notes), that contribute to the fluid-fluid interface
   std::set<int> adj_eles_row;
   std::set<int> adj_ele_nodes_row;
@@ -533,7 +508,7 @@ void XFEM::MeshVolCoupling::CreateAuxiliaryDiscretization()
   for (size_t cond = 0; cond < xfemcnd.size(); ++cond)
   {
     aux_coup_dis_->SetCondition(cond_name_, Teuchos::rcp(new DRT::Condition(*xfemcnd[cond])));
-    const std::vector<int>* nodeids_cnd = xfemcnd[cond]->Nodes();
+    const std::vector<int>* nodeids_cnd = xfemcnd[cond]->GetNodes();
     for (std::vector<int>::const_iterator c = nodeids_cnd->begin(); c != nodeids_cnd->end(); ++c)
       xfemnodeset.insert(*c);
   }

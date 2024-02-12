@@ -181,7 +181,7 @@ CONSTRAINTS::MPConstraint2::CreateDiscretizationFromCondition(
   // Loop all conditions in constrcondvec
   for (unsigned int j = 0; j < constrcondvec.size(); j++)
   {
-    std::vector<int> ngid = *(constrcondvec[j]->Nodes());
+    std::vector<int> ngid = *(constrcondvec[j]->GetNodes());
     const int numnodes = ngid.size();
     // We sort the global node ids according to the definition of the boundary condition
     ReorderConstraintNodes(ngid, constrcondvec[j]);

@@ -664,7 +664,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
       }
 
       // get pointer to its nodal Ids
-      const std::vector<int>* ids = ldconds[i]->Nodes();
+      const std::vector<int>* ids = ldconds[i]->GetNodes();
 
       /* put all nodes belonging to the L&D line or surface into 'nodes' which are
          associated with the present label */

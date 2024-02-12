@@ -32,17 +32,18 @@ XFEM::XFACoupling_Manager::XFACoupling_Manager(Teuchos::RCP<FLD::XFluid> xfluid,
     dserror("XFACoupling_Manager required (two + num coupled block) ( %d != %d)",
         (2 + (structure_ != Teuchos::null)), idx_.size());
 
-  Ale_Struct_coupling_ == Teuchos::null;
   if (structure_ != Teuchos::null)
   {
     if (ale_->Discretization()->GetCondition("StructAleCoupling") != nullptr &&
         structure_->Discretization()->GetCondition("StructAleCoupling") != nullptr)
     {
-      if (ale_->Discretization()->GetCondition("StructAleCoupling")->Nodes()->size() !=
-          structure_->Discretization()->GetCondition("StructAleCoupling")->Nodes()->size())
+      if (ale_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size() !=
+          structure_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size())
+      {
         dserror("XFACoupling_Manager: For StructAleCoupling NumNodes not equal! (%d != %d)",
-            ale_->Discretization()->GetCondition("StructAleCoupling")->Nodes()->size(),
-            structure_->Discretization()->GetCondition("StructAleCoupling")->Nodes()->size());
+            ale_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size(),
+            structure_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size());
+      }
 
       std::cout << "|== XFACoupling_Manager: Setup of Ale Structure Coupling! ==|" << std::endl;
       Ale_Struct_coupling_ = Teuchos::rcp(new XFEM::Coupling_Comm_Manager(

@@ -17,7 +17,6 @@
 
 #include "baci_comm_parobjectfactory.H"
 #include "baci_lib_container.H"
-#include "baci_utils_exceptions.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
@@ -395,7 +394,7 @@ namespace DRT
     /*!
     \brief Return vector of my global node ids
     */
-    const std::vector<int>* Nodes() const { return &nodes_; }
+    const std::vector<int>* GetNodes() const { return &nodes_; }
 
     /*!
     \brief Set vector of my global node ids
@@ -407,7 +406,7 @@ namespace DRT
      */
     bool ContainsNode(int ngid) const
     {
-      const std::vector<int>* n = Nodes();
+      const std::vector<int>* n = GetNodes();
       // DRT::Condition nodes are ordered by design! So we can perform a binary
       // search here.
       return std::binary_search(n->begin(), n->end(), ngid);

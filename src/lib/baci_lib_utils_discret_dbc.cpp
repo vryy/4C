@@ -214,7 +214,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
   // get ids of conditioned nodes
-  const std::vector<int>* nodeids = cond.Nodes();
+  const std::vector<int>* nodeids = cond.GetNodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
@@ -453,7 +453,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
         "calling this method makes no sense.");
 
   // get ids of conditioned nodes
-  const std::vector<int>* nodeids = cond.Nodes();
+  const std::vector<int>* nodeids = cond.GetNodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();

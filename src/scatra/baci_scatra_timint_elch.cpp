@@ -1043,7 +1043,7 @@ SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(Teuchos::RCP<DRT::Con
       Teuchos::rcp(new CORE::LINALG::SerialDenseVector(numscalars));
 
   // extract nodal cloud of current condition
-  const std::vector<int>* nodeids = condition->Nodes();
+  const std::vector<int>* nodeids = condition->GetNodes();
 
   // safety checks
   if (!nodeids) dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");
@@ -1496,7 +1496,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateCellVoltage()
         double potential(0.0);
 
         // extract nodal cloud
-        const std::vector<int>* const nodeids = condition->Nodes();
+        const std::vector<int>* const nodeids = condition->GetNodes();
         if (nodeids == nullptr) dserror("Cell voltage point condition does not have nodal cloud!");
         if (nodeids->size() != 1)
           dserror("Nodal cloud of cell voltage point condition must have exactly one node!");
@@ -1797,7 +1797,7 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
         const double one = 1.0;
 
         // global node id's which are part of the Nernst-BC
-        const std::vector<int>* nodegids = Elchcond[icond]->Nodes();
+        const std::vector<int>* nodegids = Elchcond[icond]->GetNodes();
 
         // loop over all global nodes part of the Nernst-BC
         for (int ii = 0; ii < (int(nodegids->size())); ++ii)
@@ -2634,7 +2634,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
   for (const auto& condition : conditions)
   {
     // extract nodal cloud of current condition
-    const std::vector<int>* nodeids = condition->Nodes();
+    const std::vector<int>* nodeids = condition->GetNodes();
 
     // safety checks
     if (!nodeids) dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");
@@ -2844,7 +2844,7 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
           }
 
           // extract nodal cloud of current condition and perform safety check
-          const std::vector<int>* nodegids = cccvhalfcyclecondition->Nodes();
+          const std::vector<int>* nodegids = cccvhalfcyclecondition->GetNodes();
           if (!nodegids or nodegids->empty())
           {
             dserror(
@@ -2971,7 +2971,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
           }
           else
           {
-            for (int node_gid : *condition.Nodes())
+            for (int node_gid : *condition.GetNodes())
             {
               auto* node = discret_->gNode(node_gid);
               auto dofs = discret_->Dof(0, node);
@@ -3200,7 +3200,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
       // all dofs that form one block map
       std::vector<std::vector<int>> partitioned_dofs(NumDofPerNode());
 
-      for (const int node_gid : *cond->Nodes())
+      for (const int node_gid : *cond->GetNodes())
       {
         if (discret_->HaveGlobalNode(node_gid) and
             discret_->gNode(node_gid)->Owner() == discret_->Comm().MyPID())

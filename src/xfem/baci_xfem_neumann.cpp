@@ -137,7 +137,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
     if (assemblemat && !systemvector.Comm().MyPID())
       std::cout << "WARNING: No linearization of PointNeumann conditions" << std::endl;
     DRT::Condition& cond = *(fool->second);
-    const std::vector<int>* nodeids = cond.Nodes();
+    const std::vector<int>* nodeids = cond.GetNodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
     const std::vector<int>* funct = cond.Get<std::vector<int>>("funct");

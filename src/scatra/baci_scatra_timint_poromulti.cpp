@@ -207,7 +207,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputOxygenPartialPressure()
       dserror("Should have only one PoroMultiphaseScatraOxyPartPressCalcCond per discretization");
 
     // extract nodal cloud from condition
-    const std::vector<int>* nodegids = conditions[0]->Nodes();
+    const std::vector<int>* nodegids = conditions[0]->GetNodes();
 
     // output
     double Pb = 0.0;

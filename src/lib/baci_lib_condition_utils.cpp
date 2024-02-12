@@ -89,7 +89,7 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
   const int myrank = dis.Comm().MyPID();
   for (const auto& cond : conds)
   {
-    for (const auto node : *cond->Nodes())
+    for (const auto node : *cond->GetNodes())
     {
       const int gid = node;
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
@@ -112,7 +112,7 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
   const int myrank = dis.Comm().MyPID();
   for (auto cond : conds)
   {
-    for (int gid : *cond->Nodes())
+    for (int gid : *cond->GetNodes())
     {
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
       {
@@ -131,7 +131,7 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
   const int myrank = dis.Comm().MyPID();
   for (auto cond : conds)
   {
-    for (int gid : *cond->Nodes())
+    for (int gid : *cond->GetNodes())
     {
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
       {
@@ -152,7 +152,7 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
   for (const auto& cond : conds)
   {
     int id = use_coupling_id ? cond->GetInt("coupling id") : 0;
-    for (int gid : *cond->Nodes())
+    for (int gid : *cond->GetNodes())
     {
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
       {
@@ -178,7 +178,7 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
   for (auto* cond : conds)
   {
     int id = cond->GetInt("coupling id");
-    for (int gid : *cond->Nodes())
+    for (int gid : *cond->GetNodes())
     {
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
       {
@@ -543,11 +543,9 @@ void DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(
     myfile.open(boundarysurffilename.c_str(), std::ios_base::app);
     myfile << "Surfaces in Surfmap for Coupling Condition No. " << condID + 1 << ":\n";
     myfile << "Format: [Node1, Node2, Node3, CondID] \n";
-    for (std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>::const_iterator iterat =
-             surfmap.begin();
-         iterat != surfmap.end(); ++iterat)
+    for (auto& iterat : surfmap)
     {
-      myfile << iterat->first[0] << " " << iterat->first[1] << " " << iterat->first[2] << " "
+      myfile << iterat.first[0] << " " << iterat.first[1] << " " << iterat.first[2] << " "
              << condID + 1 << "\n";
     }
     myfile << "End \n";
@@ -570,8 +568,8 @@ bool DRT::UTILS::HaveSameNodes(const DRT::Condition* const condition1,
   bool matching_conditions = true;
 
   // get nodes of conditions
-  const auto* condition1nodes = condition1->Nodes();
-  const auto* condition2nodes = condition2->Nodes();
+  const auto* condition1nodes = condition1->GetNodes();
+  const auto* condition2nodes = condition2->GetNodes();
 
   // simple first check just checks the size
   if (condition1nodes->size() != condition2nodes->size())

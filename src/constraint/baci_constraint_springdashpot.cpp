@@ -39,7 +39,7 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
       offset_((*spring_->Get<std::vector<double>>("disploffset"))[0]),
       viscosity_((*spring_->Get<std::vector<double>>("visco"))[0]),
       coupling_(spring_->GetInt("coupling id")),
-      nodes_(spring_->Nodes()),
+      nodes_(spring_->GetNodes()),
       area_(),
       gap0_(),
       gap_(),
@@ -201,7 +201,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
       if (*direction == "xyz")
       {
         // get all nodes of this condition and check, if it's just one -> get this node
-        const auto* nodes_cond = spring_->Nodes();
+        const auto* nodes_cond = spring_->GetNodes();
         if (nodes_cond->size() != 1) dserror("Point Robin condition must be defined on one node.");
         const int node_gid = nodes_cond->at(0);
         auto* node = actdisc_->gNode(node_gid);

@@ -64,7 +64,7 @@ void DRT::UTILS::EvaluateInitialField(const DRT::Discretization& discret,
 void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Condition& cond,
     Epetra_Vector& fieldvector, const std::vector<int>& locids)
 {
-  const std::vector<int> cond_nodeids = *cond.Nodes();
+  const std::vector<int> cond_nodeids = *cond.GetNodes();
   if (cond_nodeids.empty()) dserror("Initfield condition does not have nodal cloud.");
 
   // loop nodes to identify and evaluate spatial distributions

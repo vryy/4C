@@ -233,7 +233,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     if (!(*mymasterslavetoggle == "Master"))
     {
       const std::vector<int>* pbcids;
-      pbcids = (*thiscond).Nodes();
+      pbcids = (*thiscond).GetNodes();
 
       for (std::vector<int>::const_iterator iter = pbcids->begin(); iter != pbcids->end(); ++iter)
       {
