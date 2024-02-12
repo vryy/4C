@@ -64,8 +64,9 @@ function(baci_auto_define_module)
 
   list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-  # Collect all the targets that are defined in a global property
-  set_property(GLOBAL APPEND PROPERTY BACI_ALL_DEFINED_MODULE_TARGETS ${_target})
+  # Collect all modules in the global library
+  target_link_libraries(${BACI_LIBRARY_NAME} PUBLIC ${_target}_deps)
+  target_link_libraries(${BACI_LIBRARY_NAME} PRIVATE $<TARGET_NAME_IF_EXISTS:${_target}_objs>)
 
   # Simulate a "return" by setting a variable at the call site
   set(AUTO_DEFINED_MODULE_NAME

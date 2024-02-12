@@ -14,4 +14,4 @@ find_package(Trilinos REQUIRED)
 message(STATUS "Trilinos packages: ${Trilinos_PACKAGE_LIST}")
 message(STATUS "Trilinos TPLs: ${Trilinos_TPL_LIST}")
 
-baci_add_dependency(baci_all_enabled_external_dependencies Trilinos::all_selected_libs)
+target_link_libraries(baci_all_enabled_external_dependencies INTERFACE Trilinos::all_selected_libs)

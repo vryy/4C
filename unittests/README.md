@@ -13,11 +13,7 @@ Writing a new unit test roughly works like this:
    relative location of the tested file in the `src` directory. You may need to create the
    directory if it does not exist yet.
 2. Add the new file to the `CMakeLists.txt` inside the directory (again you may need to create it).
-   Consider the existing test directories as a template. In case you have problems listing all
-   necessary
-   libraries for your test, you can use
-   `baci_link_google_test_necessary_libraries(${TESTNAME} ${BACI_LIBRARIES})`
-   as a temporary solution to include all libraries in the correct order.
+   Consider the existing test directories as a template.
 3. Include the gtest header.
 4. Open an anonymous namespace inside the file.
 5. Write your tests. Use existing tests and the GoogleTest documentation as a guideline and

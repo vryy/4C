@@ -19,7 +19,7 @@ if(CLN_FOUND AND NOT TARGET cln::cln)
 endif()
 
 if(CLN_FOUND)
-  baci_add_dependency(baci_all_enabled_external_dependencies cln::cln)
+  target_link_libraries(baci_all_enabled_external_dependencies INTERFACE cln::cln)
   message(STATUS "CLN include directory: ${CLN_INCLUDE_DIR}")
   message(STATUS "CLN library directory: ${CLN_LIBRARY}")
 endif()
