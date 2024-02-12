@@ -28,7 +28,7 @@
 #include "baci_comm_utils.hpp"
 #include "baci_coupling_adapter_mortar.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
-#include "baci_fluid_DbcHDG.h"
+#include "baci_fluid_DbcHDG.hpp"
 #include "baci_fluid_ele.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_ele_intfaces_calc.hpp"

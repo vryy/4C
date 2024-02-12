@@ -6,8 +6,8 @@
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SSI_MONOLITHIC_DBC_HPPANDLER_HPP
-#define BACI_SSI_MONOLITHIC_DBC_HPPANDLER_HPP
+#ifndef BACI_SSI_MONOLITHIC_DBC_HANDLER_HPP
+#define BACI_SSI_MONOLITHIC_DBC_HANDLER_HPP
 
 #include "baci_config.hpp"
 

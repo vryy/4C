@@ -24,8 +24,8 @@
 #include "baci_mat_list.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
-#include "baci_red_airways_elem_params.h"
-#include "baci_red_airways_evaluation_data.h"
+#include "baci_red_airways_elem_params.hpp"
+#include "baci_red_airways_evaluation_data.hpp"
 #include "baci_utils_function.hpp"
 #include "baci_utils_function_of_time.hpp"
 

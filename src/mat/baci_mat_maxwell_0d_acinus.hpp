@@ -21,7 +21,7 @@ spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 #include "baci_comm_parobjectfactory.hpp"
 #include "baci_mat_material.hpp"
 #include "baci_mat_par_parameter.hpp"
-#include "baci_red_airways_elem_params.h"
+#include "baci_red_airways_elem_params.hpp"
 
 BACI_NAMESPACE_OPEN
 

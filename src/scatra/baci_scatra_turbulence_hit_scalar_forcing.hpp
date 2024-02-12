@@ -11,8 +11,8 @@ passive-scalar transport
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_SCATRA_TURBULENCE_HPPIT_SCALAR_FORCING_HPP
-#define BACI_SCATRA_TURBULENCE_HPPIT_SCALAR_FORCING_HPP
+#ifndef BACI_SCATRA_TURBULENCE_HIT_SCALAR_FORCING_HPP
+#define BACI_SCATRA_TURBULENCE_HIT_SCALAR_FORCING_HPP
 
 #include "baci_config.hpp"
 

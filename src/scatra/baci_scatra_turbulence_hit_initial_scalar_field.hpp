@@ -11,8 +11,8 @@ transport
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_SCATRA_TURBULENCE_HPPIT_INITIAL_SCALAR_FIELD_HPP
-#define BACI_SCATRA_TURBULENCE_HPPIT_INITIAL_SCALAR_FIELD_HPP
+#ifndef BACI_SCATRA_TURBULENCE_HIT_INITIAL_SCALAR_FIELD_HPP
+#define BACI_SCATRA_TURBULENCE_HIT_INITIAL_SCALAR_FIELD_HPP
 
 #include "baci_config.hpp"
 

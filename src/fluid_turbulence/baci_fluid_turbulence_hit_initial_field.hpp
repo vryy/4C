@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TURBULENCE_HPPIT_INITIAL_FIELD_HPP
-#define BACI_FLUID_TURBULENCE_HPPIT_INITIAL_FIELD_HPP
+#ifndef BACI_FLUID_TURBULENCE_HIT_INITIAL_FIELD_HPP
+#define BACI_FLUID_TURBULENCE_HIT_INITIAL_FIELD_HPP
 
 #include "baci_config.hpp"
 

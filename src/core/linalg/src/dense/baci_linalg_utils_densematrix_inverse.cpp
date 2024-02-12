@@ -9,7 +9,7 @@
 
 #include "baci_linalg_utils_densematrix_inverse.hpp"
 
-#include "baci_linalg_fortran_definitions.h"
+#include "baci_linalg_fortran_definitions.hpp"
 #include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN

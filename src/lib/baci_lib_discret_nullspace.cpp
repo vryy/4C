@@ -3,7 +3,7 @@
 \level 0
 */
 
-#include "baci_lib_discret_nullspace.h"
+#include "baci_lib_discret_nullspace.hpp"
 
 #include "baci_lib_discret.hpp"
 #include "baci_lib_elementtype.hpp"

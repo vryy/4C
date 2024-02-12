@@ -20,7 +20,7 @@
 #include "baci_lib_elementtype.hpp"
 #include "baci_lib_node.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
-#include "baci_red_airways_elem_params.h"
+#include "baci_red_airways_elem_params.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

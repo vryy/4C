@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_OVERLAPPREC_HPPYBRID_HPP
-#define BACI_FSI_OVERLAPPREC_HPPYBRID_HPP
+#ifndef BACI_FSI_OVERLAPPREC_HYBRID_HPP
+#define BACI_FSI_OVERLAPPREC_HYBRID_HPP
 
 /*----------------------------------------------------------------------------*/
 /* headers */

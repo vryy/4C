@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_HPPEX18_HPP
-#define BACI_SO3_HPPEX18_HPP
+#ifndef BACI_SO3_HEX18_HPP
+#define BACI_SO3_HEX18_HPP
 
 #include "baci_config.hpp"
 

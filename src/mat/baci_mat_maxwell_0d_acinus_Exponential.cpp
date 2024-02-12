@@ -26,7 +26,7 @@ E1_LIN 0 TAU 0
 #include "baci_global_data.hpp"
 #include "baci_io_linedefinition.hpp"
 #include "baci_mat_par_bundle.hpp"
-#include "baci_red_airways_elem_params.h"
+#include "baci_red_airways_elem_params.hpp"
 #include "baci_red_airways_elementbase.hpp"
 
 #include <vector>

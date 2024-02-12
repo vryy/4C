@@ -22,7 +22,7 @@
 #include "baci_mat_maxwell_0d_acinus.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_red_airways_acinus_impl.hpp"
-#include "baci_red_airways_evaluation_data.h"
+#include "baci_red_airways_evaluation_data.hpp"
 #include "baci_utils_function.hpp"
 #include "baci_utils_function_of_time.hpp"
 

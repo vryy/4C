@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_IO_HPPDF_HPP
-#define BACI_IO_HPPDF_HPP
+#ifndef BACI_IO_HDF_HPP
+#define BACI_IO_HDF_HPP
 
 
 #ifndef H5GCreate_vers

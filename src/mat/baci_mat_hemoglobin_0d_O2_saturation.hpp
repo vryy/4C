@@ -7,8 +7,8 @@ dimensional airway elements framework (transport in elements and between air and
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_HPPEMOGLOBIN_0D_O2_SATURATION_HPP
-#define BACI_MAT_HPPEMOGLOBIN_0D_O2_SATURATION_HPP
+#ifndef BACI_MAT_HEMOGLOBIN_0D_O2_SATURATION_HPP
+#define BACI_MAT_HEMOGLOBIN_0D_O2_SATURATION_HPP
 
 
 

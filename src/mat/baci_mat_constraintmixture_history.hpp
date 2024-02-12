@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_CONSTRAINTMIXTURE_HPPISTORY_HPP
-#define BACI_MAT_CONSTRAINTMIXTURE_HPPISTORY_HPP
+#ifndef BACI_MAT_CONSTRAINTMIXTURE_HISTORY_HPP
+#define BACI_MAT_CONSTRAINTMIXTURE_HISTORY_HPP
 
 #include "baci_config.hpp"
 

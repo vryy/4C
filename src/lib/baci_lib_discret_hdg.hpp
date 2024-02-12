@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DISCRET_HPPDG_HPP
-#define BACI_LIB_DISCRET_HPPDG_HPP
+#ifndef BACI_LIB_DISCRET_HDG_HPP
+#define BACI_LIB_DISCRET_HDG_HPP
 
 #include "baci_config.hpp"
 

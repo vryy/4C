@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TURBULENCE_STATISTICS_HPPIT_HPP
-#define BACI_FLUID_TURBULENCE_STATISTICS_HPPIT_HPP
+#ifndef BACI_FLUID_TURBULENCE_STATISTICS_HIT_HPP
+#define BACI_FLUID_TURBULENCE_STATISTICS_HIT_HPP
 
 #include "baci_config.hpp"
 

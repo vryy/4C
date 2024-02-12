@@ -4,8 +4,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_HPPEX27_HPP
-#define BACI_SO3_HPPEX27_HPP
+#ifndef BACI_SO3_HEX27_HPP
+#define BACI_SO3_HEX27_HPP
 
 
 #include "baci_config.hpp"

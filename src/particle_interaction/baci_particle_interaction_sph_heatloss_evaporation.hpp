@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_SPH_HPPEATLOSS_EVAPORATION_HPP
-#define BACI_PARTICLE_INTERACTION_SPH_HPPEATLOSS_EVAPORATION_HPP
+#ifndef BACI_PARTICLE_INTERACTION_SPH_HEATLOSS_EVAPORATION_HPP
+#define BACI_PARTICLE_INTERACTION_SPH_HEATLOSS_EVAPORATION_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

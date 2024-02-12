@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_SPH_HPPEATSOURCE_HPP
-#define BACI_PARTICLE_INTERACTION_SPH_HPPEATSOURCE_HPP
+#ifndef BACI_PARTICLE_INTERACTION_SPH_HEATSOURCE_HPP
+#define BACI_PARTICLE_INTERACTION_SPH_HEATSOURCE_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

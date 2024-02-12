@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TIMINT_STAT_HPPDG_HPP
-#define BACI_FLUID_TIMINT_STAT_HPPDG_HPP
+#ifndef BACI_FLUID_TIMINT_STAT_HDG_HPP
+#define BACI_FLUID_TIMINT_STAT_HDG_HPP
 // TODO als fix
 // fluid_timint_stat_hdg
 // because it is not working

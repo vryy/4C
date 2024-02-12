@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------------*/
 
 
-#ifndef BACI_FLUID_TIMINT_HPPDG_WEAK_COMP_HPP
-#define BACI_FLUID_TIMINT_HPPDG_WEAK_COMP_HPP
+#ifndef BACI_FLUID_TIMINT_HDG_WEAK_COMP_HPP
+#define BACI_FLUID_TIMINT_HDG_WEAK_COMP_HPP
 
 
 #include "baci_config.hpp"

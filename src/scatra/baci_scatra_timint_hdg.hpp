@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_TIMINT_HPPDG_HPP
-#define BACI_SCATRA_TIMINT_HPPDG_HPP
+#ifndef BACI_SCATRA_TIMINT_HDG_HPP
+#define BACI_SCATRA_TIMINT_HDG_HPP
 
 #include "baci_config.hpp"
 

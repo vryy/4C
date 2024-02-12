@@ -7,8 +7,9 @@
 
 */
 
-#ifndef BACI_FLUID_DBCHDG_H
-#define BACI_FLUID_DBCHDG_H
+#ifndef BACI_FLUID_DBCHDG_HPP
+#define BACI_FLUID_DBCHDG_HPP
+
 
 #include "baci_config.hpp"
 

@@ -9,8 +9,8 @@
 /*--------------------------------------------------------------------------*/
 
 
-#ifndef BACI_SCATRA_ELE_HPPDG_BOUNDARY_CALC_HPP
-#define BACI_SCATRA_ELE_HPPDG_BOUNDARY_CALC_HPP
+#ifndef BACI_SCATRA_ELE_HDG_BOUNDARY_CALC_HPP
+#define BACI_SCATRA_ELE_HDG_BOUNDARY_CALC_HPP
 
 #include "baci_config.hpp"
 

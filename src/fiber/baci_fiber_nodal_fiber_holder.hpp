@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FIBER_NODAL_FIBER_HPPOLDER_HPP
-#define BACI_FIBER_NODAL_FIBER_HPPOLDER_HPP
+#ifndef BACI_FIBER_NODAL_FIBER_HOLDER_HPP
+#define BACI_FIBER_NODAL_FIBER_HOLDER_HPP
 
 #include "baci_config.hpp"
 

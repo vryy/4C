@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_DEM_HPPISTORY_PAIRS_HPP
-#define BACI_PARTICLE_INTERACTION_DEM_HPPISTORY_PAIRS_HPP
+#ifndef BACI_PARTICLE_INTERACTION_DEM_HISTORY_PAIRS_HPP
+#define BACI_PARTICLE_INTERACTION_DEM_HISTORY_PAIRS_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

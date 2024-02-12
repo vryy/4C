@@ -5,8 +5,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_RED_AIRWAYS_EVALUATION_DATA_H
-#define BACI_RED_AIRWAYS_EVALUATION_DATA_H
+#ifndef BACI_RED_AIRWAYS_EVALUATION_DATA_HPP
+#define BACI_RED_AIRWAYS_EVALUATION_DATA_HPP
 
 #include "baci_config.hpp"
 

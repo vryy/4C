@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_SO3_HPPEX8_DETERMINANT_ANALYSIS_HPP
-#define BACI_SO3_HPPEX8_DETERMINANT_ANALYSIS_HPP
+#ifndef BACI_SO3_HEX8_DETERMINANT_ANALYSIS_HPP
+#define BACI_SO3_HEX8_DETERMINANT_ANALYSIS_HPP
 
 #include "baci_config.hpp"
 

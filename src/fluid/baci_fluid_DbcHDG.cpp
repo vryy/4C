@@ -7,7 +7,7 @@
 
 */
 
-#include "baci_fluid_DbcHDG.h"
+#include "baci_fluid_DbcHDG.hpp"
 
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_ele_calc.hpp"

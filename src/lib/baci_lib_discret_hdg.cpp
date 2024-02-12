@@ -13,7 +13,7 @@
 
 #include "baci_comm_exporter.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_dg_element.h"
+#include "baci_lib_dg_element.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_elementtype.hpp"

@@ -23,7 +23,7 @@
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_mat_maxwell_0d_acinus_Ogden.hpp"
 #include "baci_rebalance_utils.hpp"
-#include "baci_red_airways_evaluation_data.h"
+#include "baci_red_airways_evaluation_data.hpp"
 #include "baci_red_airways_resulttest.hpp"
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_function.hpp"

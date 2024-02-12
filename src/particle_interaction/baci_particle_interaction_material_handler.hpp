@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_MATERIAL_HPPANDLER_HPP
-#define BACI_PARTICLE_INTERACTION_MATERIAL_HPPANDLER_HPP
+#ifndef BACI_PARTICLE_INTERACTION_MATERIAL_HANDLER_HPP
+#define BACI_PARTICLE_INTERACTION_MATERIAL_HANDLER_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

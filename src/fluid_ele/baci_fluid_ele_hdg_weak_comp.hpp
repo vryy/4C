@@ -7,14 +7,14 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_ELE_HPPDG_WEAK_COMP_HPP
-#define BACI_FLUID_ELE_HPPDG_WEAK_COMP_HPP
+#ifndef BACI_FLUID_ELE_HDG_WEAK_COMP_HPP
+#define BACI_FLUID_ELE_HDG_WEAK_COMP_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_discretization_fem_general_utils_polynomial.hpp"
 #include "baci_fluid_ele.hpp"
-#include "baci_lib_dg_element.h"
+#include "baci_lib_dg_element.hpp"
 
 #include <Teuchos_RCP.hpp>
 

@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_HPPERSCHELBULKLEY_HPP
-#define BACI_MAT_HPPERSCHELBULKLEY_HPP
+#ifndef BACI_MAT_HERSCHELBULKLEY_HPP
+#define BACI_MAT_HERSCHELBULKLEY_HPP
 
 
 

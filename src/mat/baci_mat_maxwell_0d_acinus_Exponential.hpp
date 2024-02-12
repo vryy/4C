@@ -18,7 +18,7 @@ exponential pressure-volume relation (derivation: see Ismail Mahmoud's dissertat
 #include "baci_config.hpp"
 
 #include "baci_mat_maxwell_0d_acinus.hpp"
-#include "baci_red_airways_elem_params.h"
+#include "baci_red_airways_elem_params.hpp"
 #include "baci_red_airways_elementbase.hpp"
 
 BACI_NAMESPACE_OPEN

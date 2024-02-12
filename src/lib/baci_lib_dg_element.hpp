@@ -6,8 +6,8 @@
  */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DG_ELEMENT_H
-#define BACI_LIB_DG_ELEMENT_H
+#ifndef BACI_LIB_DG_ELEMENT_HPP
+#define BACI_LIB_DG_ELEMENT_HPP
 
 #include "baci_config.hpp"
 

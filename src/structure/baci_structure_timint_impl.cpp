@@ -31,7 +31,7 @@
 #include "baci_io_control.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_condition_utils.hpp"
-#include "baci_lib_discret_nullspace.h"
+#include "baci_lib_discret_nullspace.hpp"
 #include "baci_lib_locsys.hpp"
 #include "baci_linalg_krylov_projector.hpp"
 #include "baci_linalg_mapextractor.hpp"

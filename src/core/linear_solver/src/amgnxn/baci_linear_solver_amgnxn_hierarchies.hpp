@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_AMGNXN_HPPIERARCHIES_HPP
-#define BACI_LINEAR_SOLVER_AMGNXN_HPPIERARCHIES_HPP
+#ifndef BACI_LINEAR_SOLVER_AMGNXN_HIERARCHIES_HPP
+#define BACI_LINEAR_SOLVER_AMGNXN_HIERARCHIES_HPP
 
 #include "baci_config.hpp"
 
