@@ -363,6 +363,26 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
 
       break;
     }
+    case POROFLUIDMULTIPHASE::calc_phase_velocities:
+    {
+      Teuchos::RCP<MultiEvaluator<nsd, nen>> evaluator_multiphase =
+          Teuchos::rcp(new MultiEvaluator<nsd, nen>());
+
+      Teuchos::RCP<EvaluatorInterface<nsd, nen>> tmpevaluator = Teuchos::null;
+      Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
+
+      // build evaluators for all phases
+      for (int iphase = 0; iphase < numdofpernode; iphase++)
+      {
+        assembler = Teuchos::rcp(new AssembleStandard(iphase, false));
+        tmpevaluator =
+            Teuchos::rcp(new EvaluatorPhaseVelocities<nsd, nen>(assembler, iphase, para.IsAle()));
+        evaluator_multiphase->AddEvaluator(tmpevaluator);
+      }
+      evaluator = evaluator_multiphase;
+
+      break;
+    }
     case POROFLUIDMULTIPHASE::calc_valid_dofs:
     {
       Teuchos::RCP<AssembleInterface> assembler = Teuchos::rcp(new AssembleStandard(-1, false));
@@ -3181,6 +3201,109 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd,
 {
   // nothing to do
   return;
+}
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPhaseVelocities<nsd,
+    nen>::EvaluateVectorAndAssemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
+    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+    double fac, bool inittimederiv)
+{
+  CORE::LINALG::SerialDenseVector& phase_velocity = *elevec[0];
+
+  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
+
+  const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradient_phi = *variablemanager.GradPhinp();
+
+  CORE::LINALG::Matrix<nsd, 1> structure_velocity(0.0);
+  if (is_ale_) structure_velocity = *variablemanager.ConVelnp();
+
+  // FLUID phases
+  if (curphase < numfluidphases)
+  {
+    const double phase_volume_fraction =
+        phasemanager.Porosity() * phasemanager.Saturation(curphase);
+
+    for (int j = 0; j < nsd; j++)
+    {
+      if (phase_volume_fraction == 0)
+      {
+        phase_velocity(nsd * curphase + j) += structure_velocity(j);
+      }
+      else
+      {
+        // Compute the pressure gradient from the gradient of the generic primary variable:
+        // the generic primary variable psi can be pressure, pressure difference or saturation, and
+        // hence we need to employ the chain rule:
+        // d p(psi_1, psi_2, psi_3)/dx = sum_i ( (p(psi_1, psi_2, psi_3)/d psi_i) * (d psi_i/dx) )
+        CORE::LINALG::Matrix<nsd, 1> pressure_gradient(true);
+        pressure_gradient.Clear();
+        for (int i = 0; i < numfluidphases; ++i)
+          pressure_gradient.Update(phasemanager.PressureDeriv(curphase, i), gradient_phi[i], 1.0);
+
+        CORE::LINALG::Matrix<nsd, nsd> diffusion_tensor(true);
+        phasemanager.PermeabilityTensor(curphase, diffusion_tensor);
+        diffusion_tensor.Scale(phasemanager.RelPermeability(curphase) /
+                               phasemanager.DynViscosity(curphase, pressure_gradient.Norm2()));
+
+        static CORE::LINALG::Matrix<nsd, 1> diffusive_velocity(true);
+        diffusive_velocity.Multiply(
+            -1.0 / phase_volume_fraction, diffusion_tensor, pressure_gradient);
+
+        phase_velocity(nsd * curphase + j) += diffusive_velocity(j) + structure_velocity(j);
+      }
+    }
+  }
+  // VOLFRAC phases
+  else if (curphase < numfluidphases + numvolfrac)
+  {
+    // The VOLFRAC phases only have the volume fraction as primary variable and not the pressure.
+    // Hence, no velocity can be computed for these phases.
+    // The corresponding velocity is computed in the VOLFRAC_PRESSURE phases (see below).
+    return;
+  }
+  // VOLFRAC PRESSURE phases
+  else if (curphase < numdofpernode)
+  {
+    const int i_volfrac_pressure = curphase - numfluidphases - numvolfrac;
+    const double phase_volume_fraction = phasemanager.VolFrac(i_volfrac_pressure);
+
+    for (int j = 0; j < nsd; j++)
+    {
+      if (phase_volume_fraction == 0)
+      {
+        phase_velocity(nsd * curphase + j) += structure_velocity(j);
+      }
+      else
+      {
+        // For the volume fraction, pressure is always the primary variable, and hence the gradient
+        // of the primary variable directly is the pressure gradient.
+        auto pressure_gradient = gradient_phi[curphase];
+
+        CORE::LINALG::Matrix<nsd, nsd> diffusion_tensor(true);
+        phasemanager.PermeabilityTensorVolFracPressure(i_volfrac_pressure, diffusion_tensor);
+        diffusion_tensor.Scale(1.0 / phasemanager.DynViscosityVolFracPressure(
+                                         i_volfrac_pressure, pressure_gradient.Norm2()));
+
+        static CORE::LINALG::Matrix<nsd, 1> diffusive_velocity(true);
+        diffusive_velocity.Multiply(
+            -1.0 / phase_volume_fraction, diffusion_tensor, pressure_gradient);
+
+        phase_velocity(nsd * curphase + j) += diffusive_velocity(j) + structure_velocity(j);
+      }
+    }
+  }
+  else
+    dserror("Invalid phase index for current phase: %i", curphase);
 }
 
 /*----------------------------------------------------------------------*

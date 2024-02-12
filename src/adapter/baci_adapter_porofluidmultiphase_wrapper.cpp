@@ -246,6 +246,12 @@ void ADAPTER::PoroFluidMultiphaseWrapper::ReconstructPressuresAndSaturations()
 void ADAPTER::PoroFluidMultiphaseWrapper::ReconstructFlux() { porofluid_->ReconstructFlux(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::PoroFluidMultiphaseWrapper::CalculatePhaseVelocities()
+{
+  porofluid_->CalculatePhaseVelocities();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::PoroFluidMultiphaseWrapper::Evaluate() { porofluid_->Evaluate(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

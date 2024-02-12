@@ -157,6 +157,15 @@ namespace DRT
           DRT::Element::LocationArray& la       //!< location array
       );
 
+      //! evaluate at all Gauss points and average
+      void GaussPointLoopAverage(DRT::Element* ele,               //!< current element
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrices to calculate
+          std::vector<CORE::LINALG::SerialDenseVector*>&
+              elevec,                           //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la       //!< location array
+      );
+
       //! calculate off-diagonal fluid-struct-coupling matrix. Here the whole thing is hidden.
       void GaussPointLoopODStruct(DRT::Element* ele,              //!< current element
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate

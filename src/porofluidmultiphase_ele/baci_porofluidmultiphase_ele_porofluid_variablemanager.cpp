@@ -72,8 +72,8 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>::CreateVaria
 
       break;
     }
-    // reconstruct velocities
     case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
+    case POROFLUIDMULTIPHASE::calc_phase_velocities:
     {
       // state vector and gradients are needed
       varmanager = Teuchos::rcp(new VariableManagerPhiGradPhi<nsd, nen>(numdofpernode));

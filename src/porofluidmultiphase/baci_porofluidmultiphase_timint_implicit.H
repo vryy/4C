@@ -274,6 +274,9 @@ namespace POROFLUIDMULTIPHASE
     //! return phase flux field at time n+1
     Teuchos::RCP<const Epetra_MultiVector> Flux() const override { return flux_; }
 
+    //! return phase velocity at time n+1
+    Teuchos::RCP<const Epetra_MultiVector> PhaseVelocity() const { return phase_velocities_; }
+
     //! return number of dof set associated with solid pressure
     int GetDofSetNumberOfSolidPressure() const override { return nds_solidpressure_; };
 
@@ -389,6 +392,9 @@ namespace POROFLUIDMULTIPHASE
     //! reconstruct fluxes from current solution
     void ReconstructFlux() override;
 
+    //! calculate phase velocities from current solution
+    void CalculatePhaseVelocities() override;
+
     //! reconstruct porosity from current solution
     void ReconstructPorosity();
 
@@ -479,6 +485,9 @@ namespace POROFLUIDMULTIPHASE
 
     //! flag if porosity should be output
     bool output_porosity_;
+
+    //! flag if phase velocities should be written to output
+    bool output_phase_velocities_;
 
     //! flag if blood vessel volume fraction should be output (for 1D-3D coupling)
     bool output_bloodvesselvolfrac_;
@@ -615,8 +624,11 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<Epetra_Vector> valid_volfracpress_dofs_;
     Teuchos::RCP<Epetra_Vector> valid_volfracspec_dofs_;
 
-    //! velocity of each phase at time n+1 (post-processed from pressure solution)
+    //! flux of each phase at time n+1 (post-processed from pressure solution)
     Teuchos::RCP<Epetra_MultiVector> flux_;
+
+    //! velocity of each phase at time n+1 (post-processed from pressure solution)
+    Teuchos::RCP<Epetra_MultiVector> phase_velocities_;
 
     //! number of dofset associated with displacement dofs
     int nds_disp_;

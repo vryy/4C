@@ -9,6 +9,7 @@
 
 #include "baci_porofluidmultiphase_resulttest.H"
 
+#include "baci_global_data.H"
 #include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_porofluidmultiphase_meshtying_strategy_base.H"
@@ -221,6 +222,28 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultElement(
         (*porotimint_.MeshTyingStrategy()
                 ->BloodVesselVolumeFraction())[porotimint_.Discretization()->ElementRowMap()->LID(
             element->Id())];
+  }
+  else if (!quantity.compare(0, 13, "phasevelocity"))
+  {
+    const int num_dim = GLOBAL::Problem::Instance()->NDim();
+    // get phase ID
+    // example: "phasevelocity3x" -> k = 2 (phase IDs start at index 0)
+    std::string k_string = quantity.substr(13);
+    char* locator(nullptr);
+    auto idx_poro_dof = int(strtol(k_string.c_str(), &locator, 13) - 1);
+    if (locator == k_string.c_str()) dserror("Could not read phase ID in result test!");
+
+    // get spatial dimension
+    int idx_dim(-1);
+    if (!quantity.compare(14, 15, "x"))
+      idx_dim = 0;
+    else if (!quantity.compare(14, 15, "y"))
+      idx_dim = 1;
+    else if (!quantity.compare(14, 15, "z"))
+      idx_dim = 2;
+
+    result = ((*porotimint_.PhaseVelocity())[idx_poro_dof * num_dim + idx_dim])
+        [porotimint_.Discretization()->ElementRowMap()->LID(element->Id())];
   }
   // catch unknown quantity strings
   else
