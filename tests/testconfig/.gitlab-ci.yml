@@ -241,7 +241,7 @@ before_script:
     # run clang tidy and export report
   - python ${CI_PROJECT_DIR}/utilities/code_climate/run-clang-tidy.py -j `nproc` -use-color
     -p . `get_mpi_extra_args` -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*"
-    "${ESCAPED_PROJECT_DIR}\/.*" | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
+    "${ESCAPED_PROJECT_DIR}\/.*" 2>&1 | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
     # export clang tidy issues
   - python ${CI_PROJECT_DIR}/utilities/code_climate/export_clang_tidy_issues.py -j
     `nproc` --code-climate-file ${CI_PROJECT_DIR}/codeclimate.json --source-folder
