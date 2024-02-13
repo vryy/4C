@@ -47,6 +47,7 @@ void INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& strea
   PrintElementLines(stream, "SHELL7PSCATRA");
   PrintElementLines(stream, "SOLID");
   PrintElementLines(stream, "SOLIDPORO");
+  PrintElementLines(stream, "SOLIDSCATRA");
   PrintElementLines(stream, "SOLIDH18");
   PrintElementLines(stream, "SOLIDH20");
   PrintElementLines(stream, "SOLIDH27");

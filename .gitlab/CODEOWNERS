@@ -279,6 +279,8 @@ solid_ele/                 @baci/team_structure
 
 solid_poro_ele/             @baci/team_poro
 
+solid_scatra_ele           @baci/team_scatra
+
 solver_nonlin_nox/         @baci/team_solvers
 
 ssi/                       @baci/team_scatra

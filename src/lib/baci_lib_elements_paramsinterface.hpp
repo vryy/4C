@@ -88,8 +88,10 @@ namespace DRT
       struct_calc_addjacPTC,            //!< calculate elment based PTC contributions
       struct_create_backup,  //!< create a backup state of the internally store state quantities
                              //!< (e.g. EAS, material history, etc.)
-      struct_recover_from_backup  //!< recover from previously stored backup state
-    };                            // enum ActionType
+      struct_recover_from_backup,  //!< recover from previously stored backup state
+      calc_struct_stiffscalar      //!< calculate coupling term k_dS for monolithic SSI
+    };                             // enum ActionType
+
 
     static inline enum ActionType String2ActionType(const std::string& action)
     {
@@ -153,6 +155,8 @@ namespace DRT
         return struct_poro_calc_fluidcoupling;
       else if (action == "struct_poro_calc_scatracoupling")
         return struct_poro_calc_scatracoupling;
+      else if (action == "calc_struct_stiffscalar")
+        return calc_struct_stiffscalar;
 
 
 
@@ -248,6 +252,8 @@ namespace DRT
           return "struct_poro_calc_fluidcoupling";
         case struct_poro_calc_scatracoupling:
           return "struct_poro_calc_scatracoupling";
+        case calc_struct_stiffscalar:
+          return "calc_struct_stiffscalar";
         default:
           return "unknown";
       }

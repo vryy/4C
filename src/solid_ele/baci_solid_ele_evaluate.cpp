@@ -186,8 +186,10 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_predict:
+    {
       // do nothing for now
       return 0;
+    }
     default:
       dserror("The element action %s is not yet implemented for the new solid elements",
           ActionType2String(action).c_str());

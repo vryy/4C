@@ -81,6 +81,13 @@ namespace DRT::ELEMENTS
       evaluator(spatial_material_mapping.deformation_gradient_, gl_strain, linearization);
     }
 
+    static CORE::LINALG::Matrix<DETAILS::num_str<celltype>,
+        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+    GetLinearBOperator(const DisplacementBasedLinearizationContainer<celltype>& linearization)
+    {
+      return linearization.Bop_;
+    }
+
     static void AddInternalForceVector(
         const DisplacementBasedLinearizationContainer<celltype>& linearization,
         const Stress<celltype>& stress, const double integration_factor,
