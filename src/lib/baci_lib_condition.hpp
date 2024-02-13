@@ -15,9 +15,7 @@
 
 #include "baci_config.hpp"
 
-#include "baci_comm_parobjectfactory.hpp"
-#include "baci_lib_container.hpp"
-#include "baci_utils_exceptions.hpp"
+#include "baci_inpar_container.hpp"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
@@ -26,20 +24,6 @@ BACI_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class ConditionObjectType : public CORE::COMM::ParObjectType
-  {
-   public:
-    std::string Name() const override { return "ConditionObjectType"; }
-
-    static ConditionObjectType& Instance() { return instance_; };
-
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
-
-   private:
-    static ConditionObjectType instance_;
-  };
-
-
   // forward declarations
   class Element;
   class Discretization;
@@ -48,7 +32,7 @@ namespace DRT
   \brief A condition of any kind
 
   A condition is mainly used to realize boundary conditions. As the Condition
-  class implements DRT::Container it is capable of storing almost any data
+  class implements INPAR::InputParameterContainer it is capable of storing almost any data
   and can be communicated in parallel as it also implements ParObject.
   the container base class of the Condition holds all specific condition data.
   The condition can additionally store a discretization of the condition which is
@@ -58,7 +42,7 @@ namespace DRT
   (I guess this whole comment is not very helpful)
 
   */
-  class Condition : public DRT::Container
+  class Condition : public INPAR::InputParameterContainer
   {
    public:
     //! @name Enums and Friends
@@ -319,7 +303,7 @@ namespace DRT
 
     //@}
 
-    //! @name Constructors and destructors and related methods
+    //! @name Constructors and destructors
 
     /*!
     \brief Standard Constructor
@@ -330,58 +314,26 @@ namespace DRT
     DRT::Discretization.
 
     \note In case you might wonder where this condition class actually stores
-          data necessary for the condition: This class implements DRT::Container.
+          data necessary for the condition: This class implements INPAR::InputParameterContainer.
 
     \param id (in): a unique id for this condition
     \param type (in): type of the condition
     \param buildgeometry (in): flag indicating whether explicit condition geometry
                                (elements) have to be build
     \param gtype (in): type of geometric entity this condition lives on
-
     */
     Condition(
         const int id, const ConditionType type, const bool buildgeometry, const GeometryType gtype);
 
     /*!
     \brief Empty Constructor with type condition_none
-
     */
     Condition();
 
     /*!
     \brief Copy Constructor
-
-    Makes a deep copy of a condition
-
     */
     Condition(const DRT::Condition& old);
-
-    /*!
-    \brief Return unique ParObject id
-
-    every class implementing ParObject needs a unique id defined at the
-    top of this file.
-    */
-    [[nodiscard]] int UniqueParObjectId() const override
-    {
-      return ConditionObjectType::Instance().UniqueParObjectId();
-    }
-
-    /*!
-    \brief Pack this class so it can be communicated
-
-    \ref Pack and \ref Unpack are used to communicate this class
-
-    */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
-
-    /*!
-    \brief Unpack data from a char vector into this class
-
-    \ref Pack and \ref Unpack are used to communicate this class
-
-    */
-    void Unpack(const std::vector<char>& data) override;
 
     //@}
 

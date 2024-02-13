@@ -15,8 +15,8 @@
 
 #include "baci_config.hpp"
 
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "baci_inpar_xfem.hpp"
+#include "baci_lib_element.hpp"
 #include "baci_mat_material.hpp"
 #include "baci_utils_singleton_owner.hpp"
 

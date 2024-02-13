@@ -14,10 +14,14 @@
 
 #include "baci_config.hpp"
 
-#include <Epetra_IntVector.h>
-#include <Teuchos_RCP.hpp>
-// include due to enumerator...
 #include "baci_lib_condition.hpp"
+#include "baci_linalg_sparseoperator.hpp"
+
+#include <Epetra_IntVector.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 
 class Epetra_Vector;
 namespace Teuchos

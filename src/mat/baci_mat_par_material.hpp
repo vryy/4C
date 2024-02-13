@@ -12,9 +12,8 @@
 
 #include "baci_config.hpp"
 
-#include "baci_comm_parobjectfactory.hpp"
+#include "baci_inpar_container.hpp"
 #include "baci_inpar_material.hpp"
-#include "baci_lib_container.hpp"
 #include "baci_mat_par_parameter.hpp"
 
 #include <Epetra_Comm.h>
@@ -28,31 +27,17 @@ namespace MAT::PAR
   // forward declaration
   class Parameter;
 
-  class ParMaterialType : public CORE::COMM::ParObjectType
-  {
-   public:
-    [[nodiscard]] std::string Name() const override { return "ParMaterialType"; }
-
-    static ParMaterialType& Instance() { return instance_; };
-
-   private:
-    static ParMaterialType instance_;
-  };
-
   /// Container for read-in materials
   ///
   /// This object stores the validated material parameters as
-  /// DRT::Container.
-  ///
-  /// \author bborn
-  /// \date 02/09
-  class Material : public DRT::Container
+  /// INPAR::InputParameterContainer.
+  class Material : public INPAR::InputParameterContainer
   {
    public:
     /// @name life span
     //@{
 
-    /// standard constructor
+    /// Standard constructor
     Material(const int id,                    ///< unique material ID
         const INPAR::MAT::MaterialType type,  ///< type of material
         const std::string name                ///< name of material
@@ -61,19 +46,10 @@ namespace MAT::PAR
     /// default constructor
     Material() = default;
 
-    /// Copy Constructor
+    /// Copy constructor
     ///
-    /// Makes a deep copy of a condition
+    /// Makes a deep copy of the material parameters
     Material(const MAT::PAR::Material& old);
-
-    /// Return unique ParObject id
-    ///
-    /// every class implementing ParObject needs a unique id defined at the
-    /// top of this file.
-    [[nodiscard]] int UniqueParObjectId() const override
-    {
-      return ParMaterialType::Instance().UniqueParObjectId();
-    }
 
     /// Set pointer to readily allocated 'quick access' material parameters
     ///
@@ -102,7 +78,7 @@ namespace MAT::PAR
     /// Return quick accessible material parameter data
     ///
     /// These quick access parameters are stored in separate member #params_;
-    /// whereas the originally read ones are stored in DRT::Container base
+    /// whereas the originally read ones are stored in INPAR::InputParameterContainer base
     [[nodiscard]] inline MAT::PAR::Parameter* Parameter() const { return params_.get(); }
 
     //@}

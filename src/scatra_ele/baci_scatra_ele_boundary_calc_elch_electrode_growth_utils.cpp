@@ -10,9 +10,9 @@
 
 #include "baci_scatra_ele_boundary_calc_elch_electrode_growth_utils.hpp"
 
-#include "baci_scatra_ele_boundary_calc_elch_electrode_utils.hpp"
 #include "baci_scatra_ele_parameter_boundary.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

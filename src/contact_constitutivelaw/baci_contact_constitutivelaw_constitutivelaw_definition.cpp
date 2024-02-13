@@ -18,8 +18,8 @@
 #include "baci_contact_constitutivelaw_bundle.hpp"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "baci_io_inputreader.hpp"
+#include "baci_utils_exceptions.hpp"
 
-#include <utility>
 
 BACI_NAMESPACE_OPEN
 
@@ -48,9 +48,9 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& proble
 
   if (section.size() > 0)
   {
-    for (std::vector<const char*>::const_iterator i = section.begin(); i != section.end(); ++i)
+    for (auto& i : section)
     {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
+      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(i));
 
       // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
       // reading the last entry inside This is required since the material parameters can be
@@ -91,8 +91,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& proble
             new CONTACT::CONSTITUTIVELAW::Container(id, coconstlawtype_, coconstlawname_));
         // fill the latter
 
-        for (unsigned j = 0; j < inputline_.size(); ++j)
-          condline = inputline_[j]->Read(Name(), condline, *container);
+        for (const auto& j : inputline_) condline = j->Read(Name(), condline, *container);
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
@@ -106,8 +105,6 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& proble
       }
     }
   }
-
-  return;
 }
 
 
@@ -132,7 +129,7 @@ void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::DefaultLine(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::Print(
-    std::ostream& stream, const DRT::Container& cond)
+    std::ostream& stream, const INPAR::InputParameterContainer& cond)
 {
   stream << cond.GetDouble(Name());
 }
@@ -150,7 +147,7 @@ void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::Describe(std
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::Read(
     const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
-    DRT::Container& container)
+    INPAR::InputParameterContainer& container)
 {
   // initialize double parameter value to be read
   double number = defaultvalue_;
@@ -204,18 +201,18 @@ std::ostream& CONTACT::CONSTITUTIVELAW::LawDefinition::Print(
   // the descriptive lines (comments)
   stream << comment << std::endl;
   stream << comment << " " << description_ << std::endl;
-  for (unsigned i = 0; i < inputline_.size(); ++i)
+  for (const auto& i : inputline_)
   {
     std::ostringstream desc;
-    inputline_[i]->Describe(desc);
+    i->Describe(desc);
     if (desc.str().size() > 0) stream << comment << desc.str() << std::endl;
   }
 
   // the default line
   stream << comment << "LAW 0   " << coconstlawname_ << "   ";
-  for (unsigned i = 0; i < inputline_.size(); ++i)
+  for (const auto& i : inputline_)
   {
-    inputline_[i]->DefaultLine(stream);
+    i->DefaultLine(stream);
     stream << " ";
   }
 

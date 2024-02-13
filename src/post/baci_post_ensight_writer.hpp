@@ -16,6 +16,8 @@
 #include "baci_lib_element.hpp"       // due to DiscretizationType
 #include "baci_post_writer_base.hpp"  // base class PostWriterBase
 
+#include <Epetra_Map.h>
+
 #include <cstdio>
 #include <fstream>
 #include <iostream>

@@ -31,6 +31,7 @@
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "baci_inpar_xfem.hpp"
+#include "baci_lib_discret.hpp"
 #include "baci_linalg_fixedsizeblockmatrix.hpp"
 
 BACI_NAMESPACE_OPEN

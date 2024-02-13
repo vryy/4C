@@ -18,7 +18,6 @@
 #include <Teuchos_RCP.hpp>
 
 #include <iostream>
-#include <list>
 #include <string>
 #include <vector>
 
@@ -151,7 +150,7 @@ namespace CONTACT
        * \brief write my part of the actual line of the contact constitutive law
        * definition
        */
-      void Print(std::ostream& stream, const DRT::Container& cond) override;
+      void Print(std::ostream& stream, const INPAR::InputParameterContainer& cond) override;
 
       /**
        * \brief describe my part of the default (comment) line of the contact constitutive law
@@ -168,7 +167,8 @@ namespace CONTACT
        *\params[inout] container container to add the read parameter to
        */
       Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-          Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
+          Teuchos::RCP<std::stringstream> condline,
+          INPAR::InputParameterContainer& container) override;
 
      private:
       /// a default value

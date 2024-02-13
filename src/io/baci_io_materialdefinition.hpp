@@ -19,9 +19,7 @@
 #include "baci_inpar_material.hpp"
 #include "baci_io_inputreader.hpp"
 #include "baci_io_linecomponent.hpp"
-#include "baci_lib_container.hpp"
 #include "baci_mat_par_bundle.hpp"
-#include "baci_mat_par_material.hpp"
 
 #include <Teuchos_RCP.hpp>
 

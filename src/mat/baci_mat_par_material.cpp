@@ -13,17 +13,14 @@
 BACI_NAMESPACE_OPEN
 
 
-MAT::PAR::ParMaterialType MAT::PAR::ParMaterialType::instance_;
-
-
 MAT::PAR::Material::Material(
     const int id, const INPAR::MAT::MaterialType type, const std::string name)
-    : Container(), id_(id), type_(type), name_(name), params_(Teuchos::null)
+    : InputParameterContainer(), id_(id), type_(type), name_(name), params_(Teuchos::null)
 {
 }
 
 MAT::PAR::Material::Material(const MAT::PAR::Material& old)
-    : Container(old), id_(old.id_), type_(old.type_), params_(old.params_)
+    : InputParameterContainer(old), id_(old.id_), type_(old.type_), params_(old.params_)
 {
 }
 
@@ -37,7 +34,7 @@ void MAT::PAR::Material::Print(std::ostream& os) const
 {
   os << "MAT " << Id() << " " << Name() << " :: ";
 
-  DRT::Container::Print(os);
+  INPAR::InputParameterContainer::Print(os);
 }
 
 BACI_NAMESPACE_CLOSE
