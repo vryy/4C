@@ -26,9 +26,6 @@ CORE::COMM::ParObject* DRT::ConditionObjectType::Create(const std::vector<char>&
   return object;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 DRT::Condition::Condition(
     const int id, const ConditionType type, const bool buildgeometry, const GeometryType gtype)
     : Container(),
@@ -41,8 +38,6 @@ DRT::Condition::Condition(
 {
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 DRT::Condition::Condition()
     : Container(),
       id_(-1),
@@ -54,8 +49,6 @@ DRT::Condition::Condition()
 {
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 DRT::Condition::Condition(const DRT::Condition& old)
     : Container(old),
       id_(old.id_),
@@ -67,17 +60,12 @@ DRT::Condition::Condition(const DRT::Condition& old)
 {
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const DRT::Condition& cond)
 {
   cond.Print(os);
   return os;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 std::string DRT::Condition::Name() const
 {
   std::string nameOfType = "Condition " + Teuchos::toString(Id()) + " ";
@@ -644,8 +632,6 @@ std::string DRT::Condition::Name() const
   return nameOfType;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Condition::Print(std::ostream& os) const
 {
   os << DRT::Condition::Name();
@@ -658,8 +644,6 @@ void DRT::Condition::Print(std::ostream& os) const
   }
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Condition::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
@@ -677,9 +661,6 @@ void DRT::Condition::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, nodes_);
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Condition::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -701,9 +682,6 @@ void DRT::Condition::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::Condition::AdjustId(const int shift)
 {
   std::map<int, Teuchos::RCP<DRT::Element>> geometry;

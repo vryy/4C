@@ -5,7 +5,6 @@
 
 \level 0
 
-
 */
 /*---------------------------------------------------------------------*/
 
@@ -306,24 +305,6 @@ namespace DRT
       return const_cast<T*>(const_cast<const Container*>(this)->Get<T>(name));
     };
     //@}
-
-    //! @name Erase methods
-
-    /*!
-    \brief Delete a record from the container
-
-    \param name : Name of data to be deleted from container
-
-    */
-    void Delete(const std::string& name);
-
-    /*!
-    \brief Delete everything in this container
-    */
-    void Clear();
-
-    //@}
-
 
    private:
     //! a map to store integer data in

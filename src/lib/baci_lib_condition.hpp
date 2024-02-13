@@ -362,7 +362,7 @@ namespace DRT
     every class implementing ParObject needs a unique id defined at the
     top of this file.
     */
-    int UniqueParObjectId() const override
+    [[nodiscard]] int UniqueParObjectId() const override
     {
       return ConditionObjectType::Instance().UniqueParObjectId();
     }
@@ -390,12 +390,12 @@ namespace DRT
     /*!
     \brief Return condition id
     */
-    inline virtual int Id() const { return id_; }
+    [[nodiscard]] inline virtual int Id() const { return id_; }
 
     /*!
     \brief Return vector of my global node ids
     */
-    const std::vector<int>* GetNodes() const { return &nodes_; }
+    [[nodiscard]] const std::vector<int>* GetNodes() const { return &nodes_; }
 
     /*!
     \brief Set vector of my global node ids
@@ -405,7 +405,7 @@ namespace DRT
     /*!
       \brief Return if a node gid is contained in this condition
      */
-    bool ContainsNode(int ngid) const
+    [[nodiscard]] bool ContainsNode(int ngid) const
     {
       const std::vector<int>* n = GetNodes();
       // DRT::Condition nodes are ordered by design! So we can perform a binary
@@ -425,7 +425,7 @@ namespace DRT
     condition the returned flag is true, otherwise its false;
 
     */
-    inline virtual bool GeometryDescription() const { return buildgeometry_; }
+    [[nodiscard]] inline virtual bool GeometryDescription() const { return buildgeometry_; }
 
     /*!
     \brief Return type of geometry this condition lives on
@@ -434,7 +434,7 @@ namespace DRT
     geometry description is build for this condition iff GeometryDescription()==true
 
     */
-    inline virtual DRT::Condition::GeometryType GType() const { return gtype_; }
+    [[nodiscard]] inline virtual DRT::Condition::GeometryType GType() const { return gtype_; }
 
     /*!
     \brief Print this Condition (ostream << is also implemented for DRT::Condition)
@@ -444,24 +444,26 @@ namespace DRT
     /*!
     Return the id and the name of the condition
     */
-    std::string Name() const;
+    [[nodiscard]] std::string Name() const;
 
     /*!
     \brief Return type of condition
     */
-    inline virtual ConditionType Type() const { return type_; }
+    [[nodiscard]] inline virtual ConditionType Type() const { return type_; }
 
     /*!
     \brief Get a reference to the geometry description of the condition
 
     */
     virtual std::map<int, Teuchos::RCP<DRT::Element>>& Geometry() { return *geometry_; }
-    virtual const std::map<int, Teuchos::RCP<DRT::Element>>& Geometry() const { return *geometry_; }
+    [[nodiscard]] virtual const std::map<int, Teuchos::RCP<DRT::Element>>& Geometry() const
+    {
+      return *geometry_;
+    }
 
     /*!
     \brief Adjust IDs of associated elements in order to obtain global
     unique IDs within one condition type
-
     */
     void AdjustId(const int shift);
 
@@ -495,7 +497,6 @@ namespace DRT
     virtual void AddGeometry(Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geom)
     {
       geometry_ = geom;
-      return;
     }
 
     /*!
@@ -503,11 +504,7 @@ namespace DRT
 
     This method is used by the Discretization only
     */
-    virtual void ClearGeometry()
-    {
-      geometry_ = Teuchos::null;
-      return;
-    }
+    virtual void ClearGeometry() { geometry_ = Teuchos::null; }
 
     //@}
 
@@ -516,22 +513,22 @@ namespace DRT
     Condition operator=(const Condition& old);
 
     //! Unique id of this condition, no second condition of the same type with same id may exist
-    int id_;
+    int id_{};
 
     //! global node ids
     std::vector<int> nodes_{};
 
     //! flag indicating whether this condition builds a geometry description or not
-    bool buildgeometry_;
+    bool buildgeometry_{};
 
     //! Type of this condition
-    ConditionType type_;
+    ConditionType type_{};
 
     //! Type of geometry the condition lives on
-    GeometryType gtype_;
+    GeometryType gtype_{};
 
     //! Geometry description of this condition
-    Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geometry_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geometry_{};
   };  // class Condition
 
 

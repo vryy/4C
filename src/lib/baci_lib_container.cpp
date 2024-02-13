@@ -182,16 +182,6 @@ void DRT::Container::Add(const std::string& name, const int& data) { Add(name, &
 
 void DRT::Container::Add(const std::string& name, const double& data) { Add(name, &data, 1); }
 
-
-void DRT::Container::Delete(const std::string& name)
-{
-  [[maybe_unused]] const unsigned n_erased_entries =
-      intdata_.erase(name) + doubledata_.erase(name) + mapdata_.erase(name) +
-      stringdata_.erase(name) + mapdata_.erase(name);
-  dsassert(n_erased_entries == 1, "Internal error: key was present in more than one map.");
-}
-
-
 int DRT::Container::GetInt(const std::string& name) const
 {
   const std::vector<int>* vecptr = Get<std::vector<int>>(name);
@@ -213,16 +203,6 @@ double DRT::Container::GetDouble(const std::string& name) const
 int DRT::Container::UniqueParObjectId() const
 {
   return ContainerType::Instance().UniqueParObjectId();
-}
-
-
-void DRT::Container::Clear()
-{
-  intdata_.clear();
-  doubledata_.clear();
-  mapdata_.clear();
-  stringdata_.clear();
-  matdata_.clear();
 }
 
 BACI_NAMESPACE_CLOSE
