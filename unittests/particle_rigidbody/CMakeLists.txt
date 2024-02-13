@@ -6,5 +6,3 @@ set(SOURCE_LIST
     )
 
 baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
-
-baci_add_external_dependency(${TESTNAME} Trilinos::all_selected_libs)
