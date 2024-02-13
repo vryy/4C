@@ -156,6 +156,9 @@ namespace DRT
       /// access location entry
       LocationData& operator[](int i) { return data_[i]; }
 
+      /// access location entry
+      const LocationData& operator[](int i) const { return data_[i]; }
+
       /// number of location entries, that is number of dofsets in discretization
       int Size() const { return data_.size(); }
 

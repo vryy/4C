@@ -15,6 +15,7 @@
 #include "baci_membrane_scatra.hpp"
 #include "baci_shell7p_ele_scatra.hpp"
 #include "baci_so3_scatra.hpp"
+#include "baci_solid_scatra_ele.hpp"
 #include "baci_truss3_scatra.hpp"
 #include "baci_w1_scatra.hpp"
 
@@ -116,6 +117,11 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
   else if (eletypename == "Truss3ScatraType")
   {
     impltype = (dynamic_cast<DRT::ELEMENTS::Truss3Scatra*>(ele))->ImplType();
+  }
+  // SolidScatra element
+  else if (eletypename == "SolidScatraType")
+  {
+    impltype = (dynamic_cast<DRT::ELEMENTS::SolidScatra*>(ele))->ImplType();
   }
   else
   {

@@ -1054,6 +1054,13 @@ baci_test(new_solidporo_ele_poromultielast_3D_tet4_mono 2 4)
 baci_test(new_solidporo_ele_poromultielastscatra_3D_tet4_linebased_artery_coupling_mono_network 3 1)
 baci_test(new_solidporo_ele_poromultielastscatra_3D_tet4_surfbased_artery_coupling_mono_network 3 3)
 
+baci_test(new_solid_scatra_ssi_mono_3D_1hex8_scatra 2 2)
+baci_test(new_solid_scatra_ssi_mono_3D_hex8_elch_structure_quasi_statics 2 2)
+baci_test(new_solid_scatra_ssi_twoway_3D_1hex8_scatra 3 5)
+baci_test(new_solid_scatra_ssti_mono_3D_2blocks_elch_temp_dep_diff 3 "")
+baci_test(new_solid_scatra_ssi_mono_3D_tet4_elch_s2i_butlervolmer_cycling 3 40)
+baci_test(new_solid_scatra_ssi_mono_3D_tet10_elch 1 30)
+
 baci_test(orthopressure_pseudo_solidh8_eas 2 "")
 baci_test(orthopressure_pseudo_solidh8 2 "")
 baci_test(orthopressure_pseudo_solidw6 2 "")
