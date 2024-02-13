@@ -643,8 +643,6 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceSt
   bool equal_integration_mass_stiffness =
       CompareGaussIntegration(mass_matrix_integration_, stiffness_matrix_integration_);
 
-  double mean_density = 0.0;
-
   CentroidTransformation<celltype> centroid_transformation =
       EvaluateCentroidTransformation<celltype>(nodal_coordinates);
 
@@ -657,6 +655,8 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceSt
 
   EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(nodal_coordinates, params);
 
+  double element_mass = 0.0;
+  double element_volume = 0.0;
   ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -707,7 +707,8 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceSt
           }
           else
           {
-            mean_density += solid_material.Density(gp) / stiffness_matrix_integration_.NumPoints();
+            element_mass += solid_material.Density(gp) * integration_factor;
+            element_volume += integration_factor;
           }
         }
       });
@@ -733,12 +734,13 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceSt
   if (mass.has_value() && !equal_integration_mass_stiffness)
   {
     // integrate mass matrix
-    dsassert(mean_density > 0, "It looks like the density is 0.0");
+    dsassert(element_mass > 0, "It looks like the element mass is 0.0");
     ForEachGaussPoint<celltype>(nodal_coordinates, mass_matrix_integration_,
         [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-            const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
-        { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
+            const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp) {
+          AddMassMatrix(shape_functions, integration_factor, element_mass / element_volume, *mass);
+        });
   }
 }
 
