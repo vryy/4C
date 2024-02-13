@@ -370,28 +370,6 @@ macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_ste
 endmacro(baci_test_Nested_Par)
 
 ###########
-# NESTED PARALLELISM WITH COPYDATFILE
-# Usage in TestingFrameworkListOfTests.cmake: "baci_test_Nested_Par_CopyDat(<name_of_input_file> <num_proc> <num_groups> optional: <label>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
-# <num_proc>: number of processors the test should use
-# <num_groups>: the number of groups
-# optional: <label>: add a label to the test
-macro(baci_test_Nested_Par_CopyDat name_of_input_file num_proc num_groups)
-  set(test_directory framework_test_output/${name_of_input_file}_p${num_proc})
-
-  add_test(
-    NAME ${name_of_input_file}-nestedPar_CopyDat-p${num_proc}
-    COMMAND
-      bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} &&  ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat ${test_directory}/xxx"
-    )
-
-  require_fixture(${name_of_input_file}-nestedPar_CopyDat-p${num_proc} test_cleanup)
-  set_processors(${name_of_input_file}-nestedPar_CopyDat-p${num_proc} ${num_proc})
-  set_timeout(${name_of_input_file}-nestedPar_CopyDat-p${num_proc})
-endmacro(baci_test_Nested_Par_CopyDat)
-
-###########
 # FRAMEWORK TESTS - testing the whole framework: pre_exodus, BACI, and post-filter
 # Usage in TestingFrameworkListOfTests.cmake: "baci_framework_test(<name_of_input_file> <num_proc> <xml_filename>)"
 # <name_of_input_file>: must equal the name of a .e/.bc/.head file in directory tests/framework-test

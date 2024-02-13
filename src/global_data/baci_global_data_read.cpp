@@ -1272,8 +1272,6 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
     // we read nodes and elements for the desired fields as specified above
     meshreader.ReadAndPartition();
 
-    CORE::COMM::NestedParallelismType npType =
-        GLOBAL::Problem::Instance()->GetCommunicators()->NpType();
     // care for special applications
     switch (problem.GetProblemType())
     {
@@ -1286,8 +1284,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       {
         // read microscale fields from second, third, ... input file if necessary
         // (in case of multi-scale material models)
-        if (npType != CORE::COMM::NestedParallelismType::copy_dat_file)
-          ReadMicroFields(problem, reader);
+        ReadMicroFields(problem, reader);
         break;
       }
       case GLOBAL::ProblemType::np_support:

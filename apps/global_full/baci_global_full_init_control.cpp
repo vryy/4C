@@ -80,7 +80,6 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
       restartgroup = 0;
       break;
     case CORE::COMM::NestedParallelismType::every_group_read_dat_file:
-    case CORE::COMM::NestedParallelismType::copy_dat_file:
     {
       if (inoutargs > 4)
         dserror(
@@ -113,7 +112,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
       break;
     default:
       dserror(
-          "-nptype is not correct. Only copyDatFile, everyGroupReadDatFile and separateDatFiles "
+          "-nptype is not correct. Only everyGroupReadDatFile and separateDatFiles "
           "are available");
       break;
   }
@@ -165,7 +164,6 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
           // nothing to add to restartfilekenner
           break;
         case CORE::COMM::NestedParallelismType::every_group_read_dat_file:
-        case CORE::COMM::NestedParallelismType::copy_dat_file:
         {
           // check whether restartfilekenner includes a dash and in case separate the number at the
           // end
@@ -186,7 +184,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
         break;
         default:
           dserror(
-              "-nptype is not correct. Only copyDatFile, everyGroupReadDatFile and "
+              "-nptype is not correct. Only everyGroupReadDatFile and "
               "separateDatFiles are available");
           break;
       }

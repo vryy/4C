@@ -10,9 +10,6 @@ class TestMacro:
     #  regular expression matching all test names and mpi ranks
     pattern: re.Pattern
 
-    # category used during whitelisting of tests
-    category: str
-
     # group ids in the regular expression that matches a test name
     test_names_groups: List[int] = dataclasses.field(default_factory=lambda: [0])
 
@@ -172,29 +169,12 @@ def check_unittests(look_cmd, allerrors):
     return errors
 
 
-def check_mpirank_against_whitelist(
-    name: str, category: str, mpi_rank: int, whitelist: List
-) -> bool:
-    for item in whitelist:
-        if (
-            item["test_name"] == name
-            and item["test_category"] == category
-            and item["mpi_rank"] == mpi_rank
-        ):
-            return True
-    return False
-
-
 # CHECK INPUT FILE TESTS
 def check_inputtests(look_cmd, allerrors):
     errors = 0
     input_tests = [
         str(ff) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_input_file(ff)
     ]
-
-    # load mpi rank whitelist
-    with open(os.path.join(sys.path[0], "whitelist_mpi_ranks.json")) as whitelist_file:
-        mpirank_whitelist = json.load(whitelist_file)
 
     mpi_non_compliant_tests: List[str] = []
     list_of_all_testnames: List[str] = []
@@ -208,56 +188,35 @@ def check_inputtests(look_cmd, allerrors):
         test_macros = [
             TestMacro(
                 re.compile(r"baci_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"),
-                "baci_test",
                 mpirank_group=1,
             ),
             TestMacro(
                 re.compile(
                     r"baci_test_extended_timeout\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"
                 ),
-                "baci_test_extended_timeout",
                 mpirank_group=1,
             ),
             TestMacro(
                 re.compile(r"baci_omp_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"),
-                "baci_omp_test",
                 mpirank_group=1,
             ),
             TestMacro(
                 re.compile(
                     r"baci_test_and_post_ensight_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"
                 ),
-                "baci_test_and_post_ensight_test",
                 mpirank_group=1,
             ),
             TestMacro(
                 re.compile(
                     r"baci_test_restartonly\s*\(*([a-zA-Z0-9_\.\-]+)\s+(?:[a-zA-Z0-9_\.\-]+)\s+(\d+)"
                 ),
-                "baci_test_restartonly",
                 mpirank_group=1,
             ),
             TestMacro(
                 re.compile(
                     r"baci_test_Nested_Par\s*\(\s*([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s*"
                 ),
-                "Nested_Par",
                 test_names_groups=[0, 1],
-            ),
-            TestMacro(
-                re.compile(
-                    r"baci_test_Nested_Par_CopyDat\s*\(\s*([a-zA-Z0-9_\.\-]+)\s+(\d+)"
-                ),
-                "Nested_Par_CopyDat",
-                mpirank_group=1,
-            ),
-            TestMacro(
-                re.compile(
-                    r"baci_test_Nested_Par_CopyDat_prepost\s*\(\s*([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-\"\"]+)\s+(\d+)"
-                ),
-                "Nested_Par_CopyDat_prepost",
-                test_names_groups=[0, 1, 2],
-                mpirank_group=3,
             ),
         ]
 
@@ -277,12 +236,8 @@ def check_inputtests(look_cmd, allerrors):
                     mpi_rank = int(test[test_macro.mpirank_group])
 
                     if mpi_rank > 3:
-                        # check if tests are allowed to run with more than 4 procs
                         for name in my_names:
-                            if not check_mpirank_against_whitelist(
-                                name, test_macro.category, mpi_rank, mpirank_whitelist
-                            ):
-                                mpi_non_compliant_tests.append(name)
+                            mpi_non_compliant_tests.append(name)
 
     if len(mpi_non_compliant_tests) > 0:
         errors += 1

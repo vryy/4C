@@ -84,44 +84,16 @@ void ntainp_ccadiscret(
       // and add it to the (derived) nurbs discretization
       GLOBAL::ReadKnots(*problem, reader);
       break;
-    case CORE::COMM::NestedParallelismType::copy_dat_file:
-      // group 0 only reads discretization etc
-      if (group == 0)
-      {
-        // input of fields
-        GLOBAL::ReadFields(*problem, reader);
-
-        // read all types of geometry related conditions (e.g. boundary conditions)
-        // Also read time and space functions and local coord systems
-        GLOBAL::ReadConditions(*problem, reader);
-
-        // read all knot information for isogeometric analysis
-        // and add it to the (derived) nurbs discretization
-        GLOBAL::ReadKnots(*problem, reader);
-      }
-      gcomm->Barrier();
-      // group 0 broadcasts the discretizations to the other groups
-      DRT::BroadcastDiscretizations(*problem);
-      gcomm->Barrier();
-      break;
     default:
       dserror("nptype (nested parallelity type) not recognized");
       break;
   }
 
   // all reading is done at this point!
-
-  if (lcomm->MyPID() == 0 && npType != CORE::COMM::NestedParallelismType::copy_dat_file)
-    problem->WriteInputParameters();
-
+  if (lcomm->MyPID() == 0) problem->WriteInputParameters();
 
   // before we destroy the reader we want to know about unused sections
-  if (npType == CORE::COMM::NestedParallelismType::copy_dat_file)
-  {
-    if (group == 0) reader.PrintUnknownSections();
-  }
-  else
-    reader.PrintUnknownSections();
+  reader.PrintUnknownSections();
 }  // end of ntainp_ccadiscret()
 
 

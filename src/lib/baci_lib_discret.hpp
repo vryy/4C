@@ -2249,23 +2249,6 @@ namespace DRT
     //! Vector of DofSets
     std::vector<Teuchos::RCP<DofSetInterface>> dofsets_;
   };  // class Discretization
-
-  //! distribute discretizations from one group to the others with ponzi scheme
-  void BroadcastDiscretizations(GLOBAL::Problem& problem);
-
-  //! distribute a discretization from one group to one other
-  void NPDuplicateDiscretization(const int sgroup, const int rgroup,
-      Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
-      CORE::FE::ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
-
-  //! distribute a discretization from one group to one other
-  //! if the groups have the same size. In this special case it is desirable
-  //! that the parallel distribution is the same for all groups. Hence,
-  //! a different braodcasting scheme is used
-  void NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rgroup,
-      Teuchos::RCP<CORE::COMM::Communicators> group, Teuchos::RCP<DRT::Discretization> dis,
-      CORE::FE::ShapeFunctionType distype, Teuchos::RCP<Epetra_MpiComm> icomm);
-
 }  // namespace DRT
 
 

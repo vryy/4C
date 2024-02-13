@@ -163,9 +163,7 @@ namespace CORE::COMM
       {
         nptypeisset = true;
         argument = argument.substr(8, std::string::npos).c_str();
-        if (argument == "copyDatFile")
-          npType = NestedParallelismType::copy_dat_file;
-        else if (argument == "everyGroupReadDatFile")
+        if (argument == "everyGroupReadDatFile")
           npType = NestedParallelismType::every_group_read_dat_file;
         else if (argument == "separateDatFiles")
           npType = NestedParallelismType::separate_dat_files;
@@ -193,7 +191,7 @@ namespace CORE::COMM
                                      // external codes)
           {
             printf(
-                "\n\nOnly copyDatFile, everyGroupReadDatFile and separateDatFiles is available for "
+                "\n\nOnly everyGroupReadDatFile and separateDatFiles is available for "
                 "nptype=  \n\n");
             printf("Try again!\n");
           }
