@@ -279,76 +279,72 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == Owner())
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<std::vector<char>> stressdata =
+          params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+      Teuchos::RCP<std::vector<char>> straindata =
+          params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+      Teuchos::RCP<std::vector<char>> plstraindata =
+          params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
+      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+      if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> stress;
+      CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> strain;
+      CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> plstrain;
+      auto iostress =
+          INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+      auto iostrain =
+          INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+      auto ioplstrain =
+          INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
+
+      std::vector<double> mydispmat(lm.size(), 0.0);
+
+      // special case: geometrically linear
+      if (kintype_ == INPAR::STR::KinemType::linear)
       {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-        Teuchos::RCP<std::vector<char>> stressdata =
-            params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        Teuchos::RCP<std::vector<char>> straindata =
-            params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        Teuchos::RCP<std::vector<char>> plstraindata =
-            params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-        if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
-        if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-        std::vector<double> myres(lm.size());
-        DRT::UTILS::ExtractMyValues(*res, myres, lm);
-        CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> stress;
-        CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> strain;
-        CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> plstrain;
-        auto iostress =
-            INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        auto iostrain =
-            INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        auto ioplstrain =
-            INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
+        soh27_linstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain,
+            &plstrain, params, iostress, iostrain, ioplstrain);
+      }
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
+      {
+        soh27_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
+            nullptr, nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain,
+            ioplstrain);
+      }
+      else
+        dserror("unknown kinematic type");
 
-        std::vector<double> mydispmat(lm.size(), 0.0);
+      {
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, stress);
+        data.StartPacking();
+        AddtoPack(data, stress);
+        std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
+      }
 
-        // special case: geometrically linear
-        if (kintype_ == INPAR::STR::KinemType::linear)
-        {
-          soh27_linstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain,
-              &plstrain, params, iostress, iostrain, ioplstrain);
-        }
-        // standard is: geometrically non-linear with Total Lagrangean approach
-        else if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
-        {
-          soh27_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
-              nullptr, nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain,
-              ioplstrain);
-        }
-        else
-          dserror("unknown kinematic type");
+      {
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, strain);
+        data.StartPacking();
+        AddtoPack(data, strain);
+        std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
+      }
 
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, stress);
-          data.StartPacking();
-          AddtoPack(data, stress);
-          std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
-        }
-
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, strain);
-          data.StartPacking();
-          AddtoPack(data, strain);
-          std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
-        }
-
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, plstrain);
-          data.StartPacking();
-          AddtoPack(data, plstrain);
-          std::copy(data().begin(), data().end(), std::back_inserter(*plstraindata));
-        }
+      {
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, plstrain);
+        data.StartPacking();
+        AddtoPack(data, plstrain);
+        std::copy(data().begin(), data().end(), std::back_inserter(*plstraindata));
       }
     }
     break;

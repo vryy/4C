@@ -484,147 +484,142 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
     case calc_struct_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
+      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
 
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == so3_ele::Owner())
+      std::vector<double> mydisp((la[0].lm_).size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+
+      Teuchos::RCP<std::vector<char>> couplstressdata;
+      INPAR::STR::StressType iocouplstress;
+      if (this->IsParamsInterface())
       {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+        couplstressdata = this->StrParamsInterface().CouplingStressDataPtr();
+        iocouplstress = this->StrParamsInterface().GetCouplingStressOutputType();
+      }
+      else
+      {
+        couplstressdata = params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
+        iocouplstress =
+            INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
+      }
 
-        std::vector<double> mydisp((la[0].lm_).size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      // get the temperature dependent stress
+      CORE::LINALG::Matrix<numgpt_post, numstr_> couplstress(true);
 
-        Teuchos::RCP<std::vector<char>> couplstressdata;
-        INPAR::STR::StressType iocouplstress;
-        if (this->IsParamsInterface())
+      // initialise the vectors
+      // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
+      // coupling field is not yet known. Pass coupling vectors filled with zeros
+      // the size of the vectors is the length of the location vector/nsd_
+      std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
+
+      // need current temperature state,
+      // call the temperature discretization: thermo equates 2nd dofset
+      // disassemble temperature
+      if (discretization.HasState(1, "temperature"))
+      {
+        // check if you can get the temperature state
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+        if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+
+        // the temperature field has only one dof per node, disregarded by the
+        // dimension of the problem
+        const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
+        if (la[1].Size() != nen_ * numdofpernode_thr)
+          dserror("Location vector length for temperature does not match!");
+
+        // extract the current temperatures
+        DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+
+        // default: geometrically non-linear analysis with Total Lagrangean approach
+        if (so3_ele::KinematicType() == INPAR::STR::KinemType::nonlinearTotLag)
         {
-          couplstressdata = this->StrParamsInterface().CouplingStressDataPtr();
-          iocouplstress = this->StrParamsInterface().GetCouplingStressOutputType();
-        }
-        else
-        {
-          couplstressdata =
-              params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
-          iocouplstress =
-              INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
-        }
-
-        // get the temperature dependent stress
-        CORE::LINALG::Matrix<numgpt_post, numstr_> couplstress(true);
-
-        // initialise the vectors
-        // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
-        // coupling field is not yet known. Pass coupling vectors filled with zeros
-        // the size of the vectors is the length of the location vector/nsd_
-        std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
-
-        // need current temperature state,
-        // call the temperature discretization: thermo equates 2nd dofset
-        // disassemble temperature
-        if (discretization.HasState(1, "temperature"))
-        {
-          // check if you can get the temperature state
-          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-          if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
-
-          // the temperature field has only one dof per node, disregarded by the
-          // dimension of the problem
-          const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-          if (la[1].Size() != nen_ * numdofpernode_thr)
-            dserror("Location vector length for temperature does not match!");
-
-          // extract the current temperatures
-          DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
-
-          // default: geometrically non-linear analysis with Total Lagrangean approach
-          if (so3_ele::KinematicType() == INPAR::STR::KinemType::nonlinearTotLag)
-          {
-            // in case we have a finite strain thermoplastic material use hex8fbar element
-            // to cirucumvent volumetric locking
-            DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*
-                eleFBAR = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
-                    CORE::FE::CellType::hex8>*>(this);
+          // in case we have a finite strain thermoplastic material use hex8fbar element
+          // to cirucumvent volumetric locking
+          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>* eleFBAR =
+              dynamic_cast<
+                  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*>(
+                  this);
 
 #ifdef TSIASOUTPUT
-            std::cout << "thermal stress" << couplstress << std::endl;
-            std::cout << "iocouplstress = " << iocouplstress << std::endl;
+          std::cout << "thermal stress" << couplstress << std::endl;
+          std::cout << "iocouplstress = " << iocouplstress << std::endl;
 #endif
 
-            // default structural element
-            if (!eleFBAR)
-            {
-              // calculate the thermal stress
-              nln_stifffint_tsi(la,  // location array
-                  discretization,    // discr
-                  mydisp,            // current displacements
-                  mytempnp,          // current temperature
-                  nullptr,           // element stiffness matrix
-                  nullptr,           // element internal force vector
-                  &couplstress,      // stresses at GP
-                  params,            // algorithmic parameters e.g. time
-                  iocouplstress      // stress output option
-              );
-            }     // so3_ele
-            else  // Hex8Fbar
-            {
-              nln_stifffint_tsi_fbar(la,  // location array
-                  mydisp,                 // current displacements
-                  mytempnp,               // current temperature
-                  nullptr,                // element stiffness matrix
-                  nullptr,                // element internal force vector
-                  &couplstress,           // stresses at GP
-                  params,                 // algorithmic parameters e.g. time
-                  iocouplstress           // stress output option
-              );
-            }  // Hex8Fbar
-
-#ifdef TSIASOUTPUT
-            std::cout << "thermal stress" << couplstress << std::endl;
-#endif
-
-          }  // (so3_ele::KinematicType() == INPAR::STR::KinemType::nonlinearTotLag)
-
-          // geometric linear
-          else if (so3_ele::KinematicType() == INPAR::STR::KinemType::linear)
+          // default structural element
+          if (!eleFBAR)
           {
-            // purely structural method, this is the coupled routine, i.e., a 2nd
-            // discretisation exists, i.e., --> we always have a temperature state
-
-            // calculate the THERMOmechanical term for fint: temperature stresses
-            lin_fint_tsi(la, mydisp, mytempnp, nullptr, &couplstress, params, iocouplstress);
-          }  // (so3_ele::KinematicType() == INPAR::STR::KinemType::linear)
+            // calculate the thermal stress
+            nln_stifffint_tsi(la,  // location array
+                discretization,    // discr
+                mydisp,            // current displacements
+                mytempnp,          // current temperature
+                nullptr,           // element stiffness matrix
+                nullptr,           // element internal force vector
+                &couplstress,      // stresses at GP
+                params,            // algorithmic parameters e.g. time
+                iocouplstress      // stress output option
+            );
+          }     // so3_ele
+          else  // Hex8Fbar
+          {
+            nln_stifffint_tsi_fbar(la,  // location array
+                mydisp,                 // current displacements
+                mytempnp,               // current temperature
+                nullptr,                // element stiffness matrix
+                nullptr,                // element internal force vector
+                &couplstress,           // stresses at GP
+                params,                 // algorithmic parameters e.g. time
+                iocouplstress           // stress output option
+            );
+          }  // Hex8Fbar
 
 #ifdef TSIASOUTPUT
           std::cout << "thermal stress" << couplstress << std::endl;
 #endif
-        }
 
-        // total stress is the sum of the mechanical stress and the thermal stress
-        // stress = stress_d + stress_T
-        //        stress.Update(1.0,couplstress,1.0);
-        // --> so far the addition of s_d and s_T was realised here
-        // ==> from now on: we fill 2 different vectors (stressdata,couplstressdata)
-        //     which are used in the post processing.
-        //     --> advantage: different numbers of Gauss points for the stress
-        //         and couplstress are possible
-        //         --> important e.g. in case of Tet4 (s_d: 1GP, s_T: 5GP)
-        //             --> for s_T we use the library intrepid
-        //     --> in ParaView you can visualise the mechanical and the thermal
-        //         stresses separately
-        //     --> to get the total stress you have to calculate both vectors
-        //         within ParaView using programmable filters
+        }  // (so3_ele::KinematicType() == INPAR::STR::KinemType::nonlinearTotLag)
 
-        // pack the data for postprocessing
+        // geometric linear
+        else if (so3_ele::KinematicType() == INPAR::STR::KinemType::linear)
         {
-          CORE::COMM::PackBuffer data;
-          // get the size of stress
-          so3_ele::AddtoPack(data, couplstress);
-          data.StartPacking();
-          // pack the stresses
-          so3_ele::AddtoPack(data, couplstress);
-          std::copy(data().begin(), data().end(), std::back_inserter(*couplstressdata));
-        }
-      }  // end proc Owner
+          // purely structural method, this is the coupled routine, i.e., a 2nd
+          // discretisation exists, i.e., --> we always have a temperature state
+
+          // calculate the THERMOmechanical term for fint: temperature stresses
+          lin_fint_tsi(la, mydisp, mytempnp, nullptr, &couplstress, params, iocouplstress);
+        }  // (so3_ele::KinematicType() == INPAR::STR::KinemType::linear)
+
+#ifdef TSIASOUTPUT
+        std::cout << "thermal stress" << couplstress << std::endl;
+#endif
+      }
+
+      // total stress is the sum of the mechanical stress and the thermal stress
+      // stress = stress_d + stress_T
+      //        stress.Update(1.0,couplstress,1.0);
+      // --> so far the addition of s_d and s_T was realised here
+      // ==> from now on: we fill 2 different vectors (stressdata,couplstressdata)
+      //     which are used in the post processing.
+      //     --> advantage: different numbers of Gauss points for the stress
+      //         and couplstress are possible
+      //         --> important e.g. in case of Tet4 (s_d: 1GP, s_T: 5GP)
+      //             --> for s_T we use the library intrepid
+      //     --> in ParaView you can visualise the mechanical and the thermal
+      //         stresses separately
+      //     --> to get the total stress you have to calculate both vectors
+      //         within ParaView using programmable filters
+
+      // pack the data for postprocessing
+      {
+        CORE::COMM::PackBuffer data;
+        // get the size of stress
+        so3_ele::AddtoPack(data, couplstress);
+        data.StartPacking();
+        // pack the stresses
+        so3_ele::AddtoPack(data, couplstress);
+        std::copy(data().begin(), data().end(), std::back_inserter(*couplstressdata));
+      }
 
       break;
     }  // calc_struct_stress

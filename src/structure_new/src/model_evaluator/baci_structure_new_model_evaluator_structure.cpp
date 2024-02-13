@@ -847,7 +847,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeStructurePostprocessStressStra
     std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
         Teuchos::null, Teuchos::null};
 
-    EvaluateInternal(eval_mat.data(), eval_vec.data());
+    EvaluateInternalSpecifiedElements(eval_mat.data(), eval_vec.data(), Discret().ElementRowMap());
 
     auto DoPostprocessingOnElement = [](const DRT::Element& ele)
     {
@@ -1153,6 +1153,18 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(Teuchos::ParameterList& p,
 
   Discret().Evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]);
   Discret().ClearState();
+}
+
+void STR::MODELEVALUATOR::Structure::EvaluateInternalSpecifiedElements(
+    Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec,
+    const Epetra_Map* ele_map_to_be_evaluated)
+{
+  PreEvaluateInternal();
+
+  Teuchos::ParameterList p;
+  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", EvalDataPtr());
+
+  EvaluateInternalSpecifiedElements(p, eval_mat, eval_vec, ele_map_to_be_evaluated);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1464,7 +1476,7 @@ void STR::MODELEVALUATOR::Structure::DetermineStressStrain()
   std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
 
-  EvaluateInternal(eval_mat.data(), eval_vec.data());
+  EvaluateInternalSpecifiedElements(eval_mat.data(), eval_vec.data(), Discret().ElementRowMap());
 }
 
 /*----------------------------------------------------------------------------*

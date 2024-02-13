@@ -28,6 +28,7 @@
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret_faces.hpp"
 #include "baci_lib_locsys.hpp"
+#include "baci_lib_utils_discret.hpp"
 #include "baci_linalg_blocksparsematrix.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_serialdensevector.hpp"
@@ -2342,8 +2343,9 @@ void STR::TimInt::DetermineStressStrain()
 
     if ((dismatn_ != Teuchos::null)) discret_->SetState(0, "material_displacement", dismatn_);
 
-    discret_->Evaluate(
-        p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> system_vector = Teuchos::null;
+    DRT::UTILS::Evaluate(*discret_, p, system_matrix, system_vector, discret_->ElementRowMap());
     discret_->ClearState();
   }
 }

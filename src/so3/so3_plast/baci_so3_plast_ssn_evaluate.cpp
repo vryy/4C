@@ -275,95 +275,88 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     case DRT::ELEMENTS::struct_calc_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == Owner())
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
+      Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
+      Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
+      INPAR::STR::StressType iostress = INPAR::STR::stress_none;
+      INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
+      if (IsParamsInterface())
       {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
-        Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
-        Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
-        INPAR::STR::StressType iostress = INPAR::STR::stress_none;
-        INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
-        if (IsParamsInterface())
+        stressdata = StrParamsInterface().StressDataPtr();
+        straindata = StrParamsInterface().StrainDataPtr();
+
+        iostress = StrParamsInterface().GetStressOutputType();
+        iostrain = StrParamsInterface().GetStrainOutputType();
+      }
+      else
+      {
+        stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+        straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+        iostress = INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+        iostrain = INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+      }
+      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+
+      std::vector<double> mydisp((la[0].lm_).size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+
+      // initialise the vectors
+      // Evaluate() is called the first time in StructureBaseAlgorithm: at this
+      // stage the coupling field is not yet known. Pass coupling vectors filled
+      // with zeros
+      // the size of the vectors is the length of the location vector/nsd_
+      // velocities for TSI problem
+      std::vector<double> myvel(0);
+      std::vector<double> mytempnp(0);
+      std::vector<double> mytempres(0);
+      if (tsi_)
+      {
+        if (discretization.HasState(0, "velocity"))
         {
-          stressdata = StrParamsInterface().StressDataPtr();
-          straindata = StrParamsInterface().StrainDataPtr();
-
-          iostress = StrParamsInterface().GetStressOutputType();
-          iostrain = StrParamsInterface().GetStrainOutputType();
+          // get the velocities
+          Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0, "velocity");
+          if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+          // extract the velocities
+          myvel.resize((la[0].lm_).size());
+          DRT::UTILS::ExtractMyValues(*vel, myvel, la[0].lm_);
         }
-        else
+        if (discretization.HasState(1, "temperature"))
         {
-          stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-          straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-          iostress =
-              INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-          iostrain =
-              INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+          if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+
+          // the temperature field has only one dof per node, disregarded by the dimension of the
+          // problem
+          const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
+          if (la[1].Size() != nen_ * numdofpernode_thr)
+            dserror("Location vector length for temperature does not match!");
+          // extract the current temperatures
+          mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
+          DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
         }
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-        if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+      }
 
-        std::vector<double> mydisp((la[0].lm_).size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::LINALG::Matrix<numgpt_post, numstr_> stress;
+      CORE::LINALG::Matrix<numgpt_post, numstr_> strain;
 
-        // initialise the vectors
-        // Evaluate() is called the first time in StructureBaseAlgorithm: at this
-        // stage the coupling field is not yet known. Pass coupling vectors filled
-        // with zeros
-        // the size of the vectors is the length of the location vector/nsd_
-        // velocities for TSI problem
-        std::vector<double> myvel(0);
-        std::vector<double> mytempnp(0);
-        std::vector<double> mytempres(0);
-        if (tsi_)
-        {
-          if (discretization.HasState(0, "velocity"))
-          {
-            // get the velocities
-            Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0, "velocity");
-            if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-            // extract the velocities
-            myvel.resize((la[0].lm_).size());
-            DRT::UTILS::ExtractMyValues(*vel, myvel, la[0].lm_);
-          }
-          if (discretization.HasState(1, "temperature"))
-          {
-            Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-            if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
-
-            // the temperature field has only one dof per node, disregarded by the dimension of the
-            // problem
-            const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-            if (la[1].Size() != nen_ * numdofpernode_thr)
-              dserror("Location vector length for temperature does not match!");
-            // extract the current temperatures
-            mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
-            DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
-          }
-        }
-
-        CORE::LINALG::Matrix<numgpt_post, numstr_> stress;
-        CORE::LINALG::Matrix<numgpt_post, numstr_> strain;
-
-        // default: geometrically non-linear analysis with Total Lagrangean approach
-        nln_stiffmass(mydisp, myvel, mytempnp, nullptr, nullptr, nullptr, &stress, &strain, params,
-            iostress, iostrain);
-        {
-          CORE::COMM::PackBuffer data;
-          this->AddtoPack(data, stress);
-          data.StartPacking();
-          this->AddtoPack(data, stress);
-          std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
-        }
-        {
-          CORE::COMM::PackBuffer data;
-          this->AddtoPack(data, strain);
-          data.StartPacking();
-          this->AddtoPack(data, strain);
-          std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
-        }
+      // default: geometrically non-linear analysis with Total Lagrangean approach
+      nln_stiffmass(mydisp, myvel, mytempnp, nullptr, nullptr, nullptr, &stress, &strain, params,
+          iostress, iostrain);
+      {
+        CORE::COMM::PackBuffer data;
+        this->AddtoPack(data, stress);
+        data.StartPacking();
+        this->AddtoPack(data, stress);
+        std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
+      }
+      {
+        CORE::COMM::PackBuffer data;
+        this->AddtoPack(data, strain);
+        data.StartPacking();
+        this->AddtoPack(data, strain);
+        std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
 
       break;

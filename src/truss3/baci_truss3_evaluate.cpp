@@ -121,13 +121,10 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     }
     case ELEMENTS::struct_calc_stress:
     {
-      if (discretization.Comm().MyPID() == Owner())
-      {
-        std::map<std::string, std::vector<double>> ele_state;
-        ExtractElementalVariables(la, discretization, params, ele_state);
+      std::map<std::string, std::vector<double>> ele_state;
+      ExtractElementalVariables(la, discretization, params, ele_state);
 
-        CalcGPStresses(params, ele_state);
-      }
+      CalcGPStresses(params, ele_state);
       break;
     }
     case ELEMENTS::struct_calc_update_istep:
