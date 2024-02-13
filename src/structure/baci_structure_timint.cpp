@@ -2047,7 +2047,8 @@ void STR::TimInt::WriteGmshStrucOutputStep()
 {
   if (not gmsh_out_) return;
 
-  const std::string filename = IO::GMSH::GetFileName("struct", stepn_, false, myrank_);
+  const std::string filename = IO::GMSH::GetFileName(
+      "struct", discret_->Writer()->Output()->FileName(), stepn_, false, myrank_);
   std::ofstream gmshfilecontent(filename.c_str());
 
   // add 'View' to Gmsh postprocessing file

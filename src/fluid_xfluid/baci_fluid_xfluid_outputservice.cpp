@@ -20,6 +20,7 @@
 #include "baci_global_data.hpp"
 #include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_io.hpp"
+#include "baci_io_control.hpp"
 #include "baci_io_gmsh.hpp"
 #include "baci_lib_discret_xfem.hpp"
 #include "baci_lib_dofset_transparent_independent.hpp"
@@ -411,6 +412,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
 
   bool screen_out = gmsh_debug_out_screen_;
 
+  auto file_name = discret_->Writer()->Output()->FileName();
+
   // output for Element and Node IDs
   std::ostringstream filename_base_vel;
   if (count > -1)
@@ -418,7 +421,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   else
     filename_base_vel << filename_base << "_vel";
   const std::string filename_vel = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      filename_base_vel.str(), step, gmsh_step_diff_, screen_out, myrank);
+      filename_base_vel.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_vel(filename_vel.c_str());
   gmshfilecontent_vel.setf(std::ios::scientific, std::ios::floatfield);
@@ -430,7 +433,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   else
     filename_base_press << filename_base << "_press";
   const std::string filename_press = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      filename_base_press.str(), step, gmsh_step_diff_, screen_out, myrank);
+      filename_base_press.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_press(filename_press.c_str());
   gmshfilecontent_press.setf(std::ios::scientific, std::ios::floatfield);
@@ -442,7 +445,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   else
     filename_base_acc << filename_base << "_acc";
   const std::string filename_acc = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      filename_base_acc.str(), step, gmsh_step_diff_, screen_out, myrank);
+      filename_base_acc.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_acc(filename_acc.c_str());
   gmshfilecontent_acc.setf(std::ios::scientific, std::ios::floatfield);
@@ -454,7 +457,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   else
     filename_base_bound << filename_base << "_bound";
   const std::string filename_bound = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      filename_base_bound.str(), step, gmsh_step_diff_, screen_out, myrank);
+      filename_base_bound.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_bound(filename_bound.c_str());
   gmshfilecontent_bound.setf(std::ios::scientific, std::ios::floatfield);
@@ -468,7 +471,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   else
     filename_base_vel_ghost << filename_base << "_vel_ghost";
   const std::string filename_vel_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      filename_base_vel_ghost.str(), step, gmsh_step_diff_, screen_out, myrank);
+      filename_base_vel_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_vel_ghost(filename_vel_ghost.c_str());
   gmshfilecontent_vel_ghost.setf(std::ios::scientific, std::ios::floatfield);
@@ -480,7 +483,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   else
     filename_base_press_ghost << filename_base << "_press_ghost";
   const std::string filename_press_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      filename_base_press_ghost.str(), step, gmsh_step_diff_, screen_out, myrank);
+      filename_base_press_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_press_ghost(filename_press_ghost.c_str());
   gmshfilecontent_press_ghost.setf(std::ios::scientific, std::ios::floatfield);
@@ -492,7 +495,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   else
     filename_base_acc_ghost << filename_base << "_acc_ghost";
   const std::string filename_acc_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      filename_base_acc_ghost.str(), step, gmsh_step_diff_, screen_out, myrank);
+      filename_base_acc_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_acc_ghost(filename_acc_ghost.c_str());
   gmshfilecontent_acc_ghost.setf(std::ios::scientific, std::ios::floatfield);
@@ -1294,8 +1297,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputDiscretization(
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
   // output for Element and Node IDs
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      "DISCRET", step, gmsh_step_diff_, gmsh_debug_out_screen_, discret_->Comm().MyPID());
+  const std::string filename =
+      IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET", discret_->Writer()->Output()->FileName(),
+          step, gmsh_step_diff_, gmsh_debug_out_screen_, discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);
@@ -1322,8 +1326,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
   // output for Element and Node IDs
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      "EOS", step, gmsh_step_diff_, gmsh_debug_out_screen_, discret_->Comm().MyPID());
+  const std::string filename =
+      IO::GMSH::GetNewFileNameAndDeleteOldFiles("EOS", discret_->Writer()->Output()->FileName(),
+          step, gmsh_step_diff_, gmsh_debug_out_screen_, discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);

@@ -888,8 +888,8 @@ void STR::TIMINT::Base::WriteGmshStrucOutputStep()
   CheckInitSetup();
   if (!dataio_->IsGmsh()) return;
 
-  const std::string filename = IO::GMSH::GetFileName(
-      "struct", dataglobalstate_->GetStepNp(), false, dataglobalstate_->GetMyRank());
+  const std::string filename = IO::GMSH::GetFileName("struct", DiscWriter()->Output()->FileName(),
+      dataglobalstate_->GetStepNp(), false, dataglobalstate_->GetMyRank());
   std::ofstream gmshfilecontent(filename.c_str());
 
   // add 'View' to Gmsh postprocessing file

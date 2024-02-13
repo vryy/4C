@@ -3769,14 +3769,14 @@ void FLD::FluidImplicitTimeInt::OutputToGmsh(
   std::string filename = "dummy";
   if (inflow)
   {
-    filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-        "solution_velpres_inflow", step, 20, screen_out, discret_->Comm().MyPID());
+    filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_velpres_inflow",
+        discret_->Writer()->Output()->FileName(), step, 20, screen_out, discret_->Comm().MyPID());
     // std::ofstream gmshfilecontent(filename.c_str());
   }
   else
   {
-    filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-        "solution_velpres", step, 20, screen_out, discret_->Comm().MyPID());
+    filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_velpres",
+        discret_->Writer()->Output()->FileName(), step, 20, screen_out, discret_->Comm().MyPID());
     // std::ofstream gmshfilecontent(filename.c_str());
   }
   std::ofstream gmshfilecontent(filename.c_str());

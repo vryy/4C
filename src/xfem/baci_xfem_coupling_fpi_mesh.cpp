@@ -637,8 +637,9 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
   XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions, idispnp_);
 
 
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      filename_base_fsi.str(), step, gmsh_step_diff, gmsh_debug_out_screen, myrank_);
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_fsi.str(),
+      cutter_dis_->Writer()->Output()->FileName(), step, gmsh_step_diff, gmsh_debug_out_screen,
+      myrank_);
 
   std::ofstream gmshfilecontent(filename.c_str());
 

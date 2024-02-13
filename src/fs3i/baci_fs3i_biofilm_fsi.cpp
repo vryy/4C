@@ -29,6 +29,7 @@
 #include "baci_fs3i_biofilm_fsi_utils.hpp"
 #include "baci_fsi_monolithicfluidsplit.hpp"
 #include "baci_io.hpp"
+#include "baci_io_control.hpp"
 #include "baci_io_gmsh.hpp"
 #include "baci_lib_utils_createdis.hpp"
 #include "baci_lib_utils_materials.hpp"
@@ -919,8 +920,8 @@ void FS3I::BiofilmFSI::StructGmshOutput()
   const Teuchos::RCP<DRT::Discretization> structaledis = ale_->WriteAccessDiscretization();
   Teuchos::RCP<DRT::Discretization> struscatradis = scatravec_[1]->ScaTraField()->Discretization();
 
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      "struct", step_bio, 701, false, structdis->Comm().MyPID());
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("struct",
+      structdis->Writer()->Output()->FileName(), step_bio, 701, false, structdis->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
 
   Teuchos::RCP<const Epetra_Vector> structdisp = fsi_->StructureField()->Dispn();
@@ -967,8 +968,8 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
       fsi_->AleField()->WriteAccessDiscretization();
   Teuchos::RCP<DRT::Discretization> fluidscatradis = scatravec_[0]->ScaTraField()->Discretization();
 
-  const std::string filenamefluid = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      "fluid", step_bio, 701, false, fluiddis->Comm().MyPID());
+  const std::string filenamefluid = IO::GMSH::GetNewFileNameAndDeleteOldFiles("fluid",
+      fluiddis->Writer()->Output()->FileName(), step_bio, 701, false, fluiddis->Comm().MyPID());
   std::ofstream gmshfilecontent(filenamefluid.c_str());
 
   Teuchos::RCP<const Epetra_Vector> fluidvel = fsi_->FluidField()->Velnp();

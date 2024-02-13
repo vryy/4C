@@ -16,6 +16,8 @@
 #include "baci_cut_position.hpp"
 #include "baci_discretization_geometry_searchtree.hpp"
 #include "baci_discretization_geometry_searchtree_service.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
 #include "baci_io_gmsh.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret_xfem.hpp"
@@ -601,8 +603,8 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
 {
   // output of source discretization with element numbers and target nodes together with element id
   // of source element for value projection
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
-      "tarnode_to_src_ele", step, 30, 0, targetdis_->Comm().MyPID());
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("tarnode_to_src_ele",
+      targetdis_->Writer()->Output()->FileName(), step, 30, 0, targetdis_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
     XFEM::UTILS::PrintDiscretizationToStream(

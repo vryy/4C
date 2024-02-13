@@ -588,7 +588,8 @@ namespace IO
         const Teuchos::RCP<DRT::Discretization> dis,
         const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
-    std::string GetNewFileNameAndDeleteOldFiles(const std::string& filename_base,
+    std::string GetNewFileNameAndDeleteOldFiles(
+        const std::string& filename_base, const std::string& file_name_prefix,
         const int& actstep,    ///< generate filename for this step
         const int& step_diff,  ///< how many steps are kept
         const bool screen_out,
@@ -596,7 +597,7 @@ namespace IO
     );
 
     //! open Gmsh output file to add data
-    std::string GetFileName(const std::string& filename_base,
+    std::string GetFileName(const std::string& filename_base, const std::string& file_name_prefix,
         const int& actstep,  ///< generate filename for this step
         const bool screen_out,
         const int pid = 0  ///< my processor id
