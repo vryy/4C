@@ -231,49 +231,45 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == Owner())
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<std::vector<char>> stressdata =
+          params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+      Teuchos::RCP<std::vector<char>> straindata =
+          params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> stress(true);  // set to zero
+      CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> strain(true);
+      auto iostress =
+          INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+      auto iostrain =
+          INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+
+      std::vector<double> mydispmat(lm.size(), 0.0);
+
+      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
+          nullptr, nullptr, &stress, &strain, nullptr, params, iostress, iostrain,
+          INPAR::STR::strain_none);
+
       {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-        Teuchos::RCP<std::vector<char>> stressdata =
-            params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        Teuchos::RCP<std::vector<char>> straindata =
-            params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-        if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-        std::vector<double> myres(lm.size());
-        DRT::UTILS::ExtractMyValues(*res, myres, lm);
-        CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> stress(true);  // set to zero
-        CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> strain(true);
-        auto iostress =
-            INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        auto iostrain =
-            INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-
-        std::vector<double> mydispmat(lm.size(), 0.0);
-
-        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
-            nullptr, nullptr, &stress, &strain, nullptr, params, iostress, iostrain,
-            INPAR::STR::strain_none);
-
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, stress);
-          data.StartPacking();
-          AddtoPack(data, stress);
-          std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
-        }
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, strain);
-          data.StartPacking();
-          AddtoPack(data, strain);
-          std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
-        }
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, stress);
+        data.StartPacking();
+        AddtoPack(data, stress);
+        std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
+      }
+      {
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, strain);
+        data.StartPacking();
+        AddtoPack(data, strain);
+        std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
     }
     break;

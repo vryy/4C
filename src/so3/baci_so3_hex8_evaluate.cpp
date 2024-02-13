@@ -483,86 +483,80 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss points
     case ELEMENTS::struct_calc_stress:
     {
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == Owner())
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
+      Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
+      Teuchos::RCP<std::vector<char>> plstraindata = Teuchos::null;
+      INPAR::STR::StressType iostress = INPAR::STR::stress_none;
+      INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
+      INPAR::STR::StrainType ioplstrain = INPAR::STR::strain_none;
+      if (IsParamsInterface())
       {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-        Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
-        Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
-        Teuchos::RCP<std::vector<char>> plstraindata = Teuchos::null;
-        INPAR::STR::StressType iostress = INPAR::STR::stress_none;
-        INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
-        INPAR::STR::StrainType ioplstrain = INPAR::STR::strain_none;
-        if (IsParamsInterface())
-        {
-          stressdata = StrParamsInterface().StressDataPtr();
-          straindata = StrParamsInterface().StrainDataPtr();
-          plstraindata = StrParamsInterface().PlasticStrainDataPtr();
+        stressdata = StrParamsInterface().StressDataPtr();
+        straindata = StrParamsInterface().StrainDataPtr();
+        plstraindata = StrParamsInterface().PlasticStrainDataPtr();
 
-          iostress = StrParamsInterface().GetStressOutputType();
-          iostrain = StrParamsInterface().GetStrainOutputType();
-          ioplstrain = StrParamsInterface().GetPlasticStrainOutputType();
-        }
-        else
-        {
-          stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-          straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-          iostress =
-              INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-          iostrain =
-              INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-          // in case of small strain materials calculate plastic strains for post processing
-          plstraindata = params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-          ioplstrain =
-              INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
-        }
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-        if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
-        if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-        std::vector<double> myres(lm.size());
-        DRT::UTILS::ExtractMyValues(*res, myres, lm);
-        CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> stress;
-        CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> strain;
-        CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> plstrain;
+        iostress = StrParamsInterface().GetStressOutputType();
+        iostrain = StrParamsInterface().GetStrainOutputType();
+        ioplstrain = StrParamsInterface().GetPlasticStrainOutputType();
+      }
+      else
+      {
+        stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+        straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+        iostress = INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+        iostrain = INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        // in case of small strain materials calculate plastic strains for post processing
+        plstraindata = params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
+        ioplstrain =
+            INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
+      }
+      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+      if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> stress;
+      CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> strain;
+      CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> plstrain;
 
-        std::vector<double> mydispmat(lm.size(), 0.0);
-        if (structale_)
-        {
-          Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.GetState("material_displacement");
-          DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
-        }
+      std::vector<double> mydispmat(lm.size(), 0.0);
+      if (structale_)
+      {
+        Teuchos::RCP<const Epetra_Vector> dispmat =
+            discretization.GetState("material_displacement");
+        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+      }
 
-        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
-            nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
+      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
+          nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
 
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, stress);
-          data.StartPacking();
-          AddtoPack(data, stress);
-          std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
-        }
+      {
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, stress);
+        data.StartPacking();
+        AddtoPack(data, stress);
+        std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
+      }
 
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, strain);
-          data.StartPacking();
-          AddtoPack(data, strain);
-          std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
-        }
+      {
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, strain);
+        data.StartPacking();
+        AddtoPack(data, strain);
+        std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
+      }
 
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, plstrain);
-          data.StartPacking();
-          AddtoPack(data, plstrain);
-          std::copy(data().begin(), data().end(), std::back_inserter(*plstraindata));
-        }
+      {
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, plstrain);
+        data.StartPacking();
+        AddtoPack(data, plstrain);
+        std::copy(data().begin(), data().end(), std::back_inserter(*plstraindata));
       }
     }
     break;

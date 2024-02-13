@@ -240,77 +240,73 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss point
     case calc_struct_stress:
     {
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == Owner())
+      //------------------------------- compute element stress from stabilization
+      Teuchos::RCP<std::vector<char>> stressdata =
+          params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+      Teuchos::RCP<std::vector<char>> straindata =
+          params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+      if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
+      if (straindata == Teuchos::null) dserror("Cannot get strain 'data'");
+      auto iostress =
+          INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+      auto iostrain =
+          INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::LINALG::Matrix<1, 6> stress(true);
+      CORE::LINALG::Matrix<1, 6> strain(true);
+      CORE::LINALG::Matrix<1, 6> elestress(true);
+      CORE::LINALG::Matrix<1, 6> elestrain(true);
+      nstet5nlnstiffmass(
+          lm, mydisp, nullptr, nullptr, nullptr, &elestress, &elestrain, iostress, iostrain);
+
+      //--------------------------------- interpolate nodal stress from every node
+      Teuchos::RCP<Epetra_MultiVector> nodestress = ElementType().nstress_;
+      Teuchos::RCP<Epetra_MultiVector> nodestrain = ElementType().nstrain_;
+      const int numnode = NumNode();
+      for (int i = 0; i < numnode; ++i)
       {
-        //------------------------------- compute element stress from stabilization
-        Teuchos::RCP<std::vector<char>> stressdata =
-            params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        Teuchos::RCP<std::vector<char>> straindata =
-            params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
-        if (straindata == Teuchos::null) dserror("Cannot get strain 'data'");
-        auto iostress =
-            INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        auto iostrain =
-            INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-        CORE::LINALG::Matrix<1, 6> stress(true);
-        CORE::LINALG::Matrix<1, 6> strain(true);
-        CORE::LINALG::Matrix<1, 6> elestress(true);
-        CORE::LINALG::Matrix<1, 6> elestrain(true);
-        nstet5nlnstiffmass(
-            lm, mydisp, nullptr, nullptr, nullptr, &elestress, &elestrain, iostress, iostrain);
-
-        //--------------------------------- interpolate nodal stress from every node
-        Teuchos::RCP<Epetra_MultiVector> nodestress = ElementType().nstress_;
-        Teuchos::RCP<Epetra_MultiVector> nodestrain = ElementType().nstrain_;
-        const int numnode = NumNode();
-        for (int i = 0; i < numnode; ++i)
-        {
-          const int gid = Nodes()[i]->Id();
-          const int lid = nodestress->Map().LID(gid);
-          if (lid == -1) dserror("Cannot find matching nodal stresses/strains");
-          for (int j = 0; j < 6; ++j)
-          {
-            stress(0, j) += (*(*nodestress)(j))[lid];
-            strain(0, j) += (*(*nodestrain)(j))[lid];
-          }
-        }
-
+        const int gid = Nodes()[i]->Id();
+        const int lid = nodestress->Map().LID(gid);
+        if (lid == -1) dserror("Cannot find matching nodal stresses/strains");
         for (int j = 0; j < 6; ++j)
         {
-          stress(0, j) /= numnode;
-          strain(0, j) /= numnode;
+          stress(0, j) += (*(*nodestress)(j))[lid];
+          strain(0, j) += (*(*nodestrain)(j))[lid];
         }
+      }
 
-        //-------------------------------------------------------- add element stress
+      for (int j = 0; j < 6; ++j)
+      {
+        stress(0, j) /= numnode;
+        strain(0, j) /= numnode;
+      }
 
-        for (int j = 0; j < 6; ++j)
-        {
-          stress(0, j) += elestress(0, j);
-          strain(0, j) += elestrain(0, j);
-        }
+      //-------------------------------------------------------- add element stress
 
-        //----------------------------------------------- add final stress to storage
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, stress);
-          data.StartPacking();
-          AddtoPack(data, stress);
-          std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
-        }
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, strain);
-          data.StartPacking();
-          AddtoPack(data, strain);
-          std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
-        }
-      }  // if (discretization.Comm().MyPID()==Owner())
+      for (int j = 0; j < 6; ++j)
+      {
+        stress(0, j) += elestress(0, j);
+        strain(0, j) += elestrain(0, j);
+      }
+
+      //----------------------------------------------- add final stress to storage
+      {
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, stress);
+        data.StartPacking();
+        AddtoPack(data, stress);
+        std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
+      }
+      {
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, strain);
+        data.StartPacking();
+        AddtoPack(data, strain);
+        std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
+      }
     }
     break;
 

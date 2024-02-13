@@ -407,8 +407,6 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
     const StressIO& stressIO, const StrainIO& strainIO, const DRT::Discretization& discretization,
     const DRT::Element::LocationArray& la, Teuchos::ParameterList& params)
 {
-  if (discretization.Comm().MyPID() != ele.Owner()) return;
-
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
   CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);

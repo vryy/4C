@@ -468,77 +468,73 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
     // evaluate stresses and strains at gauss points
     case ELEMENTS::struct_calc_stress:
     {
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == so3_ele::Owner())
+      // get the location vector only for the structure field
+      std::vector<int> lm = la[0].lm_;
+
+      CORE::LINALG::Matrix<numdim_, numnod_> mydisp(true);
+      ExtractValuesFromGlobalVector(discretization, 0, lm, &mydisp, nullptr, "displacement");
+
+      Teuchos::RCP<std::vector<char>> couplingstressdata = Teuchos::null;
+      INPAR::STR::StressType iocouplingstress = INPAR::STR::stress_none;
+      if (this->IsParamsInterface())
       {
-        // get the location vector only for the structure field
-        std::vector<int> lm = la[0].lm_;
+        couplingstressdata = this->StrParamsInterface().CouplingStressDataPtr();
+        iocouplingstress = this->StrParamsInterface().GetCouplingStressOutputType();
+      }
+      else
+      {
+        iocouplingstress =
+            INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
 
-        CORE::LINALG::Matrix<numdim_, numnod_> mydisp(true);
-        ExtractValuesFromGlobalVector(discretization, 0, lm, &mydisp, nullptr, "displacement");
-
-        Teuchos::RCP<std::vector<char>> couplingstressdata = Teuchos::null;
-        INPAR::STR::StressType iocouplingstress = INPAR::STR::stress_none;
-        if (this->IsParamsInterface())
+        // check for output of coupling stress
+        if (iocouplingstress == INPAR::STR::stress_none)
         {
-          couplingstressdata = this->StrParamsInterface().CouplingStressDataPtr();
-          iocouplingstress = this->StrParamsInterface().GetCouplingStressOutputType();
-        }
-        else
-        {
-          iocouplingstress =
-              INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
-
-          // check for output of coupling stress
-          if (iocouplingstress == INPAR::STR::stress_none)
-          {
-            // nothing to do here for calculation of effective stress
-            break;
-          }
-
-          couplingstressdata =
-              params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
-
-          if (couplingstressdata == Teuchos::null) dserror("Cannot get 'couplstress' data");
+          // nothing to do here for calculation of effective stress
+          break;
         }
 
-        // initialize the coupling stress
-        CORE::LINALG::SerialDenseMatrix couplstress(numgpt_, numstr_);
-        // need current fluid state,
-        // call the fluid discretization: fluid equates 2nd dofset
-        // disassemble velocities and pressures
-        if (iocouplingstress != INPAR::STR::stress_none)
-        {
-          if (discretization.HasState(1, "fluidvel"))
-          {
-            // extract local values of the global vectors
-            CORE::LINALG::Matrix<numdim_, numnod_> myfluidvel(true);
-            CORE::LINALG::Matrix<numnod_, 1> myepreaf(true);
-            ExtractValuesFromGlobalVector(
-                discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
+        couplingstressdata =
+            params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
 
-            CouplingStressPoroelast(
-                mydisp, myfluidvel, myepreaf, &couplstress, nullptr, params, iocouplingstress);
-          }
-          else if (la.Size() > 2)
+        if (couplingstressdata == Teuchos::null) dserror("Cannot get 'couplstress' data");
+      }
+
+      // initialize the coupling stress
+      CORE::LINALG::SerialDenseMatrix couplstress(numgpt_, numstr_);
+      // need current fluid state,
+      // call the fluid discretization: fluid equates 2nd dofset
+      // disassemble velocities and pressures
+      if (iocouplingstress != INPAR::STR::stress_none)
+      {
+        if (discretization.HasState(1, "fluidvel"))
+        {
+          // extract local values of the global vectors
+          CORE::LINALG::Matrix<numdim_, numnod_> myfluidvel(true);
+          CORE::LINALG::Matrix<numnod_, 1> myepreaf(true);
+          ExtractValuesFromGlobalVector(
+              discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
+
+          CouplingStressPoroelast(
+              mydisp, myfluidvel, myepreaf, &couplstress, nullptr, params, iocouplingstress);
+        }
+        else if (la.Size() > 2)
+        {
+          if (discretization.HasState(1, "porofluid"))
           {
-            if (discretization.HasState(1, "porofluid"))
-            {
-              dserror("coupl stress poroelast not yet implemented for pressure-based variant");
-            }
+            dserror("coupl stress poroelast not yet implemented for pressure-based variant");
           }
         }
+      }
 
-        // pack the data for postprocessing
-        {
-          CORE::COMM::PackBuffer data;
-          // get the size of stress
-          so3_ele::AddtoPack(data, couplstress);
-          data.StartPacking();
-          // pack the stresses
-          so3_ele::AddtoPack(data, couplstress);
-          std::copy(data().begin(), data().end(), std::back_inserter(*couplingstressdata));
-        }
+      // pack the data for postprocessing
+      {
+        CORE::COMM::PackBuffer data;
+        // get the size of stress
+        so3_ele::AddtoPack(data, couplstress);
+        data.StartPacking();
+        // pack the stresses
+        so3_ele::AddtoPack(data, couplstress);
+        std::copy(data().begin(), data().end(), std::back_inserter(*couplingstressdata));
       }
     }
     break;

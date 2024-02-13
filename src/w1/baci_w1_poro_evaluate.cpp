@@ -454,63 +454,58 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
     case ELEMENTS::struct_calc_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
+      auto iocouplstress =
+          INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
 
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == Owner())
+      // check for output of coupling stress
+      if (iocouplstress == INPAR::STR::stress_none)
       {
-        auto iocouplstress =
-            INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
+        // nothing to do here for calculation of effective stress
+        break;
+      }
 
-        // check for output of coupling stress
-        if (iocouplstress == INPAR::STR::stress_none)
-        {
-          // nothing to do here for calculation of effective stress
-          break;
-        }
+      // get the location vector only for the structure field
+      std::vector<int> lm = la[0].lm_;
 
-        // get the location vector only for the structure field
-        std::vector<int> lm = la[0].lm_;
+      CORE::LINALG::Matrix<numdim_, numnod_> mydisp(true);
+      ExtractValuesFromGlobalVector(discretization, 0, lm, &mydisp, nullptr, "displacement");
 
-        CORE::LINALG::Matrix<numdim_, numnod_> mydisp(true);
-        ExtractValuesFromGlobalVector(discretization, 0, lm, &mydisp, nullptr, "displacement");
+      Teuchos::RCP<std::vector<char>> couplstressdata =
+          params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
 
-        Teuchos::RCP<std::vector<char>> couplstressdata =
-            params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
+      if (couplstressdata == Teuchos::null) dserror("Cannot get 'couplstress' data");
 
-        if (couplstressdata == Teuchos::null) dserror("Cannot get 'couplstress' data");
+      CORE::LINALG::SerialDenseMatrix couplstress(numgpt_, Wall1::numstr_);
 
-        CORE::LINALG::SerialDenseMatrix couplstress(numgpt_, Wall1::numstr_);
+      // need current fluid state,
+      // call the fluid discretization: fluid equates 2nd dofset
+      // disassemble velocities and pressures
+      if (discretization.HasState(1, "fluidvel"))
+      {
+        // extract local values of the global vectors
+        CORE::LINALG::Matrix<numdim_, numnod_> myfluidvel(true);
+        CORE::LINALG::Matrix<numnod_, 1> myepreaf(true);
+        ExtractValuesFromGlobalVector(
+            discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
 
-        // need current fluid state,
-        // call the fluid discretization: fluid equates 2nd dofset
-        // disassemble velocities and pressures
-        if (discretization.HasState(1, "fluidvel"))
-        {
-          // extract local values of the global vectors
-          CORE::LINALG::Matrix<numdim_, numnod_> myfluidvel(true);
-          CORE::LINALG::Matrix<numnod_, 1> myepreaf(true);
-          ExtractValuesFromGlobalVector(
-              discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
+        CouplingStressPoroelast(
+            mydisp, myfluidvel, myepreaf, &couplstress, nullptr, params, iocouplstress);
+      }
+      else if (la.Size() > 2)
+      {
+        if (discretization.HasState(1, "porofluid"))
+          dserror("coupl stress poroelast not yet implemented for pressure-based variant");
+      }
 
-          CouplingStressPoroelast(
-              mydisp, myfluidvel, myepreaf, &couplstress, nullptr, params, iocouplstress);
-        }
-        else if (la.Size() > 2)
-        {
-          if (discretization.HasState(1, "porofluid"))
-            dserror("coupl stress poroelast not yet implemented for pressure-based variant");
-        }
-
-        // pack the data for postprocessing
-        {
-          CORE::COMM::PackBuffer data;
-          // get the size of stress
-          Wall1::AddtoPack(data, couplstress);
-          data.StartPacking();
-          // pack the stresses
-          Wall1::AddtoPack(data, couplstress);
-          std::copy(data().begin(), data().end(), std::back_inserter(*couplstressdata));
-        }
+      // pack the data for postprocessing
+      {
+        CORE::COMM::PackBuffer data;
+        // get the size of stress
+        Wall1::AddtoPack(data, couplstress);
+        data.StartPacking();
+        // pack the stresses
+        Wall1::AddtoPack(data, couplstress);
+        std::copy(data().begin(), data().end(), std::back_inserter(*couplstressdata));
       }
     }
     break;

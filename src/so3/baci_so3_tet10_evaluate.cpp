@@ -206,64 +206,59 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == Owner())
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<std::vector<char>> stressdata =
+          params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+      Teuchos::RCP<std::vector<char>> straindata =
+          params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D> stress;
+      CORE::LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D> strain;
+      auto iostress =
+          INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+      auto iostrain =
+          INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+
+      std::vector<double> mydispmat(lm.size(), 0.0);
+
+      so_tet10_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
+          nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
       {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-        Teuchos::RCP<std::vector<char>> stressdata =
-            params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        Teuchos::RCP<std::vector<char>> straindata =
-            params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-        if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-        std::vector<double> myres(lm.size());
-        DRT::UTILS::ExtractMyValues(*res, myres, lm);
-        CORE::LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D> stress;
-        CORE::LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D> strain;
-        auto iostress =
-            INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        auto iostrain =
-            INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, stress);
+        data.StartPacking();
+        AddtoPack(data, stress);
+        std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
+      }
+      {
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, strain);
+        data.StartPacking();
+        AddtoPack(data, strain);
+        std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
+      }
 
-        std::vector<double> mydispmat(lm.size(), 0.0);
+      // output of rotation matrix R with F = U*R
+      if (INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_ROT") == true)
+      {
+        CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> R;
+        DRT::ELEMENTS::UTILS::CalcR<CORE::FE::CellType::tet10>(this, mydisp, R);
 
-        so_tet10_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
-            nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, stress);
-          data.StartPacking();
-          AddtoPack(data, stress);
-          std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
-        }
-        {
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, strain);
-          data.StartPacking();
-          AddtoPack(data, strain);
-          std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
-        }
+        Teuchos::RCP<std::vector<char>> rotdata =
+            params.get<Teuchos::RCP<std::vector<char>>>("rotation", Teuchos::null);
 
-        // output of rotation matrix R with F = U*R
-        if (INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_ROT") ==
-            true)
-        {
-          CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> R;
-          DRT::ELEMENTS::UTILS::CalcR<CORE::FE::CellType::tet10>(this, mydisp, R);
-
-          Teuchos::RCP<std::vector<char>> rotdata =
-              params.get<Teuchos::RCP<std::vector<char>>>("rotation", Teuchos::null);
-
-          CORE::COMM::PackBuffer data;
-          AddtoPack(data, R);
-          data.StartPacking();
-          AddtoPack(data, R);
-          std::copy(data().begin(), data().end(), std::back_inserter(*rotdata));
-        }
+        CORE::COMM::PackBuffer data;
+        AddtoPack(data, R);
+        data.StartPacking();
+        AddtoPack(data, R);
+        std::copy(data().begin(), data().end(), std::back_inserter(*rotdata));
       }
     }
     break;

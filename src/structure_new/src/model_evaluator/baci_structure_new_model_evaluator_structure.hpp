@@ -246,6 +246,11 @@ namespace STR
           Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
+      /*! \brief  Set the ParamsInterface in the parameter list and call the other
+       * EvaluateInternalSpecifiedElements routine */
+      void EvaluateInternalSpecifiedElements(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Epetra_Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated);
+
       /*! \brief  Check if the given parameter list is valid and call the
        *  Evaluate routine for all elements specified in the element map
        *
