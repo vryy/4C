@@ -18,7 +18,6 @@ set(_dependencies
     io
     lib
     solver_nonlin_nox
-    struct_ale
     structure_new
     )
 
