@@ -8,20 +8,20 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_contact_pair.H"
+#include "baci_beaminteraction_contact_pair.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam_to_beam_contact_pair.H"
-#include "baci_beaminteraction_beam_to_beam_contact_params.H"
-#include "baci_beaminteraction_beam_to_sphere_contact_pair.H"
-#include "baci_beaminteraction_conditions.H"
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_geometry_pair.H"
-#include "baci_lib_element.H"
-#include "baci_rigidsphere.H"
-#include "baci_so3_base.H"
-#include "baci_solid_ele.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_base.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_pair.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_params.hpp"
+#include "baci_beaminteraction_beam_to_sphere_contact_pair.hpp"
+#include "baci_beaminteraction_conditions.hpp"
+#include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_rigidsphere.hpp"
+#include "baci_so3_base.hpp"
+#include "baci_solid_ele.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
 

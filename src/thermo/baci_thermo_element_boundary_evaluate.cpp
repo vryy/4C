@@ -11,7 +11,7 @@ Evaluate boundary conditions for thermo problems
 /*----------------------------------------------------------------------*
  | headers                                                   dano 09/09 |
  *----------------------------------------------------------------------*/
-#include "baci_thermo_ele_boundary_impl.H"
+#include "baci_thermo_ele_boundary_impl.hpp"
 
 BACI_NAMESPACE_OPEN
 

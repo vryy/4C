@@ -7,12 +7,12 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_poroelast_dyn.H"
+#include "baci_poroelast_dyn.hpp"
 
-#include "baci_poroelast_base.H"
-#include "baci_poroelast_utils.H"
-#include "baci_poroelast_utils_clonestrategy.H"
-#include "baci_poroelast_utils_setup.H"
+#include "baci_poroelast_base.hpp"
+#include "baci_poroelast_utils.hpp"
+#include "baci_poroelast_utils_clonestrategy.hpp"
+#include "baci_poroelast_utils_setup.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

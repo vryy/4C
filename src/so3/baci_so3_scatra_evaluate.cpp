@@ -8,11 +8,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_lib_utils.H"
-#include "baci_mat_so3_material.H"
-#include "baci_so3_element_service.H"
-#include "baci_so3_scatra.H"
-#include "baci_structure_new_enum_lists.H"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_so3_element_service.hpp"
+#include "baci_so3_scatra.hpp"
+#include "baci_structure_new_enum_lists.hpp"
 
 BACI_NAMESPACE_OPEN
 

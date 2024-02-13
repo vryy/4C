@@ -7,19 +7,19 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_contact_nitsche_integrator_poro.H"
+#include "baci_contact_nitsche_integrator_poro.hpp"
 
-#include "baci_contact_element.H"
-#include "baci_contact_integrator.H"
-#include "baci_contact_nitsche_utils.H"
-#include "baci_contact_node.H"
-#include "baci_contact_paramsinterface.H"
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_mat_elasthyper.H"
-#include "baci_mat_structporo.H"
-#include "baci_so3_base.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_poro.H"
+#include "baci_contact_element.hpp"
+#include "baci_contact_integrator.hpp"
+#include "baci_contact_nitsche_utils.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_contact_paramsinterface.hpp"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_mat_elasthyper.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_so3_base.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_poro.hpp"
 
 #include <Epetra_FEVector.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

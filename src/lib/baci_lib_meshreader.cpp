@@ -8,18 +8,18 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_meshreader.H"
+#include "baci_lib_meshreader.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_rebalance.H"
-#include "baci_io_inputreader.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_domainreader.H"
-#include "baci_lib_elementreader.H"
-#include "baci_lib_nodereader.H"
-#include "baci_rebalance.H"
-#include "baci_rebalance_utils.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_rebalance.hpp"
+#include "baci_io_inputreader.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_domainreader.hpp"
+#include "baci_lib_elementreader.hpp"
+#include "baci_lib_nodereader.hpp"
+#include "baci_rebalance.hpp"
+#include "baci_rebalance_utils.hpp"
 
 #include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_TimeMonitor.hpp>

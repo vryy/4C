@@ -8,19 +8,19 @@ John Wiley & Sons, Ltd, 2008
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mat_plasticdruckerprager.H"
+#include "baci_mat_plasticdruckerprager.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_linalg_FADmatrix_utils.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_material.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_parameter.H"
-#include "baci_mat_stvenantkirchhoff.H"
-#include "baci_utils_local_newton.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_linalg_FADmatrix_utils.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_parameter.hpp"
+#include "baci_mat_stvenantkirchhoff.hpp"
+#include "baci_utils_local_newton.hpp"
 
 BACI_NAMESPACE_OPEN
 

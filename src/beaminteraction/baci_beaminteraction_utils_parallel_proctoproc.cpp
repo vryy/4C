@@ -9,11 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_beaminteraction_utils_parallel_proctoproc.H"
+#include "baci_beaminteraction_utils_parallel_proctoproc.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_MpiComm.h>
 

@@ -9,19 +9,19 @@
 /*----------------------------------------------------------------------------*/
 
 
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_geometric_search_bounding_volume.H"
-#include "baci_discretization_geometric_search_params.H"
-#include "baci_global_data.H"
-#include "baci_inpar_browniandyn.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_stvenantkirchhoff.H"
-#include "baci_rigidsphere.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_utils_exceptions.H"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_discretization_geometric_search_bounding_volume.hpp"
+#include "baci_discretization_geometric_search_params.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_browniandyn.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_stvenantkirchhoff.hpp"
+#include "baci_rigidsphere.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_CrsMatrix.h>
 

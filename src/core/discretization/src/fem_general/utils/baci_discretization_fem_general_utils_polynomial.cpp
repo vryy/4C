@@ -8,10 +8,10 @@
  */
 
 
-#include "baci_discretization_fem_general_utils_polynomial.H"
+#include "baci_discretization_fem_general_utils_polynomial.hpp"
 
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 #include <Intrepid_FieldContainer.hpp>
 #include <Intrepid_PointTools.hpp>

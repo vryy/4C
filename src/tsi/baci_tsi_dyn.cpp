@@ -10,17 +10,17 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 12/09 |
  *----------------------------------------------------------------------*/
-#include "baci_tsi_dyn.H"
+#include "baci_tsi_dyn.hpp"
 
-#include "baci_adapter_str_structure.H"
-#include "baci_adapter_thermo.H"
-#include "baci_global_data.H"
-#include "baci_inpar_tsi.H"
-#include "baci_lib_discret.H"
-#include "baci_tsi_algorithm.H"
-#include "baci_tsi_monolithic.H"
-#include "baci_tsi_partitioned.H"
-#include "baci_tsi_utils.H"
+#include "baci_adapter_str_structure.hpp"
+#include "baci_adapter_thermo.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_tsi.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_tsi_algorithm.hpp"
+#include "baci_tsi_monolithic.hpp"
+#include "baci_tsi_partitioned.hpp"
+#include "baci_tsi_utils.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>

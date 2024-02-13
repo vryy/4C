@@ -14,13 +14,13 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_elasthyper.H"
+#include "baci_mat_elasthyper.hpp"
 
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_elasthyper_service.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_elasthyper_service.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

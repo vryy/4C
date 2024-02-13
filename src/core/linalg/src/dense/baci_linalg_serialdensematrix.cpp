@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensematrix.hpp"
 
 BACI_NAMESPACE_OPEN
 

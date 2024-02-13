@@ -10,15 +10,15 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-#include "baci_levelset_algorithm.H"
-#include "baci_levelset_intersection_utils.H"
-#include "baci_lib_periodicbc.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_scatra_ele_action.H"
+#include "baci_io_control.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_levelset_algorithm.hpp"
+#include "baci_levelset_intersection_utils.hpp"
+#include "baci_lib_periodicbc.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_scatra_ele_action.hpp"
 
 #include <list>
 

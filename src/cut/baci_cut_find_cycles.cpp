@@ -8,7 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_find_cycles.H"
+#include "baci_cut_find_cycles.hpp"
 
 BACI_NAMESPACE_OPEN
 

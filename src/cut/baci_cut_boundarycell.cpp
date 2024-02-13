@@ -8,14 +8,14 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_boundarycell.H"
+#include "baci_cut_boundarycell.hpp"
 
-#include "baci_cut_cycle.H"
-#include "baci_cut_element.H"
-#include "baci_cut_output.H"
-#include "baci_cut_side.H"
-#include "baci_cut_volumecell.H"
-#include "baci_discretization_geometry_element_volume.H"
+#include "baci_cut_cycle.hpp"
+#include "baci_cut_element.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_side.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_discretization_geometry_element_volume.hpp"
 
 BACI_NAMESPACE_OPEN
 

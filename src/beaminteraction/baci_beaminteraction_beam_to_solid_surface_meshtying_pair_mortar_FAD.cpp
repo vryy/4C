@@ -7,19 +7,19 @@ evaluated with FAD.
 \level 3
 */
 
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_FAD.H"
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_FAD.hpp"
 
-#include "baci_beam3_reissner.H"
-#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
-#include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_geometry_pair_element_faces.H"
-#include "baci_geometry_pair_line_to_surface.H"
-#include "baci_inpar_beam_to_solid.H"
-#include "baci_inpar_geometry_pair.H"
+#include "baci_beam3_reissner.hpp"
+#include "baci_beam3_triad_interpolation_local_rotation_vectors.hpp"
+#include "baci_beaminteraction_beam_to_solid_mortar_manager.hpp"
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"
+#include "baci_beaminteraction_beam_to_solid_utils.hpp"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair_element_faces.hpp"
+#include "baci_geometry_pair_line_to_surface.hpp"
+#include "baci_inpar_beam_to_solid.hpp"
+#include "baci_inpar_geometry_pair.hpp"
 
 #include <Epetra_FEVector.h>
 

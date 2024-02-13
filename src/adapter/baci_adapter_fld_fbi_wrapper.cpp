@@ -7,11 +7,11 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_adapter_fld_fbi_wrapper.H"
+#include "baci_adapter_fld_fbi_wrapper.hpp"
 
-#include "baci_fluid_implicit_integration.H"
-#include "baci_io_control.H"
-#include "baci_linalg_sparseoperator.H"
+#include "baci_fluid_implicit_integration.hpp"
+#include "baci_io_control.hpp"
+#include "baci_linalg_sparseoperator.hpp"
 
 #include <Teuchos_RCP.hpp>
 

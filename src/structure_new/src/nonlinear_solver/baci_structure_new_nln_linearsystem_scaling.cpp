@@ -9,15 +9,15 @@
  */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_nln_linearsystem_scaling.H"
+#include "baci_structure_new_nln_linearsystem_scaling.hpp"
 
-#include "baci_inpar_structure.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
-#include "baci_structure_new_timint_basedatasdyn.H"
+#include "baci_inpar_structure.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_structure_new_timint_basedataglobalstate.hpp"
+#include "baci_structure_new_timint_basedatasdyn.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LinearProblem.h>

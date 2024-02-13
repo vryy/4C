@@ -8,12 +8,12 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_lib_element.H"
-#include "baci_lib_element_integration_select.H"
-#include "baci_so3_element_service.H"
+#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.hpp"
+#include "baci_discretization_fem_general_utils_gausspoints.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_element_integration_select.hpp"
+#include "baci_so3_element_service.hpp"
 
 #include <vector>
 

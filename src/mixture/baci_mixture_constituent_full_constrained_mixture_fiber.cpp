@@ -5,16 +5,16 @@ equations
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mixture_constituent_full_constrained_mixture_fiber.H"
+#include "baci_mixture_constituent_full_constrained_mixture_fiber.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_global_data.H"
-#include "baci_inpar_material.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
-#include "baci_mixture_constituent_remodelfiber_lib.H"
-#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_material.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_matelast_aniso_structuraltensor_strategy.hpp"
+#include "baci_mixture_constituent_remodelfiber_lib.hpp"
+#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <algorithm>
 #include <cstdlib>

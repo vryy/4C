@@ -8,9 +8,9 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_global_data.H"
-#include "baci_mat_electrode.H"
-#include "baci_mat_par_material.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_electrode.hpp"
+#include "baci_mat_par_material.hpp"
 
 namespace
 {

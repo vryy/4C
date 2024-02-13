@@ -10,10 +10,10 @@
 /*---------------------------------------------------------------------------*/
 
 
-#include "baci_xfem_xfield_state.H"
+#include "baci_xfem_xfield_state.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_lib_discret_xfem.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_discret_xfem.hpp"
 
 BACI_NAMESPACE_OPEN
 

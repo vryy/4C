@@ -9,9 +9,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_ele_parameter_xfem.H"
+#include "baci_fluid_ele_parameter_xfem.hpp"
 
-#include "baci_io_pstream.H"
+#include "baci_io_pstream.hpp"
 
 BACI_NAMESPACE_OPEN
 

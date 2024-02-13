@@ -7,9 +7,9 @@ the collagen and elastin matrix surrounding the myocardial fiber (chappelle12)
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_visco_coupmyocard.H"
+#include "baci_matelast_visco_coupmyocard.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

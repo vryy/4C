@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_lib_immersed_node.H"
+#include "baci_lib_immersed_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

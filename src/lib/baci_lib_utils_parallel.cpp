@@ -10,18 +10,18 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_lib_utils_parallel.H"
+#include "baci_lib_utils_parallel.hpp"
 
-#include "baci_binstrategy.H"
-#include "baci_coupling_matchingoctree.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_node.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_rebalance_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_binstrategy.hpp"
+#include "baci_coupling_matchingoctree.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_rebalance_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_IntVector.h>
 

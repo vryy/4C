@@ -6,9 +6,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mixture_growth_strategy_isotropic.H"
+#include "baci_mixture_growth_strategy_isotropic.hpp"
 
-#include "baci_mixture_growth_strategy.H"
+#include "baci_mixture_growth_strategy.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,12 +8,12 @@
  | definitions                                                gjb 01/08 |
  *----------------------------------------------------------------------*/
 
-#include "baci_thermo_dyn.H"
+#include "baci_thermo_dyn.hpp"
 
-#include "baci_adapter_thermo.H"
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_thermo_resulttest.H"
+#include "baci_adapter_thermo.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_thermo_resulttest.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

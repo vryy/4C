@@ -7,13 +7,13 @@
 
  */
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_post_common.H"
-#include "baci_post_processor_single_field_writers.H"
-#include "baci_post_writer_base.H"
-#include "baci_scatra_ele.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_post_common.hpp"
+#include "baci_post_processor_single_field_writers.hpp"
+#include "baci_post_writer_base.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_MpiComm.h>
 

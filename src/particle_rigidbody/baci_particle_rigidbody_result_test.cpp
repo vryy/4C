@@ -8,12 +8,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_rigidbody_result_test.H"
+#include "baci_particle_rigidbody_result_test.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_particle_rigidbody_datastate.H"
-#include "baci_particle_rigidbody_interface.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_particle_rigidbody_datastate.hpp"
+#include "baci_particle_rigidbody_interface.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

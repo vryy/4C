@@ -7,9 +7,9 @@ Implementation of a coupled Saint-Venant-Kirchhoff material
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coupSaintVenantKirchhoff.H"
+#include "baci_matelast_coupSaintVenantKirchhoff.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

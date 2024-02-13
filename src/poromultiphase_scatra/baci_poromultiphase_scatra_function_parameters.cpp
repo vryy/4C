@@ -10,9 +10,9 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_poromultiphase_scatra_function_parameters.H"
+#include "baci_poromultiphase_scatra_function_parameters.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

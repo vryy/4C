@@ -8,10 +8,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_discretization_geometric_search_visualization.H"
+#include "baci_discretization_geometric_search_visualization.hpp"
 
-#include "baci_discretization_geometric_search_utils.H"
-#include "baci_io_visualization_utils.H"
+#include "baci_discretization_geometric_search_utils.hpp"
+#include "baci_io_visualization_utils.hpp"
 
 #include <utility>
 

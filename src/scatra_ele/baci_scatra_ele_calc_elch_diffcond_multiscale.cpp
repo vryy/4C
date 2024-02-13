@@ -8,14 +8,14 @@ multi-scale framework
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_scatra_ele_calc_elch_diffcond_multiscale.H"
+#include "baci_scatra_ele_calc_elch_diffcond_multiscale.hpp"
 
-#include "baci_mat_elchmat.H"
-#include "baci_mat_elchphase.H"
-#include "baci_mat_newman_multiscale.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_mat_elchmat.hpp"
+#include "baci_mat_elchphase.hpp"
+#include "baci_mat_newman_multiscale.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

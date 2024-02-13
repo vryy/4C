@@ -10,16 +10,16 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_geometry_pair_line_to_volume_segmentation.H"
+#include "baci_geometry_pair_line_to_volume_segmentation.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_beam3_reissner.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
-#include "baci_geometry_pair_line_to_volume_segmentation_geometry_functions_test.H"
-#include "baci_geometry_pair_utility_classes.H"
-#include "baci_so3_hex27.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_beam3_base.hpp"
+#include "baci_beam3_reissner.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
+#include "baci_geometry_pair_line_to_volume_segmentation_geometry_functions_test.hpp"
+#include "baci_geometry_pair_utility_classes.hpp"
+#include "baci_so3_hex27.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 
 namespace

@@ -19,10 +19,10 @@ MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 32
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_mat_maxwell_0d_acinus.H"
+#include "baci_mat_maxwell_0d_acinus.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <vector>
 

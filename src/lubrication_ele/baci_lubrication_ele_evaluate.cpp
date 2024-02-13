@@ -7,13 +7,13 @@
 
 */
 
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_lubrication_ele.H"
-#include "baci_lubrication_ele_action.H"
-#include "baci_lubrication_ele_factory.H"
-#include "baci_lubrication_ele_interface.H"
-#include "baci_lubrication_ele_parameter.H"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lubrication_ele.hpp"
+#include "baci_lubrication_ele_action.hpp"
+#include "baci_lubrication_ele_factory.hpp"
+#include "baci_lubrication_ele_interface.hpp"
+#include "baci_lubrication_ele_parameter.hpp"
 
 BACI_NAMESPACE_OPEN
 

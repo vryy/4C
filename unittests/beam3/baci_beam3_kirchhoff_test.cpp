@@ -9,9 +9,9 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_beam3_kirchhoff.H"
+#include "baci_beam3_kirchhoff.hpp"
 
-#include "baci_lib_element.H"
+#include "baci_lib_element.hpp"
 
 #include <Epetra_SerialComm.h>
 

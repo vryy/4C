@@ -7,7 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_discretization_geometry_searchtree_nearestobject.H"
+#include "baci_discretization_geometry_searchtree_nearestobject.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,12 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linear_solver_amgnxn_preconditioner.H"
+#include "baci_linear_solver_amgnxn_preconditioner.hpp"
 
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_amgnxn_vcycle.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_amgnxn_vcycle.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <EpetraExt_RowMatrixOut.h>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>

@@ -8,22 +8,22 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_config.H"
-#include "baci_config_revision.H"
-#include "baci_config_trilinos_version.H"
+#include "baci_config.hpp"
+#include "baci_config_revision.hpp"
+#include "baci_config_trilinos_version.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_global_legacy_module.H"
-#include "baci_inpar_validconditions.H"
-#include "baci_inpar_validcontactconstitutivelaw.H"
-#include "baci_inpar_validmaterials.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_elementdefinition.H"
-#include "baci_lib_resulttest.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_global_legacy_module.hpp"
+#include "baci_inpar_validconditions.hpp"
+#include "baci_inpar_validcontactconstitutivelaw.hpp"
+#include "baci_inpar_validmaterials.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_elementdefinition.hpp"
+#include "baci_lib_resulttest.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Kokkos_Core.hpp>

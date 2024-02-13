@@ -7,9 +7,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <EpetraExt_MatrixMatrix.h>
 #include <EpetraExt_Transpose_RowMatrix.h>

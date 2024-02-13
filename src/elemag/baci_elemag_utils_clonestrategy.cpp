@@ -9,15 +9,15 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#include "baci_elemag_utils_clonestrategy.H"
+#include "baci_elemag_utils_clonestrategy.hpp"
 
-#include "baci_elemag_ele.H"
-#include "baci_global_data.H"
-#include "baci_global_data_enums.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_material.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_hdg.H"
+#include "baci_elemag_ele.hpp"
+#include "baci_global_data.hpp"
+#include "baci_global_data_enums.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_hdg.hpp"
 
 BACI_NAMESPACE_OPEN
 

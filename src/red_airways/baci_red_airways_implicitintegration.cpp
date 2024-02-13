@@ -9,24 +9,24 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_red_airways_implicitintegration.H"
+#include "baci_red_airways_implicitintegration.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_mat_maxwell_0d_acinus_Ogden.H"
-#include "baci_rebalance_utils.H"
-#include "baci_red_airways_evaluation_data.h"
-#include "baci_red_airways_resulttest.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_lib_utils_parallel.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_mat_maxwell_0d_acinus_Ogden.hpp"
+#include "baci_rebalance_utils.hpp"
+#include "baci_red_airways_evaluation_data.hpp"
+#include "baci_red_airways_resulttest.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
 
 #include <stdio.h>
 

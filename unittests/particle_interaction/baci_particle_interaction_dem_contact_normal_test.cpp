@@ -6,10 +6,10 @@
 /*---------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_particle_interaction_dem_contact_normal.H"
+#include "baci_particle_interaction_dem_contact_normal.hpp"
 
-#include "baci_inpar_validparameters.H"
-#include "baci_particle_interaction_utils.H"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_particle_interaction_utils.hpp"
 
 
 namespace

@@ -10,11 +10,11 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "baci_contact_meshtying_poro_lagrange_strategy.H"
+#include "baci_contact_meshtying_poro_lagrange_strategy.hpp"
 
-#include "baci_inpar_contact.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_inpar_contact.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <Epetra_SerialComm.h>
 

@@ -11,10 +11,10 @@
 
 
 
-#include "baci_inpar_fs3i.H"
+#include "baci_inpar_fs3i.hpp"
 
-#include "baci_inpar_scatra.H"
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_scatra.hpp"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

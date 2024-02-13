@@ -9,9 +9,9 @@
 
 /*----------------------------------------------------------------------*/
 
-#include "baci_inpar_mor.H"
+#include "baci_inpar_mor.hpp"
 
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

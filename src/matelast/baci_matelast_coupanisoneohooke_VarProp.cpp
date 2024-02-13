@@ -7,13 +7,13 @@ space-time varying coefficients
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coupanisoneohooke_VarProp.H"
+#include "baci_matelast_coupanisoneohooke_VarProp.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_par_material.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_matelast_aniso_structuraltensor_strategy.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 

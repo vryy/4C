@@ -7,9 +7,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linalg_utils_densematrix_svd.H"
+#include "baci_linalg_utils_densematrix_svd.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_ScalarTraits.hpp>
 

@@ -9,20 +9,20 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_adapter_str_timeada_joint.H"
+#include "baci_adapter_str_timeada_joint.hpp"
 
-#include "baci_adapter_str_timeloop.H"
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_structure_new_solver_factory.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
-#include "baci_structure_new_timint_basedataio.H"
-#include "baci_structure_new_timint_basedatasdyn.H"
-#include "baci_structure_new_timint_factory.H"
+#include "baci_adapter_str_timeloop.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_structure_new_solver_factory.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_structure_new_timint_basedataglobalstate.hpp"
+#include "baci_structure_new_timint_basedataio.hpp"
+#include "baci_structure_new_timint_basedatasdyn.hpp"
+#include "baci_structure_new_timint_factory.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

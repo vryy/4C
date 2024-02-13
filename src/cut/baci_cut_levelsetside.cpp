@@ -9,12 +9,12 @@ levelset
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_levelsetside.H"
+#include "baci_cut_levelsetside.hpp"
 
-#include "baci_cut_element.H"
-#include "baci_cut_mesh.H"
-#include "baci_cut_pointgraph.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_cut_element.hpp"
+#include "baci_cut_mesh.hpp"
+#include "baci_cut_pointgraph.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 
 BACI_NAMESPACE_OPEN
 

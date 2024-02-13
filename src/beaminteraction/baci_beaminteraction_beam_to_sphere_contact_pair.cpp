@@ -8,20 +8,20 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_beam_to_sphere_contact_pair.H"
+#include "baci_beaminteraction_beam_to_sphere_contact_pair.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
-#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
-#include "baci_beaminteraction_beam_to_sphere_contact_params.H"
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_inpar_beamcontact.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_rigidsphere.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_base.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.hpp"
+#include "baci_beaminteraction_beam_to_sphere_contact_params.hpp"
+#include "baci_beaminteraction_contact_params.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_inpar_beamcontact.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_rigidsphere.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

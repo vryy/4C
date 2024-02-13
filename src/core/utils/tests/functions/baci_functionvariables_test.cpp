@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_utils_functionvariables.H"
+#include "baci_utils_functionvariables.hpp"
 
 BACI_NAMESPACE_OPEN
 

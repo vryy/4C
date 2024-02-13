@@ -8,20 +8,20 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_xfluid_state.H"
+#include "baci_fluid_xfluid_state.hpp"
 
-#include "baci_cut_cutwizard.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_discret_xfem.H"
-#include "baci_lib_xfem_dofset.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_xfem_condition_manager.H"
-#include "baci_xfem_xfield_state_utils.H"
+#include "baci_cut_cutwizard.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_discret_xfem.hpp"
+#include "baci_lib_xfem_dofset.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_xfem_condition_manager.hpp"
+#include "baci_xfem_xfield_state_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

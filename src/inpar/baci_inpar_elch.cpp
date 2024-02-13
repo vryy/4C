@@ -7,12 +7,12 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_inpar_elch.H"
+#include "baci_inpar_elch.hpp"
 
-#include "baci_inpar_scatra.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_conditiondefinition.H"
-#include "baci_linalg_sparseoperator.H"
+#include "baci_inpar_scatra.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_conditiondefinition.hpp"
+#include "baci_linalg_sparseoperator.hpp"
 
 BACI_NAMESPACE_OPEN
 

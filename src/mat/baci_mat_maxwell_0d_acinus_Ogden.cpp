@@ -23,13 +23,13 @@ MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 32
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_mat_maxwell_0d_acinus_Ogden.H"
+#include "baci_mat_maxwell_0d_acinus_Ogden.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_red_airways_elem_params.h"
-#include "baci_red_airways_elementbase.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_red_airways_elem_params.hpp"
+#include "baci_red_airways_elementbase.hpp"
 
 #include <vector>
 

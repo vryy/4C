@@ -7,12 +7,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_structure_resulttest.H"
+#include "baci_structure_resulttest.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_structure_timint.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_structure_timint.hpp"
 
 #include <Epetra_Vector.h>
 

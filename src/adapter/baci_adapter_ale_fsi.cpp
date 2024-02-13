@@ -11,9 +11,9 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
-#include "baci_adapter_ale_fsi.H"
+#include "baci_adapter_ale_fsi.hpp"
 
-#include "baci_ale_utils_mapextractor.H"
+#include "baci_ale_utils_mapextractor.hpp"
 
 BACI_NAMESPACE_OPEN
 

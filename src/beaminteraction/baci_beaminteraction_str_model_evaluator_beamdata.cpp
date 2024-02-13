@@ -8,7 +8,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_structure_new_model_evaluator_data.H"
+#include "baci_structure_new_model_evaluator_data.hpp"
 
 BACI_NAMESPACE_OPEN
 

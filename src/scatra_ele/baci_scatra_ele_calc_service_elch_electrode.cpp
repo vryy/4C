@@ -8,12 +8,12 @@ within electrodes
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_material.H"
-#include "baci_scatra_ele_calc_elch_electrode.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_scatra_ele_calc_elch_electrode.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
 
 BACI_NAMESPACE_OPEN
 

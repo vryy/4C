@@ -8,7 +8,7 @@
 \brief Nonlinear Membrane Finite Element line
 
 *----------------------------------------------------------------------*/
-#include "baci_membrane.H"
+#include "baci_membrane.hpp"
 
 BACI_NAMESPACE_OPEN
 

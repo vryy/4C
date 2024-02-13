@@ -8,9 +8,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_inpar_geometric_search.H"
+#include "baci_inpar_geometric_search.hpp"
 
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,13 +8,13 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_nln_solver_singlestep.H"
+#include "baci_structure_new_nln_solver_singlestep.hpp"
 
-#include "baci_solver_nonlin_nox_globaldata.H"
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_structure_new_integrator.H"
-#include "baci_structure_new_nln_solver_utils.H"
-#include "baci_structure_new_timint_base.H"
+#include "baci_solver_nonlin_nox_globaldata.hpp"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_structure_new_integrator.hpp"
+#include "baci_structure_new_nln_solver_utils.hpp"
+#include "baci_structure_new_timint_base.hpp"
 
 #include <NOX_Solver_Generic.H>
 

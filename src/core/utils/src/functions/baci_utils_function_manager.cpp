@@ -8,11 +8,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <stdexcept>
 

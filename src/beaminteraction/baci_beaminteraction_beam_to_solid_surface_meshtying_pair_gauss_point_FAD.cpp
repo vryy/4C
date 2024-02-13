@@ -8,11 +8,11 @@ coupling terms are evaluated using FAD.
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point_FAD.H"
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point_FAD.hpp"
 
-#include "baci_geometry_pair_element_faces.H"
-#include "baci_geometry_pair_line_to_surface.H"
-#include "baci_geometry_pair_scalar_types.H"
+#include "baci_geometry_pair_element_faces.hpp"
+#include "baci_geometry_pair_line_to_surface.hpp"
+#include "baci_geometry_pair_scalar_types.hpp"
 
 #include <Epetra_FEVector.h>
 

@@ -9,12 +9,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_dofset.H"
+#include "baci_lib_dofset.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_discret_hdg.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Epetra_FECrsGraph.h>
 

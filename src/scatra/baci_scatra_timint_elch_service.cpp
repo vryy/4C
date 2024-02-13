@@ -8,9 +8,9 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_scatra_timint_elch_service.H"
+#include "baci_scatra_timint_elch_service.hpp"
 
-#include "baci_io.H"
+#include "baci_io.hpp"
 
 BACI_NAMESPACE_OPEN
 

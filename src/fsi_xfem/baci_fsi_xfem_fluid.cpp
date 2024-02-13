@@ -7,11 +7,11 @@
 
 */
 
-#include "baci_fsi_xfem_fluid.H"
+#include "baci_fsi_xfem_fluid.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_pstream.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_pstream.hpp"
 
 BACI_NAMESPACE_OPEN
 

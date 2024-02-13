@@ -10,7 +10,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_group_prepostoperator.H"
+#include "baci_solver_nonlin_nox_group_prepostoperator.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

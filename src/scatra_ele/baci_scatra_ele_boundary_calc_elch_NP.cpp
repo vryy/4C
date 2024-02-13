@@ -7,14 +7,14 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_ele_boundary_calc_elch_NP.H"
+#include "baci_scatra_ele_boundary_calc_elch_NP.hpp"
 
-#include "baci_mat_ion.H"
-#include "baci_mat_list.H"
-#include "baci_mat_material.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_parameter_elch.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_mat_ion.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_parameter_elch.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,13 +8,13 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_electrode.H"
-#include "baci_mat_inelastic_defgrad_factors.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_electrode.hpp"
+#include "baci_mat_inelastic_defgrad_factors.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 namespace
 {

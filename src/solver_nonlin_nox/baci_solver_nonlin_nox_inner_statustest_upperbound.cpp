@@ -9,11 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_inner_statustest_upperbound.H"
+#include "baci_solver_nonlin_nox_inner_statustest_upperbound.hpp"
 
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_linesearch_generic.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_solver_nonlin_nox_linesearch_generic.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>
 #include <NOX_Abstract_Vector.H>

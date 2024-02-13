@@ -8,8 +8,8 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_io_csv_reader.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_io_csv_reader.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 #include <fstream>
 #include <vector>

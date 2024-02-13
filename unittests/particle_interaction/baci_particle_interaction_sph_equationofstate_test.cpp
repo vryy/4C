@@ -8,7 +8,7 @@ interactions
 
 #include <gtest/gtest.h>
 
-#include "baci_particle_interaction_sph_equationofstate.H"
+#include "baci_particle_interaction_sph_equationofstate.hpp"
 
 namespace
 {

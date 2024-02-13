@@ -8,11 +8,11 @@
 
 
 
-#include "baci_mat_scatra_mat_multiporo.H"
+#include "baci_mat_scatra_mat_multiporo.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <vector>
 

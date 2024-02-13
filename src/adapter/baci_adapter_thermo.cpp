@@ -11,15 +11,15 @@
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
-#include "baci_adapter_thermo.H"
+#include "baci_adapter_thermo.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_thermo.H"
-#include "baci_io_pstream.H"
-#include "baci_thermo_timint_expleuler.H"
-#include "baci_thermo_timint_genalpha.H"
-#include "baci_thermo_timint_ost.H"
-#include "baci_thermo_timint_statics.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_thermo.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_thermo_timint_expleuler.hpp"
+#include "baci_thermo_timint_genalpha.hpp"
+#include "baci_thermo_timint_ost.hpp"
+#include "baci_thermo_timint_statics.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>

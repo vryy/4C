@@ -7,15 +7,15 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poromultiphase_partitioned_twoway.H"
+#include "baci_poromultiphase_partitioned_twoway.hpp"
 
-#include "baci_adapter_art_net.H"
-#include "baci_adapter_porofluidmultiphase_wrapper.H"
-#include "baci_adapter_str_wrapper.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_adapter_art_net.hpp"
+#include "baci_adapter_porofluidmultiphase_wrapper.hpp"
+#include "baci_adapter_str_wrapper.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
 
 BACI_NAMESPACE_OPEN
 

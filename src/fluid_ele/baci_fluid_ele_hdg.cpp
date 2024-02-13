@@ -9,14 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_hdg.H"
+#include "baci_fluid_ele_hdg.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_factory.H"
-#include "baci_fluid_ele_interface.H"
-#include "baci_inpar_fluid.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret_faces.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_factory.hpp"
+#include "baci_fluid_ele_interface.hpp"
+#include "baci_inpar_fluid.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret_faces.hpp"
 
 BACI_NAMESPACE_OPEN
 

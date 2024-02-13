@@ -6,12 +6,12 @@
 */
 
 
-#include "baci_shell7p_ele_scatra_preevaluator.H"
+#include "baci_shell7p_ele_scatra_preevaluator.hpp"
 
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_lib_discret.H"
-#include "baci_shell7p_ele_calc_lib.H"
-#include "baci_shell7p_ele_scatra.H"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_shell7p_ele_calc_lib.hpp"
+#include "baci_shell7p_ele_scatra.hpp"
 
 BACI_NAMESPACE_OPEN
 

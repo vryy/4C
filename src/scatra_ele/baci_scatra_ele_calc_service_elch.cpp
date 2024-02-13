@@ -8,21 +8,21 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_global_data.H"  // consistency check of formulation and material
-#include "baci_lib_discret.H"  // for time curve in body force
-#include "baci_lib_utils.H"
-#include "baci_mat_elchmat.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_calc_elch.H"
-#include "baci_scatra_ele_parameter_elch.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_scatra_ele_utils_elch.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_fluid_rotsym_periodicbc.hpp"
+#include "baci_global_data.hpp"  // consistency check of formulation and material
+#include "baci_lib_discret.hpp"  // for time curve in body force
+#include "baci_lib_utils.hpp"
+#include "baci_mat_elchmat.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_calc_elch.hpp"
+#include "baci_scatra_ele_parameter_elch.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_scatra_ele_utils_elch.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -7,13 +7,13 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_ele_utils_elch_scl.H"
+#include "baci_scatra_ele_utils_elch_scl.hpp"
 
-#include "baci_mat_elchmat.H"
-#include "baci_mat_elchphase.H"
-#include "baci_mat_scl.H"
-#include "baci_scatra_ele_calc_elch_scl.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_mat_elchmat.hpp"
+#include "baci_mat_elchphase.hpp"
+#include "baci_mat_scl.hpp"
+#include "baci_scatra_ele_calc_elch_scl.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

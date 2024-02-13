@@ -8,14 +8,14 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_contact_nitsche_integrator_fsi.H"
+#include "baci_contact_nitsche_integrator_fsi.hpp"
 
-#include "baci_contact_element.H"
-#include "baci_contact_node.H"
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_poro.H"
-#include "baci_xfem_xfluid_contact_communicator.H"
+#include "baci_contact_element.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_poro.hpp"
+#include "baci_xfem_xfluid_contact_communicator.hpp"
 
 BACI_NAMESPACE_OPEN
 

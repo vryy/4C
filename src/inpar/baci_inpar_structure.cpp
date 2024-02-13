@@ -9,11 +9,11 @@
 
 /*----------------------------------------------------------------------*/
 
-#include "baci_inpar_structure.H"
+#include "baci_inpar_structure.hpp"
 
-#include "baci_inpar.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_conditiondefinition.H"
+#include "baci_inpar.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_conditiondefinition.hpp"
 
 BACI_NAMESPACE_OPEN
 

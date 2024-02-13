@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_constraint_element3.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_constraint_element3.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -6,7 +6,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "cut_test_loader.H"
+#include "cut_test_loader.hpp"
 
 void test_fluidfluid()
 {

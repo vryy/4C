@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_nox_newton.H"
+#include "baci_fsi_nox_newton.hpp"
 
 #include <NOX_GlobalData.H>
 #include <NOX_Utils.H>

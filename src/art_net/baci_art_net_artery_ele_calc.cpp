@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_art_net_artery_ele_calc.H"
+#include "baci_art_net_artery_ele_calc.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -7,9 +7,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_utils_local_numeric_methods.H"
+#include "baci_utils_local_numeric_methods.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <cmath>
 

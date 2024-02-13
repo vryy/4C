@@ -48,16 +48,16 @@
 /*----------------------------------------------------------------------*
  | Headers                                                   dano 11/11 |
  *----------------------------------------------------------------------*/
-#include "baci_mat_robinson.H"
+#include "baci_mat_robinson.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_so3_hex8.H"
-#include "baci_tsi_defines.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_tsi_defines.hpp"
 
 #include <vector>
 

@@ -8,11 +8,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_boundarycell_integration.H"
+#include "baci_cut_boundarycell_integration.hpp"
 
-#include "baci_cut_base_vol.H"
-#include "baci_cut_least_squares.H"
-#include "baci_io_pstream.H"
+#include "baci_cut_base_vol.hpp"
+#include "baci_cut_least_squares.hpp"
+#include "baci_io_pstream.hpp"
 
 BACI_NAMESPACE_OPEN
 

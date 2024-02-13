@@ -7,10 +7,10 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_params_base.H"
+#include "baci_beaminteraction_beam_to_solid_params_base.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_geometry_pair.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_geometry_pair.hpp"
 
 BACI_NAMESPACE_OPEN
 

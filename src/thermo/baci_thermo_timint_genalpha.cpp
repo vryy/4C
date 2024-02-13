@@ -7,9 +7,9 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 10/09 |
  *----------------------------------------------------------------------*/
-#include "baci_thermo_timint_genalpha.H"
+#include "baci_thermo_timint_genalpha.hpp"
 
-#include "baci_thermo_ele_action.H"
+#include "baci_thermo_ele_action.hpp"
 
 BACI_NAMESPACE_OPEN
 

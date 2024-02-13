@@ -8,17 +8,17 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mixture_prestress_strategy.H"
+#include "baci_mixture_prestress_strategy.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_material.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_service.H"
-#include "baci_mixture_prestress_strategy_constant.H"
-#include "baci_mixture_prestress_strategy_isocyl.H"
-#include "baci_mixture_prestress_strategy_iterative.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_material.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_mixture_prestress_strategy_constant.hpp"
+#include "baci_mixture_prestress_strategy_isocyl.hpp"
+#include "baci_mixture_prestress_strategy_iterative.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

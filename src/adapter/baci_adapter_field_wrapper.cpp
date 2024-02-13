@@ -9,7 +9,7 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "baci_adapter_field_wrapper.H"
+#include "baci_adapter_field_wrapper.hpp"
 
 BACI_NAMESPACE_OPEN
 

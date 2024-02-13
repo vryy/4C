@@ -6,18 +6,18 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
+#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.hpp"
 
-#include "baci_discretization_fem_general_cell_type_traits.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_lib_node.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
+#include "baci_discretization_fem_general_cell_type_traits.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_gausspoints.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

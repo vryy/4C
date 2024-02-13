@@ -8,16 +8,16 @@ equations
 
 
 *----------------------------------------------------------------------*/
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_boundarycell_integration.H"
-#include "baci_cut_kernel.H"
-#include "baci_cut_line_integration.H"
-#include "baci_cut_options.H"
-#include "baci_cut_side.H"
-#include "baci_cut_triangulateFacet.H"
+#include "baci_cut_boundarycell.hpp"
+#include "baci_cut_boundarycell_integration.hpp"
+#include "baci_cut_kernel.hpp"
+#include "baci_cut_line_integration.hpp"
+#include "baci_cut_options.hpp"
+#include "baci_cut_side.hpp"
+#include "baci_cut_triangulateFacet.hpp"
 
 #ifdef DEBUGCUTLIBRARY
-#include "baci_cut_output.H"
+#include "baci_cut_output.hpp"
 #endif
 
 

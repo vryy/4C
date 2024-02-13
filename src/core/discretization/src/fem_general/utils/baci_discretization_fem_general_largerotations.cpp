@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------------*/
 
 
-#include "baci_discretization_fem_general_largerotations.H"
+#include "baci_discretization_fem_general_largerotations.hpp"
 
 BACI_NAMESPACE_OPEN
 

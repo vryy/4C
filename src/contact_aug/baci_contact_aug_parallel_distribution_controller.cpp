@@ -7,11 +7,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_contact_aug_parallel_distribution_controller.H"
+#include "baci_contact_aug_parallel_distribution_controller.hpp"
 
-#include "baci_contact_aug_strategy.H"
-#include "baci_contact_paramsinterface.H"
-#include "baci_io_pstream.H"
+#include "baci_contact_aug_strategy.hpp"
+#include "baci_contact_paramsinterface.hpp"
+#include "baci_io_pstream.hpp"
 
 BACI_NAMESPACE_OPEN
 

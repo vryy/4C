@@ -9,12 +9,12 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_linear_solver_preconditioner_linalg.H"
+#include "baci_linear_solver_preconditioner_linalg.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_lib_node.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
 
 #include <Ifpack.h>
 #include <ml_common.h>

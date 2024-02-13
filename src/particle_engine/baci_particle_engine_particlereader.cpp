@@ -12,12 +12,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 04/2018 |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_particlereader.H"
+#include "baci_particle_engine_particlereader.hpp"
 
-#include "baci_io_pstream.H"
-#include "baci_particle_engine_enums.H"
-#include "baci_particle_engine_object.H"
-#include "baci_particle_engine_typedefs.H"
+#include "baci_io_pstream.hpp"
+#include "baci_particle_engine_enums.hpp"
+#include "baci_particle_engine_object.hpp"
+#include "baci_particle_engine_typedefs.hpp"
 
 #include <Teuchos_Time.hpp>
 

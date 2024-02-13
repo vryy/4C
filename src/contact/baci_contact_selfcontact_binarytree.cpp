@@ -8,13 +8,13 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "baci_contact_selfcontact_binarytree.H"
+#include "baci_contact_selfcontact_binarytree.hpp"
 
-#include "baci_contact_element.H"
-#include "baci_contact_node.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_contact_element.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
 
 BACI_NAMESPACE_OPEN
 

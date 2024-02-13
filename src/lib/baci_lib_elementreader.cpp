@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_elementreader.H"
+#include "baci_lib_elementreader.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_global_data.H"
-#include "baci_lib_elementdefinition.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_rebalance_utils.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_elementdefinition.hpp"
+#include "baci_lib_utils_parallel.hpp"
+#include "baci_rebalance_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

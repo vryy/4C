@@ -7,7 +7,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensevector.hpp"
 
 BACI_NAMESPACE_OPEN
 

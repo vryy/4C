@@ -9,14 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_resulttest.H"
+#include "baci_lib_resulttest.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_io_inputreader.H"
-#include "baci_io_linedefinition.H"
-#include "baci_io_pstream.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_inputreader.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <utility>
 

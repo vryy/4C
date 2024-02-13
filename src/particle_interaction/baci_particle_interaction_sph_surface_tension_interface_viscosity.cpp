@@ -9,18 +9,18 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_sph_surface_tension_interface_viscosity.H"
+#include "baci_particle_interaction_sph_surface_tension_interface_viscosity.hpp"
 
-#include "baci_particle_engine_container.H"
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_interaction_material_handler.H"
-#include "baci_particle_interaction_sph_artificialviscosity.H"
-#include "baci_particle_interaction_sph_equationofstate.H"
-#include "baci_particle_interaction_sph_equationofstate_bundle.H"
-#include "baci_particle_interaction_sph_kernel.H"
-#include "baci_particle_interaction_sph_neighbor_pairs.H"
-#include "baci_particle_interaction_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_particle_engine_container.hpp"
+#include "baci_particle_engine_interface.hpp"
+#include "baci_particle_interaction_material_handler.hpp"
+#include "baci_particle_interaction_sph_artificialviscosity.hpp"
+#include "baci_particle_interaction_sph_equationofstate.hpp"
+#include "baci_particle_interaction_sph_equationofstate_bundle.hpp"
+#include "baci_particle_interaction_sph_kernel.hpp"
+#include "baci_particle_interaction_sph_neighbor_pairs.hpp"
+#include "baci_particle_interaction_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

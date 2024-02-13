@@ -9,16 +9,16 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_post_filter_base.H"
+#include "baci_post_filter_base.hpp"
 
-#include "baci_io_legacy_table.H"
-#include "baci_io_legacy_table_iter.H"
-#include "baci_post_common.H"
-#include "baci_post_ensight_writer.H"
-#include "baci_post_vtk_vti_writer.H"
-#include "baci_post_vtk_vtu_writer.H"
-#include "baci_post_vtk_vtu_writer_node_based.H"
-#include "baci_post_writer_base.H"
+#include "baci_io_legacy_table.hpp"
+#include "baci_io_legacy_table_iter.hpp"
+#include "baci_post_common.hpp"
+#include "baci_post_ensight_writer.hpp"
+#include "baci_post_vtk_vti_writer.hpp"
+#include "baci_post_vtk_vtu_writer.hpp"
+#include "baci_post_vtk_vtu_writer_node_based.hpp"
+#include "baci_post_writer_base.hpp"
 
 BACI_NAMESPACE_OPEN
 

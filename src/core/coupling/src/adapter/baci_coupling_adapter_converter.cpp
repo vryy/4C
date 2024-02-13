@@ -10,9 +10,9 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
-#include "baci_coupling_adapter_converter.H"
+#include "baci_coupling_adapter_converter.hpp"
 
-#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

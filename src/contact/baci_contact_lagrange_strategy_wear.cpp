@@ -11,24 +11,24 @@
  | Header                                                   farah 09/13 |
  *----------------------------------------------------------------------*/
 
-#include "baci_contact_lagrange_strategy_wear.H"
+#include "baci_contact_lagrange_strategy_wear.hpp"
 
-#include "baci_contact_defines.H"
-#include "baci_contact_element.H"
-#include "baci_contact_friction_node.H"
-#include "baci_contact_integrator.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_lagrange_strategy.H"
-#include "baci_contact_wear_interface.H"
-#include "baci_inpar_contact.H"
-#include "baci_inpar_wear.H"
-#include "baci_io.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_mortar_utils.H"
+#include "baci_contact_defines.hpp"
+#include "baci_contact_element.hpp"
+#include "baci_contact_friction_node.hpp"
+#include "baci_contact_integrator.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_lagrange_strategy.hpp"
+#include "baci_contact_wear_interface.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_inpar_wear.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_mortar_utils.hpp"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_SerialComm.h>

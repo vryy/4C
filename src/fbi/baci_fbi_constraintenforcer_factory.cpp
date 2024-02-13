@@ -9,15 +9,15 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fbi_constraintenforcer_factory.H"
+#include "baci_fbi_constraintenforcer_factory.hpp"
 
-#include "baci_fbi_adapter_constraintbridge.H"
-#include "baci_fbi_adapter_constraintbridge_penalty.H"
-#include "baci_fbi_constraintenforcer_penalty.H"
-#include "baci_fbi_immersed_geometry_coupler.H"
-#include "baci_fbi_immersedcoupler_factory.H"
-#include "baci_inpar_fbi.H"
-#include "baci_inpar_fsi.H"
+#include "baci_fbi_adapter_constraintbridge.hpp"
+#include "baci_fbi_adapter_constraintbridge_penalty.hpp"
+#include "baci_fbi_constraintenforcer_penalty.hpp"
+#include "baci_fbi_immersed_geometry_coupler.hpp"
+#include "baci_fbi_immersedcoupler_factory.hpp"
+#include "baci_inpar_fbi.hpp"
+#include "baci_inpar_fsi.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

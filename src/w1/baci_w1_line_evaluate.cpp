@@ -8,21 +8,21 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_elements_paramsinterface.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_structporo.H"
-#include "baci_nurbs_discret.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
-#include "baci_w1.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_elements_paramsinterface.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_w1.hpp"
 
 BACI_NAMESPACE_OPEN
 

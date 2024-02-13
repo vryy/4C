@@ -9,12 +9,12 @@ based on the interface displacements
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_dirichletneumann_disp.H"
+#include "baci_fsi_dirichletneumann_disp.hpp"
 
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_fsi_debugwriter.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fsi.H"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_fsi_debugwriter.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fsi.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

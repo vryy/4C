@@ -10,7 +10,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_timint_ac_ost.H"
+#include "baci_fluid_timint_ac_ost.hpp"
 
 BACI_NAMESPACE_OPEN
 

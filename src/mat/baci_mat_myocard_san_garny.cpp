@@ -10,11 +10,11 @@
  |  headers                                                  ljag 07/12 |
  *----------------------------------------------------------------------*/
 
-#include "baci_mat_myocard_san_garny.H"
+#include "baci_mat_myocard_san_garny.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <vector>
 

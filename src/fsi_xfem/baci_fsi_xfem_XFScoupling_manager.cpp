@@ -6,15 +6,15 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_fsi_xfem_XFScoupling_manager.H"
+#include "baci_fsi_xfem_XFScoupling_manager.hpp"
 
-#include "baci_adapter_str_structure.H"
-#include "baci_fluid_xfluid.H"
-#include "baci_fluid_xfluid_fluid.H"  //Todo: remove me finally
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_xfem_condition_manager.H"
+#include "baci_adapter_str_structure.hpp"
+#include "baci_fluid_xfluid.hpp"
+#include "baci_fluid_xfluid_fluid.hpp"  //Todo: remove me finally
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_xfem_condition_manager.hpp"
 
 BACI_NAMESPACE_OPEN
 

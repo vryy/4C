@@ -8,11 +8,11 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_fs3i_biofilm_fsi_utils.H"
+#include "baci_fs3i_biofilm_fsi_utils.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 BACI_NAMESPACE_OPEN
 

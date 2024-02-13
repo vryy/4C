@@ -8,9 +8,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_io_linedefinition.H"
-#include "baci_mat_elasthyper.H"
-#include "baci_so3_nstet5.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_elasthyper.hpp"
+#include "baci_so3_nstet5.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,11 +8,11 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_io_visualization_writer_factory.H"
+#include "baci_io_visualization_writer_factory.hpp"
 
-#include "baci_inpar_IO_runtime_output.H"
-#include "baci_io_visualization_writer_vtu_per_rank.H"
-#include "baci_utils_exceptions.H"
+#include "baci_inpar_IO_runtime_output.hpp"
+#include "baci_io_visualization_writer_vtu_per_rank.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

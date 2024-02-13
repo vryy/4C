@@ -7,13 +7,13 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_timint_elch_scheme.H"
+#include "baci_scatra_timint_elch_scheme.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_scatra_timint_meshtying_strategy_base.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_scatra_timint_meshtying_strategy_base.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -6,13 +6,13 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_matelast_remodelfiber.H"
+#include "baci_matelast_remodelfiber.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_service.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_service.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

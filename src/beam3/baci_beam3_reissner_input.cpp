@@ -8,12 +8,12 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beam3_reissner.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_beam_material_generic.H"
-#include "baci_mat_material.H"
-#include "baci_mat_par_parameter.H"
+#include "baci_beam3_reissner.hpp"
+#include "baci_discretization_fem_general_largerotations.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_beam_material_generic.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_mat_par_parameter.hpp"
 
 BACI_NAMESPACE_OPEN
 

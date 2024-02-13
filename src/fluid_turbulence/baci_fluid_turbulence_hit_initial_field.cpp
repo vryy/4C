@@ -12,14 +12,14 @@ Technical Report 034, MEMS, Rice University (2002) 16.
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_turbulence_hit_initial_field.H"
+#include "baci_fluid_turbulence_hit_initial_field.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_implicit_integration.H"
-#include "baci_fluid_timint_hdg.H"
-#include "baci_global_data.H"
-#include "baci_lib_utils.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_implicit_integration.hpp"
+#include "baci_fluid_timint_hdg.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_utils.hpp"
 
 #include <cmath>
 #include <complex>

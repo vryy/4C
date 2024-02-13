@@ -7,9 +7,9 @@
 */
 
 
-#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
 
-#include "baci_inpar_parameterlist_utils.H"
+#include "baci_inpar_parameterlist_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

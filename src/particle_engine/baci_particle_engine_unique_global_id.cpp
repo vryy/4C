@@ -8,12 +8,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_unique_global_id.H"
+#include "baci_particle_engine_unique_global_id.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_particle_engine_communication_utils.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_particle_engine_communication_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-#include "baci_adapter_fld_fluid_ac_fsi.H"
+#include "baci_adapter_fld_fluid_ac_fsi.hpp"
 
-#include "baci_fluid_impedancecondition.H"
-#include "baci_fluid_implicit_integration.H"
+#include "baci_fluid_impedancecondition.hpp"
+#include "baci_fluid_implicit_integration.hpp"
 
 BACI_NAMESPACE_OPEN
 

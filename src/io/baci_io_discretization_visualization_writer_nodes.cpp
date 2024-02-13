@@ -9,12 +9,12 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 /* headers */
-#include "baci_io_discretization_visualization_writer_nodes.H"
+#include "baci_io_discretization_visualization_writer_nodes.hpp"
 
-#include "baci_io_visualization_manager.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_node.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io_visualization_manager.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <utility>
 

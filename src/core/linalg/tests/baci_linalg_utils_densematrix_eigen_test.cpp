@@ -8,12 +8,12 @@
 *----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_linalg_utils_densematrix_eigen.H"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
 
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 BACI_NAMESPACE_OPEN
 

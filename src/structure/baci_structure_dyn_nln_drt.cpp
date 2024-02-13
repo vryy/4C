@@ -7,21 +7,21 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_structure_dyn_nln_drt.H"
+#include "baci_structure_dyn_nln_drt.hpp"
 
-#include "baci_adapter_str_factory.H"
-#include "baci_adapter_str_structure.H"
-#include "baci_adapter_str_structure_new.H"
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_periodicbc.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_structure_resulttest.H"
+#include "baci_adapter_str_factory.hpp"
+#include "baci_adapter_str_structure.hpp"
+#include "baci_adapter_str_structure_new.hpp"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_periodicbc.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_structure_resulttest.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

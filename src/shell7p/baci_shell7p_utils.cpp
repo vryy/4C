@@ -5,13 +5,13 @@
 \level 1
 */
 
-#include "baci_shell7p_utils.H"
+#include "baci_shell7p_utils.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_io_linedefinition.H"
-#include "baci_shell7p_ele.H"
-#include "baci_shell7p_ele_scatra.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_shell7p_ele.hpp"
+#include "baci_shell7p_ele_scatra.hpp"
 
 BACI_NAMESPACE_OPEN
 

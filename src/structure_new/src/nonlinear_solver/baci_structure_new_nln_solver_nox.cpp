@@ -9,17 +9,17 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_nln_solver_nox.H"  // class header
+#include "baci_structure_new_nln_solver_nox.hpp"  // class header
 
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_solver_nonlin_nox_constraint_interface_required.H"
-#include "baci_solver_nonlin_nox_globaldata.H"
-#include "baci_solver_nonlin_nox_linearsystem.H"
-#include "baci_solver_nonlin_nox_problem.H"
-#include "baci_solver_nonlin_nox_solver_factory.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_timint_noxinterface.H"
-#include "baci_structure_new_utils.H"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_solver_nonlin_nox_constraint_interface_required.hpp"
+#include "baci_solver_nonlin_nox_globaldata.hpp"
+#include "baci_solver_nonlin_nox_linearsystem.hpp"
+#include "baci_solver_nonlin_nox_problem.hpp"
+#include "baci_solver_nonlin_nox_solver_factory.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_structure_new_timint_noxinterface.hpp"
+#include "baci_structure_new_utils.hpp"
 
 #include <NOX_Abstract_Group.H>
 #include <NOX_Epetra_LinearSystem.H>

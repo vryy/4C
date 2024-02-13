@@ -9,12 +9,12 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#include "baci_io_visualization_parameters.H"
+#include "baci_io_visualization_parameters.hpp"
 
-#include "baci_inpar_IO_runtime_output.H"
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_io_control.H"
-#include "baci_utils_exceptions.H"
+#include "baci_inpar_IO_runtime_output.hpp"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_io_control.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

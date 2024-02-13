@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_io_linedefinition.H"
-#include "baci_rigidsphere.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_rigidsphere.hpp"
 
 BACI_NAMESPACE_OPEN
 

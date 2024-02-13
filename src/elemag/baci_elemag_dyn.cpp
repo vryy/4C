@@ -8,25 +8,25 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_elemag_dyn.H"
+#include "baci_elemag_dyn.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_comm_utils.H"
-#include "baci_elemag_ele.H"
-#include "baci_elemag_timeint.H"
-#include "baci_elemag_utils_clonestrategy.H"
-#include "baci_global_data.H"
-#include "baci_inpar_elemag.H"
-#include "baci_inpar_scatra.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_dofset_independent.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_scatra_timint_stat.H"
-#include "baci_scatra_timint_stat_hdg.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_comm_utils.hpp"
+#include "baci_elemag_ele.hpp"
+#include "baci_elemag_timeint.hpp"
+#include "baci_elemag_utils_clonestrategy.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_elemag.hpp"
+#include "baci_inpar_scatra.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret_hdg.hpp"
+#include "baci_lib_dofset_independent.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_scatra_timint_stat.hpp"
+#include "baci_scatra_timint_stat_hdg.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

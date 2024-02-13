@@ -8,16 +8,16 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_linear_solver_method_krylov.H"
+#include "baci_linear_solver_method_krylov.hpp"
 
-#include "baci_linear_solver_amgnxn_preconditioner.H"
-#include "baci_linear_solver_preconditioner_block.H"
-#include "baci_linear_solver_preconditioner_ifpack.H"
-#include "baci_linear_solver_preconditioner_krylovprojection.H"
-#include "baci_linear_solver_preconditioner_ml.H"
-#include "baci_linear_solver_preconditioner_muelu.H"
-#include "baci_linear_solver_preconditioner_point.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linear_solver_amgnxn_preconditioner.hpp"
+#include "baci_linear_solver_preconditioner_block.hpp"
+#include "baci_linear_solver_preconditioner_ifpack.hpp"
+#include "baci_linear_solver_preconditioner_krylovprojection.hpp"
+#include "baci_linear_solver_preconditioner_ml.hpp"
+#include "baci_linear_solver_preconditioner_muelu.hpp"
+#include "baci_linear_solver_preconditioner_point.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_CrsMatrix.h>

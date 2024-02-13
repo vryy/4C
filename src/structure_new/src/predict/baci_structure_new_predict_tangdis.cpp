@@ -11,20 +11,20 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_predict_tangdis.H"
+#include "baci_structure_new_predict_tangdis.hpp"
 
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_group_prepostoperator.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_impl_generic.H"
-#include "baci_structure_new_model_evaluator.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_solver_nonlin_nox_group_prepostoperator.hpp"
+#include "baci_structure_new_dbc.hpp"
+#include "baci_structure_new_impl_generic.hpp"
+#include "baci_structure_new_model_evaluator.hpp"
+#include "baci_structure_new_model_evaluator_data.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_structure_new_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <NOX_Epetra_Vector.H>
 

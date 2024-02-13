@@ -7,10 +7,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_fluid_murnaghantait.H"
+#include "baci_mat_fluid_murnaghantait.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <vector>
 

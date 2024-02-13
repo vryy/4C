@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_line.H"
+#include "baci_so3_line.hpp"
 
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

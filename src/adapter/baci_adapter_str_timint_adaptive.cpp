@@ -10,11 +10,11 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_adapter_str_timint_adaptive.H"
+#include "baci_adapter_str_timint_adaptive.hpp"
 
-#include "baci_structure_timada.H"
-#include "baci_structure_timint.H"
-#include "baci_structure_timint_create.H"
+#include "baci_structure_timada.hpp"
+#include "baci_structure_timint.hpp"
+#include "baci_structure_timint_create.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -7,21 +7,21 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
+#include "baci_beaminteraction_beam_to_solid_mortar_manager.hpp"
 
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_beaminteraction_str_model_evaluator_datastate.H"
-#include "baci_geometry_pair.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"
+#include "baci_beaminteraction_beam_to_solid_utils.hpp"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_beaminteraction_contact_params.hpp"
+#include "baci_beaminteraction_str_model_evaluator_datastate.hpp"
+#include "baci_geometry_pair.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <Epetra_FEVector.h>
 

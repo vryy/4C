@@ -8,10 +8,10 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beam3_triad_interpolation.H"
+#include "baci_beam3_triad_interpolation.hpp"
 
-#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_triad_interpolation_local_rotation_vectors.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>

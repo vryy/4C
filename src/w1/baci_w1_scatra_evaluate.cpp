@@ -8,11 +8,11 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_mat_material.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_w1_scatra.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_w1_scatra.hpp"
 
 BACI_NAMESPACE_OPEN
 

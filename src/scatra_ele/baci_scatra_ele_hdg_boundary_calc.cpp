@@ -9,12 +9,12 @@
 /*--------------------------------------------------------------------------*/
 
 
-#include "baci_scatra_ele_hdg_boundary_calc.H"
+#include "baci_scatra_ele_hdg_boundary_calc.hpp"
 
-#include "baci_lib_node.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_hdg.H"
+#include "baci_lib_node.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_hdg.hpp"
 
 BACI_NAMESPACE_OPEN
 

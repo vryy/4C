@@ -7,9 +7,9 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#include "baci_linalg_downwindmatrix.H"
+#include "baci_linalg_downwindmatrix.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 #include <ml_utils.h>
 #include <Teuchos_Time.hpp>

@@ -7,14 +7,14 @@
 */
 
 
-#include "baci_geometry_pair_line_to_volume_gauss_point_projection.H"
+#include "baci_geometry_pair_line_to_volume_gauss_point_projection.hpp"
 
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_geometry_pair_element.H"
-#include "baci_geometry_pair_line_projection.H"
-#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
-#include "baci_geometry_pair_utility_classes.H"
-#include "baci_lib_element.H"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_line_projection.hpp"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
+#include "baci_geometry_pair_utility_classes.hpp"
+#include "baci_lib_element.hpp"
 
 BACI_NAMESPACE_OPEN
 

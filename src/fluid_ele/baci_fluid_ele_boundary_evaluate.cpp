@@ -10,12 +10,12 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fluid_ele.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_boundary_calc.H"
-#include "baci_fluid_ele_boundary_factory.H"
-#include "baci_fluid_ele_boundary_parent_calc.H"
-#include "baci_lib_discret.H"
+#include "baci_fluid_ele.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_boundary_calc.hpp"
+#include "baci_fluid_ele_boundary_factory.hpp"
+#include "baci_fluid_ele_boundary_parent_calc.hpp"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

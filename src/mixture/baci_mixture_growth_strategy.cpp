@@ -5,14 +5,14 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mixture_growth_strategy.H"
+#include "baci_mixture_growth_strategy.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
-#include "baci_mixture_growth_strategy_anisotropic.H"
-#include "baci_mixture_growth_strategy_isotropic.H"
-#include "baci_mixture_growth_strategy_stiffness.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_mixture_growth_strategy_anisotropic.hpp"
+#include "baci_mixture_growth_strategy_isotropic.hpp"
+#include "baci_mixture_growth_strategy_stiffness.hpp"
 
 BACI_NAMESPACE_OPEN
 

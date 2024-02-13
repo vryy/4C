@@ -9,18 +9,18 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fbi_beam_to_fluid_mortar_manager.H"
+#include "baci_fbi_beam_to_fluid_mortar_manager.hpp"
 
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_fbi_calc_utils.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fbi.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_params.hpp"
+#include "baci_fbi_calc_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fbi.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <Epetra_FEVector.h>
 

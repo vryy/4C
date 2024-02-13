@@ -5,17 +5,17 @@
 \level 1
 */
 
-#include "baci_solid_ele_factory.H"
+#include "baci_solid_ele_factory.hpp"
 
-#include "baci_discretization_fem_general_cell_type.H"
-#include "baci_discretization_fem_general_cell_type_traits.H"
-#include "baci_inpar_structure.H"
-#include "baci_solid_ele_calc_displacement_based.H"
-#include "baci_solid_ele_calc_eas.H"
-#include "baci_solid_ele_calc_fbar.H"
-#include "baci_solid_ele_calc_mulf.H"
-#include "baci_solid_ele_properties.H"
-#include "baci_utils_exceptions.H"
+#include "baci_discretization_fem_general_cell_type.hpp"
+#include "baci_discretization_fem_general_cell_type_traits.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_solid_ele_calc_displacement_based.hpp"
+#include "baci_solid_ele_calc_eas.hpp"
+#include "baci_solid_ele_calc_fbar.hpp"
+#include "baci_solid_ele_calc_mulf.hpp"
+#include "baci_solid_ele_properties.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <type_traits>
 

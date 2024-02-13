@@ -9,11 +9,11 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_lubrication_resulttest.H"
+#include "baci_lubrication_resulttest.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_lubrication_timint_implicit.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lubrication_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

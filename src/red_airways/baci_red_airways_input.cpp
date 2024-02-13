@@ -10,10 +10,10 @@ RedAirBloodScatraLine3 elements
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_maxwell_0d_acinus.H"
-#include "baci_red_airways_elementbase.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_maxwell_0d_acinus.hpp"
+#include "baci_red_airways_elementbase.hpp"
 
 BACI_NAMESPACE_OPEN
 

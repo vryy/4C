@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_utils_local_integration.H"
+#include "baci_utils_local_integration.hpp"
 
 #include <Sacado.hpp>
 #include <Sacado_Fad_DFad.hpp>

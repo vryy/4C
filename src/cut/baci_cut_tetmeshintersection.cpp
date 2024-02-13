@@ -8,16 +8,16 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_tetmeshintersection.H"
+#include "baci_cut_tetmeshintersection.hpp"
 
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_integrationcell.H"
-#include "baci_cut_node.H"
-#include "baci_cut_options.H"
-#include "baci_cut_output.H"
-#include "baci_cut_pointpool.H"
-#include "baci_cut_side.H"
-#include "baci_cut_volumecell.H"
+#include "baci_cut_boundarycell.hpp"
+#include "baci_cut_integrationcell.hpp"
+#include "baci_cut_node.hpp"
+#include "baci_cut_options.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_pointpool.hpp"
+#include "baci_cut_side.hpp"
+#include "baci_cut_volumecell.hpp"
 
 #include <Shards_BasicTopologies.hpp>
 #include <Shards_CellTopologyTraits.hpp>

@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_boundary_calc_std.H"
+#include "baci_fluid_ele_boundary_calc_std.hpp"
 
-#include "baci_fluid_ele_parameter_std.H"
-#include "baci_lib_elementtype.H"
+#include "baci_fluid_ele_parameter_std.hpp"
+#include "baci_lib_elementtype.hpp"
 
 BACI_NAMESPACE_OPEN
 

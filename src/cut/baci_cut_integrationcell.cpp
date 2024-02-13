@@ -7,15 +7,15 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_cut_integrationcell.H"
+#include "baci_cut_integrationcell.hpp"
 
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_facet.H"
-#include "baci_cut_mesh.H"
-#include "baci_cut_output.H"
-#include "baci_cut_position.H"
-#include "baci_cut_volumecell.H"
-#include "baci_discretization_geometry_element_volume.H"
+#include "baci_cut_boundarycell.hpp"
+#include "baci_cut_facet.hpp"
+#include "baci_cut_mesh.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_position.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_discretization_geometry_element_volume.hpp"
 
 BACI_NAMESPACE_OPEN
 

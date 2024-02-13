@@ -8,19 +8,19 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_pasi_partitioned.H"
+#include "baci_pasi_partitioned.hpp"
 
-#include "baci_adapter_str_factory.H"
-#include "baci_adapter_str_pasiwrapper.H"
-#include "baci_adapter_str_structure_new.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_particle_algorithm.H"
-#include "baci_particle_wall_datastate.H"
-#include "baci_particle_wall_interface.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_str_factory.hpp"
+#include "baci_adapter_str_pasiwrapper.hpp"
+#include "baci_adapter_str_structure_new.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_particle_algorithm.hpp"
+#include "baci_particle_wall_datastate.hpp"
+#include "baci_particle_wall_interface.hpp"
+#include "baci_structure_aux.hpp"
 
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 #include <Teuchos_TimeMonitor.hpp>

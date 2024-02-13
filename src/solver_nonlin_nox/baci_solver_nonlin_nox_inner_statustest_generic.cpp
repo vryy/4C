@@ -8,7 +8,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_inner_statustest_generic.H"  // class definition
+#include "baci_solver_nonlin_nox_inner_statustest_generic.hpp"  // class definition
 
 #include <iomanip>
 

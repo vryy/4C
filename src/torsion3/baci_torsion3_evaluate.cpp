@@ -8,15 +8,15 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_global_data.H"
-#include "baci_inpar_browniandyn.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_spring.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_torsion3.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_browniandyn.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_spring.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_torsion3.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <cmath>
 

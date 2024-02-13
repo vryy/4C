@@ -8,9 +8,9 @@ Comput. Methods Appl. Mech. Engrg. 260, 2013"
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_couplogmixneohooke.H"
+#include "baci_matelast_couplogmixneohooke.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

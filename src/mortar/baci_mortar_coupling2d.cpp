@@ -7,17 +7,17 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mortar_coupling2d.H"
+#include "baci_mortar_coupling2d.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_integrator.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_projector.H"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_integrator.hpp"
+#include "baci_mortar_node.hpp"
+#include "baci_mortar_projector.hpp"
 
 #include <utility>
 

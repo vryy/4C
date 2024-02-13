@@ -7,15 +7,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_scatra_utils.H"
+#include "baci_scatra_utils.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_inpar_s2i.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_inpar_s2i.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -10,14 +10,14 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_beaminteraction_submodel_evaluator_factory.H"
+#include "baci_beaminteraction_submodel_evaluator_factory.hpp"
 
-#include "baci_beaminteraction_submodel_evaluator_beamcontact.H"
-#include "baci_beaminteraction_submodel_evaluator_crosslinking.H"
-#include "baci_beaminteraction_submodel_evaluator_potential.H"
-#include "baci_beaminteraction_submodel_evaluator_spherebeamlinking.H"
-#include "baci_global_data.H"
-#include "baci_inpar_beaminteraction.H"
+#include "baci_beaminteraction_submodel_evaluator_beamcontact.hpp"
+#include "baci_beaminteraction_submodel_evaluator_crosslinking.hpp"
+#include "baci_beaminteraction_submodel_evaluator_potential.hpp"
+#include "baci_beaminteraction_submodel_evaluator_spherebeamlinking.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_beaminteraction.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,16 +8,16 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_sph_neighbor_pairs.H"
+#include "baci_particle_interaction_sph_neighbor_pairs.hpp"
 
-#include "baci_discretization_geometry_element_coordtrafo.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_particle_engine_container.H"
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_interaction_sph_kernel.H"
-#include "baci_particle_interaction_utils.H"
-#include "baci_particle_wall_interface.H"
+#include "baci_discretization_geometry_element_coordtrafo.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_discretization_geometry_searchtree_service.hpp"
+#include "baci_particle_engine_container.hpp"
+#include "baci_particle_engine_interface.hpp"
+#include "baci_particle_interaction_sph_kernel.hpp"
+#include "baci_particle_interaction_utils.hpp"
+#include "baci_particle_wall_interface.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

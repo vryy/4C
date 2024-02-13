@@ -15,13 +15,13 @@ derived from an abstract, purely virtual interface class.
 
  */
 /*----------------------------------------------------------------------*/
-#include "baci_ssi_monolithic_convcheck_strategies.H"
+#include "baci_ssi_monolithic_convcheck_strategies.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_ssi_utils.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_adapter_str_ssiwrapper.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_ssi_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -5,9 +5,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_shape_function_type.H"
+#include "baci_discretization_fem_general_shape_function_type.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <algorithm>
 #include <map>

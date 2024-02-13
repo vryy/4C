@@ -8,12 +8,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_material_handler.H"
+#include "baci_particle_interaction_material_handler.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_particle_algorithm_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_particle_algorithm_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

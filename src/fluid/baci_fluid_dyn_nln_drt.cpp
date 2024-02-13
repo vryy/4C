@@ -20,14 +20,14 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_dyn_nln_drt.H"
+#include "baci_fluid_dyn_nln_drt.hpp"
 
-#include "baci_adapter_fld_base_algorithm.H"
-#include "baci_fluid_turbulence_turbulent_flow_algorithm.H"
-#include "baci_global_data.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_adapter_fld_base_algorithm.hpp"
+#include "baci_fluid_turbulence_turbulent_flow_algorithm.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 BACI_NAMESPACE_OPEN
 

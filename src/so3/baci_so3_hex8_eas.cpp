@@ -5,12 +5,12 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_lib_discret.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_sh8p8.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_sh8p8.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

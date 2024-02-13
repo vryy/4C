@@ -9,12 +9,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_scatra_algorithm.H"
+#include "baci_scatra_algorithm.hpp"
 
-#include "baci_coupling_adapter_volmortar.H"
-#include "baci_fluid_turbulence_statistic_manager.H"
-#include "baci_global_data.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_coupling_adapter_volmortar.hpp"
+#include "baci_fluid_turbulence_statistic_manager.hpp"
+#include "baci_global_data.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

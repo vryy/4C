@@ -5,13 +5,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mixture_remodelfiber.H"
+#include "baci_mixture_remodelfiber.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_mixture_constituent_remodelfiber_material.H"
-#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
-#include "baci_mixture_remodelfiber-internal.H"
-#include "baci_utils_fad.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_mixture_constituent_remodelfiber_material.hpp"
+#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.hpp"
+#include "baci_mixture_remodelfiber-internal.hpp"
+#include "baci_utils_fad.hpp"
 
 #include <Sacado.hpp>
 

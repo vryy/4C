@@ -16,16 +16,16 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_inner_statustest_filter.H"
+#include "baci_solver_nonlin_nox_inner_statustest_filter.hpp"
 
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_inner_statustest_interface_required.H"
-#include "baci_solver_nonlin_nox_linesearch_generic.H"
-#include "baci_solver_nonlin_nox_meritfunction_lagrangian.H"
-#include "baci_solver_nonlin_nox_solver_linesearchbased.H"
-#include "baci_solver_nonlin_nox_statustest_activeset.H"
-#include "baci_solver_nonlin_nox_statustest_normf.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_solver_nonlin_nox_inner_statustest_interface_required.hpp"
+#include "baci_solver_nonlin_nox_linesearch_generic.hpp"
+#include "baci_solver_nonlin_nox_meritfunction_lagrangian.hpp"
+#include "baci_solver_nonlin_nox_solver_linesearchbased.hpp"
+#include "baci_solver_nonlin_nox_statustest_activeset.hpp"
+#include "baci_solver_nonlin_nox_statustest_normf.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>
 #include <fenv.h>

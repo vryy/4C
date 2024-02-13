@@ -7,12 +7,12 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_adapter_fld_fluid_fpsi.H"
+#include "baci_adapter_fld_fluid_fpsi.hpp"
 
-#include "baci_adapter_fld_fluid_fsi.H"
-#include "baci_fluid_implicit_integration.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_fpsi_utils.H"
+#include "baci_adapter_fld_fluid_fsi.hpp"
+#include "baci_fluid_implicit_integration.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_fpsi_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

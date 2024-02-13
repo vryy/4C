@@ -11,22 +11,22 @@ continuous interior penalty) scheme
 
 
 
-#include "baci_xfem_edgestab.H"
+#include "baci_xfem_edgestab.hpp"
 
-#include "baci_cut_cutwizard.H"
-#include "baci_cut_elementhandle.H"
-#include "baci_cut_sidehandle.H"
-#include "baci_cut_volumecell.H"
-#include "baci_fluid_ele.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_intfaces_calc.H"
-#include "baci_inpar_fluid.H"
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_discret_faces.H"
-#include "baci_mat_list.H"
-#include "baci_mat_material.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_xfem_utils.H"
+#include "baci_cut_cutwizard.hpp"
+#include "baci_cut_elementhandle.hpp"
+#include "baci_cut_sidehandle.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_fluid_ele.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_intfaces_calc.hpp"
+#include "baci_inpar_fluid.hpp"
+#include "baci_lib_assemblestrategy.hpp"
+#include "baci_lib_discret_faces.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_xfem_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

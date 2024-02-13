@@ -9,16 +9,16 @@
 
 
 
-#include "baci_post_ensight_writer.H"
+#include "baci_post_ensight_writer.hpp"
 
-#include "baci_fluid_rotsym_periodicbc_utils.H"
-#include "baci_inpar_problemtype.H"
-#include "baci_io_legacy_table.H"
-#include "baci_io_legacy_table_iter.H"
-#include "baci_lib_discret_xfem.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_nurbs_discret.H"
-#include "baci_post_common.H"
+#include "baci_fluid_rotsym_periodicbc_utils.hpp"
+#include "baci_inpar_problemtype.hpp"
+#include "baci_io_legacy_table.hpp"
+#include "baci_io_legacy_table_iter.hpp"
+#include "baci_lib_discret_xfem.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_post_common.hpp"
 
 #include <numeric>
 #include <string>

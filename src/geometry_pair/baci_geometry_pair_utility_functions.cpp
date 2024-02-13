@@ -9,9 +9,9 @@
 
 
 
-#include "baci_geometry_pair_utility_functions.H"
+#include "baci_geometry_pair_utility_functions.hpp"
 
-#include "baci_geometry_pair_element_classes.H"
+#include "baci_geometry_pair_element_classes.hpp"
 
 BACI_NAMESPACE_OPEN
 

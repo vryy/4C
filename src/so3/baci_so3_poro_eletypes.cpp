@@ -8,10 +8,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_poro_eletypes.H"
+#include "baci_so3_poro_eletypes.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_so3_poro.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_so3_poro.hpp"
 
 BACI_NAMESPACE_OPEN
 

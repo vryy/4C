@@ -7,23 +7,23 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_scatra_ele_calc_cardiac_monodomain_hdg.H"
+#include "baci_scatra_ele_calc_cardiac_monodomain_hdg.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_fem_general_utils_polynomial.H"
-#include "baci_fiber_nodal_fiber_holder.H"
-#include "baci_fiber_node.H"
-#include "baci_fiber_utils.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_mat_list.H"
-#include "baci_mat_myocard.H"
-#include "baci_scatra_ele_calc_hdg.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_discretization_fem_general_utils_polynomial.hpp"
+#include "baci_fiber_nodal_fiber_holder.hpp"
+#include "baci_fiber_node.hpp"
+#include "baci_fiber_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_myocard.hpp"
+#include "baci_scatra_ele_calc_hdg.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
 
 BACI_NAMESPACE_OPEN
 

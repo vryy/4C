@@ -9,17 +9,17 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc_hdg.H"
+#include "baci_fluid_ele_calc_hdg.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_calc.H"
-#include "baci_fluid_ele_parameter_std.H"
-#include "baci_fluid_ele_parameter_timint.H"
-#include "baci_fluid_functions.H"
-#include "baci_global_data.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_mat_fluid_murnaghantait.H"
-#include "baci_mat_newtonianfluid.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_calc.hpp"
+#include "baci_fluid_ele_parameter_std.hpp"
+#include "baci_fluid_ele_parameter_timint.hpp"
+#include "baci_fluid_functions.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_mat_fluid_murnaghantait.hpp"
+#include "baci_mat_newtonianfluid.hpp"
 
 #include <Teuchos_BLAS.hpp>
 #include <Teuchos_LAPACK.hpp>

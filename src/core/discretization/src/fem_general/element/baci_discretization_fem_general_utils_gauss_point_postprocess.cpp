@@ -6,12 +6,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.hpp"
 
-#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_lib_element.H"
+#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.hpp"
+#include "baci_discretization_fem_general_utils_gausspoints.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_lib_element.hpp"
 
 BACI_NAMESPACE_OPEN
 

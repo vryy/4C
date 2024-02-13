@@ -7,23 +7,23 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_scatra_ele_hdg.H"
+#include "baci_scatra_ele_hdg.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-#include "baci_discretization_fem_general_utils_polynomial.H"
-#include "baci_global_data.H"
-#include "baci_inpar_scatra.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret_faces.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_mat_list.H"
-#include "baci_mat_myocard.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_factory.H"
-#include "baci_scatra_ele_hdg_boundary_calc.H"
-#include "baci_scatra_ele_hdg_intfaces_calc.H"
-#include "baci_scatra_ele_interface.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_discretization_fem_general_utils_gausspoints.hpp"
+#include "baci_discretization_fem_general_utils_polynomial.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_scatra.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret_faces.hpp"
+#include "baci_lib_discret_hdg.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_myocard.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_factory.hpp"
+#include "baci_scatra_ele_hdg_boundary_calc.hpp"
+#include "baci_scatra_ele_hdg_intfaces_calc.hpp"
+#include "baci_scatra_ele_interface.hpp"
 
 BACI_NAMESPACE_OPEN
 

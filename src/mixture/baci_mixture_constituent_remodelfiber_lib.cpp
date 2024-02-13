@@ -5,14 +5,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mixture_constituent_remodelfiber_lib.H"
+#include "baci_mixture_constituent_remodelfiber_lib.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
-#include "baci_mixture_constituent_remodelfiber_material.H"
-#include "baci_mixture_constituent_remodelfiber_material_exponential.H"
-#include "baci_mixture_constituent_remodelfiber_material_exponential_active.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_mixture_constituent_remodelfiber_material.hpp"
+#include "baci_mixture_constituent_remodelfiber_material_exponential.hpp"
+#include "baci_mixture_constituent_remodelfiber_material_exponential_active.hpp"
 
 BACI_NAMESPACE_OPEN
 

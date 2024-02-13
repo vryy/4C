@@ -10,7 +10,7 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_floating_point_exception.H"
+#include "baci_solver_nonlin_nox_floating_point_exception.hpp"
 
 #include <NOX_Utils.H>
 #ifdef BACI_TRAP_FE

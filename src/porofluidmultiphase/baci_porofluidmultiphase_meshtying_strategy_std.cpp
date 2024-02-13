@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_porofluidmultiphase_meshtying_strategy_std.H"
+#include "baci_porofluidmultiphase_meshtying_strategy_std.hpp"
 
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_porofluidmultiphase_utils.H"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_porofluidmultiphase_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,14 +9,14 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#include "baci_ale_ale3.H"
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element_integration_select.H"
-#include "baci_lib_utils.H"
+#include "baci_ale_ale3.hpp"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element_integration_select.hpp"
+#include "baci_lib_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

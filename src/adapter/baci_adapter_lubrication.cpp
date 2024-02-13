@@ -8,15 +8,15 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_adapter_lubrication.H"
+#include "baci_adapter_lubrication.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_lubrication_resulttest.H"
-#include "baci_lubrication_timint_stat.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_lubrication_resulttest.hpp"
+#include "baci_lubrication_timint_stat.hpp"
 
 BACI_NAMESPACE_OPEN
 

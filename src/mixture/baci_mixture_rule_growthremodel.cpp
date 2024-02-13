@@ -8,14 +8,14 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mixture_rule_growthremodel.H"
+#include "baci_mixture_rule_growthremodel.hpp"
 
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_mat_par_material.H"
-#include "baci_mixture_constituent.H"
-#include "baci_mixture_growth_strategy.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mixture_constituent.hpp"
+#include "baci_mixture_growth_strategy.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_ConfigDefs.h>
 #include <Teuchos_ParameterList.hpp>

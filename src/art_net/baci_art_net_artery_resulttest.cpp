@@ -8,12 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_art_net_artery_resulttest.H"
+#include "baci_art_net_artery_resulttest.hpp"
 
-#include "baci_art_net_explicitintegration.H"
-#include "baci_art_net_impl_stationary.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
+#include "baci_art_net_explicitintegration.hpp"
+#include "baci_art_net_impl_stationary.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

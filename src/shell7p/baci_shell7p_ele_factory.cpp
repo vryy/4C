@@ -6,11 +6,11 @@
 */
 
 
-#include "baci_shell7p_ele_factory.H"
+#include "baci_shell7p_ele_factory.hpp"
 
-#include "baci_shell7p_ele.H"
-#include "baci_shell7p_ele_calc.H"
-#include "baci_shell7p_ele_calc_eas.H"
+#include "baci_shell7p_ele.hpp"
+#include "baci_shell7p_ele_calc.hpp"
+#include "baci_shell7p_ele_calc_eas.hpp"
 
 #include <memory>
 

@@ -10,19 +10,19 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_linearsystem.H"
+#include "baci_solver_nonlin_nox_linearsystem.hpp"
 
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_interface_jacobian.H"
-#include "baci_solver_nonlin_nox_interface_required.H"
-#include "baci_solver_nonlin_nox_linearsystem_prepostoperator.H"
-#include "baci_solver_nonlin_nox_solver_ptc.H"
-#include "baci_structure_new_nln_linearsystem_scaling.H"
-#include "baci_utils_epetra_exceptions.H"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_solver_nonlin_nox_interface_jacobian.hpp"
+#include "baci_solver_nonlin_nox_interface_required.hpp"
+#include "baci_solver_nonlin_nox_linearsystem_prepostoperator.hpp"
+#include "baci_solver_nonlin_nox_solver_ptc.hpp"
+#include "baci_structure_new_nln_linearsystem_scaling.hpp"
+#include "baci_utils_epetra_exceptions.hpp"
 
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Vector.h>

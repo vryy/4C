@@ -10,7 +10,7 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_xfem_xfield_field_coupling_dofset.H"
+#include "baci_xfem_xfield_field_coupling_dofset.hpp"
 
 BACI_NAMESPACE_OPEN
 

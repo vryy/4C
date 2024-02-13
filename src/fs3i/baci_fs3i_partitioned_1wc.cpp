@@ -11,16 +11,16 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_fs3i_partitioned_1wc.H"
+#include "baci_fs3i_partitioned_1wc.hpp"
 
-#include "baci_adapter_fld_fluid_fsi.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_fsi_monolithic.H"
-#include "baci_global_data.H"
-#include "baci_inpar_scatra.H"
-#include "baci_lib_discret.H"
-#include "baci_scatra_algorithm.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_adapter_fld_fluid_fsi.hpp"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_fsi_monolithic.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_scatra.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_scatra_algorithm.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

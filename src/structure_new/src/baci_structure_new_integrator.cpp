@@ -9,23 +9,23 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_integrator.H"
+#include "baci_structure_new_integrator.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_pstream.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_model_evaluator.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_model_evaluator_structure.H"
-#include "baci_structure_new_monitor_dbc.H"
-#include "baci_structure_new_nox_nln_str_linearsystem.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_timint_noxinterface.H"
-#include "baci_utils_epetra_exceptions.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_structure_new_dbc.hpp"
+#include "baci_structure_new_model_evaluator.hpp"
+#include "baci_structure_new_model_evaluator_data.hpp"
+#include "baci_structure_new_model_evaluator_structure.hpp"
+#include "baci_structure_new_monitor_dbc.hpp"
+#include "baci_structure_new_nox_nln_str_linearsystem.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_structure_new_timint_noxinterface.hpp"
+#include "baci_utils_epetra_exceptions.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Epetra_Vector.h>
 

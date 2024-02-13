@@ -8,10 +8,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_global_full_init_control.H"
+#include "baci_global_full_init_control.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
 
 #include <sstream>
 #include <string>

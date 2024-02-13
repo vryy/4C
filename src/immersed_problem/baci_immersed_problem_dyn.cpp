@@ -6,17 +6,17 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_immersed_problem_dyn.H"
+#include "baci_immersed_problem_dyn.hpp"
 
-#include "baci_adapter_str_fsiwrapper_immersed.H"
-#include "baci_ale_utils_clonestrategy.H"
-#include "baci_fsi_utils.H"
-#include "baci_global_data.H"
-#include "baci_immersed_problem_immersed_base.H"
-#include "baci_immersed_problem_immersed_partitioned_fsi_dirichletneumann.H"
-#include "baci_inpar_immersed.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_utils_parallel.H"
+#include "baci_adapter_str_fsiwrapper_immersed.hpp"
+#include "baci_ale_utils_clonestrategy.hpp"
+#include "baci_fsi_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_immersed_problem_immersed_base.hpp"
+#include "baci_immersed_problem_immersed_partitioned_fsi_dirichletneumann.hpp"
+#include "baci_inpar_immersed.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_lib_utils_parallel.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

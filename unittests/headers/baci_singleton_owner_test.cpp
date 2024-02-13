@@ -11,7 +11,7 @@
 
 #include <gmock/gmock.h>
 
-#include "baci_utils_singleton_owner.H"
+#include "baci_utils_singleton_owner.hpp"
 
 namespace
 {

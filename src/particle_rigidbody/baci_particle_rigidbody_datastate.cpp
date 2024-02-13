@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_rigidbody_datastate.H"
+#include "baci_particle_rigidbody_datastate.hpp"
 
 BACI_NAMESPACE_OPEN
 

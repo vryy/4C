@@ -9,7 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_comm_parobject.H"
+#include "baci_comm_parobject.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,15 +8,15 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_pyramid5fbar.H"
+#include "baci_so3_pyramid5fbar.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_so3_nullspace.H"
-#include "baci_so3_prestress.H"
-#include "baci_so3_prestress_service.H"
-#include "baci_so3_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_so3_nullspace.hpp"
+#include "baci_so3_prestress.hpp"
+#include "baci_so3_prestress_service.hpp"
+#include "baci_so3_utils.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

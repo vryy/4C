@@ -7,15 +7,15 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_base.H"
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_base.hpp"
 
-#include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
-#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_line_to_surface.H"
+#include "baci_beaminteraction_beam_to_solid_mortar_manager.hpp"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"
+#include "baci_beaminteraction_beam_to_solid_utils.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_line_to_surface.hpp"
 
 #include <unordered_set>
 

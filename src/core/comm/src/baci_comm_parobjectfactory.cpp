@@ -9,14 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_comm_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_lib_elementtype.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_elementtype.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
 

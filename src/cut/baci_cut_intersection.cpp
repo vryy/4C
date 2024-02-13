@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_cut_intersection.H"
+#include "baci_cut_intersection.hpp"
 
-#include "baci_cut_boundingbox.H"
-#include "baci_cut_position.H"
-#include "baci_cut_side.H"
-#include "baci_cut_utils.H"
-#include "baci_global_data.H"
+#include "baci_cut_boundingbox.hpp"
+#include "baci_cut_position.hpp"
+#include "baci_cut_side.hpp"
+#include "baci_cut_utils.hpp"
+#include "baci_global_data.hpp"
 
 BACI_NAMESPACE_OPEN
 

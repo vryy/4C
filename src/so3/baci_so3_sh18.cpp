@@ -8,15 +8,15 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_sh18.H"
+#include "baci_so3_sh18.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_global_data.H"
-#include "baci_mat_so3_material.H"
-#include "baci_so3_line.H"
-#include "baci_so3_nullspace.H"
-#include "baci_so3_surface.H"
-#include "baci_so3_utils.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_so3_line.hpp"
+#include "baci_so3_nullspace.hpp"
+#include "baci_so3_surface.hpp"
+#include "baci_so3_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

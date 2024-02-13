@@ -8,13 +8,13 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_wall_datastate.H"
+#include "baci_particle_wall_datastate.hpp"
 
-#include "baci_inpar_particle.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_inpar_particle.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 BACI_NAMESPACE_OPEN
 

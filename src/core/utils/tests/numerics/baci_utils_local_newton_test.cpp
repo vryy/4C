@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_utils_local_newton.H"
+#include "baci_utils_local_newton.hpp"
 
 BACI_NAMESPACE_OPEN
 

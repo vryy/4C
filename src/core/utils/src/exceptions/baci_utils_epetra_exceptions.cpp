@@ -9,7 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_utils_epetra_exceptions.H"
+#include "baci_utils_epetra_exceptions.hpp"
 
 #include <Epetra_Object.h>
 

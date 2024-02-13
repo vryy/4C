@@ -7,12 +7,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_mortar_binarytree.H"
+#include "baci_mortar_binarytree.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_node.H"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

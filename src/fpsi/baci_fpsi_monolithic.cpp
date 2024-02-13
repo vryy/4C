@@ -9,22 +9,22 @@
 
 /*----------------------------------------------------------------------*/
 // GENERAL includes
-#include "baci_fpsi_monolithic.H"
+#include "baci_fpsi_monolithic.hpp"
 
-#include "baci_adapter_fld_poro.H"
-#include "baci_adapter_str_fpsiwrapper.H"
-#include "baci_coupling_adapter.H"
-#include "baci_fpsi_utils.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_method_parameters.H"
-#include "baci_poroelast_monolithic.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_fld_poro.hpp"
+#include "baci_adapter_str_fpsiwrapper.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_fpsi_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_linear_solver_method_parameters.hpp"
+#include "baci_poroelast_monolithic.hpp"
+#include "baci_structure_aux.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

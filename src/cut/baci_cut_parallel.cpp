@@ -7,13 +7,13 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#include "baci_cut_parallel.H"
+#include "baci_cut_parallel.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_comm_pack_buffer.H"
-#include "baci_cut_output.H"
-#include "baci_cut_volumecell.H"
-#include "baci_lib_discret.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_comm_pack_buffer.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>

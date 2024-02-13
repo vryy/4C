@@ -9,18 +9,18 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/12 |
  *----------------------------------------------------------------------*/
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_robinson.H"
-#include "baci_mat_thermoplastichyperelast.H"
-#include "baci_mat_thermoplasticlinelast.H"
-#include "baci_mat_thermostvenantkirchhoff.H"
-#include "baci_mat_trait_thermo_solid.H"
-#include "baci_nurbs_discret.H"
-#include "baci_so3_thermo.H"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_robinson.hpp"
+#include "baci_mat_thermoplastichyperelast.hpp"
+#include "baci_mat_thermoplasticlinelast.hpp"
+#include "baci_mat_thermostvenantkirchhoff.hpp"
+#include "baci_mat_trait_thermo_solid.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_so3_thermo.hpp"
 #include "baci_so3_thermo_fwd.hpp"
-#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_structure_new_elements_paramsinterface.hpp"
 
 BACI_NAMESPACE_OPEN
 

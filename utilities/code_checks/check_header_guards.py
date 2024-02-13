@@ -8,11 +8,11 @@ def check_header_guards(look_cmd, allerrors):
     for file_path in utils.files_changed(look_cmd):
         file_ending = os.path.splitext(os.path.basename(file_path))[1]
 
-        if file_path == "" or (file_ending != ".H" and file_ending != ".h"):
+        if file_path == "" or (file_ending != ".hpp" and file_ending != ".h"):
             continue
 
         file_name = os.path.splitext(os.path.basename(file_path))[0]
-        define_name = file_name.replace("-", "_").replace(".", "_").upper() + "_H"
+        define_name = file_name.replace("-", "_").replace(".", "_").upper() + "_HPP"
 
         template_header_if = "#ifndef " + define_name + "\n"
         template_header_define = "#define " + define_name + "\n"

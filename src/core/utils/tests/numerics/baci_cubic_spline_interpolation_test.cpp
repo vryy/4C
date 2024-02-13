@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_utils_cubic_spline_interpolation.H"
-#include "baci_utils_exceptions.H"
+#include "baci_utils_cubic_spline_interpolation.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
 

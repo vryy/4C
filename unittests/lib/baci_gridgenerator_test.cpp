@@ -8,12 +8,12 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_global_data.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_gridgenerator.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_material.H"
+#include "baci_global_data.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_gridgenerator.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_material.hpp"
 
 #include <Epetra_SerialComm.h>
 

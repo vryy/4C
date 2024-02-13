@@ -7,18 +7,18 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_arrhenius_temp.H"
-#include "baci_mat_list.H"
-#include "baci_mat_material.H"
-#include "baci_mat_sutherland.H"
-#include "baci_mat_tempdepwater.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_calc_loma.H"
-#include "baci_scatra_ele_parameter_timint.H"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_arrhenius_temp.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_mat_sutherland.hpp"
+#include "baci_mat_tempdepwater.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_calc_loma.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
 
 BACI_NAMESPACE_OPEN
 

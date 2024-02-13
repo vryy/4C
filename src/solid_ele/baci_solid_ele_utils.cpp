@@ -5,12 +5,12 @@
 \level 1
 */
 
-#include "baci_solid_ele_utils.H"
+#include "baci_solid_ele_utils.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_lib_element.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_solid_ele_properties.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_solid_ele_properties.hpp"
 
 BACI_NAMESPACE_OPEN
 

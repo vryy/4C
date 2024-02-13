@@ -8,12 +8,12 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#include "baci_ale_utils_mapextractor.H"
+#include "baci_ale_utils_mapextractor.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_condition_selector.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_condition_selector.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

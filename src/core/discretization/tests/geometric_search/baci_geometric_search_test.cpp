@@ -11,9 +11,9 @@
 
 #ifdef BACI_WITH_ARBORX
 
-#include "baci_discretization_geometric_search_bvh.H"
-#include "baci_discretization_geometric_search_utils.H"
-#include "baci_geometric_search_create_bounding_volumes_test.H"
+#include "baci_discretization_geometric_search_bvh.hpp"
+#include "baci_discretization_geometric_search_utils.hpp"
+#include "baci_geometric_search_create_bounding_volumes_test.hpp"
 
 #include <Epetra_SerialComm.h>
 

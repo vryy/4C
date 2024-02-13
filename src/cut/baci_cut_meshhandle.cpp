@@ -7,9 +7,9 @@
 \level 2
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_cut_meshhandle.H"
+#include "baci_cut_meshhandle.hpp"
 
-#include "baci_cut_options.H"
+#include "baci_cut_options.hpp"
 
 BACI_NAMESPACE_OPEN
 

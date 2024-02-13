@@ -7,16 +7,16 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_ssi_partitioned_1wc.H"
+#include "baci_ssi_partitioned_1wc.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_adapter_str_wrapper.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_scatra_timint_cardiac_monodomain.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_adapter_str_ssiwrapper.hpp"
+#include "baci_adapter_str_wrapper.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_scatra_timint_cardiac_monodomain.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

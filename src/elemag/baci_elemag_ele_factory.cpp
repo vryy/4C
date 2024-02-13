@@ -8,11 +8,11 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_elemag_ele_factory.H"
+#include "baci_elemag_ele_factory.hpp"
 
-#include "baci_elemag_diff_ele_calc.H"
-#include "baci_elemag_ele_calc.H"
-#include "baci_elemag_ele_interface.H"
+#include "baci_elemag_diff_ele_calc.hpp"
+#include "baci_elemag_ele_calc.hpp"
+#include "baci_elemag_ele_interface.hpp"
 
 BACI_NAMESPACE_OPEN
 

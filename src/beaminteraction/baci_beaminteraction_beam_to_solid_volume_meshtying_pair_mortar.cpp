@@ -8,19 +8,19 @@ functions for the traction.
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_mortar.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_mortar.hpp"
 
-#include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
-#include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_line_to_volume.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_beaminteraction_beam_to_solid_mortar_manager.hpp"
+#include "baci_beaminteraction_beam_to_solid_utils.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_line_to_volume.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
 
 #include <unordered_set>
 

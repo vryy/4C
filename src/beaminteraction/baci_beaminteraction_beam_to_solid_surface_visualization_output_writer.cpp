@@ -8,23 +8,23 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_writer.H"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_writer.hpp"
 
-#include "baci_beaminteraction_beam_to_solid_conditions.H"
-#include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
-#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_utils.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_beaminteraction_str_model_evaluator_datastate.H"
-#include "baci_beaminteraction_submodel_evaluator_beamcontact.H"
-#include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
-#include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
-#include "baci_geometry_pair_line_to_surface_evaluation_data.H"
-#include "baci_io_visualization_parameters.H"
-#include "baci_lib_discret.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
+#include "baci_beaminteraction_beam_to_solid_conditions.hpp"
+#include "baci_beaminteraction_beam_to_solid_mortar_manager.hpp"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_utils.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_beaminteraction_str_model_evaluator_datastate.hpp"
+#include "baci_beaminteraction_submodel_evaluator_beamcontact.hpp"
+#include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.hpp"
+#include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.hpp"
+#include "baci_geometry_pair_line_to_surface_evaluation_data.hpp"
+#include "baci_io_visualization_parameters.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_structure_new_timint_basedataglobalstate.hpp"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_MpiComm.h>

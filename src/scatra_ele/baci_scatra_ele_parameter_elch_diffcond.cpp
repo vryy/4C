@@ -14,13 +14,13 @@ additional static parameters required for scalar transport element evaluation.
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_ele_parameter_elch_diffcond.H"
+#include "baci_scatra_ele_parameter_elch_diffcond.hpp"
 
-#include "baci_inpar_elch.H"
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_inpar_elch.hpp"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

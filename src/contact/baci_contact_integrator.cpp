@@ -8,24 +8,24 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_contact_integrator.H"
+#include "baci_contact_integrator.hpp"
 
-#include "baci_contact_defines.H"
-#include "baci_contact_element.H"
-#include "baci_contact_friction_node.H"
-#include "baci_contact_node.H"
-#include "baci_contact_paramsinterface.H"
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_inpar_contact.H"
-#include "baci_inpar_wear.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_mat_structporo.H"
-#include "baci_mortar_calc_utils.H"
-#include "baci_mortar_coupling3d_classes.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_projector.H"
+#include "baci_contact_defines.hpp"
+#include "baci_contact_element.hpp"
+#include "baci_contact_friction_node.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_contact_paramsinterface.hpp"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_inpar_wear.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_mortar_calc_utils.hpp"
+#include "baci_mortar_coupling3d_classes.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_projector.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

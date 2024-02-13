@@ -7,9 +7,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coupneohooke.H"
+#include "baci_matelast_coupneohooke.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 #include <limits>
 

@@ -10,10 +10,10 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
-#include "baci_adapter_ale_wear.H"
+#include "baci_adapter_ale_wear.hpp"
 
-#include "baci_ale_utils_mapextractor.H"
-#include "baci_utils_exceptions.H"
+#include "baci_ale_utils_mapextractor.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

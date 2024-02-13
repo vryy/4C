@@ -10,12 +10,12 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_so3_sh8p8.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_so3_sh8p8.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

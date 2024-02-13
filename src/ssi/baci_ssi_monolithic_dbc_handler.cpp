@@ -7,16 +7,16 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include "baci_ssi_monolithic_dbc_handler.H"
+#include "baci_ssi_monolithic_dbc_handler.hpp"
 
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_lib_locsys.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_ssi_monolithic.H"
-#include "baci_ssi_utils.H"
+#include "baci_adapter_str_ssiwrapper.hpp"
+#include "baci_lib_locsys.hpp"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_ssi_monolithic.hpp"
+#include "baci_ssi_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

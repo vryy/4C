@@ -5,9 +5,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coupvarga.H"
+#include "baci_matelast_coupvarga.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

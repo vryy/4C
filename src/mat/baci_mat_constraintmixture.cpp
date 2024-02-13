@@ -22,22 +22,22 @@ For a detailed description see:
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_mat_constraintmixture.H"
+#include "baci_mat_constraintmixture.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"  // for debug plotting with gmsh
-#include "baci_discretization_fem_general_utils_integration.H"  // for debug plotting with gmsh
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"  // for pstime
-#include "baci_io_control.H"       // for debug plotting with gmsh
-#include "baci_io_gmsh.H"          // for debug plotting with gmsh
-#include "baci_io_linedefinition.H"
-#include "baci_lib_utils.H"  // for debug plotting with gmsh
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_mat_constraintmixture_history.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_comm_utils.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"  // for debug plotting with gmsh
+#include "baci_discretization_fem_general_utils_integration.hpp"  // for debug plotting with gmsh
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"  // for pstime
+#include "baci_io_control.hpp"       // for debug plotting with gmsh
+#include "baci_io_gmsh.hpp"          // for debug plotting with gmsh
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_utils.hpp"  // for debug plotting with gmsh
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_mat_constraintmixture_history.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 BACI_NAMESPACE_OPEN
 

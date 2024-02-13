@@ -9,16 +9,16 @@ attached parenchyma balloon
 
 *----------------------------------------------------------------------*/
 
-#include "baci_adapter_str_lung.H"
+#include "baci_adapter_str_lung.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_structure_aux.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_structure_aux.hpp"
 
 BACI_NAMESPACE_OPEN
 

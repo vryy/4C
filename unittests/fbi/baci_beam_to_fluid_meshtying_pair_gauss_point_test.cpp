@@ -9,17 +9,17 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_beam3_euler_bernoulli.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_fbi_beam_to_fluid_meshtying_pair_gauss_point.H"
-#include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_fluid_ele.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
-#include "baci_geometry_pair_line_to_volume_segmentation.H"
-#include "baci_global_data.H"
-#include "baci_lib_element.H"
-#include "baci_linalg_serialdensevector.H"
+#include "baci_beam3_euler_bernoulli.hpp"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_pair_gauss_point.hpp"
+#include "baci_fbi_beam_to_fluid_meshtying_params.hpp"
+#include "baci_fluid_ele.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
+#include "baci_geometry_pair_line_to_volume_segmentation.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_linalg_serialdensevector.hpp"
 
 #include <vector>
 

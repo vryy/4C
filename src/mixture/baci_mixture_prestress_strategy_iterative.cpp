@@ -7,17 +7,17 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mixture_prestress_strategy_iterative.H"
+#include "baci_mixture_prestress_strategy_iterative.hpp"
 
-#include "baci_linalg_fixedsizematrix_generators.H"
-#include "baci_linalg_utils_densematrix_svd.H"
-#include "baci_mat_anisotropy.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
-#include "baci_matelast_isoneohooke.H"
-#include "baci_matelast_volsussmanbathe.H"
-#include "baci_mixture_constituent_elasthyper.H"
-#include "baci_mixture_rule.H"
+#include "baci_linalg_fixedsizematrix_generators.hpp"
+#include "baci_linalg_utils_densematrix_svd.hpp"
+#include "baci_mat_anisotropy.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_matelast_isoneohooke.hpp"
+#include "baci_matelast_volsussmanbathe.hpp"
+#include "baci_mixture_constituent_elasthyper.hpp"
+#include "baci_mixture_rule.hpp"
 
 BACI_NAMESPACE_OPEN
 

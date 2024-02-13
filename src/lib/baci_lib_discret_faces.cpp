@@ -9,13 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_discret_faces.H"
+#include "baci_lib_discret_faces.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_global_data.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

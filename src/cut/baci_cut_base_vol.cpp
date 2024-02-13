@@ -8,7 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_base_vol.H"
+#include "baci_cut_base_vol.hpp"
 
 BACI_NAMESPACE_OPEN
 

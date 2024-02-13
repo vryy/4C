@@ -10,12 +10,12 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_fluid_volumetric_surfaceFlow_condition.H"
+#include "baci_fluid_volumetric_surfaceFlow_condition.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_utils_function.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <stdio.h>
 

@@ -7,20 +7,20 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_scatra_ele_calc_advanced_reaction.H"
+#include "baci_scatra_ele_calc_advanced_reaction.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_mat_growth_law.H"
-#include "baci_mat_list.H"
-#include "baci_mat_list_reactions.H"
-#include "baci_mat_scatra_mat.H"
-#include "baci_mat_scatra_reaction_mat.H"
-#include "baci_mat_so3_material.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_mat_growth_law.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_list_reactions.hpp"
+#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra_reaction_mat.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

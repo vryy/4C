@@ -7,12 +7,12 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_porofluidmultiphase_ele_calc_utils.H"
+#include "baci_porofluidmultiphase_ele_calc_utils.hpp"
 
-#include "baci_mat_fluidporo_multiphase.H"
-#include "baci_mat_fluidporo_multiphase_reactions.H"
-#include "baci_mat_fluidporo_multiphase_singlereaction.H"
-#include "baci_mat_fluidporo_singlephase.H"
+#include "baci_mat_fluidporo_multiphase.hpp"
+#include "baci_mat_fluidporo_multiphase_reactions.hpp"
+#include "baci_mat_fluidporo_multiphase_singlereaction.hpp"
+#include "baci_mat_fluidporo_singlephase.hpp"
 
 BACI_NAMESPACE_OPEN
 

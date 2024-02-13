@@ -8,12 +8,12 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_art_net_timint.H"
+#include "baci_art_net_timint.hpp"
 
-#include "baci_art_net_artery_resulttest.H"
-#include "baci_global_data.H"
-#include "baci_inpar_bio.H"
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_art_net_artery_resulttest.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_bio.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
 
 BACI_NAMESPACE_OPEN
 

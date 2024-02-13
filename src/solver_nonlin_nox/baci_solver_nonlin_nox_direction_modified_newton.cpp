@@ -10,11 +10,11 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_direction_modified_newton.H"
+#include "baci_solver_nonlin_nox_direction_modified_newton.hpp"
 
-#include "baci_solver_nonlin_nox_direction_defaultsteptest.H"
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_direction_defaultsteptest.hpp"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

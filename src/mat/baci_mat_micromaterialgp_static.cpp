@@ -9,18 +9,18 @@ class for handling of micro-macro transitions
 *----------------------------------------------------------------------*/
 
 
-#include "baci_mat_micromaterialgp_static.H"
+#include "baci_mat_micromaterialgp_static.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_elementtype.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_shw6.H"
-#include "baci_stru_multi_microstatic.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_elementtype.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_shw6.hpp"
+#include "baci_stru_multi_microstatic.hpp"
 
 #include <filesystem>
 

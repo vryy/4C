@@ -8,11 +8,11 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_algorithm_sim.H"
+#include "baci_particle_algorithm_sim.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_particle_algorithm.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_particle_algorithm.hpp"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>

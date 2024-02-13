@@ -8,9 +8,9 @@
 *----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
 
-#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensematrix.hpp"
 
 BACI_NAMESPACE_OPEN
 

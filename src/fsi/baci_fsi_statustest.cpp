@@ -8,12 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_statustest.H"
+#include "baci_fsi_statustest.hpp"
 
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_fsi_nox_newton.H"
-#include "baci_utils_exceptions.H"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_fsi_nox_newton.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <NOX_Abstract_Group.H>
 #include <NOX_Abstract_Vector.H>

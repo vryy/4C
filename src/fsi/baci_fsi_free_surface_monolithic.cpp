@@ -9,24 +9,24 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#include "baci_fsi_free_surface_monolithic.H"
+#include "baci_fsi_free_surface_monolithic.hpp"
 
-#include "baci_adapter_ale_fluid.H"
-#include "baci_ale_utils_mapextractor.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_fsi_monolithic_linearsystem.H"
-#include "baci_fsi_nox_newton.H"
-#include "baci_fsi_overlapprec_fsiamg.H"
-#include "baci_fsi_statustest.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fsi.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linear_solver_preconditioner_linalg.H"
+#include "baci_adapter_ale_fluid.hpp"
+#include "baci_ale_utils_mapextractor.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_fsi_monolithic_linearsystem.hpp"
+#include "baci_fsi_nox_newton.hpp"
+#include "baci_fsi_overlapprec_fsiamg.hpp"
+#include "baci_fsi_statustest.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fsi.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linear_solver_preconditioner_linalg.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>

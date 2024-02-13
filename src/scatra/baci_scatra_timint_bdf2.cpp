@@ -8,17 +8,17 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_scatra_timint_bdf2.H"
+#include "baci_scatra_timint_bdf2.hpp"
 
-#include "baci_fluid_turbulence_dyn_smag.H"
-#include "baci_fluid_turbulence_dyn_vreman.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_timint_meshtying_strategy_base.H"
-#include "baci_scatra_turbulence_hit_scalar_forcing.H"
+#include "baci_fluid_turbulence_dyn_smag.hpp"
+#include "baci_fluid_turbulence_dyn_vreman.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_timint_meshtying_strategy_base.hpp"
+#include "baci_scatra_turbulence_hit_scalar_forcing.hpp"
 
 BACI_NAMESPACE_OPEN
 

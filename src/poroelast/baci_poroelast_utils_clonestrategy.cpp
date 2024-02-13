@@ -7,19 +7,19 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poroelast_utils_clonestrategy.H"
+#include "baci_poroelast_utils_clonestrategy.hpp"
 
-#include "baci_fluid_ele_poro.H"
-#include "baci_global_data.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_structporo.H"
-#include "baci_poroelast_utils.H"
-#include "baci_so3_element_service.H"
-#include "baci_so3_poro.H"
-#include "baci_so3_poro_p1_eletypes.H"
-#include "baci_solid_poro_ele.H"
-#include "baci_w1_poro.H"
+#include "baci_fluid_ele_poro.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_poroelast_utils.hpp"
+#include "baci_so3_element_service.hpp"
+#include "baci_so3_poro.hpp"
+#include "baci_so3_poro_p1_eletypes.hpp"
+#include "baci_solid_poro_ele.hpp"
+#include "baci_w1_poro.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,22 +9,22 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_global_data.H"
+#include "baci_global_data.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_contact_constitutivelaw_bundle.H"
-#include "baci_global_legacy_module.H"
-#include "baci_inpar_problemtype.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_materialdefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_discret_faces.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_particle_engine_particlereader.H"
-#include "baci_rebalance.H"
+#include "baci_comm_utils.hpp"
+#include "baci_contact_constitutivelaw_bundle.hpp"
+#include "baci_global_legacy_module.hpp"
+#include "baci_inpar_problemtype.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_materialdefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_discret_faces.hpp"
+#include "baci_lib_discret_hdg.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_particle_engine_particlereader.hpp"
+#include "baci_rebalance.hpp"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterListExceptions.hpp>

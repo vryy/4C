@@ -8,15 +8,15 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_wall_discretization_runtime_vtu_writer.H"
+#include "baci_particle_wall_discretization_runtime_vtu_writer.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_discretization_visualization_writer_mesh.H"
-#include "baci_io_visualization_parameters.H"
-#include "baci_lib_discret.H"
-#include "baci_particle_wall_datastate.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_discretization_visualization_writer_mesh.hpp"
+#include "baci_io_visualization_parameters.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_particle_wall_datastate.hpp"
 
 #include <memory>
 

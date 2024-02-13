@@ -9,13 +9,13 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mortar_multifield_coupling.H"
+#include "baci_mortar_multifield_coupling.hpp"
 
-#include "baci_coupling_adapter_mortar.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_mortar_utils.H"
+#include "baci_coupling_adapter_mortar.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_mortar_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

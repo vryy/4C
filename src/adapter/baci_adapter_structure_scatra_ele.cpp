@@ -9,14 +9,14 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_adapter_structure_scatra_ele.H"
+#include "baci_adapter_structure_scatra_ele.hpp"
 
-#include "baci_lib_element.H"
-#include "baci_membrane_scatra.H"
-#include "baci_shell7p_ele_scatra.H"
-#include "baci_so3_scatra.H"
-#include "baci_truss3_scatra.H"
-#include "baci_w1_scatra.H"
+#include "baci_lib_element.hpp"
+#include "baci_membrane_scatra.hpp"
+#include "baci_shell7p_ele_scatra.hpp"
+#include "baci_so3_scatra.hpp"
+#include "baci_truss3_scatra.hpp"
+#include "baci_w1_scatra.hpp"
 
 BACI_NAMESPACE_OPEN
 

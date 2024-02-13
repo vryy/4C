@@ -9,17 +9,17 @@
 /*----------------------------------------------------------------------*
  |  headers                                                             |
  *----------------------------------------------------------------------*/
-#include "baci_adapter_coupling_ehl_mortar.H"
+#include "baci_adapter_coupling_ehl_mortar.hpp"
 
-#include "baci_contact_friction_node.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_lagrange_strategy_tsi.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_contact_friction_node.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_lagrange_strategy_tsi.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 BACI_NAMESPACE_OPEN
 

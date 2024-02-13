@@ -7,13 +7,13 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point_base.H"
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point_base.hpp"
 
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_geometry_pair_element_faces.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_scalar_types.H"
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"
+#include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair_element_faces.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_scalar_types.hpp"
 
 BACI_NAMESPACE_OPEN
 

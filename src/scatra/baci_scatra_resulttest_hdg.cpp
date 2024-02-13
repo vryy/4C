@@ -8,9 +8,9 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_resulttest_hdg.H"
+#include "baci_scatra_resulttest_hdg.hpp"
 
-#include "baci_scatra_timint_hdg.H"
+#include "baci_scatra_timint_hdg.hpp"
 
 BACI_NAMESPACE_OPEN
 

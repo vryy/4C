@@ -9,9 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_config.H"
+#include "baci_config.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #ifdef BACI_WITH_BACKTRACE
 #define BOOST_STACKTRACE_USE_BACKTRACE

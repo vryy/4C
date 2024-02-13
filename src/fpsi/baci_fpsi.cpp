@@ -8,12 +8,12 @@
 /*----------------------------------------------------------------------*
  | headers                                                  rauch 12/12 |
  *----------------------------------------------------------------------*/
-#include "baci_fpsi.H"
+#include "baci_fpsi.hpp"
 
-#include "baci_fpsi_utils.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_poroelast_utils.H"
+#include "baci_fpsi_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_poroelast_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

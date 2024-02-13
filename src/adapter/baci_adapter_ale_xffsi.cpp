@@ -12,10 +12,10 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
-#include "baci_adapter_ale_xffsi.H"
+#include "baci_adapter_ale_xffsi.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

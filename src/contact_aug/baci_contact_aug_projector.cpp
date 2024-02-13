@@ -7,13 +7,13 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_contact_aug_projector.H"
+#include "baci_contact_aug_projector.hpp"
 
-#include "baci_contact_aug_element_utils.H"
-#include "baci_linalg_gauss.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_element.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_contact_aug_element_utils.hpp"
+#include "baci_linalg_gauss.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

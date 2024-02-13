@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_calc.H"
-#include "baci_scatra_ele_calc_no_physics.H"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_ele_calc.hpp"
+#include "baci_scatra_ele_calc_no_physics.hpp"
 
 BACI_NAMESPACE_OPEN
 

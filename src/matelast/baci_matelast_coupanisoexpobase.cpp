@@ -6,9 +6,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coupanisoexpobase.H"
+#include "baci_matelast_coupanisoexpobase.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

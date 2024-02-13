@@ -10,19 +10,19 @@
 /*----------------------------------------------------------------------*
  | Header                                                    seitz 08/15|
  *----------------------------------------------------------------------*/
-#include "baci_contact_tsi_interface.H"
+#include "baci_contact_tsi_interface.hpp"
 
-#include "baci_contact_defines.H"
-#include "baci_contact_element.H"
-#include "baci_contact_friction_node.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_node.H"
-#include "baci_inpar_mortar.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_mortar_dofset.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_node.H"
+#include "baci_contact_defines.hpp"
+#include "baci_contact_element.hpp"
+#include "baci_contact_friction_node.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_inpar_mortar.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_mortar_dofset.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

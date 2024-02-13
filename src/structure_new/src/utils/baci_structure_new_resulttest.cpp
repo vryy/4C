@@ -9,14 +9,14 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_resulttest.H"
+#include "baci_structure_new_resulttest.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_timint_base.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_structure_new_model_evaluator_data.hpp"
+#include "baci_structure_new_timint_base.hpp"
 
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCPDecl.hpp>

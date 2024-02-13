@@ -8,18 +8,18 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_binstrategy_utils.H"
+#include "baci_binstrategy_utils.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_bele_bele3.H"
-#include "baci_comm_exporter.H"
-#include "baci_fluid_ele.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_rebalance_utils.H"
-#include "baci_rigidsphere.H"
-#include "baci_scatra_ele.H"
-#include "baci_so3_base.H"
-#include "baci_solid_ele.H"
+#include "baci_beam3_base.hpp"
+#include "baci_bele_bele3.hpp"
+#include "baci_comm_exporter.hpp"
+#include "baci_fluid_ele.hpp"
+#include "baci_lib_utils_parallel.hpp"
+#include "baci_rebalance_utils.hpp"
+#include "baci_rigidsphere.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_so3_base.hpp"
+#include "baci_solid_ele.hpp"
 
 BACI_NAMESPACE_OPEN
 

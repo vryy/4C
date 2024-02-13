@@ -8,11 +8,11 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_mat_micromaterial.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_surface.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_micromaterial.hpp"
+#include "baci_so3_hex8.hpp"
+#include "baci_so3_surface.hpp"
 
 BACI_NAMESPACE_OPEN
 

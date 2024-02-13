@@ -7,9 +7,9 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_unittest_utils_assertions_test.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_symbolic_expression.H"
+#include "baci_unittest_utils_assertions_test.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_symbolic_expression.hpp"
 
 BACI_NAMESPACE_OPEN
 

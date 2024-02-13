@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_contact_utils_parallel.H"
+#include "baci_contact_utils_parallel.hpp"
 
-#include "baci_global_data.H"
-#include "baci_global_data_enums.H"
-#include "baci_inpar_contact.H"
-#include "baci_inpar_mortar.H"
-#include "baci_inpar_structure.H"
+#include "baci_global_data.hpp"
+#include "baci_global_data_enums.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_inpar_mortar.hpp"
+#include "baci_inpar_structure.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

@@ -12,21 +12,21 @@
 #define DIRECTMANIPULATION
 #define ZEROSYSMAT
 
-#include "baci_fluid_meshtying.H"
+#include "baci_fluid_meshtying.hpp"
 
-#include "baci_coupling_adapter_mortar.H"
-#include "baci_fluid_utils.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_linalg_krylov_projector.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_method_parameters.H"
-#include "baci_mortar_interface.H"
-#include "baci_mortar_node.H"
+#include "baci_coupling_adapter_mortar.hpp"
+#include "baci_fluid_utils.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_linalg_krylov_projector.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_linear_solver_method_parameters.hpp"
+#include "baci_mortar_interface.hpp"
+#include "baci_mortar_node.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

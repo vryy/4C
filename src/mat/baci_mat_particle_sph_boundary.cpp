@@ -11,10 +11,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#include "baci_mat_particle_sph_boundary.H"
+#include "baci_mat_particle_sph_boundary.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 BACI_NAMESPACE_OPEN
 

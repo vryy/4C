@@ -7,12 +7,12 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cardiovascular0d_resulttest.H"
+#include "baci_cardiovascular0d_resulttest.hpp"
 
-#include "baci_cardiovascular0d.H"
-#include "baci_cardiovascular0d_manager.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
+#include "baci_cardiovascular0d.hpp"
+#include "baci_cardiovascular0d_manager.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <string>
 

@@ -6,15 +6,15 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_ssti_dyn.H"
+#include "baci_ssti_dyn.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_ssti.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_ssti_algorithm.H"
-#include "baci_ssti_monolithic.H"
-#include "baci_ssti_utils.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_ssti.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_ssti_algorithm.hpp"
+#include "baci_ssti_monolithic.hpp"
+#include "baci_ssti_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

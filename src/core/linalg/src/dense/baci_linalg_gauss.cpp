@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linalg_gauss_templates.H"
+#include "baci_linalg_gauss_templates.hpp"
 
 BACI_NAMESPACE_OPEN
 

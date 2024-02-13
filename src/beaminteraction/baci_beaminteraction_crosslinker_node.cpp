@@ -11,11 +11,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_beaminteraction_crosslinker_node.H"
+#include "baci_beaminteraction_crosslinker_node.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_mat_crosslinkermat.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_mat_crosslinkermat.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

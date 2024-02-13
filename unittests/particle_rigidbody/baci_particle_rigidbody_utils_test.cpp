@@ -7,9 +7,9 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_particle_rigidbody_utils.H"
+#include "baci_particle_rigidbody_utils.hpp"
 
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 namespace
 {

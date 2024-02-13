@@ -13,10 +13,10 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_contact_constitutivelaw_bundle.H"
+#include "baci_contact_constitutivelaw_bundle.hpp"
 
-#include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
-#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
+#include "baci_contact_constitutivelaw_contactconstitutivelaw.hpp"
+#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 
 BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/

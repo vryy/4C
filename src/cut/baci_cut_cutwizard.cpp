@@ -6,19 +6,19 @@ surface meshes
 
 \level 3
  *------------------------------------------------------------------------------------------------*/
-#include "baci_cut_cutwizard.H"
+#include "baci_cut_cutwizard.hpp"
 
-#include "baci_cut_combintersection.H"
-#include "baci_cut_elementhandle.H"
-#include "baci_cut_node.H"
-#include "baci_cut_parallel.H"
-#include "baci_cut_sidehandle.H"
-#include "baci_cut_volumecell.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_discret_xfem.H"
+#include "baci_cut_combintersection.hpp"
+#include "baci_cut_elementhandle.hpp"
+#include "baci_cut_node.hpp"
+#include "baci_cut_parallel.hpp"
+#include "baci_cut_sidehandle.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_discret_xfem.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>

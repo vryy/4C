@@ -11,13 +11,13 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_timint_basedatasdyn.H"
+#include "baci_structure_new_timint_basedatasdyn.hpp"
 
-#include "baci_beaminteraction_periodic_boundingbox.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_structure_new_utils.H"
+#include "baci_beaminteraction_periodic_boundingbox.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_structure_new_utils.hpp"
 
 #include <Teuchos_Time.hpp>
 

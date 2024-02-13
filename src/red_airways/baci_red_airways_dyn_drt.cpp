@@ -11,17 +11,17 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_red_airways_dyn_drt.H"
+#include "baci_red_airways_dyn_drt.hpp"
 
-#include "baci_adapter_str_redairway.H"
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_resulttest.H"
-#include "baci_red_airways_implicitintegration.H"
-#include "baci_red_airways_resulttest.H"
-#include "baci_red_airways_tissue.H"
+#include "baci_adapter_str_redairway.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_resulttest.hpp"
+#include "baci_red_airways_implicitintegration.hpp"
+#include "baci_red_airways_resulttest.hpp"
+#include "baci_red_airways_tissue.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

@@ -8,13 +8,13 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_discretization_geometric_search_utils.H"
+#include "baci_discretization_geometric_search_utils.hpp"
 
-#include "baci_discretization_geometric_search_bounding_volume.H"
-#include "baci_io_pstream.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_utils_fad.H"
+#include "baci_discretization_geometric_search_bounding_volume.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
+#include "baci_utils_fad.hpp"
 
 BACI_NAMESPACE_OPEN
 

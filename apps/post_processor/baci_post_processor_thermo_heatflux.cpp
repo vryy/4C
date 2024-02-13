@@ -15,13 +15,13 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/09 |
  *----------------------------------------------------------------------*/
-#include "baci_io_legacy_table.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_post_common.H"
-#include "baci_post_processor_single_field_writers.H"
-#include "baci_post_writer_base.H"
-#include "baci_thermo_ele_action.H"
+#include "baci_io_legacy_table.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_post_common.hpp"
+#include "baci_post_processor_single_field_writers.hpp"
+#include "baci_post_writer_base.hpp"
+#include "baci_thermo_ele_action.hpp"
 
 #include <string>
 

@@ -7,9 +7,9 @@ problems
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mat_scatra_multiscale.H"
+#include "baci_mat_scatra_multiscale.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

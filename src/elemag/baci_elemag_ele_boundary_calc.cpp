@@ -7,13 +7,13 @@
 /*--------------------------------------------------------------------------*/
 
 
-#include "baci_elemag_ele_boundary_calc.H"
+#include "baci_elemag_ele_boundary_calc.hpp"
 
-#include "baci_elemag_ele.H"
-#include "baci_elemag_ele_action.H"
-#include "baci_global_data.H"
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_lib_node.H"
+#include "baci_elemag_ele.hpp"
+#include "baci_elemag_ele_action.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_lib_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

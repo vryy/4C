@@ -10,9 +10,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_anisotropy_extension_base.H"
+#include "baci_mat_anisotropy_extension_base.hpp"
 
-#include "baci_mat_anisotropy.H"
+#include "baci_mat_anisotropy.hpp"
 
 BACI_NAMESPACE_OPEN
 

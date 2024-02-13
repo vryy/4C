@@ -10,8 +10,8 @@ multipliers method
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc_xfem_coupling.H"
-#include "baci_fluid_ele_calc_xfem_coupling_impl.H"
+#include "baci_fluid_ele_calc_xfem_coupling.hpp"
+#include "baci_fluid_ele_calc_xfem_coupling_impl.hpp"
 
 BACI_NAMESPACE_OPEN
 

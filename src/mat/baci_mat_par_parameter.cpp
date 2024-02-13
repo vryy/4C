@@ -11,14 +11,14 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_mat_par_parameter.H"
+#include "baci_mat_par_parameter.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_material.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
+#include "baci_global_data.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
 #include <Teuchos_RCP.hpp>
 

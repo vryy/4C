@@ -8,15 +8,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_overlapprec_fsiamg.H"
+#include "baci_fsi_overlapprec_fsiamg.hpp"
 
-#include "baci_adapter_fld_fluid.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_comm_utils.H"
-#include "baci_fsi_overlapprec_hybrid.H"
-#include "baci_global_data.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_preconditioner_linalg.H"
+#include "baci_adapter_fld_fluid.hpp"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_comm_utils.hpp"
+#include "baci_fsi_overlapprec_hybrid.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_linear_solver_preconditioner_linalg.hpp"
 
 #include <EpetraExt_SolverMap_CrsMatrix.h>
 #include <ml_MultiLevelPreconditioner.h>

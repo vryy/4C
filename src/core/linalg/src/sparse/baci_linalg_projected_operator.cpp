@@ -8,10 +8,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_linalg_projected_operator.H"
+#include "baci_linalg_projected_operator.hpp"
 
-#include "baci_linalg_krylov_projector.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_krylov_projector.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_MultiVector.h>
 

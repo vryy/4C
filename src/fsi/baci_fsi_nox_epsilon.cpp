@@ -8,7 +8,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_fsi_nox_epsilon.H"
+#include "baci_fsi_nox_epsilon.hpp"
 
 #include <NOX_Abstract_Group.H>
 #include <NOX_Epetra_Group.H>

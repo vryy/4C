@@ -8,23 +8,23 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_beamcontact_beam3tosolidcontact.H"
+#include "baci_beamcontact_beam3tosolidcontact.hpp"
 
-#include "baci_beam3_euler_bernoulli.H"
-#include "baci_beam3_reissner.H"
-#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
-#include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
-#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
-#include "baci_comm_exporter.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_global_data.H"
-#include "baci_inpar_beamcontact.H"
-#include "baci_inpar_contact.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_lib_elementtype.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_euler_bernoulli.hpp"
+#include "baci_beam3_reissner.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.hpp"
+#include "baci_comm_exporter.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_beamcontact.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_elementtype.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

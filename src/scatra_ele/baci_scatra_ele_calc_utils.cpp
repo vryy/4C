@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_scatra_ele_calc_utils.H"
+#include "baci_scatra_ele_calc_utils.hpp"
 
-#include "baci_lib_condition_utils.H"
+#include "baci_lib_condition_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

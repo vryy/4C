@@ -1,0 +1,248 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+\brief H-file associated with general algorithmic routines for
+       partitioned solution approaches to fluid-structure-scalar-scalar
+       interaction (FS3I) and fluid-porous-structure-scalar-scalar
+       interaction (FPS3I).
+
+\level 2
+
+
+
+*----------------------------------------------------------------------*/
+
+#ifndef BACI_FS3I_HPP
+#define BACI_FS3I_HPP
+
+
+#include "baci_config.hpp"
+
+#include "baci_coupling_adapter.hpp"
+
+#include <Epetra_Comm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+BACI_NAMESPACE_OPEN
+
+
+// forward declarations
+namespace ADAPTER
+{
+  class Coupling;
+  class ScaTraBaseAlgorithm;
+}  // namespace ADAPTER
+
+namespace FSI
+{
+  class Monolithic;
+}  // namespace FSI
+
+namespace CORE::LINALG
+{
+  class MultiMapExtractor;
+  class BlockSparseMatrixBase;
+  class SparseMatrix;
+  class Solver;
+  class MatrixRowTransform;
+  class MatrixColTransform;
+  class MatrixRowColTransform;
+}  // namespace CORE::LINALG
+
+namespace FS3I
+{
+  class FS3I_Base
+  {
+   public:
+    /// constructor of base class
+    FS3I_Base();
+
+    /// destructor of base class
+    virtual ~FS3I_Base() = default;
+
+    /// initialize this class
+    virtual void Init();
+
+    /// setup this class
+    virtual void Setup();
+
+    /// setup
+    virtual void SetupSystem() = 0;
+
+    /// timeloop of coupled problem
+    virtual void Timeloop() = 0;
+
+    /// test results (if necessary)
+    virtual void TestResults(const Epetra_Comm& comm) = 0;
+
+    /// read restart
+    virtual void ReadRestart() = 0;
+
+    /// needed for redistribution of FPS3I interface, if running on parallel
+    virtual void RedistributeInterface() = 0;
+
+    //! make sure potential Dirichlet conditions at the scatra coupling
+    //! interface are defined on both discretizations
+    void CheckInterfaceDirichletBC();
+
+    //! Check FS3I specific inputs
+    void CheckFS3IInputs();
+
+    //! output of scalars and mean scalars
+    void ScatraOutput();
+
+    //! increment step and time
+    void IncrementTimeAndStep();
+
+    //! update ScaTra solution vectors (new time step)
+    void UpdateScatraFields();
+
+    //! evaluate, solve and iteratively update coupled ScaTra problem
+    void ScatraEvaluateSolveIterUpdate();
+
+    //! @name monolithic ScaTra problem
+    //@{
+
+    //! evaluate ScaTra fields
+    virtual void EvaluateScatraFields();
+
+    //! set Membrane concentration in scatra fields
+    void SetMembraneConcentration() const;
+
+    //! set-up of global matrix and rhs of the monolithic ScaTra problem
+    void SetupCoupledScatraSystem();
+
+    //! set-up of global rhs of the monolithic ScaTra problem
+    void SetupCoupledScatraVector(
+        Teuchos::RCP<Epetra_Vector> globalvec,    //!< resulting global vector
+        Teuchos::RCP<const Epetra_Vector>& vec1,  //!< vector in fluid ScaTra map
+        Teuchos::RCP<const Epetra_Vector>& vec2   //!< vector in solid ScaTra map
+    );
+
+    //! set-up of global rhs of the monolithic ScaTra problem
+    void SetupCoupledScatraRHS();
+
+    //! set-up of global matrix of the monolithic ScaTra problem
+    void SetupCoupledScatraMatrix();
+
+    Teuchos::RCP<Epetra_Vector> Scatra2ToScatra1(Teuchos::RCP<const Epetra_Vector> iv) const;
+
+    Teuchos::RCP<Epetra_Vector> Scatra1ToScatra2(Teuchos::RCP<const Epetra_Vector> iv) const;
+
+    //! linear solution of monolithic ScaTra problem
+    void LinearSolveScatra();
+
+    //! iterative update of ScaTra solution vectors
+    void ScatraIterUpdate();
+
+    //! extraction of field-specific vectors from global ScaTra vector
+    void ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,  //!< global vector
+        Teuchos::RCP<const Epetra_Vector>& vec1,  //!< resulting vector in fluid ScaTra map
+        Teuchos::RCP<const Epetra_Vector>& vec2   //!< resulting vector in solid ScaTra map
+    );
+
+   private:
+    /// extracts membrane concentration in membrane (interface)
+    void ExtractMembraneConcentration(
+        std::vector<Teuchos::RCP<Epetra_Vector>>& MembraneConcentration) const;
+
+    /// Calculation of membane concentration in the membrane between fluid-scatra and
+    /// structure-scatra
+    Teuchos::RCP<Epetra_Vector> CalcMembraneConcentration() const;
+
+   protected:
+    /// vector of scatra algorithms
+    std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>> scatravec_;
+
+    /// scatra rhs vector
+    Teuchos::RCP<Epetra_Vector> scatrarhs_;
+
+    /// scatra increment vector
+    Teuchos::RCP<Epetra_Vector> scatraincrement_;
+
+    /// dof row map of scatra problems splitted in (field) blocks
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> scatraglobalex_;
+
+    /// vector of scatra field map extractors (coupled vs. uncoupled dofs)
+    std::vector<Teuchos::RCP<CORE::LINALG::MultiMapExtractor>> scatrafieldexvec_;
+
+    /// coupling of dofs at the scatra interface
+    Teuchos::RCP<CORE::ADAPTER::Coupling> scatracoup_;
+
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> scatrasystemmatrix_;
+
+    /// coupling forces (in case of surface permeability)
+    std::vector<Teuchos::RCP<Epetra_Vector>> scatracoupforce_;
+
+    /// coupling matrices (in case of surface permeability)
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> scatracoupmat_;
+
+    /// zero vector (needed for application of Dirichlet BC on coupling vector)
+    std::vector<Teuchos::RCP<Epetra_Vector>> scatrazeros_;
+
+    /// scatra solver
+    Teuchos::RCP<CORE::LINALG::Solver> scatrasolver_;
+
+    /// flag for infinite surface permeability
+    const bool infperm_;
+
+    /// @name  control parameters for time-integration scheme
+
+    /// maximal simulation time
+    const double timemax_;
+
+    /// number of steps to simulate
+    const int numstep_;
+
+    /// timestep
+    const double dt_;
+
+    /// current time
+    double time_;
+
+    /// current step
+    int step_;
+
+    //@}
+   private:
+    /// @name Matrix block transform objects
+    /// Handle row and column map exchange for matrix blocks
+
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> sbbtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> sbitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> sibtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fbitransform_;
+    ///@}
+
+   private:
+    //! flag indicating if class is setup
+    bool issetup_;
+
+    //! flag indicating if class is initialized
+    bool isinit_;
+
+   protected:
+    //! returns true if Setup() was called and is still valid
+    bool IsSetup() { return issetup_; };
+
+    //! returns true if Init(..) was called and is still valid
+    bool IsInit() { return isinit_; };
+
+    //! check if \ref Setup() was called
+    void CheckIsSetup();
+
+    //! check if \ref Init() was called
+    void CheckIsInit();
+
+   public:
+    //! set flag true after setup or false if setup became invalid
+    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+
+    //! set flag true after init or false if init became invalid
+    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+  };
+}  // namespace FS3I
+
+BACI_NAMESPACE_CLOSE
+
+#endif

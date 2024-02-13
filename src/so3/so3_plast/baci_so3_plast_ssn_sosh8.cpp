@@ -18,17 +18,17 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 /*----------------------------------------------------------------------*/
 
-#include "baci_so3_plast_ssn_sosh8.H"
+#include "baci_so3_plast_ssn_sosh8.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_mat_plasticelasthyper.H"
-#include "baci_so3_plast_ssn.H"
-#include "baci_so3_utils.H"
-#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_mat_plasticelasthyper.hpp"
+#include "baci_so3_plast_ssn.hpp"
+#include "baci_so3_utils.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

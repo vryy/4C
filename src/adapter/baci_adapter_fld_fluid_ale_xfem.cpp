@@ -7,15 +7,15 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_adapter_fld_fluid_ale_xfem.H"
+#include "baci_adapter_fld_fluid_ale_xfem.hpp"
 
-#include "baci_adapter_ale_fluid.H"
-#include "baci_adapter_fld_fluid_xfsi.H"
-#include "baci_coupling_adapter.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fsi.H"
-#include "baci_inpar_validparameters.H"
+#include "baci_adapter_ale_fluid.hpp"
+#include "baci_adapter_fld_fluid_xfsi.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fsi.hpp"
+#include "baci_inpar_validparameters.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

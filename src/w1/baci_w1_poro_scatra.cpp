@@ -8,10 +8,10 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_w1_poro_scatra.H"
+#include "baci_w1_poro_scatra.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_w1_poro_scatra_eletypes.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_w1_poro_scatra_eletypes.hpp"
 
 BACI_NAMESPACE_OPEN
 

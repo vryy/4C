@@ -54,10 +54,10 @@ adapter/                                    @baci/team_discretization
 adapter/baci_adapter_ale*                        @baci/team_fluid
 adapter/baci_adapter_ale_wear*                   @baci/team_contact
 adapter/baci_adapter_algorithmbase*              @baci/team_discretization
-adapter/baci_adapter_art_net.H                   @baci/team_reduced_fluid_models
+adapter/baci_adapter_art_net.hpp                 @baci/team_reduced_fluid_models
 adapter/baci_adapter_coupling*                   @baci/team_contact
 adapter/baci_adapter_coupling_poro_mortar*       @baci/team_poro
-adapter/baci_adapter_field.H                     @baci/team_discretization
+adapter/baci_adapter_field.hpp                     @baci/team_discretization
 adapter/baci_adapter_field_wrapper*              @baci/team_discretization
 adapter/baci_adapter_fld_*                       @baci/team_fluid
 adapter/baci_adapter_fld_poro*                   @baci/team_poro

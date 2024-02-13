@@ -11,16 +11,16 @@
  |  headers                                                  cbert 09/12 |
  *----------------------------------------------------------------------*/
 
-#include "baci_mat_myocard.H"
+#include "baci_mat_myocard.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_myocard_fitzhugh_nagumo.H"
-#include "baci_mat_myocard_inada.H"
-#include "baci_mat_myocard_minimal.H"
-#include "baci_mat_myocard_san_garny.H"
-#include "baci_mat_myocard_tentusscher.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_myocard_fitzhugh_nagumo.hpp"
+#include "baci_mat_myocard_inada.hpp"
+#include "baci_mat_myocard_minimal.hpp"
+#include "baci_mat_myocard_san_garny.hpp"
+#include "baci_mat_myocard_tentusscher.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <fstream>  // For plotting ion concentrations
 #include <vector>

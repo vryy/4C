@@ -9,13 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc_loma.H"
+#include "baci_fluid_ele_calc_loma.hpp"
 
-#include "baci_fluid_ele.H"
-#include "baci_fluid_ele_parameter_std.H"
-#include "baci_fluid_ele_parameter_timint.H"
-#include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
+#include "baci_fluid_ele.hpp"
+#include "baci_fluid_ele_parameter_std.hpp"
+#include "baci_fluid_ele_parameter_timint.hpp"
+#include "baci_fluid_rotsym_periodicbc.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,10 +8,10 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
 
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <utility>
 

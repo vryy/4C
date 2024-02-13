@@ -10,9 +10,9 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
-#include "baci_structure_timint_noxgroup.H"
+#include "baci_structure_timint_noxgroup.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 BACI_NAMESPACE_OPEN
 

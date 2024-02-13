@@ -9,9 +9,9 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_beam3_reissner.H"
+#include "baci_beam3_reissner.hpp"
 
-#include "baci_lib_element.H"
+#include "baci_lib_element.hpp"
 
 #include <Epetra_SerialComm.h>
 

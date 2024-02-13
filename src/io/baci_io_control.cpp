@@ -6,13 +6,13 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_config.H"
-#include "baci_config_revision.H"
+#include "baci_config.hpp"
+#include "baci_config_revision.hpp"
 
-#include "baci_io_control.H"
+#include "baci_io_control.hpp"
 
-#include "baci_io_legacy_table.H"
-#include "baci_io_pstream.H"
+#include "baci_io_legacy_table.hpp"
+#include "baci_io_pstream.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <pwd.h>

@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_contact_aug_lagrange_interface.H"
+#include "baci_contact_aug_lagrange_interface.hpp"
 
 BACI_NAMESPACE_OPEN
 

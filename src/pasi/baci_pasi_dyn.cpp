@@ -8,15 +8,15 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_pasi_dyn.H"
+#include "baci_pasi_dyn.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_inpar_pasi.H"
-#include "baci_lib_discret.H"
-#include "baci_pasi_partitioned_onewaycoup.H"
-#include "baci_pasi_partitioned_twowaycoup.H"
-#include "baci_pasi_utils.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_pasi.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_pasi_partitioned_onewaycoup.hpp"
+#include "baci_pasi_partitioned_twowaycoup.hpp"
+#include "baci_pasi_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

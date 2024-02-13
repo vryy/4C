@@ -15,10 +15,10 @@ parameters required for Lubrication element evaluation.
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_lubrication_ele_parameter.H"
+#include "baci_lubrication_ele_parameter.hpp"
 
-#include "baci_utils_exceptions.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

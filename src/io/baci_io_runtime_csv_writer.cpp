@@ -6,11 +6,11 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 /* headers */
-#include "baci_io_runtime_csv_writer.H"
+#include "baci_io_runtime_csv_writer.hpp"
 
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <iostream>
 #include <utility>

@@ -8,9 +8,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_discretization_geometric_search_params.H"
+#include "baci_discretization_geometric_search_params.hpp"
 
-#include "baci_inpar_parameterlist_utils.H"
+#include "baci_inpar_parameterlist_utils.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

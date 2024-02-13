@@ -7,11 +7,11 @@
 \level 2
  */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_ele_utils_elch_electrode.H"
+#include "baci_scatra_ele_utils_elch_electrode.hpp"
 
-#include "baci_mat_electrode.H"
-#include "baci_scatra_ele_calc_elch_electrode.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_mat_electrode.hpp"
+#include "baci_scatra_ele_calc_elch_electrode.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

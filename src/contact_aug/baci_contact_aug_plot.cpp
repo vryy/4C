@@ -11,22 +11,22 @@ MATLAB, PGFPlot or other tools.
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_contact_aug_plot.H"
+#include "baci_contact_aug_plot.hpp"
 
-#include "baci_contact_aug_strategy.H"
-#include "baci_inpar_contact.H"
-#include "baci_io_every_iteration_writer.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_element.H"
-#include "baci_lib_node.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_constraint_group.H"
-#include "baci_solver_nonlin_nox_solver_linesearchbased.H"
-#include "baci_structure_new_model_evaluator_contact.H"
-#include "baci_utils_epetra_exceptions.H"
-#include "baci_utils_exceptions.H"
+#include "baci_contact_aug_strategy.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_io_every_iteration_writer.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_solver_nonlin_nox_constraint_group.hpp"
+#include "baci_solver_nonlin_nox_solver_linesearchbased.hpp"
+#include "baci_structure_new_model_evaluator_contact.hpp"
+#include "baci_utils_epetra_exceptions.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

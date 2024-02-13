@@ -12,9 +12,9 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_utils_symbolic_expression.H"
+#include "baci_utils_symbolic_expression.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <Sacado.hpp>
 

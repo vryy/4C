@@ -7,10 +7,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_discret.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_IntVector.h>
 

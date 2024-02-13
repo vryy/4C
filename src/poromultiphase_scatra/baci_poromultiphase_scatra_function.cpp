@@ -7,13 +7,13 @@
 
     *----------------------------------------------------------------------*/
 
-#include "baci_poromultiphase_scatra_function.H"
+#include "baci_poromultiphase_scatra_function.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_poromultiphase_scatra_utils.H"
-#include "baci_utils_fad.H"
-#include "baci_utils_function_manager.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_poromultiphase_scatra_utils.hpp"
+#include "baci_utils_fad.hpp"
+#include "baci_utils_function_manager.hpp"
 
 #include <Teuchos_RCP.hpp>
 

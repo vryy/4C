@@ -11,10 +11,10 @@
 /*----------------------------------------------------------------------*
  | headers                                                  seitz 04/14 |
  *----------------------------------------------------------------------*/
-#include "baci_global_data.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
-#include "baci_so3_plast_ssn.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
+#include "baci_so3_plast_ssn.hpp"
 
 BACI_NAMESPACE_OPEN
 

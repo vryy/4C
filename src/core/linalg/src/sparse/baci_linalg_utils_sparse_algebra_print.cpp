@@ -6,9 +6,9 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#include "baci_linalg_utils_sparse_algebra_print.H"
+#include "baci_linalg_utils_sparse_algebra_print.hpp"
 
-#include "baci_linalg_blocksparsematrix.H"
+#include "baci_linalg_blocksparsematrix.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_MultiVector.h>

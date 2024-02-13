@@ -10,9 +10,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_meritfunction_factory.H"
+#include "baci_solver_nonlin_nox_meritfunction_factory.hpp"
 
-#include "baci_solver_nonlin_nox_meritfunction_lagrangian.H"
+#include "baci_solver_nonlin_nox_meritfunction_lagrangian.hpp"
 
 #include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>

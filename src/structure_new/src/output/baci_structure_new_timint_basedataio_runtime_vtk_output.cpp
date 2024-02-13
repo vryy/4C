@@ -8,13 +8,13 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
+#include "baci_structure_new_timint_basedataio_runtime_vtk_output.hpp"
 
-#include "baci_beam3_discretization_runtime_output_params.H"
-#include "baci_global_data.H"
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_structure_new_discretization_runtime_output_params.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_discretization_runtime_output_params.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_structure_new_discretization_runtime_output_params.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

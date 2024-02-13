@@ -8,10 +8,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_options.H"
+#include "baci_cut_options.hpp"
 
-#include "baci_cut_position.H"
-#include "baci_global_data.H"
+#include "baci_cut_position.hpp"
+#include "baci_global_data.hpp"
 
 BACI_NAMESPACE_OPEN
 

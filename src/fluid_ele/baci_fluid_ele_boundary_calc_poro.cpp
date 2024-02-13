@@ -9,20 +9,20 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_boundary_calc_poro.H"
+#include "baci_fluid_ele_boundary_calc_poro.hpp"
 
-#include "baci_coupling_volmortar_shape.H"
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_fluid_ele.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_parameter_poro.H"
-#include "baci_global_data.H"
-#include "baci_lib_element_integration_select.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_mat_structporo.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-#include "baci_poroelast_utils.H"
+#include "baci_coupling_volmortar_shape.hpp"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_fluid_ele.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_parameter_poro.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_element_integration_select.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
+#include "baci_poroelast_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

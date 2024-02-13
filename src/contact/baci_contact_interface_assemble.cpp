@@ -9,14 +9,14 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_contact_element.H"
-#include "baci_contact_friction_node.H"
-#include "baci_contact_interface.H"
-#include "baci_coupling_adapter.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_contact_element.hpp"
+#include "baci_contact_friction_node.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 BACI_NAMESPACE_OPEN
 

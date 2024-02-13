@@ -8,10 +8,10 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
-#include "baci_mat_structporo.H"
-#include "baci_solid_ele_calc_lib.H"
-#include "baci_solid_ele_calc_lib_io.H"
-#include "baci_solid_poro_ele.H"
+#include "baci_mat_structporo.hpp"
+#include "baci_solid_ele_calc_lib.hpp"
+#include "baci_solid_ele_calc_lib_io.hpp"
+#include "baci_solid_poro_ele.hpp"
 
 BACI_NAMESPACE_OPEN
 

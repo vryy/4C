@@ -7,9 +7,9 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_contact_aug_integrator_policy.H"
-#include "baci_contact_node.H"
-#include "baci_mortar_element.H"
+#include "baci_contact_aug_integrator_policy.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_mortar_element.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -7,19 +7,19 @@
 */
 
 
-#include "baci_geometry_pair_line_projection.H"
+#include "baci_geometry_pair_line_projection.hpp"
 
-#include "baci_geometry_pair_element.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
-#include "baci_geometry_pair_line_to_surface_evaluation_data.H"
-#include "baci_geometry_pair_line_to_surface_gauss_point_projection.H"
-#include "baci_geometry_pair_line_to_surface_segmentation.H"
-#include "baci_geometry_pair_line_to_volume_gauss_point_projection.H"
-#include "baci_geometry_pair_line_to_volume_segmentation.H"
-#include "baci_geometry_pair_scalar_types.H"
-#include "baci_geometry_pair_utility_functions.H"
-#include "baci_utils_fad.H"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
+#include "baci_geometry_pair_line_to_surface_evaluation_data.hpp"
+#include "baci_geometry_pair_line_to_surface_gauss_point_projection.hpp"
+#include "baci_geometry_pair_line_to_surface_segmentation.hpp"
+#include "baci_geometry_pair_line_to_volume_gauss_point_projection.hpp"
+#include "baci_geometry_pair_line_to_volume_segmentation.hpp"
+#include "baci_geometry_pair_scalar_types.hpp"
+#include "baci_geometry_pair_utility_functions.hpp"
+#include "baci_utils_fad.hpp"
 
 BACI_NAMESPACE_OPEN
 

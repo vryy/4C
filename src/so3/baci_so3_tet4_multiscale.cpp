@@ -4,11 +4,11 @@
 \level 2
 *----------------------------------------------------------------------*/
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_mat_micromaterial.H"
-#include "baci_so3_tet4.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_micromaterial.hpp"
+#include "baci_so3_tet4.hpp"
 
 BACI_NAMESPACE_OPEN
 

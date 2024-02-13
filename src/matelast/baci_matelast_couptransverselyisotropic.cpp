@@ -7,15 +7,15 @@ computations
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_couptransverselyisotropic.H"
+#include "baci_matelast_couptransverselyisotropic.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_io_pstream.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_service.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
-#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_matelast_aniso_structuraltensor_strategy.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -6,18 +6,18 @@ mesh
 
 \level 3
  *------------------------------------------------------------------------------------------------*/
-#include "baci_cut_mesh.H"
+#include "baci_cut_mesh.hpp"
 
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_integrationcell.H"
-#include "baci_cut_levelsetside.H"
-#include "baci_cut_output.H"
-#include "baci_cut_parallel.H"
-#include "baci_cut_point_impl.H"
-#include "baci_cut_volumecell.H"
-#include "baci_discretization_geometry_element_volume.H"
-#include "baci_discretization_geometry_searchtree.H"
-#include "baci_lib_discret.H"
+#include "baci_cut_boundarycell.hpp"
+#include "baci_cut_integrationcell.hpp"
+#include "baci_cut_levelsetside.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_parallel.hpp"
+#include "baci_cut_point_impl.hpp"
+#include "baci_cut_volumecell.hpp"
+#include "baci_discretization_geometry_element_volume.hpp"
+#include "baci_discretization_geometry_searchtree.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -11,17 +11,17 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_structure_timint_genalpha.H"
+#include "baci_structure_timint_genalpha.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_locsys.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_structure_aux.H"
-#include "baci_structure_new_impl_genalpha.H"
-#include "baci_structure_new_utils.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_locsys.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_structure_aux.hpp"
+#include "baci_structure_new_impl_genalpha.hpp"
+#include "baci_structure_new_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

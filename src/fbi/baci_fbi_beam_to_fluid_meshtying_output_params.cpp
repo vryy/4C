@@ -8,11 +8,11 @@
 */
 
 
-#include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
+#include "baci_fbi_beam_to_fluid_meshtying_output_params.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_IO_runtime_output.H"
-#include "baci_inpar_parameterlist_utils.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_IO_runtime_output.hpp"
+#include "baci_inpar_parameterlist_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

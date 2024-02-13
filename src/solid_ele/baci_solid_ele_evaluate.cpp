@@ -8,15 +8,15 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
-#include "baci_lib_elements_paramsinterface.H"
-#include "baci_solid_ele.H"
-#include "baci_solid_ele_calc_interface.H"
-#include "baci_solid_ele_calc_lib.H"
-#include "baci_solid_ele_calc_lib_io.H"
-#include "baci_solid_ele_calc_mulf.H"
-#include "baci_solid_ele_neumann_evaluator.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_elements_paramsinterface.hpp"
+#include "baci_solid_ele.hpp"
+#include "baci_solid_ele_calc_interface.hpp"
+#include "baci_solid_ele_calc_lib.hpp"
+#include "baci_solid_ele_calc_lib_io.hpp"
+#include "baci_solid_ele_calc_mulf.hpp"
+#include "baci_solid_ele_neumann_evaluator.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

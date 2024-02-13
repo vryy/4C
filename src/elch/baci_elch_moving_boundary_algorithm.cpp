@@ -8,15 +8,15 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_elch_moving_boundary_algorithm.H"
+#include "baci_elch_moving_boundary_algorithm.hpp"
 
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_global_data.H"
-#include "baci_inpar_elch.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_scatra_timint_elch.H"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_elch.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_scatra_timint_elch.hpp"
 
 BACI_NAMESPACE_OPEN
 

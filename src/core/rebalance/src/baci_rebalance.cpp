@@ -8,15 +8,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_rebalance.H"
+#include "baci_rebalance.hpp"
 
-#include "baci_discretization_geometric_search_bounding_volume.H"
-#include "baci_discretization_geometric_search_distributed_tree.H"
-#include "baci_discretization_geometric_search_params.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_discretization_geometric_search_bounding_volume.hpp"
+#include "baci_discretization_geometric_search_distributed_tree.hpp"
+#include "baci_discretization_geometric_search_params.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <Epetra_FECrsGraph.h>
 #include <Isorropia_Epetra.hpp>

@@ -9,9 +9,9 @@
 */
 
 
-#include "baci_post_writer_base.H"
+#include "baci_post_writer_base.hpp"
 
-#include "baci_post_common.H"
+#include "baci_post_common.hpp"
 
 BACI_NAMESPACE_OPEN
 

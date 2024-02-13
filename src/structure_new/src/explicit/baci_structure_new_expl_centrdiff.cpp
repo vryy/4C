@@ -9,15 +9,15 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_expl_centrdiff.H"
+#include "baci_structure_new_expl_centrdiff.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_structure_new_model_evaluator.H"
-#include "baci_structure_new_model_evaluator_generic.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_structure_new_model_evaluator.hpp"
+#include "baci_structure_new_model_evaluator_generic.hpp"
+#include "baci_structure_new_timint_base.hpp"
+#include "baci_structure_new_timint_basedataglobalstate.hpp"
 
 BACI_NAMESPACE_OPEN
 

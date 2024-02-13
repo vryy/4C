@@ -20,10 +20,10 @@ the file filter_commmon/filter_evaluation.cpp needs to be adapted accordingly.
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_scatra_multiscale.H"
-#include "baci_mat_scatra_multiscale_gp.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_scatra_multiscale.hpp"
+#include "baci_mat_scatra_multiscale_gp.hpp"
 
 BACI_NAMESPACE_OPEN
 

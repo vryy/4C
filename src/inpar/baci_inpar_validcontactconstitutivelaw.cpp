@@ -6,10 +6,10 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_inpar_validcontactconstitutivelaw.H"
+#include "baci_inpar_validcontactconstitutivelaw.hpp"
 
-#include "baci_contact_constitutivelaw_constitutivelaw_definition.H"
-#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
+#include "baci_contact_constitutivelaw_constitutivelaw_definition.hpp"
+#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 
 BACI_NAMESPACE_OPEN
 

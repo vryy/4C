@@ -8,17 +8,17 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_mor_pod.H"
+#include "baci_mor_pod.hpp"
 
-#include "baci_adapter_str_structure.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_adapter_str_structure.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
 
 #include <iostream>
 

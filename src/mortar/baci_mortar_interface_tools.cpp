@@ -7,16 +7,16 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_io_gmsh.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_dofset.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_integrator.H"
-#include "baci_mortar_interface.H"
-#include "baci_mortar_node.H"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_gmsh.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_dofset.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_integrator.hpp"
+#include "baci_mortar_interface.hpp"
+#include "baci_mortar_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

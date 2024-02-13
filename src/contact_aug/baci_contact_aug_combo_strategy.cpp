@@ -8,18 +8,18 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_aug_combo_strategy.H"
+#include "baci_contact_aug_combo_strategy.hpp"
 
-#include "baci_contact_aug_interface.H"
-#include "baci_contact_aug_strategy.H"
-#include "baci_contact_paramsinterface.H"
-#include "baci_contact_strategy_factory.H"
-#include "baci_inpar_contact.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_structure_new_solver_factory.H"
+#include "baci_contact_aug_interface.hpp"
+#include "baci_contact_aug_strategy.hpp"
+#include "baci_contact_paramsinterface.hpp"
+#include "baci_contact_strategy_factory.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_utils_parallel.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_structure_new_solver_factory.hpp"
 
 BACI_NAMESPACE_OPEN
 

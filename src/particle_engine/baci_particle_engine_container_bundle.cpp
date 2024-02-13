@@ -8,9 +8,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_container_bundle.H"
+#include "baci_particle_engine_container_bundle.hpp"
 
-#include "baci_particle_engine_object.H"
+#include "baci_particle_engine_object.hpp"
 
 BACI_NAMESPACE_OPEN
 

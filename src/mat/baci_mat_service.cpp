@@ -7,22 +7,22 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_service.H"
+#include "baci_mat_service.hpp"
 
-#include "baci_linalg_four_tensor.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mixture_constituent_remodelfiber_material_exponential.H"
-#include "baci_mixture_constituent_remodelfiber_material_exponential_active.H"
-#include "baci_mixture_growth_strategy_anisotropic.H"
-#include "baci_mixture_growth_strategy_isotropic.H"
-#include "baci_mixture_growth_strategy_stiffness.H"
-#include "baci_mixture_prestress_strategy_constant.H"
-#include "baci_mixture_prestress_strategy_isocyl.H"
-#include "baci_mixture_prestress_strategy_iterative.H"
-#include "baci_mixture_rule_function.H"
-#include "baci_mixture_rule_growthremodel.H"
-#include "baci_mixture_rule_simple.H"
+#include "baci_linalg_four_tensor.hpp"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mixture_constituent_remodelfiber_material_exponential.hpp"
+#include "baci_mixture_constituent_remodelfiber_material_exponential_active.hpp"
+#include "baci_mixture_growth_strategy_anisotropic.hpp"
+#include "baci_mixture_growth_strategy_isotropic.hpp"
+#include "baci_mixture_growth_strategy_stiffness.hpp"
+#include "baci_mixture_prestress_strategy_constant.hpp"
+#include "baci_mixture_prestress_strategy_isocyl.hpp"
+#include "baci_mixture_prestress_strategy_iterative.hpp"
+#include "baci_mixture_rule_function.hpp"
+#include "baci_mixture_rule_growthremodel.hpp"
+#include "baci_mixture_rule_simple.hpp"
 
 #include <Sacado.hpp>
 

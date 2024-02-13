@@ -5,11 +5,11 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#include "baci_matelast_visco_generalizedgenmax.H"
+#include "baci_matelast_visco_generalizedgenmax.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_material.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

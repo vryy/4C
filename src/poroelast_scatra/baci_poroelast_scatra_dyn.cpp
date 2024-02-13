@@ -7,13 +7,13 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_poroelast_scatra_dyn.H"
+#include "baci_poroelast_scatra_dyn.hpp"
 
-#include "baci_poroelast_scatra_base.H"
-#include "baci_poroelast_scatra_utils.H"
-#include "baci_poroelast_scatra_utils_clonestrategy.H"
-#include "baci_poroelast_scatra_utils_setup.H"
-#include "baci_poroelast_utils_clonestrategy.H"
+#include "baci_poroelast_scatra_base.hpp"
+#include "baci_poroelast_scatra_utils.hpp"
+#include "baci_poroelast_scatra_utils_clonestrategy.hpp"
+#include "baci_poroelast_scatra_utils_setup.hpp"
+#include "baci_poroelast_utils_clonestrategy.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

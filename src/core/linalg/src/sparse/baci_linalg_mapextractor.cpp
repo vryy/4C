@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linalg_mapextractor.H"
+#include "baci_linalg_mapextractor.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
 
 #include <Teuchos_getConst.hpp>
 

@@ -10,7 +10,7 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_fluid_ele_poro.H"
+#include "baci_fluid_ele_poro.hpp"
 
 BACI_NAMESPACE_OPEN
 

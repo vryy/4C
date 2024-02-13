@@ -8,23 +8,23 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poroelast_scatra_monolithic.H"
+#include "baci_poroelast_scatra_monolithic.hpp"
 
-#include "baci_adapter_fld_poro.H"
-#include "baci_adapter_str_fpsiwrapper.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_poroelast_scatra_utils.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_adapter_fld_poro.hpp"
+#include "baci_adapter_str_fpsiwrapper.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_assemblestrategy.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_poroelast_scatra_utils.hpp"
+#include "baci_scatra_ele_action.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

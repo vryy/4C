@@ -10,11 +10,11 @@
 
 
 
-#include "baci_inpar_poroscatra.H"
+#include "baci_inpar_poroscatra.hpp"
 
-#include "baci_inpar_poroelast.H"
-#include "baci_inpar_scatra.H"
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_poroelast.hpp"
+#include "baci_inpar_scatra.hpp"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,17 +8,17 @@
 
 
 
-#include "baci_porofluidmultiphase_dyn.H"
+#include "baci_porofluidmultiphase_dyn.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_bio.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_porofluidmultiphase_timint_implicit.H"
-#include "baci_porofluidmultiphase_timint_ost.H"
-#include "baci_porofluidmultiphase_utils.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_bio.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_porofluidmultiphase_timint_implicit.hpp"
+#include "baci_porofluidmultiphase_timint_ost.hpp"
+#include "baci_porofluidmultiphase_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

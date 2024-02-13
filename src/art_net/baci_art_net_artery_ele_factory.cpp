@@ -7,11 +7,11 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_art_net_artery_ele_factory.H"
+#include "baci_art_net_artery_ele_factory.hpp"
 
-#include "baci_art_net_artery_ele_calc_lin_exp.H"
-#include "baci_art_net_artery_ele_calc_pres_based.H"
-#include "baci_art_net_artery_ele_interface.H"
+#include "baci_art_net_artery_ele_calc_lin_exp.hpp"
+#include "baci_art_net_artery_ele_calc_pres_based.hpp"
+#include "baci_art_net_artery_ele_interface.hpp"
 
 BACI_NAMESPACE_OPEN
 

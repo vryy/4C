@@ -11,18 +11,18 @@
 /*----------------------------------------------------------------------------*/
 
 
-#include "baci_xfem_multi_field_mapextractor.H"
+#include "baci_xfem_multi_field_mapextractor.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_comm_parobject.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_lib_discret_xfem.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_xfem_xfield_field_coupling.H"
-#include "baci_xfem_xfield_field_coupling_dofset.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_comm_parobject.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_lib_discret_xfem.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_xfem_xfield_field_coupling.hpp"
+#include "baci_xfem_xfield_field_coupling_dofset.hpp"
 
 BACI_NAMESPACE_OPEN
 

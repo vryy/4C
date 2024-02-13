@@ -9,10 +9,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_dofset_gidbased_wrapper.H"
+#include "baci_lib_dofset_gidbased_wrapper.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_lib_dofset_proxy.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_dofset_proxy.hpp"
 
 BACI_NAMESPACE_OPEN
 

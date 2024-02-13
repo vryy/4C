@@ -7,23 +7,23 @@
 
  */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_ele_boundary_factory.H"
+#include "baci_scatra_ele_boundary_factory.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_elchmat.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_boundary_calc_elch_diffcond.H"
-#include "baci_scatra_ele_boundary_calc_elch_electrode.H"
-#include "baci_scatra_ele_boundary_calc_elch_electrode_growth.H"
-#include "baci_scatra_ele_boundary_calc_elch_electrode_sti_thermo.H"
-#include "baci_scatra_ele_boundary_calc_elch_NP.H"
-#include "baci_scatra_ele_boundary_calc_loma.H"
-#include "baci_scatra_ele_boundary_calc_poro.H"
-#include "baci_scatra_ele_boundary_calc_refconc_reac.H"
-#include "baci_scatra_ele_boundary_calc_std.H"
-#include "baci_scatra_ele_boundary_calc_sti_electrode.H"
-#include "baci_scatra_ele_boundary_interface.H"
-#include "baci_scatra_ele_calc.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_elchmat.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_boundary_calc_elch_diffcond.hpp"
+#include "baci_scatra_ele_boundary_calc_elch_electrode.hpp"
+#include "baci_scatra_ele_boundary_calc_elch_electrode_growth.hpp"
+#include "baci_scatra_ele_boundary_calc_elch_electrode_sti_thermo.hpp"
+#include "baci_scatra_ele_boundary_calc_elch_NP.hpp"
+#include "baci_scatra_ele_boundary_calc_loma.hpp"
+#include "baci_scatra_ele_boundary_calc_poro.hpp"
+#include "baci_scatra_ele_boundary_calc_refconc_reac.hpp"
+#include "baci_scatra_ele_boundary_calc_std.hpp"
+#include "baci_scatra_ele_boundary_calc_sti_electrode.hpp"
+#include "baci_scatra_ele_boundary_interface.hpp"
+#include "baci_scatra_ele_calc.hpp"
 
 BACI_NAMESPACE_OPEN
 

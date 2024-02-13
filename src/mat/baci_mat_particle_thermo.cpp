@@ -11,9 +11,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#include "baci_mat_particle_thermo.H"
+#include "baci_mat_particle_thermo.hpp"
 
-#include "baci_mat_par_bundle.H"
+#include "baci_mat_par_bundle.hpp"
 
 BACI_NAMESPACE_OPEN
 

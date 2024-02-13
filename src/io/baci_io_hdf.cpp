@@ -9,9 +9,9 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_io_hdf.H"
+#include "baci_io_hdf.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <iostream>
 

@@ -9,9 +9,9 @@ Mechanics, 2000"
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_volsussmanbathe.H"
+#include "baci_matelast_volsussmanbathe.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

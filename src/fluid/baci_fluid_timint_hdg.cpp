@@ -9,18 +9,18 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_timint_hdg.H"
+#include "baci_fluid_timint_hdg.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_hdg.H"
-#include "baci_fluid_ele_hdg_weak_comp.H"
-#include "baci_fluid_turbulence_hit_forcing.H"
-#include "baci_fluid_turbulence_hit_initial_field.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_hdg.hpp"
+#include "baci_fluid_ele_hdg_weak_comp.hpp"
+#include "baci_fluid_turbulence_hit_forcing.hpp"
+#include "baci_fluid_turbulence_hit_initial_field.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret_hdg.hpp"
+#include "baci_lib_dofset_predefineddofnumber.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 BACI_NAMESPACE_OPEN
 

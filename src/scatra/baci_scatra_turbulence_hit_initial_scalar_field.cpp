@@ -10,12 +10,12 @@ transport
 
 *----------------------------------------------------------------------*/
 
-#include "baci_scatra_turbulence_hit_initial_scalar_field.H"
+#include "baci_scatra_turbulence_hit_initial_scalar_field.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_global_data.H"
-#include "baci_lib_utils.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 #include <cmath>
 #include <complex>

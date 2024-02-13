@@ -10,10 +10,10 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_mat_cnst_1d_art.H"
+#include "baci_mat_cnst_1d_art.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <vector>
 

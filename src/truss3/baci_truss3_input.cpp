@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_io_linedefinition.H"
-#include "baci_truss3.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_truss3.hpp"
 
 BACI_NAMESPACE_OPEN
 

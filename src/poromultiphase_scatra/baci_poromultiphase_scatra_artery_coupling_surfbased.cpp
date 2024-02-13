@@ -8,11 +8,11 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poromultiphase_scatra_artery_coupling_surfbased.H"
+#include "baci_poromultiphase_scatra_artery_coupling_surfbased.hpp"
 
-#include "baci_global_data.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_poromultiphase_scatra_artery_coupling_pair.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_poromultiphase_scatra_artery_coupling_pair.hpp"
 
 #include <Epetra_MultiVector.h>
 

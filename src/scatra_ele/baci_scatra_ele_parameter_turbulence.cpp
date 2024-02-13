@@ -14,11 +14,11 @@ general static parameters required for scalar transport element evaluation.
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_ele_parameter_turbulence.H"
+#include "baci_scatra_ele_parameter_turbulence.hpp"
 
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

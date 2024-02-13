@@ -8,19 +8,19 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_sph_virtual_wall_particle.H"
+#include "baci_particle_interaction_sph_virtual_wall_particle.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_lib_element.H"
-#include "baci_lib_utils.H"
-#include "baci_particle_engine_container.H"
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_interaction_sph_kernel.H"
-#include "baci_particle_interaction_sph_neighbor_pairs.H"
-#include "baci_particle_interaction_utils.H"
-#include "baci_particle_wall_datastate.H"
-#include "baci_particle_wall_interface.H"
-#include "baci_utils_exceptions.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_particle_engine_container.hpp"
+#include "baci_particle_engine_interface.hpp"
+#include "baci_particle_interaction_sph_kernel.hpp"
+#include "baci_particle_interaction_sph_neighbor_pairs.hpp"
+#include "baci_particle_interaction_utils.hpp"
+#include "baci_particle_wall_datastate.hpp"
+#include "baci_particle_wall_interface.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

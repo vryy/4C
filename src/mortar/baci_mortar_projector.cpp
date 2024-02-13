@@ -7,19 +7,19 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "baci_mortar_projector.H"
+#include "baci_mortar_projector.hpp"
 
-#include "baci_contact_element.H"
-#include "baci_contact_node.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mortar_calc_utils.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_interface.H"
-#include "baci_mortar_node.H"
+#include "baci_contact_element.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mortar_calc_utils.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_interface.hpp"
+#include "baci_mortar_node.hpp"
 
 BACI_NAMESPACE_OPEN
 

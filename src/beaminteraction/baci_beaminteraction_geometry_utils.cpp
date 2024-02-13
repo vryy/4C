@@ -8,11 +8,11 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_geometry_utils.H"
+#include "baci_beaminteraction_geometry_utils.hpp"
 
-#include "baci_beam3_spatial_discretization_utils.H"
-#include "baci_io_pstream.H"
-#include "baci_utils_fad.H"
+#include "baci_beam3_spatial_discretization_utils.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_utils_fad.hpp"
 
 #include <Sacado.hpp>
 

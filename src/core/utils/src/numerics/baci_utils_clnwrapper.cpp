@@ -7,7 +7,7 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_utils_clnwrapper.H"
+#include "baci_utils_clnwrapper.hpp"
 
 BACI_NAMESPACE_OPEN
 

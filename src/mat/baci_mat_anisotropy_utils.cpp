@@ -7,12 +7,12 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mat_anisotropy_utils.H"
+#include "baci_mat_anisotropy_utils.hpp"
 
-#include "baci_comm_pack_buffer.H"
-#include "baci_comm_parobject.H"
-#include "baci_io_inputreader.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
+#include "baci_comm_pack_buffer.hpp"
+#include "baci_comm_parobject.hpp"
+#include "baci_io_inputreader.hpp"
+#include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
 BACI_NAMESPACE_OPEN
 

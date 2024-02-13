@@ -10,11 +10,11 @@ passive-scalar transport
 
 *----------------------------------------------------------------------*/
 
-#include "baci_scatra_turbulence_hit_scalar_forcing.H"
+#include "baci_scatra_turbulence_hit_scalar_forcing.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_scatra_timint_genalpha.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_scatra_timint_genalpha.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 #include <complex>
 

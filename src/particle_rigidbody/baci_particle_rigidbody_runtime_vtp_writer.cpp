@@ -8,13 +8,13 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_rigidbody_runtime_vtp_writer.H"
+#include "baci_particle_rigidbody_runtime_vtp_writer.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_visualization_manager.H"
-#include "baci_particle_rigidbody_datastate.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_visualization_manager.hpp"
+#include "baci_particle_rigidbody_datastate.hpp"
 
 BACI_NAMESPACE_OPEN
 

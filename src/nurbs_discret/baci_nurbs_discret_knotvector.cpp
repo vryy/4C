@@ -8,7 +8,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_nurbs_discret_knotvector.H"
+#include "baci_nurbs_discret_knotvector.hpp"
 
 BACI_NAMESPACE_OPEN
 

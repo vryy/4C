@@ -7,14 +7,14 @@
 \level 2
 */
 
-#include "baci_adapter_str_fbiwrapper.H"
+#include "baci_adapter_str_fbiwrapper.hpp"
 
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_fsi_str_model_evaluator_partitioned.H"
-#include "baci_global_data.H"
-#include "baci_structure_aux.H"
-#include "baci_structure_new_timint_basedataio.H"
-#include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_fsi_str_model_evaluator_partitioned.hpp"
+#include "baci_global_data.hpp"
+#include "baci_structure_aux.hpp"
+#include "baci_structure_new_timint_basedataio.hpp"
+#include "baci_structure_new_timint_basedataio_runtime_vtk_output.hpp"
 
 BACI_NAMESPACE_OPEN
 

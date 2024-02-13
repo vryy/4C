@@ -10,11 +10,11 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_discretization_geometry_integrationcell.H"
+#include "baci_discretization_geometry_integrationcell.hpp"
 
-#include "baci_discretization_geometry_element_coordtrafo.H"
-#include "baci_discretization_geometry_element_volume.H"
-#include "baci_io_gmsh.H"
+#include "baci_discretization_geometry_element_coordtrafo.hpp"
+#include "baci_discretization_geometry_element_volume.hpp"
+#include "baci_io_gmsh.hpp"
 
 BACI_NAMESPACE_OPEN
 

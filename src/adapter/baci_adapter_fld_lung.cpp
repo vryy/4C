@@ -11,17 +11,17 @@ parenchyma balloon
 
 *----------------------------------------------------------------------*/
 
-#include "baci_adapter_fld_lung.H"
+#include "baci_adapter_fld_lung.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
 
 BACI_NAMESPACE_OPEN
 

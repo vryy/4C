@@ -9,15 +9,15 @@
 
 *---------------------------------------------------------------------------*/
 
-#include "baci_linalg_krylov_projector.H"
+#include "baci_linalg_krylov_projector.hpp"
 
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>

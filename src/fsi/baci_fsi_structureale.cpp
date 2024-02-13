@@ -9,17 +9,17 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_structureale.H"
+#include "baci_fsi_structureale.hpp"
 
-#include "baci_adapter_ale_fluid.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_mortar.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_fsi_utils.H"
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_ale_fluid.hpp"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_mortar.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_fsi_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_structure_aux.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

@@ -9,7 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele.H"
+#include "baci_fluid_ele.hpp"
 
 BACI_NAMESPACE_OPEN
 

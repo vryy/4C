@@ -8,21 +8,21 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_global_data.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_fluidporo_multiphase.H"
-#include "baci_mat_list.H"
-#include "baci_mat_structporo.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-#include "baci_so3_poro.H"
-#include "baci_so3_poro_eletypes.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_utils_function.H"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_fluidporo_multiphase.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
+#include "baci_so3_poro.hpp"
+#include "baci_so3_poro_eletypes.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

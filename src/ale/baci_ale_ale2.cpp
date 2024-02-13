@@ -9,14 +9,14 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#include "baci_ale_ale2.H"
+#include "baci_ale_ale2.hpp"
 
-#include "baci_ale_ale2_nurbs.H"
-#include "baci_comm_utils_factory.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_so3_nullspace.H"
-#include "baci_utils_exceptions.H"
+#include "baci_ale_ale2_nurbs.hpp"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_so3_nullspace.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

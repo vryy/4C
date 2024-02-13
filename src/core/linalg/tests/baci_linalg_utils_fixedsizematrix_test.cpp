@@ -9,8 +9,8 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_utils_fad.H"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_utils_fad.hpp"
 
 BACI_NAMESPACE_OPEN
 

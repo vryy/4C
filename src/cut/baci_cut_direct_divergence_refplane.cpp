@@ -7,13 +7,13 @@ coordinate system
 \level 2
 
  *------------------------------------------------------------------------------------------------*/
-#include "baci_cut_direct_divergence_refplane.H"
+#include "baci_cut_direct_divergence_refplane.hpp"
 
-#include "baci_cut_kernel.H"
-#include "baci_cut_options.H"
-#include "baci_cut_output.H"
-#include "baci_cut_side.H"
-#include "baci_cut_volumecell.H"
+#include "baci_cut_kernel.hpp"
+#include "baci_cut_options.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_side.hpp"
+#include "baci_cut_volumecell.hpp"
 
 BACI_NAMESPACE_OPEN
 

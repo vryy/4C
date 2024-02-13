@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_utils_demangle.H"
+#include "baci_utils_demangle.hpp"
 
 #include <Teuchos_RCPDecl.hpp>
 

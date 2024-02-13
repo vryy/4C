@@ -7,15 +7,15 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_porofluidmultiphase_ele_boundary_calc.H"
+#include "baci_porofluidmultiphase_ele_boundary_calc.hpp"
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_global_data.H"  // for curves and functions
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_porofluidmultiphase_ele_action.H"
-#include "baci_porofluidmultiphase_ele_parameter.H"
-#include "baci_utils_function.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_global_data.hpp"  // for curves and functions
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_porofluidmultiphase_ele_action.hpp"
+#include "baci_porofluidmultiphase_ele_parameter.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

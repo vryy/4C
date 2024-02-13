@@ -10,11 +10,11 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_geometry_pair_element.H"
-#include "baci_geometry_pair_element_faces.H"
-#include "baci_geometry_pair_line_to_surface_patch_geometry_test.H"
-#include "baci_geometry_pair_line_to_surface_patch_results_test.H"
-#include "baci_geometry_pair_scalar_types.H"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_faces.hpp"
+#include "baci_geometry_pair_line_to_surface_patch_geometry_test.hpp"
+#include "baci_geometry_pair_line_to_surface_patch_results_test.hpp"
+#include "baci_geometry_pair_scalar_types.hpp"
 
 #include <Epetra_SerialComm.h>
 

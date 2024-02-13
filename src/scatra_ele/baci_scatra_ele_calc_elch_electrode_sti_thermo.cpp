@@ -8,10 +8,10 @@ within thermodynamic electrodes
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_scatra_ele_calc_elch_electrode_sti_thermo.H"
+#include "baci_scatra_ele_calc_elch_electrode_sti_thermo.hpp"
 
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

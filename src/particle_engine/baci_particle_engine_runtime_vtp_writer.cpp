@@ -8,12 +8,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_runtime_vtp_writer.H"
+#include "baci_particle_engine_runtime_vtp_writer.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_visualization_manager.H"
-#include "baci_utils_exceptions.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_visualization_manager.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

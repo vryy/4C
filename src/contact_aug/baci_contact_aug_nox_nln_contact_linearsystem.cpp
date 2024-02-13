@@ -7,18 +7,18 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_contact_aug_nox_nln_contact_linearsystem.H"  // base class
+#include "baci_contact_aug_nox_nln_contact_linearsystem.hpp"  // base class
 
-#include "baci_contact_abstract_strategy.H"
-#include "baci_inpar_contact.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_mortar_strategy_base.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_interface_jacobian.H"
-#include "baci_solver_nonlin_nox_interface_required.H"
+#include "baci_contact_abstract_strategy.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_linalg_blocksparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_mortar_strategy_base.hpp"
+#include "baci_solver_nonlin_nox_aux.hpp"
+#include "baci_solver_nonlin_nox_interface_jacobian.hpp"
+#include "baci_solver_nonlin_nox_interface_required.hpp"
 
 BACI_NAMESPACE_OPEN
 

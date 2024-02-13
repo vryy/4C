@@ -5,14 +5,14 @@
 \level 3
 */
 
-#include "baci_global_data.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_mat_material.H"
-#include "baci_shell7p_ele.H"
-#include "baci_shell7p_ele_calc_interface.H"
-#include "baci_shell7p_ele_neumann_evaluator.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_global_data.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_shell7p_ele.hpp"
+#include "baci_shell7p_ele_calc_interface.hpp"
+#include "baci_shell7p_ele_neumann_evaluator.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <Teuchos_RCP.hpp>
 

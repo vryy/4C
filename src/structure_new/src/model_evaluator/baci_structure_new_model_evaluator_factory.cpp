@@ -10,21 +10,21 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_model_evaluator_factory.H"
+#include "baci_structure_new_model_evaluator_factory.hpp"
 
-#include "baci_beamcontact_str_model_evaluator_beaminteraction_old.H"
-#include "baci_beaminteraction_str_model_evaluator.H"
-#include "baci_browniandyn_str_model_evaluator.H"
-#include "baci_cardiovascular0d_structure_new_model_evaluator.H"
-#include "baci_constraint_framework_model_evaluator.H"
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_struct_ale_str_model_evaluator.H"
-#include "baci_structure_new_model_evaluator_contact.H"
-#include "baci_structure_new_model_evaluator_lagpenconstraint.H"
-#include "baci_structure_new_model_evaluator_meshtying.H"
-#include "baci_structure_new_model_evaluator_springdashpot.H"
-#include "baci_structure_new_model_evaluator_structure.H"
+#include "baci_beamcontact_str_model_evaluator_beaminteraction_old.hpp"
+#include "baci_beaminteraction_str_model_evaluator.hpp"
+#include "baci_browniandyn_str_model_evaluator.hpp"
+#include "baci_cardiovascular0d_structure_new_model_evaluator.hpp"
+#include "baci_constraint_framework_model_evaluator.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_struct_ale_str_model_evaluator.hpp"
+#include "baci_structure_new_model_evaluator_contact.hpp"
+#include "baci_structure_new_model_evaluator_lagpenconstraint.hpp"
+#include "baci_structure_new_model_evaluator_meshtying.hpp"
+#include "baci_structure_new_model_evaluator_springdashpot.hpp"
+#include "baci_structure_new_model_evaluator_structure.hpp"
 
 BACI_NAMESPACE_OPEN
 

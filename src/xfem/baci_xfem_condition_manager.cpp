@@ -9,14 +9,14 @@ builds the bridge between the xfluid class and the cut-library
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_xfem_condition_manager.H"
+#include "baci_xfem_condition_manager.hpp"
 
-#include "baci_cut_volumecell.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_xfem_utils.H"
+#include "baci_cut_volumecell.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_xfem_utils.hpp"
 
 #include <Epetra_IntVector.h>
 

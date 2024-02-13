@@ -7,13 +7,13 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_scatra_timint_meshtying_strategy_std.H"
+#include "baci_scatra_timint_meshtying_strategy_std.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

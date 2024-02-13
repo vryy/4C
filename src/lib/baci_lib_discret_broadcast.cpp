@@ -9,13 +9,13 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_comm_exporter.H"
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_nurbs_discret.H"
-#include "baci_rebalance.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_rebalance.hpp"
 
 #include <Epetra_FECrsGraph.h>
 

@@ -8,25 +8,25 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_scatra_ele_calc_aniso.H"
+#include "baci_scatra_ele_calc_aniso.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_gder2.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_global_data.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_list.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_mat_scatra_mat_aniso.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-#include "baci_scatra_ele.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_gder2.hpp"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_mat_scatra_mat_aniso.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

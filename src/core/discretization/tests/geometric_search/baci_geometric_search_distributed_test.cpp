@@ -9,14 +9,14 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <array>
 
 #ifdef BACI_WITH_ARBORX
 
-#include "baci_discretization_geometric_search_distributed_tree.H"
-#include "baci_geometric_search_create_bounding_volumes_test.H"
+#include "baci_discretization_geometric_search_distributed_tree.hpp"
+#include "baci_geometric_search_create_bounding_volumes_test.hpp"
 
 #include <Epetra_MpiComm.h>
 

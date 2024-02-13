@@ -7,9 +7,9 @@ continuum mechanics for finite element analysis", Cambridge, 1997.
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_couplogneohooke.H"
+#include "baci_matelast_couplogneohooke.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

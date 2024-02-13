@@ -11,9 +11,9 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_mat_par_material.H"
-#include "baci_matelast_isoogden.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_mat_par_material.hpp"
+#include "baci_matelast_isoogden.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 namespace
 {

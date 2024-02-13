@@ -8,10 +8,10 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_w1_scatra.H"
+#include "baci_w1_scatra.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

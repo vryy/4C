@@ -8,22 +8,22 @@
 */
 /*------------------------------------------------------*/
 
-#include "baci_fsi_fluidfluidmonolithic_fluidsplit.H"
+#include "baci_fsi_fluidfluidmonolithic_fluidsplit.hpp"
 
-#include "baci_adapter_ale_xffsi.H"
-#include "baci_adapter_fld_fluid_fluid_fsi.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_ale_utils_mapextractor.H"
-#include "baci_constraint_manager.H"
-#include "baci_coupling_adapter.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_global_data.H"
-#include "baci_inpar_ale.H"
-#include "baci_inpar_fsi.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_ale_xffsi.hpp"
+#include "baci_adapter_fld_fluid_fluid_fsi.hpp"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_ale_utils_mapextractor.hpp"
+#include "baci_constraint_manager.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_ale.hpp"
+#include "baci_inpar_fsi.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_structure_aux.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,10 +9,10 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_contact_aug_steepest_ascent_interface.H"
+#include "baci_contact_aug_steepest_ascent_interface.hpp"
 
-#include "baci_contact_node.H"
-#include "baci_lib_discret.H"
+#include "baci_contact_node.hpp"
+#include "baci_lib_discret.hpp"
 
 BACI_NAMESPACE_OPEN
 

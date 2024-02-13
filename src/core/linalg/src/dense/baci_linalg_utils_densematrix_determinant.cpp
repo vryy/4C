@@ -7,9 +7,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linalg_utils_densematrix_determinant.H"
+#include "baci_linalg_utils_densematrix_determinant.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_LAPACK.hpp>
 

@@ -9,13 +9,13 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_structure_new_nln_solver_factory.H"
+#include "baci_structure_new_nln_solver_factory.hpp"
 
-#include "baci_structure_new_nln_solver_fullnewton.H"
-#include "baci_structure_new_nln_solver_nox.H"
-#include "baci_structure_new_nln_solver_ptc.H"
-#include "baci_structure_new_nln_solver_singlestep.H"
-#include "baci_structure_new_nln_solver_uzawa.H"
+#include "baci_structure_new_nln_solver_fullnewton.hpp"
+#include "baci_structure_new_nln_solver_nox.hpp"
+#include "baci_structure_new_nln_solver_ptc.hpp"
+#include "baci_structure_new_nln_solver_singlestep.hpp"
+#include "baci_structure_new_nln_solver_uzawa.hpp"
 
 BACI_NAMESPACE_OPEN
 

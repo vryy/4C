@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_beamcontact_beam3contactinterface.H"
+#include "baci_beamcontact_beam3contactinterface.hpp"
 
-#include "baci_beamcontact_beam3contact.H"
-#include "baci_beamcontact_beam3contactnew.H"
-#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
-#include "baci_inpar_beamcontact.H"
-#include "baci_lib_element.H"
+#include "baci_beamcontact_beam3contact.hpp"
+#include "baci_beamcontact_beam3contactnew.hpp"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.hpp"
+#include "baci_inpar_beamcontact.hpp"
+#include "baci_lib_element.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -6,13 +6,13 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_fsi_xfem_XFFcoupling_manager.H"
+#include "baci_fsi_xfem_XFFcoupling_manager.hpp"
 
-#include "baci_fluid_xfluid.H"
-#include "baci_lib_discret_xfem.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_xfem_condition_manager.H"
+#include "baci_fluid_xfluid.hpp"
+#include "baci_lib_discret_xfem.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_xfem_condition_manager.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -3,11 +3,11 @@
 \level 0
 */
 
-#include "baci_utils_function_of_time.H"
+#include "baci_utils_function_of_time.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_symbolic_expression.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_symbolic_expression.hpp"
 
 BACI_NAMESPACE_OPEN
 

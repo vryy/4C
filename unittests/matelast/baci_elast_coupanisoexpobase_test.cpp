@@ -11,12 +11,12 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_fixedsizematrix_generators.H"
-#include "baci_linalg_fixedsizematrix_voigt_notation.H"
-#include "baci_mat_anisotropy.H"
-#include "baci_mat_service.H"
-#include "baci_matelast_coupanisoexpo.H"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_linalg_fixedsizematrix_generators.hpp"
+#include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_mat_anisotropy.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_matelast_coupanisoexpo.hpp"
 
 #include <Teuchos_RCPDecl.hpp>
 

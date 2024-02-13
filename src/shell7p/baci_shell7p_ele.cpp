@@ -4,15 +4,15 @@
 \level 3
 */
 
-#include "baci_shell7p_ele.H"
+#include "baci_shell7p_ele.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_lib_discret.H"
-#include "baci_mat_so3_material.H"
-#include "baci_shell7p_ele_factory.H"
-#include "baci_shell7p_ele_interface_serializable.H"
-#include "baci_shell7p_line.H"
-#include "baci_shell7p_utils.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_shell7p_ele_factory.hpp"
+#include "baci_shell7p_ele_interface_serializable.hpp"
+#include "baci_shell7p_line.hpp"
+#include "baci_shell7p_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

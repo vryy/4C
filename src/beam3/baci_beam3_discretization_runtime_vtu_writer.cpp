@@ -9,19 +9,19 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 /* headers */
-#include "baci_beam3_discretization_runtime_vtu_writer.H"
+#include "baci_beam3_discretization_runtime_vtu_writer.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_beam3_reissner.H"
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_periodic_boundingbox.H"
-#include "baci_io_control.H"
-#include "baci_io_discretization_visualization_writer_mesh.H"
-#include "baci_io_visualization_manager.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beam3_base.hpp"
+#include "baci_beam3_reissner.hpp"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_periodic_boundingbox.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_discretization_visualization_writer_mesh.hpp"
+#include "baci_io_visualization_manager.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
 

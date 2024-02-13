@@ -8,12 +8,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_dem_history_pairs.H"
+#include "baci_particle_interaction_dem_history_pairs.hpp"
 
-#include "baci_comm_pack_buffer.H"
-#include "baci_io.H"
-#include "baci_particle_engine_communication_utils.H"
-#include "baci_particle_engine_interface.H"
+#include "baci_comm_pack_buffer.hpp"
+#include "baci_io.hpp"
+#include "baci_particle_engine_communication_utils.hpp"
+#include "baci_particle_engine_interface.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

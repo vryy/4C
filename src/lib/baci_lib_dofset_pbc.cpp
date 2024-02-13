@@ -10,12 +10,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_dofset_pbc.H"
+#include "baci_lib_dofset_pbc.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_lib_node.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 BACI_NAMESPACE_OPEN
 

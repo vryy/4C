@@ -9,13 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_adapter_str_poro_wrapper.H"
+#include "baci_adapter_str_poro_wrapper.hpp"
 
-#include "baci_adapter_fld_poro.H"
-#include "baci_adapter_str_fpsiwrapper.H"
-#include "baci_global_data.H"
-#include "baci_poroelast_monolithic.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_fld_poro.hpp"
+#include "baci_adapter_str_fpsiwrapper.hpp"
+#include "baci_global_data.hpp"
+#include "baci_poroelast_monolithic.hpp"
+#include "baci_structure_aux.hpp"
 
 BACI_NAMESPACE_OPEN
 

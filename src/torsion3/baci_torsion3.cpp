@@ -8,12 +8,12 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_torsion3.H"
+#include "baci_torsion3.hpp"
 
-#include "baci_io_linedefinition.H"
-#include "baci_so3_nullspace.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_so3_nullspace.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

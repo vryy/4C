@@ -9,22 +9,22 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_calc.H"
-#include "baci_fluid_ele_factory.H"
-#include "baci_fluid_ele_parameter.H"
-#include "baci_fluid_ele_parameter_timint.H"
-#include "baci_fluid_rotsym_periodicbc.H"
-#include "baci_global_data.H"
-#include "baci_immersed_problem_immersed_base.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_mat_fluid_linear_density_viscosity.H"
-#include "baci_mat_fluid_murnaghantait.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-#include "baci_utils_function.H"
+#include "baci_fluid_ele.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_calc.hpp"
+#include "baci_fluid_ele_factory.hpp"
+#include "baci_fluid_ele_parameter.hpp"
+#include "baci_fluid_ele_parameter_timint.hpp"
+#include "baci_fluid_rotsym_periodicbc.hpp"
+#include "baci_global_data.hpp"
+#include "baci_immersed_problem_immersed_base.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_mat_fluid_linear_density_viscosity.hpp"
+#include "baci_mat_fluid_murnaghantait.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Sacado.hpp>
 

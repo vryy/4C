@@ -9,11 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_linear_solver_amgnxn_hierarchies.H"
+#include "baci_linear_solver_amgnxn_hierarchies.hpp"
 
-#include "baci_linalg_multiply.H"
-#include "baci_linear_solver_amgnxn_vcycle.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_multiply.hpp"
+#include "baci_linear_solver_amgnxn_vcycle.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <EpetraExt_RowMatrixOut.h>
 #include <MueLu_EpetraOperator.hpp>

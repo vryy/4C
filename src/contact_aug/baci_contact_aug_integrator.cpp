@@ -8,16 +8,16 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_contact_aug_integrator.H"
+#include "baci_contact_aug_integrator.hpp"
 
-#include "baci_contact_aug_contact_integrator_utils.H"
-#include "baci_contact_aug_element_utils.H"
-#include "baci_contact_element.H"
-#include "baci_contact_node.H"
-#include "baci_contact_paramsinterface.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_mortar_coupling3d_classes.H"
+#include "baci_contact_aug_contact_integrator_utils.hpp"
+#include "baci_contact_aug_element_utils.hpp"
+#include "baci_contact_element.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_contact_paramsinterface.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_mortar_coupling3d_classes.hpp"
 
 #include <Epetra_Map.h>
 #include <Teuchos_TimeMonitor.hpp>
@@ -1137,4 +1137,4 @@ CONTACT::AUG::IntegratorGeneric::Create3D<CORE::FE::CellType::nurbs9, CORE::FE::
 
 BACI_NAMESPACE_CLOSE
 
-#include "baci_contact_aug_integrator.inst.H"
+#include "baci_contact_aug_integrator.inst.hpp"

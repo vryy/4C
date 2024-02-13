@@ -8,9 +8,9 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_cut_edge.H"
-#include "baci_cut_element.H"
-#include "baci_cut_volumecell.H"
+#include "baci_cut_edge.hpp"
+#include "baci_cut_element.hpp"
+#include "baci_cut_volumecell.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

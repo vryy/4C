@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_linear_solver_preconditioner_ifpack.H"
+#include "baci_linear_solver_preconditioner_ifpack.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

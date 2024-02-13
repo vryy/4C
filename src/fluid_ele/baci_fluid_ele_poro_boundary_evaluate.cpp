@@ -9,11 +9,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_boundary_calc.H"
-#include "baci_fluid_ele_boundary_factory.H"
-#include "baci_fluid_ele_poro.H"
-#include "baci_inpar_fluid.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_ele_boundary_calc.hpp"
+#include "baci_fluid_ele_boundary_factory.hpp"
+#include "baci_fluid_ele_poro.hpp"
+#include "baci_inpar_fluid.hpp"
 
 BACI_NAMESPACE_OPEN
 

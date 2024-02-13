@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_overlapprec_fsiamg.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_preconditioner_linalg.H"
+#include "baci_fsi_overlapprec_fsiamg.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_linear_solver_preconditioner_linalg.hpp"
 
 #include <EpetraExt_SolverMap_CrsMatrix.h>
 #include <MLAPI_Expressions.h>

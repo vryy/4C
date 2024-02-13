@@ -11,11 +11,11 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_inpar_fbi.H"
+#include "baci_inpar_fbi.hpp"
 
-#include "baci_inpar_geometry_pair.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_conditiondefinition.H"
+#include "baci_inpar_geometry_pair.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_conditiondefinition.hpp"
 
 BACI_NAMESPACE_OPEN
 

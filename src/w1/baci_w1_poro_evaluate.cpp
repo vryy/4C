@@ -9,16 +9,16 @@
 /*---------------------------------------------------------------------------*/
 
 
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_fluidporo_multiphase.H"
-#include "baci_mat_list.H"
-#include "baci_mat_structporo.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_w1_poro.H"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_fluidporo_multiphase.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_nurbs_discret_nurbs_utils.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_w1_poro.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

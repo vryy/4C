@@ -8,21 +8,21 @@ of two MORTAR::Elements in 1D and 2D
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mortar_integrator.H"
+#include "baci_mortar_integrator.hpp"
 
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_lib_element.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_mortar_calc_utils.H"
-#include "baci_mortar_coupling3d_classes.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_projector.H"
-#include "baci_mortar_shape_utils.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_mortar_calc_utils.hpp"
+#include "baci_mortar_coupling3d_classes.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_node.hpp"
+#include "baci_mortar_projector.hpp"
+#include "baci_mortar_shape_utils.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

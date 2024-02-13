@@ -9,17 +9,17 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_fs3i_dyn.H"
+#include "baci_fs3i_dyn.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_fs3i.H"
-#include "baci_fs3i_ac_fsi.H"
-#include "baci_fs3i_biofilm_fsi.H"
-#include "baci_fs3i_fps3i_partitioned_1wc.H"
-#include "baci_fs3i_partitioned_1wc.H"
-#include "baci_fs3i_partitioned_2wc.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
+#include "baci_comm_utils.hpp"
+#include "baci_fs3i.hpp"
+#include "baci_fs3i_ac_fsi.hpp"
+#include "baci_fs3i_biofilm_fsi.hpp"
+#include "baci_fs3i_fps3i_partitioned_1wc.hpp"
+#include "baci_fs3i_partitioned_1wc.hpp"
+#include "baci_fs3i_partitioned_2wc.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

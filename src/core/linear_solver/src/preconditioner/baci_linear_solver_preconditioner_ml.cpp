@@ -10,10 +10,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linear_solver_preconditioner_ml.H"
+#include "baci_linear_solver_preconditioner_ml.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <ml_common.h>
 #include <ml_epetra.h>

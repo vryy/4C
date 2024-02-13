@@ -9,10 +9,10 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_io_linedefinition.H"
-#include "baci_lib_discret.H"
-#include "baci_red_airways_elementbase.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_red_airways_elementbase.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,9 +8,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_xfem_coupling_mesh_coupled_levelset.H"
+#include "baci_xfem_coupling_mesh_coupled_levelset.hpp"
 
-#include "baci_xfem_coupling_mesh.H"
+#include "baci_xfem_coupling_mesh.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -10,13 +10,13 @@
 #define INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP
 
 
-#include "baci_inpar_poromultiphase_scatra.H"
+#include "baci_inpar_poromultiphase_scatra.hpp"
 
-#include "baci_inpar_poroelast.H"
-#include "baci_inpar_scatra.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_conditiondefinition.H"
-#include "baci_linalg_equilibrate.H"
+#include "baci_inpar_poroelast.hpp"
+#include "baci_inpar_scatra.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_lib_conditiondefinition.hpp"
+#include "baci_linalg_equilibrate.hpp"
 
 BACI_NAMESPACE_OPEN
 

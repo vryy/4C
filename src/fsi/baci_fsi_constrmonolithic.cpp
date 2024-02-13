@@ -9,24 +9,24 @@
 
 /*----------------------------------------------------------------------------*/
 
-#include "baci_fsi_constrmonolithic.H"
+#include "baci_fsi_constrmonolithic.hpp"
 
-#include "baci_adapter_ale_fsi.H"
-#include "baci_adapter_fld_fluid_fsi.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_str_structure.H"
-#include "baci_ale_utils_mapextractor.H"
-#include "baci_constraint_manager.H"
-#include "baci_coupling_adapter.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_fsi_overlapprec_fsiamg.H"
-#include "baci_fsi_statustest.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fsi.H"
-#include "baci_io_control.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_structure_aux.H"
+#include "baci_adapter_ale_fsi.hpp"
+#include "baci_adapter_fld_fluid_fsi.hpp"
+#include "baci_adapter_str_fsiwrapper.hpp"
+#include "baci_adapter_str_structure.hpp"
+#include "baci_ale_utils_mapextractor.hpp"
+#include "baci_constraint_manager.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_fsi_overlapprec_fsiamg.hpp"
+#include "baci_fsi_statustest.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fsi.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_structure_aux.hpp"
 
 #include <NOX_Epetra_LinearSystem.H>
 #include <NOX_Epetra_LinearSystem_AztecOO.H>

@@ -8,7 +8,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_constraint_framework_model_evaluator.H"
+#include "baci_constraint_framework_model_evaluator.hpp"
 
 BACI_NAMESPACE_OPEN
 

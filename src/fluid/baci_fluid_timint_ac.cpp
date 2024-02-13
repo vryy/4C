@@ -9,10 +9,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_timint_ac.H"
+#include "baci_fluid_timint_ac.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
 
 BACI_NAMESPACE_OPEN
 

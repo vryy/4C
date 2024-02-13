@@ -7,23 +7,23 @@
 */
 
 
-#include "baci_beaminteraction_conditions.H"
+#include "baci_beaminteraction_conditions.hpp"
 
-#include "baci_beaminteraction_beam_to_beam_contact_condition.H"
-#include "baci_beaminteraction_beam_to_beam_point_coupling_pair.H"
-#include "baci_beaminteraction_beam_to_beam_point_coupling_pair_condition.H"
-#include "baci_beaminteraction_beam_to_solid_conditions.H"
-#include "baci_beaminteraction_beam_to_solid_surface_contact_params.H"
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_geometry_pair_element.H"
-#include "baci_geometry_pair_evaluation_data_base.H"
-#include "baci_inpar_beam_to_solid.H"
-#include "baci_lib_condition.H"
-#include "baci_lib_discret.H"
-#include "baci_so3_base.H"
+#include "baci_beaminteraction_beam_to_beam_contact_condition.hpp"
+#include "baci_beaminteraction_beam_to_beam_point_coupling_pair.hpp"
+#include "baci_beaminteraction_beam_to_beam_point_coupling_pair_condition.hpp"
+#include "baci_beaminteraction_beam_to_solid_conditions.hpp"
+#include "baci_beaminteraction_beam_to_solid_surface_contact_params.hpp"
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_evaluation_data_base.hpp"
+#include "baci_inpar_beam_to_solid.hpp"
+#include "baci_lib_condition.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_so3_base.hpp"
 
 BACI_NAMESPACE_OPEN
 

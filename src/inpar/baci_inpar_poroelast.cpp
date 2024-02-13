@@ -11,11 +11,11 @@
 
 
 
-#include "baci_inpar_poroelast.H"
+#include "baci_inpar_poroelast.hpp"
 
-#include "baci_inpar_fluid.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_linalg_equilibrate.H"
+#include "baci_inpar_fluid.hpp"
+#include "baci_inpar_validparameters.hpp"
+#include "baci_linalg_equilibrate.hpp"
 
 BACI_NAMESPACE_OPEN
 

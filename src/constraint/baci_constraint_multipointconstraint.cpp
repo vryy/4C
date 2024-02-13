@@ -7,11 +7,11 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_constraint_multipointconstraint.H"
+#include "baci_constraint_multipointconstraint.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <iostream>
 

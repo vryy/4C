@@ -8,17 +8,17 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#include "baci_nurbs_discret_apply_nurbs_initial_condition.H"
+#include "baci_nurbs_discret_apply_nurbs_initial_condition.hpp"
 
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_nurbs_discret.H"
-#include "baci_utils_function.H"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 

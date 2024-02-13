@@ -9,14 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_link_truss.H"
+#include "baci_beaminteraction_link_truss.hpp"
 
-#include "baci_beaminteraction_link.H"
-#include "baci_comm_utils_factory.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_truss3.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beaminteraction_link.hpp"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_truss3.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
 

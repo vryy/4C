@@ -10,13 +10,13 @@ analysis for supporting processors
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_stru_multi_microstatic_npsupport.H"
+#include "baci_stru_multi_microstatic_npsupport.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_mat_micromaterial.H"
-#include "baci_stru_multi_microstatic.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_micromaterial.hpp"
+#include "baci_stru_multi_microstatic.hpp"
 
 #include <hdf5.h>
 

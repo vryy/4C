@@ -8,19 +8,19 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_scatra_timint_cardiac_monodomain.H"
+#include "baci_scatra_timint_cardiac_monodomain.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_linalg_krylov_projector.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_mat_list.H"
-#include "baci_mat_material.H"
-#include "baci_nurbs_discret.H"
-#include "baci_scatra_ele_action.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_linalg_krylov_projector.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_scatra_ele_action.hpp"
 
 BACI_NAMESPACE_OPEN
 

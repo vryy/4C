@@ -8,10 +8,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_algorithm_gravity.H"
+#include "baci_particle_algorithm_gravity.hpp"
 
-#include "baci_global_data.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_global_data.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 BACI_NAMESPACE_OPEN
 

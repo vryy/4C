@@ -7,9 +7,9 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_cut_memory_manager.H"
+#include "baci_cut_memory_manager.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <algorithm>
 #include <cstdlib>  // for malloc

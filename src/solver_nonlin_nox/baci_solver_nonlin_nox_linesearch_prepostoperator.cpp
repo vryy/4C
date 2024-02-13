@@ -8,7 +8,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_linesearch_prepostoperator.H"
+#include "baci_solver_nonlin_nox_linesearch_prepostoperator.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

@@ -8,11 +8,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_direction_defaultsteptest.H"
+#include "baci_solver_nonlin_nox_direction_defaultsteptest.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>

@@ -9,7 +9,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_io_pstream.H"
+#include "baci_io_pstream.hpp"
 
 #include <Teuchos_oblackholestream.hpp>
 

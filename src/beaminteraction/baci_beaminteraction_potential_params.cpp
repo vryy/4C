@@ -8,12 +8,12 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_potential_params.H"
+#include "baci_beaminteraction_potential_params.hpp"
 
-#include "baci_beaminteraction_potential_runtime_visualization_output_params.H"
-#include "baci_global_data.H"
-#include "baci_inpar_beamcontact.H"
-#include "baci_utils_exceptions.H"
+#include "baci_beaminteraction_potential_runtime_visualization_output_params.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_beamcontact.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

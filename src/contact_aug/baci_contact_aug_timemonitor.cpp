@@ -7,9 +7,9 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_contact_aug_timemonitor.H"
+#include "baci_contact_aug_timemonitor.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_Time.hpp>

@@ -8,9 +8,9 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_adapter_fld_fluid_fsi_msht.H"
+#include "baci_adapter_fld_fluid_fsi_msht.hpp"
 
-#include "baci_fluid_utils_mapextractor.H"
+#include "baci_fluid_utils_mapextractor.hpp"
 
 BACI_NAMESPACE_OPEN
 

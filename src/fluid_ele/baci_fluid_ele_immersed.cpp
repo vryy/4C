@@ -9,9 +9,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_immersed.H"
+#include "baci_fluid_ele_immersed.hpp"
 
-#include "baci_io_linedefinition.H"
+#include "baci_io_linedefinition.hpp"
 
 BACI_NAMESPACE_OPEN
 

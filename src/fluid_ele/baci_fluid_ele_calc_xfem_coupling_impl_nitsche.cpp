@@ -10,9 +10,9 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fluid_ele_calc_xfem_coupling.H"
-#include "baci_fluid_ele_calc_xfem_coupling_impl.H"
-#include "baci_fluid_ele_parameter_xfem.H"
+#include "baci_fluid_ele_calc_xfem_coupling.hpp"
+#include "baci_fluid_ele_calc_xfem_coupling_impl.hpp"
+#include "baci_fluid_ele_parameter_xfem.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

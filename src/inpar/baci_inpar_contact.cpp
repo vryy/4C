@@ -8,10 +8,10 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_inpar_contact.H"
+#include "baci_inpar_contact.hpp"
 
-#include "baci_inpar_structure.H"
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_structure.hpp"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

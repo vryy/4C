@@ -9,13 +9,13 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_adapter_fld_fbi_movingboundary.H"
-#include "baci_adapter_fld_fluid_ale.H"
-#include "baci_adapter_fld_fluid_ale_xfem.H"
-#include "baci_adapter_fld_fluid_immersed.H"
-#include "baci_adapter_fld_fluid_xfem.H"
-#include "baci_global_data.H"
-#include "baci_inpar_validparameters.H"
+#include "baci_adapter_fld_fbi_movingboundary.hpp"
+#include "baci_adapter_fld_fluid_ale.hpp"
+#include "baci_adapter_fld_fluid_ale_xfem.hpp"
+#include "baci_adapter_fld_fluid_immersed.hpp"
+#include "baci_adapter_fld_fluid_xfem.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_validparameters.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

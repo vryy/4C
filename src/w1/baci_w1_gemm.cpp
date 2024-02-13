@@ -14,15 +14,15 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_lib_element.H"
-#include "baci_lib_node.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_mat_stvenantkirchhoff.H"
-#include "baci_w1.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_lib_node.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_mat_stvenantkirchhoff.hpp"
+#include "baci_w1.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

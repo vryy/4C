@@ -6,7 +6,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_constraint_element2.H"
+#include "baci_constraint_element2.hpp"
 
 BACI_NAMESPACE_OPEN
 

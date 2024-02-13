@@ -7,14 +7,14 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_scatra_ele_calc_sti_electrode.H"
+#include "baci_scatra_ele_calc_sti_electrode.hpp"
 
-#include "baci_mat_soret.H"
-#include "baci_scatra_ele_calc_elch_electrode.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_scatra_ele_sti_thermo.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_mat_soret.hpp"
+#include "baci_scatra_ele_calc_elch_electrode.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_scatra_ele_sti_thermo.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

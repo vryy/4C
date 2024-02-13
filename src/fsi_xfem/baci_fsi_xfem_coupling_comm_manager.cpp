@@ -8,16 +8,16 @@ transform matrixes, vectors, ...
 
 *----------------------------------------------------------------------*/
 
-#include "baci_fsi_xfem_coupling_comm_manager.H"
+#include "baci_fsi_xfem_coupling_comm_manager.hpp"
 
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_lib_condition_selector.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_lib_condition_selector.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_linalg_matrixtransform.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <iostream>
 #include <string>

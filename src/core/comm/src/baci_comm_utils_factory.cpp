@@ -9,9 +9,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_comm_utils_factory.H"
+#include "baci_comm_utils_factory.hpp"
 
-#include "baci_comm_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.hpp"
 
 BACI_NAMESPACE_OPEN
 

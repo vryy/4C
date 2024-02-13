@@ -7,9 +7,9 @@ mechanics", 2001.
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coupblatzko.H"
+#include "baci_matelast_coupblatzko.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

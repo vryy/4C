@@ -7,13 +7,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_contact_node.H"
+#include "baci_contact_node.hpp"
 
-#include "baci_contact_aug_contact_integrator_utils.H"
-#include "baci_contact_defines.H"
-#include "baci_contact_element.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_utils_exceptions.H"
+#include "baci_contact_aug_contact_integrator_utils.hpp"
+#include "baci_contact_defines.hpp"
+#include "baci_contact_element.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

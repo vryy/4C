@@ -8,13 +8,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_global_data.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_scatra_ele_calc.H"
-#include "baci_scatra_ele_calc_utils.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_function.H"
+#include "baci_global_data.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_scatra_ele_calc.hpp"
+#include "baci_scatra_ele_calc_utils.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 

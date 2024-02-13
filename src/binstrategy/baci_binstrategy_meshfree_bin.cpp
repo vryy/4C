@@ -7,9 +7,9 @@
 
 *--------------------------------------------------------------------------*/
 
-#include "baci_binstrategy_meshfree_bin.H"
+#include "baci_binstrategy_meshfree_bin.hpp"
 
-#include "baci_mortar_element.H"
+#include "baci_mortar_element.hpp"
 
 BACI_NAMESPACE_OPEN
 

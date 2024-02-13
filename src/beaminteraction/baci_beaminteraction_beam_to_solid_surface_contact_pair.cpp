@@ -7,20 +7,20 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_surface_contact_pair.H"
+#include "baci_beaminteraction_beam_to_solid_surface_contact_pair.hpp"
 
-#include "baci_beaminteraction_beam_to_solid_surface_contact_params.H"
-#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.H"
-#include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_geometry_pair_element_faces.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_factory.H"
-#include "baci_geometry_pair_line_to_surface.H"
-#include "baci_geometry_pair_scalar_types.H"
+#include "baci_beaminteraction_beam_to_solid_surface_contact_params.hpp"
+#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"
+#include "baci_beaminteraction_beam_to_solid_utils.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair_element_faces.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_factory.hpp"
+#include "baci_geometry_pair_line_to_surface.hpp"
+#include "baci_geometry_pair_scalar_types.hpp"
 
 #include <Epetra_FEVector.h>
 

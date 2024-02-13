@@ -8,9 +8,9 @@
 
 // TODO replace me by EpetraExt routines
 // includes for MLMultiply...
-#include "baci_linalg_multiply.H"
+#include "baci_linalg_multiply.hpp"
 
-#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_sparsematrix.hpp"
 
 #include <EpetraExt_Transpose_RowMatrix.h>
 #include <ml_MultiLevelPreconditioner.h>

@@ -10,10 +10,10 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_linesearch_factory.H"  // class definition
+#include "baci_solver_nonlin_nox_linesearch_factory.hpp"  // class definition
 
-#include "baci_solver_nonlin_nox_linesearch_backtrack.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_linesearch_backtrack.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <NOX_Common.H>
 #include <NOX_LineSearch_FullStep.H>

@@ -8,13 +8,13 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_linalg_matrixtransform.H"
+#include "baci_linalg_matrixtransform.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_utils_exceptions.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_coupling_adapter.hpp"
+#include "baci_coupling_adapter_converter.hpp"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <iterator>
 #include <vector>

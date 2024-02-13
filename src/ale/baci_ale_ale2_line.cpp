@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#include "baci_ale_ale2.H"
-#include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
+#include "baci_ale_ale2.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

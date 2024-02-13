@@ -8,10 +8,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_coloredgraph.H"
+#include "baci_cut_coloredgraph.hpp"
 
-#include "baci_cut_facet.H"
-#include "baci_cut_output.H"
+#include "baci_cut_facet.hpp"
+#include "baci_cut_output.hpp"
 
 #include <algorithm>
 #include <fstream>

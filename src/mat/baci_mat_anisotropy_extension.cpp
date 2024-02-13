@@ -8,10 +8,10 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_mat_anisotropy_extension.H"
+#include "baci_mat_anisotropy_extension.hpp"
 
-#include "baci_comm_parobject.H"
-#include "baci_mat_anisotropy_utils.H"
+#include "baci_comm_parobject.hpp"
+#include "baci_mat_anisotropy_utils.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

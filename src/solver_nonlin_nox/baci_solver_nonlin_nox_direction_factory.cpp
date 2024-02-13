@@ -8,9 +8,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_direction_factory.H"
+#include "baci_solver_nonlin_nox_direction_factory.hpp"
 
-#include "baci_solver_nonlin_nox_direction_modified_newton.H"
+#include "baci_solver_nonlin_nox_direction_modified_newton.hpp"
 
 BACI_NAMESPACE_OPEN
 

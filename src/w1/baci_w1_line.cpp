@@ -8,10 +8,10 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_utils_exceptions.H"
-#include "baci_w1.H"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_w1.hpp"
 
 BACI_NAMESPACE_OPEN
 

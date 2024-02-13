@@ -8,7 +8,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_so3_hex8_determinant_analysis.H"
+#include "baci_so3_hex8_determinant_analysis.hpp"
 
 #include <Teuchos_LAPACK.hpp>
 

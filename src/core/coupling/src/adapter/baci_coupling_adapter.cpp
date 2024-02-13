@@ -9,11 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter.hpp"
 
-#include "baci_coupling_matchingoctree.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_coupling_matchingoctree.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
 
 #include <Epetra_IntVector.h>
 

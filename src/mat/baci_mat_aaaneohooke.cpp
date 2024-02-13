@@ -14,14 +14,14 @@ the input line should read
 
 *----------------------------------------------------------------------*/
 
-#include "baci_mat_aaaneohooke.H"
+#include "baci_mat_aaaneohooke.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_io_pstream.H"
-#include "baci_lib_discret.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -10,14 +10,14 @@ be directly assembled into the global matrices.
 */
 
 
-#include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
+#include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.hpp"
 
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_beaminteraction_str_model_evaluator_datastate.H"
-#include "baci_lib_element.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_beaminteraction_str_model_evaluator_datastate.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
 
 BACI_NAMESPACE_OPEN
 

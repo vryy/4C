@@ -7,23 +7,23 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poroelast_scatra_utils_clonestrategy.H"
+#include "baci_poroelast_scatra_utils_clonestrategy.hpp"
 
-#include "baci_adapter_structure_scatra_ele.H"
-#include "baci_global_data.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_structporo.H"
-#include "baci_poroelast_scatra_utils.H"
-#include "baci_poroelast_utils_clonestrategy.H"
-#include "baci_scatra_ele.H"
-#include "baci_so3_nurbs27.H"
-#include "baci_so3_poro_p1_scatra.H"
-#include "baci_so3_poro_scatra.H"
-#include "baci_so3_scatra.H"
-#include "baci_solid_poro_ele.H"
-#include "baci_w1_poro_p1_scatra.H"
-#include "baci_w1_poro_scatra.H"
+#include "baci_adapter_structure_scatra_ele.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_fluidporo.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_structporo.hpp"
+#include "baci_poroelast_scatra_utils.hpp"
+#include "baci_poroelast_utils_clonestrategy.hpp"
+#include "baci_scatra_ele.hpp"
+#include "baci_so3_nurbs27.hpp"
+#include "baci_so3_poro_p1_scatra.hpp"
+#include "baci_so3_poro_scatra.hpp"
+#include "baci_so3_scatra.hpp"
+#include "baci_solid_poro_ele.hpp"
+#include "baci_w1_poro_p1_scatra.hpp"
+#include "baci_w1_poro_scatra.hpp"
 
 BACI_NAMESPACE_OPEN
 

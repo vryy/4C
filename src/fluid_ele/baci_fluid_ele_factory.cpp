@@ -11,18 +11,18 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fluid_ele_factory.H"
+#include "baci_fluid_ele_factory.hpp"
 
-#include "baci_fluid_ele_calc_hdg.H"
-#include "baci_fluid_ele_calc_hdg_weak_comp.H"
-#include "baci_fluid_ele_calc_immersed.H"
-#include "baci_fluid_ele_calc_loma.H"
-#include "baci_fluid_ele_calc_poro.H"
-#include "baci_fluid_ele_calc_poro_p1.H"
-#include "baci_fluid_ele_calc_std.H"
-#include "baci_fluid_ele_calc_xfem.H"
-#include "baci_fluid_ele_calc_xwall.H"
-#include "baci_fluid_ele_interface.H"
+#include "baci_fluid_ele_calc_hdg.hpp"
+#include "baci_fluid_ele_calc_hdg_weak_comp.hpp"
+#include "baci_fluid_ele_calc_immersed.hpp"
+#include "baci_fluid_ele_calc_loma.hpp"
+#include "baci_fluid_ele_calc_poro.hpp"
+#include "baci_fluid_ele_calc_poro_p1.hpp"
+#include "baci_fluid_ele_calc_std.hpp"
+#include "baci_fluid_ele_calc_xfem.hpp"
+#include "baci_fluid_ele_calc_xwall.hpp"
+#include "baci_fluid_ele_interface.hpp"
 
 BACI_NAMESPACE_OPEN
 

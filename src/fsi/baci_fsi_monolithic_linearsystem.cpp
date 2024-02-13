@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fsi_monolithic_linearsystem.H"
+#include "baci_fsi_monolithic_linearsystem.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 #include <AztecOO.h>
 #include <AztecOO_Operator.h>

@@ -9,10 +9,10 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_mat_arrhenius_spec.H"
+#include "baci_mat_arrhenius_spec.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <vector>
 

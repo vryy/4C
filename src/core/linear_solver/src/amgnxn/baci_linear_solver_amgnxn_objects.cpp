@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linear_solver_amgnxn_objects.H"
+#include "baci_linear_solver_amgnxn_objects.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

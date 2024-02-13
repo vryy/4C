@@ -7,14 +7,14 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_poroelast_scatra_part_2wc.H"
+#include "baci_poroelast_scatra_part_2wc.hpp"
 
-#include "baci_adapter_fld_poro.H"
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_fpsiwrapper.H"
-#include "baci_global_data.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_adapter_fld_poro.hpp"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_adapter_str_fpsiwrapper.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

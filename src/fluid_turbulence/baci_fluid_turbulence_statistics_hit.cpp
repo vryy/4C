@@ -8,14 +8,14 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_fluid_turbulence_statistics_hit.H"
+#include "baci_fluid_turbulence_statistics_hit.hpp"
 
-#include "baci_comm_exporter.H"
-#include "baci_fluid_ele_action.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_mat_newtonianfluid.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_comm_exporter.hpp"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_newtonianfluid.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 #include <complex>
 #include <fstream>

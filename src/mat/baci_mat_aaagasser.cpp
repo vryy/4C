@@ -19,11 +19,11 @@ CABLUM 1.98e-3
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_mat_aaagasser.H"
+#include "baci_mat_aaagasser.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

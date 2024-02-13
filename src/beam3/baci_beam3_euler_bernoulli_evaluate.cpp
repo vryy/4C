@@ -8,19 +8,19 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beam3_euler_bernoulli.H"
-#include "baci_beam3_spatial_discretization_utils.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_global_data.H"
-#include "baci_inpar_browniandyn.H"
-#include "baci_inpar_structure.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_beam3_euler_bernoulli.hpp"
+#include "baci_beam3_spatial_discretization_utils.hpp"
+#include "baci_discretization_fem_general_largerotations.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_browniandyn.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <Sacado.hpp>
 

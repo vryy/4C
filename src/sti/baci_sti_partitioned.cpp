@@ -7,12 +7,12 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_sti_partitioned.H"
+#include "baci_sti_partitioned.hpp"
 
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_scatra_timint_implicit.H"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_scatra_timint_implicit.hpp"
 
 BACI_NAMESPACE_OPEN
 

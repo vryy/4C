@@ -10,11 +10,11 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_structure_new_predict_factory.H"
+#include "baci_structure_new_predict_factory.hpp"
 
 // supported predictor classes
-#include "baci_structure_new_predict_constdisvelaccpress.H"
-#include "baci_structure_new_predict_tangdis.H"
+#include "baci_structure_new_predict_constdisvelaccpress.hpp"
+#include "baci_structure_new_predict_tangdis.hpp"
 
 BACI_NAMESPACE_OPEN
 

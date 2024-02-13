@@ -8,15 +8,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_ssi_clonestrategy.H"
+#include "baci_ssi_clonestrategy.hpp"
 
-#include "baci_adapter_structure_scatra_ele.H"
-#include "baci_global_data.H"
-#include "baci_inpar_ssi.H"
-#include "baci_lib_discret.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_material.H"
-#include "baci_scatra_ele.H"
+#include "baci_adapter_structure_scatra_ele.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_ssi.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_scatra_ele.hpp"
 
 BACI_NAMESPACE_OPEN
 

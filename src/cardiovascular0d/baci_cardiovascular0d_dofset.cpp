@@ -8,9 +8,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cardiovascular0d_dofset.H"
+#include "baci_cardiovascular0d_dofset.hpp"
 
-#include "baci_mor_pod.H"
+#include "baci_mor_pod.hpp"
 
 #include <algorithm>
 #include <iostream>

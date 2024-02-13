@@ -8,17 +8,17 @@
 
 
 
-#include "baci_poromultiphase_scatra_partitioned_twoway.H"
+#include "baci_poromultiphase_scatra_partitioned_twoway.hpp"
 
-#include "baci_adapter_art_net.H"
-#include "baci_adapter_porofluidmultiphase_wrapper.H"
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_wrapper.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_poromultiphase_base.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_artery.H"
+#include "baci_adapter_art_net.hpp"
+#include "baci_adapter_porofluidmultiphase_wrapper.hpp"
+#include "baci_adapter_scatra_base_algorithm.hpp"
+#include "baci_adapter_str_wrapper.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_poromultiphase_base.hpp"
+#include "baci_scatra_timint_implicit.hpp"
+#include "baci_scatra_timint_meshtying_strategy_artery.hpp"
 
 BACI_NAMESPACE_OPEN
 

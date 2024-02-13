@@ -6,12 +6,12 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_mortar_base_binarytree.H"
+#include "baci_mortar_base_binarytree.hpp"
 
-#include "baci_lib_discret.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_node.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_discret.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_node.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

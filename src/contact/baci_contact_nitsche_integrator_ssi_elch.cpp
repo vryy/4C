@@ -8,17 +8,17 @@ electrochemistry
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_contact_nitsche_integrator_ssi_elch.H"
+#include "baci_contact_nitsche_integrator_ssi_elch.hpp"
 
-#include "baci_contact_nitsche_utils.H"
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_mat_electrode.H"
-#include "baci_scatra_ele_boundary_calc_elch_electrode_utils.H"
-#include "baci_scatra_ele_parameter_boundary.H"
-#include "baci_scatra_ele_parameter_elch.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_so3_utils.H"
+#include "baci_contact_nitsche_utils.hpp"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_mat_electrode.hpp"
+#include "baci_scatra_ele_boundary_calc_elch_electrode_utils.hpp"
+#include "baci_scatra_ele_parameter_boundary.hpp"
+#include "baci_scatra_ele_parameter_elch.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_so3_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

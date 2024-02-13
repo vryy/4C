@@ -10,7 +10,7 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
-#include "baci_adapter_ale_wrapper.H"
+#include "baci_adapter_ale_wrapper.hpp"
 
 BACI_NAMESPACE_OPEN
 

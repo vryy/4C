@@ -14,13 +14,13 @@
 /*----------------------------------------------------------------------*
  | headers                                         brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-#include "baci_mat_membrane_active_strain.H"
+#include "baci_mat_membrane_active_strain.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_global_data.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_mat_membrane_elasthyper.H"
-#include "baci_mat_par_bundle.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
+#include "baci_mat_membrane_elasthyper.hpp"
+#include "baci_mat_par_bundle.hpp"
 
 BACI_NAMESPACE_OPEN
 

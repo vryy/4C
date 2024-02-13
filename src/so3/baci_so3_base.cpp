@@ -9,10 +9,10 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_so3_base.H"
+#include "baci_so3_base.hpp"
 
-#include "baci_mat_so3_material.H"
-#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_mat_so3_material.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
 
 BACI_NAMESPACE_OPEN
 

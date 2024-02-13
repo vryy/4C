@@ -9,15 +9,15 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_timint_loma.H"
+#include "baci_fluid_timint_loma.hpp"
 
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_turbulence_statistic_manager.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_sutherland.H"
+#include "baci_fluid_ele_action.hpp"
+#include "baci_fluid_turbulence_statistic_manager.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_sutherland.hpp"
 
 BACI_NAMESPACE_OPEN
 

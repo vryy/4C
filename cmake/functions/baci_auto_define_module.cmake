@@ -22,7 +22,7 @@ function(baci_auto_define_module)
   file(
     GLOB _headers
     LIST_DIRECTORIES false
-    CONFIGURE_DEPENDS *.h *.H
+    CONFIGURE_DEPENDS *.h *.hpp
     )
   # Remove headers that only contain template instantiations
   list(
@@ -30,7 +30,7 @@ function(baci_auto_define_module)
     _headers
     EXCLUDE
     REGEX
-    "\.inst\.[hH]"
+    "_fwd\.h(pp)?|\.inst\.[hH]"
     )
 
   baci_add_library(

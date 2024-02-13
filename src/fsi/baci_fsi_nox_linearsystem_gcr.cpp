@@ -8,10 +8,10 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_nox_linearsystem_gcr.H"
+#include "baci_fsi_nox_linearsystem_gcr.hpp"
 
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LinearProblem.h>

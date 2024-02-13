@@ -7,11 +7,11 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_coupling_volmortar_utils.H"
+#include "baci_coupling_volmortar_utils.hpp"
 
-#include "baci_coupling_volmortar.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
+#include "baci_coupling_volmortar.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

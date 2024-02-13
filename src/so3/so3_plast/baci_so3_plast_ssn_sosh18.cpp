@@ -5,18 +5,18 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_so3_plast_ssn_sosh18.H"
+#include "baci_so3_plast_ssn_sosh18.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linedefinition.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_mat_plasticelasthyper.H"
-#include "baci_so3_hex18.H"
-#include "baci_so3_plast_ssn_eletypes.H"
-#include "baci_so3_sh18.H"
-#include "baci_so3_utils.H"
-#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_mat_plasticelasthyper.hpp"
+#include "baci_so3_hex18.hpp"
+#include "baci_so3_plast_ssn_eletypes.hpp"
+#include "baci_so3_sh18.hpp"
+#include "baci_so3_utils.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
 
 BACI_NAMESPACE_OPEN
 

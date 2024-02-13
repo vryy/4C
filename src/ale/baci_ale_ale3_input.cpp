@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#include "baci_ale_ale3.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_so3_material.H"
+#include "baci_ale_ale3.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_so3_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

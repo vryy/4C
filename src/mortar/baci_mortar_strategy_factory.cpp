@@ -6,18 +6,18 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include "baci_mortar_strategy_factory.H"
+#include "baci_mortar_strategy_factory.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_interface.H"
-#include "baci_nurbs_discret.H"
-#include "baci_nurbs_discret_control_point.H"
-#include "baci_nurbs_discret_knotvector.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_interface.hpp"
+#include "baci_nurbs_discret.hpp"
+#include "baci_nurbs_discret_control_point.hpp"
+#include "baci_nurbs_discret_knotvector.hpp"
+#include "baci_structure_new_timint_basedataglobalstate.hpp"
 
 BACI_NAMESPACE_OPEN
 

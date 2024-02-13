@@ -8,10 +8,10 @@
 
 
 
-#include "baci_inpar_porofluidmultiphase.H"
+#include "baci_inpar_porofluidmultiphase.hpp"
 
-#include "baci_inpar_bio.H"
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_bio.hpp"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

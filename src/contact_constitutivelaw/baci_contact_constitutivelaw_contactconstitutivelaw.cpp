@@ -10,18 +10,18 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
+#include "baci_contact_constitutivelaw_contactconstitutivelaw.hpp"
 
-#include "baci_contact_constitutivelaw_brokenrational_contactconstitutivelaw.H"
-#include "baci_contact_constitutivelaw_bundle.H"
-#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
-#include "baci_contact_constitutivelaw_cubic_contactconstitutivelaw.H"
-#include "baci_contact_constitutivelaw_linear_contactconstitutivelaw.H"
-#include "baci_contact_constitutivelaw_power_contactconstitutivelaw.H"
-#include "baci_global_data.H"
+#include "baci_contact_constitutivelaw_brokenrational_contactconstitutivelaw.hpp"
+#include "baci_contact_constitutivelaw_bundle.hpp"
+#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
+#include "baci_contact_constitutivelaw_cubic_contactconstitutivelaw.hpp"
+#include "baci_contact_constitutivelaw_linear_contactconstitutivelaw.hpp"
+#include "baci_contact_constitutivelaw_power_contactconstitutivelaw.hpp"
+#include "baci_global_data.hpp"
 
 #ifdef BACI_WITH_MIRCO
-#include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
+#include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"
 #endif
 
 BACI_NAMESPACE_OPEN

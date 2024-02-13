@@ -40,10 +40,10 @@ table. This table can be queried for those values quite easily.
 
 */
 
-#include "baci_io_legacy_table.H"
+#include "baci_io_legacy_table.hpp"
 
-#include "baci_io_legacy_types.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io_legacy_types.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <cctype>
 #include <cstring>

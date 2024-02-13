@@ -5,12 +5,12 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include "baci_contact_element.H"
+#include "baci_contact_element.hpp"
 
-#include "baci_contact_friction_node.H"
-#include "baci_contact_node.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
+#include "baci_contact_friction_node.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
 
 #include <array>
 

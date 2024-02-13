@@ -7,11 +7,11 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_crosslinking_params.H"
+#include "baci_beaminteraction_crosslinking_params.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_crosslinkermat.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_crosslinkermat.hpp"
+#include "baci_structure_new_timint_basedataglobalstate.hpp"
 
 BACI_NAMESPACE_OPEN
 

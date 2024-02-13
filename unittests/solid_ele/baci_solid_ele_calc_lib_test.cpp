@@ -8,7 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_calc_lib.hpp"
 
 namespace
 {

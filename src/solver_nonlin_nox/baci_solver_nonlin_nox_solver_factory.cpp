@@ -10,12 +10,12 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_solver_factory.H"
+#include "baci_solver_nonlin_nox_solver_factory.hpp"
 
-#include "baci_solver_nonlin_nox_globaldata.H"
-#include "baci_solver_nonlin_nox_solver_linesearchbased.H"
-#include "baci_solver_nonlin_nox_solver_ptc.H"
-#include "baci_solver_nonlin_nox_solver_singlestep.H"
+#include "baci_solver_nonlin_nox_globaldata.hpp"
+#include "baci_solver_nonlin_nox_solver_linesearchbased.hpp"
+#include "baci_solver_nonlin_nox_solver_ptc.hpp"
+#include "baci_solver_nonlin_nox_solver_singlestep.hpp"
 
 #include <NOX_Solver_Factory.H>
 #include <NOX_Solver_Generic.H>

@@ -11,17 +11,17 @@ Validate a given BACI input file (after all preprocessing steps)
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_pre_exodus_validate.H"
+#include "baci_pre_exodus_validate.hpp"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_global_data.H"
-#include "baci_global_data_read.H"
-#include "baci_global_legacy_module.H"
-#include "baci_io_control.H"  //for writing to the error file
-#include "baci_io_inputreader.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_pre_exodus_soshextrusion.H"  //just temporarly for gmsh-plot
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_global_data.hpp"
+#include "baci_global_data_read.hpp"
+#include "baci_global_legacy_module.hpp"
+#include "baci_io_control.hpp"  //for writing to the error file
+#include "baci_io_inputreader.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_pre_exodus_soshextrusion.hpp"  //just temporarly for gmsh-plot
 
 BACI_NAMESPACE_OPEN
 

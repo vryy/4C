@@ -9,9 +9,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_membrane_elasthyper_service.H"
+#include "baci_mat_membrane_elasthyper_service.hpp"
 
-#include "baci_mat_elasthyper_service.H"
+#include "baci_mat_elasthyper_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

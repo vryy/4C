@@ -8,7 +8,7 @@
 */
 
 
-#include "baci_adapter_str_ssiwrapper.H"
+#include "baci_adapter_str_ssiwrapper.hpp"
 
 BACI_NAMESPACE_OPEN
 

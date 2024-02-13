@@ -5,9 +5,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_coupsimopister.H"
+#include "baci_matelast_coupsimopister.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 #include <limits>
 

@@ -1,0 +1,21 @@
+/*---------------------------------------------------------------------*/
+/*!
+
+\brief baci git revision information
+
+\level 0
+
+
+*/
+/*---------------------------------------------------------------------*/
+
+#ifndef REVISION_HPP
+#define REVISION_HPP
+
+#include <string>
+
+const std::string BaciGitHash = "@BaciGitHash@";
+const std::string BaciGitHashShort = "@BaciGitHashShort@";
+const std::string BaciGitBranch = "@BaciGitBranch@";
+
+#endif

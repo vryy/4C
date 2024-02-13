@@ -8,12 +8,12 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 01/12 |
  *----------------------------------------------------------------------*/
-#include "baci_thermo_timint_expleuler.H"
+#include "baci_thermo_timint_expleuler.hpp"
 
-#include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_thermo_ele_action.H"
+#include "baci_io.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_linear_solver_method_linalg.hpp"
+#include "baci_thermo_ele_action.hpp"
 
 BACI_NAMESPACE_OPEN
 

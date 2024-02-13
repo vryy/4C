@@ -9,12 +9,12 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_so3_scatra.H"
+#include "baci_so3_scatra.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_ssi.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_element_integration_select.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_ssi.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_element_integration_select.hpp"
 
 BACI_NAMESPACE_OPEN
 

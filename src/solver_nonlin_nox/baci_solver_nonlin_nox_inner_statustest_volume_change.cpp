@@ -8,11 +8,11 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_solver_nonlin_nox_inner_statustest_volume_change.H"
+#include "baci_solver_nonlin_nox_inner_statustest_volume_change.hpp"
 
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_inner_statustest_interface_required.H"
-#include "baci_utils_exceptions.H"
+#include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_solver_nonlin_nox_inner_statustest_interface_required.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>

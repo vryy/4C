@@ -8,13 +8,13 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_mat_scatra_reaction_mat.H"
+#include "baci_mat_scatra_reaction_mat.hpp"
 
-#include "baci_comm_utils.H"
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_scatra_reaction_coupling.H"
-#include "baci_utils_function.H"
+#include "baci_comm_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_scatra_reaction_coupling.hpp"
+#include "baci_utils_function.hpp"
 
 #include <vector>
 

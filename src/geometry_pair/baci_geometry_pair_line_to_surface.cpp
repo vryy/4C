@@ -7,16 +7,16 @@
 */
 
 
-#include "baci_geometry_pair_line_to_surface.H"
+#include "baci_geometry_pair_line_to_surface.hpp"
 
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_geometry_pair_constants.H"
-#include "baci_geometry_pair_element.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_scalar_types.H"
-#include "baci_geometry_pair_utility_classes.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_utils_exceptions.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_geometry_pair_constants.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_scalar_types.hpp"
+#include "baci_geometry_pair_utility_classes.hpp"
+#include "baci_linalg_utils_densematrix_inverse.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

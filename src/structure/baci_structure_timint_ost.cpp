@@ -9,13 +9,13 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_structure_timint_ost.H"
+#include "baci_structure_timint_ost.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_structure_aux.H"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_structure_aux.hpp"
 
 BACI_NAMESPACE_OPEN
 

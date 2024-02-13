@@ -8,11 +8,11 @@
 \brief Nonlinear Membrane Finite Element
 
 *----------------------------------------------------------------------*/
-#include "baci_membrane.H"
+#include "baci_membrane.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_mat_so3_material.H"
-#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
 
 BACI_NAMESPACE_OPEN
 

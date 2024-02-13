@@ -8,9 +8,9 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_beam_to_sphere_contact_params.H"
+#include "baci_beaminteraction_beam_to_sphere_contact_params.hpp"
 
-#include "baci_global_data.H"
+#include "baci_global_data.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -7,12 +7,12 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_inpar_plasticity.H"
+#include "baci_inpar_plasticity.hpp"
 
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_inpar_structure.H"
-#include "baci_inpar_tsi.H"
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_inpar_tsi.hpp"
+#include "baci_inpar_validparameters.hpp"
 
 BACI_NAMESPACE_OPEN
 

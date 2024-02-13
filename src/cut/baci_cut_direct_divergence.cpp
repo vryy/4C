@@ -9,13 +9,13 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_cut_direct_divergence.H"
+#include "baci_cut_direct_divergence.hpp"
 
-#include "baci_cut_direct_divergence_refplane.H"
-#include "baci_cut_facet_integration.H"
-#include "baci_cut_kernel.H"
-#include "baci_cut_output.H"
-#include "baci_cut_volume_integration.H"
+#include "baci_cut_direct_divergence_refplane.hpp"
+#include "baci_cut_facet_integration.hpp"
+#include "baci_cut_kernel.hpp"
+#include "baci_cut_output.hpp"
+#include "baci_cut_volume_integration.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

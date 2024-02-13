@@ -11,9 +11,9 @@
 
 
 
-#include "baci_lib_elementdefinition.H"
+#include "baci_lib_elementdefinition.hpp"
 
-#include "baci_comm_parobjectfactory.H"
+#include "baci_comm_parobjectfactory.hpp"
 
 BACI_NAMESPACE_OPEN
 

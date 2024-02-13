@@ -9,11 +9,11 @@
 
 
 
-#include "baci_mat_structporo_reaction_ecm.H"
+#include "baci_mat_structporo_reaction_ecm.hpp"
 
-#include "baci_global_data.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_poro_law.H"
+#include "baci_global_data.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_poro_law.hpp"
 
 #include <vector>
 

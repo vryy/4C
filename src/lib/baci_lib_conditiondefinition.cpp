@@ -10,11 +10,11 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_lib_conditiondefinition.H"
+#include "baci_lib_conditiondefinition.hpp"
 
-#include "baci_global_data.H"
-#include "baci_io_linecomponent.H"
-#include "baci_lib_discret.H"
+#include "baci_global_data.hpp"
+#include "baci_io_linecomponent.hpp"
+#include "baci_lib_discret.hpp"
 
 #include <algorithm>
 #include <iterator>

@@ -5,21 +5,22 @@
 \level 1
 */
 
-#include "baci_solid_ele.H"
 
-#include "baci_comm_parobject.H"
-#include "baci_comm_utils_factory.H"
-#include "baci_discretization_fem_general_cell_type.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_io_linedefinition.H"
-#include "baci_mat_so3_material.H"
-#include "baci_so3_line.H"
-#include "baci_so3_nullspace.H"
-#include "baci_so3_surface.H"
-#include "baci_solid_ele_factory.H"
-#include "baci_solid_ele_interface_serializable.H"
-#include "baci_solid_ele_utils.H"
-#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_solid_ele.hpp"
+
+#include "baci_comm_parobject.hpp"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_discretization_fem_general_cell_type.hpp"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_so3_line.hpp"
+#include "baci_so3_nullspace.hpp"
+#include "baci_so3_surface.hpp"
+#include "baci_solid_ele_factory.hpp"
+#include "baci_solid_ele_interface_serializable.hpp"
+#include "baci_solid_ele_utils.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
 
 BACI_NAMESPACE_OPEN
 

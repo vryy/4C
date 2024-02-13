@@ -7,10 +7,10 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_inpar_validmaterials.H"
+#include "baci_inpar_validmaterials.hpp"
 
-#include "baci_inpar_material.H"
-#include "baci_io_materialdefinition.H"
+#include "baci_inpar_material.hpp"
+#include "baci_io_materialdefinition.hpp"
 
 BACI_NAMESPACE_OPEN
 

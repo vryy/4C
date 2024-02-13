@@ -8,11 +8,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_io_vtu_writer.H"
+#include "baci_io_vtu_writer.hpp"
 
-#include "baci_io_pstream.H"
-#include "baci_io_vtk_writer_base.H"
-#include "baci_utils_exceptions.H"
+#include "baci_io_pstream.hpp"
+#include "baci_io_vtk_writer_base.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <iomanip>
 #include <iostream>

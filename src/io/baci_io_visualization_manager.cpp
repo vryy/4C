@@ -8,11 +8,11 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_io_visualization_manager.H"
+#include "baci_io_visualization_manager.hpp"
 
-#include "baci_io_visualization_data.H"
-#include "baci_io_visualization_parameters.H"
-#include "baci_io_visualization_writer_factory.H"
+#include "baci_io_visualization_data.hpp"
+#include "baci_io_visualization_parameters.hpp"
+#include "baci_io_visualization_writer_factory.hpp"
 
 #include <utility>
 

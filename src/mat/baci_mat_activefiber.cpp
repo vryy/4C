@@ -30,17 +30,17 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 
 *----------------------------------------------------------------------*/
 
-#include "baci_mat_activefiber.H"
+#include "baci_mat_activefiber.hpp"
 
-#include "baci_comm_utils_factory.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_global_data.H"
-#include "baci_io_control.H"
-#include "baci_linalg_four_tensor.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
-#include "baci_linalg_utils_densematrix_svd.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io_control.hpp"
+#include "baci_linalg_four_tensor.hpp"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
+#include "baci_linalg_utils_densematrix_svd.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_service.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -9,16 +9,16 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_fluid_timint_red.H"
+#include "baci_fluid_timint_red.hpp"
 
-#include "baci_adapter_art_net.H"
-#include "baci_fluid_coupling_red_models.H"
-#include "baci_fluid_meshtying.H"
-#include "baci_fluid_volumetric_surfaceFlow_condition.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_locsys.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_adapter_art_net.hpp"
+#include "baci_fluid_coupling_red_models.hpp"
+#include "baci_fluid_meshtying.hpp"
+#include "baci_fluid_volumetric_surfaceFlow_condition.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_locsys.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 
 BACI_NAMESPACE_OPEN
 

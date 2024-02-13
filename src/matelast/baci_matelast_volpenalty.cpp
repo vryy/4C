@@ -7,9 +7,9 @@ thesis)
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_matelast_volpenalty.H"
+#include "baci_matelast_volpenalty.hpp"
 
-#include "baci_mat_par_material.H"
+#include "baci_mat_par_material.hpp"
 
 BACI_NAMESPACE_OPEN
 

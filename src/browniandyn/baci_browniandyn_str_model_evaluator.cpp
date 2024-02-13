@@ -11,20 +11,20 @@
 
 */
 /*-----------------------------------------------------------*/
-#include "baci_browniandyn_str_model_evaluator.H"
+#include "baci_browniandyn_str_model_evaluator.hpp"
 
-#include "baci_beam3_base.H"
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_periodic_boundingbox.H"
-#include "baci_global_data.H"
-#include "baci_io.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_rigidsphere.H"
-#include "baci_structure_new_integrator.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_timint_base.H"
+#include "baci_beam3_base.hpp"
+#include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_beaminteraction_periodic_boundingbox.hpp"
+#include "baci_global_data.hpp"
+#include "baci_io.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_rigidsphere.hpp"
+#include "baci_structure_new_integrator.hpp"
+#include "baci_structure_new_model_evaluator_data.hpp"
+#include "baci_structure_new_timint_base.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>

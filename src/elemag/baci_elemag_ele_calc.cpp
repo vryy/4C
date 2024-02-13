@@ -7,19 +7,19 @@
  */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_elemag_ele_calc.H"
+#include "baci_elemag_ele_calc.hpp"
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_elemag_ele_action.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_elementtype.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_electromagnetic.H"
-#include "baci_utils_function.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_geometry_position_array.hpp"
+#include "baci_elemag_ele_action.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_discret_hdg.hpp"
+#include "baci_lib_elementtype.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_electromagnetic.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>

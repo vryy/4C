@@ -3,20 +3,20 @@
 \brief averaged nodal volume tet4
 \level 3
 *----------------------------------------------------------------------*/
-#include "baci_contact_analytical.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_mat_so3_material.H"
-#include "baci_so3_tet4av.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
+#include "baci_contact_analytical.hpp"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_sparse_algebra_math.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_so3_tet4av.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

@@ -8,13 +8,13 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_mat_elasthyper_service.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_service.H"
-#include "baci_matelast_coupanisoexpo.H"
-#include "baci_matelast_isoneohooke.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_mat_elasthyper_service.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_matelast_coupanisoexpo.hpp"
+#include "baci_matelast_isoneohooke.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 namespace
 {

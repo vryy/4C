@@ -7,12 +7,12 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_io_every_iteration_writer.H"
+#include "baci_io_every_iteration_writer.hpp"
 
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_pstream.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 

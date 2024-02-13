@@ -6,10 +6,10 @@
 \level 0
 *----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
 
 BACI_NAMESPACE_OPEN
 

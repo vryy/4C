@@ -10,9 +10,9 @@ mixture fibers
 
 #include <gmock/gmock.h>
 
-#include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.H"
+#include "baci_mixture_full_constrained_mixture_fiber_adaptive_history.hpp"
 
-#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
+#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.hpp"
 
 #include <Sacado.hpp>
 

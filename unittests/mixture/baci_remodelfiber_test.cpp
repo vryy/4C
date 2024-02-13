@@ -7,13 +7,13 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_mat_par_material.H"
-#include "baci_mixture_constituent_remodelfiber_material_exponential.H"
-#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
-#include "baci_mixture_remodelfiber-internal.H"
-#include "baci_mixture_remodelfiber.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_linalg_fixedsizematrix.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mixture_constituent_remodelfiber_material_exponential.hpp"
+#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.hpp"
+#include "baci_mixture_remodelfiber-internal.hpp"
+#include "baci_mixture_remodelfiber.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 
 #include <Sacado.hpp>
 

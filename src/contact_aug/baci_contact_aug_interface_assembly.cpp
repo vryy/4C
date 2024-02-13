@@ -9,13 +9,13 @@ sparse matrices and parallel distributed vectors
 /*----------------------------------------------------------------------------*/
 
 
-#include "baci_contact_aug_contact_integrator_utils.H"
-#include "baci_contact_aug_interface.H"
-#include "baci_contact_aug_steepest_ascent_interface.H"
-#include "baci_contact_node.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_contact_aug_contact_integrator_utils.hpp"
+#include "baci_contact_aug_interface.hpp"
+#include "baci_contact_aug_steepest_ascent_interface.hpp"
+#include "baci_contact_node.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 
 #include <Epetra_Export.h>
 

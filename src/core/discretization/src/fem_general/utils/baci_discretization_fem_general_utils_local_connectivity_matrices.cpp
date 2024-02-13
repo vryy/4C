@@ -6,9 +6,9 @@
 \level 0
 
 *----------------------------------------------------------------------*/
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 
-#include "baci_utils_exceptions.H"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 

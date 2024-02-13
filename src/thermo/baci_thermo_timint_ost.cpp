@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
-#include "baci_thermo_timint_ost.H"
+#include "baci_thermo_timint_ost.hpp"
 
-#include "baci_thermo_ele_action.H"
+#include "baci_thermo_ele_action.hpp"
 
 BACI_NAMESPACE_OPEN
 

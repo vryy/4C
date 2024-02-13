@@ -8,17 +8,17 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_scatra_ele_calc_cardiac_monodomain.H"
+#include "baci_scatra_ele_calc_cardiac_monodomain.hpp"
 
-#include "baci_global_data.H"
-#include "baci_inpar_cardiac_monodomain.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_mat_list.H"
-#include "baci_mat_myocard.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_utils_singleton_owner.H"
+#include "baci_global_data.hpp"
+#include "baci_inpar_cardiac_monodomain.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_element.hpp"
+#include "baci_mat_list.hpp"
+#include "baci_mat_myocard.hpp"
+#include "baci_scatra_ele_parameter_std.hpp"
+#include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,22 +8,22 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine.H"
+#include "baci_particle_engine.hpp"
 
-#include "baci_binstrategy.H"
-#include "baci_comm_utils_factory.H"
-#include "baci_global_data.H"
-#include "baci_inpar_particle.H"
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_particle_algorithm_utils.H"
-#include "baci_particle_engine_communication_utils.H"
-#include "baci_particle_engine_container.H"
-#include "baci_particle_engine_container_bundle.H"
-#include "baci_particle_engine_object.H"
-#include "baci_particle_engine_runtime_vtp_writer.H"
-#include "baci_particle_engine_unique_global_id.H"
-#include "baci_utils_exceptions.H"
+#include "baci_binstrategy.hpp"
+#include "baci_comm_utils_factory.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_particle.hpp"
+#include "baci_io.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_particle_algorithm_utils.hpp"
+#include "baci_particle_engine_communication_utils.hpp"
+#include "baci_particle_engine_container.hpp"
+#include "baci_particle_engine_container_bundle.hpp"
+#include "baci_particle_engine_object.hpp"
+#include "baci_particle_engine_runtime_vtp_writer.hpp"
+#include "baci_particle_engine_unique_global_id.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

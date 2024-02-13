@@ -8,9 +8,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_inpar_rebalance.H"
+#include "baci_inpar_rebalance.hpp"
 
-#include "baci_inpar_parameterlist_utils.H"
+#include "baci_inpar_parameterlist_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

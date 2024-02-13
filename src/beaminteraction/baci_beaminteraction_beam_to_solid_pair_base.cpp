@@ -7,15 +7,15 @@
 */
 
 
-#include "baci_beaminteraction_beam_to_solid_pair_base.H"
+#include "baci_beaminteraction_beam_to_solid_pair_base.hpp"
 
-#include "baci_beam3_euler_bernoulli.H"
-#include "baci_beam3_kirchhoff.H"
-#include "baci_beam3_reissner.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_scalar_types.H"
+#include "baci_beam3_euler_bernoulli.hpp"
+#include "baci_beam3_kirchhoff.hpp"
+#include "baci_beam3_reissner.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
+#include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
+#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_scalar_types.hpp"
 
 #include <Sacado.hpp>
 

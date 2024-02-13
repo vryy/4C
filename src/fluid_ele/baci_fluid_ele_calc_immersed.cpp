@@ -9,12 +9,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc_immersed.H"
+#include "baci_fluid_ele_calc_immersed.hpp"
 
-#include "baci_fluid_ele_immersed_base.H"
-#include "baci_fluid_ele_parameter_std.H"
-#include "baci_fluid_ele_tds.H"
-#include "baci_global_data.H"
+#include "baci_fluid_ele_immersed_base.hpp"
+#include "baci_fluid_ele_parameter_std.hpp"
+#include "baci_fluid_ele_tds.hpp"
+#include "baci_global_data.hpp"
 
 BACI_NAMESPACE_OPEN
 

@@ -8,10 +8,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_membrane_scatra.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_membrane_scatra.hpp"
 
 BACI_NAMESPACE_OPEN
 

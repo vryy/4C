@@ -11,20 +11,20 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
-#include "baci_tsi_partitioned.H"
+#include "baci_tsi_partitioned.hpp"
 
-#include "baci_adapter_str_structure.H"
-#include "baci_adapter_thermo.H"
-#include "baci_contact_abstract_strategy.H"
-#include "baci_contact_meshtying_contact_bridge.H"
-#include "baci_global_data.H"
-#include "baci_inpar_structure.H"
-#include "baci_inpar_tsi.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_mortar_manager_base.H"
-#include "baci_tsi_defines.H"
-#include "baci_tsi_utils.H"
+#include "baci_adapter_str_structure.hpp"
+#include "baci_adapter_thermo.hpp"
+#include "baci_contact_abstract_strategy.hpp"
+#include "baci_contact_meshtying_contact_bridge.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_structure.hpp"
+#include "baci_inpar_tsi.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_mortar_manager_base.hpp"
+#include "baci_tsi_defines.hpp"
+#include "baci_tsi_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 

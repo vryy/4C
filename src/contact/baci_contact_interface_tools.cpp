@@ -7,21 +7,21 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_contact_defines.H"
-#include "baci_contact_friction_node.H"
-#include "baci_contact_integrator.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_selfcontact_binarytree.H"
-#include "baci_global_data.H"
-#include "baci_inpar_contact.H"
-#include "baci_io_control.H"
-#include "baci_io_gmsh.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_dofset.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_integrator.H"
+#include "baci_contact_defines.hpp"
+#include "baci_contact_friction_node.hpp"
+#include "baci_contact_integrator.hpp"
+#include "baci_contact_interface.hpp"
+#include "baci_contact_selfcontact_binarytree.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_contact.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_gmsh.hpp"
+#include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linalg_utils_densematrix_multiply.hpp"
+#include "baci_mortar_defines.hpp"
+#include "baci_mortar_dofset.hpp"
+#include "baci_mortar_element.hpp"
+#include "baci_mortar_integrator.hpp"
 
 BACI_NAMESPACE_OPEN
 

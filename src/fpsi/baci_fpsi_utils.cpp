@@ -14,19 +14,19 @@
  *----------------------------------------------------------------------*/
 
 // FPSI includes
-#include "baci_fpsi_utils.H"
+#include "baci_fpsi_utils.hpp"
 
-#include "baci_ale_utils_clonestrategy.H"
-#include "baci_fpsi_monolithic_plain.H"
-#include "baci_fsi_utils.H"
-#include "baci_global_data.H"
-#include "baci_inpar_fpsi.H"
-#include "baci_lib_condition_selector.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_poroelast_scatra_utils_clonestrategy.H"
-#include "baci_poroelast_scatra_utils_setup.H"
-#include "baci_poroelast_utils_clonestrategy.H"
-#include "baci_poroelast_utils_setup.H"
+#include "baci_ale_utils_clonestrategy.hpp"
+#include "baci_fpsi_monolithic_plain.hpp"
+#include "baci_fsi_utils.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_fpsi.hpp"
+#include "baci_lib_condition_selector.hpp"
+#include "baci_lib_utils_createdis.hpp"
+#include "baci_poroelast_scatra_utils_clonestrategy.hpp"
+#include "baci_poroelast_scatra_utils_setup.hpp"
+#include "baci_poroelast_utils_clonestrategy.hpp"
+#include "baci_poroelast_utils_setup.hpp"
 
 #include <Teuchos_RCP.hpp>
 

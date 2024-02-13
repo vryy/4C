@@ -6,17 +6,17 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_beam3_kirchhoff.H"
-#include "baci_beam3_reissner.H"
-#include "baci_comm_pack_buffer.H"
-#include "baci_global_data.H"
-#include "baci_linalg_FADmatrix_utils.H"
-#include "baci_mat_material.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_plasticdruckerprager.H"
-#include "baci_mat_service.H"
-#include "baci_unittest_utils_assertions_test.H"
+#include "baci_beam3_kirchhoff.hpp"
+#include "baci_beam3_reissner.hpp"
+#include "baci_comm_pack_buffer.hpp"
+#include "baci_global_data.hpp"
+#include "baci_linalg_FADmatrix_utils.hpp"
+#include "baci_mat_material.hpp"
+#include "baci_mat_par_bundle.hpp"
+#include "baci_mat_par_material.hpp"
+#include "baci_mat_plasticdruckerprager.hpp"
+#include "baci_mat_service.hpp"
+#include "baci_unittest_utils_assertions_test.hpp"
 namespace
 {
   using namespace BACI;

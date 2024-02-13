@@ -8,10 +8,10 @@
 */
 
 // Baci
-#include "baci_linear_solver_preconditioner_muelu.H"
+#include "baci_linear_solver_preconditioner_muelu.hpp"
 
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <EpetraExt_BlockMapOut.h>
 #include <MueLu_AggregationExportFactory.hpp>

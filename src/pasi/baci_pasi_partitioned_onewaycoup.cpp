@@ -8,11 +8,11 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_pasi_partitioned_onewaycoup.H"
+#include "baci_pasi_partitioned_onewaycoup.hpp"
 
-#include "baci_particle_algorithm.H"
-#include "baci_particle_wall_datastate.H"
-#include "baci_particle_wall_interface.H"
+#include "baci_particle_algorithm.hpp"
+#include "baci_particle_wall_datastate.hpp"
+#include "baci_particle_wall_interface.hpp"
 
 BACI_NAMESPACE_OPEN
 

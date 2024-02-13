@@ -5,7 +5,7 @@
 \level 3
 */
 
-#include "baci_shell7p_line.H"
+#include "baci_shell7p_line.hpp"
 
 BACI_NAMESPACE_OPEN
 

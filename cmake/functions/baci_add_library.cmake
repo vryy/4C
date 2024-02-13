@@ -40,14 +40,14 @@ function(baci_add_library _target)
     target_link_libraries(${_target}_objs PUBLIC ${_target}_deps)
   endif()
 
-  # Check that every header includes baci_config.H
+  # Check that every header includes baci_config.hpp
   foreach(_header ${_parsed_HEADERS})
     file(READ ${_header} _header_content)
-    string(FIND "${_header_content}" "#include \"baci_config.H\"" _index)
+    string(FIND "${_header_content}" "#include \"baci_config.hpp\"" _index)
     if(_index EQUAL -1)
       message(
         FATAL_ERROR
-          "The file \"${_header}\" does not include \"baci_config.H\". Please include the file and rerun CMake."
+          "The file \"${_header}\" does not include \"baci_config.hpp\". Please include the file and rerun CMake."
         )
     endif()
   endforeach()

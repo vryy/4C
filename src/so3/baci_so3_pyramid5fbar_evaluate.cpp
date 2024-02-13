@@ -6,22 +6,22 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_global_data.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
-#include "baci_mat_so3_material.H"
-#include "baci_mat_thermoplastichyperelast.H"
-#include "baci_so3_prestress.H"
-#include "baci_so3_prestress_service.H"
-#include "baci_so3_pyramid5fbar.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "baci_discretization_fem_general_utils_integration.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_utils.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
+#include "baci_mat_so3_material.hpp"
+#include "baci_mat_thermoplastichyperelast.hpp"
+#include "baci_so3_prestress.hpp"
+#include "baci_so3_prestress_service.hpp"
+#include "baci_so3_pyramid5fbar.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

@@ -9,22 +9,22 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_fluid_xfluid_state_creator.H"
+#include "baci_fluid_xfluid_state_creator.hpp"
 
-#include "baci_cut_cutwizard.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_fluid_xfluid_fluid_state.H"
-#include "baci_fluid_xfluid_state.H"
-#include "baci_global_data.H"
-#include "baci_inpar_parameterlist_utils.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_linedefinition.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_discret_xfem.H"
-#include "baci_lib_xfem_dofset.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_xfem_condition_manager.H"
+#include "baci_cut_cutwizard.hpp"
+#include "baci_fluid_utils_mapextractor.hpp"
+#include "baci_fluid_xfluid_fluid_state.hpp"
+#include "baci_fluid_xfluid_state.hpp"
+#include "baci_global_data.hpp"
+#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_io.hpp"
+#include "baci_io_control.hpp"
+#include "baci_io_linedefinition.hpp"
+#include "baci_lib_condition_utils.hpp"
+#include "baci_lib_discret_xfem.hpp"
+#include "baci_lib_xfem_dofset.hpp"
+#include "baci_linalg_mapextractor.hpp"
+#include "baci_xfem_condition_manager.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

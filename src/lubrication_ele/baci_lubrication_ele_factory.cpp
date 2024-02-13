@@ -9,10 +9,10 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_lubrication_ele_factory.H"
+#include "baci_lubrication_ele_factory.hpp"
 
-#include "baci_global_data.H"
-#include "baci_lubrication_ele_calc.H"
+#include "baci_global_data.hpp"
+#include "baci_lubrication_ele_calc.hpp"
 
 BACI_NAMESPACE_OPEN
 

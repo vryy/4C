@@ -9,10 +9,10 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_io_linedefinition.H"
+#include "baci_io_linedefinition.hpp"
 
-#include "baci_utils_demangle.H"
-#include "baci_utils_exceptions.H"
+#include "baci_utils_demangle.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <functional>
 #include <iterator>

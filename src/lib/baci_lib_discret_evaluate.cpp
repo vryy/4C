@@ -9,18 +9,18 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_comm_parobjectfactory.H"
-#include "baci_global_data.H"
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_elements_paramsinterface.H"
-#include "baci_lib_utils_discret.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_function_of_time.H"
+#include "baci_comm_parobjectfactory.hpp"
+#include "baci_global_data.hpp"
+#include "baci_lib_assemblestrategy.hpp"
+#include "baci_lib_discret.hpp"
+#include "baci_lib_elements_paramsinterface.hpp"
+#include "baci_lib_utils_discret.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
+#include "baci_linalg_sparsematrix.hpp"
+#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_utils_exceptions.hpp"
+#include "baci_utils_function_of_time.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
