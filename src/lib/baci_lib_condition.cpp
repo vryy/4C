@@ -635,6 +635,11 @@ std::string DRT::Condition::Name() const
 void DRT::Condition::Print(std::ostream& os) const
 {
   os << DRT::Condition::Name();
+  os << " Node Ids: ";
+  for (const auto& node_id : nodes_)
+  {
+    os << node_id << " ";
+  }
   Container::Print(os);
   if (geometry_ != Teuchos::null and (int) geometry_->size())
   {
