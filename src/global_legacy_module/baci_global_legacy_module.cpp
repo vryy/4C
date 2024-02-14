@@ -187,10 +187,8 @@ namespace
     // Perform a dummy operation for the side-effect of forcing registration.
     std::stringstream s;
 
-    s << DRT::ContainerType::Instance().Name() << " " << DRT::ConditionObjectType::Instance().Name()
-      << " " << DRT::NodeType::Instance().Name() << " "
-      << DRT::NURBS::ControlPointType::Instance().Name() << " "
-      << DRT::ImmersedNodeType::Instance().Name() << " "
+    s << DRT::NodeType::Instance().Name() << " " << DRT::NURBS::ControlPointType::Instance().Name()
+      << " " << DRT::ImmersedNodeType::Instance().Name() << " "
       << CROSSLINKING::CrosslinkerNodeType::Instance().Name() << " "
       << DRT::MESHFREE::MeshfreeMultiBinType::Instance().Name() << " "
       << DRT::ELEMENTS::Beam3rType::Instance().Name() << " "

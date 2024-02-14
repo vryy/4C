@@ -12,6 +12,7 @@
 #include "baci_config.hpp"
 
 #include "baci_mat_par_parameter.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <memory>
 

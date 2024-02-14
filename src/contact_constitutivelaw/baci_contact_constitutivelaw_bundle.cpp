@@ -17,6 +17,7 @@
 
 #include "baci_contact_constitutivelaw_contactconstitutivelaw.hpp"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
+#include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/

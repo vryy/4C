@@ -11,24 +11,15 @@
 
 #include "baci_lib_condition.hpp"
 
+#include "baci_inpar_container.hpp"
 #include "baci_lib_element.hpp"
 
 BACI_NAMESPACE_OPEN
 
 
-DRT::ConditionObjectType DRT::ConditionObjectType::instance_;
-
-
-CORE::COMM::ParObject* DRT::ConditionObjectType::Create(const std::vector<char>& data)
-{
-  auto* object = new DRT::Condition();
-  object->Unpack(data);
-  return object;
-}
-
 DRT::Condition::Condition(
     const int id, const ConditionType type, const bool buildgeometry, const GeometryType gtype)
-    : Container(),
+    : InputParameterContainer(),
       id_(id),
       nodes_(),
       buildgeometry_(buildgeometry),
@@ -39,7 +30,7 @@ DRT::Condition::Condition(
 }
 
 DRT::Condition::Condition()
-    : Container(),
+    : InputParameterContainer(),
       id_(-1),
       nodes_(),
       buildgeometry_(false),
@@ -50,7 +41,7 @@ DRT::Condition::Condition()
 }
 
 DRT::Condition::Condition(const DRT::Condition& old)
-    : Container(old),
+    : InputParameterContainer(old),
       id_(old.id_),
       nodes_(old.nodes_),
       buildgeometry_(old.buildgeometry_),
@@ -635,7 +626,7 @@ std::string DRT::Condition::Name() const
 void DRT::Condition::Print(std::ostream& os) const
 {
   os << DRT::Condition::Name();
-  Container::Print(os);
+  InputParameterContainer::Print(os);
   os << std::endl;
   if (nodes_.size() != 0)
   {
@@ -649,44 +640,6 @@ void DRT::Condition::Print(std::ostream& os) const
     for (const auto& [ele_id, ele] : *geometry_) os << " " << ele_id;
     os << std::endl;
   }
-}
-
-void DRT::Condition::Pack(CORE::COMM::PackBuffer& data) const
-{
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data, type);
-  // add base class container
-  Container::Pack(data);
-  AddtoPack(data, id_);
-  AddtoPack(data, buildgeometry_);
-  AddtoPack(data, type_);
-  AddtoPack(data, gtype_);
-  AddtoPack(data, nodes_);
-}
-
-void DRT::Condition::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
-
-  // extract base class Container
-  std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
-  Container::Unpack(basedata);
-
-  ExtractfromPack(position, data, id_);
-  buildgeometry_ = ExtractInt(position, data);
-  type_ = static_cast<ConditionType>(ExtractInt(position, data));
-  gtype_ = static_cast<GeometryType>(ExtractInt(position, data));
-  ExtractfromPack(position, data, nodes_);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 void DRT::Condition::AdjustId(const int shift)

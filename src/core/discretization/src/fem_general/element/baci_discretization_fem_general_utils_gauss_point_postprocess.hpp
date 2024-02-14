@@ -12,6 +12,7 @@
 
 #include "baci_config.hpp"
 
+#include "baci_global_data.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 

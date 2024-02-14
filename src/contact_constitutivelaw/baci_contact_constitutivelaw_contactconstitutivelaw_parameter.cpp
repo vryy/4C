@@ -11,8 +11,6 @@ file as well as a quick access wrapper for those parameters
 
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 
-#include "baci_utils_exceptions.hpp"
-
 #include <Teuchos_RCP.hpp>
 
 BACI_NAMESPACE_OPEN
@@ -27,9 +25,8 @@ CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Container::Container(
     const int id, const INPAR::CONTACT::ConstitutiveLawType type, const std::string name)
-    : DRT::Container(), id_(id), type_(type), name_(name), params_(Teuchos::null)
+    : INPAR::InputParameterContainer(), id_(id), type_(type), name_(name), params_(Teuchos::null)
 {
-  return;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -37,9 +34,7 @@ void CONTACT::CONSTITUTIVELAW::Container::Print(std::ostream& os) const
 {
   os << "ContactConstitutiveLaw " << Id() << " " << Name() << " :: ";
 
-  DRT::Container::Print(os);
-
-  return;
+  INPAR::InputParameterContainer::Print(os);
 }
 
 BACI_NAMESPACE_CLOSE

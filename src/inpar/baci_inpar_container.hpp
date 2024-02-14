@@ -8,14 +8,12 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_CONTAINER_HPP
-#define BACI_LIB_CONTAINER_HPP
+#ifndef BACI_INPAR_CONTAINER_HPP
+#define BACI_INPAR_CONTAINER_HPP
 
 
 #include "baci_config.hpp"
 
-#include "baci_comm_parobject.hpp"
-#include "baci_comm_parobjectfactory.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -29,27 +27,13 @@ class Epetra_Vector;
 
 BACI_NAMESPACE_OPEN
 
-namespace DRT
+namespace INPAR
 {
-  class ContainerType : public CORE::COMM::ParObjectType
-  {
-   public:
-    [[nodiscard]] std::string Name() const override { return "ContainerType"; }
-
-    static ContainerType& Instance() { return instance_; };
-
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
-
-   private:
-    static ContainerType instance_;
-  };
-
   /*!
   \brief A data storage container
 
   You can store arrays of integer, double, and strings in this container
-  and access the data by keys. As the Container implements ParObject
-  everything stored in here can easily be communicated using the CORE::COMM::Exporter.
+  and access the data by keys.
 
   The intention of this class is to store rather 'small' units of data. Though possible,
   it is not meant to be used at the system level to store huge data sets such as sparse matrices or
@@ -57,23 +41,24 @@ namespace DRT
   or Epetra_CrsMatrix objects and is not supposed to in the future either.
 
   */
-  class Container : public CORE::COMM::ParObject
+  class InputParameterContainer
   {
    public:
-    [[nodiscard]] int UniqueParObjectId() const override;
+    /**
+     * Standard constructor
+     */
+    InputParameterContainer() = default;
 
-    void Pack(CORE::COMM::PackBuffer& data) const override;
-
-    void Unpack(const std::vector<char>& data) override;
-
-    //! @name Query methods
+    /**
+     * Destructor.
+     */
+    virtual ~InputParameterContainer() = default;
 
     /*!
-    \brief Print this element
+    \brief Print this container
     */
     virtual void Print(std::ostream& os) const;
 
-    //@}
 
     //! @name Construction methods
 
@@ -182,20 +167,15 @@ namespace DRT
 
     Usage is<br>
       \code
-      const std::vector<int>* ifool = Container::Get<std::vector<int> >("ifool_name");
+      const std::vector<int>* ifool = InputParameterContainer::Get<std::vector<int> >("ifool_name");
       \endcode
       or <br>
       \code
-      const std::vector<double>* dfool = Container::Get<std::vector<double> >("dfool_name");
-      \endcode
-      or <br>
-      \code
-      const string* sfool = Container::Get<string>("sfool_name");
-      \endcode
-      or <br>
-      \code
-      const CORE::LINALG::SerialDenseMatrix* mfool =
-    Container::Get<CORE::LINALG::SerialDenseMatrix>("mfool_name"); \endcode
+      const std::vector<double>* dfool = InputParameterContainer::Get<std::vector<double>
+    >("dfool_name"); \endcode or <br> \code const string* sfool =
+    InputParameterContainer::Get<string>("sfool_name"); \endcode or <br> \code const
+    CORE::LINALG::SerialDenseMatrix* mfool =
+    InputParameterContainer::Get<CORE::LINALG::SerialDenseMatrix>("mfool_name"); \endcode
 
     \note This template will let you experience one of the most kryptic error messages
           (at link time) you have ever seen if you try to use it with other data types than
@@ -244,7 +224,7 @@ namespace DRT
 
     Usage is<br>
     \code
-    int mynumber = Container::Getint("name_of_my_number")
+    int mynumber = InputParameterContainer::Getint("name_of_my_number")
     \endcode
     */
     [[nodiscard]] int GetInt(const std::string& name) const;
@@ -258,7 +238,7 @@ namespace DRT
 
     Usage is<br>
     \code
-    double mynumber = Container::GetDouble("name_of_my_number")
+    double mynumber = InputParameterContainer::GetDouble("name_of_my_number")
     \endcode
     */
     [[nodiscard]] double GetDouble(const std::string& name) const;
@@ -272,20 +252,20 @@ namespace DRT
 
     Usage is<br>
       \code
-      std::vector<int>* ifool = Container::Get<std::vector<int> >("ifool_name");
+      std::vector<int>* ifool = InputParameterContainer::Get<std::vector<int> >("ifool_name");
       \endcode
       or <br>
       \code
-      std::vector<double>* dfool = Container::Get<std::vector<double> >("dfool_name");
+      std::vector<double>* dfool = InputParameterContainer::Get<std::vector<double> >("dfool_name");
       \endcode
       or <br>
       \code
-      string* sfool = Container::Get<string>("sfool_name");
+      string* sfool = InputParameterContainer::Get<string>("sfool_name");
       \endcode
       or <br>
       \code
       CORE::LINALG::SerialDenseMatrix* mfool =
-    Container::Get<CORE::LINALG::SerialDenseMatrix>("mfool_name"); \endcode
+    InputParameterContainer::Get<CORE::LINALG::SerialDenseMatrix>("mfool_name"); \endcode
 
     \note This template will let you experience one of the most kryptic error messages
           (at link time) you have ever seen if you try to use it with other data types than
@@ -302,7 +282,7 @@ namespace DRT
     template <typename T>
     T* Get(const std::string& name)
     {
-      return const_cast<T*>(const_cast<const Container*>(this)->Get<T>(name));
+      return const_cast<T*>(const_cast<const InputParameterContainer*>(this)->Get<T>(name));
     };
     //@}
 
@@ -321,14 +301,13 @@ namespace DRT
 
     //! a map to store matrices in
     std::map<std::string, CORE::LINALG::SerialDenseMatrix> matdata_;
-  };  // class Container
-}  // namespace DRT
+  };  // class InputParameterContainer
+}  // namespace INPAR
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const DRT::Container& cont);
-
+std::ostream& operator<<(std::ostream& os, const INPAR::InputParameterContainer& cont);
 
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_CONTAINER_H
+#endif  // INPAR_CONTAINER_H

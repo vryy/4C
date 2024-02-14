@@ -17,7 +17,7 @@ relate the contact gap to the contact pressure based on micro interactions
 /* headers */
 #include "baci_config.hpp"
 
-#include "baci_lib_container.hpp"
+#include "baci_inpar_container.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -92,7 +92,7 @@ namespace CONTACT::CONSTITUTIVELAW
    * \brief Container to pass Contact Constitutive Law parameters around
    */
 
-  class Container : public DRT::Container
+  class Container : public INPAR::InputParameterContainer
   {
    public:
     /// @name life span
@@ -132,7 +132,7 @@ namespace CONTACT::CONSTITUTIVELAW
      * \brief Return quickly accessible material parameter data
      *
      * These quick access parameters are stored in separate member #params_;
-     * whereas the originally read ones are stored in DRT::Container base
+     * whereas the originally read ones are stored in INPAR::InputParameterContainer base
      */
     [[nodiscard]] inline CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const
     {
