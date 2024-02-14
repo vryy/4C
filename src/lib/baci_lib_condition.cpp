@@ -636,11 +636,18 @@ void DRT::Condition::Print(std::ostream& os) const
 {
   os << DRT::Condition::Name();
   Container::Print(os);
+  os << std::endl;
+  if (nodes_.size() != 0)
+  {
+    os << "Nodes of this condition:";
+    for (const auto& node_gid : nodes_) os << " " << node_gid;
+    os << std::endl;
+  }
   if (geometry_ != Teuchos::null and (int) geometry_->size())
   {
+    os << "Elements of this condition:";
+    for (const auto& [ele_id, ele] : *geometry_) os << " " << ele_id;
     os << std::endl;
-    os << "Elements of this condition:\n";
-    for (const auto& [ele_id, ele] : *geometry_) os << "      " << ele << std::endl;
   }
 }
 
