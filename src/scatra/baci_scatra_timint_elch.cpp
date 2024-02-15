@@ -597,6 +597,17 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
   CheckIsInit();
   CheckIsSetup();
 
+  if (step_ == 0)
+  {
+    // calculate initial electric potential field
+    if (INPUT::IntegralValue<int>(*elchparams_, "INITPOTCALC")) CalcInitialPotentialField();
+
+    // evaluate SOC, c-rate and cell voltage for output
+    EvaluateElectrodeInfoInterior();
+    EvaluateCellVoltage();
+    EvaluateCCCVPhase();
+  }
+
   // call base class routine
   ScaTraTimIntImpl::PrepareTimeLoop();
 
@@ -634,9 +645,6 @@ void SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep()
   // safety checks
   CheckIsInit();
   CheckIsSetup();
-
-  // calculate initial electric potential field
-  if (INPUT::IntegralValue<int>(*elchparams_, "INITPOTCALC")) CalcInitialPotentialField();
 
   // call base class routine
   ScaTraTimIntImpl::PrepareFirstTimeStep();
@@ -795,16 +803,17 @@ void SCATRA::ScaTraTimIntElch::Update()
 {
   // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();
+
+  // evaluate SOC, c-rate and cell voltage for output
+  EvaluateElectrodeInfoInterior();
+  EvaluateCellVoltage();
+  EvaluateCCCVPhase();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CheckAndWriteOutputAndRestart()
 {
-  // evaluate SOC, c-rate and cell voltage for output
-  EvaluateElectrodeInfoInterior();
-  EvaluateCellVoltage();
-
   // call base class routine
   ScaTraTimIntImpl::CheckAndWriteOutputAndRestart();
 
@@ -2994,43 +3003,13 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
  *---------------------------------------------------------------------------*/
 bool SCATRA::ScaTraTimIntElch::NotFinished() const
 {
-  // call base class routine in case no cell cycling is performed
   if (cccv_condition_ == Teuchos::null)
   {
     return ScaTraTimIntImpl::NotFinished();
   }
-  // control progress of simulation in case cell cycling is performed
-  // note that the maximum number of time steps and the maximum simulation time are ignored in
-  // this case
   else
   {
-    // only proc 0 should print out information
-    const bool do_print = discret_->Comm().MyPID() == 0;
-
-    // which mode was last converged step? Is this phase over? Is the current half cycle over?
-    if (cccv_condition_->GetCCCVHalfCyclePhase() ==
-        INPAR::ELCH::CCCVHalfCyclePhase::initital_relaxation)
-    {
-      // or-case is required to be independent of the time step size
-      if (cccv_condition_->IsInitialRelaxation(time_, Dt()) or (time_ == 0.0))
-      {
-        // do nothing
-      }
-      else
-        cccv_condition_->SetFirstCCCVHalfCycle(step_);
-      return true;
-    }
-    else
-      while (cccv_condition_->IsEndOfHalfCyclePhase(cellvoltage_, cellcrate_, time_))
-        cccv_condition_->NextPhase(step_, time_, do_print);
-
-    // all half cycles completed?
-    const bool notfinished = cccv_condition_->NotFinished();
-
-    if (!notfinished and do_print)
-      std::cout << "CCCV cycling is completed. Terminating simulation..." << std::endl;
-
-    return (notfinished);
+    return cccv_condition_->NotFinished();
   }
 }
 
@@ -3315,5 +3294,42 @@ double SCATRA::ScaTraTimIntElch::GetCurrentTemperature() const
 Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntElch::CreateScaTraFieldTest()
 {
   return Teuchos::rcp(new SCATRA::ElchResultTest(Teuchos::rcp(this, false)));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::EvaluateCCCVPhase()
+{
+  // Check and update state of cccv condition
+  if (cccv_condition_ != Teuchos::null)
+  {
+    // only proc 0 should print out information
+    const bool do_print = discret_->Comm().MyPID() == 0;
+
+    // which mode was last converged step? Is this phase over? Is the current half cycle over?
+    if (cccv_condition_->GetCCCVHalfCyclePhase() ==
+        INPAR::ELCH::CCCVHalfCyclePhase::initital_relaxation)
+    {
+      // or-case is required to be independent of the time step size
+      if (cccv_condition_->IsInitialRelaxation(time_, Dt()) or (time_ == 0.0))
+      {
+        // do nothing
+      }
+      else
+      {
+        cccv_condition_->SetFirstCCCVHalfCycle(step_);
+      }
+    }
+    else
+    {
+      while (cccv_condition_->IsEndOfHalfCyclePhase(cellvoltage_, cellcrate_, time_))
+        cccv_condition_->NextPhase(step_, time_, do_print);
+    }
+
+    // all half cycles completed?
+    const bool notfinished = cccv_condition_->NotFinished();
+
+    if (!notfinished and do_print) std::cout << "CCCV cycling is completed.\n";
+  }
 }
 BACI_NAMESPACE_CLOSE

@@ -425,8 +425,8 @@ void SSTI::SSTIMono::Timeloop()
   {
     DistributeSolutionAllFields();
 
-    ScaTraField()->CheckAndWriteOutputAndRestart();
-    ThermoField()->CheckAndWriteOutputAndRestart();
+    ScaTraField()->PrepareTimeLoop();
+    ThermoField()->PrepareTimeLoop();
   }
   // time loop
   while (NotFinished() and ScaTraField()->NotFinished())

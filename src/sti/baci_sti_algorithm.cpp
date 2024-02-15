@@ -252,7 +252,13 @@ void STI::Algorithm::ReadRestart(int step  //! time step for restart
 void STI::Algorithm::TimeLoop()
 {
   // output initial solution to screen and files
-  if (Step() == 0) Output();
+  if (Step() == 0)
+  {
+    TransferThermoToScatra(thermo_->ScaTraField()->Phiafnp());
+    TransferScatraToThermo(scatra_->ScaTraField()->Phiafnp());
+    ScaTraField()->PrepareTimeLoop();
+    ThermoField()->PrepareTimeLoop();
+  }
 
   // time loop
   while (NotFinished())

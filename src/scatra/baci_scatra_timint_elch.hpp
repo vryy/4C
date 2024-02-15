@@ -244,6 +244,9 @@ namespace SCATRA
     //! evaluate cell voltage of electrode
     void EvaluateCellVoltage();
 
+    //! Evaluate cccv phase based on c rate and cell voltage
+    void EvaluateCCCVPhase();
+
     //! extrapolate current state and adapt time step
     double ExtrapolateStateAdaptTimeStep(double dt);
 
