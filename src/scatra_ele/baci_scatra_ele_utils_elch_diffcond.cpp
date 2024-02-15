@@ -114,13 +114,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
         diffcondmat = INPAR::ELCH::diffcondmat_newman;
 
         // evaluate standard Newman material
-        if (elchPhaseMaterial->MaterialType() == INPAR::MAT::m_newman)
-        {
-          MatNewman(elchPhaseMaterial, concentrations[0], temperature, diffmanager);
-        }
-        // evaluate multi-scale Newman material
-        else
-          MatNewmanMultiScale(elchPhaseMaterial, concentrations[0], temperature, diffmanager);
+        MatNewman(elchPhaseMaterial, concentrations[0], temperature, diffmanager);
 
         break;
       }
@@ -202,28 +196,6 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
   // derivative of electronic conductivity w.r.t. temperature
   diffmanager->SetTempDerivCond(
       matnewman->ComputeTemperatureDerivativeOfConductivity(concentration, temperature), 0);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewmanMultiScale(
-    Teuchos::RCP<const MAT::Material> material, const double concentration,
-    const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager)
-{
-  // evaluate standard Newman material
-  MatNewman(material, concentration, temperature, diffmanager);
-
-  // cast material and diffusion manager
-  const Teuchos::RCP<const MAT::NewmanMultiScale> newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<const MAT::NewmanMultiScale>(material);
-  if (newmanmultiscale == Teuchos::null) dserror("Invalid material!");
-  const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCondMultiScale> diffmanagermultiscale =
-      Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCondMultiScale>(diffmanager);
-  if (diffmanagermultiscale == Teuchos::null) dserror("Invalid diffusion manager!");
-
-  // set electronic conductivity
-  diffmanagermultiscale->SetSigma(newmanmultiscale->Sigma());
 }
 
 

@@ -61,11 +61,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
     const double rhsfac)
 {
   // extract multi-scale Newman material
-  const Teuchos::RCP<const MAT::ElchMat> elchmat =
-      Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());
-  const Teuchos::RCP<const MAT::ElchPhase> elchphase =
+  const auto elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());
+  const auto elchphase =
       Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
-  const Teuchos::RCP<MAT::NewmanMultiScale> newmanmultiscale =
+  const auto newmanmultiscale =
       Teuchos::rcp_dynamic_cast<MAT::NewmanMultiScale>(elchphase->MatById(elchphase->MatID(0)));
 
   // initialize variables for micro-scale coupling flux and derivatives of micro-scale coupling flux
@@ -141,8 +140,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
       emat(fvi + 2, fui) += -vi_dq_dc_el_ui;
       emat(fvi + 2, fui + 1) += -vi_dq_dpot_el_ui;
       emat(fvi + 2, fui + 2) += timefacfac * mydiffcond::VarManager()->InvF() *
-                                    DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetSigma() *
-                                    laplawf -
+                                    DiffManager()->GetPhasePoroTort(0) *
+                                    newmanmultiscale->electronic_cond(iquad) * laplawf -
                                 vi_dq_dpot_ed_ui;
     }
 
@@ -156,8 +155,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
     double laplawfrhs_gradpot(0.0);
     my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot_ed, vi);
     erhs[fvi + 2] -= rhsfac * mydiffcond::VarManager()->InvF() *
-                         DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetSigma() *
-                         laplawfrhs_gradpot -
+                         DiffManager()->GetPhasePoroTort(0) *
+                         newmanmultiscale->electronic_cond(iquad) * laplawfrhs_gradpot -
                      vi_rhsterm;
   }
 }

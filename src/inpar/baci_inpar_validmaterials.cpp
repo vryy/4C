@@ -851,7 +851,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
         "function number of function describing concentration dependence of conductivity", 0);
     AddNamedInt(m, "COND_TEMP_SCALE_FUNCT",
         "FUNCT number describing temperature scaling of conductivity", 0);
-    AddNamedReal(m, "SIGMA", "electronic conductivity");
+    AddNamedReal(m, "ELECTRONIC_COND", "electronic conductivity");
+    AddNamedInt(m, "ELECTRONIC_COND_CONC_SCALE_FUNC_NUM",
+        "FUNCT number describing concentration dependence of electronic conductivity", 0);
     AddNamedReal(m, "A_s", "specific micro-scale surface area");
     AddNamedString(m, "MICROFILE", "input file for micro scale", "filename.dat");
     AddNamedInt(m, "MICRODIS_NUM", "number of micro-scale discretization");

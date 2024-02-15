@@ -10,6 +10,7 @@
 
 #include "baci_global_data.hpp"
 #include "baci_mat_par_bundle.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -17,9 +18,11 @@ BACI_NAMESPACE_OPEN
  | constructor                                             fang 07/17 |
  *--------------------------------------------------------------------*/
 MAT::PAR::NewmanMultiScale::NewmanMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Newman(matdata), ScatraMicroMacroCoupling(matdata), sigma_(*matdata->Get<double>("SIGMA"))
+    : Newman(matdata),
+      ScatraMicroMacroCoupling(matdata),
+      electronic_cond_(*matdata->Get<double>("ELECTRONIC_COND")),
+      conc_dep_scale_func_num_(*matdata->Get<int>("ELECTRONIC_COND_CONC_SCALE_FUNC_NUM"))
 {
-  return;
 }
 
 
@@ -49,7 +52,7 @@ CORE::COMM::ParObject* MAT::NewmanMultiScaleType::Create(const std::vector<char>
 /*--------------------------------------------------------------------*
  | construct empty Newman multi-scale material             fang 07/17 |
  *--------------------------------------------------------------------*/
-MAT::NewmanMultiScale::NewmanMultiScale() : params_(nullptr) { return; }
+MAT::NewmanMultiScale::NewmanMultiScale() : params_(nullptr) {}
 
 
 /*--------------------------------------------------------------------------------------*
@@ -58,7 +61,6 @@ MAT::NewmanMultiScale::NewmanMultiScale() : params_(nullptr) { return; }
 MAT::NewmanMultiScale::NewmanMultiScale(MAT::PAR::NewmanMultiScale* params)
     : Newman(params), params_(params)
 {
-  return;
 }
 
 
@@ -80,8 +82,6 @@ void MAT::NewmanMultiScale::Pack(CORE::COMM::PackBuffer& data) const
 
   // pack base class material
   Newman::Pack(data);
-
-  return;
 }
 
 
@@ -99,6 +99,7 @@ void MAT::NewmanMultiScale::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
   if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  {
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -110,6 +111,7 @@ void MAT::NewmanMultiScale::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not match calling type %d!", mat->Type(),
             MaterialType());
     }
+  }
 
   // extract base class material
   std::vector<char> basedata(0);
@@ -119,8 +121,24 @@ void MAT::NewmanMultiScale::Unpack(const std::vector<char>& data)
   // final safety check
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d!", data.size(), position);
+}
 
-  return;
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+double MAT::NewmanMultiScale::electronic_cond(const int gp) const
+{
+  const int func_num = params_->conc_dep_scale_func_num();
+  if (func_num > 0)
+  {
+    return GLOBAL::Problem::Instance()
+               ->FunctionById<CORE::UTILS::FunctionOfAnything>(func_num - 1)
+               .Evaluate({{"c", EvaluateMeanConcentration(gp)}}, {}, 0) *
+           params_->electronic_cond();
+  }
+  else
+  {
+    return params_->electronic_cond();
+  }
 }
 
 BACI_NAMESPACE_CLOSE

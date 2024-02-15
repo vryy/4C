@@ -106,27 +106,14 @@ namespace DRT
      public:
       //! constructor
       ScaTraEleDiffManagerElchDiffCondMultiScale(int numscal)
-          : ScaTraEleDiffManagerElchDiffCond(numscal), sigma_(0.0){};
-
-      //! set electronic conductivity
-      void SetSigma(const double sigma) { sigma_ = sigma; };
-
-      //! access electronic conductivity
-      double GetSigma() const { return sigma_; };
+          : ScaTraEleDiffManagerElchDiffCond(numscal){};
 
       //! Output of transport parameter (to screen)
       void OutputTransportParams(const int numscal) override
       {
         // call base class routine
         ScaTraEleDiffManagerElchDiffCond::OutputTransportParams(numscal);
-
-        // additional output
-        std::cout << "electronic conductivity:   " << sigma_ << std::endl;
       };
-
-     private:
-      //! electrolyte conductivity
-      double sigma_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
