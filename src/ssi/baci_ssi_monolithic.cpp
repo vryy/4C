@@ -598,8 +598,8 @@ void SSI::SSIMono::PrepareTimeLoop()
   // calculate initial time derivatives
   CalcInitialTimeDerivative();
 
-  ScaTraField()->CheckAndWriteOutputAndRestart();
-  if (IsScaTraManifold()) ScaTraManifold()->CheckAndWriteOutputAndRestart();
+  ScaTraField()->PrepareTimeLoop();
+  if (IsScaTraManifold()) ScaTraManifold()->PrepareTimeLoop();
 }
 
 /*--------------------------------------------------------------------------*
