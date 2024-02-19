@@ -53,7 +53,8 @@ namespace DRT::ELEMENTS
     }
 
     template <typename Evaluator>
-    static void Evaluate(const DRT::Element& ele, const ElementNodes<celltype>& nodal_coordinates,
+    static inline auto Evaluate(const DRT::Element& ele,
+        const ElementNodes<celltype>& nodal_coordinates,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
@@ -78,7 +79,121 @@ namespace DRT::ELEMENTS
             return linearization;
           });
 
-      evaluator(spatial_material_mapping.deformation_gradient_, gl_strain, linearization);
+      return evaluator(spatial_material_mapping.deformation_gradient_, gl_strain, linearization);
+    }
+
+    static inline SolidFormulationLinearization<celltype> EvaluateFullLinearization(
+        const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+            deformation_gradient,
+        const DisplacementBasedPreparationData& preparation_data,
+        DisplacementBasedHistoryData& history_data)
+    {
+      if constexpr (!CORE::FE::use_lagrange_shapefnct<celltype>)
+      {
+        dserror("The full linearization is only implemented for lagrangian elements.");
+      }
+
+      using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
+      SolidFormulationLinearization<celltype> linearization{};
+
+      CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<celltype>::numderiv2,
+          CORE::FE::num_nodes<celltype>>
+          deriv2(true);
+      CORE::FE::shape_function_deriv2<celltype>(xi, deriv2);
+
+      // evaluate derivative w.r.t. displacements
+      for (int i = 0; i < CORE::FE::num_nodes<celltype>; ++i)
+      {
+        linearization.d_F_dd(0, CORE::FE::dim<celltype> * i + 0) = jacobian_mapping.N_XYZ_(0, i);
+        linearization.d_F_dd(1, CORE::FE::dim<celltype> * i + 1) = jacobian_mapping.N_XYZ_(1, i);
+        linearization.d_F_dd(2, CORE::FE::dim<celltype> * i + 2) = jacobian_mapping.N_XYZ_(2, i);
+        linearization.d_F_dd(3, CORE::FE::dim<celltype> * i + 0) = jacobian_mapping.N_XYZ_(1, i);
+        linearization.d_F_dd(4, CORE::FE::dim<celltype> * i + 1) = jacobian_mapping.N_XYZ_(2, i);
+        linearization.d_F_dd(5, CORE::FE::dim<celltype> * i + 0) = jacobian_mapping.N_XYZ_(2, i);
+        linearization.d_F_dd(6, CORE::FE::dim<celltype> * i + 1) = jacobian_mapping.N_XYZ_(0, i);
+        linearization.d_F_dd(7, CORE::FE::dim<celltype> * i + 2) = jacobian_mapping.N_XYZ_(1, i);
+        linearization.d_F_dd(8, CORE::FE::dim<celltype> * i + 2) = jacobian_mapping.N_XYZ_(0, i);
+      }
+
+      // evaluate derivative of F w.r.t. xi
+      static CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, CORE::FE::dim<celltype>> xXF(true);
+      static CORE::LINALG::Matrix<CORE::FE::dim<celltype>,
+          CORE::FE::DisTypeToNumDeriv2<celltype>::numderiv2>
+          xXFsec(true);
+      xXF.Update(1.0, element_nodes.reference_coordinates_, 0.0);
+      xXF.Update(1.0, element_nodes.displacements_, 1.0);
+      xXF.MultiplyNT(-1.0, element_nodes.reference_coordinates_, deformation_gradient, 1.0);
+      xXFsec.MultiplyTT(1.0, xXF, deriv2, 0.0);
+
+      for (int a = 0; a < CORE::FE::dim<celltype>; ++a)
+      {
+        for (int b = 0; b < CORE::FE::dim<celltype>; ++b)
+        {
+          linearization.d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 0) +=
+              xXFsec(a, 0) * jacobian_mapping.inverse_jacobian_(b, 0) +
+              xXFsec(a, 3) * jacobian_mapping.inverse_jacobian_(b, 1) +
+              xXFsec(a, 4) * jacobian_mapping.inverse_jacobian_(b, 2);
+          linearization.d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 1) +=
+              xXFsec(a, 3) * jacobian_mapping.inverse_jacobian_(b, 0) +
+              xXFsec(a, 1) * jacobian_mapping.inverse_jacobian_(b, 1) +
+              xXFsec(a, 5) * jacobian_mapping.inverse_jacobian_(b, 2);
+          linearization.d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 2) +=
+              xXFsec(a, 4) * jacobian_mapping.inverse_jacobian_(b, 0) +
+              xXFsec(a, 5) * jacobian_mapping.inverse_jacobian_(b, 1) +
+              xXFsec(a, 2) * jacobian_mapping.inverse_jacobian_(b, 2);
+        }
+      }
+
+      // evaluate second derivative w.r.t. xi, displacements
+      CORE::LINALG::Matrix<CORE::FE::DisTypeToNumDeriv2<celltype>::numderiv2,
+          CORE::FE::dim<celltype>>
+          Xsec(true);
+      CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>,
+          CORE::FE::DisTypeToNumDeriv2<celltype>::numderiv2>
+          N_XYZ_Xsec(true);
+      Xsec.Multiply(1.0, deriv2, element_nodes.reference_coordinates_, 0.0);
+      N_XYZ_Xsec.MultiplyTT(1.0, jacobian_mapping.N_XYZ_, Xsec, 0.0);
+      for (int i = 0; i < CORE::FE::dim<celltype>; ++i)
+      {
+        for (int j = 0; j < CORE::FE::dim<celltype>; ++j)
+        {
+          for (int k = 0; k < CORE::FE::num_nodes<celltype>; ++k)
+          {
+            linearization.d2_F_dxi_dd(VoigtMapping::NonSymToVoigt9(i, j),
+                CORE::FE::dim<celltype> * (CORE::FE::dim<celltype> * k + i) + 0) +=
+                deriv2(0, k) * jacobian_mapping.inverse_jacobian_(j, 0) +
+                deriv2(3, k) * jacobian_mapping.inverse_jacobian_(j, 1) +
+                deriv2(4, k) * jacobian_mapping.inverse_jacobian_(j, 2) -
+                N_XYZ_Xsec(k, 0) * jacobian_mapping.inverse_jacobian_(j, 0) -
+                N_XYZ_Xsec(k, 3) * jacobian_mapping.inverse_jacobian_(j, 1) -
+                N_XYZ_Xsec(k, 4) * jacobian_mapping.inverse_jacobian_(j, 2);
+
+            linearization.d2_F_dxi_dd(VoigtMapping::NonSymToVoigt9(i, j),
+                CORE::FE::dim<celltype> * (CORE::FE::dim<celltype> * k + i) + 1) +=
+                deriv2(3, k) * jacobian_mapping.inverse_jacobian_(j, 0) +
+                deriv2(1, k) * jacobian_mapping.inverse_jacobian_(j, 1) +
+                deriv2(5, k) * jacobian_mapping.inverse_jacobian_(j, 2) -
+                N_XYZ_Xsec(k, 3) * jacobian_mapping.inverse_jacobian_(j, 0) -
+                N_XYZ_Xsec(k, 1) * jacobian_mapping.inverse_jacobian_(j, 1) -
+                N_XYZ_Xsec(k, 5) * jacobian_mapping.inverse_jacobian_(j, 2);
+
+            linearization.d2_F_dxi_dd(VoigtMapping::NonSymToVoigt9(i, j),
+                CORE::FE::dim<celltype> * (CORE::FE::dim<celltype> * k + i) + 2) +=
+                deriv2(4, k) * jacobian_mapping.inverse_jacobian_(j, 0) +
+                deriv2(5, k) * jacobian_mapping.inverse_jacobian_(j, 1) +
+                deriv2(2, k) * jacobian_mapping.inverse_jacobian_(j, 2) -
+                N_XYZ_Xsec(k, 4) * jacobian_mapping.inverse_jacobian_(j, 0) -
+                N_XYZ_Xsec(k, 5) * jacobian_mapping.inverse_jacobian_(j, 1) -
+                N_XYZ_Xsec(k, 2) * jacobian_mapping.inverse_jacobian_(j, 2);
+          }
+        }
+      }
+
+      return linearization;
     }
 
     static CORE::LINALG::Matrix<DETAILS::num_str<celltype>,

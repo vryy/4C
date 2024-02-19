@@ -94,7 +94,8 @@ namespace DRT::ELEMENTS
     }
 
     template <typename Evaluator>
-    static void Evaluate(const DRT::Element& ele, const ElementNodes<celltype>& nodal_coordinates,
+    static inline auto Evaluate(const DRT::Element& ele,
+        const ElementNodes<celltype>& nodal_coordinates,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
@@ -114,7 +115,23 @@ namespace DRT::ELEMENTS
       CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1> gl_strain;
       gl_strain.Multiply(linearization.linear_b_operator_, nodal_displs);
 
-      evaluator(CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>(), gl_strain, linearization);
+      return evaluator(
+          CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>(), gl_strain, linearization);
+    }
+
+    static inline SolidFormulationLinearization<celltype> EvaluateFullLinearization(
+        const DRT::Element& ele, const ElementNodes<celltype>& nodal_coordinates,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+            deformation_gradient,
+        const DisplacementBasedLinearKinematicsPreparationData& preparation_data,
+        DisplacementBasedLinearKinematicsHistoryData& history_data)
+    {
+      dserror(
+          "The full linearization is not yet implemented for the displacement based formulation "
+          "with linear kinematics.");
     }
 
     static void AddInternalForceVector(

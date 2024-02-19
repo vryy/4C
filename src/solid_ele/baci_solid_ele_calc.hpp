@@ -17,6 +17,7 @@
 #include "baci_solid_ele_calc_lib.hpp"
 #include "baci_solid_ele_calc_lib_integration.hpp"
 #include "baci_solid_ele_calc_lib_io.hpp"
+#include "baci_solid_ele_calc_lib_nitsche.hpp"
 
 #include <memory>
 #include <string>
@@ -107,6 +108,11 @@ namespace DRT::ELEMENTS
         STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
     void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material);
+
+    CauchyNDirAndLinearization<3> GetCauchyNDirAndDerivativesAtXi(const DRT::Element& ele,
+        MAT::So3Material& solid_material, const std::vector<double>& disp,
+        const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
+        const CORE::LINALG::Matrix<3, 1>& dir);
 
    private:
     /// static values for matrix sizes

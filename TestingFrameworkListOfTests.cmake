@@ -943,6 +943,8 @@ baci_test(mixture_prestress_cube 2 "5")
 baci_test_restartonly(mixture_prestress_cube_restart_from_prestress mixture_prestress_cube 2 2 41)
 baci_test(mixture_prestress_minimum_number_of_prestress_steps 2 "50")
 
+baci_test(new_solid_ele_contact3D_unbiased_self_hex8_nitsche_new_struct 3 "")
+baci_test(new_solid_ele_contact3D_unbiased_self_tet4_nitsche_ele_new_struct 3 "")
 baci_test(new_solid_ele_hex8_Standard_eas_none_volume_neumann 2 1)
 baci_test(new_solid_ele_hex8_Standard_eas_none_nodal_fibers 2 1)
 baci_test(new_solid_ele_hex8_Standard_eas_none_element_fibers 2 1)

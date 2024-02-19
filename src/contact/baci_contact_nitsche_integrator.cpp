@@ -17,6 +17,8 @@
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_mat_elasthyper.hpp"
 #include "baci_so3_base.hpp"
+#include "baci_solid_ele.hpp"
+#include "baci_solid_ele_calc_lib_nitsche.hpp"
 
 #include <Epetra_FEVector.h>
 
@@ -471,38 +473,66 @@ void CONTACT::IntegratorNitsche::SoEleCauchy(MORTAR::Element& moEle, double* bou
   CORE::LINALG::Matrix<dim, dim> derivtravo_slave;
   CONTACT::UTILS::MapGPtoParent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
 
-  double sigma_nt = 0.0;
-  CORE::LINALG::SerialDenseMatrix dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt, d2sntDdDpxi;
-  CORE::LINALG::Matrix<dim, 1> dsntdn, dsntdt, dsntdpxi;
-  dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())
-      ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction,
-          sigma_nt, &dsntdd, &d2sntdd2, &d2sntDdDn, &d2sntDdDt, &d2sntDdDpxi, &dsntdn, &dsntdt,
-          &dsntdpxi, nullptr, nullptr, nullptr, nullptr, nullptr);
+  // check for old or new solid element
+  const DRT::ELEMENTS::CauchyNDirAndLinearization<dim> cauchy_n_dir = std::invoke(
+      [&]()
+      {
+        if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement());
+            solid_ele != nullptr)
+        {
+          // old solid element
+          DRT::ELEMENTS::CauchyNDirAndLinearization<dim> cauchy_n_dir;
+          solid_ele->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal,
+              direction, cauchy_n_dir.cauchy_n_dir, &cauchy_n_dir.d_cauchyndir_dd,
+              &cauchy_n_dir.d2_cauchyndir_dd2, &cauchy_n_dir.d2_cauchyndir_dd_dn,
+              &cauchy_n_dir.d2_cauchyndir_dd_ddir, &cauchy_n_dir.d2_cauchyndir_dd_dxi,
+              &cauchy_n_dir.d_cauchyndir_dn, &cauchy_n_dir.d_cauchyndir_ddir,
+              &cauchy_n_dir.d_cauchyndir_dxi, nullptr, nullptr, nullptr, nullptr, nullptr);
 
-  cauchy_nt += w * sigma_nt;
+          return cauchy_n_dir;
+        }
+        else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(moEle.ParentElement());
+                 solid_ele != nullptr)
+        {
+          // new solid element
+          return solid_ele->GetCauchyNDirAndDerivativesAtXi<dim>(
+              moEle.MoData().ParentDisp(), pxsi, normal, direction);
+        }
+        else
+        {
+          dserror("Unknown solid element type");
+        }
+      });
+
+
+  cauchy_nt += w * cauchy_n_dir.cauchy_n_dir;
 
   for (int i = 0; i < moEle.ParentElement()->NumNode() * dim; ++i)
-    deriv_sigma_nt[moEle.MoData().ParentDof().at(i)] += w * dsntdd(i, 0);
+    deriv_sigma_nt[moEle.MoData().ParentDof().at(i)] += w * cauchy_n_dir.d_cauchyndir_dd(i, 0);
 
   for (int i = 0; i < dim - 1; ++i)
   {
     for (const auto& p : boundary_gpcoord_lin[i])
       for (int k = 0; k < dim; ++k)
-        deriv_sigma_nt[p.first] += dsntdpxi(k) * derivtravo_slave(k, i) * p.second * w;
+        deriv_sigma_nt[p.first] +=
+            cauchy_n_dir.d_cauchyndir_dxi(k) * derivtravo_slave(k, i) * p.second * w;
   }
 
 
   for (int d = 0; d < dim; ++d)
-    for (const auto& p : normal_deriv[d]) deriv_sigma_nt[p.first] += dsntdn(d) * p.second * w;
+    for (const auto& p : normal_deriv[d])
+      deriv_sigma_nt[p.first] += cauchy_n_dir.d_cauchyndir_dn(d) * p.second * w;
 
   for (int d = 0; d < dim; ++d)
-    for (const auto& p : direction_deriv[d]) deriv_sigma_nt[p.first] += dsntdt(d) * p.second * w;
+    for (const auto& p : direction_deriv[d])
+      deriv_sigma_nt[p.first] += cauchy_n_dir.d_cauchyndir_ddir(d) * p.second * w;
 
   if (abs(theta_) > 1.e-12)
   {
-    BuildAdjointTest<dim>(moEle, w, dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt, d2sntDdDpxi,
-        boundary_gpcoord_lin, derivtravo_slave, normal_deriv, direction_deriv, adjoint_test,
-        deriv_adjoint_test);
+    BuildAdjointTest<dim>(moEle, w, cauchy_n_dir.d_cauchyndir_dd, cauchy_n_dir.d2_cauchyndir_dd2,
+        cauchy_n_dir.d2_cauchyndir_dd_dn, cauchy_n_dir.d2_cauchyndir_dd_ddir,
+        cauchy_n_dir.d2_cauchyndir_dd_dxi, boundary_gpcoord_lin, derivtravo_slave, normal_deriv,
+        direction_deriv, adjoint_test, deriv_adjoint_test);
   }
 }
 
