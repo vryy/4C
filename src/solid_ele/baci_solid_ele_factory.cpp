@@ -113,7 +113,7 @@ namespace
       std::enable_if_t<celltype == CORE::FE::CellType::hex8 ||
                        celltype == CORE::FE::CellType::pyramid5>>
   {
-    using type = DRT::ELEMENTS::SolidEleCalcFbar<celltype>;
+    using type = DRT::ELEMENTS::FBarSolidIntegrator<celltype>;
   };
 
   /*!

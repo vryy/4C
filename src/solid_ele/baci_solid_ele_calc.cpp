@@ -14,6 +14,7 @@ formulation
 #include "baci_mat_so3_material.hpp"
 #include "baci_solid_ele_calc_displacement_based.hpp"
 #include "baci_solid_ele_calc_displacement_based_linear_kinematics.hpp"
+#include "baci_solid_ele_calc_fbar.hpp"
 #include "baci_solid_ele_calc_lib.hpp"
 #include "baci_solid_ele_calc_lib_integration.hpp"
 #include "baci_solid_ele_calc_lib_io.hpp"
@@ -509,5 +510,14 @@ template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::wedge6,
     DRT::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<CORE::FE::CellType::wedge6>,
     DRT::ELEMENTS::DisplacementBasedLinearKinematicsPreparationData,
     DRT::ELEMENTS::DisplacementBasedLinearKinematicsHistoryData>;
+
+// Fbar element technology
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex8,
+    DRT::ELEMENTS::FBarFormulation<CORE::FE::CellType::hex8>,
+    DRT::ELEMENTS::FBarPreparationData<CORE::FE::CellType::hex8>, DRT::ELEMENTS::FBarHistoryData>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5,
+    DRT::ELEMENTS::FBarFormulation<CORE::FE::CellType::pyramid5>,
+    DRT::ELEMENTS::FBarPreparationData<CORE::FE::CellType::pyramid5>,
+    DRT::ELEMENTS::FBarHistoryData>;
 
 BACI_NAMESPACE_CLOSE
