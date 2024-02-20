@@ -40,10 +40,7 @@ namespace
         .AddOptionalNamedDoubleVector("FIBER2", 3)
         .AddOptionalNamedDoubleVector("FIBER3", 3)
         .AddOptionalNamedString("TYPE")
-        .AddOptionalNamedString("POROTYPE")
-        .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
-        .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-        .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
+        .AddOptionalNamedString("POROTYPE");
   }
 }  // namespace
 
@@ -60,9 +57,6 @@ void DRT::ELEMENTS::SolidPoroType::SetupElementDefinition(
       GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex8>()
           .AddOptionalNamedString("EAS")
           .AddOptionalTag("FBAR")
-          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 8)
-          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 8)
-          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 8)
           .Build();
 
   defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex27)] =
@@ -70,11 +64,7 @@ void DRT::ELEMENTS::SolidPoroType::SetupElementDefinition(
 
 
   defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::tet4)] =
-      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet4>()
-          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 8)
-          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 8)
-          .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 8)
-          .Build();
+      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet4>().Build();
 
   defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::tet10)] =
       GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet10>().Build();
@@ -160,8 +150,6 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   // read base element
   // set cell type
   celltype_ = CORE::FE::StringToCellType(elecelltype);
-  anisotropic_permeability_directions_.resize(3, std::vector<double>(3, 0.0));
-  anisotropic_permeability_nodal_coeffs_.resize(3, std::vector<double>(this->NumNode(), 0.0));
 
   // read number of material model
   SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
@@ -196,9 +184,6 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
     poro_ele_property_.impltype = INPAR::SCATRA::impltype_undefined;
   }
 
-  ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
-  ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(linedef);
-
   solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
   solidporo_calc_variant_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
 
@@ -211,28 +196,6 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
       solidporo_calc_variant_);
 
   return true;
-}
-
-void DRT::ELEMENTS::SolidPoro::ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
-    INPUT::LineDefinition* linedef)
-{
-  for (int dim = 0; dim < 3; ++dim)
-  {
-    std::string definition_name = "POROANISODIR" + std::to_string(dim + 1);
-    if (linedef->HaveNamed(definition_name))
-      linedef->ExtractDoubleVector(definition_name, anisotropic_permeability_directions_[dim]);
-  }
-}
-
-void DRT::ELEMENTS::SolidPoro::ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
-    INPUT::LineDefinition* linedef)
-{
-  for (int dim = 0; dim < 3; ++dim)
-  {
-    std::string definition_name = "POROANISONODALCOEFFS" + std::to_string(dim + 1);
-    if (linedef->HaveNamed(definition_name))
-      linedef->ExtractDoubleVector(definition_name, anisotropic_permeability_nodal_coeffs_[dim]);
-  }
 }
 
 MAT::So3Material& DRT::ELEMENTS::SolidPoro::SolidPoroMaterial(int nummat) const
@@ -260,16 +223,6 @@ void DRT::ELEMENTS::SolidPoro::Pack(CORE::COMM::PackBuffer& data) const
 
   data.AddtoPack(material_post_setup_);
 
-  // anisotropic_permeability_directions_
-  auto size = static_cast<int>(anisotropic_permeability_directions_.size());
-  AddtoPack(data, size);  // TODO:: necessary?
-  for (int i = 0; i < size; ++i) AddtoPack(data, anisotropic_permeability_directions_[i]);
-
-  // anisotropic_permeability_nodal_coeffs_
-  size = static_cast<int>(anisotropic_permeability_nodal_coeffs_.size());
-  AddtoPack(data, size);  // TODO:: necessary?
-  for (int i = 0; i < size; ++i) AddtoPack(data, anisotropic_permeability_nodal_coeffs_[i]);
-
   // optional data, e.g., EAS data
   DRT::ELEMENTS::Pack(solid_calc_variant_, data);
   DRT::ELEMENTS::Pack(solidporo_calc_variant_, data);
@@ -295,20 +248,6 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   poro_ele_property_.impltype = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
 
   CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
-
-  // anisotropic_permeability_directions_
-  int size = 0;
-  ExtractfromPack(position, data, size);
-  anisotropic_permeability_directions_.resize(size, std::vector<double>(3, 0.0));
-  for (int i = 0; i < size; ++i)
-    ExtractfromPack(position, data, anisotropic_permeability_directions_[i]);
-
-  // anisotropic_permeability_nodal_coeffs_
-  size = 0;
-  ExtractfromPack(position, data, size);
-  anisotropic_permeability_nodal_coeffs_.resize(size, std::vector<double>(this->NumNode(), 0.0));
-  for (int i = 0; i < size; ++i)
-    ExtractfromPack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // reset solid and poro interfaces
   solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);

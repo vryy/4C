@@ -136,24 +136,6 @@ namespace DRT::ELEMENTS
         DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
-    void ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
-        INPUT::LineDefinition* linedef);
-
-    void ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
-        INPUT::LineDefinition* linedef);
-
-    [[nodiscard]] const std::vector<std::vector<double>>& GetAnisotropicPermeabilityDirections()
-        const
-    {
-      return anisotropic_permeability_directions_;
-    }
-
-    [[nodiscard]] const std::vector<std::vector<double>>& GetAnisotropicPermeabilityNodalCoeffs()
-        const
-    {
-      return anisotropic_permeability_nodal_coeffs_;
-    }
-
     void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
     Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override
@@ -197,19 +179,12 @@ namespace DRT::ELEMENTS
    private:
     //! cell type
     CORE::FE::CellType celltype_{CORE::FE::CellType::dis_none};
-    ;
 
     //! solid element properties
     SolidElementProperties solid_ele_property_{};
 
     //! additional poro element properties
     SolidPoroElementProperties poro_ele_property_{};
-
-    //! directions for anisotropic permeability
-    std::vector<std::vector<double>> anisotropic_permeability_directions_;
-
-    //! scaling coefficients for nodal anisotropic permeability
-    std::vector<std::vector<double>> anisotropic_permeability_nodal_coeffs_;
 
     //! interface pointer for data exchange between the element and the time integrator.
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
