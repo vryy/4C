@@ -725,23 +725,6 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
       dserror("No valid scaling method selected. Choose between \"none\", \"sym\" or \"infnorm\".");
   }
 
-  // set permutation of linear problem
-  switch (Teuchos::getIntegralValue<INPAR::SOLVER::PermutationStrategy>(inparams, "PERMUTE_SYSTEM"))
-  {
-    case INPAR::SOLVER::PermutationStrategy::algebraic:
-      beloslist.set("permutation strategy", "Algebraic");
-      break;
-    case INPAR::SOLVER::PermutationStrategy::local:
-      beloslist.set("permutation strategy", "Local");
-      break;
-    case INPAR::SOLVER::PermutationStrategy::none:
-    default:
-      beloslist.set("permutation strategy", "none");
-      break;
-  }
-  double nonDiagDominance = inparams.get<double>("NON_DIAGDOMINANCE_RATIO");
-  beloslist.set("diagonal dominance ratio", nonDiagDominance);
-
   // set parameters for Ifpack if used
   if (azprectyp == INPAR::SOLVER::PreconditionerType::ilu ||
       azprectyp == INPAR::SOLVER::PreconditionerType::icc)

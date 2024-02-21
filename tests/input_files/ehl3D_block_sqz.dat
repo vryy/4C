@@ -173,8 +173,7 @@ ML_SMOOTHERFINE                 SGS
 ML_SMOOTHERMED                  SGS
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-SOLVER                          Belos
-PERMUTE_SYSTEM                  none
+SOLVER                          Beloss
 --------------------------------------------------------------------SOLVER 3
 NAME                            Direct_Solver
 SOLVER                          Superlu

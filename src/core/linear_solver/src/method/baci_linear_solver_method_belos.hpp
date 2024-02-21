@@ -13,7 +13,6 @@
 #include "baci_config.hpp"
 
 #include "baci_linear_solver_method_krylov.hpp"
-#include "baci_linear_solver_preconditioner_type.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>

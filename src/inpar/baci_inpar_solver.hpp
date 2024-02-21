@@ -90,14 +90,6 @@ namespace INPAR::SOLVER
     infnorm     ///< infinity-norm scaling of the linear system
   };
 
-  //! permutation strategies for linear solvers
-  enum class PermutationStrategy
-  {
-    none,       /// < no permutation, use original linear system
-    algebraic,  /// < use algebraic permutation strategy
-    local       /// < use local permutations
-  };
-
   //! set the parameters for the linear solver
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

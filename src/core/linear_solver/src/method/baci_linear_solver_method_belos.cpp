@@ -10,33 +10,12 @@
 
 #include "baci_linear_solver_method_belos.hpp"
 
-#include "baci_linear_solver_method_linalg.hpp"
-#include "baci_linear_solver_preconditioner_block.hpp"
-#include "baci_linear_solver_preconditioner_ifpack.hpp"
-#include "baci_linear_solver_preconditioner_krylovprojection.hpp"
-#include "baci_linear_solver_preconditioner_ml.hpp"
-#include "baci_linear_solver_preconditioner_point.hpp"
-
 #include <BelosBiCGStabSolMgr.hpp>
 #include <BelosBlockCGSolMgr.hpp>
 #include <BelosBlockGmresSolMgr.hpp>
 #include <BelosConfigDefs.hpp>
 #include <BelosEpetraAdapter.hpp>
 #include <BelosLinearProblem.hpp>
-#include <MueLu.hpp>
-#include <MueLu_ConfigDefs.hpp>
-#include <MueLu_DirectSolver.hpp>
-#include <MueLu_FactoryBase.hpp>
-#include <MueLu_HierarchyUtils.hpp>
-#include <MueLu_PermutationFactory.hpp>
-#include <MueLu_SmootherFactory.hpp>
-#include <MueLu_SmootherPrototype.hpp>
-#include <MueLu_VerboseObject.hpp>
-#include <Trilinos_version.h>
-#include <Xpetra_CrsMatrixWrap.hpp>
-#include <Xpetra_MapFactory.hpp>
-#include <Xpetra_Matrix.hpp>
-#include <Xpetra_MultiVectorFactory.hpp>
 
 BACI_NAMESPACE_OPEN
 
@@ -63,13 +42,6 @@ void CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Setup(
 
   if (!this->Params().isSublist("Belos Parameters")) dserror("Do not have belos parameter list");
   Teuchos::ParameterList& belist = this->Params().sublist("Belos Parameters");
-
-  this->permutationStrategy_ = belist.get<std::string>("permutation strategy", "none");
-  this->diagDominanceRatio_ = belist.get<double>("diagonal dominance ratio", 1.0);
-  if (this->permutationStrategy_ == "none")
-    this->bAllowPermutation_ = false;
-  else
-    this->bAllowPermutation_ = true;
 
   int reuse = belist.get("reuse", 0);
   bool create = this->AllowReusePreconditioner(reuse, reset) == false;
@@ -113,42 +85,10 @@ void CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Setup(
     }
   }
 
-  ////////////////////////////////////// permutation stuff
-  if (this->bAllowPermutation_)
-  {
-    // extract (user-given) additional information about linear system
-    Teuchos::RCP<Epetra_Map> epSlaveDofMap =
-        this->ExtractPermutationMap("Belos Parameters", "contact slaveDofMap");
-
-    // build permutation operators
-    // permP, permQT and A = permQ^T A permP
-    // all variables and information is stored in data_
-    // note: we only allow permutations for rows in epSlaveDofMap
-    //       the idea is not to disturb the matrix in regions which are
-    //       known to work perfectly (no contact)
-    this->BuildPermutationOperator(A, epSlaveDofMap);
-
-    // decide whether to permute linear system or not.
-    // set all information corresponding to the decision.
-    this->bPermuteLinearSystem_ = this->DecideAboutPermutation(A);
-  }
-
-  // set linear system
-  if (this->bAllowPermutation_ && this->bPermuteLinearSystem_)
-  {
-    // set
-    // b_ = permP * b;
-    // A_ = permQ^T * A * permP
-    this->PermuteLinearSystem(A, b);
-  }
-  else
-  {
-    this->b_ = b;
-    this->A_ =
-        matrix;  // we cannot use A here, since it could be Teuchos::null (for blocked operators);
-  }
+  this->b_ = b;
+  this->A_ =
+      matrix;  // we cannot use A here, since it could be Teuchos::null (for blocked operators);
   this->x_ = x;
-
 
   // call setup of preconditioner
   this->preconditioner_->Setup(create, this->A_.get(), this->x_.get(), this->b_.get());
@@ -161,26 +101,21 @@ int CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
 {
   Teuchos::ParameterList& belist = this->Params().sublist("Belos Parameters");
 
-  // build Belos linear problem
   Teuchos::RCP<Belos::LinearProblem<double, VectorType, MatrixType>> problem = Teuchos::rcp(
       new Belos::LinearProblem<double, VectorType, MatrixType>(this->A_, this->x_, this->b_));
   bool we_have_a_problem = false;
-  // TODO support for left preconditioner?
+
   if (this->preconditioner_ != Teuchos::null)
   {
-    // prepare preconditioner in preconditioner_->PrecOperator() for Belos
     Teuchos::RCP<Belos::EpetraPrecOp> belosPrec =
         Teuchos::rcp(new Belos::EpetraPrecOp(this->preconditioner_->PrecOperator()));
     problem->setRightPrec(belosPrec);
   }
+
   bool set = problem->setProblem();
   if (set == false)
-  {
-    std::cout << std::endl
-              << "ERROR: Belos::LinearProblem failed to set up correctly!" << std::endl;
-  }
+    dserror("CORE::LINEAR_SOLVER::BelosSolver: Iterative solver failed to set up correctly.");
 
-  // create iterative solver manager
   Teuchos::RCP<Belos::SolverManager<double, VectorType, MatrixType>> newSolver;
   std::string solverType = belist.get<std::string>("Solver Type");
   if (solverType == "GMRES")
@@ -193,21 +128,15 @@ int CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
     newSolver = Teuchos::rcp(new Belos::BiCGStabSolMgr<double, VectorType, MatrixType>(
         problem, Teuchos::rcp(&belist, false)));
   else
-    dserror("unknown solver type for Belos");
+    dserror("CORE::LINEAR_SOLVER::BelosSolver: Unknown iterative solver solver type chosen.");
 
-  //
-  // Perform solve
-  //
   Belos::ReturnType ret = newSolver->solve();
 
-  // store number of iterations
   numiters_ = newSolver->getNumIters();
 
-  // TODO: check me -> access solution x from linear problem???
   if (this->preconditioner_ != Teuchos::null)
     this->preconditioner_->Finish(this->A_.get(), this->x_.get(), this->b_.get());
 
-  // communicate non convergence to proc 0 and print warning
   int my_error = 0;
   if (ret != Belos::Converged)
   {
@@ -219,18 +148,15 @@ int CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Solve()
   this->comm_.SumAll(&my_error, &glob_error, 1);
 
   if (glob_error > 0 and this->comm_.MyPID() == 0)
-    std::cout << std::endl << "WARNING: Belos did not converge!" << std::endl;
+    std::cout << std::endl
+              << "CORE::LINEAR_SOLVER::BelosSolver: WARNING: Iterative solver did not converge!"
+              << std::endl;
 
-  if (this->bAllowPermutation_ && this->bPermuteLinearSystem_)
-  {
-    // repermutate solution vector
-    this->ReTransformSolution();
-  }
+  this->ncall_ += 1;
 
-  this->ncall_ += 1;  // increment counter of solver calls
   if (we_have_a_problem)
     return 1;
-  else  // everything is fine
+  else
     return 0;
 }
 

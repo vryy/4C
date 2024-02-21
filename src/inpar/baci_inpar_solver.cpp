@@ -220,22 +220,6 @@ namespace INPAR::SOLVER
           &list);
     }
 
-    // parameters for permutation of linear systems
-    {
-      setStringToIntegralParameter<PermutationStrategy>("PERMUTE_SYSTEM", "none",
-          "allow linear solver to permute linear system to improve properties",
-          tuple<std::string>("none", "algebraic", "local"),
-          tuple<PermutationStrategy>(PermutationStrategy::none, PermutationStrategy::algebraic,
-              PermutationStrategy::local),
-          &list);
-
-      DoubleParameter("NON_DIAGDOMINANCE_RATIO", 1.,
-          "matrix rows with diagEntry/maxEntry<nonDiagDominanceRatio are marked to be "
-          "significantly non-diagonal dominant (default: 1.0 = mark all non-diagonal dominant "
-          "rows)",
-          &list);
-    }
-
     // user-given name of solver block (just for beauty)
     StringParameter("NAME", "No_name", "User specified name for solver block", &list);
 

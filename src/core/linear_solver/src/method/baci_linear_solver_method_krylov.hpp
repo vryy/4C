@@ -16,14 +16,8 @@
 #include "baci_linear_solver_preconditioner_type.hpp"
 #include "baci_utils_exceptions.hpp"
 
-#include <MueLu_FactoryBase_fwd.hpp>
-#include <MueLu_Level_fwd.hpp>
-#include <MueLu_PermutationFactory_fwd.hpp>
-#include <MueLu_UseDefaultTypes.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-#include <Xpetra_MapFactory.hpp>
-#include <Xpetra_Matrix.hpp>
 
 BACI_NAMESPACE_OPEN
 
@@ -131,98 +125,6 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Epetra_Map> activeDofMap_;
 
    protected:
-    //! @name Permutation methods.
-    //!@{
-
-    /*! @brief extract map provided for being used with permutation factory. only rows in the
-     * given map are subject to permutations. returns Teuchos::null if no additional information
-     * is available/user-provided
-     */
-    Teuchos::RCP<Epetra_Map> ExtractPermutationMap(
-        const std::string solverSublist, const std::string mapName = "contact slaveDofMap");
-
-    /*! @brief Member function to build permutation operators using matrix A as input for the
-     * permutation factory. epSlaveDofMap defines a row map which restricts the permutation on
-     * this map.
-     */
-    void BuildPermutationOperator(
-        const Teuchos::RCP<Epetra_CrsMatrix>& A, const Teuchos::RCP<Epetra_Map>& epSlaveDofMap);
-
-    /*! @brief Decide whether linear system is recommended for being permuted before solver is
-     * called.
-     *
-     * decide whether it is recommended to solve a permuted linear system using the given
-     * linear solver. returns true, if permutation is recommended.
-     * Depending on the decision it feeds the preconditioner with the following additional
-     * information: "Linear System Properties" -> "non diagonal-dominant row map"
-     * (Teuchos::RCP<Map>) "Linear System Properties" -> "near-zero diagonal row map"
-     * (Teuchos::RCP<Map>)*
-     *
-     * use non-permuted matrix A as input.
-     * must be called after BuildPermutationOperator().
-     *
-     */
-    bool DecideAboutPermutation(const Teuchos::RCP<Epetra_CrsMatrix>& A);
-
-    /*! @brief Do permutation of linear system. Routine sets permuted matrix and permuted rhs to
-     * internal solver variables.
-     */
-    void PermuteLinearSystem(
-        const Teuchos::RCP<Epetra_CrsMatrix>& A, const Teuchos::RCP<Epetra_MultiVector>& b);
-
-    /*! @brief Retransform solution of permuted linear system to solution of original linear
-     * system
-     */
-    void ReTransformSolution();
-
-    /*! parameter xOp only needed for RowMap and DomainMap? (use original matrix A without
-     * permutation)
-     */
-    void PermuteNullSpace(const Teuchos::RCP<Epetra_CrsMatrix>& A);
-
-    /*! @brief Internal helper functions to access operators from internal data structure */
-    Teuchos::RCP<const Epetra_CrsMatrix> GetOperator(
-        const std::string name, const Teuchos::RCP<MueLu::FactoryBase>& fact);
-
-    Teuchos::RCP<Epetra_CrsMatrix> GetOperatorNonConst(
-        const std::string name, const Teuchos::RCP<MueLu::FactoryBase>& fact);
-
-    /*! @brief Count number of zeros on diagonal of input matrix */
-    int CountZerosOnDiagonalEpetra(const Teuchos::RCP<Epetra_CrsMatrix>& A);
-
-    /*! @brief Count number of zeros on diagonal of input matrix */
-    int CountZerosOnDiagonal(const Teuchos::RCP<const Xpetra::Matrix<double, int, int>>& xOp);
-
-    /*! @brief Returns map with global row ids of rows with absolute value < tolerance on the
-     * diagonal of matrix A
-     */
-    Teuchos::RCP<Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> FindZeroDiagonalEntries(
-        const Teuchos::RCP<Epetra_CrsMatrix>& A, double tolerance = 1e-5);
-
-    /*! @brief Returns map with global row ids of rows with absolute value < tolerance on the
-     * diagonal of matrix A
-     */
-    Teuchos::RCP<Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> FindZeroDiagonalEntries(
-        const Teuchos::RCP<Xpetra::Matrix<double, int, int>>& xA, double tolerance = 1e-5);
-
-    /*! @brief Returns map with non-diagonal dominant rows of matrix A.
-     *
-     *  check the ratio nof the diagonal entry and the entry with
-     *  maximal absolute value in the current row (diagEntry / maxEntry ) < diagDominance (=1.0
-     * default).
-     *
-     *  - if the row is diagonal dominant the ratio is 1.0
-     *  - if the row is not diagonal dominant, the ratio is < 1.0
-     *  - if the row has a zero on the diagonal the ratio is zero
-     *  - if the row is a zero row (-> singular matrix) we divide zero by zero
-     */
-    Teuchos::RCP<Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> FindNonDiagonalDominantRows(
-        const Teuchos::RCP<Epetra_CrsMatrix>& A, double diagDominanceRatio = 1.0);
-
-    Teuchos::RCP<Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> FindNonDiagonalDominantRows(
-        const Teuchos::RCP<Xpetra::Matrix<double, int, int>>& xA, double diagDominanceRatio = 1.0);
-
-
     // Read a parameter value from a parameter list and copy it into a new parameter list (with
     // another parameter name)
     template <class varType>
@@ -235,37 +137,7 @@ namespace CORE::LINEAR_SOLVER
         outParamList.set<varType>(outParamStr, defaultValue);
     }
 
-    /*! @brief if true, the linear solver is allowed to decide to solve a permuted linear system
-     * (default: false)
-     */
-    bool bAllowPermutation_;
-
-    /*! @brief internal variable whether to solve permuted linear system or original linear system
-     * (after algorithmic decision)
-     */
-    bool bPermuteLinearSystem_;
-
-    /*! @brief internal variable with the permutation strategy */
-    std::string permutationStrategy_;
-
-    /*! @brief maximum allowed diagonal dominance ratio. All row GIDs with diagonalEntry/maxEntry
-     * < diagDominanceRatio are considered to be significantly non-diagonal dominant.
-     */
-    double diagDominanceRatio_;
-
-    /*! @brief internal flexible data container for storing permutation specific data (permutation
-     * operators...)
-     */
-    Teuchos::RCP<MueLu::Level> data_;
-
-    /*! @brief factory class which generates permutation data using input matrix A */
-    Teuchos::RCP<MueLu::PermutationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>> PermFact_;
-
     //!@}
-
-#ifdef WRITEOUTSTATISTICS
-    double dtimeprecondsetup_;
-#endif
   };
 }  // namespace CORE::LINEAR_SOLVER
 

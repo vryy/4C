@@ -218,7 +218,6 @@ ML_SMOTIMES                     6 6 6 6 1
 SIMPLE_DAMPING                  1
 MUELU_XML_ENFORCE               No
 SOLVER                          Belos
-PERMUTE_SYSTEM                  local
 ----------------------------------------------------------MATERIALS
 //MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2500  NUE 0.25 DENS 7.8e-3
 //MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 25000 NUE 0.25 DENS 7.8e-3
