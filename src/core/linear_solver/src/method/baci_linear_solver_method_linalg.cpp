@@ -12,8 +12,8 @@
 #include "baci_inpar_solver.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_linalg_sparsematrix.hpp"
-#include "baci_linear_solver_method_belos.hpp"
 #include "baci_linear_solver_method_direct.hpp"
+#include "baci_linear_solver_method_iterative.hpp"
 
 #include <BelosTypes.hpp>  // for Belos verbosity codes
 #include <Epetra_LinearProblem.h>
@@ -184,8 +184,8 @@ void CORE::LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
 
     if ("belos" == solvertype)
     {
-      solver_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::BelosSolver<Epetra_Operator, Epetra_MultiVector>(
+      solver_ = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::IterativeSolver<Epetra_Operator, Epetra_MultiVector>(
               comm_, Params()));
     }
     else if ("umfpack" == solvertype or "superlu" == solvertype)
@@ -724,23 +724,6 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
     default:
       dserror("No valid scaling method selected. Choose between \"none\", \"sym\" or \"infnorm\".");
   }
-
-  // set permutation of linear problem
-  switch (Teuchos::getIntegralValue<INPAR::SOLVER::PermutationStrategy>(inparams, "PERMUTE_SYSTEM"))
-  {
-    case INPAR::SOLVER::PermutationStrategy::algebraic:
-      beloslist.set("permutation strategy", "Algebraic");
-      break;
-    case INPAR::SOLVER::PermutationStrategy::local:
-      beloslist.set("permutation strategy", "Local");
-      break;
-    case INPAR::SOLVER::PermutationStrategy::none:
-    default:
-      beloslist.set("permutation strategy", "none");
-      break;
-  }
-  double nonDiagDominance = inparams.get<double>("NON_DIAGDOMINANCE_RATIO");
-  beloslist.set("diagonal dominance ratio", nonDiagDominance);
 
   // set parameters for Ifpack if used
   if (azprectyp == INPAR::SOLVER::PreconditionerType::ilu ||

@@ -174,8 +174,6 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-NON_DIAGDOMINANCE_RATIO         1
-PERMUTE_SYSTEM                  none
 SIMPLE_DAMPING                  1
 SOLVER                          Belos
 ----------------------------------------------------------MATERIALS

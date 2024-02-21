@@ -877,13 +877,6 @@ ML_SMOTIMES 1 1 1 1 1
 // User specified name for solver block
 NAME ALE solver
 //
-// matrix rows with diagEntry/maxEntry<nonDiagDominanceRatio are marked to be significantly non-diagonal dominant (default: 1.0 = mark all non-diagonal dominant rows)
-NON_DIAGDOMINANCE_RATIO         1
-//
-// allow linear solver to permute linear system to improve properties of linear system for iterative methods.
-//                              none,Algebraic,algebraic,Local,local
-PERMUTE_SYSTEM                  none
-//
 // damping parameter for SIMPLE preconditioner
 SIMPLE_DAMPING                  1
 //
@@ -1093,13 +1086,6 @@ ML_SMOTIMES 1 1 1 1 1
 // User specified name for solver block
 NAME Fluid solver
 //
-// matrix rows with diagEntry/maxEntry<nonDiagDominanceRatio are marked to be significantly non-diagonal dominant (default: 1.0 = mark all non-diagonal dominant rows)
-NON_DIAGDOMINANCE_RATIO         1
-//
-// allow linear solver to permute linear system to improve properties of linear system for iterative methods.
-//                              none,Algebraic,algebraic,Local,local
-PERMUTE_SYSTEM                  none
-//
 // damping parameter for SIMPLE preconditioner
 SIMPLE_DAMPING                  1
 //
@@ -1308,13 +1294,6 @@ ML_SMOTIMES 1 1 1 1 1
 //
 // User specified name for solver block
 NAME Structure solver
-//
-// matrix rows with diagEntry/maxEntry<nonDiagDominanceRatio are marked to be significantly non-diagonal dominant (default: 1.0 = mark all non-diagonal dominant rows)
-NON_DIAGDOMINANCE_RATIO         1
-//
-// allow linear solver to permute linear system to improve properties of linear system for iterative methods.
-//                              none,Algebraic,algebraic,Local,local
-PERMUTE_SYSTEM                  none
 //
 // damping parameter for SIMPLE preconditioner
 SIMPLE_DAMPING                  1
