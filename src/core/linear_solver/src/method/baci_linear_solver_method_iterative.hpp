@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_METHOD_KRYLOV_HPP
-#define BACI_LINEAR_SOLVER_METHOD_KRYLOV_HPP
+#ifndef BACI_LINEAR_SOLVER_METHOD_ITERATIVE_HPP
+#define BACI_LINEAR_SOLVER_METHOD_ITERATIVE_HPP
 
 #include "baci_config.hpp"
 
@@ -85,7 +85,8 @@ namespace CORE::LINEAR_SOLVER
      * @param isCrsMatrix Boolean flag to indicate Epetra_CrsMatrix (true) or block matrix (false)
      * @param projector Krylov projector
      */
-    void CreatePreconditioner(Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
+    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType> CreatePreconditioner(
+        Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
     //! a communicator
@@ -104,10 +105,10 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<MatrixType> A_;
 
     //! counting how many times matrix was solved between resets
-    int ncall_;
+    int ncall_{0};
 
     //! number of iterations
-    int numiters_;
+    int numiters_{-1};
 
     //! preconditioner object
     Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType> preconditioner_;
@@ -129,8 +130,7 @@ namespace CORE::LINEAR_SOLVER
      * (false) of the preconditioner
      * \param[in] linSysParams Parameter list with some linear system information
      */
-    virtual void CheckReuseStatusOfActiveSet(
-        bool& bAllowReuse, const Teuchos::ParameterList* linSysParams);
+    bool CheckReuseStatusOfActiveSet(const Teuchos::ParameterList& linSysParams);
 
     /*! \brief Map of active DOFs in structural contact simulations.
      *

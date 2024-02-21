@@ -36,10 +36,8 @@ BACI_NAMESPACE_OPEN
 template <class MatrixType, class VectorType>
 CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::IterativeSolver(
     const Epetra_Comm& comm, Teuchos::ParameterList& params)
-    : comm_(comm), params_(params), ncall_(0), numiters_(-1), activeDofMap_(Teuchos::null)
+    : comm_(comm), params_(params)
 {
-  ncall_ = 0;
-  preconditioner_ = Teuchos::null;
 }
 
 //----------------------------------------------------------------------------------
@@ -56,11 +54,11 @@ void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Setup(
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
   const int reuse = belist.get("reuse", 0);
-  const bool create = AllowReusePreconditioner(reuse, reset) == false;
+  const bool create = !AllowReusePreconditioner(reuse, reset);
   if (create)
   {
     ncall_ = 0;
-    CreatePreconditioner(belist, A != Teuchos::null, projector);
+    preconditioner_ = CreatePreconditioner(belist, A != Teuchos::null, projector);
   }
 
   // feed preconditioner with more information about linear system using
@@ -109,14 +107,11 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
 {
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
-  Teuchos::RCP<Belos::LinearProblem<double, VectorType, MatrixType>> problem =
-      Teuchos::rcp(new Belos::LinearProblem<double, VectorType, MatrixType>(A_, x_, b_));
-  bool we_have_a_problem = false;
+  auto problem = Teuchos::rcp(new Belos::LinearProblem<double, VectorType, MatrixType>(A_, x_, b_));
 
   if (preconditioner_ != Teuchos::null)
   {
-    Teuchos::RCP<Belos::EpetraPrecOp> belosPrec =
-        Teuchos::rcp(new Belos::EpetraPrecOp(preconditioner_->PrecOperator()));
+    auto belosPrec = Teuchos::rcp(new Belos::EpetraPrecOp(preconditioner_->PrecOperator()));
     problem->setRightPrec(belosPrec);
   }
 
@@ -145,12 +140,7 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
   if (preconditioner_ != Teuchos::null) preconditioner_->Finish(A_.get(), x_.get(), b_.get());
 
   int my_error = 0;
-  if (ret != Belos::Converged)
-  {
-    my_error = 1;
-    we_have_a_problem = true;
-  }
-
+  if (ret != Belos::Converged) my_error = 1;
   int glob_error = 0;
   comm_.SumAll(&my_error, &glob_error, 1);
 
@@ -161,10 +151,7 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
 
   ncall_ += 1;
 
-  if (we_have_a_problem)
-    return 1;
-  else
-    return 0;
+  return 0;
 }
 
 //----------------------------------------------------------------------------------
@@ -173,16 +160,13 @@ template <class MatrixType, class VectorType>
 bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::AllowReusePreconditioner(
     const int reuse, const bool reset)
 {
-  bool bAllowReuse = true;  // default: allow reuse of preconditioner
-
   // first, check some parameters with information that has to be updated
   const Teuchos::ParameterList& linSysParams = Params().sublist("Belos Parameters");
 
-  CheckReuseStatusOfActiveSet(bAllowReuse, &linSysParams);
+  bool bAllowReuse = CheckReuseStatusOfActiveSet(linSysParams);
 
-  // true, if preconditioner must not reused but is to re-created!
   const bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
-  if (create) bAllowReuse = false;  // we have to create a new preconditioner
+  if (create) bAllowReuse = false;
 
   // here, each processor has its own local decision made
   // bAllowReuse = true -> preconditioner can be reused
@@ -197,10 +181,51 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::AllowReusePre
   int gAllowReuse = 0;
   comm_.SumAll(&lAllowReuse, &gAllowReuse, 1);
 
-  if (gAllowReuse == nProc)
-    bAllowReuse = true;
-  else
-    bAllowReuse = false;
+  return gAllowReuse == nProc;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+template <class MatrixType, class VectorType>
+bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseStatusOfActiveSet(
+    const Teuchos::ParameterList& linSysParams)
+{
+  bool bAllowReuse = true;  // default: allow reuse of preconditioner
+
+  if (linSysParams.isSublist("Linear System properties"))
+  {
+    const Teuchos::ParameterList& linSystemProps = linSysParams.sublist("Linear System properties");
+
+    if (linSystemProps.isParameter("contact activeDofMap"))
+    {
+      Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
+      epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
+
+      // Do we have history information available?
+      if (activeDofMap_.is_null())
+      {
+        /* No history available.
+         * This is the first application of the preconditioner. We cannot reuse it.
+         */
+        bAllowReuse = false;
+      }
+      else
+      {
+        /* History is available. We actually have to check for a change in the active set
+         * by comparing the current map of active DOFs with the stored map of active DOFs
+         * from the previous application of the preconditioner.
+         */
+        if (not epActiveDofMap->PointSameAs(*activeDofMap_))
+        {
+          // Map of active nodes has changed -> force preconditioner to be rebuilt
+          bAllowReuse = false;
+        }
+      }
+
+      // Store current map of active slave DOFs for comparison in next preconditioner application
+      activeDofMap_ = epActiveDofMap;
+    }
+  }
 
   return bAllowReuse;
 }
@@ -208,59 +233,14 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::AllowReusePre
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseStatusOfActiveSet(
-    bool& bAllowReuse, const Teuchos::ParameterList* linSysParams)
-{
-  if (linSysParams != nullptr)
-  {
-    if (linSysParams->isSublist("Linear System properties"))
-    {
-      const Teuchos::ParameterList& linSystemProps =
-          linSysParams->sublist("Linear System properties");
-
-      if (linSystemProps.isParameter("contact activeDofMap"))
-      {
-        Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
-        epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
-
-        // Do we have history information available?
-        if (activeDofMap_.is_null())
-        {
-          /* No history available.
-           * This is the first application of the preconditioner. We cannot reuse it.
-           */
-          bAllowReuse = false;
-        }
-        else
-        {
-          /* History is available. We actually have to check for a change in the active set
-           * by comparing the current map of active DOFs with the stored map of active DOFs
-           * from the previous application of the preconditioner.
-           */
-          if (not epActiveDofMap->PointSameAs(*activeDofMap_))
-          {
-            // Map of active nodes has changed -> force preconditioner to be rebuilt
-            bAllowReuse = false;
-          }
-        }
-
-        // Store current map of active slave DOFs for comparison in next preconditioner application
-        activeDofMap_ = epActiveDofMap;
-      }
-    }
-  }
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
-void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePreconditioner(
+Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType>
+CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePreconditioner(
     Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1.1)   CreatePreconditioner");
 
-  preconditioner_ = Teuchos::null;
+  Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType> preconditioner;
 
   if (isCrsMatrix)
   {
@@ -269,28 +249,28 @@ void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecond
     // if we have an ml parameter list we do ml
     if (Params().isSublist("IFPACK Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::IFPACKPreconditioner(
+      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::IFPACKPreconditioner(
           Params().sublist("IFPACK Parameters"), solverlist));
     }
     else if (Params().isSublist("ML Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(
+      preconditioner = Teuchos::rcp(
           new CORE::LINEAR_SOLVER::MLPreconditioner(Params().sublist("ML Parameters")));
     }
     else if (Params().isSublist("MueLu Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(
+      preconditioner = Teuchos::rcp(
           new CORE::LINEAR_SOLVER::MueLuPreconditioner(Params().sublist("MueLu Parameters")));
     }
     else if (Params().isSublist("MueLu (BeamSolid) Parameters"))
     {
-      preconditioner_ =
+      preconditioner =
           Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner(Params()));
     }
     else
-    {
-      dserror("unknown preconditioner");
-    }
+      dserror(
+          "CORE::LINEAR_SOLVER::IterativeSolver::CreatePreconditioner: Unknown preconditioner for "
+          "iterative solver chosen.");
 
     // decide whether we do what kind of scaling
     std::string scaling = solverlist.get("scaling", "none");
@@ -299,21 +279,21 @@ void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecond
     }
     else if (scaling == "infnorm")
     {
-      preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::InfNormPreconditioner(preconditioner_));
+      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::InfNormPreconditioner(preconditioner));
     }
     else if (scaling == "symmetric")
     {
-      preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::SymDiagPreconditioner(preconditioner_));
+      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::SymDiagPreconditioner(preconditioner));
     }
     else
-      dserror("Unknown type of scaling found in parameter list");
+      dserror(
+          "CORE::LINEAR_SOLVER::IterativeSolver::CreatePreconditioner: Unknown type of scaling "
+          "found in parameter list.");
 
     if (projector != Teuchos::null)
     {
-      preconditioner_ = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner(preconditioner_, projector));
+      preconditioner = Teuchos::rcp(
+          new CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner(preconditioner, projector));
     }
   }
   else
@@ -321,42 +301,42 @@ void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecond
     // assume block matrix
     if (Params().isSublist("CheapSIMPLE Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::SimplePreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::SimplePreconditioner(Params()));
     }
     else if (Params().isSublist("BGS Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(
+      preconditioner = Teuchos::rcp(
           new CORE::LINEAR_SOLVER::BGSPreconditioner(Params(), Params().sublist("BGS Parameters")));
     }
     else if (Params().isSublist("MueLu (Fluid) Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner(
+      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner(
           Params().sublist("MueLu (Fluid) Parameters")));
     }
     else if (Params().isSublist("MueLu (TSI) Parameters"))
     {
-      preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner(Params()));
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner(
+      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner(
           Params().sublist("MueLu (Contact) Parameters")));
     }
     else if (Params().isSublist("MueLu (FSI) Parameters"))
     {
-      preconditioner_ =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner(Params()));
     }
     else if (Params().isSublist("AMGnxn Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::AMGnxn_Preconditioner(Params()));
+      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::AMGnxn_Preconditioner(Params()));
     }
     else
-    {
-      dserror("unknown preconditioner for block matrix solver");
-    }
+      dserror(
+          "CORE::LINEAR_SOLVER::IterativeSolver::CreatePreconditioner: Unknown preconditioner for "
+          "block iterative solver chosen.");
   }
+
+  return preconditioner;
 }
 
 //----------------------------------------------------------------------------------
