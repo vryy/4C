@@ -25,17 +25,36 @@ namespace CORE::LINEAR_SOLVER
 {
   //! krylov subspace linear solvers with right-side preconditioning
   template <class MatrixType, class VectorType>
-  class KrylovSolver : public SolverType<MatrixType, VectorType>
+  class IterativeSolver : public SolverType<MatrixType, VectorType>
   {
    public:
     //! Constructor
-    KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params);
+    IterativeSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params);
+
+    /*! \brief Setup the solver object
+     *
+     * @param A Matrix of the linear system
+     * @param x Solution vector of the linear system
+     * @param b Right-hand side vector of the linear system
+     * @param refactor Boolean flag to enforce a refactorization of the matrix
+     * @param reset Boolean flag to enforce a full reset of the solver object
+     * @param projector Krylov projector
+     */
+    void Setup(Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x,
+        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector) override;
+
+    //! Actual call to the underlying Belos solver
+    int Solve() override;
 
     int Ncall() { return ncall_; }
 
+    //! return number of iterations
+    int getNumIters() const override { return numiters_; };
+
     Teuchos::ParameterList& Params() const { return params_; }
 
-   protected:
+   private:
     //! Get underlying preconditioner object of type PreconditionerType
     const CORE::LINEAR_SOLVER::PreconditionerType& Preconditioner()
     {
@@ -87,10 +106,12 @@ namespace CORE::LINEAR_SOLVER
     //! counting how many times matrix was solved between resets
     int ncall_;
 
+    //! number of iterations
+    int numiters_;
+
     //! preconditioner object
     Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType> preconditioner_;
 
-   private:
     /*! \brief Check if active set has changed. If yes, enforce to rebuild the preconditioner.
      *
      * We only can reuse the preconditioner if the active set in contact problems has not changed.
@@ -124,7 +145,6 @@ namespace CORE::LINEAR_SOLVER
      */
     Teuchos::RCP<Epetra_Map> activeDofMap_;
 
-   protected:
     // Read a parameter value from a parameter list and copy it into a new parameter list (with
     // another parameter name)
     template <class varType>

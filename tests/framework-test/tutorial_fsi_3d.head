@@ -1181,13 +1181,6 @@ BGS2X2_BLOCK1_DAMPING           1
 // damping parameter for BGS2X2 preconditioner block2
 BGS2X2_BLOCK2_DAMPING           1
 //
-// allow linear solver to permute linear system to improve properties of linear system for iterative methods.
-//     none,Algebraic,algebraic,Local,local
-PERMUTE_SYSTEM                  none
-//
-// matrix rows with diagEntry/maxEntry<nonDiagDominanceRatio are marked to be significantly non-diagonal dominant (default: 1.0 = mark all non-diagonal dominant rows)
-NON_DIAGDOMINANCE_RATIO         1
-//
 // User specified name for solver block
 NAME                            Fluid solver
 //
