@@ -153,6 +153,23 @@ namespace DRT::ELEMENTS
 
     bool VisData(const std::string& name, std::vector<double>& data) override;
 
+    /*!
+     * @brief Evaluate the Cauchy stress at @p xi with the normal vector @p n in the direction @p
+     * dir and compute the linearizations w.r.t. all input parameters (disp, xi, n and dir)
+     *
+     * @tparam dim (in) : Dimension of the element
+     * @param disp (in) : Nodal displacements of the element
+     * @param xi (in) : Position of the point in the parameter space of the element
+     * @param n (in) : Normal vector
+     * @param dir (in) : Direction of the Cauchy stress
+     * @return CauchyNDirAndLinearization<dim> (out) : A struct containing the Cauchy stress
+     * component and its linearizations
+     */
+    template <int dim>
+    CauchyNDirAndLinearization<dim> GetCauchyNDirAndDerivativesAtXi(const std::vector<double>& disp,
+        const CORE::LINALG::Matrix<dim, 1>& xi, const CORE::LINALG::Matrix<dim, 1>& n,
+        const CORE::LINALG::Matrix<dim, 1>& dir);
+
    private:
     //! cell type
     CORE::FE::CellType celltype_ = CORE::FE::CellType::dis_none;

@@ -13,6 +13,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "baci_solid_ele_calc_interface.hpp"
 #include "baci_solid_ele_calc_lib.hpp"
 #include "baci_solid_ele_calc_lib_io.hpp"
+#include "baci_solid_ele_calc_lib_nitsche.hpp"
 #include "baci_solid_ele_calc_mulf.hpp"
 #include "baci_solid_ele_neumann_evaluator.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
@@ -215,5 +216,24 @@ int DRT::ELEMENTS::Solid::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::ELEMENTS::EvaluateNeumannByElement(*this, discretization, condition, lm, elevec1, time);
   return 0;
 }
+
+template <int dim>
+DRT::ELEMENTS::CauchyNDirAndLinearization<dim>
+DRT::ELEMENTS::Solid::GetCauchyNDirAndDerivativesAtXi(const std::vector<double>& disp,
+    const CORE::LINALG::Matrix<dim, 1>& xi, const CORE::LINALG::Matrix<dim, 1>& n,
+    const CORE::LINALG::Matrix<dim, 1>& dir)
+{
+  return DRT::ELEMENTS::GetCauchyNDirAndDerivativesAtXi<dim>(
+      solid_calc_variant_, *this, *SolidMaterial(), disp, xi, n, dir);
+}
+
+template DRT::ELEMENTS::CauchyNDirAndLinearization<3>
+DRT::ELEMENTS::Solid::GetCauchyNDirAndDerivativesAtXi<3>(const std::vector<double>& disp,
+    const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
+    const CORE::LINALG::Matrix<3, 1>& dir);
+template DRT::ELEMENTS::CauchyNDirAndLinearization<2>
+DRT::ELEMENTS::Solid::GetCauchyNDirAndDerivativesAtXi<2>(const std::vector<double>& disp,
+    const CORE::LINALG::Matrix<2, 1>& xi, const CORE::LINALG::Matrix<2, 1>& n,
+    const CORE::LINALG::Matrix<2, 1>& dir);
 
 BACI_NAMESPACE_CLOSE

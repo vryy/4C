@@ -122,6 +122,31 @@ namespace DRT::ELEMENTS
   };
 
   /*!
+   * @brief Evaluate element node information given the element and a displacement vector
+   *
+   * @tparam celltype
+   * @param ele (in): Element
+   * @param disp (in) : Vector of nodal displacements of the element
+   * @return ElementNodes<celltype>
+   */
+  template <CORE::FE::CellType celltype>
+  ElementNodes<celltype> EvaluateElementNodes(
+      const DRT::Element& ele, const std::vector<double>& disp)
+  {
+    DRT::ELEMENTS::ElementNodes<celltype> element_nodes;
+    for (int i = 0; i < DETAIL::num_nodes<celltype>; ++i)
+    {
+      for (int d = 0; d < DETAIL::num_dim<celltype>; ++d)
+      {
+        element_nodes.reference_coordinates_(i, d) = ele.Nodes()[i]->X()[d];
+        element_nodes.displacements_(i, d) = disp[i * DETAIL::num_dim<celltype> + d];
+      }
+    }
+
+    return element_nodes;
+  }
+
+  /*!
    * @brief Evaluates the nodal coordinates from this iteration
    *
    * @param ele (in) : Reference to the element
@@ -137,15 +162,8 @@ namespace DRT::ELEMENTS
     std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
 
-    DRT::ELEMENTS::ElementNodes<celltype> element_nodes;
-    for (int i = 0; i < DETAIL::num_nodes<celltype>; ++i)
-    {
-      for (int d = 0; d < DETAIL::num_dim<celltype>; ++d)
-      {
-        element_nodes.reference_coordinates_(i, d) = ele.Nodes()[i]->X()[d];
-        element_nodes.displacements_(i, d) = mydisp[i * DETAIL::num_dim<celltype> + d];
-      }
-    }
+    DRT::ELEMENTS::ElementNodes<celltype> element_nodes =
+        EvaluateElementNodes<celltype>(ele, mydisp);
 
     if constexpr (CORE::FE::is_nurbs<celltype>)
     {
@@ -902,6 +920,28 @@ namespace DRT::ELEMENTS
       params.set("fiberholder", fiberHolder);
     }
   }
+
+  /*!
+   * @brief Linearization of a solid formulation containing the derivatives of the deformation
+   * gradient w.r.t. the nodal displacements, xi and the second derivative w.r.t. xi and
+   * displacements
+   *
+   * @tparam celltype
+   */
+  template <CORE::FE::CellType celltype>
+  struct SolidFormulationLinearization
+  {
+    /// Derivative of the deformation gradient w.r.t. nodal displacements
+    CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>> d_F_dd{};
+
+    /// Derivative of the deformation gradient w.r.t. xi
+    CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> d_F_dxi{};
+
+    /// 2. Derivative of the deformation gradient w.r.t. xi and nodal displacements
+    CORE::LINALG::Matrix<9,
+        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
+        d2_F_dxi_dd{};
+  };
 
 }  // namespace DRT::ELEMENTS
 
