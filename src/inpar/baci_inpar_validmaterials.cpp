@@ -259,6 +259,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedReal(m, "REACOEFF", "reaction coefficient", 0.0, true);
     AddNamedReal(m, "SCNUM", "schmidt number", 0.0, true);
     AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
+    AddNamedBool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -323,6 +324,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedReal(m, "MIN_SAT",
         "minimum saturation under which also corresponding mass fraction is equal to zero", 1.0e-9,
         true);
+    AddNamedBool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -340,6 +342,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedReal(m, "SCNUM", "schmidt number", 0.0, true);
     AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
     AddNamedReal(m, "DELTA", "delta", 0.0, true);
+    AddNamedBool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -358,6 +361,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedReal(m, "SCNUM", "schmidt number", 0.0, true);
     AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
     AddNamedReal(m, "DELTA", "delta", 0.0, true);
+    AddNamedBool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -383,6 +387,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedReal(m, "REACOEFF", "reaction coefficient", 0.0, true);
     AddNamedReal(m, "SCNUM", "schmidt number", 0.0, true);
     AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
+    AddNamedBool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -428,6 +433,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedReal(m, "REACOEFF", "reaction coefficient", 0.0, true);
     AddNamedReal(m, "SCNUM", "Schmidt number", 0.0, true);
     AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
+    AddNamedBool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
 
     AppendMaterialDefinition(matlist, m);
   }

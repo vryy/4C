@@ -163,24 +163,22 @@ namespace DRT
       {
         // call base class (scatra) with dummy variable econvelnp
         const CORE::LINALG::Matrix<NSD, NEN> econvelnp(true);
-        my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist);
+        const CORE::LINALG::Matrix<NSD, NEN> eforcevelocity(true);
+        my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
 
         static CORE::LINALG::Matrix<NSD, 1> pressuregrad(true);
         pressuregrad.Multiply(derxy, earterypressure);
 
-        // convective velocity
-        my::convelint_.Update(-Diam() * Diam() / 32.0 / Visc(), pressuregrad, 0.0);
-        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-        my::conv_.MultiplyTN(derxy, my::convelint_);
-
         for (int k = 0; k < my::numscal_; ++k)
         {
+          // convective velocity
+          my::convelint_[k].Update(-Diam() * Diam() / 32.0 / Visc(), pressuregrad, 0.0);
+          // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+          my::conv_[k].MultiplyTN(derxy, my::convelint_[k]);
           // overwrite convective term
           // - k/\mu*grad p * grad phi
-          my::conv_phi_[k] = my::convelint_.Dot(my::gradphi_[k]);
+          my::conv_phi_[k] = my::convelint_[k].Dot(my::gradphi_[k]);
         }
-
-        return;
       };
 
       // Set the artery material in the scatra-Varmanager

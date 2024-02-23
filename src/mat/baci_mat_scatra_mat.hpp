@@ -38,8 +38,12 @@ namespace MAT
         diff,
         reac,
         densific,
+        /*!< True if the scalar reacts to the external force.
+         * Example: the scalar is magnetic and reacts to the magnetic field. Another scalar could be
+         * not magnetic and not react to the magnetic field. */
+        reacts_to_external_force,
         first = diff,
-        last = densific
+        last = reacts_to_external_force
       };
 
     };  // class Scatra
@@ -125,6 +129,13 @@ namespace MAT
     {
       return params_->GetParameter(params_->densific, eleid);
     }
+
+    /// reacts to external force
+    [[nodiscard]] double ReactsToExternalForce() const
+    {
+      return params_->GetParameter(params_->reacts_to_external_force, -1);
+    }
+
 
     /// Return quick accessible material parameter data
     MAT::PAR::Parameter* Parameter() const override { return params_; }

@@ -65,6 +65,8 @@ namespace DRT
       bool PartitionedMultiScale() const { return partitioned_multiscale_; };
       bool IsEMD() const { return is_emd_; };
       int EMDSource() const { return emd_source_; };
+      //! return true if external force is applied
+      [[nodiscard]] bool HasExternalForce() const { return has_external_force_; };
       //! number of dofset associated with displacement dofs
       int NdsDisp() const;
       //! number of dofset associated with interface growth dofs
@@ -180,6 +182,10 @@ namespace DRT
 
       /// electromagnetic diffusion source function
       int emd_source_;
+
+      /// flag for external force
+      bool has_external_force_;
+
       //! @}
 
       //! @name stabilization parameters

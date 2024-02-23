@@ -425,7 +425,8 @@ namespace DRT
       {
         // call base class (scatra) with dummy variable econvelnp
         const CORE::LINALG::Matrix<NSD, NEN> econvelnp(true);
-        my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist);
+        const CORE::LINALG::Matrix<NSD, NEN> eforcevelocity(true);
+        my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
 
         //------------------------get determinant of Jacobian dX / ds
         // transposed jacobian "dX/ds"

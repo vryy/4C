@@ -230,6 +230,21 @@ namespace SCATRA
     //! set the velocity field (zero or field by function)
     virtual void SetVelocityField();
 
+    /*! Set external force field
+
+     The contribution of velocity due to the external force \f$ v_{external force} \f$ to the
+     convection-diffusion-reaction equation is given by
+     \f[
+        \nabla \cdot (v_{external force} \phi).
+     \f]
+     The velocity due to the external force F is given by
+     \f[
+        v_{external force} = M \cdot F,
+     \f]
+     where M is the intrinsic mobility of the scalar.
+     */
+    void SetExternalForce();
+
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
     virtual void SetVelocityField(
@@ -448,6 +463,12 @@ namespace SCATRA
 
     //! print information about current time step to screen
     virtual void PrintTimeStepInfo();
+
+    //! convert dof-based result vector into node-based multi-vector for postprocessing
+    [[nodiscard]] Teuchos::RCP<Epetra_MultiVector> ConvertDofVectorToComponentwiseNodeVector(
+        const Teuchos::RCP<const Epetra_Vector>& dof_vector,  ///< dof-based result vector
+        const int nds                                         ///< number of dofset to convert
+    ) const;
 
     //! return system matrix as sparse operator
     Teuchos::RCP<CORE::LINALG::SparseOperator> SystemMatrixOperator() { return sysmat_; };
@@ -804,6 +825,9 @@ namespace SCATRA
 
     //! return rcp ptr to neumann loads vector
     Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() override { return neumann_loads_; };
+
+    //! return true if an external force is applied to the system
+    bool HasExternalForce() { return has_external_force_; };
 
     //! returns if restart information is needed for the current time step
     [[nodiscard]] bool IsRestartStep() const
@@ -1218,6 +1242,9 @@ namespace SCATRA
     //! electromagnetic diffusion current source function
     int emd_source_;
 
+    //! flag for external force
+    bool has_external_force_;
+
     /*--- query and output ---------------------------------------------------*/
 
     //! flag for calculating flux vector field inside domain
@@ -1436,6 +1463,9 @@ namespace SCATRA
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
+
+    //! function to set external force
+    std::function<void()> set_external_force;
 
     //! maps for extracting Dirichlet and free DOF sets
     Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;

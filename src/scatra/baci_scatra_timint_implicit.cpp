@@ -94,6 +94,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
       micro_scale_(probnum != 0),
       isemd_(extraparams->get<bool>("ELECTROMAGNETICDIFFUSION", false)),
       emd_source_(extraparams->get<int>("EMDSOURCE", -1)),
+      has_external_force_(
+          INPUT::IntegralValue<bool>(params_->sublist("EXTERNAL FORCE"), "EXTERNAL_FORCE")),
       calcflux_domain_(INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params, "CALCFLUX_DOMAIN")),
       calcflux_domain_lumped_(INPUT::IntegralValue<bool>(*params, "CALCFLUX_DOMAIN_LUMPED")),
       calcflux_boundary_(
@@ -987,6 +989,9 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
   // current source function
   if (isemd_) eleparams.set<int>("electromagnetic_diffusion_source", emd_source_);
 
+  // flag for external force
+  eleparams.set<bool>("has_external_force", has_external_force_);
+
   // add parameters associated with meshtying strategy
   strategy_->SetElementGeneralParameters(eleparams);
 
@@ -1113,6 +1118,11 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   //     update velocity field if given by function (it might depend on time)
   // -------------------------------------------------------------------
   if (velocity_field_type_ == INPAR::SCATRA::velocity_function) SetVelocityField();
+
+  // -------------------------------------------------------------------
+  //     update external force given by function (it might depend on time)
+  // -------------------------------------------------------------------
+  if (has_external_force_) SetExternalForce();
 
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
@@ -1252,6 +1262,68 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 
   // provide scatra discretization with velocity
   discret_->SetState(NdsVel(), "velocity field", vel);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetExternalForce()
+{
+  const auto input_params_external_force = params_->sublist("EXTERNAL FORCE");
+  const int external_force_function_id = input_params_external_force.get<int>("FORCE_FUNCTION_ID");
+  const int intrinsic_mobility_function_id =
+      input_params_external_force.get<int>("INTRINSIC_MOBILITY_FUNCTION_ID");
+
+  if (NdsVel() >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
+
+  // vector for the external force
+  auto external_force = CORE::LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
+
+  // vector for the intrinsic mobility
+  auto intrinsic_mobility = CORE::LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
+
+  // vector for the velocity due to the external force:
+  // force_velocity = intrinsic_mobility * external_force
+  auto force_velocity = CORE::LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
+
+  for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+  {
+    auto* const current_node = discret_->lRowNode(lnodeid);
+    const auto nodedofs = discret_->Dof(NdsVel(), current_node);
+
+    for (int spatial_dimension = 0; spatial_dimension < nsd_; ++spatial_dimension)
+    {
+      const double external_force_value =
+          problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(external_force_function_id - 1)
+              .Evaluate(current_node->X().data(), time_, spatial_dimension);
+
+      const double intrinsic_mobility_value =
+          problem_
+              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(intrinsic_mobility_function_id - 1)
+              .Evaluate(current_node->X().data(), time_, spatial_dimension);
+      const double force_velocity_value = external_force_value * intrinsic_mobility_value;
+
+      const int gid = nodedofs[spatial_dimension];
+      const int lid = force_velocity->Map().LID(gid);
+
+      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+      const int error_force_velocity = force_velocity->ReplaceMyValue(lid, 0, force_velocity_value);
+      if (error_force_velocity != 0)
+        dserror("Error while inserting a force_velocity_value into force_velocity.");
+
+      const int error_external_force = external_force->ReplaceMyValue(lid, 0, external_force_value);
+      if (error_external_force != 0)
+        dserror("Error while inserting a external_force_value into external_force.");
+
+      const int error_intrinsic_mobility =
+          intrinsic_mobility->ReplaceMyValue(lid, 0, intrinsic_mobility_value);
+      if (error_intrinsic_mobility != 0)
+        dserror("Error while inserting a intrinsic_mobility_value into intrinsic_mobility.");
+    }
+  }
+
+  discret_->SetState(NdsVel(), "external_force", external_force);
+  discret_->SetState(NdsVel(), "intrinsic_mobility", intrinsic_mobility);
+  discret_->SetState(NdsVel(), "force_velocity", force_velocity);
 }
 
 /*----------------------------------------------------------------------*
@@ -2925,16 +2997,8 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
         discret_->GetState(NdsVel(), "convective velocity field");
     if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
 
-    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> convel_multi =
-        Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), nsd_, true));
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
-    {
-      DRT::Node* node = discret_->lRowNode(inode);
-      for (int idim = 0; idim < nsd_; ++idim)
-        (*convel_multi)[idim][inode] =
-            (*convel)[convel->Map().LID(discret_->Dof(NdsVel(), node, idim))];
-    }
+        ConvertDofVectorToComponentwiseNodeVector(convel, NdsVel());
 
     output_->WriteVector("convec_velocity", convel_multi, IO::nodevector);
   }
@@ -2945,16 +3009,8 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
     Teuchos::RCP<const Epetra_Vector> dispnp = discret_->GetState(NdsDisp(), "dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot extract displacement field from discretization");
 
-    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
-        Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), nsd_, true));
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
-    {
-      DRT::Node* node = discret_->lRowNode(inode);
-      for (int idim = 0; idim < nsd_; ++idim)
-        (*dispnp_multi)[idim][inode] =
-            (*dispnp)[dispnp->Map().LID(discret_->Dof(NdsDisp(), node, idim))];
-    }
+        ConvertDofVectorToComponentwiseNodeVector(dispnp, NdsDisp());
 
     output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
   }
@@ -2969,6 +3025,38 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 
     output_->WriteVector("micro_conc", micro_conc_multi, IO::nodevector);
   }
+
+  if (has_external_force_)
+  {
+    Teuchos::RCP<const Epetra_Vector> external_force =
+        discret_->GetState(nds_vel_, "external_force");
+    Teuchos::RCP<Epetra_MultiVector> output_external_force =
+        ConvertDofVectorToComponentwiseNodeVector(external_force, NdsVel());
+    output_->WriteVector("external_force", output_external_force, IO::nodevector);
+
+    Teuchos::RCP<const Epetra_Vector> mobility = discret_->GetState(nds_vel_, "intrinsic_mobility");
+    Teuchos::RCP<Epetra_MultiVector> output_intrinsic_mobility =
+        ConvertDofVectorToComponentwiseNodeVector(mobility, NdsVel());
+    output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, IO::nodevector);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector>
+SCATRA::ScaTraTimIntImpl::ConvertDofVectorToComponentwiseNodeVector(
+    const Teuchos::RCP<const Epetra_Vector>& dof_vector, const int nds) const
+{
+  Teuchos::RCP<Epetra_MultiVector> componentwise_node_vector =
+      Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), nsd_, true));
+  for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
+  {
+    DRT::Node* node = discret_->lRowNode(inode);
+    for (int idim = 0; idim < nsd_; ++idim)
+      (*componentwise_node_vector)[idim][inode] =
+          (*dof_vector)[dof_vector->Map().LID(discret_->Dof(nds, node, idim))];
+  }
+  return componentwise_node_vector;
 }
 
 /*----------------------------------------------------------------------*

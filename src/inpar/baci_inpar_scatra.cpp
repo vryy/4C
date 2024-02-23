@@ -436,6 +436,22 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   // scale for coupling (scatra part)
   setNumericStringParameter(
       "SCALEREAC_CONT", "0", "scale for coupling (scatra part)", &scatradyn_art);
+
+  // ----------------------------------------------------------------------
+  Teuchos::ParameterList& scatradyn_external_force =
+      scatradyn.sublist("EXTERNAL FORCE", false, "Parameters for magnetics");
+
+  // Flag for external force
+  BoolParameter(
+      "EXTERNAL_FORCE", "No", "Flag to activate external force", &scatradyn_external_force);
+
+  // Function ID for external force
+  IntParameter(
+      "FORCE_FUNCTION_ID", -1, "Function ID for external force", &scatradyn_external_force);
+
+  // Function ID for mobility of the scalar
+  IntParameter("INTRINSIC_MOBILITY_FUNCTION_ID", -1, "Function ID for intrinsic mobility",
+      &scatradyn_external_force);
 }
 
 

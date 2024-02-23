@@ -604,8 +604,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     conv_phi = convelint.Dot(gradphinp);
 
     // set changed values in variable manager
-    VarManager()->SetConv(conv);
-    VarManager()->SetConVel(convelint);
+    VarManager()->SetConv(0, conv);
+    VarManager()->SetConVel(0, convelint);
     VarManager()->SetConvPhi(0, conv_phi);
 
     CORE::LINALG::Matrix<nen_, 1> diff(true);

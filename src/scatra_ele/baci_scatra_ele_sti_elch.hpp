@@ -148,7 +148,8 @@ namespace DRT
       )
       {
         // call base class routine to set thermo variables
-        vm::SetInternalVariables(funct, derxy, etempnp, etempn, econvelnp, ehist);
+        const CORE::LINALG::Matrix<NSD, NEN> eforcevelocity(true);
+        vm::SetInternalVariables(funct, derxy, etempnp, etempn, econvelnp, ehist, eforcevelocity);
 
         // set local values of scatra variables at time t_(n+1) or t_(n+alpha_F)
         conc_ = funct.Dot(econcnp);          // concentration
