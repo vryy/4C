@@ -17,6 +17,7 @@
 #include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "baci_structure_new_model_evaluator_data.hpp"
 #include "baci_structure_new_timint_base.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCPDecl.hpp>
@@ -74,6 +75,62 @@ namespace
     }
 
     return data[name_and_component.component][local_id];
+  }
+
+  /*!
+   * @brief Returns the stress or strain component requested in label at the given node
+   *
+   * @param prefix (in) : prefix (either stress or strain)
+   * @param label (in) : label of the quantity, e.g. stress_xx
+   * @param node_id (in) : Id of the node
+   * @param nodal_data (in) : Nodal data
+   * @return double
+   */
+  double GetNodalStressStrainComponent(const std::string& prefix, const std::string& label,
+      int node_id, const Epetra_MultiVector& nodal_data)
+  {
+    int voigt_index = -1;
+    if (label == prefix + "_xx")
+    {
+      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 0);
+    }
+    else if (label == prefix + "_yy")
+    {
+      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(1, 1);
+    }
+    else if (label == prefix + "_zz")
+    {
+      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(2, 2);
+    }
+    else if (label == prefix + "_xy")
+    {
+      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 1);
+    }
+    else if (label == prefix + "_xz")
+    {
+      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 2);
+    }
+    else if (label == prefix + "_yz")
+    {
+      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(1, 2);
+    }
+
+    if (voigt_index < 0)
+    {
+      dserror(
+          "You try to test an unknown %s component %s. Use one of %s{_xx, _yy, _zz, _xy, _xz, "
+          "_yz}.",
+          label.c_str(), prefix.c_str(), prefix.c_str());
+    }
+
+    int local_id = nodal_data.Map().LID(node_id);
+
+    if (local_id < 0)
+    {
+      dserror("You tried to test %s on a proc that does not own node %i.", label.c_str(), node_id);
+    }
+
+    return nodal_data[voigt_index][local_id];
   }
 }  // namespace
 
@@ -261,7 +318,28 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
       // test nodal stresses
       if (position.rfind("stress", 0) == 0)
       {
-        result = GetNodalStressComponent(position, node);
+        if (data_->GetStressDataNodePostprocessed() == Teuchos::null)
+        {
+          dserror(
+              "It looks like you don't write stresses. You have to specify the stress type in "
+              "IO->STRUCT_STRESS");
+        }
+        result = GetNodalStressStrainComponent(
+            "stress", position, node, *data_->GetStressDataNodePostprocessed());
+        unknownpos = false;
+      }
+
+      // test nodal strain
+      if (position.rfind("strain", 0) == 0)
+      {
+        if (data_->GetStressDataNodePostprocessed() == Teuchos::null)
+        {
+          dserror(
+              "It looks like you don't write strains. You have to specify the strain type in "
+              "IO->STRUCT_STRAIN");
+        }
+        result = GetNodalStressStrainComponent(
+            "strain", position, node, *data_->GetStrainDataNodePostprocessed());
         unknownpos = false;
       }
 
@@ -492,61 +570,6 @@ int STR::GetIntegerNumberAtLastPositionOfName(const std::string& quantity)
         "\"<prefix_name>_<number>\"");
   }
   exit(EXIT_FAILURE);
-}
-
-double STR::ResultTest::GetNodalStressComponent(const std::string& label, int node_id) const
-{
-  int stress_voigt_index = -1;
-  if (label == "stress_xx")
-  {
-    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 0);
-  }
-  else if (label == "stress_yy")
-  {
-    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(1, 1);
-  }
-  else if (label == "stress_zz")
-  {
-    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(2, 2);
-  }
-  else if (label == "stress_xy")
-  {
-    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 1);
-  }
-  else if (label == "stress_xz")
-  {
-    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 2);
-  }
-  else if (label == "stress_yz")
-  {
-    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(1, 2);
-  }
-
-  if (stress_voigt_index < 0)
-  {
-    dserror(
-        "You try to test an unknown stress component %s. Use one of [stress_xx, stress_yy, "
-        "stress_zz, stress_xy, stress_xz, stress_yz]",
-        label.c_str());
-  }
-
-  Teuchos::RCP<Epetra_MultiVector> nodalStressData = data_->GetStressDataNodePostprocessed();
-
-  if (Teuchos::is_null(nodalStressData))
-  {
-    dserror(
-        "It looks like you don't write stresses. You have to specify the stress type in "
-        "IO->STRUCT_STRESS");
-  }
-
-  int local_id = nodalStressData->Map().LID(node_id);
-
-  if (local_id < 0)
-  {
-    dserror("You tried to test %s on a proc that does not own node %i.", label.c_str(), node_id);
-  }
-
-  return (*nodalStressData)[stress_voigt_index][local_id];
 }
 
 BACI_NAMESPACE_CLOSE

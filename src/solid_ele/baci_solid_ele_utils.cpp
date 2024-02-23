@@ -10,6 +10,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "baci_linalg_utils_densematrix_eigen.hpp"
 #include "baci_solid_ele_properties.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -48,6 +49,32 @@ CORE::LINALG::Matrix<6, 1> STR::UTILS::GreenLagrangeToEulerAlmansi(
   CORE::LINALG::Matrix<6, 1> ea;
   CORE::LINALG::VOIGT::Strains::MatrixToVector(ea_matrix, ea);
   return ea;
+}
+
+CORE::LINALG::Matrix<6, 1> STR::UTILS::GreenLagrangeToHencky(const CORE::LINALG::Matrix<6, 1>& gl)
+{
+  CORE::LINALG::Matrix<3, 3> E_matrix;
+  CORE::LINALG::VOIGT::Strains::VectorToMatrix(gl, E_matrix);
+
+  CORE::LINALG::Matrix<3, 3> pr_strain(true);  // squared principal strains
+  CORE::LINALG::Matrix<3, 3> pr_dir(true);     // principal directions
+  CORE::LINALG::SYEV(E_matrix, pr_strain, pr_dir);
+
+  // compute principal hencky strains
+  CORE::LINALG::Matrix<3, 3> pr_hencky_strain(true);
+  for (int i = 0; i < 3; ++i)
+    pr_hencky_strain(i, i) = std::log(std::sqrt(2 * pr_strain(i, i) + 1.0));
+
+  // create logarithmic strain matrix
+  CORE::LINALG::Matrix<3, 3> hencky_strain_matrix(true);
+  CORE::LINALG::Matrix<3, 3> VH(false);
+  VH.MultiplyNN(pr_dir, pr_hencky_strain);
+  hencky_strain_matrix.MultiplyNT(VH, pr_dir);
+
+  // convert to strain-like voigt notation
+  CORE::LINALG::Matrix<6, 1> hencky_strain_voigt(true);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(hencky_strain_matrix, hencky_strain_voigt);
+  return hencky_strain_voigt;
 }
 
 int STR::UTILS::READELEMENT::ReadElementMaterial(INPUT::LineDefinition* linedef)

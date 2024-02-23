@@ -26,6 +26,8 @@ namespace STR::UTILS
   CORE::LINALG::Matrix<6, 1> GreenLagrangeToEulerAlmansi(
       const CORE::LINALG::Matrix<6, 1>& gl, const CORE::LINALG::Matrix<3, 3>& defgrd);
 
+  CORE::LINALG::Matrix<6, 1> GreenLagrangeToHencky(const CORE::LINALG::Matrix<6, 1>& gl);
+
   namespace READELEMENT
   {
     int ReadElementMaterial(INPUT::LineDefinition* linedef);

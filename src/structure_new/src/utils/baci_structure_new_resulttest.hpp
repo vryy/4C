@@ -183,17 +183,6 @@ namespace STR
      *  \author kremheller \date 11/19 */
     std::optional<double> GetEnergy(const std::string& quantity, Status& special_status) const;
 
-    /*!
-     * \brief Returns the stress component requested in label at the given node
-     *
-     * \param label Stress component (stress_xx, stress_yy, stress_zz, stress_xy, stress_xz,
-     * stress_yz)
-     *
-     * \param node_id
-     * \return double stress component
-     */
-    double GetNodalStressComponent(const std::string& label, int node_id) const;
-
    protected:
     //! flag which indicates if the Init() routine has already been called
     bool isinit_;

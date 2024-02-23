@@ -136,6 +136,15 @@ namespace DRT::ELEMENTS
         DETAILS::AssembleVectorToMatrixRow(ea_stress_like, data, row);
         return;
       }
+      case INPAR::STR::strain_log:
+      {
+        const CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> hencky_strain =
+            STR::UTILS::GreenLagrangeToHencky(gl_strain);
+        CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> hencky_strain_stress_like;
+        CORE::LINALG::VOIGT::Strains::ToStressLike(hencky_strain, hencky_strain_stress_like);
+        DETAILS::AssembleVectorToMatrixRow(hencky_strain_stress_like, data, row);
+        return;
+      }
       case INPAR::STR::strain_none:
         return;
       default:
