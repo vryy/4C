@@ -9,8 +9,8 @@
 #include "baci_inpar_problemtype.hpp"
 
 #include "baci_discretization_fem_general_shape_function_type.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_utils_exceptions.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -55,8 +55,8 @@ void INPAR::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "Defines the function spaces for the spatial approximation", name, label, &type);
   }
 
-  IntParameter("RESTART", 0, "", &type);
-  IntParameter("RANDSEED", -1, "Set the random seed. If < 0 use current time.", &type);
+  CORE::UTILS::IntParameter("RESTART", 0, "", &type);
+  CORE::UTILS::IntParameter("RANDSEED", -1, "Set the random seed. If < 0 use current time.", &type);
 }
 
 /*----------------------------------------------------------------------*/

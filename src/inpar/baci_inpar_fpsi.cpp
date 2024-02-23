@@ -9,8 +9,8 @@
 
 #include "baci_inpar_fpsi.hpp"
 
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -36,12 +36,12 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("COUPALGO", "fpsi_monolithic_plain",
       "Iteration Scheme over the fields", name, label, &fpsidyn);
 
-  BoolParameter("SHAPEDERIVATIVES", "No",
+  CORE::UTILS::BoolParameter("SHAPEDERIVATIVES", "No",
       "Include linearization with respect to mesh movement in Navier Stokes equation.\n"
       "Supported in monolithic FPSI for now.",
       &fpsidyn);
 
-  BoolParameter("USESHAPEDERIVATIVES", "No",
+  CORE::UTILS::BoolParameter("USESHAPEDERIVATIVES", "No",
       "Add linearization with respect to mesh movement in Navier Stokes equation to stiffness "
       "matrix.\n"
       "Supported in monolithic FPSI for now.",
@@ -52,17 +52,18 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("RobinNeumann", "monolithic", "nocoupling"),
       tuple<int>(RobinNeumann, monolithic, nocoupling), &fpsidyn);
 
-  BoolParameter("SECONDORDER", "No", "Second order coupling at the interface.", &fpsidyn);
+  CORE::UTILS::BoolParameter(
+      "SECONDORDER", "No", "Second order coupling at the interface.", &fpsidyn);
 
   // Iterationparameters
-  StringParameter("RESTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
+  CORE::UTILS::StringParameter("RESTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
       "Tolerances for single fields in the residual norm for the Newton iteration. \n"
       "For NORM_RESF != Abs_sys_split only the first value is used for all fields. \n"
       "Order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, "
       "fluidpressure, ale",
       &fpsidyn);
 
-  StringParameter("INCTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
+  CORE::UTILS::StringParameter("INCTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
       "Tolerance in the increment norm for the Newton iteration. \n"
       "For NORM_INC != \\*_split only the first value is used for all fields. \n"
       "Order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, "
@@ -100,22 +101,23 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(1, 0), &fpsidyn);
 
   // number of linear solver used for poroelasticity
-  IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for FPSI problems", &fpsidyn);
+  CORE::UTILS::IntParameter(
+      "LINEAR_SOLVER", -1, "number of linear solver used for FPSI problems", &fpsidyn);
 
-  IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &fpsidyn);
-  IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &fpsidyn);
-  IntParameter("NUMSTEP", 200, "Total number of Timesteps", &fpsidyn);
-  IntParameter("ITEMAX", 100, "Maximum number of iterations over fields", &fpsidyn);
-  IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &fpsidyn);
-  IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &fpsidyn);
+  CORE::UTILS::IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &fpsidyn);
+  CORE::UTILS::IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &fpsidyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 200, "Total number of Timesteps", &fpsidyn);
+  CORE::UTILS::IntParameter("ITEMAX", 100, "Maximum number of iterations over fields", &fpsidyn);
+  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &fpsidyn);
+  CORE::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &fpsidyn);
 
-  IntParameter("FDCheck_row", 0, "print row value during FDCheck", &fpsidyn);
-  IntParameter("FDCheck_column", 0, "print column value during FDCheck", &fpsidyn);
+  CORE::UTILS::IntParameter("FDCheck_row", 0, "print row value during FDCheck", &fpsidyn);
+  CORE::UTILS::IntParameter("FDCheck_column", 0, "print column value during FDCheck", &fpsidyn);
 
-  DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &fpsidyn);
-  DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &fpsidyn);
-  DoubleParameter("CONVTOL", 1e-6, "Tolerance for iteration over fields", &fpsidyn);
-  DoubleParameter("ALPHABJ", 1.0,
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &fpsidyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &fpsidyn);
+  CORE::UTILS::DoubleParameter("CONVTOL", 1e-6, "Tolerance for iteration over fields", &fpsidyn);
+  CORE::UTILS::DoubleParameter("ALPHABJ", 1.0,
       "Beavers-Joseph-Coefficient for Slip-Boundary-Condition at Fluid-Porous-Interface (0.1-4)",
       &fpsidyn);
 }

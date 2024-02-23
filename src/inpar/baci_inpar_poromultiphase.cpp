@@ -10,9 +10,9 @@
 
 #include "baci_inpar_poromultiphase.hpp"
 
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_linalg_equilibrate.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -29,18 +29,19 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
       "POROMULTIPHASE DYNAMIC", false, "Control paramters for multiphase porous medium");
 
   // Output type
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &poromultiphasedyn);
   // Time loop control
-  IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &poromultiphasedyn);
-  DoubleParameter("MAXTIME", 1000.0, "total simulation time", &poromultiphasedyn);
-  DoubleParameter("TIMESTEP", -1, "time step size dt", &poromultiphasedyn);
-  IntParameter("RESULTSEVRY", 1, "increment for writing solution", &poromultiphasedyn);
-  IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &poromultiphasedyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &poromultiphasedyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "total simulation time", &poromultiphasedyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", -1, "time step size dt", &poromultiphasedyn);
+  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "increment for writing solution", &poromultiphasedyn);
+  CORE::UTILS::IntParameter(
+      "ITEMAX", 10, "maximum number of iterations over fields", &poromultiphasedyn);
 
   // here the computation of the structure can be skipped, this is helpful if only fluid-scatra
   // coupling should be calculated
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "SOLVE_STRUCTURE", "yes", "Flag to skip computation of structural field", &poromultiphasedyn);
 
 
@@ -51,7 +52,8 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
       tuple<int>(solscheme_twoway_partitioned, solscheme_twoway_monolithic), &poromultiphasedyn);
 
   // coupling with 1D artery network active
-  BoolParameter("ARTERY_COUPLING", "No", "Coupling with 1D blood vessels.", &poromultiphasedyn);
+  CORE::UTILS::BoolParameter(
+      "ARTERY_COUPLING", "No", "Coupling with 1D blood vessels.", &poromultiphasedyn);
 
   // ----------------------------------------------------------------------
   // (2) monolithic parameters
@@ -59,14 +61,14 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
       "MONOLITHIC", false, "Parameters for monolithic Poro-Multiphase-Scatra Interaction");
 
   // convergence tolerances for monolithic coupling
-  DoubleParameter("TOLRES_GLOBAL", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poromultiphasedynmono);
-  DoubleParameter("TOLINC_GLOBAL", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poromultiphasedynmono);
+  CORE::UTILS::DoubleParameter("TOLRES_GLOBAL", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poromultiphasedynmono);
+  CORE::UTILS::DoubleParameter("TOLINC_GLOBAL", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poromultiphasedynmono);
 
   // number of linear solver used for poroelasticity
-  IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for poroelasticity problems",
-      &poromultiphasedynmono);
+  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
+      "number of linear solver used for poroelasticity problems", &poromultiphasedynmono);
 
   // parameters for finite difference check
   setStringToIntegralParameter<int>("FDCHECK", "none",
@@ -106,10 +108,10 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
       &poromultiphasedynmono);
 
   // convergence criteria adaptivity --> note ADAPTCONV_BETTER set pretty small
-  BoolParameter("ADAPTCONV", "No",
+  CORE::UTILS::BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &poromultiphasedynmono);
-  DoubleParameter("ADAPTCONV_BETTER", 0.001,
+  CORE::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.001,
       "The linear solver shall be this much better "
       "than the current nonlinear residual in the nonlinear convergence limit",
       &poromultiphasedynmono);
@@ -120,8 +122,8 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
       "PARTITIONED", false, "Parameters for partitioned Poro-Multiphase-Scatra Interaction");
 
   // convergence tolerance of outer iteration loop
-  DoubleParameter("CONVTOL", 1e-6, "tolerance for convergence check of outer iteration",
-      &poromultiphasedynpart);
+  CORE::UTILS::DoubleParameter("CONVTOL", 1e-6,
+      "tolerance for convergence check of outer iteration", &poromultiphasedynpart);
 
   // flag for relaxation of partitioned scheme
   setStringToIntegralParameter<int>("RELAXATION", "none",
@@ -129,10 +131,11 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
       tuple<int>(relaxation_none, relaxation_constant, relaxation_aitken), &poromultiphasedynpart);
 
   // parameters for relaxation of partitioned coupling
-  DoubleParameter("STARTOMEGA", 1.0, "fixed relaxation parameter", &poromultiphasedynpart);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
+      "STARTOMEGA", 1.0, "fixed relaxation parameter", &poromultiphasedynpart);
+  CORE::UTILS::DoubleParameter(
       "MINOMEGA", 0.1, "smallest omega allowed for Aitken relaxation", &poromultiphasedynpart);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "MAXOMEGA", 10.0, "largest omega allowed for Aitken relaxation", &poromultiphasedynpart);
 }
 

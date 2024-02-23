@@ -25,7 +25,6 @@
 #include "baci_inpar_volmortar.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_sparsematrix.hpp"
@@ -38,6 +37,7 @@
 #include "baci_mortar_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_pairedvector.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_Time.hpp>
 
@@ -1379,7 +1379,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     // solve with default solver
 
     Teuchos::ParameterList solvparams;
-    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+    CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
         "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
     CORE::LINALG::Solver solver(solvparams, *comm_);
 

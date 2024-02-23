@@ -14,8 +14,8 @@
 #include "baci_inpar_thermo.hpp"
 
 #include "baci_inpar.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -35,10 +35,11 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(dyna_statics, dyna_onesteptheta, dyna_genalpha, dyna_expleuler), &tdyn);
 
   // output type
-  IntParameter("RESULTSEVRY", 1,
+  CORE::UTILS::IntParameter("RESULTSEVRY", 1,
       "save temperature and other global quantities every RESULTSEVRY steps", &tdyn);
-  IntParameter("RESEVRYERGY", 0, "write system energies every requested step", &tdyn);
-  IntParameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &tdyn);
+  CORE::UTILS::IntParameter("RESEVRYERGY", 0, "write system energies every requested step", &tdyn);
+  CORE::UTILS::IntParameter(
+      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &tdyn);
 
   setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
       "Initial Field for thermal problem",
@@ -46,22 +47,22 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(initfield_zero_field, initfield_field_by_function, initfield_field_by_condition),
       &tdyn);
 
-  IntParameter("INITFUNCNO", -1, "function number for thermal initial field", &tdyn);
+  CORE::UTILS::IntParameter("INITFUNCNO", -1, "function number for thermal initial field", &tdyn);
 
   // Time loop control
-  DoubleParameter("TIMESTEP", 0.05, "time step size", &tdyn);
-  IntParameter("NUMSTEP", 200, "maximum number of steps", &tdyn);
-  DoubleParameter("MAXTIME", 5.0, "maximum time", &tdyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size", &tdyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 200, "maximum number of steps", &tdyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 5.0, "maximum time", &tdyn);
 
   // Iterationparameters
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "TOLTEMP", 1.0E-10, "tolerance in the temperature norm of the Newton iteration", &tdyn);
 
   setStringToIntegralParameter<int>("NORM_TEMP", "Abs",
       "type of norm for temperature convergence check", tuple<std::string>("Abs", "Rel", "Mix"),
       tuple<int>(convnorm_abs, convnorm_rel, convnorm_mix), &tdyn);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "TOLRES", 1.0E-08, "tolerance in the residual norm for the Newton iteration", &tdyn);
 
   setStringToIntegralParameter<int>("NORM_RESF", "Abs",
@@ -72,10 +73,10 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "binary operator to combine temperature and residual force values",
       tuple<std::string>("And", "Or"), tuple<int>(bop_and, bop_or), &tdyn);
 
-  IntParameter("MAXITER", 50,
+  CORE::UTILS::IntParameter("MAXITER", 50,
       "maximum number of iterations allowed for Newton-Raphson iteration before failure", &tdyn);
 
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "MINITER", 0, "minimum number of iterations to be done within Newton-Raphson loop", &tdyn);
 
   setStringToIntegralParameter<int>("ITERNORM", "L2", "type of norm to be applied to residuals",
@@ -89,7 +90,7 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           divcont_repeat_simulation),
       &tdyn);
 
-  IntParameter("MAXDIVCONREFINEMENTLEVEL", 10,
+  CORE::UTILS::IntParameter("MAXDIVCONREFINEMENTLEVEL", 10,
       "number of times timestep is halved in case nonlinear solver diverges", &tdyn);
 
   setStringToIntegralParameter<int>("NLNSOL", "fullnewton", "Nonlinear solution technique",
@@ -102,17 +103,19 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(pred_vague, pred_consttemp, pred_consttemprate, pred_tangtemp), &tdyn);
 
   // convergence criteria solver adaptivity
-  BoolParameter("ADAPTCONV", "No",
+  CORE::UTILS::BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution", &tdyn);
-  DoubleParameter("ADAPTCONV_BETTER", 0.1,
+  CORE::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &tdyn);
 
-  BoolParameter("LUMPCAPA", "No", "Lump the capacity matrix for explicit time integration", &tdyn);
+  CORE::UTILS::BoolParameter(
+      "LUMPCAPA", "No", "Lump the capacity matrix for explicit time integration", &tdyn);
 
   // number of linear solver used for thermal problems
-  IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for thermal problems", &tdyn);
+  CORE::UTILS::IntParameter(
+      "LINEAR_SOLVER", -1, "number of linear solver used for thermal problems", &tdyn);
 
   // where the geometry comes from
   setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
@@ -122,7 +125,7 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("CALCERROR", "No",
       "compute error compared to analytical solution", tuple<std::string>("No", "byfunct"),
       tuple<int>(no_error_calculation, calcerror_byfunct), &tdyn);
-  IntParameter("CALCERRORFUNCNO", -1, "Function for Error Calculation", &tdyn);
+  CORE::UTILS::IntParameter("CALCERRORFUNCNO", -1, "Function for Error Calculation", &tdyn);
 
   /*----------------------------------------------------------------------*/
   /* parameters for generalised-alpha thermal integrator */
@@ -133,16 +136,16 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(midavg_vague, midavg_imrlike, midavg_trlike), &tgenalpha);
 
   // default values correspond to midpoint-rule
-  DoubleParameter("GAMMA", 0.5, "Generalised-alpha factor in (0,1]", &tgenalpha);
-  DoubleParameter("ALPHA_M", 0.5, "Generalised-alpha factor in [0.5,1)", &tgenalpha);
-  DoubleParameter("ALPHA_F", 0.5, "Generalised-alpha factor in [0.5,1)", &tgenalpha);
-  DoubleParameter("RHO_INF", -1.0, "Generalised-alpha factor in [0,1]", &tgenalpha);
+  CORE::UTILS::DoubleParameter("GAMMA", 0.5, "Generalised-alpha factor in (0,1]", &tgenalpha);
+  CORE::UTILS::DoubleParameter("ALPHA_M", 0.5, "Generalised-alpha factor in [0.5,1)", &tgenalpha);
+  CORE::UTILS::DoubleParameter("ALPHA_F", 0.5, "Generalised-alpha factor in [0.5,1)", &tgenalpha);
+  CORE::UTILS::DoubleParameter("RHO_INF", -1.0, "Generalised-alpha factor in [0,1]", &tgenalpha);
 
   /*----------------------------------------------------------------------*/
   /* parameters for one-step-theta thermal integrator */
   Teuchos::ParameterList& tonesteptheta = tdyn.sublist("ONESTEPTHETA", false, "");
 
-  DoubleParameter("THETA", 0.5, "One-step-theta factor in (0,1]", &tonesteptheta);
+  CORE::UTILS::DoubleParameter("THETA", 0.5, "One-step-theta factor in (0,1]", &tonesteptheta);
 }
 
 

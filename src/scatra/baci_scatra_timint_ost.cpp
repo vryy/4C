@@ -12,10 +12,10 @@
 #include "baci_fluid_turbulence_dyn_vreman.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_timint_meshtying_strategy_base.hpp"
 #include "baci_scatra_turbulence_hit_scalar_forcing.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -101,7 +101,7 @@ void SCATRA::TimIntOneStepTheta::Setup()
     Teuchos::ParameterList eleparams;
 
     // set action
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_initialize, eleparams);
 
     // loop over macro-scale elements
@@ -116,7 +116,7 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementals
 {
   Teuchos::ParameterList eleparams;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
@@ -296,7 +296,7 @@ void SCATRA::TimIntOneStepTheta::Update()
     Teuchos::ParameterList eleparams;
 
     // set action
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_update, eleparams);
 
     // loop over macro-scale elements
@@ -363,7 +363,7 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
     Teuchos::ParameterList eleparams;
 
     // set action
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_read_restart, eleparams);
 
     // loop over macro-scale elements

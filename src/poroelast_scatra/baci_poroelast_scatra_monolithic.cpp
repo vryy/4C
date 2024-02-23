@@ -17,7 +17,6 @@
 #include "baci_io_control.hpp"
 #include "baci_lib_assemblestrategy.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -25,6 +24,7 @@
 #include "baci_poroelast_scatra_utils.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_timint_implicit.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -1138,7 +1138,7 @@ void POROELASTSCATRA::PoroScatraMono::EvaluateODBlockMatScatra()
 
   k_sps_->Zero();
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, sparams_struct);
   // other parameters that might be needed by the elements
   sparams_struct.set("delta time", Dt());
@@ -1171,7 +1171,7 @@ void POROELASTSCATRA::PoroScatraMono::EvaluateODBlockMatScatra()
   // create the parameters for the discretization
   Teuchos::ParameterList sparams_fluid;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_fluid, sparams_fluid);
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", Dt());

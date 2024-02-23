@@ -13,7 +13,6 @@
 #include "baci_lib_dofset_gidbased_wrapper.hpp"
 #include "baci_lib_dofset_merged_wrapper.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_rebalance_utils.hpp"
@@ -21,6 +20,7 @@
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_scatra_utils_clonestrategy.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -47,7 +47,7 @@ void SCATRA::HeterogeneousReactionStrategy::EvaluateMeshtying()
   Teuchos::ParameterList condparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_heteroreac_mat_and_rhs, condparams);
 
   // set global state vectors according to time-integration scheme

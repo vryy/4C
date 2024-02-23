@@ -70,6 +70,7 @@
 #include "baci_inpar_wear.hpp"
 #include "baci_inpar_xfem.hpp"
 #include "baci_io_pstream.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_any.hpp>
 #include <Teuchos_Array.hpp>
@@ -293,51 +294,6 @@ void INPUT::PrintDefaultParameters(IO::Pstream& stream, const Teuchos::Parameter
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::BoolParameter(std::string const& paramName, std::string const& value,
-    std::string const& docString, Teuchos::ParameterList* paramList)
-{
-  Teuchos::Array<std::string> yesnotuple =
-      Teuchos::tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = Teuchos::tuple<int>(true, false, true, false, true, false);
-  Teuchos::setStringToIntegralParameter<int>(
-      paramName, value, docString, yesnotuple, yesnovalue, paramList);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void INPUT::IntParameter(std::string const& paramName, int const value,
-    std::string const& docString, Teuchos::ParameterList* paramList)
-{
-  Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
-  validator.allowInt(true);
-  Teuchos::setIntParameter(paramName, value, docString, paramList, validator);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void INPUT::DoubleParameter(std::string const& paramName, double const& value,
-    std::string const& docString, Teuchos::ParameterList* paramList)
-{
-  Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
-  validator.allowDouble(true);
-  validator.allowInt(true);
-  Teuchos::setDoubleParameter(paramName, value, docString, paramList, validator);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void INPUT::StringParameter(std::string const& paramName, std::string const& value,
-    std::string const& docString, Teuchos::ParameterList* paramList)
-{
-  Teuchos::RCP<Teuchos::StringValidator> validator = Teuchos::rcp(new Teuchos::StringValidator());
-  paramList->set(paramName, value, docString, validator);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Teuchos::ParameterList> INPUT::ValidParameters()
 {
   Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList);
@@ -345,27 +301,28 @@ Teuchos::RCP<const Teuchos::ParameterList> INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& discret = list->sublist("DISCRETISATION", false, "");
 
-  IntParameter("NUMFLUIDDIS", 1, "Number of meshes in fluid field", &discret);
-  IntParameter("NUMSTRUCDIS", 1, "Number of meshes in structural field", &discret);
-  IntParameter("NUMALEDIS", 1, "Number of meshes in ale field", &discret);
-  IntParameter("NUMARTNETDIS", 1, "Number of meshes in arterial network field", &discret);
-  IntParameter("NUMTHERMDIS", 1, "Number of meshes in thermal field", &discret);
-  IntParameter("NUMAIRWAYSDIS", 1, "Number of meshes in reduced dimensional airways network field",
-      &discret);
+  CORE::UTILS::IntParameter("NUMFLUIDDIS", 1, "Number of meshes in fluid field", &discret);
+  CORE::UTILS::IntParameter("NUMSTRUCDIS", 1, "Number of meshes in structural field", &discret);
+  CORE::UTILS::IntParameter("NUMALEDIS", 1, "Number of meshes in ale field", &discret);
+  CORE::UTILS::IntParameter(
+      "NUMARTNETDIS", 1, "Number of meshes in arterial network field", &discret);
+  CORE::UTILS::IntParameter("NUMTHERMDIS", 1, "Number of meshes in thermal field", &discret);
+  CORE::UTILS::IntParameter("NUMAIRWAYSDIS", 1,
+      "Number of meshes in reduced dimensional airways network field", &discret);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& size = list->sublist("PROBLEM SIZE", false, "");
 
-  IntParameter("DIM", 3, "2d or 3d problem", &size);
+  CORE::UTILS::IntParameter("DIM", 3, "2d or 3d problem", &size);
 
   // deactivate all the follwing (unused) parameters one day
   // they are nice as general info in the input file but should not
   // read into a parameter list. Misuse is possible
-  IntParameter("ELEMENTS", 0, "Total number of elements", &size);
-  IntParameter("NODES", 0, "Total number of nodes", &size);
-  IntParameter("NPATCHES", 0, "number of nurbs patches", &size);
-  IntParameter("MATERIALS", 0, "number of materials", &size);
-  IntParameter("NUMDF", 3, "maximum number of degrees of freedom", &size);
+  CORE::UTILS::IntParameter("ELEMENTS", 0, "Total number of elements", &size);
+  CORE::UTILS::IntParameter("NODES", 0, "Total number of nodes", &size);
+  CORE::UTILS::IntParameter("NPATCHES", 0, "number of nurbs patches", &size);
+  CORE::UTILS::IntParameter("MATERIALS", 0, "number of materials", &size);
+  CORE::UTILS::IntParameter("NUMDF", 3, "maximum number of degrees of freedom", &size);
 
   INPAR::PROBLEMTYPE::SetValidParameters(list);
 

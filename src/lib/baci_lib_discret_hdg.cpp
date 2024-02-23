@@ -18,8 +18,8 @@
 #include "baci_lib_element.hpp"
 #include "baci_lib_elementtype.hpp"
 #include "baci_lib_utils_discret.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -565,7 +565,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
         GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::scatra)
     {
       initParams.set("hdg_action", true);
-      DRT::UTILS::AddEnumClassToParameterList<DRT::HDGAction>(
+      CORE::UTILS::AddEnumClassToParameterList<DRT::HDGAction>(
           "action", DRT::HDGAction::project_dirich_field, initParams);
     }
 

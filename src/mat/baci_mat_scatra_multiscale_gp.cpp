@@ -13,11 +13,11 @@ transport problems
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
 #include "baci_scatra_timint_ost.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <filesystem>
 
@@ -310,7 +310,7 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentration() const
 
   // set parameters for micro-scale elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
@@ -343,7 +343,7 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative() const
 
   // set parameters for micro-scale elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_mean_scalar_time_derivatives, eleparams);
 
   // initialize result vector: first component = integral of concentration time derivative, second

@@ -12,7 +12,7 @@
 
 #include "baci_inpar_binningstrategy.hpp"
 
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -27,21 +27,21 @@ void INPAR::BINSTRATEGY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   Teuchos::ParameterList& binningstrategy = list->sublist("BINNING STRATEGY", false, "");
 
 
-  DoubleParameter("BIN_SIZE_LOWER_BOUND", -1.0,
+  CORE::UTILS::DoubleParameter("BIN_SIZE_LOWER_BOUND", -1.0,
       "Lower bound for bin size. Exact bin size is computed via (Domain edge "
       "length)/BIN_SIZE_LOWER_BOUND. This also determines the number of bins in each spatial "
       "direction",
       &binningstrategy);
 
-  StringParameter("BIN_PER_DIR", "-1 -1 -1",
+  CORE::UTILS::StringParameter("BIN_PER_DIR", "-1 -1 -1",
       "Number of bins per direction (x, y, z) in particle simulations. Either Define this value or "
       "BIN_SIZE_LOWER_BOUND",
       &binningstrategy);
 
-  StringParameter("PERIODICONOFF", "0 0 0",
+  CORE::UTILS::StringParameter("PERIODICONOFF", "0 0 0",
       "Turn on/off periodic boundary conditions in each spatial direction", &binningstrategy);
 
-  StringParameter("DOMAINBOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
+  CORE::UTILS::StringParameter("DOMAINBOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
       "Bounding box for computational domain using binning strategy. Specify diagonal corner "
       "points",
       &binningstrategy);

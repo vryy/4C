@@ -13,7 +13,6 @@
 #include "baci_coupling_adapter_converter.hpp"
 #include "baci_lib_assemblestrategy.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_matrixtransform.hpp"
 #include "baci_linalg_sparseoperator.hpp"
@@ -24,6 +23,7 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "baci_ssi_utils.hpp"
 #include "baci_structure_new_enum_lists.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -72,7 +72,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // add state vectors to scalar transport discretization
@@ -109,7 +109,7 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraMani
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // add state vectors to scalar transport discretization
@@ -327,11 +327,11 @@ void SSI::ScatraStructureOffDiagCoupling::
   Teuchos::ParameterList condparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_capacitance_od, condparams);
 
   // linearization of boundary flux w.r.t. displacement
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
 
   // add state vectors to scalar transport discretization
@@ -579,11 +579,11 @@ void SSI::ScatraStructureOffDiagCoupling::
   Teuchos::ParameterList condparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // linearization of boundary flux w.r.t. displacement
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::disp, condparams);
 
   // add state vectors to scalar transport discretization

@@ -15,12 +15,12 @@
 #include "baci_global_data.hpp"
 #include "baci_inpar_tsi.hpp"
 #include "baci_io_linedefinition.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_mat_plasticelasthyper.hpp"
 #include "baci_so3_line.hpp"
 #include "baci_so3_surface.hpp"
 #include "baci_thermo_ele_impl_utils.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -660,7 +660,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   dDp_inc_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
 
   Teuchos::ParameterList plparams = GLOBAL::Problem::Instance()->SemiSmoothPlastParams();
-  DRT::UTILS::AddEnumClassToParameterList(
+  CORE::UTILS::AddEnumClassToParameterList(
       "GLOBAL::ProblemType", GLOBAL::Problem::Instance()->GetProblemType(), plparams);
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 

@@ -8,8 +8,8 @@
 #include "baci_scatra_timint_stat_hdg.hpp"
 
 #include "baci_io.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_scatra_ele_action.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -48,7 +48,7 @@ void SCATRA::TimIntStationaryHDG::SetElementTimeParameter(bool forcedincremental
 {
   Teuchos::ParameterList eleparams;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", true);

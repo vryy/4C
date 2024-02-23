@@ -12,8 +12,8 @@
 
 #include "baci_inpar_beamcontact.hpp"
 
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -36,26 +36,26 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       tuple<std::string>("Old", "old", "Standard", "standard"),
       tuple<int>(bstr_old, bstr_old, bstr_standard, bstr_standard), &beamcontact);
 
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "BEAMS_NEWGAP", "No", "choose between original or enhanced gapfunction", &beamcontact);
 
-  BoolParameter("BEAMS_SEGCON", "No",
+  CORE::UTILS::BoolParameter("BEAMS_SEGCON", "No",
       "choose between beam contact with and without subsegment generation", &beamcontact);
 
-  BoolParameter("BEAMS_DEBUG", "No",
+  CORE::UTILS::BoolParameter("BEAMS_DEBUG", "No",
       "This flag can be used for testing purposes. When it is switched on, some sanity checks are "
       "not performed!",
       &beamcontact);
 
-  BoolParameter("BEAMS_INACTIVESTIFF", "No",
+  CORE::UTILS::BoolParameter("BEAMS_INACTIVESTIFF", "No",
       "Always apply contact stiffness in first Newton step for pairs which have active in last "
       "time step",
       &beamcontact);
 
-  BoolParameter("BEAMS_BTSOL", "No",
+  CORE::UTILS::BoolParameter("BEAMS_BTSOL", "No",
       "decide, if also the contact between beams and solids is possible", &beamcontact);
 
-  BoolParameter("BEAMS_ENDPOINTPENALTY", "No",
+  CORE::UTILS::BoolParameter("BEAMS_ENDPOINTPENALTY", "No",
       "Additional consideration of endpoint-line and endpoint-endpoint contacts", &beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_SMOOTHING", "None",
@@ -66,57 +66,58 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       tuple<std::string>("No", "no", "Yes", "yes"), tuple<int>(bd_no, bd_no, bd_yes, bd_yes),
       &beamcontact);
 
-  DoubleParameter("BEAMS_BTBPENALTYPARAM", 0.0, "Penalty parameter for beam-to-beam point contact",
-      &beamcontact);
-  DoubleParameter("BEAMS_BTBLINEPENALTYPARAM", -1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_BTBPENALTYPARAM", 0.0,
+      "Penalty parameter for beam-to-beam point contact", &beamcontact);
+  CORE::UTILS::DoubleParameter("BEAMS_BTBLINEPENALTYPARAM", -1.0,
       "Penalty parameter per unit length for beam-to-beam line contact", &beamcontact);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "BEAMS_BTSPENALTYPARAM", 0.0, "Penalty parameter for beam-to-solid contact", &beamcontact);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "BEAMS_DAMPINGPARAM", -1000.0, "Damping parameter for contact damping force", &beamcontact);
-  DoubleParameter("BEAMS_DAMPREGPARAM1", -1000.0,
+  CORE::UTILS::DoubleParameter("BEAMS_DAMPREGPARAM1", -1000.0,
       "First (at gap1, with gap1>gap2) regularization parameter for contact damping force",
       &beamcontact);
-  DoubleParameter("BEAMS_DAMPREGPARAM2", -1000.0,
+  CORE::UTILS::DoubleParameter("BEAMS_DAMPREGPARAM2", -1000.0,
       "Second (at gap2, with gap1>gap2) regularization parameter for contact damping force",
       &beamcontact);
-  DoubleParameter("BEAMS_MAXDISISCALEFAC", -1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_MAXDISISCALEFAC", -1.0,
       "Scale factor in order to limit maximal iterative displacement increment (resiudal "
       "displacement)",
       &beamcontact);
-  DoubleParameter("BEAMS_MAXDELTADISSCALEFAC", 1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_MAXDELTADISSCALEFAC", 1.0,
       "Scale factor in order to limit maximal displacement per time step", &beamcontact);
 
-  DoubleParameter("BEAMS_PERPSHIFTANGLE1", -1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_PERPSHIFTANGLE1", -1.0,
       "Lower shift angle (in degrees) for penalty scaling of large-angle-contact", &beamcontact);
-  DoubleParameter("BEAMS_PERPSHIFTANGLE2", -1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_PERPSHIFTANGLE2", -1.0,
       "Upper shift angle (in degrees) for penalty scaling of large-angle-contact", &beamcontact);
-  DoubleParameter("BEAMS_PARSHIFTANGLE1", -1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_PARSHIFTANGLE1", -1.0,
       "Lower shift angle (in degrees) for penalty scaling of small-angle-contact", &beamcontact);
-  DoubleParameter("BEAMS_PARSHIFTANGLE2", -1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_PARSHIFTANGLE2", -1.0,
       "Upper shift angle (in degrees) for penalty scaling of small-angle-contact", &beamcontact);
-  DoubleParameter("BEAMS_SEGANGLE", -1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_SEGANGLE", -1.0,
       "Maximal angle deviation allowed for contact search segmentation", &beamcontact);
-  IntParameter("BEAMS_NUMINTEGRATIONINTERVAL", 1, "Number of integration intervals per element",
-      &beamcontact);
+  CORE::UTILS::IntParameter("BEAMS_NUMINTEGRATIONINTERVAL", 1,
+      "Number of integration intervals per element", &beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_PENALTYLAW", "LinPen", "Applied Penalty Law",
       tuple<std::string>("LinPen", "QuadPen", "LinNegQuadPen", "LinPosQuadPen", "LinPosCubPen",
           "LinPosDoubleQuadPen", "LinPosExpPen"),
       tuple<int>(pl_lp, pl_qp, pl_lnqp, pl_lpqp, pl_lpcp, pl_lpdqp, pl_lpep), &beamcontact);
 
-  DoubleParameter("BEAMS_PENREGPARAM_G0", -1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_PENREGPARAM_G0", -1.0,
       "First penalty regularization parameter G0 >=0: For gap<G0 contact is active!", &beamcontact);
-  DoubleParameter("BEAMS_PENREGPARAM_F0", -1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_PENREGPARAM_F0", -1.0,
       "Second penalty regularization parameter F0 >=0: F0 represents the force at the transition "
       "point between regularized and linear force law!",
       &beamcontact);
-  DoubleParameter("BEAMS_PENREGPARAM_C0", -1.0,
+  CORE::UTILS::DoubleParameter("BEAMS_PENREGPARAM_C0", -1.0,
       "Third penalty regularization parameter C0 >=0: C0 has different physical meanings for the "
       "different penalty laws!",
       &beamcontact);
-  DoubleParameter("BEAMS_GAPSHIFTPARAM", 0.0, "Parameter to shift penalty law!", &beamcontact);
-  DoubleParameter("BEAMS_BASICSTIFFGAP", -1.0,
+  CORE::UTILS::DoubleParameter(
+      "BEAMS_GAPSHIFTPARAM", 0.0, "Parameter to shift penalty law!", &beamcontact);
+  CORE::UTILS::DoubleParameter("BEAMS_BASICSTIFFGAP", -1.0,
       "For gaps > -BEAMS_BASICSTIFFGAP, only the basic part of the contact linearization is "
       "applied!",
       &beamcontact);
@@ -129,15 +130,15 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
           "None", "none", "octree_axisaligned", "octree_cylorient", "octree_spherical"),
       tuple<int>(boct_none, boct_none, boct_aabb, boct_cobb, boct_spbb), &beamcontact);
 
-  BoolParameter("BEAMS_ADDITEXT", "Yes",
+  CORE::UTILS::BoolParameter("BEAMS_ADDITEXT", "Yes",
       "Switch between No==multiplicative extrusion factor and Yes==additive extrusion factor",
       &beamcontact);
   setNumericStringParameter("BEAMS_EXTVAL", "-1.0",
       "extrusion value(s) of the bounding box, Depending on BEAMS_ADDITIVEEXTFAC is either "
       "additive or multiplicative. Give one or two values.",
       &beamcontact);
-  IntParameter("BEAMS_TREEDEPTH", 6, "max, tree depth of the octree", &beamcontact);
-  IntParameter(
+  CORE::UTILS::IntParameter("BEAMS_TREEDEPTH", 6, "max, tree depth of the octree", &beamcontact);
+  CORE::UTILS::IntParameter(
       "BEAMS_BOXESINOCT", 8, "max number of bounding boxes in any leaf octant", &beamcontact);
 
 
@@ -149,23 +150,23 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
 
   // whether to write visualization output for beam contact
-  BoolParameter("VTK_OUTPUT_BEAM_CONTACT", "No", "write visualization output for beam contact",
-      &beamcontact_vtk_sublist);
+  CORE::UTILS::BoolParameter("VTK_OUTPUT_BEAM_CONTACT", "No",
+      "write visualization output for beam contact", &beamcontact_vtk_sublist);
 
   // output interval regarding steps: write output every INTERVAL_STEPS steps
-  IntParameter("INTERVAL_STEPS", -1,
+  CORE::UTILS::IntParameter("INTERVAL_STEPS", -1,
       "write visualization output at runtime every INTERVAL_STEPS steps", &beamcontact_vtk_sublist);
 
   // whether to write output in every iteration of the nonlinear solver
-  BoolParameter("EVERY_ITERATION", "No", "write output in every iteration of the nonlinear solver",
-      &beamcontact_vtk_sublist);
+  CORE::UTILS::BoolParameter("EVERY_ITERATION", "No",
+      "write output in every iteration of the nonlinear solver", &beamcontact_vtk_sublist);
 
   // whether to write visualization output for contact forces
-  BoolParameter("CONTACT_FORCES", "No", "write visualization output for contact forces",
-      &beamcontact_vtk_sublist);
+  CORE::UTILS::BoolParameter("CONTACT_FORCES", "No",
+      "write visualization output for contact forces", &beamcontact_vtk_sublist);
 
   // whether to write visualization output for gaps
-  BoolParameter("GAPS", "No", "write visualization output for gap, i.e. penetration",
+  CORE::UTILS::BoolParameter("GAPS", "No", "write visualization output for gap, i.e. penetration",
       &beamcontact_vtk_sublist);
 }
 

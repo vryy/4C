@@ -14,9 +14,9 @@
 #include "baci_inpar_xfem.hpp"
 
 #include "baci_inpar_cut.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_io_linecomponent.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -31,22 +31,22 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL", false, "");
 
   // OUTPUT options
-  BoolParameter("GMSH_DEBUG_OUT", "No",
+  CORE::UTILS::BoolParameter("GMSH_DEBUG_OUT", "No",
       "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
-  BoolParameter("GMSH_DEBUG_OUT_SCREEN", "No",
+  CORE::UTILS::BoolParameter("GMSH_DEBUG_OUT_SCREEN", "No",
       "Do you want to be informed, if Gmsh output is written?", &xfem_general);
-  BoolParameter("GMSH_SOL_OUT", "No",
+  CORE::UTILS::BoolParameter("GMSH_SOL_OUT", "No",
       "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
-  BoolParameter("GMSH_TIMINT_OUT", "No",
+  CORE::UTILS::BoolParameter("GMSH_TIMINT_OUT", "No",
       "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
-  BoolParameter("GMSH_EOS_OUT", "No",
+  CORE::UTILS::BoolParameter("GMSH_EOS_OUT", "No",
       "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
-  BoolParameter("GMSH_DISCRET_OUT", "No",
+  CORE::UTILS::BoolParameter("GMSH_DISCRET_OUT", "No",
       "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
-  BoolParameter("GMSH_CUT_OUT", "No",
+  CORE::UTILS::BoolParameter("GMSH_CUT_OUT", "No",
       "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
 
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "MAX_NUM_DOFSETS", 3, "Maximum number of volumecells in the XFEM element", &xfem_general);
 
   setStringToIntegralParameter<int>("NODAL_DOFSET_STRATEGY", "full",
@@ -80,16 +80,17 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& xfluid_general = xfluid_dyn.sublist("GENERAL", false, "");
 
   // Do we use more than one fluid discretization?
-  BoolParameter("XFLUIDFLUID", "no", "Use an embedded fluid patch.", &xfluid_general);
+  CORE::UTILS::BoolParameter("XFLUIDFLUID", "no", "Use an embedded fluid patch.", &xfluid_general);
 
   // How many monolithic steps we keep the fluidfluid-boundary fixed
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "RELAXING_ALE_EVERY", 1, "Relaxing Ale after how many monolithic steps", &xfluid_general);
 
-  BoolParameter("RELAXING_ALE", "yes",
+  CORE::UTILS::BoolParameter("RELAXING_ALE", "yes",
       "switch on/off for relaxing Ale in monolithic fluid-fluid-fsi", &xfluid_general);
 
-  DoubleParameter("XFLUIDFLUID_SEARCHRADIUS", 1.0, "Radius of the search tree", &xfluid_general);
+  CORE::UTILS::DoubleParameter(
+      "XFLUIDFLUID_SEARCHRADIUS", 1.0, "Radius of the search tree", &xfluid_general);
 
   // xfluidfluid-fsi-monolithic approach
   setStringToIntegralParameter<int>("MONOLITHIC_XFFSI_APPROACH", "xffsi_fixedALE_partitioned",
@@ -141,7 +142,7 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP),
       &xfluid_general);
 
-  BoolParameter("ALE_XFluid", "no", "XFluid is Ale Fluid?", &xfluid_general);
+  CORE::UTILS::BoolParameter("ALE_XFluid", "no", "XFluid is Ale Fluid?", &xfluid_general);
 
   // for new OST-implementation: which interface terms to be evaluated for previous time step
   setStringToIntegralParameter<int>("INTERFACE_TERMS_PREVIOUS_STATE",
@@ -155,10 +156,10 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           ),
       &xfluid_general);
 
-  BoolParameter("XFLUID_TIMEINT_CHECK_INTERFACETIPS", "Yes",
+  CORE::UTILS::BoolParameter("XFLUID_TIMEINT_CHECK_INTERFACETIPS", "Yes",
       "Xfluid TimeIntegration Special Check if node has changed the side!", &xfluid_general);
 
-  BoolParameter("XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE", "Yes",
+  CORE::UTILS::BoolParameter("XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE", "Yes",
       "Xfluid TimeIntegration Special Check if node is sliding on surface!", &xfluid_general);
 
   /*----------------------------------------------------------------------*/
@@ -193,9 +194,9 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &xfluid_stab);
 
   // viscous and convective Nitsche/MSH stabilization parameter
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "NIT_STAB_FAC", 35.0, " ( stabilization parameter for Nitsche's penalty term", &xfluid_stab);
-  DoubleParameter("NIT_STAB_FAC_TANG", 35.0,
+  CORE::UTILS::DoubleParameter("NIT_STAB_FAC_TANG", 35.0,
       " ( stabilization parameter for Nitsche's penalty tangential term", &xfluid_stab);
 
   setStringToIntegralParameter<int>("VISC_STAB_TRACE_ESTIMATE", "CT_div_by_hk",
@@ -285,53 +286,53 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           ),
       &xfluid_stab);
 
-  BoolParameter("GHOST_PENALTY_STAB", "no", "switch on/off ghost penalty interface stabilization",
-      &xfluid_stab);
+  CORE::UTILS::BoolParameter("GHOST_PENALTY_STAB", "no",
+      "switch on/off ghost penalty interface stabilization", &xfluid_stab);
 
-  BoolParameter("GHOST_PENALTY_TRANSIENT_STAB", "no",
+  CORE::UTILS::BoolParameter("GHOST_PENALTY_TRANSIENT_STAB", "no",
       "switch on/off ghost penalty transient interface stabilization", &xfluid_stab);
 
-  BoolParameter("GHOST_PENALTY_2nd_STAB", "no",
+  CORE::UTILS::BoolParameter("GHOST_PENALTY_2nd_STAB", "no",
       "switch on/off ghost penalty interface stabilization for 2nd order derivatives",
       &xfluid_stab);
-  BoolParameter("GHOST_PENALTY_2nd_STAB_NORMAL", "no",
+  CORE::UTILS::BoolParameter("GHOST_PENALTY_2nd_STAB_NORMAL", "no",
       "switch between ghost penalty interface stabilization for 2nd order derivatives in normal or "
       "all spatial directions",
       &xfluid_stab);
 
 
-  DoubleParameter("GHOST_PENALTY_FAC", 0.1,
+  CORE::UTILS::DoubleParameter("GHOST_PENALTY_FAC", 0.1,
       "define stabilization parameter ghost penalty interface stabilization", &xfluid_stab);
 
-  DoubleParameter("GHOST_PENALTY_TRANSIENT_FAC", 0.001,
+  CORE::UTILS::DoubleParameter("GHOST_PENALTY_TRANSIENT_FAC", 0.001,
       "define stabilization parameter ghost penalty transient interface stabilization",
       &xfluid_stab);
 
   //  // NOT chosen optimally!
-  //  DoubleParameter("GHOST_PENALTY_2nd_FAC", 1.0,"define stabilization parameter ghost penalty 2nd
-  //  order viscous interface stabilization",&xfluid_stab);
-  //  DoubleParameter("GHOST_PENALTY_PRESSURE_2nd_FAC", 1.0,"define stabilization parameter ghost
-  //  penalty 2nd order pressure interface stabilization",&xfluid_stab);
+  //  CORE::UTILS::DoubleParameter("GHOST_PENALTY_2nd_FAC", 1.0,"define stabilization parameter
+  //  ghost penalty 2nd order viscous interface stabilization",&xfluid_stab);
+  //  CORE::UTILS::DoubleParameter("GHOST_PENALTY_PRESSURE_2nd_FAC", 1.0,"define stabilization
+  //  parameter ghost penalty 2nd order pressure interface stabilization",&xfluid_stab);
 
-  DoubleParameter("GHOST_PENALTY_2nd_FAC", 0.05,
+  CORE::UTILS::DoubleParameter("GHOST_PENALTY_2nd_FAC", 0.05,
       "define stabilization parameter ghost penalty 2nd order viscous interface stabilization",
       &xfluid_stab);
-  DoubleParameter("GHOST_PENALTY_PRESSURE_2nd_FAC", 0.05,
+  CORE::UTILS::DoubleParameter("GHOST_PENALTY_PRESSURE_2nd_FAC", 0.05,
       "define stabilization parameter ghost penalty 2nd order pressure interface stabilization",
       &xfluid_stab);
 
 
-  BoolParameter("XFF_EOS_PRES_EMB_LAYER", "no",
+  CORE::UTILS::BoolParameter("XFF_EOS_PRES_EMB_LAYER", "no",
       "switch on/off edge-based pressure stabilization on interface-contributing elements of the "
       "embedded fluid",
       &xfluid_stab);
 
-  BoolParameter("IS_PSEUDO_2D", "no",
+  CORE::UTILS::BoolParameter("IS_PSEUDO_2D", "no",
       "modify viscous interface stabilization due to the vanishing polynomial in third dimension "
       "when using strong Dirichlet conditions to block polynomials in one spatial dimension",
       &xfluid_stab);
 
-  BoolParameter("GHOST_PENALTY_ADD_INNER_FACES", "no",
+  CORE::UTILS::BoolParameter("GHOST_PENALTY_ADD_INNER_FACES", "no",
       "Apply ghost penalty stabilization also for inner faces if this is possible due to the "
       "dofsets",
       &xfluid_stab);
@@ -339,43 +340,44 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfsi_monolithic = xfluid_dyn.sublist("XFPSI MONOLITHIC", false, "");
 
-  IntParameter("ITEMIN", 1, "How many iterations are performed minimal", &xfsi_monolithic);
-  IntParameter(
+  CORE::UTILS::IntParameter(
+      "ITEMIN", 1, "How many iterations are performed minimal", &xfsi_monolithic);
+  CORE::UTILS::IntParameter(
       "ITEMAX_OUTER", 5, "How many outer iterations are performed maximal", &xfsi_monolithic);
-  BoolParameter("ND_NEWTON_DAMPING", "no",
+  CORE::UTILS::BoolParameter("ND_NEWTON_DAMPING", "no",
       "Activate Newton damping based on residual and increment", &xfsi_monolithic);
-  DoubleParameter("ND_MAX_DISP_ITERINC", -1.0,
+  CORE::UTILS::DoubleParameter("ND_MAX_DISP_ITERINC", -1.0,
       "Maximal displacement increment to apply full newton --> otherwise damp newton",
       &xfsi_monolithic);
-  DoubleParameter("ND_MAX_VEL_ITERINC", -1.0,
+  CORE::UTILS::DoubleParameter("ND_MAX_VEL_ITERINC", -1.0,
       "Maximal fluid velocity increment to apply full newton --> otherwise damp newton",
       &xfsi_monolithic);
-  DoubleParameter("ND_MAX_PRES_ITERINC", -1.0,
+  CORE::UTILS::DoubleParameter("ND_MAX_PRES_ITERINC", -1.0,
       "Maximal fluid pressure increment to apply full newton --> otherwise damp newton",
       &xfsi_monolithic);
-  DoubleParameter("ND_MAX_PVEL_ITERINC", -1.0,
+  CORE::UTILS::DoubleParameter("ND_MAX_PVEL_ITERINC", -1.0,
       "Maximal porofluid velocity increment to apply full newton --> otherwise damp newton",
       &xfsi_monolithic);
-  DoubleParameter("ND_MAX_PPRES_ITERINC", -1.0,
+  CORE::UTILS::DoubleParameter("ND_MAX_PPRES_ITERINC", -1.0,
       "Maximal porofluid pressure increment to apply full newton --> otherwise damp newton",
       &xfsi_monolithic);
-  DoubleParameter("CUT_EVALUATE_MINTOL", 0.0,
+  CORE::UTILS::DoubleParameter("CUT_EVALUATE_MINTOL", 0.0,
       "Minimal value of the maximal strucutral displacement for which the CUT is evaluate in this "
       "iteration!",
       &xfsi_monolithic);
-  IntParameter("CUT_EVALUATE_MINITER", 0,
+  CORE::UTILS::IntParameter("CUT_EVALUATE_MINITER", 0,
       "Minimal number of nonlinear iterations, before the CUT is potentially not evaluated",
       &xfsi_monolithic);
-  BoolParameter("EXTRAPOLATE_TO_ZERO", "no",
+  CORE::UTILS::BoolParameter("EXTRAPOLATE_TO_ZERO", "no",
       "the extrapolation of the fluid stress in the contact zone is relaxed to zero after a "
       "certain distance",
       &xfsi_monolithic);
-  DoubleParameter("POROCONTACTFPSI_HFRACTION", 1.0,
+  CORE::UTILS::DoubleParameter("POROCONTACTFPSI_HFRACTION", 1.0,
       "factor of element size, when transition between FPSI and PSCI is started!",
       &xfsi_monolithic);
-  DoubleParameter("POROCONTACTFPSI_FULLPCFRACTION", 0.0,
+  CORE::UTILS::DoubleParameter("POROCONTACTFPSI_FULLPCFRACTION", 0.0,
       "ration of gap/(POROCONTACTFPSI_HFRACTION*h) when full PSCI is started!", &xfsi_monolithic);
-  BoolParameter("USE_PORO_PRESSURE", "yes",
+  CORE::UTILS::BoolParameter("USE_PORO_PRESSURE", "yes",
       "the extrapolation of the fluid stress in the contact zone is relaxed to zero after a "
       "certtain distance",
       &xfsi_monolithic);

@@ -13,7 +13,6 @@
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_utils_gid_vector.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_sparseoperator.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
@@ -27,6 +26,7 @@
 #include "baci_scatra_ele_parameter_boundary.hpp"
 #include "baci_scatra_ele_parameter_elch.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
+#include "baci_utils_parameter_list.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -60,7 +60,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
     Teuchos::ParameterList condparams;
 
     // action for elements
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_elch_minmax_overpotential, condparams);
 
     // initialize results

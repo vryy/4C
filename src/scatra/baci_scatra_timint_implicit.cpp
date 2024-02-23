@@ -30,7 +30,6 @@
 #include "baci_lib_condition_selector.hpp"
 #include "baci_lib_periodicbc.hpp"
 #include "baci_lib_utils_gid_vector.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_krylov_projector.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_linear_solver_method_parameters.hpp"
@@ -54,6 +53,7 @@
 #include "baci_scatra_turbulence_hit_scalar_forcing.hpp"
 #include "baci_scatra_utils.hpp"
 #include "baci_utils_function.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <unordered_set>
 #include <utility>
@@ -661,7 +661,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
@@ -908,7 +908,7 @@ void SCATRA::ScaTraTimIntImpl::SetElementNodesetParameters() const
   Teuchos::ParameterList eleparams;
 
   // set action
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_nodeset_parameter, eleparams);
 
   eleparams.set<int>("ndsdisp", NdsDisp());
@@ -932,7 +932,7 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
   Teuchos::ParameterList eleparams;
 
   // set action
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_general_scatra_parameter, eleparams);
 
   // set problem number
@@ -1011,7 +1011,7 @@ void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameters(bool calcinitialti
 {
   Teuchos::ParameterList eleparams;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_turbulence_scatra_parameter, eleparams);
 
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
@@ -1146,7 +1146,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
     Teuchos::ParameterList eleparams;
 
     // set action
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_prepare_time_step, eleparams);
 
     // add state vectors
@@ -1724,7 +1724,7 @@ void SCATRA::ScaTraTimIntImpl::WriteResult()
     Teuchos::ParameterList eleparams;
 
     // set action
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::micro_scale_output, eleparams);
 
     // loop over macro-scale elements
@@ -2282,7 +2282,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     Teuchos::ParameterList mode_params;
 
     // set parameters for elements that do not change over mode
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::integrate_shape_functions, mode_params);
 
     // loop over all activemodes
@@ -2473,7 +2473,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
   Teuchos::ParameterList condparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_Neumann, condparams);
 
   // specific parameters
@@ -2534,7 +2534,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_Robin, condparams);
 
   // add element parameters and set state vectors according to time-integration scheme
@@ -2569,7 +2569,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_mat_and_rhs, eleparams);
 
   // DO THIS AT VERY FIRST!!!
@@ -2622,7 +2622,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     Teuchos::ParameterList mhdbcparams;
 
     // set action for elements
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_weak_Dirichlet, mhdbcparams);
 
     AddTimeIntegrationSpecificVectors();
@@ -2939,7 +2939,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearMicroScaleSolve()
   Teuchos::ParameterList eleparams;
 
   // set action for macro-scale elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::micro_scale_solve, eleparams);
 
   // clear state vectors
@@ -3638,7 +3638,7 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
 
   Teuchos::ParameterList eleparams;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_elch_elctrode_mean_concentration, eleparams);
 
   // evaluate nodal mean concentration of micro discretizations
@@ -3786,7 +3786,7 @@ void SCATRA::ScaTraTimIntImpl::SetTimeSteppingToMicroScale()
 {
   Teuchos::ParameterList eleparams;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::micro_scale_set_time, eleparams);
 
   eleparams.set<double>("dt", dta_);

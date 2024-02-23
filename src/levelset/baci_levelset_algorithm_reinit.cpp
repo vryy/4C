@@ -15,10 +15,10 @@
 #include "baci_levelset_algorithm.hpp"
 #include "baci_levelset_intersection_utils.hpp"
 #include "baci_lib_periodicbc.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_scatra_ele_action.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <list>
 
@@ -68,7 +68,7 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters(
   Teuchos::ParameterList eleparams;
 
   // set action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_lsreinit_scatra_parameter, eleparams);
 
   // reinitialization equation is given in convective form
@@ -129,7 +129,7 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementTimeParameters()
 {
   Teuchos::ParameterList eleparams;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_time_parameter, eleparams);
 
   eleparams.set<bool>("using generalized-alpha time integration", false);
@@ -392,7 +392,7 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
 
       // parameters for the elements
       // action
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_node_based_reinit_velocity, eleparams);
       // set current spatial direction
       // we have to loop the dimensions, since we merely have one dof per node here
@@ -498,7 +498,7 @@ void SCATRA::LevelSetAlgorithm::CorrectionReinit()
   // generate a parameterlist for communication and control
   Teuchos::ParameterList eleparams;
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_mat_and_rhs_lsreinit_correction_step, eleparams);
   eleparams.set<bool>("solve reinit eq", true);
 

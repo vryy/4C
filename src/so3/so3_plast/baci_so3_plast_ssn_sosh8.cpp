@@ -22,13 +22,13 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 #include "baci_global_data.hpp"
 #include "baci_io_linedefinition.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_mat_plasticelasthyper.hpp"
 #include "baci_so3_plast_ssn.hpp"
 #include "baci_so3_utils.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
@@ -514,7 +514,7 @@ bool DRT::ELEMENTS::So_sh8Plast::ReadElement(
   dDp_inc_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
 
   Teuchos::ParameterList plparams = GLOBAL::Problem::Instance()->SemiSmoothPlastParams();
-  DRT::UTILS::AddEnumClassToParameterList(
+  CORE::UTILS::AddEnumClassToParameterList(
       "GLOBAL::ProblemType", GLOBAL::Problem::Instance()->GetProblemType(), plparams);
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 

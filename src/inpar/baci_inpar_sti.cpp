@@ -10,9 +10,9 @@
 #include "baci_inpar_sti.hpp"
 
 #include "baci_inpar_scatra.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_linalg_sparseoperator.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -58,15 +58,16 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &stidyn);
 
   // function number for initial temperature field
-  IntParameter("THERMO_INITFUNCNO", -1,
+  CORE::UTILS::IntParameter("THERMO_INITFUNCNO", -1,
       "function number for initial temperature field for scatra-thermo interaction problems",
       &stidyn);
 
   // ID of linear solver for temperature field
-  IntParameter("THERMO_LINEAR_SOLVER", -1, "ID of linear solver for temperature field", &stidyn);
+  CORE::UTILS::IntParameter(
+      "THERMO_LINEAR_SOLVER", -1, "ID of linear solver for temperature field", &stidyn);
 
   // flag for double condensation of linear equations associated with temperature field
-  BoolParameter("THERMO_CONDENSATION", "No",
+  CORE::UTILS::BoolParameter("THERMO_CONDENSATION", "No",
       "flag for double condensation of linear equations associated with temperature field",
       &stidyn);
 
@@ -76,8 +77,8 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "MONOLITHIC", false, "control parameters for monolithic scatra-thermo interaction problems");
 
   // ID of linear solver for global system of equations
-  IntParameter("LINEAR_SOLVER", -1, "ID of linear solver for global system of equations",
-      &stidyn_monolithic);
+  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
+      "ID of linear solver for global system of equations", &stidyn_monolithic);
 
   // type of global system matrix in global system of equations
   setStringToIntegralParameter<CORE::LINALG::MatrixType>("MATRIXTYPE", "block",
@@ -93,10 +94,10 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "control parameters for partitioned scatra-thermo interaction problems");
 
   // relaxation parameter
-  DoubleParameter("OMEGA", 1., "relaxation parameter", &stidyn_partitioned);
+  CORE::UTILS::DoubleParameter("OMEGA", 1., "relaxation parameter", &stidyn_partitioned);
 
   // maximum value of Aitken relaxation parameter
-  DoubleParameter("OMEGAMAX", 0.,
+  CORE::UTILS::DoubleParameter("OMEGAMAX", 0.,
       "maximum value of Aitken relaxation parameter (0.0 = no constraint)", &stidyn_partitioned);
 
   return;

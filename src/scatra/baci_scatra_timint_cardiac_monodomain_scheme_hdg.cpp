@@ -13,9 +13,9 @@
 
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_ele_calc_hdg.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -75,7 +75,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::ElementMaterialTimeUpdate()
   discret_->ClearState(true);
 
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::time_update_material, eleparams);
 
   discret_->SetState("phiaf", phinp_);
@@ -112,7 +112,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::OutputState()
   {
     material_internal_state_np_->PutScalar(0.0);
     Teuchos::ParameterList params;
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::get_material_internal_state, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>(
         "material_internal_state", material_internal_state_np_);
@@ -224,7 +224,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::ProjectMaterial()
   discret_->ClearState(true);
   // set action
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::project_material_field, eleparams);
 
   CORE::LINALG::SerialDenseMatrix dummyMat;

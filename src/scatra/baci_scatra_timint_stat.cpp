@@ -12,9 +12,9 @@
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_timint_meshtying_strategy_base.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -81,7 +81,7 @@ void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsol
 {
   Teuchos::ParameterList eleparams;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", true);

@@ -12,7 +12,6 @@
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_utils_parallel.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_equilibrate.hpp"
 #include "baci_linalg_krylov_projector.hpp"
 #include "baci_linalg_matrixtransform.hpp"
@@ -30,6 +29,7 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.hpp"
 #include "baci_scatra_timint_meshtying_strategy_std_elch.hpp"
 #include "baci_utils_function_of_time.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <unordered_set>
 
@@ -407,14 +407,14 @@ void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(
   // overwrite action type
   if (INPUT::IntegralValue<int>(*elchparams_, "DIFFCOND_FORMULATION"))
   {
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::set_diffcond_scatra_parameter, eleparams);
 
     // parameters for diffusion-conduction formulation
     eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
   }
   else
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::set_elch_scatra_parameter, eleparams);
 
   // general elch parameters
@@ -614,7 +614,7 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
 
   // check validity of material and element formulation
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::check_scatra_element_parameter, eleparams);
 
   discret_->Evaluate(
@@ -686,7 +686,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
@@ -734,7 +734,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
@@ -766,7 +766,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
@@ -995,10 +995,10 @@ Teuchos::RCP<CORE::LINALG::SerialDenseVector> SCATRA::ScaTraTimIntElch::Evaluate
 
   // set action for elements depending on type of condition to be evaluated
   if (condstring == "ElchDomainKinetics")
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::calc_elch_domain_kinetics, eleparams);
   else if (condstring == "ElchBoundaryKinetics")
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_elch_boundary_kinetics, eleparams);
   else
     dserror("Invalid action " + condstring + " for output of electrode status information!");
@@ -1078,7 +1078,7 @@ SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(Teuchos::RCP<DRT::Con
     Teuchos::ParameterList condparams;
 
     // set action for elements
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::calc_elch_boundary_kinetics_point, condparams);
 
     // set flag for evaluation of status information
@@ -1360,7 +1360,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeInfoInterior()
       Teuchos::ParameterList condparams;
 
       // action for elements
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_elch_electrode_soc_and_c_rate, condparams);
 
       // initialize result vector
@@ -1481,7 +1481,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateCellVoltage()
         Teuchos::ParameterList condparams;
 
         // action for elements
-        DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
             "action", SCATRA::BoundaryAction::calc_elch_cell_voltage, condparams);
 
         // initialize result vector
@@ -1638,7 +1638,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
@@ -2088,7 +2088,7 @@ double SCATRA::ScaTraTimIntElch::ComputeConductivity(
 
   // create the parameters for the elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_elch_conductivity, eleparams);
 
   eleparams.set("effCond", effCond);
@@ -2601,10 +2601,10 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
 
   // set action for elements depending on type of condition to be evaluated
   if (condstring == "ElchDomainKinetics")
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::calc_elch_domain_kinetics, condparams);
   else if (condstring == "ElchBoundaryKinetics")
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_elch_boundary_kinetics, condparams);
   else
     dserror("Illegal action for electrode kinetics evaluation!");
@@ -2632,7 +2632,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
   Teuchos::ParameterList condparams;
 
   // set action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_elch_boundary_kinetics_point, condparams);
 
   // set state vectors according to time-integration scheme
@@ -2732,7 +2732,7 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   // update total time for time curve actions
   AddTimeIntegrationSpecificVectors();
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_elch_linearize_nernst, condparams);
 
   // add element parameters and set state vectors according to time-integration scheme
@@ -2950,7 +2950,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
             Teuchos::ParameterList params;
 
             // set action for elements
-            DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+            CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
                 "action", SCATRA::BoundaryAction::calc_Neumann, params);
 
             // loop over all conditioned elements

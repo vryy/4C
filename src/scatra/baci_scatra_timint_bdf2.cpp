@@ -14,11 +14,11 @@
 #include "baci_fluid_turbulence_dyn_vreman.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_timint_meshtying_strategy_base.hpp"
 #include "baci_scatra_turbulence_hit_scalar_forcing.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -98,7 +98,7 @@ void SCATRA::TimIntBDF2::SetElementTimeParameter(bool forcedincrementalsolver) c
 {
   Teuchos::ParameterList eleparams;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);

@@ -30,7 +30,6 @@
 #include "baci_io_control.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_blocksparsematrix.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_sparsematrix.hpp"
@@ -40,6 +39,7 @@
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_poroelast_monolithic.hpp"
 #include "baci_structure_aux.hpp"
+#include "baci_utils_parameter_list.hpp"
 #include "baci_xfem_condition_manager.hpp"
 #include "baci_xfem_xfluid_contact_communicator.hpp"
 
@@ -2012,7 +2012,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     merge_fsi_blockmatrix_ = true;
 
     Teuchos::ParameterList solverparams;
-    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>("SOLVER",
+    CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>("SOLVER",
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(xfsisolverparams, "SOLVER"),
         solverparams);
 

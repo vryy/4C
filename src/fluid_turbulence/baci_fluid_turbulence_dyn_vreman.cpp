@@ -14,11 +14,11 @@
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_turbulence_boxfilter.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_scatra_mat.hpp"
 #include "baci_scatra_ele_action.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -188,7 +188,7 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList& extraparams)
 
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_vreman_params_scatra;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_vreman_scatra, calc_vreman_params_scatra);
   calc_vreman_params_scatra.set("col_filtered_phi", col_filtered_phi_);
   calc_vreman_params_scatra.set("col_filtered_phi2", col_filtered_phi2_);

@@ -17,7 +17,6 @@
 #include "baci_lib_dofset_predefineddofnumber.hpp"
 #include "baci_lib_utils_gid_vector.hpp"
 #include "baci_lib_utils_parallel.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_equilibrate.hpp"
 #include "baci_linalg_matrixtransform.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
@@ -29,6 +28,7 @@
 #include "baci_scatra_timint_elch_service.hpp"
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.hpp"
 #include "baci_utils_function_of_time.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -856,7 +856,7 @@ void SCATRA::ScaTraTimIntElchSCL::ScaleMicroProblem()
   Teuchos::ParameterList condparams;
 
   // scale micro problem with nodal area of macro discretiaztion
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_nodal_size, condparams);
 
   auto nodal_size_macro = CORE::LINALG::CreateVector(*DofRowMap(), true);

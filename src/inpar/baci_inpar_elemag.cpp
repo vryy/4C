@@ -10,9 +10,9 @@
 
 #include "baci_inpar_elemag.hpp"
 
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_linalg_equilibrate.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -26,21 +26,23 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       "ELECTROMAGNETIC DYNAMIC", false, "control parameters for electromagnetic problems\n");
 
   // general settings for time-integration scheme
-  DoubleParameter("TIMESTEP", 0.01, "Time-step length dt", &electromagneticdyn);
-  DoubleParameter("TAU", 1, "Stabilization parameter", &electromagneticdyn);
-  IntParameter("NUMSTEP", 100, "Number of time steps", &electromagneticdyn);
-  DoubleParameter("MAXTIME", 1.0, "Total simulation time", &electromagneticdyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.01, "Time-step length dt", &electromagneticdyn);
+  CORE::UTILS::DoubleParameter("TAU", 1, "Stabilization parameter", &electromagneticdyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 100, "Number of time steps", &electromagneticdyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1.0, "Total simulation time", &electromagneticdyn);
 
   // additional parameters
-  IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &electromagneticdyn);
-  IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &electromagneticdyn);
-  IntParameter("LINEAR_SOLVER", -1, "Number of linear solver used for electromagnetic problem",
-      &electromagneticdyn);
-  IntParameter("STARTFUNCNO", -1, "Function for initial field", &electromagneticdyn);
-  IntParameter("SOURCEFUNCNO", -1, "Function for source term in volume", &electromagneticdyn);
-  // BoolParameter("DOUBLEORFLOAT","Yes","Yes, if evaluation with double, no if with
-  // float",&electromagneticdyn); BoolParameter("ALLELESEQUAL","No","Yes, if all elements have same
-  // shape and material",&electromagneticdyn);
+  CORE::UTILS::IntParameter(
+      "RESULTSEVRY", 1, "Increment for writing solution", &electromagneticdyn);
+  CORE::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &electromagneticdyn);
+  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
+      "Number of linear solver used for electromagnetic problem", &electromagneticdyn);
+  CORE::UTILS::IntParameter("STARTFUNCNO", -1, "Function for initial field", &electromagneticdyn);
+  CORE::UTILS::IntParameter(
+      "SOURCEFUNCNO", -1, "Function for source term in volume", &electromagneticdyn);
+  // CORE::UTILS::BoolParameter("DOUBLEORFLOAT","Yes","Yes, if evaluation with double, no if with
+  // float",&electromagneticdyn); CORE::UTILS::BoolParameter("ALLELESEQUAL","No","Yes, if all
+  // elements have same shape and material",&electromagneticdyn);
 
   {
     // time integration
@@ -85,13 +87,16 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         name, label, &electromagneticdyn);
 
     // Error calculation
-    BoolParameter("CALCERR", "No", "Calc the error wrt ERRORFUNCNO?", &electromagneticdyn);
+    CORE::UTILS::BoolParameter(
+        "CALCERR", "No", "Calc the error wrt ERRORFUNCNO?", &electromagneticdyn);
 
     // Post process solution?
-    BoolParameter("POSTPROCESS", "No", "Postprocess solution? (very slow)", &electromagneticdyn);
+    CORE::UTILS::BoolParameter(
+        "POSTPROCESS", "No", "Postprocess solution? (very slow)", &electromagneticdyn);
   }
 
-  IntParameter("ERRORFUNCNO", -1, "Function for error calculation", &electromagneticdyn);
+  CORE::UTILS::IntParameter(
+      "ERRORFUNCNO", -1, "Function for error calculation", &electromagneticdyn);
 
   // flag for equilibration of global system of equations
   setStringToIntegralParameter<CORE::LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
@@ -108,8 +113,8 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       &electromagneticdyn);
 
   // PML
-  // StringParameter("PML_DEFINITION_FILE","none.txt","Filename of file containing the pml
-  // definition",&electromagneticdyn);
+  // CORE::UTILS::StringParameter("PML_DEFINITION_FILE","none.txt","Filename of file containing the
+  // pml definition",&electromagneticdyn);
 }
 
 /// set specific electromagnetic conditions

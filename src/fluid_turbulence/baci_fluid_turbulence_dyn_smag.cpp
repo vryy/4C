@@ -14,10 +14,10 @@
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_turbulence_boxfilter.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_scatra_ele_action.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -790,7 +790,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_turb_prandtl_params;
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_turbulent_prandtl_number, calc_turb_prandtl_params);
 
   // hand filtered global vectors down to the element

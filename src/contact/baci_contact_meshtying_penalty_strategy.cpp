@@ -11,7 +11,6 @@
 
 #include "baci_contact_meshtying_defines.hpp"
 #include "baci_inpar_contact.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -20,6 +19,7 @@
 #include "baci_mortar_interface.hpp"
 #include "baci_mortar_node.hpp"
 #include "baci_mortar_utils.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -166,7 +166,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
 
   // solve with default solver
   Teuchos::ParameterList solvparams;
-  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
       "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
   CORE::LINALG::Solver solver(solvparams, Comm());
 

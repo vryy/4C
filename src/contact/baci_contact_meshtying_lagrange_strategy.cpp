@@ -14,7 +14,6 @@
 #include "baci_global_data.hpp"
 #include "baci_inpar_contact.hpp"
 #include "baci_inpar_mortar.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
@@ -24,6 +23,7 @@
 #include "baci_mortar_interface.hpp"
 #include "baci_mortar_node.hpp"
 #include "baci_mortar_utils.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
@@ -248,7 +248,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
       // solve with default solver
 
       Teuchos::ParameterList solvparams;
-      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
@@ -283,7 +283,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
       // solve with default solver
 
       Teuchos::ParameterList solvparams;
-      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 

@@ -11,8 +11,8 @@
 
 #include "baci_inpar_ale.hpp"
 
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -26,9 +26,9 @@ void INPAR::ALE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC", false, "");
 
-  DoubleParameter("TIMESTEP", 0.1, "time step size", &adyn);
-  IntParameter("NUMSTEP", 41, "max number of time steps", &adyn);
-  DoubleParameter("MAXTIME", 4.0, "max simulation time", &adyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.1, "time step size", &adyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 41, "max number of time steps", &adyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 4.0, "max simulation time", &adyn);
 
   setStringToIntegralParameter<int>("ALE_TYPE", "solid", "ale mesh movement algorithm",
       tuple<std::string>("solid", "solid_linear", "laplace_material", "laplace_spatial",
@@ -37,21 +37,21 @@ void INPAR::ALE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           springs_spatial),
       &adyn);
 
-  BoolParameter("ASSESSMESHQUALITY", "no",
+  CORE::UTILS::BoolParameter("ASSESSMESHQUALITY", "no",
       "Evaluate element quality measure according to [Oddy et al. 1988]", &adyn);
 
-  BoolParameter("UPDATEMATRIX", "no",
+  CORE::UTILS::BoolParameter("UPDATEMATRIX", "no",
       "Update stiffness matrix in every time step (only for linear/material strategies)", &adyn);
 
-  IntParameter("MAXITER", 1, "Maximum number of newton iterations.", &adyn);
-  DoubleParameter(
+  CORE::UTILS::IntParameter("MAXITER", 1, "Maximum number of newton iterations.", &adyn);
+  CORE::UTILS::DoubleParameter(
       "TOLRES", 1.0e-06, "Absolute tolerance for length scaled L2 residual norm ", &adyn);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "TOLDISP", 1.0e-06, "Absolute tolerance for length scaled L2 increment norm ", &adyn);
 
-  IntParameter("NUM_INITSTEP", 0, "", &adyn);
-  IntParameter("RESTARTEVRY", 1, "write restart data every RESTARTEVRY steps", &adyn);
-  IntParameter("RESULTSEVRY", 0, "write results every RESULTSTEVRY steps", &adyn);
+  CORE::UTILS::IntParameter("NUM_INITSTEP", 0, "", &adyn);
+  CORE::UTILS::IntParameter("RESTARTEVRY", 1, "write restart data every RESTARTEVRY steps", &adyn);
+  CORE::UTILS::IntParameter("RESULTSEVRY", 0, "write results every RESULTSTEVRY steps", &adyn);
   setStringToIntegralParameter<int>("DIVERCONT", "continue",
       "What to do if nonlinear solver does not converge?", tuple<std::string>("stop", "continue"),
       tuple<int>(divcont_stop, divcont_continue), &adyn);
@@ -68,10 +68,11 @@ void INPAR::ALE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(initdisp_zero_disp, initdisp_disp_by_function), &adyn);
 
   // Function to evaluate initial displacement
-  IntParameter("STARTFUNCNO", -1, "Function for Initial displacement", &adyn);
+  CORE::UTILS::IntParameter("STARTFUNCNO", -1, "Function for Initial displacement", &adyn);
 
   // linear solver id used for scalar ale problems
-  IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for ale problems...", &adyn);
+  CORE::UTILS::IntParameter(
+      "LINEAR_SOLVER", -1, "number of linear solver used for ale problems...", &adyn);
 }
 
 

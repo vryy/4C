@@ -30,7 +30,7 @@ void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
           RebalanceType::recursive_coordinate_bisection, RebalanceType::monolithic),
       &meshpartitioning);
 
-  DoubleParameter("IMBALANCE_TOL", 1.1,
+  CORE::UTILS::DoubleParameter("IMBALANCE_TOL", 1.1,
       "Tolerance for relative imbalance of subdomain sizes for graph partitioning of unstructured "
       "meshes read from input files.",
       &meshpartitioning);
