@@ -44,7 +44,7 @@ namespace CORE::CLN
     for (unsigned int idx = 0; idx < in.numRows() * in.numCols(); ++idx)
     {
       ClnWrapper clnnum;
-      // zeros do not convert properly to CLN (lose of precision)
+      // zeros do not convert properly to CLN (loss of precision)
       if ((in.A()[idx] == 0.0))
       {
         // returning the cached value from the ClnWrapper cln table
@@ -55,6 +55,28 @@ namespace CORE::CLN
       out.A()[idx] = clnnum;
     }
   }
+
+  //! convert LINALG matrix with CLN values to a new LINALG matrix with CLN values with different
+  //! precision
+  template <unsigned int num_row, unsigned int num_col>
+  void UpdatePresicion(const LINALG::Matrix<num_row, num_col, ClnWrapper>& in,
+      LINALG::Matrix<num_row, num_col, ClnWrapper>& out, const int precision = 20)
+  {
+    for (unsigned int idx = 0; idx < in.numRows() * in.numCols(); ++idx)
+    {
+      ClnWrapper clnnum;
+      // zeros do not convert properly to CLN (loss of precision)
+      if ((in.A()[idx] == 0.0))
+      {
+        // returning the cached value from the ClnWrapper cln table
+        clnnum = 0.0;
+      }
+      else
+        clnnum = cln::cl_float(in.A()[idx].Value(), cln::float_format(precision));
+      out.A()[idx] = clnnum;
+    }
+  }
+
 }  // namespace CORE::CLN
 
 BACI_NAMESPACE_CLOSE

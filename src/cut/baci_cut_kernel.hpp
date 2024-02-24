@@ -1556,8 +1556,8 @@ namespace CORE::GEO::CUT::KERNEL
           cln_ref_shape_xyz;
       CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> cln_glob_init;
       CORE::LINALG::Matrix<probDim, 1, CORE::CLN::ClnWrapper> cln_loc_calc;
-      cln_loc_calc = loc_calc;
 
+      CORE::CLN::UpdatePresicion(loc_calc, cln_loc_calc, prec);
       CORE::CLN::ConvDoubleCLN(ref_shape_xyz, cln_ref_shape_xyz, prec);
       CORE::CLN::ConvDoubleCLN(glob_init, cln_glob_init, prec);
 
@@ -2552,7 +2552,7 @@ namespace CORE::GEO::CUT::KERNEL
         cln::float_format_t prec_beg = cln::float_format(clnxyze_side_(0, 0).Value());
         for (unsigned int i = 0; i < probDim; ++i)
         {
-          cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0).Value()));
+          cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0).Value());
           if (prec_beg != prec_end)
           {
             dserror(
@@ -2688,7 +2688,7 @@ namespace CORE::GEO::CUT::KERNEL
       clndistance = cln::cl_float(distance[0].Value(), cln::float_format(prec));
       CORE::CLN::ConvDoubleCLN(refshape_xyze, xyze_side, prec);
       CORE::CLN::ConvDoubleCLN(p, clnpx, prec);
-      clnxi = loc_calc;
+      CORE::CLN::UpdatePresicion(loc_calc, clnxi, prec);
 
       for (unsigned int i = 0; i < probDim; ++i)
       {
@@ -4139,7 +4139,7 @@ namespace CORE::GEO::CUT::KERNEL
 
       CORE::CLN::ConvDoubleCLN(refside_xyz, cln_refside_xyz, prec);
       CORE::CLN::ConvDoubleCLN(refedge_xyz, cln_refedge_xyz, prec);
-      cln_loc_calc = loc_calc;
+      CORE::CLN::UpdatePresicion(loc_calc, cln_loc_calc, prec);
 
       // Calculating interpolation from the shapefunction of the side
       CORE::LINALG::Matrix<CORE::FE::num_nodes<sideType>, 1, CORE::CLN::ClnWrapper> sideFunct;
