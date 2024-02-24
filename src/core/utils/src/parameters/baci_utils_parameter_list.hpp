@@ -60,6 +60,29 @@ namespace CORE
     */
     void StringParameter(std::string const& paramName, std::string const& value,
         std::string const& docString, Teuchos::ParameterList* paramList);
+
+    template <class T>
+    T IntegralValue(const Teuchos::ParameterList& params, const std::string& name)
+    {
+      int value = Teuchos::getIntegralValue<int>(params, name);
+      return static_cast<T>(value);
+    }
+
+    template <class T>
+    T GetAsEnum(const Teuchos::ParameterList& params, const std::string& name)
+    {
+      static_assert(std::is_enum_v<T>, "This function may only be used for enum constants.");
+      int value = params.get<int>(name);
+      return static_cast<T>(value);
+    }
+
+    template <class T>
+    T GetAsEnum(Teuchos::ParameterList& params, const std::string& name, T default_value)
+    {
+      static_assert(std::is_enum_v<T>, "This function may only be used for enum constants.");
+      int value = params.get<int>(name, default_value);
+      return static_cast<T>(value);
+    }
   }  // namespace UTILS
 }  // namespace CORE
 

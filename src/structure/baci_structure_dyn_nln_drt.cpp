@@ -40,7 +40,7 @@ void caldyn_drt()
   // get input lists
   const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   // major switch to different time integrators
-  switch (INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     case INPAR::STR::dyna_statics:
     case INPAR::STR::dyna_genalpha:
@@ -89,7 +89,7 @@ void dyn_nlnstructural_drt()
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
   const enum INPAR::STR::IntegrationStrategy intstrat =
-      INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+      CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
   switch (intstrat)
   {
     // -------------------------------------------------------------------
@@ -118,10 +118,10 @@ void dyn_nlnstructural_drt()
     }
   }
 
-  const bool write_initial_state =
-      INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "WRITE_INITIAL_STATE");
+  const bool write_initial_state = CORE::UTILS::IntegralValue<int>(
+      GLOBAL::Problem::Instance()->IOParams(), "WRITE_INITIAL_STATE");
   const bool write_final_state =
-      INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "WRITE_FINAL_STATE");
+      CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "WRITE_FINAL_STATE");
 
   // do restart
   const int restart = GLOBAL::Problem::Instance()->Restart();

@@ -94,16 +94,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     const int eta_ntp)
 {
   // init stuff
-  couplmethod_ = INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-      couplingparams, "ARTERY_COUPLING_METHOD");
+  couplmethod_ =
+      CORE::UTILS::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+          couplingparams, "ARTERY_COUPLING_METHOD");
 
   condname_ = condname;
 
   evaluate_in_ref_config_ =
-      INPUT::IntegralValue<int>(fluidcouplingparams, "EVALUATE_IN_REF_CONFIG");
+      CORE::UTILS::IntegralValue<int>(fluidcouplingparams, "EVALUATE_IN_REF_CONFIG");
 
   evaluate_on_lateral_surface_ =
-      INPUT::IntegralValue<int>(fluidcouplingparams, "LATERAL_SURFACE_COUPLING");
+      CORE::UTILS::IntegralValue<int>(fluidcouplingparams, "LATERAL_SURFACE_COUPLING");
 
   coupling_element_type_ = couplingtype;
 

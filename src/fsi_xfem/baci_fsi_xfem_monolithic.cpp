@@ -60,7 +60,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       solveradapttol_(true),
       solveradaptolbetter_(fsimono_.get<double>("ADAPTIVEDIST")),  // adaptive distance
       merge_fsi_blockmatrix_(false),
-      scaling_infnorm_((bool)INPUT::IntegralValue<int>(fsimono_, "INFNORMSCALING")),
+      scaling_infnorm_((bool)CORE::UTILS::IntegralValue<int>(fsimono_, "INFNORMSCALING")),
       log_(Teuchos::null),
       /// tolerance and for linear solver
       tolrhs_(fsimono_.get<double>(
@@ -72,9 +72,9 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       itermax_(fsimono_.get<int>("ITEMAX")),
       itermax_outer_(xfpsimono_.get<int>("ITEMAX_OUTER")),
       /// Convergence criterion and convergence tolerances for Newton scheme
-      normtypeinc_(INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsimono_, "NORM_INC")),
-      normtypefres_(INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsimono_, "NORM_RESF")),
-      combincfres_(INPUT::IntegralValue<INPAR::FSI::BinaryOp>(fsimono_, "NORMCOMBI_RESFINC")),
+      normtypeinc_(CORE::UTILS::IntegralValue<INPAR::FSI::ConvNorm>(fsimono_, "NORM_INC")),
+      normtypefres_(CORE::UTILS::IntegralValue<INPAR::FSI::ConvNorm>(fsimono_, "NORM_RESF")),
+      combincfres_(CORE::UTILS::IntegralValue<INPAR::FSI::BinaryOp>(fsimono_, "NORMCOMBI_RESFINC")),
       tolinc_(fsimono_.get<double>("CONVTOL")),
       tolfres_(fsimono_.get<double>("CONVTOL")),
       /// set tolerances for nonlinear solver
@@ -93,7 +93,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       TOL_VEL_RES_INF_(fsimono_.get<double>("TOL_VEL_RES_INF")),
       TOL_VEL_INC_L2_(fsimono_.get<double>("TOL_VEL_INC_L2")),
       TOL_VEL_INC_INF_(fsimono_.get<double>("TOL_VEL_INC_INF")),
-      nd_newton_damping_((bool)INPUT::IntegralValue<int>(xfpsimono_, "ND_NEWTON_DAMPING")),
+      nd_newton_damping_((bool)CORE::UTILS::IntegralValue<int>(xfpsimono_, "ND_NEWTON_DAMPING")),
       nd_newton_incmax_damping_(nd_newton_damping_),
       nd_levels_(3),
       nd_reduction_fac_(0.75),
@@ -129,7 +129,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   //-------------------------------------------------------------------------
   // enable debugging
   //-------------------------------------------------------------------------
-  if (INPUT::IntegralValue<int>(fsidyn_, "DEBUGOUTPUT") == 1)
+  if (CORE::UTILS::IntegralValue<int>(fsidyn_, "DEBUGOUTPUT") == 1)
   {
     // debug writer for structure field
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructurePoro()->Discretization()));
@@ -146,7 +146,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
   // write energy-file
-  if (INPUT::IntegralValue<int>(fsidyn_.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
+  if (CORE::UTILS::IntegralValue<int>(fsidyn_.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
   {
     dserror("writing energy not supported yet");
     //  TODO
@@ -160,7 +160,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   // time step size adaptivity
   //-------------------------------------------------------------------------
   const bool timeadapton =
-      INPUT::IntegralValue<bool>(fsidyn_.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      CORE::UTILS::IntegralValue<bool>(fsidyn_.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (timeadapton)
   {
@@ -205,7 +205,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
     // we do this here, since we have direct access to all necessary parameters
     const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
     INPAR::FLUID::InitialField initfield =
-        INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn, "INITIALFIELD");
+        CORE::UTILS::IntegralValue<INPAR::FLUID::InitialField>(fdyn, "INITIALFIELD");
     if (initfield != INPAR::FLUID::initfield_zero_field)
     {
       int startfuncno = fdyn.get<int>("STARTFUNCNO");

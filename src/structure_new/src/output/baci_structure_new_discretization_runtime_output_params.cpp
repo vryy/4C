@@ -11,9 +11,9 @@
 #include "baci_structure_new_discretization_runtime_output_params.hpp"
 
 #include "baci_global_data.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_inpar_structure.hpp"
 #include "baci_utils_exceptions.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -45,18 +45,19 @@ void DRT::ELEMENTS::StructureRuntimeOutputParams::Init(
 
   // initialize the parameter values
   output_displacement_state_ =
-      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
+      CORE::UTILS::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
   output_velocity_state_ =
-      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "VELOCITY");
+      CORE::UTILS::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "VELOCITY");
   output_element_owner_ =
-      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
+      CORE::UTILS::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
   output_element_gid_ =
-      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
+      CORE::UTILS::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
   output_element_ghosting_ =
-      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GHOSTING");
-  output_node_gid_ = INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "NODE_GID");
+      CORE::UTILS::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GHOSTING");
+  output_node_gid_ =
+      CORE::UTILS::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "NODE_GID");
   output_stress_strain_ =
-      INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "STRESS_STRAIN");
+      CORE::UTILS::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "STRESS_STRAIN");
   gauss_point_data_output_type_ = Teuchos::getIntegralValue<INPAR::STR::GaussPointDataOutputType>(
       IO_vtk_structure_structure_paramslist, "GAUSS_POINT_DATA_OUTPUT_TYPE");
 
@@ -66,9 +67,9 @@ void DRT::ELEMENTS::StructureRuntimeOutputParams::Init(
     // section are set.
     const Teuchos::ParameterList& io_parameter_list = GLOBAL::Problem::Instance()->IOParams();
     INPAR::STR::StressType io_stress =
-        INPUT::IntegralValue<INPAR::STR::StressType>(io_parameter_list, "STRUCT_STRESS");
+        CORE::UTILS::IntegralValue<INPAR::STR::StressType>(io_parameter_list, "STRUCT_STRESS");
     INPAR::STR::StrainType io_strain =
-        INPUT::IntegralValue<INPAR::STR::StrainType>(io_parameter_list, "STRUCT_STRAIN");
+        CORE::UTILS::IntegralValue<INPAR::STR::StrainType>(io_parameter_list, "STRUCT_STRAIN");
     if (io_stress == INPAR::STR::stress_none and io_strain == INPAR::STR::strain_none)
       dserror(
           "If stress / strain runtime output is required, one or two of the flags STRUCT_STRAIN / "

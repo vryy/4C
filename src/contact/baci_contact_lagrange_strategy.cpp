@@ -268,7 +268,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
 
   // shape function
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -1870,9 +1870,9 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
 {
   // shape function type and type of LM interpolation for quadratic elements
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
   INPAR::MORTAR::LagMultQuad lagmultquad =
-      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
 
   // In case of nonsmooth contact the scenario of contacting edges (non parallel)
   // requires a penalty regularization. Here, the penalty contriutions for this
@@ -2027,7 +2027,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin &&
-        INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
             INPAR::MORTAR::lagmult_const)
       dserror("Condensation only for dual LM");
 
@@ -3387,7 +3387,7 @@ void CONTACT::LagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
     EvalStrContactRHS();
 
   INPAR::MORTAR::LagMultQuad lagmultquad =
-      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
   if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
   {
     systrafo_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ProblemDofs(), 100, false, true));
@@ -3508,7 +3508,7 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFriction()
   }
 
   INPAR::MORTAR::LagMultQuad lagmultquad =
-      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
   if (Dualquadslavetrafo())
   {
     if (lagmultquad == INPAR::MORTAR::lagmult_lin)
@@ -3769,7 +3769,7 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFrictionless()
   linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
 
   INPAR::MORTAR::LagMultQuad lagmultquad =
-      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
   if (Dualquadslavetrafo())
   {
     if (lagmultquad == INPAR::MORTAR::lagmult_lin)
@@ -4136,7 +4136,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
       return Teuchos::null;
   }
   INPAR::MORTAR::LagMultQuad lagmultquad =
-      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
@@ -4355,7 +4355,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::LagrangeStrategy::GetRhsBlockPtr(
         vec_ptr->Update(1., *strcontactrhs_, 1.);
 
       Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      if (Dualquadslavetrafo() && INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
+      if (Dualquadslavetrafo() && CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(
                                       Params(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin)
       {
         invsystrafo_->Multiply(true, *vec_ptr, *tmp);
@@ -4428,9 +4428,9 @@ void CONTACT::LagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 
   // shape function type and type of LM interpolation for quadratic elements
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
   INPAR::MORTAR::LagMultQuad lagmultquad =
-      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
 
   //**********************************************************************
   //**********************************************************************
@@ -4442,7 +4442,7 @@ void CONTACT::LagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     // double-check if this is a dual LM system
     if ((shapefcn != INPAR::MORTAR::shape_dual &&
             shapefcn != INPAR::MORTAR::shape_petrovgalerkin) &&
-        INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
             INPAR::MORTAR::lagmult_const)
       dserror("Condensation only for dual LM");
 
@@ -4585,7 +4585,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
 {
   // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // assume that active set has converged and check for opposite
   activesetconv_ = true;
@@ -4626,7 +4626,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
              frinode->Data().txi()[1] * frinode->MoData().lm()[1];
 
         // compute tangential part of jump FIXME -- also the teta component should be considered
-        if (INPUT::IntegralValue<int>(Params(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(Params(), "GP_SLIP_INCR") == true)
           tjump = frinode->FriData().jump_var()[0];
         else
           tjump = frinode->Data().txi()[0] * frinode->FriData().jump()[0] +
@@ -4892,7 +4892,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPr
 
   // get out gof here if not in the semi-smooth Newton case
   // (but before doing this, check if there are invalid active nodes)
-  bool semismooth = INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
+  bool semismooth = CORE::UTILS::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
   if (!semismooth)
   {
     // loop over all interfaces
@@ -4923,7 +4923,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPr
 
   // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // assume that active set has converged and check for opposite
   activesetconv_ = true;
@@ -5516,7 +5516,7 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
 
   // shape function
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
@@ -6293,7 +6293,7 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
 
   // shape function type and type of LM interpolation for quadratic elements
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   // In case of nonsmooth contact the scenario of contacting edges (non parallel)
   // requires a penalty regularization. Here, the penalty contriutions for this
@@ -6346,7 +6346,7 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin &&
-      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
           INPAR::MORTAR::lagmult_const)
     dserror("Condensation only for dual LM");
 
@@ -6876,7 +6876,7 @@ void CONTACT::LagrangeStrategy::RunPreApplyJacobianInverse(
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
   INPAR::MORTAR::LagMultQuad lagmultquad =
-      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
   if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
   {
     if (not(systrafo_->DomainMap().SameAs(kteff->DomainMap()))) dserror("stop");
@@ -6916,12 +6916,12 @@ void CONTACT::LagrangeStrategy::RunPostApplyJacobianInverse(const CONTACT::Param
   {
     // shape function type and type of LM interpolation for quadratic elements
     INPAR::MORTAR::ShapeFcn shapefcn =
-        INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
     // double-check if this is a dual LM system
     if ((shapefcn != INPAR::MORTAR::shape_dual &&
             shapefcn != INPAR::MORTAR::shape_petrovgalerkin) &&
-        INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
             INPAR::MORTAR::lagmult_const)
       dserror("Condensation only for dual LM");
 

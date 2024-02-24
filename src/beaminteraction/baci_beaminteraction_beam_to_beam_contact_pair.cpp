@@ -149,7 +149,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
 
 
   // Todo
-  //  bool beamsdebug = INPUT::IntegralValue<int>(beamcontactparams,"BEAMS_DEBUG");
+  //  bool beamsdebug = CORE::UTILS::IntegralValue<int>(beamcontactparams,"BEAMS_DEBUG");
   //
   //  //Check, if a unique closest point solution can be guaranteed for angles alpha >
   //  BEAMS_PERPSHIFTANGLE1 if((perpshiftangle1<acos(1.0-2*MAXCROSSSECTIONTOCURVATURE)) and

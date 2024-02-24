@@ -447,7 +447,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateMatPoroNoPen(
 
   // shape function
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -999,7 +999,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateOtherMatPoroNoPen(
 
   // shape function
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -1231,7 +1231,7 @@ void CONTACT::LagrangeStrategyPoro::RecoverPoroNoPen(
 
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************

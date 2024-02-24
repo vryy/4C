@@ -63,15 +63,15 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
       zeros_(Teuchos::null),
       eledetjac_(Teuchos::null),
       elequality_(Teuchos::null),
-      elequalityyesno_(INPUT::IntegralValue<bool>(*params, "ASSESSMESHQUALITY")),
+      elequalityyesno_(CORE::UTILS::IntegralValue<bool>(*params, "ASSESSMESHQUALITY")),
       precond_(Teuchos::null),
-      aletype_(INPUT::IntegralValue<INPAR::ALE::AleDynamic>(*params, "ALE_TYPE")),
+      aletype_(CORE::UTILS::IntegralValue<INPAR::ALE::AleDynamic>(*params, "ALE_TYPE")),
       maxiter_(params->get<int>("MAXITER")),
       tolres_(params->get<double>("TOLRES")),
       toldisp_(params->get<double>("TOLDISP")),
-      divercont_(INPUT::IntegralValue<INPAR::ALE::DivContAct>(*params, "DIVERCONT")),
-      msht_(INPUT::IntegralValue<INPAR::ALE::MeshTying>(*params, "MESHTYING")),
-      initialdisp_(INPUT::IntegralValue<INPAR::ALE::InitialDisp>(*params, "INITIALDISP")),
+      divercont_(CORE::UTILS::IntegralValue<INPAR::ALE::DivContAct>(*params, "DIVERCONT")),
+      msht_(CORE::UTILS::IntegralValue<INPAR::ALE::MeshTying>(*params, "MESHTYING")),
+      initialdisp_(CORE::UTILS::IntegralValue<INPAR::ALE::InitialDisp>(*params, "INITIALDISP")),
       startfuncno_(params->get<int>("STARTFUNCNO"))
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -899,7 +899,7 @@ ALE::AleLinear::AleLinear(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : Ale(actdis, solver, params, output), validsysmat_(false), updateeverystep_(false)
 {
-  updateeverystep_ = INPUT::IntegralValue<bool>(Params(), "UPDATEMATRIX");
+  updateeverystep_ = CORE::UTILS::IntegralValue<bool>(Params(), "UPDATEMATRIX");
 
   return;
 }

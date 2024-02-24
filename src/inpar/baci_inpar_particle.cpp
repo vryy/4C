@@ -13,7 +13,6 @@
  *---------------------------------------------------------------------------*/
 #include "baci_inpar_particle.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_utils_parameter_list.hpp"
 

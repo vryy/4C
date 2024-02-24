@@ -41,9 +41,9 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
     : AlgorithmBase(comm, globaltimeparams),
       structure_(Teuchos::null),
       lubrication_(Teuchos::null),
-      fieldcoupling_(INPUT::IntegralValue<INPAR::EHL::FieldCoupling>(
+      fieldcoupling_(CORE::UTILS::IntegralValue<INPAR::EHL::FieldCoupling>(
           GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "FIELDCOUPLING")),
-      dry_contact_(INPUT::IntegralValue<bool>(
+      dry_contact_(CORE::UTILS::IntegralValue<bool>(
           GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "DRY_CONTACT_MODEL"))
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
@@ -69,7 +69,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   // by the problem section (e.g. ehl or cell dynamic)
   const Teuchos::ParameterList* structtimeparams = &globaltimeparams;
   const Teuchos::ParameterList* lubricationtimeparams = &globaltimeparams;
-  if (INPUT::IntegralValue<int>(
+  if (CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "DIFFTIMESTEPSIZE"))
   {
     structtimeparams = &structparams;
@@ -512,7 +512,7 @@ void EHL::Base::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
  *----------------------------------------------------------------------*/
 void EHL::Base::SetupUnprojectableDBC()
 {
-  if (not INPUT::IntegralValue<int>(
+  if (not CORE::UTILS::IntegralValue<int>(
           ((GLOBAL::Problem::Instance()->ElastoHydroDynamicParams())), "UNPROJ_ZERO_DBC"))
     return;
 
@@ -611,7 +611,7 @@ void EHL::Base::SetupFieldCoupling(
       GLOBAL::Problem::Instance()->SpatialApproximationType()));
   mortaradapter_->Setup(structdis, structdis, coupleddof, "EHLCoupling");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
           mortaradapter_->Interface()->InterfaceParams(), "STRATEGY") !=
       INPAR::CONTACT::solution_ehl)
     dserror("you need to set ---CONTACT DYNAMIC: STRATEGY   Ehl");

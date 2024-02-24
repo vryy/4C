@@ -156,7 +156,7 @@ namespace CONTACT
      */
     INPAR::WEAR::WearType WearType()
     {
-      return INPUT::IntegralValue<INPAR::WEAR::WearType>(imortar_, "WEARTYPE");
+      return CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(imortar_, "WEARTYPE");
     }
 
     //@}
@@ -230,7 +230,7 @@ namespace CONTACT
      */
     INPAR::MORTAR::LagMultQuad LagMultQuad() override
     {
-      return INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
+      return CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     //@}
@@ -312,7 +312,7 @@ namespace CONTACT
      */
     INPAR::MORTAR::IntType IntType()
     {
-      return INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
+      return CORE::UTILS::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
     };
 
     /*!
@@ -327,7 +327,7 @@ namespace CONTACT
      */
     INPAR::MORTAR::LagMultQuad LagMultQuad()
     {
-      return INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
+      return CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     /*!
@@ -354,7 +354,7 @@ namespace CONTACT
      */
     INPAR::MORTAR::ShapeFcn ShapeFcn()
     {
-      return INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+      return CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
 
     /*!

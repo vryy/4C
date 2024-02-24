@@ -45,7 +45,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     case GLOBAL::ProblemType::fsi_xfem:
     {
       const Teuchos::ParameterList xfluid = GLOBAL::Problem::Instance()->XFluidDynamicParams();
-      bool alefluid = INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
+      bool alefluid = CORE::UTILS::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
       if (!alefluid)  // xfluid
       {
         // std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;

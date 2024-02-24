@@ -11,10 +11,10 @@
 
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_global_data.hpp"  // for curves and functions
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_porofluidmultiphase_ele_action.hpp"
 #include "baci_porofluidmultiphase_ele_parameter.hpp"
 #include "baci_utils_function.hpp"
+#include "baci_utils_parameter_list.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -96,7 +96,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::El
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::BoundaryAction action =
-      INPUT::get<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
+      CORE::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
   // evaluate action
   EvaluateAction(ele, params, discretization, action, la, elemat, elevec);
 

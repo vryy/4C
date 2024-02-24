@@ -11,7 +11,6 @@
 #include "baci_inpar_beampotential.hpp"
 
 #include "baci_inpar_beamcontact.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_inpar_structure.hpp"
 #include "baci_inpar_tsi.hpp"
 #include "baci_lib_conditiondefinition.hpp"

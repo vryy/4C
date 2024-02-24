@@ -11,7 +11,6 @@
 #include "baci_particle_algorithm_timint.hpp"
 
 #include "baci_global_data.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_io.hpp"
 #include "baci_particle_algorithm_dirichlet_bc.hpp"
 #include "baci_particle_algorithm_temperature_bc.hpp"
@@ -20,6 +19,7 @@
 #include "baci_particle_engine_enums.hpp"
 #include "baci_particle_engine_interface.hpp"
 #include "baci_particle_rigidbody_interface.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

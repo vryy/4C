@@ -42,7 +42,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(DRT::ELEMENTS
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = INPUT::get<FLD::Action>(params, "action");
+  const FLD::Action act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -575,8 +575,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   CORE::LINALG::Matrix<nsd_, nsd_> dervelint(true);
 
   const INPAR::FLUID::CalcError calcerr =
-      INPUT::get<INPAR::FLUID::CalcError>(params, "calculate error");
-  const int calcerrfunctno = INPUT::get<int>(params, "error function number");
+      CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(params, "calculate error");
+  const int calcerrfunctno = params.get<int>("error function number");
 
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors

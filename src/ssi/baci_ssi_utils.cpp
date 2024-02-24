@@ -60,7 +60,7 @@ int SSI::UTILS::CheckTimeStepping(double dt1, double dt2)
 void SSI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
     Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn)
 {
-  bool difftimestep = INPUT::IntegralValue<int>(ssiparams, "DIFFTIMESTEPSIZE");
+  bool difftimestep = CORE::UTILS::IntegralValue<int>(ssiparams, "DIFFTIMESTEPSIZE");
 
   if (difftimestep)  // Create subproblems with different time steps
   {
@@ -165,8 +165,8 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
 {
   Teuchos::ParameterList scatra_manifold_params(scatraparams);
 
-  switch (
-      INPUT::IntegralValue<INPAR::SCATRA::InitialField>(sublist_manifold_params, "INITIALFIELD"))
+  switch (CORE::UTILS::IntegralValue<INPAR::SCATRA::InitialField>(
+      sublist_manifold_params, "INITIALFIELD"))
   {
     case INPAR::SCATRA::initfield_zero_field:
     {
@@ -191,7 +191,7 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
       break;
   }
 
-  if (INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
+  if (CORE::UTILS::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       INPAR::SCATRA::outputscalars_none)
     scatra_manifold_params.set<bool>("output_file_name_discretization", true);
 
@@ -208,7 +208,7 @@ Teuchos::ParameterList SSI::UTILS::ModifyScaTraParams(const Teuchos::ParameterLi
 {
   auto scatraparams_mutable = Teuchos::ParameterList(scatraparams);
 
-  if (INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
+  if (CORE::UTILS::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       INPAR::SCATRA::outputscalars_none)
     scatraparams_mutable.set<bool>("output_file_name_discretization", true);
 

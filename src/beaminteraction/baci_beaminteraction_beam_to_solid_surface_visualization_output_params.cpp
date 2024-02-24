@@ -11,7 +11,7 @@
 #include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"
 
 #include "baci_global_data.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -65,36 +65,36 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::Setup()
 
   // Get global parameters.
   output_interval_steps_ = global_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
-  output_every_iteration_ =
-      (bool)INPUT::IntegralValue<int>(global_visualization_output_paramslist, "EVERY_ITERATION");
+  output_every_iteration_ = (bool)CORE::UTILS::IntegralValue<int>(
+      global_visualization_output_paramslist, "EVERY_ITERATION");
 
   // Get beam to solid surface specific parameters.
-  output_flag_ = (bool)INPUT::IntegralValue<int>(
+  output_flag_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "WRITE_OUTPUT");
 
-  nodal_forces_ = (bool)INPUT::IntegralValue<int>(
+  nodal_forces_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "NODAL_FORCES");
 
-  averaged_normals_ = (bool)INPUT::IntegralValue<int>(
+  averaged_normals_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "AVERAGED_NORMALS");
 
-  mortar_lambda_discret_ = (bool)INPUT::IntegralValue<int>(
+  mortar_lambda_discret_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "MORTAR_LAMBDA_DISCRET");
 
-  mortar_lambda_continuous_ = (bool)INPUT::IntegralValue<int>(
+  mortar_lambda_continuous_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "MORTAR_LAMBDA_CONTINUOUS");
 
   mortar_lambda_continuous_segments_ =
       beam_to_solid_volume_meshtying_visualization_output_paramslist.get<int>(
           "MORTAR_LAMBDA_CONTINUOUS_SEGMENTS");
 
-  segmentation_ = (bool)INPUT::IntegralValue<int>(
+  segmentation_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "SEGMENTATION");
 
-  integration_points_ = (bool)INPUT::IntegralValue<int>(
+  integration_points_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "INTEGRATION_POINTS");
 
-  write_unique_ids_ = (bool)INPUT::IntegralValue<int>(
+  write_unique_ids_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "UNIQUE_IDS");
 
   // Set the setup flag.

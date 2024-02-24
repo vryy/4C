@@ -10,7 +10,6 @@
 #include "baci_inpar_IO_monitor_structure_dbc.hpp"
 
 #include "baci_inpar.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -25,7 +24,6 @@ namespace INPAR
      *----------------------------------------------------------------------*/
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     {
-      using namespace INPUT;
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 

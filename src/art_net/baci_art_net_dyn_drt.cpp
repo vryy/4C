@@ -133,17 +133,17 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
 
   // flag for writing the hemodynamic physiological results
   // arterytimeparams.set ("write stresses"
-  // ,INPUT::IntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
+  // ,CORE::UTILS::IntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
   //---------------------- A method to initialize the flow inside the
   //                       arteries.
-  //  int init = INPUT::IntegralValue<int> (artdyn,"INITIALFIELD");
+  //  int init = CORE::UTILS::IntegralValue<int> (artdyn,"INITIALFIELD");
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   INPAR::ARTDYN::TimeIntegrationScheme timintscheme =
-      INPUT::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
+      CORE::UTILS::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
   // build art net time integrator
   Teuchos::RCP<ADAPTER::ArtNet> artnettimint =

@@ -11,8 +11,8 @@
 
 #include "baci_ehl_utils.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_utils_exceptions.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -51,7 +51,7 @@ int EHL::Utils::CheckTimeStepping(double dt1, double dt2)
 void EHL::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ehlparams,
     Teuchos::ParameterList& lubricationdyn, Teuchos::ParameterList& sdyn)
 {
-  bool difftimestep = INPUT::IntegralValue<int>(ehlparams, "DIFFTIMESTEPSIZE");
+  bool difftimestep = CORE::UTILS::IntegralValue<int>(ehlparams, "DIFFTIMESTEPSIZE");
 
   if (difftimestep)  // Create subproblems with different time steps
   {

@@ -35,7 +35,7 @@ PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup(
       convtolscaleddisp_(params.get<double>("CONVTOLSCALEDDISP")),
       convtolrelativeforce_(params.get<double>("CONVTOLRELATIVEFORCE")),
       convtolscaledforce_(params.get<double>("CONVTOLSCALEDFORCE")),
-      ignoreconvcheck_(INPUT::IntegralValue<bool>(params, "IGNORE_CONV_CHECK")),
+      ignoreconvcheck_(CORE::UTILS::IntegralValue<bool>(params, "IGNORE_CONV_CHECK")),
       writerestartevery_(params.get<int>("RESTARTEVRY"))
 {
   // empty constructor

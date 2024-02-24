@@ -4942,7 +4942,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
         jumpteta = 0.0;
@@ -5064,7 +5064,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -5278,7 +5278,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
         }  //  loop over master nodes
         // gp-wise slip !!!!!!!
 
-        if (INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -5409,7 +5409,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
   double frbound = InterfaceParams().get<double>("FRBOUND");
   double frcoeff = InterfaceParams().get<double>("FRCOEFF");
   double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
@@ -5489,7 +5489,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+      if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
         jumpteta = 0.0;
@@ -5619,7 +5619,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -5855,7 +5855,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -6094,7 +6094,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
+        if (CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -6613,10 +6613,10 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
     CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
 
-    if ((INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
-            INPAR::CONTACT::solution_penalty) ||
-        (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
-            INPAR::CONTACT::solution_multiscale))
+    if ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+             InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
+        (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+             InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
     {
       for (int j = 0; j < dim; j++)
       {
@@ -6770,10 +6770,10 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
       CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
 
-      if ((INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
-              INPAR::CONTACT::solution_penalty) ||
-          (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
-              INPAR::CONTACT::solution_multiscale))
+      if ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
+          (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
       {
         for (int j = 0; j < dim; j++)
         {
@@ -6988,10 +6988,10 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
       CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
 
-      if ((INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
-              INPAR::CONTACT::solution_penalty) ||
-          (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
-              INPAR::CONTACT::solution_multiscale))
+      if ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
+          (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+               InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_multiscale))
       {
         for (int j = 0; j < dim; j++)
         {

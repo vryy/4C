@@ -13,10 +13,10 @@
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element_integration_select.hpp"
 #include "baci_lib_utils.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -61,7 +61,7 @@ int DRT::ELEMENTS::Ale3Surface::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
-  const Ale3::ActionType act = INPUT::get<Ale3::ActionType>(params, "action");
+  const Ale3::ActionType act = CORE::UTILS::GetAsEnum<Ale3::ActionType>(params, "action");
 
   switch (act)
   {

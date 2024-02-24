@@ -103,17 +103,17 @@ void MAT::ScatraMultiScaleGP::Init()
           "Must have one-dimensional micro scale in multi-scale simulations of scalar transport "
           "problems!");
     }
-    if (INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(sdyn_macro, "TIMEINTEGR") !=
-            INPAR::SCATRA::timeint_one_step_theta or
-        INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*sdyn_micro, "TIMEINTEGR") !=
-            INPAR::SCATRA::timeint_one_step_theta)
+    if (CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(
+            sdyn_macro, "TIMEINTEGR") != INPAR::SCATRA::timeint_one_step_theta or
+        CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(
+            *sdyn_micro, "TIMEINTEGR") != INPAR::SCATRA::timeint_one_step_theta)
     {
       dserror(
           "Multi-scale calculations for scalar transport only implemented for one-step-theta time "
           "integration scheme!");
     }
-    if (INPUT::IntegralValue<bool>(sdyn_macro, "SKIPINITDER") !=
-        INPUT::IntegralValue<bool>(*sdyn_micro, "SKIPINITDER"))
+    if (CORE::UTILS::IntegralValue<bool>(sdyn_macro, "SKIPINITDER") !=
+        CORE::UTILS::IntegralValue<bool>(*sdyn_micro, "SKIPINITDER"))
       dserror("Flag SKIPINITDER in input file must be equal on macro and micro scales!");
     if (sdyn_macro.get<double>("TIMESTEP") != sdyn_micro->get<double>("TIMESTEP"))
       dserror("Must have identical time step size on macro and micro scales!");
@@ -421,7 +421,7 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
         microdis->Comm(), "Scalar_Transport", microproblem->SpatialApproximationType(),
         "micro-input-file-not-known", restartname_, newfilename, ndim, restart,
         GLOBAL::Problem::Instance(microdisnum_)->IOParams().get<int>("FILESTEPS"),
-        INPUT::IntegralValue<bool>(
+        CORE::UTILS::IntegralValue<bool>(
             GLOBAL::Problem::Instance(microdisnum_)->IOParams(), "OUTPUT_BIN"),
         adaptname));
 

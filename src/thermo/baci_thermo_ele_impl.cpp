@@ -146,7 +146,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 {
   PrepareNurbsEval(ele, discretization);
 
-  const auto action = INPUT::get<THR::Action>(params, "action");
+  const auto action = CORE::UTILS::GetAsEnum<THR::Action>(params, "action");
 
   // check length
   if (la[0].Size() != nen_ * numdofpernode_) dserror("Location vector length does not match!");
@@ -245,7 +245,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // lumping
     if (params.get<bool>("lump capa matrix", false))
     {
-      const auto timint = INPUT::get<INPAR::THR::DynamicType>(
+      const auto timint = CORE::UTILS::GetAsEnum<INPAR::THR::DynamicType>(
           params, "time integrator", INPAR::THR::dyna_undefined);
       switch (timint)
       {
@@ -322,8 +322,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // combine capacity and conductivity matrix to one global tangent matrix
     // check the time integrator
     // K_T = fac_capa . C + fac_cond . K
-    const auto timint =
-        INPUT::get<INPAR::THR::DynamicType>(params, "time integrator", INPAR::THR::dyna_undefined);
+    const auto timint = CORE::UTILS::GetAsEnum<INPAR::THR::DynamicType>(
+        params, "time integrator", INPAR::THR::dyna_undefined);
     switch (timint)
     {
       case INPAR::THR::dyna_statics:
@@ -644,7 +644,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     etempn_.Update(etemp);                                                        // copy
   }
   // check for the action parameter
-  const auto action = INPUT::get<THR::Action>(params, "action");
+  const auto action = CORE::UTILS::GetAsEnum<THR::Action>(params, "action");
   // extract time
   const double time = params.get<double>("total time");
 
@@ -1153,8 +1153,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
 
   // --------------------------------------------------- time integration
   // check the time integrator and add correct time factor
-  const auto timint =
-      INPUT::get<INPAR::THR::DynamicType>(params, "time integrator", INPAR::THR::dyna_undefined);
+  const auto timint = CORE::UTILS::GetAsEnum<INPAR::THR::DynamicType>(
+      params, "time integrator", INPAR::THR::dyna_undefined);
 
   // get step size dt
   const double stepsize = params.get<double>("delta time");
@@ -1614,8 +1614,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
   double timefac_d = 0.0;
   double timefac = 0.0;
   // check the time integrator and add correct time factor
-  const auto timint =
-      INPUT::get<INPAR::THR::DynamicType>(params, "time integrator", INPAR::THR::dyna_undefined);
+  const auto timint = CORE::UTILS::GetAsEnum<INPAR::THR::DynamicType>(
+      params, "time integrator", INPAR::THR::dyna_undefined);
   switch (timint)
   {
     case INPAR::THR::dyna_statics:
@@ -1646,7 +1646,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     }
   }  // end of switch(timint)
 
-  const auto s_timint = INPUT::get<INPAR::STR::DynamicType>(params, "structural time integrator");
+  const auto s_timint =
+      CORE::UTILS::GetAsEnum<INPAR::STR::DynamicType>(params, "structural time integrator");
   switch (s_timint)
   {
     case INPAR::STR::dyna_statics:
@@ -2102,8 +2103,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const auto timint =
-      INPUT::get<INPAR::THR::DynamicType>(params, "time integrator", INPAR::THR::dyna_undefined);
+  const auto timint = CORE::UTILS::GetAsEnum<INPAR::THR::DynamicType>(
+      params, "time integrator", INPAR::THR::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
   switch (timint)
@@ -2381,8 +2382,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const auto timint =
-      INPUT::get<INPAR::THR::DynamicType>(params, "time integrator", INPAR::THR::dyna_undefined);
+  const auto timint = CORE::UTILS::GetAsEnum<INPAR::THR::DynamicType>(
+      params, "time integrator", INPAR::THR::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
   switch (timint)
@@ -2508,10 +2509,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
     Teuchos::ParameterList& params)
 {
   // specific choice of heat flux / temperature gradient
-  const auto ioheatflux =
-      INPUT::get<INPAR::THR::HeatFluxType>(params, "ioheatflux", INPAR::THR::heatflux_none);
-  const auto iotempgrad =
-      INPUT::get<INPAR::THR::TempGradType>(params, "iotempgrad", INPAR::THR::tempgrad_none);
+  const auto ioheatflux = CORE::UTILS::GetAsEnum<INPAR::THR::HeatFluxType>(
+      params, "ioheatflux", INPAR::THR::heatflux_none);
+  const auto iotempgrad = CORE::UTILS::GetAsEnum<INPAR::THR::TempGradType>(
+      params, "iotempgrad", INPAR::THR::tempgrad_none);
 
   // update element geometry
   CORE::LINALG::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
@@ -3233,7 +3234,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
   //  if (intpoints.IP().nquad != nquad_)
   //    dserror("Trouble with number of Gauss points");
 
-  const auto calcerr = INPUT::get<INPAR::THR::CalcError>(params, "calculate error");
+  const auto calcerr = CORE::UTILS::GetAsEnum<INPAR::THR::CalcError>(params, "calculate error");
   const int errorfunctno = params.get<int>("error function number");
   const double t = params.get<double>("total time");
 

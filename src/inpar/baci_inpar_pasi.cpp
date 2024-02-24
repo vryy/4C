@@ -12,7 +12,6 @@
  *---------------------------------------------------------------------------*/
 #include "baci_inpar_pasi.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -22,7 +21,6 @@ BACI_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 

@@ -18,7 +18,6 @@
 #include "baci_fluid_xfluid_state.hpp"
 #include "baci_fluid_xfluid_state_creator.hpp"
 #include "baci_global_data.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_io_gmsh.hpp"
@@ -26,6 +25,7 @@
 #include "baci_lib_dofset_transparent_independent.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_utils_parameter_list.hpp"
 #include "baci_xfem_condition_manager.hpp"
 #include "baci_xfem_discretization_utils.hpp"
 #include "baci_xfem_edgestab.hpp"
@@ -252,18 +252,20 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
     const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>& cond_manager, const bool include_inner)
     : XFluidOutputService(discret, cond_manager),
-      gmsh_sol_out_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_SOL_OUT")),
-      gmsh_ref_sol_out_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_TIMINT_OUT")),
-      gmsh_debug_out_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT")),
-      gmsh_debug_out_screen_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT_SCREEN")),
-      gmsh_EOS_out_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
-      gmsh_discret_out_((bool)INPUT::IntegralValue<int>(params_xfem, "GMSH_DISCRET_OUT")),
+      gmsh_sol_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_SOL_OUT")),
+      gmsh_ref_sol_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_TIMINT_OUT")),
+      gmsh_debug_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT")),
+      gmsh_debug_out_screen_(
+          (bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT_SCREEN")),
+      gmsh_EOS_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
+      gmsh_discret_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_DISCRET_OUT")),
       gmsh_step_diff_(500),
-      VolumeCellGaussPointBy_(
-          INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
+      VolumeCellGaussPointBy_(CORE::UTILS::IntegralValue<INPAR::CUT::VCellGaussPts>(
+          params_xfem, "VOLUME_GAUSS_POINTS_BY")),
       include_inner_(include_inner)
 {
-  if (!(bool)INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
+  if (!(bool)CORE::UTILS::IntegralValue<int>(
+          GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
     dserror(
         "If GMSH output is globally deactivated, don't create an instance of "
         "XFluidOutputServiceGmsh!");

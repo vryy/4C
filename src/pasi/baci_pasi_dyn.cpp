@@ -46,7 +46,7 @@ void pasi_dyn()
   Teuchos::RCP<PASI::PartitionedAlgo> algo = Teuchos::null;
 
   // get type of partitioned coupling
-  int coupling = INPUT::IntegralValue<int>(params, "COUPLING");
+  int coupling = CORE::UTILS::IntegralValue<int>(params, "COUPLING");
 
   // query algorithm
   switch (coupling)

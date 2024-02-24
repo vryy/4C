@@ -987,7 +987,7 @@ void STR::TIMINT::Base::OutputErrorNorms()
   const Teuchos::ParameterList& params = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // get error calculation info
-  const auto calcerr = INPUT::IntegralValue<INPAR::STR::CalcError>(params, "CALCERROR");
+  const auto calcerr = CORE::UTILS::IntegralValue<INPAR::STR::CalcError>(params, "CALCERROR");
 
   switch (calcerr)
   {

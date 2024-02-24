@@ -182,7 +182,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
     INPAR::CONTACT::SolvingStrategy soltype =
-        INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
     if (friction_ and (soltype == INPAR::CONTACT::solution_penalty or
                           soltype == INPAR::CONTACT::solution_multiscale))
@@ -276,7 +276,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
 
 #ifdef CONTACTFDPENALTYTRAC
   INPAR::CONTACT::FrictionType ftype =
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // check derivatives of penalty traction
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -407,7 +407,7 @@ void CONTACT::PenaltyStrategy::EvaluateFriction(
 
   // check if friction should be applied
   INPAR::CONTACT::FrictionType ftype =
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // coulomb friction case
   if (ftype == INPAR::CONTACT::friction_coulomb || ftype == INPAR::CONTACT::friction_stick)
@@ -624,7 +624,7 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
     // (only for Uzawa Augmented Lagrange strategy)
     //********************************************************************
     INPAR::CONTACT::SolvingStrategy soltype =
-        INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
     if (soltype == INPAR::CONTACT::solution_uzawa)
     {
@@ -773,7 +773,7 @@ void CONTACT::PenaltyStrategy::Assemble()
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
     INPAR::CONTACT::SolvingStrategy soltype =
-        INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
     if (friction_ and (soltype == INPAR::CONTACT::solution_penalty or
                           soltype == INPAR::CONTACT::solution_multiscale))

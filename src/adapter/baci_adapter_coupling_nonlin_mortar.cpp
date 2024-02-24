@@ -218,9 +218,9 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
   input.set<int>("DIMENSION", GLOBAL::Problem::Instance()->NDim());
 
   // check for invalid parameter values
-  if (INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input, "LM_SHAPEFCN") !=
+  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(input, "LM_SHAPEFCN") !=
           INPAR::MORTAR::shape_dual and
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input, "LM_SHAPEFCN") !=
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(input, "LM_SHAPEFCN") !=
           INPAR::MORTAR::shape_petrovgalerkin)
     if (myrank_ == 0) dserror("Mortar coupling adapter only works for dual shape functions");
 
@@ -1039,7 +1039,7 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   CheckSetup();
 
   // check
-  if (INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(
+  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(
           Interface()->InterfaceParams(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("ERROR: Creation of P operator only for dual shape functions!");
 

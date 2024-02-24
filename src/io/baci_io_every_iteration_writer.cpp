@@ -9,10 +9,10 @@
 
 #include "baci_io_every_iteration_writer.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_io_pstream.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -55,7 +55,7 @@ void IO::EveryIterationWriter::Init(const IO::DiscretizationWriter* parent_write
   run_number_ = params.get<int>("RUN_NUMBER");
   write_only_this_step_ = params.get<int>("STEP_NP_NUMBER");
   write_owner_each_newton_iteration_ =
-      INPUT::IntegralValue<bool>(params, "WRITE_OWNER_EACH_NEWTON_ITER");
+      CORE::UTILS::IntegralValue<bool>(params, "WRITE_OWNER_EACH_NEWTON_ITER");
 
   isinit_ = true;
 }

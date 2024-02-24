@@ -9,7 +9,6 @@
 
 #include "baci_inpar_plasticity.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_inpar_structure.hpp"
 #include "baci_inpar_tsi.hpp"
 #include "baci_utils_parameter_list.hpp"

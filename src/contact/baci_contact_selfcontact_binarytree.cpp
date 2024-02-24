@@ -585,7 +585,8 @@ void CONTACT::SelfBinaryTree::InitLeafNodesAndMap(std::vector<int>& elelist)
 
   // check for non-smooth contact surface
   bool nonsmoothsurface(false);
-  if (INPUT::IntegralValue<int>(iparams_, "NONSMOOTH_CONTACT_SURFACE")) nonsmoothsurface = true;
+  if (CORE::UTILS::IntegralValue<int>(iparams_, "NONSMOOTH_CONTACT_SURFACE"))
+    nonsmoothsurface = true;
 
   // build local element list and create leaf nodes
   std::vector<int> localelelist;

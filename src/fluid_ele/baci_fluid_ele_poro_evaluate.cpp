@@ -25,7 +25,7 @@ void DRT::ELEMENTS::FluidPoroEleType::PreEvaluate(DRT::Discretization& dis,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const auto action = INPUT::get<FLD::Action>(p, "action");
+  const auto action = CORE::UTILS::GetAsEnum<FLD::Action>(p, "action");
 
   // poro specific actions
   if (action == FLD::set_poro_parameter)
@@ -49,7 +49,7 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = INPUT::get<FLD::Action>(params, "action");
+  const auto act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
   Teuchos::RCP<MAT::Material> mat = Material();

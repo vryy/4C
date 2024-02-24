@@ -152,7 +152,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
 
   // print out summary of pairs
   if (contdis_->Name() == "porofluid" &&
-      (INPUT::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
+      (CORE::UTILS::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
   {
     if (myrank_ == 0)
       std::cout << "In total " << numgp_desired << " GPs (" << numgp_per_artele

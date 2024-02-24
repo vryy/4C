@@ -35,7 +35,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
       params_(params),
       geotype_(TurbulenceStatisticsBfs::none),
       inflowchannel_(
-          INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
+          CORE::UTILS::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
       inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE", 0.0)),
       statistics_outfilename_(statistics_outfilename)
 {
@@ -61,7 +61,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
   const INPAR::FLUID::PhysicalType physicaltype =
-      INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
+      CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
 
   // geometry of bfs
   convertStringToGeoType(geotype);

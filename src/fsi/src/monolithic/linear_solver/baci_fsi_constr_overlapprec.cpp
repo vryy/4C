@@ -46,8 +46,8 @@ FSI::ConstrOverlappingBlockMatrix::ConstrOverlappingBlockMatrix(
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   alpha_ = fsidyn.sublist("CONSTRAINT").get<double>("ALPHA");
   simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
-  prec_ =
-      INPUT::IntegralValue<INPAR::FSI::PrecConstr>(fsidyn.sublist("CONSTRAINT"), "PRECONDITIONER");
+  prec_ = CORE::UTILS::IntegralValue<INPAR::FSI::PrecConstr>(
+      fsidyn.sublist("CONSTRAINT"), "PRECONDITIONER");
 }
 
 

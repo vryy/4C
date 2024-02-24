@@ -30,7 +30,8 @@ Teuchos::RCP<CONTACT::AUG::ComboStrategy::Switching> CONTACT::AUG::ComboStrategy
   const Teuchos::ParameterList& p_combo = combo.Params().sublist("AUGMENTED").sublist("COMBO");
 
   const enum INPAR::CONTACT::SwitchingStrategy switch_type =
-      INPUT::IntegralValue<enum INPAR::CONTACT::SwitchingStrategy>(p_combo, "SWITCHING_STRATEGY");
+      CORE::UTILS::IntegralValue<enum INPAR::CONTACT::SwitchingStrategy>(
+          p_combo, "SWITCHING_STRATEGY");
 
   switch (switch_type)
   {
@@ -126,11 +127,11 @@ CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::PreAsymptoticSwitching(
         "need more.");
 
   const enum INPAR::CONTACT::SolvingStrategy preasymptotic =
-      INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(p_combo, "STRATEGY_0");
+      CORE::UTILS::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(p_combo, "STRATEGY_0");
   preasymptotic_id_ = FindId(preasymptotic);
 
   const enum INPAR::CONTACT::SolvingStrategy asymptotic =
-      INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(p_combo, "STRATEGY_1");
+      CORE::UTILS::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(p_combo, "STRATEGY_1");
   asymptotic_id_ = FindId(asymptotic);
 }
 

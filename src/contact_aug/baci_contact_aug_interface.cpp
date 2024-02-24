@@ -66,10 +66,11 @@ CONTACT::AUG::Interface::Interface(
   const Teuchos::ParameterList& p_aug = icontact.sublist("AUGMENTED");
 
   interfaceData_.SetAssembleStratType(
-      INPUT::IntegralValue<INPAR::CONTACT::AssembleStrategy>(p_aug, "ASSEMBLE_STRATEGY"));
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::AssembleStrategy>(p_aug, "ASSEMBLE_STRATEGY"));
 
   interfaceData_.SetVariationalApproachType(
-      INPUT::IntegralValue<INPAR::CONTACT::VariationalApproach>(p_aug, "VARIATIONAL_APPROACH"));
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::VariationalApproach>(
+          p_aug, "VARIATIONAL_APPROACH"));
 
   // empty constructor body
   return;
@@ -1302,7 +1303,7 @@ bool CONTACT::AUG::Interface::SetNodeInitiallyActive(
     const CONTACT::ParamsInterface& cparams, CONTACT::Node& cnode) const
 {
   static const bool init_contact_by_gap =
-      INPUT::IntegralValue<int>(InterfaceParams(), "INITCONTACTBYGAP");
+      CORE::UTILS::IntegralValue<int>(InterfaceParams(), "INITCONTACTBYGAP");
 
   const bool node_init_active = cnode.IsInitActive();
 

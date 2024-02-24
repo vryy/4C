@@ -43,7 +43,7 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const FLD::Action action = INPUT::get<FLD::Action>(p, "action");
+  const FLD::Action action = CORE::UTILS::GetAsEnum<FLD::Action>(p, "action");
 
   if (action == FLD::set_general_fluid_parameter)
   {
@@ -90,7 +90,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = INPUT::get<FLD::Action>(params, "action");
+  const FLD::Action act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
   Teuchos::RCP<MAT::Material> mat = Material();
@@ -763,7 +763,7 @@ void DRT::ELEMENTS::FluidIntFaceType::PreEvaluate(DRT::Discretization& dis,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const FLD::Action action = INPUT::get<FLD::Action>(p, "action");
+  const FLD::Action action = CORE::UTILS::GetAsEnum<FLD::Action>(p, "action");
 
   if (action == FLD::set_general_face_fluid_parameter)
   {

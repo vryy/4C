@@ -44,7 +44,7 @@ void ssi_drt()
 
     // introduce additional scatra field on manifold?
     const bool is_scatra_manifold =
-        INPUT::IntegralValue<bool>(ssiparams.sublist("MANIFOLD"), "ADD_MANIFOLD");
+        CORE::UTILS::IntegralValue<bool>(ssiparams.sublist("MANIFOLD"), "ADD_MANIFOLD");
 
     // Modification of time parameter list
     SSI::UTILS::ChangeTimeParameter(comm, ssiparams, scatradyn, sdyn);
@@ -123,7 +123,7 @@ void ssi_drt()
 
     // 3.3 AFTER restart: reset input filename of the problem so that results from other runs can be
     // read
-    bool flag_readscatra = INPUT::IntegralValue<bool>(ssiparams, "SCATRA_FROM_RESTART_FILE");
+    bool flag_readscatra = CORE::UTILS::IntegralValue<bool>(ssiparams, "SCATRA_FROM_RESTART_FILE");
     if (coupling == INPAR::SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid and
         flag_readscatra)
     {

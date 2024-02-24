@@ -32,7 +32,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::Ini
 {
   Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix;
 
-  if (INPUT::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "BLOCKPRECOND"))
+  if (CORE::UTILS::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "BLOCKPRECOND"))
   {
     // safety checks
     if (ElchTimInt()->EquPot() == INPAR::ELCH::equpot_undefined)

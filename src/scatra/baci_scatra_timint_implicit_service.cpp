@@ -967,7 +967,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary() const
   Teuchos::ParameterList& solverparams = solver_->Params();
 
   // compute point-based null space information if applicable
-  if (INPUT::IntegralValue<bool>(*params_, "NULLSPACE_POINTBASED"))
+  if (CORE::UTILS::IntegralValue<bool>(*params_, "NULLSPACE_POINTBASED"))
   {
     // MueLu preconditioner
     if (solverparams.isSublist("MueLu Parameters"))
@@ -1575,7 +1575,7 @@ void SCATRA::ScaTraTimIntImpl::ReadRestart(const int step, Teuchos::RCP<IO::Inpu
  *-------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
 {
-  if (INPUT::IntegralValue<int>(
+  if (CORE::UTILS::IntegralValue<int>(
           extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"), "ADAPT_CSGS_PHI"))
   {
     // mean Cai
@@ -1670,8 +1670,9 @@ void SCATRA::ScaTraTimIntImpl::CalcIntermediateSolution()
   if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" and
       extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") ==
           "isotropic" and
-      INPUT::IntegralValue<INPAR::FLUID::ForcingType>(extraparams_->sublist("TURBULENCE MODEL"),
-          "FORCING_TYPE") == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+      CORE::UTILS::IntegralValue<INPAR::FLUID::ForcingType>(
+          extraparams_->sublist("TURBULENCE MODEL"), "FORCING_TYPE") ==
+          INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
   {
     bool activate = true;
 
@@ -2483,8 +2484,8 @@ void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatr
 {
   myrank_ = scatratimint->myrank_;
 
-  output_mean_grad_ =
-      INPUT::IntegralValue<bool>(*scatratimint->ScatraParameterList(), "OUTPUTSCALARSMEANGRAD");
+  output_mean_grad_ = CORE::UTILS::IntegralValue<bool>(
+      *scatratimint->ScatraParameterList(), "OUTPUTSCALARSMEANGRAD");
 
   output_micro_dis_ = scatratimint->MacroScale() and scatratimint->NdsMicro();
 

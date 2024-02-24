@@ -134,7 +134,7 @@ void FLD::FluidImplicitTimeInt::Init()
   theta_ = params_->get<double>("theta");
 
   // cfl computation type and cfl number for adaptive time stepping
-  cfl_estimator_ = INPUT::IntegralValue<INPAR::FLUID::AdaptiveTimeStepEstimator>(
+  cfl_estimator_ = CORE::UTILS::IntegralValue<INPAR::FLUID::AdaptiveTimeStepEstimator>(
       (params_->sublist("TIMEADAPTIVITY")), "ADAPTIVE_TIME_STEP_ESTIMATOR");
   cfl_ = params_->sublist("TIMEADAPTIVITY").get<double>("CFL_NUMBER", -1.0);
   if (cfl_estimator_ == INPAR::FLUID::cfl_number && cfl_ < 0.0)
@@ -144,7 +144,7 @@ void FLD::FluidImplicitTimeInt::Init()
   numstasteps_ = params_->get<int>("number of start steps");
 
   // parameter for linearization scheme (fixed-point-like or Newton)
-  newton_ = INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
+  newton_ = CORE::UTILS::GetAsEnum<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
 
   predictor_ = params_->get<std::string>("predictor", "steady_state_predictor");
 
@@ -266,7 +266,7 @@ void FLD::FluidImplicitTimeInt::Init()
 
   {
     // XWall: enrichment with spaldings law
-    if (INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"), "X_WALL"))
+    if (CORE::UTILS::IntegralValue<int>(params_->sublist("WALL MODEL"), "X_WALL"))
     {
       if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fsi ||
           GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fluid_ale)
@@ -369,12 +369,12 @@ void FLD::FluidImplicitTimeInt::Init()
 
   // for the case of edge-oriented stabilization
   Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-  if (INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") ==
+  if (CORE::UTILS::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") ==
       INPAR::FLUID::stabtype_edgebased)
   {
     CreateFacesExtension();
   }
-  reconstructder_ = INPUT::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der");
+  reconstructder_ = CORE::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der");
 
 }  // FluidImplicitTimeInt::Init()
 
@@ -454,7 +454,7 @@ void FLD::FluidImplicitTimeInt::InitNonlinearBC()
     isimpedancebc_ = true;  // Set bool to true since there is an impedance BC
 
     // Test if also AVM3 is used
-    fssgv_ = INPUT::IntegralValue<INPAR::FLUID::FineSubgridVisc>(
+    fssgv_ = CORE::UTILS::IntegralValue<INPAR::FLUID::FineSubgridVisc>(
         params_->sublist("TURBULENCE MODEL"), "FSSUGRVISC");
     if (fssgv_ != INPAR::FLUID::no_fssgv)
     {
@@ -1013,7 +1013,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   }
 
   // set external volume force (required, e.g., for forced homogeneous isotropic turbulence)
-  if (INPUT::IntegralValue<INPAR::FLUID::ForcingType>(
+  if (CORE::UTILS::IntegralValue<INPAR::FLUID::ForcingType>(
           params_->sublist("TURBULENCE MODEL"), "FORCING_TYPE") == INPAR::FLUID::fixed_power_input)
   {
     // calculate required forcing
@@ -3286,7 +3286,7 @@ void FLD::FluidImplicitTimeInt::CalcIntermediateSolution()
   if ((special_flow_ == "forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "decaying_homogeneous_isotropic_turbulence") and
-      INPUT::IntegralValue<INPAR::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
+      CORE::UTILS::IntegralValue<INPAR::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
           "FORCING_TYPE") == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
   {
     bool activate = true;
@@ -3970,7 +3970,7 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
   // get order of accuracy of grid velocity determination
   // from input file data
   const Teuchos::ParameterList& fluiddynparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
-  const int gridvel = INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
+  const int gridvel = CORE::UTILS::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   switch (gridvel)
   {
@@ -4799,7 +4799,7 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractPressurePart
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-  auto calcerr = INPUT::get<INPAR::FLUID::CalcError>(*params_, "calculate error");
+  auto calcerr = CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {
@@ -4865,7 +4865,7 @@ Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorCompar
         {
           std::cout << std::endl
                     << "Warning: H_1 velocity error norm for analytical solution Nr. "
-                    << INPUT::get<INPAR::FLUID::CalcError>(*params_, "calculate error")
+                    << CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error")
                     << " is not implemented yet!!" << std::endl;
         }
       }
@@ -4876,7 +4876,7 @@ Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorCompar
           std::cout.precision(8);
           std::cout << std::endl
                     << "---- error norm for analytical solution Nr. "
-                    << INPUT::get<INPAR::FLUID::CalcError>(*params_, "calculate error")
+                    << CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error")
                     << " ----------" << std::endl;
           std::cout << "| relative L_2 velocity error norm:     " << (*relerror)[0] << std::endl;
           std::cout << "| relative L_2 pressure error norm:     " << (*relerror)[1] << std::endl;
@@ -5574,7 +5574,7 @@ void FLD::FluidImplicitTimeInt::SetFaceGeneralFluidParameter()
   faceparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
   faceparams.set<int>(
-      "STABTYPE", INPUT::IntegralValue<INPAR::FLUID::StabType>(
+      "STABTYPE", CORE::UTILS::IntegralValue<INPAR::FLUID::StabType>(
                       params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
 
   faceparams.set<int>("Physical Type", physicaltype_);
@@ -5608,7 +5608,7 @@ void FLD::FluidImplicitTimeInt::SetGeneralTurbulenceParameters()
   scale_sep_ = INPAR::FLUID::no_scale_sep;
 
   // fine-scale subgrid viscosity?
-  fssgv_ = INPUT::IntegralValue<INPAR::FLUID::FineSubgridVisc>(
+  fssgv_ = CORE::UTILS::IntegralValue<INPAR::FLUID::FineSubgridVisc>(
       params_->sublist("TURBULENCE MODEL"), "FSSUGRVISC");
 
   // warning if classical (all-scale) turbulence model and fine-scale
@@ -5788,7 +5788,7 @@ void FLD::FluidImplicitTimeInt::PrintStabilizationDetails() const
               << "Evaluation Mat  = " << stabparams->get<std::string>("EVALUATION_MAT") << "\n";
     std::cout << "\n";
 
-    if (INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") ==
+    if (CORE::UTILS::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") ==
         INPAR::FLUID::stabtype_residualbased)
     {
       std::cout << "                             " << stabparams->get<std::string>("TDS") << "\n";
@@ -5825,7 +5825,7 @@ void FLD::FluidImplicitTimeInt::PrintStabilizationDetails() const
       std::cout << "\n";
       std::cout << std::endl;
     }
-    else if (INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") ==
+    else if (CORE::UTILS::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") ==
              INPAR::FLUID::stabtype_edgebased)
     {
       Teuchos::ParameterList* stabparams_edgebased =
@@ -5918,7 +5918,7 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
       std::cout << "- Csgs:              " << modelparams->get<double>("CSGS") << "\n";
       std::cout << "- Scale separation:  " << modelparams->get<std::string>("SCALE_SEPARATION")
                 << "\n";
-      if ((INPUT::IntegralValue<int>(*modelparams, "CALC_N")))
+      if ((CORE::UTILS::IntegralValue<int>(*modelparams, "CALC_N")))
       {
         std::cout << "- Re_length:         " << modelparams->get<std::string>("REF_LENGTH") << "\n";
         std::cout << "- Re_vel:            " << modelparams->get<std::string>("REF_VELOCITY")
@@ -5928,11 +5928,11 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
       else
         std::cout << "- N:                 " << modelparams->get<double>("N") << "\n";
       std::cout << "- near-wall limit:   "
-                << INPUT::IntegralValue<int>(*modelparams, "NEAR_WALL_LIMIT") << "\n";
+                << CORE::UTILS::IntegralValue<int>(*modelparams, "NEAR_WALL_LIMIT") << "\n";
       std::cout << "- beta:              " << modelparams->get<double>("BETA") << "\n";
       std::cout << "- evaluation B:      " << modelparams->get<std::string>("EVALUATION_B") << "\n";
       std::cout << "- conservative:      " << modelparams->get<std::string>("CONVFORM") << "\n";
-      if ((INPUT::IntegralValue<int>(*modelparams, "SET_FINE_SCALE_VEL")))
+      if ((CORE::UTILS::IntegralValue<int>(*modelparams, "SET_FINE_SCALE_VEL")))
         std::cout << "WARNING: fine-scale velocity is set for nightly tests!"
                   << "\n";
       std::cout << &std::endl;
@@ -5999,7 +5999,7 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
         // set fine-scale velocity for parallel nigthly tests
         // separation matrix depends on the number of proc here
         if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales and
-            (INPUT::IntegralValue<int>(
+            (CORE::UTILS::IntegralValue<int>(
                 params_->sublist("MULTIFRACTAL SUBGRID SCALES"), "SET_FINE_SCALE_VEL")))
           fsvelaf_->PutScalar(0.01);
 
@@ -6042,7 +6042,8 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
   // is seen by the scalar field. However, note that vel_n ~ vel_np ~ vel_af for statistically
   // stationary flow. Hence, the expected error is marginal, but another computation is avoided.
 
-  if (INPUT::IntegralValue<int>(params_->sublist("MULTIFRACTAL SUBGRID SCALES"), "ADAPT_CSGS_PHI"))
+  if (CORE::UTILS::IntegralValue<int>(
+          params_->sublist("MULTIFRACTAL SUBGRID SCALES"), "ADAPT_CSGS_PHI"))
   {
     // mean Cai
     double meanCai = 0.0;
@@ -6395,7 +6396,7 @@ void FLD::FluidImplicitTimeInt::SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_g
 // overloaded in TimIntRedModels bk 12/13
 void FLD::FluidImplicitTimeInt::SetupMeshtying()
 {
-  msht_ = INPUT::get<INPAR::FLUID::MeshTying>(*params_, "MESHTYING");
+  msht_ = CORE::UTILS::GetAsEnum<INPAR::FLUID::MeshTying>(*params_, "MESHTYING");
   bool alldofcoupled = params_->get<bool>("ALLDOFCOUPLED");
 
   // meshtying: all dofs (velocity + pressure) are coupled

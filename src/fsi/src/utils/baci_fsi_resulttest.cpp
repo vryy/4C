@@ -35,7 +35,7 @@ FSI::FSIResultTest::FSIResultTest(
     Teuchos::RCP<FSI::Monolithic>& fsi, const Teuchos::ParameterList& fsidyn)
     : DRT::ResultTest("FSI"), fsi_(fsi)
 {
-  int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_monolithicfluidsplit:
@@ -154,7 +154,7 @@ FSI::FSIResultTest::FSIResultTest(
     Teuchos::RCP<FSI::MonolithicNoNOX> fsi, const Teuchos::ParameterList& fsidyn)
     : DRT::ResultTest("FSI")
 {
-  int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_fluidfluid_monolithicstructuresplit_nonox:

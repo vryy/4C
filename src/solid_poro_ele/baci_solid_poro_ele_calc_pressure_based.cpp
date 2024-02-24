@@ -237,8 +237,8 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingStress(cons
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
-  auto iocouplingstress =
-      INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
+  auto iocouplingstress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
+      params, "iocouplstress", INPAR::STR::stress_none);
 
   // check for output of coupling stress
   if (iocouplingstress == INPAR::STR::stress_none)

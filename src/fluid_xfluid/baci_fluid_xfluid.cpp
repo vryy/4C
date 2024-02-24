@@ -27,7 +27,6 @@ interface
 #include "baci_fluid_xfluid_state.hpp"
 #include "baci_fluid_xfluid_state_creator.hpp"
 #include "baci_global_data.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_assemblestrategy.hpp"
@@ -44,6 +43,7 @@ interface
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_utils_function.hpp"
+#include "baci_utils_parameter_list.hpp"
 #include "baci_xfem_condition_manager.hpp"
 #include "baci_xfem_discretization_utils.hpp"
 #include "baci_xfem_edgestab.hpp"
@@ -264,7 +264,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   // -------------------------------------------------------------------
 
   // load GMSH output flags
-  if (INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
+  if (CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
   {
     output_service_ = Teuchos::rcp(new XFluidOutputServiceGmsh(
         params_->sublist("XFEM"), xdiscret_, condition_manager_, include_inner_));
@@ -348,11 +348,11 @@ void FLD::XFluid::SetXFluidParams()
   maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
 
   xfluid_timintapproach_ =
-      INPUT::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen, "XFLUID_TIMEINT");
+      CORE::UTILS::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen, "XFLUID_TIMEINT");
   xfluid_timint_check_interfacetips_ =
-      (bool)INPUT::IntegralValue<int>(params_xf_gen, "XFLUID_TIMEINT_CHECK_INTERFACETIPS");
+      (bool)CORE::UTILS::IntegralValue<int>(params_xf_gen, "XFLUID_TIMEINT_CHECK_INTERFACETIPS");
   xfluid_timint_check_sliding_on_surface_ =
-      (bool)INPUT::IntegralValue<int>(params_xf_gen, "XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE");
+      (bool)CORE::UTILS::IntegralValue<int>(params_xf_gen, "XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE");
 
   // for monolithic problems with xfluid (varying dofrowmaps)
   permutation_map_ = Teuchos::rcp(new std::map<int, int>);
@@ -360,7 +360,7 @@ void FLD::XFluid::SetXFluidParams()
 
   // get interface stabilization specific parameters
   coupling_method_ =
-      INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
+      CORE::UTILS::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
   {
@@ -377,15 +377,16 @@ void FLD::XFluid::SetXFluidParams()
     // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to
     // Nitsche's method has to be integrated
     bool ghost_penalty =
-        ((bool)INPUT::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_STAB") or
-            (bool) INPUT::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_TRANSIENT_STAB") or
-            (bool) INPUT::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_2nd_STAB"));
+        ((bool)CORE::UTILS::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_STAB") or
+            (bool)
+                CORE::UTILS::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_TRANSIENT_STAB") or
+            (bool) CORE::UTILS::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_2nd_STAB"));
 
     // determine, whether face-based stabilizing terms are active
     eval_eos_ = edge_based || ghost_penalty;
 
     ghost_penalty_add_inner_faces_ =
-        (bool)INPUT::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_ADD_INNER_FACES");
+        (bool)CORE::UTILS::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_ADD_INNER_FACES");
   }
 
   if (myrank_ == 0)
@@ -473,7 +474,7 @@ void FLD::XFluid::SetFaceGeneralFluidXFEMParameter()
     faceparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
     faceparams.set<int>(
-        "STABTYPE", INPUT::IntegralValue<INPAR::FLUID::StabType>(
+        "STABTYPE", CORE::UTILS::IntegralValue<INPAR::FLUID::StabType>(
                         params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
 
     faceparams.set<int>("Physical Type", physicaltype_);
@@ -1323,7 +1324,7 @@ void FLD::XFluid::AssembleMatAndRHS_FaceTerms(
       DRT::ELEMENTS::FluidIntFace* face_ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
       if (face_ele == nullptr) dserror("expect FluidIntFace element");
 
-      bool gmsh_EOS_out(INPUT::IntegralValue<int>(params_->sublist("XFEM"), "GMSH_EOS_OUT"));
+      bool gmsh_EOS_out(CORE::UTILS::IntegralValue<int>(params_->sublist("XFEM"), "GMSH_EOS_OUT"));
       edgestab_->EvaluateEdgeStabGhostPenalty(faceparams, discret_, face_ele, sysmat, residual_col,
           wizard, include_inner_, ghost_penalty_add_inner_faces_, gmsh_EOS_out);
     }
@@ -1650,7 +1651,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::EvaluateErrorComparedToAnalytical
 
   // how is the analytical solution available (implemented of via function?)
   INPAR::FLUID::CalcError calcerr =
-      INPUT::get<INPAR::FLUID::CalcError>(*params_, "calculate error");
+      CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error");
 
   if (calcerr != INPAR::FLUID::no_error_calculation)
   {
@@ -1784,7 +1785,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::EvaluateErrorComparedToAnalytical
         std::cout.precision(8);
         IO::cout << IO::endl
                  << "---- error norm for analytical solution Nr. "
-                 << INPUT::get<INPAR::FLUID::CalcError>(*params_, "calculate error")
+                 << CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error")
                  << " ----------" << IO::endl;
         IO::cout << "-------------- domain error norms -----------------------" << IO::endl;
         IO::cout << "|| u - u_h ||_L2(Omega)                               =  " << dom_err_vel_L2
@@ -2096,7 +2097,7 @@ void FLD::XFluid::CheckXFluidParams() const
 
   Teuchos::ParameterList& params_xfem = params_->sublist("XFEM");
   if (ghost_penalty_add_inner_faces_ &&
-      !INPUT::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(params_xfem,
+      !CORE::UTILS::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(params_xfem,
           "NODAL_DOFSET_STRATEGY") == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition)
     dserror(
         "The option GHOST_PENALTY_ADD_INNER_FACES is only availabe if you use max 1 nodal dofset!");
@@ -5237,7 +5238,7 @@ void FLD::XFluid::UpdateGridv()
   // get order of accuracy of grid velocity determination
   // from input file data
   const Teuchos::ParameterList& fluiddynparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
-  const int order = INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
+  const int order = CORE::UTILS::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   Teuchos::RCP<Epetra_Vector> gridv = Teuchos::rcp(new Epetra_Vector(dispnp_->Map(), true));
 

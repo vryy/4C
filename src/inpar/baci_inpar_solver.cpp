@@ -22,7 +22,6 @@ namespace INPAR::SOLVER
   {
     using Teuchos::setStringToIntegralParameter;
     using Teuchos::tuple;
-    using namespace INPUT;
 
     // Solver options
     {

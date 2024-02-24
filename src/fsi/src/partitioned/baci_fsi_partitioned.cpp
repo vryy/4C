@@ -88,7 +88,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
       GLOBAL::Problem::Instance()->SpatialApproximationType()));
 
 
-  if ((INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
+  if ((CORE::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
           1)  // matching meshes
       and (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fsi_xfem) and
       (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fbi))
@@ -102,7 +102,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
-  else if ((INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
+  else if ((CORE::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                1)  // matching meshes coupled via XFEM
            and (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fsi_xfem) and
            (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fbi))
@@ -125,7 +125,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
   {
     matchingnodes_ = true;
   }
-  else if (INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
+  else if (CORE::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                0  // mortar coupling
            and (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::fsi_xfem))
   {
@@ -146,7 +146,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
   }
 
   // enable debugging
-  if (INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT"))
+  if (CORE::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT"))
     debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
 }
 
@@ -180,7 +180,7 @@ void FSI::Partitioned::SetDefaultParameters(
   // search step.
   //
 
-  switch (INPUT::IntegralValue<int>(fsidyn, "COUPALGO"))
+  switch (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO"))
   {
     case fsi_iter_stagg_fixed_rel_param:
     {
@@ -511,7 +511,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
     // In case of sliding ALE interfaces, 'remesh' fluid field
     INPAR::FSI::PartitionedCouplingMethod usedmethod =
-        INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
+        CORE::UTILS::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
             fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
     if (usedmethod == INPAR::FSI::DirichletNeumannSlideale)
@@ -859,7 +859,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
 
-  if (INPUT::IntegralValue<int>(fsidyn, "SECONDORDER") == 1)
+  if (CORE::UTILS::IntegralValue<int>(fsidyn, "SECONDORDER") == 1)
   {
     ivel = Teuchos::rcp(new Epetra_Vector(*iveln_));
     ivel->Update(2. / Dt(), *idispnp, -2. / Dt(), *idispn_, -1.);
@@ -940,7 +940,8 @@ void FSI::Partitioned::Output()
   // call base class version
   FSI::Algorithm::Output();
 
-  switch (INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
+  switch (
+      CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
   {
     case fsi_iter_stagg_AITKEN_rel_param:
     {
@@ -970,7 +971,8 @@ void FSI::Partitioned::ReadRestart(int step)
   // call base class version
   FSI::Algorithm::ReadRestart(step);
 
-  switch (INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
+  switch (
+      CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
   {
     case fsi_iter_stagg_AITKEN_rel_param:
     {

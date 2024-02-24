@@ -65,7 +65,7 @@ MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer
   Data().Dim() = spatialDim;
   Data().AlphaF() = alphaf;
   Data().MaxDof() = maxdof;
-  Data().SysType() = INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact_, "SYSTEM");
+  Data().SysType() = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(scontact_, "SYSTEM");
 }
 
 /*----------------------------------------------------------------------*
@@ -92,7 +92,7 @@ void MORTAR::StrategyBase::SetTimeIntegrationInfo(
   }
 
   // Check if we only want to compute the contact force at the time endpoint
-  if (INPUT::IntegralValue<int>(Data().SContact(), "CONTACTFORCE_ENDTIME"))
+  if (CORE::UTILS::IntegralValue<int>(Data().SContact(), "CONTACTFORCE_ENDTIME"))
     alphaf_ = 0.0;
   else
   {

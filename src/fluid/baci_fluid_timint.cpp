@@ -14,10 +14,10 @@
 #include "baci_fluid_utils_mapextractor.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_fluid.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_io_discretization_visualization_writer_mesh.hpp"
 #include "baci_io_visualization_parameters.hpp"
 #include "baci_lib_discret.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
@@ -43,8 +43,9 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
       itemax_(params_->get<int>("max nonlin iter steps")),
       uprestart_(params_->get("write restart every", -1)),
       upres_(params_->get("write solution every", -1)),
-      timealgo_(INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
-      physicaltype_(INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type")),
+      timealgo_(
+          CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
+      physicaltype_(CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(*params_, "Physical Type")),
       myrank_(discret_->Comm().MyPID()),
       updateprojection_(false),
       projector_(Teuchos::null),
@@ -55,7 +56,8 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
       Teuchos::rcp(new Teuchos::ParameterList(
           GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT").sublist("FLUID")));
 
-  bool output_fluid = (bool)INPUT::IntegralValue<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
+  bool output_fluid =
+      (bool)CORE::UTILS::IntegralValue<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
 
   // create and initialize parameter container object for fluid specific runtime output
   if (output_fluid)

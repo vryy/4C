@@ -94,7 +94,7 @@ void fluid_ale_drt()
 
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
   // check for xfem discretization
-  if (INPUT::IntegralValue<bool>(
+  if (CORE::UTILS::IntegralValue<bool>(
           (problem->XFluidDynamicParams().sublist("GENERAL")), "XFLUIDFLUID"))
   {
     FLD::XFluid::SetupFluidDiscretization();
@@ -154,7 +154,7 @@ void fluid_xfem_drt()
   FLD::XFluid::SetupFluidDiscretization();
 
   const Teuchos::ParameterList xfluid = problem->XFluidDynamicParams();
-  bool alefluid = INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
+  bool alefluid = CORE::UTILS::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
 
   if (alefluid)  // in ale case
   {
@@ -275,7 +275,7 @@ void fluid_freesurf_drt()
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
-  int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_monolithicfluidsplit:
@@ -375,7 +375,7 @@ void fsi_immersed_drt()
   Teuchos::RCP<FSI::Partitioned> fsi;
 
   INPAR::FSI::PartitionedCouplingMethod method =
-      INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
+      CORE::UTILS::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
           fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
   if (method == INPAR::FSI::DirichletNeumann)
   {
@@ -434,7 +434,7 @@ void fsi_ale_drt()
     structdis->FillComplete();
   }
 
-  if (INPUT::IntegralValue<bool>(
+  if (CORE::UTILS::IntegralValue<bool>(
           (problem->XFluidDynamicParams().sublist("GENERAL")), "XFLUIDFLUID"))
   {
     FLD::XFluid::SetupFluidDiscretization();
@@ -466,8 +466,8 @@ void fsi_ale_drt()
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
 
-    if ((not INPUT::IntegralValue<bool>(problem->FSIDynamicParams(), "MATCHGRID_FLUIDALE")) or
-        (not INPUT::IntegralValue<bool>(problem->FSIDynamicParams(), "MATCHGRID_STRUCTALE")))
+    if ((not CORE::UTILS::IntegralValue<bool>(problem->FSIDynamicParams(), "MATCHGRID_FLUIDALE")) or
+        (not CORE::UTILS::IntegralValue<bool>(problem->FSIDynamicParams(), "MATCHGRID_STRUCTALE")))
     {
       // create vector of discr.
       std::vector<Teuchos::RCP<DRT::Discretization>> dis;
@@ -493,7 +493,7 @@ void fsi_ale_drt()
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
-  FSI_COUPLING coupling = INPUT::IntegralValue<FSI_COUPLING>(fsidyn, "COUPALGO");
+  FSI_COUPLING coupling = CORE::UTILS::IntegralValue<FSI_COUPLING>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_pseudo_structureale:
@@ -535,7 +535,7 @@ void fsi_ale_drt()
       Teuchos::RCP<FSI::Monolithic> fsi;
 
       INPAR::FSI::LinearBlockSolver linearsolverstrategy =
-          INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+          CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
       // call constructor to initialize the base class
       if (coupling == fsi_iter_monolithicfluidsplit)
@@ -610,7 +610,7 @@ void fsi_ale_drt()
       // possibly redistribute domain decomposition
       {
         const INPAR::FSI::Redistribute redistribute =
-            INPUT::IntegralValue<INPAR::FSI::Redistribute>(fsimono, "REDISTRIBUTE");
+            CORE::UTILS::IntegralValue<INPAR::FSI::Redistribute>(fsimono, "REDISTRIBUTE");
 
         const double weight1 = fsimono.get<double>("REDIST_WEIGHT1");
         const double weight2 = fsimono.get<double>("REDIST_WEIGHT2");
@@ -735,7 +735,7 @@ void fsi_ale_drt()
       Teuchos::RCP<FSI::Partitioned> fsi;
 
       INPAR::FSI::PartitionedCouplingMethod method =
-          INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
+          CORE::UTILS::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
               fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
       switch (method)
@@ -806,7 +806,7 @@ void xfsi_drt()
 
   // CREATE ALE
   const Teuchos::ParameterList& xfdyn = problem->XFluidDynamicParams();
-  bool ale = INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
+  bool ale = CORE::UTILS::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
   Teuchos::RCP<DRT::Discretization> aledis;
   if (ale)
   {
@@ -835,7 +835,7 @@ void xfsi_drt()
     }
   }
 
-  int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_xfem_monolithic:
@@ -844,7 +844,7 @@ void xfsi_drt()
       const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
       INPAR::FSI::LinearBlockSolver linearsolverstrategy =
-          INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+          CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
       if (linearsolverstrategy != INPAR::FSI::PreconditionedKrylov)
         dserror("Only Newton-Krylov scheme with XFEM fluid");
@@ -890,7 +890,7 @@ void xfsi_drt()
       Teuchos::RCP<FSI::Partitioned> fsi;
 
       INPAR::FSI::PartitionedCouplingMethod method =
-          INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
+          CORE::UTILS::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
               fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
       switch (method)
@@ -956,7 +956,7 @@ void xfpsi_drt()
 
   Teuchos::RCP<DRT::Discretization> aledis;
   const Teuchos::ParameterList& xfdyn = problem->XFluidDynamicParams();
-  bool ale = INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
+  bool ale = CORE::UTILS::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
   if (ale)
   {
     aledis = problem->GetDis("ale");
@@ -989,7 +989,7 @@ void xfpsi_drt()
 
   // 2.- Parameter reading
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-  int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
   switch (coupling)
   {
@@ -998,7 +998,7 @@ void xfpsi_drt()
       // monolithic solver settings
       const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
       INPAR::FSI::LinearBlockSolver linearsolverstrategy =
-          INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+          CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
       if (linearsolverstrategy != INPAR::FSI::PreconditionedKrylov)
         dserror("Only Newton-Krylov scheme with XFEM fluid");

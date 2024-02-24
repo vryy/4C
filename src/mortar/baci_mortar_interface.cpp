@@ -209,9 +209,10 @@ MORTAR::Interface::Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData,
   quadslave_ = false;
   interfaceData_->SetExtendGhosting(Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
       imortar.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY"));
-  searchalgo_ = INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar, "SEARCH_ALGORITHM");
+  searchalgo_ =
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar, "SEARCH_ALGORITHM");
   searchparam_ = imortar.get<double>("SEARCH_PARAM");
-  searchuseauxpos_ = INPUT::IntegralValue<int>(imortar, "SEARCH_USE_AUX_POS");
+  searchuseauxpos_ = CORE::UTILS::IntegralValue<int>(imortar, "SEARCH_USE_AUX_POS");
   nurbs_ = imortar.get<bool>("NURBS");
 
   if (Dim() != 2 && Dim() != 3) dserror("Mortar problem must be 2D or 3D.");
@@ -264,7 +265,8 @@ void MORTAR::Interface::CreateInterfaceDiscretization()
  *----------------------------------------------------------------------*/
 void MORTAR::Interface::SetShapeFunctionType()
 {
-  auto shapefcn = INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(InterfaceParams(), "LM_SHAPEFCN");
+  auto shapefcn =
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(InterfaceParams(), "LM_SHAPEFCN");
   switch (shapefcn)
   {
     case INPAR::MORTAR::shape_dual:
@@ -461,7 +463,7 @@ void MORTAR::Interface::PrintParallelDistribution() const
       }
 
       // Print details of parallel distribution for each proc if requested by the user
-      const bool printDetails = INPUT::IntegralValue<bool>(
+      const bool printDetails = CORE::UTILS::IntegralValue<bool>(
           InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "PRINT_DISTRIBUTION");
       if (printDetails)
       {
@@ -583,7 +585,7 @@ void MORTAR::Interface::FillComplete(
   }
   else if (imortar_.isParameter("STRATEGY"))
   {
-    if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM") ==
+    if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM") ==
         INPAR::MORTAR::algorithm_gpts)
       CreateVolumeGhosting();
   }
@@ -616,7 +618,7 @@ void MORTAR::Interface::InitializeCornerEdge()
 {
   // if linear LM for quad displacements return!
   // TODO: this case needs a special treatment
-  bool lagmultlin = (INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
+  bool lagmultlin = (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(
                          InterfaceParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
 
   if (lagmultlin) return;
@@ -648,7 +650,7 @@ void MORTAR::Interface::InitializeCornerEdge()
 void MORTAR::Interface::InitializeCrossPoints()
 {
   // check whether crosspoints / edge nodes shall be considered or not
-  bool crosspoints = INPUT::IntegralValue<int>(InterfaceParams(), "CROSSPOINTS");
+  bool crosspoints = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "CROSSPOINTS");
 
   // modify crosspoints / edge nodes
   if (crosspoints)
@@ -694,7 +696,7 @@ void MORTAR::Interface::InitializeCrossPoints()
 void MORTAR::Interface::InitializeLagMultLin()
 {
   // check for linear interpolation of 2D/3D quadratic Lagrange multipliers
-  bool lagmultlin = (INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
+  bool lagmultlin = (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(
                          InterfaceParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
 
   // modify nodes accordingly
@@ -804,7 +806,7 @@ void MORTAR::Interface::InitializeLagMultLin()
  *----------------------------------------------------------------------*/
 void MORTAR::Interface::InitializeLagMultConst()
 {
-  if ((INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(InterfaceParams(), "LM_QUAD") ==
+  if ((CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(InterfaceParams(), "LM_QUAD") ==
           INPAR::MORTAR::lagmult_const))
   {
     // modified treatment slave side nodes:
@@ -946,7 +948,7 @@ void MORTAR::Interface::InitializeDataContainer()
 
   if (InterfaceParams().isParameter("ALGORITHM"))
   {
-    if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(InterfaceParams(), "ALGORITHM") ==
+    if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(InterfaceParams(), "ALGORITHM") ==
         INPAR::MORTAR::algorithm_gpts)
     {
       const int numMyMasterColumnElements = MasterColElements()->NumMyElements();
@@ -1543,7 +1545,7 @@ void MORTAR::Interface::CreateSearchTree()
         InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
     // get update type of binary tree
-    auto updatetype = INPUT::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
+    auto updatetype = CORE::UTILS::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
         InterfaceParams(), "BINARYTREE_UPDATETYPE");
 
     Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
@@ -2115,7 +2117,7 @@ void MORTAR::Interface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCel
   // check
   if (Dim() == 2) dserror("Geometry evaluation for mortar interface only for 3D problems!");
 
-  auto algo = INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+  auto algo = CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   if (algo == INPAR::MORTAR::algorithm_nts)
     dserror("Geometry evaluation only for mortar problems!");
@@ -2248,7 +2250,7 @@ void MORTAR::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
     const Epetra_Map* snoderowmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
-  auto algo = INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+  auto algo = CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   // smooth contact
   switch (algo)
@@ -3380,8 +3382,8 @@ void MORTAR::Interface::AssembleLM(Epetra_Vector& zglobal)
  *----------------------------------------------------------------------*/
 void MORTAR::Interface::AssembleD(CORE::LINALG::SparseMatrix& dglobal)
 {
-  const bool nonsmooth = INPUT::IntegralValue<int>(InterfaceParams(), "NONSMOOTH_GEOMETRIES");
-  const bool lagmultlin = (INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
+  const bool nonsmooth = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "NONSMOOTH_GEOMETRIES");
+  const bool lagmultlin = (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(
                                InterfaceParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
 
   // loop over proc's slave nodes of the interface for assembly
@@ -3591,7 +3593,7 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
     dserror("AssembleTrafo -> you should not be here...");
 
   // check whether locally linear LM interpolation is used
-  const bool lagmultlin = (INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
+  const bool lagmultlin = (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(
                                InterfaceParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
 
   //********************************************************************

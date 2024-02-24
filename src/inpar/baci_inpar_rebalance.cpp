@@ -10,7 +10,7 @@
 
 #include "baci_inpar_rebalance.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -18,7 +18,6 @@ void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
-  using namespace INPUT;
 
   Teuchos::ParameterList& meshpartitioning = list->sublist("MESH PARTITIONING", false, "");
 

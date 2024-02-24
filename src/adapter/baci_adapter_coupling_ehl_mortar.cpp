@@ -28,7 +28,7 @@ ADAPTER::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     CORE::FE::ShapeFunctionType shape_function_type)
     : CouplingNonLinMortar(
           spatial_dimension, mortar_coupling_params, contact_dynamic_params, shape_function_type),
-      contact_regularization_(INPUT::IntegralValue<int>(
+      contact_regularization_(CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->ContactDynamicParams(), "REGULARIZED_NORMAL_CONTACT")),
       regularization_thickness_(GLOBAL::Problem::Instance()->ContactDynamicParams().get<double>(
           "REGULARIZATION_THICKNESS")),
@@ -46,9 +46,9 @@ ADAPTER::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     if (regularization_compliance_ <= 0. || regularization_thickness_ <= 0.)
       dserror("need positive REGULARIZATION_THICKNESS and REGULARIZATION_STIFFNESS");
   if (contact_regularization_) regularization_compliance_ = 1. / regularization_compliance_;
-  if (INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->ContactDynamicParams(),
+  if (CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->ContactDynamicParams(),
           "REGULARIZED_NORMAL_CONTACT") == true &&
-      INPUT::IntegralValue<bool>(
+      CORE::UTILS::IntegralValue<bool>(
           GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "DRY_CONTACT_MODEL") == false)
     dserror("for dry contact model you need REGULARIZED_NORMAL_CONTACT and DRY_CONTACT_MODEL");
 }
@@ -77,7 +77,7 @@ void ADAPTER::CouplingEhlMortar::Setup(Teuchos::RCP<DRT::Discretization> masterd
   z_ = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowDofs(), true));
   fscn_ = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowDofs(), true));
 
-  INPAR::CONTACT::FrictionType ftype = INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(
+  INPAR::CONTACT::FrictionType ftype = CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(
       GLOBAL::Problem::Instance()->ContactDynamicParams(), "FRICTION");
 
   std::vector<DRT::Condition*> ehl_conditions(0);
@@ -162,7 +162,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
 {
   const double alphaf_ = 0.;  // statics!
   const INPAR::CONTACT::ConstraintDirection& constr_direction_ =
-      INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
           Interface()->InterfaceParams(), "CONSTRAINT_DIRECTIONS");
 
   // return if this state has already been evaluated

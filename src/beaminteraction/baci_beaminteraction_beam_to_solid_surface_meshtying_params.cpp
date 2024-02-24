@@ -52,7 +52,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
         beam_to_solid_surface_meshtying_params_list, "COUPLING_TYPE");
 
     // Parameters for rotational coupling.
-    rotational_coupling_ = (bool)INPUT::IntegralValue<int>(
+    rotational_coupling_ = (bool)CORE::UTILS::IntegralValue<int>(
         beam_to_solid_surface_meshtying_params_list, "ROTATIONAL_COUPLING");
     rotational_coupling_penalty_parameter_ =
         beam_to_solid_surface_meshtying_params_list.get<double>(

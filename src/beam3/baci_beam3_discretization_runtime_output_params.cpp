@@ -10,8 +10,8 @@
 
 #include "baci_beam3_discretization_runtime_output_params.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_utils_exceptions.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -52,49 +52,49 @@ void DRT::ELEMENTS::BeamRuntimeOutputParams::Init(
   // initialize the parameter values
 
   output_displacement_state_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "DISPLACEMENT");
+      (bool)CORE::UTILS::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "DISPLACEMENT");
 
-  use_absolute_positions_visualizationpoint_coordinates_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "USE_ABSOLUTE_POSITIONS");
+  use_absolute_positions_visualizationpoint_coordinates_ = (bool)CORE::UTILS::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "USE_ABSOLUTE_POSITIONS");
 
-  write_internal_energy_element_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "INTERNAL_ENERGY_ELEMENT");
+  write_internal_energy_element_ = (bool)CORE::UTILS::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "INTERNAL_ENERGY_ELEMENT");
 
-  write_kinetic_energy_element_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "KINETIC_ENERGY_ELEMENT");
+  write_kinetic_energy_element_ = (bool)CORE::UTILS::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "KINETIC_ENERGY_ELEMENT");
 
-  write_triads_visualizationpoints_ = (bool)INPUT::IntegralValue<int>(
+  write_triads_visualizationpoints_ = (bool)CORE::UTILS::IntegralValue<int>(
       IO_vtk_structure_beams_paramslist, "TRIAD_VISUALIZATIONPOINT");
 
-  write_material_crosssection_strains_gausspoints_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "STRAINS_GAUSSPOINT");
+  write_material_crosssection_strains_gausspoints_ = (bool)CORE::UTILS::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "STRAINS_GAUSSPOINT");
 
-  write_material_crosssection_strains_continuous_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "STRAINS_CONTINUOUS");
+  write_material_crosssection_strains_continuous_ = (bool)CORE::UTILS::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "STRAINS_CONTINUOUS");
 
-  write_material_crosssection_stresses_gausspoints_ = (bool)INPUT::IntegralValue<int>(
+  write_material_crosssection_stresses_gausspoints_ = (bool)CORE::UTILS::IntegralValue<int>(
       IO_vtk_structure_beams_paramslist, "MATERIAL_FORCES_GAUSSPOINT");
 
-  write_material_crosssection_strains_continuous_ = (bool)INPUT::IntegralValue<int>(
+  write_material_crosssection_strains_continuous_ = (bool)CORE::UTILS::IntegralValue<int>(
       IO_vtk_structure_beams_paramslist, "MATERIAL_FORCES_CONTINUOUS");
 
-  write_spatial_crosssection_stresses_gausspoints_ = (bool)INPUT::IntegralValue<int>(
+  write_spatial_crosssection_stresses_gausspoints_ = (bool)CORE::UTILS::IntegralValue<int>(
       IO_vtk_structure_beams_paramslist, "SPATIAL_FORCES_GAUSSPOINT");
 
-  write_orientation_parameter_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ORIENTATION_PARAMETER");
+  write_orientation_parameter_ = (bool)CORE::UTILS::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "ORIENTATION_PARAMETER");
 
-  write_rve_crosssection_forces_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "RVE_CROSSSECTION_FORCES");
+  write_rve_crosssection_forces_ = (bool)CORE::UTILS::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "RVE_CROSSSECTION_FORCES");
 
   write_ref_length_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "REF_LENGTH");
+      (bool)CORE::UTILS::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "REF_LENGTH");
 
   write_element_gid_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GID");
+      (bool)CORE::UTILS::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GID");
 
   write_element_ghosting_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GHOSTING");
+      (bool)CORE::UTILS::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GHOSTING");
 
   n_subsegments_ = IO_vtk_structure_beams_paramslist.get<int>("NUMBER_SUBSEGMENTS");
   if (n_subsegments_ < 1)

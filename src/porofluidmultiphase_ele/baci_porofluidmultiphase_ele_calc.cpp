@@ -82,7 +82,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Evaluate(DRT::Element* e
 {
   // check for the action parameter
   const POROFLUIDMULTIPHASE::Action action =
-      INPUT::get<POROFLUIDMULTIPHASE::Action>(params, "action");
+      CORE::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::Action>(params, "action");
 
   // setup
   if (SetupCalc(ele, discretization, action) == -1) return -1;

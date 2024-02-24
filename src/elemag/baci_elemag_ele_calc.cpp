@@ -80,7 +80,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
   }
   else
   {
-    action = INPUT::get<ELEMAG::Action>(params, "action");
+    action = CORE::UTILS::GetAsEnum<ELEMAG::Action>(params, "action");
   }
 
   InitializeShapes(ele);

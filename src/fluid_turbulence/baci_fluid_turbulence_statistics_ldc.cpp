@@ -38,7 +38,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
   if (numdim != 3) dserror("Evaluation of turbulence statistics only for 3d flow problems!");
 
   INPAR::FLUID::PhysicalType physicaltype =
-      INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
+      CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors

@@ -139,7 +139,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   // access the problem-specific parameter list
   const Teuchos::ParameterList& tsidyn = GLOBAL::Problem::Instance()->TSIDynamicParams();
 
-  bool matchinggrid = INPUT::IntegralValue<bool>(tsidyn, "MATCHINGGRID");
+  bool matchinggrid = CORE::UTILS::IntegralValue<bool>(tsidyn, "MATCHINGGRID");
 
   // we use the structure discretization as layout for the temperature discretization
   if (structdis->NumGlobalNodes() == 0) dserror("Structure discretization is empty!");

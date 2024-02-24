@@ -12,7 +12,6 @@
 
 #include "baci_inpar.hpp"
 #include "baci_inpar_fluid.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>

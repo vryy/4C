@@ -111,7 +111,7 @@ void electromagnetics_drt()
 
   // create algorithm depending on time-integration scheme
   INPAR::ELEMAG::DynamicType elemagdyna =
-      INPUT::IntegralValue<INPAR::ELEMAG::DynamicType>(elemagparams, "TIMEINT");
+      CORE::UTILS::IntegralValue<INPAR::ELEMAG::DynamicType>(elemagparams, "TIMEINT");
   Teuchos::RCP<ELEMAG::ElemagTimeInt> elemagalgo;
   switch (elemagdyna)
   {
@@ -167,7 +167,7 @@ void electromagnetics_drt()
   else
   {
     INPAR::ELEMAG::InitialField init =
-        INPUT::IntegralValue<INPAR::ELEMAG::InitialField>(elemagparams, "INITIALFIELD");
+        CORE::UTILS::IntegralValue<INPAR::ELEMAG::InitialField>(elemagparams, "INITIALFIELD");
 
     bool ishdg = false;
 
@@ -218,7 +218,7 @@ void electromagnetics_drt()
 
         // do the scatra
         const INPAR::SCATRA::VelocityField veltype =
-            INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
+            CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
         switch (veltype)
         {
           case INPAR::SCATRA::velocity_zero:  // zero  (see case 1)
@@ -363,7 +363,7 @@ void electromagnetics_drt()
   elemagalgo->Integrate();
 
   // Computing the error at the las time step (the conditional stateme nt is inside for now)
-  if (INPUT::IntegralValue<bool>(elemagparams, "CALCERR"))
+  if (CORE::UTILS::IntegralValue<bool>(elemagparams, "CALCERR"))
   {
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors = elemagalgo->ComputeError();
     elemagalgo->PrintErrors(errors);

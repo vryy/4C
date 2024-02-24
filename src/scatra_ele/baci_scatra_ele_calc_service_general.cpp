@@ -1594,7 +1594,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalErrorComparedToAnalytSol
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const auto errortype = INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+  const auto errortype = CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
     case INPAR::SCATRA::calcerror_byfunction:

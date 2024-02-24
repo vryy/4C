@@ -59,7 +59,7 @@ MAT::PAR::ActiveFiber::ActiveFiber(Teuchos::RCP<MAT::PAR::Material> matdata)
       epsilonnull_(*matdata->Get<double>("EPSNULL"))
 {
   analyticalmaterialtangent_ =
-      INPUT::IntegralValue<int>(
+      CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->StructuralDynamicParams(), "MATERIALTANGENT") == 0;
 }
 

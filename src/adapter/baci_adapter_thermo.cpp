@@ -49,7 +49,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(
 
   // major switch to different time integrators
   INPAR::THR::DynamicType timinttype =
-      INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP");
+      CORE::UTILS::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP");
   switch (timinttype)
   {
     case INPAR::THR::dyna_statics:

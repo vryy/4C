@@ -118,7 +118,7 @@ void FS3I::PartFPS3I::Init()
   fpsi_algo = FPSI_UTILS->SetupDiscretizations(comm_, fpsidynparams, poroelastdynparams);
 
   // only monolithic coupling of fpsi problem is supported!
-  int coupling = INPUT::IntegralValue<int>(fpsidynparams, "COUPALGO");
+  int coupling = CORE::UTILS::IntegralValue<int>(fpsidynparams, "COUPALGO");
   if (coupling == fpsi_monolithic_plain)
   {
     // Cast needed because functions such as PoroField() and FluidField() are just a
@@ -148,8 +148,9 @@ void FS3I::PartFPS3I::Init()
   Teuchos::RCP<DRT::Discretization> structscatradis = problem->GetDis("scatra2");
 
   // determine type of scalar transport
-  const INPAR::SCATRA::ImplType impltype_fluid = INPUT::IntegralValue<INPAR::SCATRA::ImplType>(
-      GLOBAL::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_SCATRATYPE");
+  const INPAR::SCATRA::ImplType impltype_fluid =
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::ImplType>(
+          GLOBAL::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
   // create discretization for fluid-based scalar transport from and
@@ -261,12 +262,12 @@ void FS3I::PartFPS3I::Init()
   // and rule out unsupported versions of generalized-alpha time-integration
   // scheme (as well as other inappropriate schemes) for fluid subproblem
   INPAR::SCATRA::TimeIntegrationScheme scatratimealgo =
-      INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
   INPAR::FLUID::TimeIntegrationScheme fluidtimealgo =
-      INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
+      CORE::UTILS::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
 
   INPAR::STR::DynamicType structtimealgo =
-      INPUT::IntegralValue<INPAR::STR::DynamicType>(structdyn, "DYNAMICTYP");
+      CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(structdyn, "DYNAMICTYP");
 
   if (fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
   {
@@ -641,7 +642,7 @@ void FS3I::PartFPS3I::SetVelocityFields()
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
-  int cdvel = INPUT::IntegralValue<int>(scatradyn, "VELOCITYFIELD");
+  int cdvel = CORE::UTILS::IntegralValue<int>(scatradyn, "VELOCITYFIELD");
   switch (cdvel)
   {
     case INPAR::SCATRA::velocity_zero:

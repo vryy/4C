@@ -56,7 +56,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::Init()
   // safety check
   if (trans_dT_intvisc_ > 0.0)
   {
-    if (INPUT::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
+    if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
       dserror("temperature evaluation needed for linear transition of interface viscosity!");
   }

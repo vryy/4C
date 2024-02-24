@@ -193,15 +193,15 @@ void SCATRA::TimIntCardiacMonodomain::SetElementSpecificScaTraParameters(
     Teuchos::ParameterList& eleparams) const
 {
   // safety check
-  if (INPUT::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
+  if (CORE::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
     if (INPAR::SCATRA::timeint_gen_alpha ==
-        INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
+        CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
       if (params_->get<double>("ALPHA_M") < 1.0 or params_->get<double>("ALPHA_F") < 1.0)
         dserror(
             "EP calculation with semiimplicit timestepping scheme only tested for gen-alpha with "
             "alpha_f = alpha_m = 1!");
 
-  eleparams.set<bool>("semiimplicit", INPUT::IntegralValue<int>(*params_, "SEMIIMPLICIT"));
+  eleparams.set<bool>("semiimplicit", CORE::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"));
 
   return;
 }

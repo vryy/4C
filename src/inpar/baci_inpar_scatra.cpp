@@ -455,16 +455,16 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       scatradyn.sublist("EXTERNAL FORCE", false, "Parameters for magnetics");
 
   // Flag for external force
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "EXTERNAL_FORCE", "No", "Flag to activate external force", &scatradyn_external_force);
 
   // Function ID for external force
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "FORCE_FUNCTION_ID", -1, "Function ID for external force", &scatradyn_external_force);
 
   // Function ID for mobility of the scalar
-  IntParameter("INTRINSIC_MOBILITY_FUNCTION_ID", -1, "Function ID for intrinsic mobility",
-      &scatradyn_external_force);
+  CORE::UTILS::IntParameter("INTRINSIC_MOBILITY_FUNCTION_ID", -1,
+      "Function ID for intrinsic mobility", &scatradyn_external_force);
 }
 
 

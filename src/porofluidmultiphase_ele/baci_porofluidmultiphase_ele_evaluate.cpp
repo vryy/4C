@@ -7,13 +7,13 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_porofluidmultiphase_ele.hpp"
 #include "baci_porofluidmultiphase_ele_action.hpp"
 #include "baci_porofluidmultiphase_ele_factory.hpp"
 #include "baci_porofluidmultiphase_ele_interface.hpp"
 #include "baci_porofluidmultiphase_ele_parameter.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -32,7 +32,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::Action action =
-      INPUT::get<POROFLUIDMULTIPHASE::Action>(params, "action");
+      CORE::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::Action>(params, "action");
   switch (action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
@@ -102,7 +102,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::PreEvaluate(DRT::Discretization& di
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const POROFLUIDMULTIPHASE::Action action = INPUT::get<POROFLUIDMULTIPHASE::Action>(p, "action");
+  const POROFLUIDMULTIPHASE::Action action =
+      CORE::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::Action>(p, "action");
 
   switch (action)
   {

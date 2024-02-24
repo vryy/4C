@@ -33,7 +33,7 @@ BACI_NAMESPACE_OPEN
 CONTACT::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele)
     : MORTAR::Coupling2d(idiscret, dim, quad, params, sele, mele),
-      stype_(INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   // empty constructor
 
@@ -146,7 +146,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
 CONTACT::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele)
     : MORTAR::Coupling2dManager(idiscret, dim, quad, params, sele, mele),
-      stype_(INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   // empty constructor
   return;
@@ -168,7 +168,7 @@ bool CONTACT::Coupling2dManager::EvaluateCoupling(
 
   // decide which type of coupling should be evaluated
   INPAR::MORTAR::AlgorithmType algo =
-      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -277,7 +277,7 @@ void CONTACT::Coupling2dManager::IntegrateCoupling(
       if (IntType() == INPAR::MORTAR::inttype_elements_BS and boundary_ele == true)
       {
         // switch, if consistent boundary modification chosen
-        if (INPUT::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT") == true &&
+        if (CORE::UTILS::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT") == true &&
             ShapeFcn() != INPAR::MORTAR::shape_standard  // so for petrov-Galerkin and dual
         )
         {
@@ -378,7 +378,7 @@ void CONTACT::Coupling2dManager::ConsistDualShape()
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
   INPAR::MORTAR::ConsistentDualType consistent =
-      INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
   if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent == INPAR::MORTAR::consistent_none)
     return;
 

@@ -146,7 +146,7 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
 void SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying()
 {
   // safety check
-  if (INPUT::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "BLOCKPRECOND"))
+  if (CORE::UTILS::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "BLOCKPRECOND"))
     dserror("Block preconditioning doesn't work for scatra-scatra interface coupling yet!");
 
   // call base class routine
@@ -257,10 +257,10 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
 
         // compute domain integration factor
         constexpr double four_pi = 4.0 * M_PI;
-        const double fac =
-            INPUT::IntegralValue<bool>(*scatratimint_->ScatraParameterList(), "SPHERICALCOORDS")
-                ? *slave_node->X().data() * *slave_node->X().data() * four_pi
-                : 1.0;
+        const double fac = CORE::UTILS::IntegralValue<bool>(
+                               *scatratimint_->ScatraParameterList(), "SPHERICALCOORDS")
+                               ? *slave_node->X().data() * *slave_node->X().data() * four_pi
+                               : 1.0;
         const double timefacfac =
             DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFac() * fac;
         const double timefacrhsfac =
@@ -770,7 +770,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
 )
 {
   // extract and evaluate action
-  switch (INPUT::get<INPAR::S2I::EvaluationActions>(params, "action"))
+  switch (CORE::UTILS::GetAsEnum<INPAR::S2I::EvaluationActions>(params, "action"))
   {
     // evaluate and assemble off-diagonal interface linearizations
     case INPAR::S2I::evaluate_condition_od:
@@ -980,7 +980,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
 )
 {
   // extract and evaluate action
-  switch (INPUT::get<INPAR::S2I::EvaluationActions>(params, "action"))
+  switch (CORE::UTILS::GetAsEnum<INPAR::S2I::EvaluationActions>(params, "action"))
   {
     // evaluate and assemble interface linearizations and residuals
     case INPAR::S2I::evaluate_condition:

@@ -10,8 +10,8 @@
 #include "baci_poromultiphase_scatra_artery_coupling_base.hpp"
 
 #include "baci_global_data.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_lib_discret.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterListExceptions.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -27,7 +27,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
     : arterydis_(arterydis),
       contdis_(contdis),
       myrank_(arterydis->Comm().MyPID()),
-      evaluate_in_ref_config_(INPUT::IntegralValue<int>(
+      evaluate_in_ref_config_(CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist(
               "ARTERY COUPLING"),
           "EVALUATE_IN_REF_CONFIG")),

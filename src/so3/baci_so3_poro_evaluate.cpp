@@ -483,8 +483,8 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
       }
       else
       {
-        iocouplingstress =
-            INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
+        iocouplingstress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
+            params, "iocouplstress", INPAR::STR::stress_none);
 
         // check for output of coupling stress
         if (iocouplingstress == INPAR::STR::stress_none)

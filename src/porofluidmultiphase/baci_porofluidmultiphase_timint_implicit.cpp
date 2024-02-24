@@ -52,24 +52,26 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       myrank_(actdis->Comm().MyPID()),
       nsd_(GLOBAL::Problem::Instance()->NDim()),
       isale_(false),
-      skipinitder_(INPUT::IntegralValue<int>(poroparams_, "SKIPINITDER")),
-      output_satpress_(INPUT::IntegralValue<int>(poroparams_, "OUTPUT_SATANDPRESS")),
-      output_solidpress_(INPUT::IntegralValue<int>(poroparams_, "OUTPUT_SOLIDPRESS")),
-      output_porosity_(INPUT::IntegralValue<int>(poroparams_, "OUTPUT_POROSITY")),
-      output_phase_velocities_(INPUT::IntegralValue<int>(poroparams_, "OUTPUT_PHASE_VELOCITIES")),
-      output_bloodvesselvolfrac_(INPUT::IntegralValue<int>(
+      skipinitder_(CORE::UTILS::IntegralValue<int>(poroparams_, "SKIPINITDER")),
+      output_satpress_(CORE::UTILS::IntegralValue<int>(poroparams_, "OUTPUT_SATANDPRESS")),
+      output_solidpress_(CORE::UTILS::IntegralValue<int>(poroparams_, "OUTPUT_SOLIDPRESS")),
+      output_porosity_(CORE::UTILS::IntegralValue<int>(poroparams_, "OUTPUT_POROSITY")),
+      output_phase_velocities_(
+          CORE::UTILS::IntegralValue<int>(poroparams_, "OUTPUT_PHASE_VELOCITIES")),
+      output_bloodvesselvolfrac_(CORE::UTILS::IntegralValue<int>(
           poroparams_.sublist("ARTERY COUPLING"), "OUTPUT_BLOODVESSELVOLFRAC")),
-      stab_biot_(INPUT::IntegralValue<int>(poroparams_, "STAB_BIOT")),
+      stab_biot_(CORE::UTILS::IntegralValue<int>(poroparams_, "STAB_BIOT")),
       domainint_funct_(std::vector<int>()),
       num_domainint_funct_(0),
-      calcerr_(
-          INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::CalcError>(poroparams_, "CALCERROR")),
-      fluxrecon_(INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
+      calcerr_(CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::CalcError>(
+          poroparams_, "CALCERROR")),
+      fluxrecon_(CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
           poroparams_, "FLUX_PROJ_METHOD")),
       fluxreconsolvernum_(poroparams_.get<int>("FLUX_PROJ_SOLVER")),
-      divcontype_(
-          INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::DivContAct>(poroparams_, "DIVERCONT")),
-      fdcheck_(INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FDCheck>(poroparams_, "FDCHECK")),
+      divcontype_(CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::DivContAct>(
+          poroparams_, "DIVERCONT")),
+      fdcheck_(
+          CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FDCheck>(poroparams_, "FDCHECK")),
       fdcheckeps_(poroparams_.get<double>("FDCHECKEPS")),
       fdchecktol_(poroparams_.get<double>("FDCHECKTOL")),
       stab_biot_scaling_(poroparams_.get<double>("STAB_BIOT_SCALING")),
@@ -84,13 +86,13 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       itemax_(poroparams_.get<int>("ITEMAX")),
       upres_(params_.get<int>("RESULTSEVRY")),
       uprestart_(params_.get<int>("RESTARTEVRY")),
-      vectornormfres_(INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::VectorNorm>(
+      vectornormfres_(CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::VectorNorm>(
           poroparams_, "VECTORNORM_RESF")),
-      vectornorminc_(INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::VectorNorm>(
+      vectornorminc_(CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::VectorNorm>(
           poroparams_, "VECTORNORM_INC")),
       ittolres_(poroparams_.get<double>("TOLRES")),
       ittolinc_(poroparams_.get<double>("TOLINC")),
-      artery_coupling_active_(INPUT::IntegralValue<int>(params_, "ARTERY_COUPLING")),
+      artery_coupling_active_(CORE::UTILS::IntegralValue<int>(params_, "ARTERY_COUPLING")),
       // Initialization of degrees of freedom variables
       phin_(Teuchos::null),
       phinp_(Teuchos::null),
@@ -259,8 +261,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
-  SetInitialField(
-      INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::InitialField>(poroparams_, "INITIALFIELD"),
+  SetInitialField(CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::InitialField>(
+                      poroparams_, "INITIALFIELD"),
       poroparams_.get<int>("INITFUNCNO"));
 
   // -------------------------------------------------------------------
@@ -1041,7 +1043,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::NonlinearSolve()
   PrintConvergenceHeader();
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool isadapttol = (INPUT::IntegralValue<int>(poroparams_, "ADAPTCONV"));
+  const bool isadapttol = (CORE::UTILS::IntegralValue<int>(poroparams_, "ADAPTCONV"));
   const double adaptolbetter = poroparams_.get<double>("ADAPTCONV_BETTER");
   const double abstolres = poroparams_.get<double>("ABSTOLRES");
   double actresidual(0.0);

@@ -51,7 +51,7 @@ WEAR::LagrangeStrategyWear::LagrangeStrategyWear(
       wearprimvar_(false),
       wearbothpv_(false),
       weartimescales_(false),
-      sswear_(INPUT::IntegralValue<int>(Params(), "SSWEAR"))
+      sswear_(CORE::UTILS::IntegralValue<int>(Params(), "SSWEAR"))
 {
   // cast to  wearinterfaces
   for (int z = 0; z < (int)interfaces.size(); ++z)
@@ -61,13 +61,15 @@ WEAR::LagrangeStrategyWear::LagrangeStrategyWear(
   }
 
   // set wear contact status
-  INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(Params(), "WEARTYPE");
-  INPAR::WEAR::WearSide wside = INPUT::IntegralValue<INPAR::WEAR::WearSide>(Params(), "WEAR_SIDE");
+  INPAR::WEAR::WearType wtype =
+      CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(Params(), "WEARTYPE");
+  INPAR::WEAR::WearSide wside =
+      CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(Params(), "WEAR_SIDE");
   INPAR::WEAR::WearTimeScale wtime =
-      INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(Params(), "WEAR_TIMESCALE");
+      CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimeScale>(Params(), "WEAR_TIMESCALE");
   INPAR::WEAR::WearTimInt wtimint =
-      INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(Params(), "WEARTIMINT");
-  INPAR::WEAR::WearLaw wlaw = INPUT::IntegralValue<INPAR::WEAR::WearLaw>(Params(), "WEARLAW");
+      CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimInt>(Params(), "WEARTIMINT");
+  INPAR::WEAR::WearLaw wlaw = CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(Params(), "WEARLAW");
 
   // set wear contact status
   if (wlaw != INPAR::WEAR::wear_none and wtype == INPAR::WEAR::wear_intstate) weightedwear_ = true;
@@ -199,7 +201,7 @@ void WEAR::LagrangeStrategyWear::SetupWear(bool redistributed, bool init)
     // ****************************************************
     // both-sided wear specific
     // ****************************************************
-    if (INPUT::IntegralValue<INPAR::WEAR::WearSide>(Params(), "WEAR_SIDE") ==
+    if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(Params(), "WEAR_SIDE") ==
             INPAR::WEAR::wear_both and
         wearprimvar_ == false)
     {
@@ -398,7 +400,7 @@ void WEAR::LagrangeStrategyWear::AssembleMortar()
     // only assemble D2 for both-sided wear --> unweights the
     // weighted wear increment in master side
     // --> based on weak dirichlet bc!
-    if (INPUT::IntegralValue<INPAR::WEAR::WearSide>(Params(), "WEAR_SIDE") ==
+    if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(Params(), "WEAR_SIDE") ==
             INPAR::WEAR::wear_both and
         !wearprimvar_)
       interface_[i]->AssembleD2(*d2matrix_);
@@ -562,7 +564,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearImplExpl(
     Teuchos::RCP<Epetra_Vector>& gact)
 {
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
@@ -1545,9 +1547,9 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
     Teuchos::RCP<Epetra_Vector>& gact)
 {
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
   INPAR::WEAR::WearShape wearshapefcn =
-      INPUT::IntegralValue<INPAR::WEAR::WearShape>(Params(), "WEAR_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::WEAR::WearShape>(Params(), "WEAR_SHAPEFCN");
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
@@ -2627,11 +2629,11 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
   // systemtype
   INPAR::CONTACT::SystemType systype =
-      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
 
   // get wear shapefunction type
   INPAR::WEAR::WearShape wearshapefcn =
-      INPUT::IntegralValue<INPAR::WEAR::WearShape>(Params(), "WEAR_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::WEAR::WearShape>(Params(), "WEAR_SHAPEFCN");
 
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
@@ -3136,7 +3138,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
 
   // get system type
   INPAR::CONTACT::SystemType systype =
-      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
 
   //**********************************************************************
   // prepare saddle point system
@@ -4044,7 +4046,7 @@ void WEAR::LagrangeStrategyWear::OutputWear()
     // only for dual/pg Lagrange multiplier so far
     // diagonality of mortar matrix D is assumed
     INPAR::MORTAR::ShapeFcn shapefcn =
-        INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
     if (shapefcn == INPAR::MORTAR::shape_standard)
       dserror("Evaluation of wear only for dual shape functions so far.");
 
@@ -4156,7 +4158,7 @@ void WEAR::LagrangeStrategyWear::OutputWear()
      * unweight the resulting vector by D_2^-1*w_2~ and get the final
      * unweighted wear vector.
      **********************************************************************/
-    if (INPUT::IntegralValue<INPAR::WEAR::WearSide>(Params(), "WEAR_SIDE") ==
+    if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(Params(), "WEAR_SIDE") ==
         INPAR::WEAR::wear_both)
     {
       // different wear coefficients on both sides...
@@ -4300,9 +4302,9 @@ void WEAR::LagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
 
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
   INPAR::CONTACT::SystemType systype =
-      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
 
   //**********************************************************************
   //**********************************************************************
@@ -4705,7 +4707,7 @@ void WEAR::LagrangeStrategyWear::DoReadRestart(
   // to try to read certain, in this case non-existing, vectors
   // such as the activetoggle or sliptoggle vectors, but rather
   // initialize the restart active and slip sets as being empty)
-  bool restartwithcontact = INPUT::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = CORE::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
 
   // set restart displacement state
   SetState(MORTAR::state_new_displacement, *dis);
@@ -4811,7 +4813,7 @@ void WEAR::LagrangeStrategyWear::DoReadRestart(
   // only for Uzawa Augmented strategy
   // TODO: this should be moved to contact_penalty_strategy
   INPAR::CONTACT::SolvingStrategy st =
-      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
   if (st == INPAR::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -4900,7 +4902,7 @@ void WEAR::LagrangeStrategyWear::UpdateActiveSetSemiSmooth(const bool firstStepP
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // for both-sided wear
-    if (INPUT::IntegralValue<INPAR::WEAR::WearSide>(scontact_, "WEAR_SIDE") ==
+    if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(scontact_, "WEAR_SIDE") ==
             INPAR::WEAR::wear_both and
         wearprimvar_ == false)
     {

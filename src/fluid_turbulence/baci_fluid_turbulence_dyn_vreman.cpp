@@ -29,7 +29,7 @@ FLD::Vreman::Vreman(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::Parameter
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
+      physicaltype_(CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
 {
   Boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
   // Initialize Boxfilter

@@ -92,7 +92,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   sstructdynamic_ = GLOBAL::Problem::Instance()->StructuralDynamicParams();
 
   // indicate if beam-to-solid contact is applied
-  btsol_ = INPUT::IntegralValue<int>(BeamContactParameters(), "BEAMS_BTSOL");
+  btsol_ = CORE::UTILS::IntegralValue<int>(BeamContactParameters(), "BEAMS_BTSOL");
 
   InitBeamContactDiscret();
 
@@ -131,7 +131,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     dserror("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
 
   // initialize octtree for contact search
-  if (INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(sbeamcontact_, "BEAMS_OCTREE") !=
+  if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(sbeamcontact_, "BEAMS_OCTREE") !=
       INPAR::BEAMCONTACT::boct_none)
   {
     if (!pdiscret_.Comm().MyPID())
@@ -155,16 +155,17 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
 
   if (!pdiscret_.Comm().MyPID())
   {
-    if (INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
+    if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
         INPAR::BEAMCONTACT::bstr_penalty)
       std::cout << "Strategy                 Penalty" << std::endl;
-    else if (INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
-             INPAR::BEAMCONTACT::bstr_gmshonly)
+    else if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
+                 sbeamcontact_, "BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_gmshonly)
       std::cout << "Strategy                 Gmsh Only" << std::endl;
     else
       dserror("Unknown strategy for beam contact!");
 
-    switch (INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(sbeamcontact_, "BEAMS_PENALTYLAW"))
+    switch (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+        sbeamcontact_, "BEAMS_PENALTYLAW"))
     {
       case INPAR::BEAMCONTACT::pl_lp:
       {
@@ -213,8 +214,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
       }
     }
 
-    if (INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(sbeamcontact_, "BEAMS_PENALTYLAW") !=
-        INPAR::BEAMCONTACT::pl_lp)
+    if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+            sbeamcontact_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lp)
     {
       std::cout << "Regularization Params    BEAMS_PENREGPARAM_G0 = "
                 << sbeamcontact_.get<double>("BEAMS_PENREGPARAM_G0", -1.0)
@@ -226,7 +227,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
                 << sbeamcontact_.get<double>("BEAMS_GAPSHIFTPARAM", 0.0) << std::endl;
     }
 
-    if (INPUT::IntegralValue<INPAR::BEAMCONTACT::Damping>(sbeamcontact_, "BEAMS_DAMPING") ==
+    if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Damping>(sbeamcontact_, "BEAMS_DAMPING") ==
         INPAR::BEAMCONTACT::bd_no)
       std::cout << "Damping                  No Contact Damping Force Applied!" << std::endl;
     else
@@ -305,7 +306,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     {
       std::cout << "=============== Beam Potential-Based Interaction ===============" << std::endl;
 
-      switch (INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialType>(
+      switch (CORE::UTILS::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialType>(
           sbeampotential_, "BEAMPOTENTIAL_TYPE"))
       {
         case INPAR::BEAMPOTENTIAL::beampot_surf:
@@ -334,8 +335,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     searchradiuspot_ = sbeampotential_.get<double>("CUTOFFRADIUS", -1.0);
 
     // initialize octtree for search of potential-based interaction pairs
-    if (INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(sbeampotential_, "BEAMPOT_OCTREE") !=
-        INPAR::BEAMCONTACT::boct_none)
+    if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(
+            sbeampotential_, "BEAMPOT_OCTREE") != INPAR::BEAMCONTACT::boct_none)
     {
       if (searchradiuspot_ <= 0)
         dserror(
@@ -368,8 +369,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     }
 
     // flags to indicate, if beam-to-solid or beam-to-sphere potential-based interaction is applied
-    potbtsol_ = INPUT::IntegralValue<int>(sbeampotential_, "BEAMPOT_BTSOL");
-    potbtsph_ = INPUT::IntegralValue<int>(sbeampotential_, "BEAMPOT_BTSPH");
+    potbtsol_ = CORE::UTILS::IntegralValue<int>(sbeampotential_, "BEAMPOT_BTSOL");
+    potbtsph_ = CORE::UTILS::IntegralValue<int>(sbeampotential_, "BEAMPOT_BTSPH");
 
   }  // end: at least one beam potential line charge condition applied
 
@@ -395,7 +396,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
     const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti, double time)
 {
   // get out of here if only interested in gmsh output
-  if (INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
       INPAR::BEAMCONTACT::bstr_gmshonly)
     return;
 
@@ -537,7 +538,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
   contactevaluationtime_ += sumproc_evaluationtime;
   t_start = Teuchos::Time::wallTime();
 
-  if (INPUT::IntegralValue<INPAR::STR::MassLin>(sstructdynamic_, "MASSLIN") !=
+  if (CORE::UTILS::IntegralValue<INPAR::STR::MassLin>(sstructdynamic_, "MASSLIN") !=
       INPAR::STR::ml_rotations)
   {
     // assemble contact forces into global fres vector
@@ -1118,7 +1119,7 @@ void CONTACT::Beam3cmanager::SetState(
   }
   // Update also the interpolated tangents if the tangentsmoothing is activated for Reissner beams
   int smoothing =
-      INPUT::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(sbeamcontact_, "BEAMS_SMOOTHING");
+      CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(sbeamcontact_, "BEAMS_SMOOTHING");
   if (smoothing != INPAR::BEAMCONTACT::bsm_none)
   {
     for (int i = 0; i < (int)pairs_.size(); ++i)
@@ -1979,7 +1980,7 @@ void CONTACT::Beam3cmanager::Update(
 
   // If the original gap function definition is applied, the displacement per time is not allowed
   // to be larger than the smalles beam cross section radius occurring in the discretization!
-  bool newgapfunction = INPUT::IntegralValue<int>(BeamContactParameters(), "BEAMS_NEWGAP");
+  bool newgapfunction = CORE::UTILS::IntegralValue<int>(BeamContactParameters(), "BEAMS_NEWGAP");
   if (!newgapfunction)
   {
     double maxdeltadisscalefac = sbeamcontact_.get<double>("BEAMS_MAXDELTADISSCALEFAC", 1.0);

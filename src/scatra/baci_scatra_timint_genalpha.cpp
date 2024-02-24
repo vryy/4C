@@ -109,7 +109,7 @@ void SCATRA::TimIntGenAlpha::Setup()
       homisoturb_forcing_ = Teuchos::rcp(new SCATRA::HomIsoTurbScalarForcing(this));
       // initialize forcing algorithm
       homisoturb_forcing_->SetInitialSpectrum(
-          INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_, "INITIALFIELD"));
+          CORE::UTILS::IntegralValue<INPAR::SCATRA::InitialField>(*params_, "INITIALFIELD"));
     }
   }
 }
@@ -248,7 +248,7 @@ void SCATRA::TimIntGenAlpha::AVM3Separation()
   // set fine-scale velocity for parallel nigthly tests
   // separation matrix depends on the number of proc here
   if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales and
-      (INPUT::IntegralValue<int>(
+      (CORE::UTILS::IntegralValue<int>(
           extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"), "SET_FINE_SCALE_VEL")))
     fsphiaf_->PutScalar(0.01);
 

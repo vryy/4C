@@ -77,7 +77,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
 //  )
 //{
 //  // check for the action parameter
-//  const SCATRA::Action action = INPUT::get<SCATRA::Action>(params,"action");
+//  const SCATRA::Action action = CORE::UTILS::GetAsEnum<SCATRA::Action>(params,"action");
 //  switch(action)
 //  {
 //    case SCATRA::calc_scatra_mono_odblock_mesh:

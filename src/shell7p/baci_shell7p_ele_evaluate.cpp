@@ -55,7 +55,7 @@ namespace
     }
     else
     {
-      return INPUT::get<INPAR::STR::StressType>(params, "iostress");
+      return CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(params, "iostress");
     }
   }
 
@@ -68,7 +68,7 @@ namespace
     }
     else
     {
-      return INPUT::get<INPAR::STR::StrainType>(params, "iostrain");
+      return CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(params, "iostrain");
     }
   }
 }  // namespace

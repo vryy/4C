@@ -111,7 +111,7 @@ void FS3I::ACFSI::Init()
 
   const int fsiperssisteps = fs3idynac.get<int>("FSI_STEPS_PER_SCATRA_STEP");
   const INPAR::FS3I::SolutionSchemeOverFields couplingalgo =
-      INPUT::IntegralValue<INPAR::FS3I::SolutionSchemeOverFields>(fs3idynpart, "COUPALGO");
+      CORE::UTILS::IntegralValue<INPAR::FS3I::SolutionSchemeOverFields>(fs3idynpart, "COUPALGO");
   const double wk_rel_tol = fs3idynac.get<double>("WINDKESSEL_REL_TOL");
 
   if (couplingalgo == INPAR::FS3I::fs3i_IterStagg and fsiperssisteps != 1)
@@ -134,7 +134,7 @@ void FS3I::ACFSI::Init()
     dserror("Your structure scatra time step does not match!");
 
   if (not(INPAR::FLUID::wss_standard ==
-          INPUT::IntegralValue<INPAR::FLUID::WSSType>(
+          CORE::UTILS::IntegralValue<INPAR::FLUID::WSSType>(
               GLOBAL::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")))
     dserror("WSS_TYPE must be 'Standard', we will mean the WSS by using the fs3i mean manager!");
 
@@ -178,7 +178,8 @@ void FS3I::ACFSI::ReadRestart()
   if (restart)
   {
     const Teuchos::ParameterList& fs3idynac = GLOBAL::Problem::Instance()->FS3IDynamicParams();
-    const bool restartfrompartfsi = INPUT::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
+    const bool restartfrompartfsi =
+        CORE::UTILS::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
 
     auto input_control_file = GLOBAL::Problem::Instance()->InputControlFile();
 
@@ -254,7 +255,7 @@ void FS3I::ACFSI::Timeloop()
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
   if (GLOBAL::Problem::Instance()->Restart() and
-      INPUT::IntegralValue<int>(
+      CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
     scatravec_[0]->ScaTraField()->PrepareFirstTimeStep();
@@ -362,7 +363,7 @@ void FS3I::ACFSI::SmallTimeScaleOuterLoop()
       GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED");
   // get coupling algorithm from input file
   const INPAR::FS3I::SolutionSchemeOverFields couplingalgo =
-      INPUT::IntegralValue<INPAR::FS3I::SolutionSchemeOverFields>(fs3idynpart, "COUPALGO");
+      CORE::UTILS::IntegralValue<INPAR::FS3I::SolutionSchemeOverFields>(fs3idynpart, "COUPALGO");
 
   switch (couplingalgo)
   {

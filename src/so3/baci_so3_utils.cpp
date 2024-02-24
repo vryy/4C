@@ -237,7 +237,7 @@ void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian(
 void DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
     const Teuchos::ParameterList& sdyn, const std::string& eletype)
 {
-  bool doFDCheck = static_cast<bool>(INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT"));
+  bool doFDCheck = static_cast<bool>(CORE::UTILS::IntegralValue<int>(sdyn, "MATERIALTANGENT"));
   if (doFDCheck)
   {
     dserror(

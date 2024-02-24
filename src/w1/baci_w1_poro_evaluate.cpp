@@ -454,8 +454,8 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
     case ELEMENTS::struct_calc_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-      auto iocouplstress =
-          INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
+      auto iocouplstress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
+          params, "iocouplstress", INPAR::STR::stress_none);
 
       // check for output of coupling stress
       if (iocouplstress == INPAR::STR::stress_none)

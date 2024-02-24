@@ -333,7 +333,7 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(IO::DiscretizationWrite
   }
 
   // write spring stress if defined in io-flag
-  if (INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_SPRING"))
+  if (CORE::UTILS::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_SPRING"))
     iowriter.WriteVector("springstress", springstress);
 }
 

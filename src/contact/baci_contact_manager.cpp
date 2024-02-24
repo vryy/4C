@@ -105,21 +105,21 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
 
   // get input parameters
   INPAR::CONTACT::SolvingStrategy stype =
-      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contactParams, "STRATEGY");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contactParams, "STRATEGY");
   INPAR::WEAR::WearLaw wearLaw =
-      INPUT::IntegralValue<INPAR::WEAR::WearLaw>(contactParams, "WEARLAW");
+      CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(contactParams, "WEARLAW");
   INPAR::WEAR::WearType wearType =
-      INPUT::IntegralValue<INPAR::WEAR::WearType>(contactParams, "WEARTYPE");
+      CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(contactParams, "WEARTYPE");
   INPAR::CONTACT::ConstraintDirection constr_direction =
-      INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
           contactParams, "CONSTRAINT_DIRECTIONS");
   INPAR::CONTACT::FrictionType frictionType =
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contactParams, "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contactParams, "FRICTION");
   INPAR::CONTACT::AdhesionType adhesionType =
-      INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(contactParams, "ADHESION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::AdhesionType>(contactParams, "ADHESION");
   const bool nurbs = contactParams.get<bool>("NURBS");
   INPAR::MORTAR::AlgorithmType algo =
-      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(contactParams, "ALGORITHM");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(contactParams, "ALGORITHM");
 
   bool friplus = false;
   if ((wearLaw != INPAR::WEAR::wear_none) ||
@@ -677,7 +677,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   const int dim = GLOBAL::Problem::Instance()->NDim();
 
   // in case just System type system_condensed_lagmult
-  if (INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") ==
       INPAR::CONTACT::system_condensed_lagmult)
     dserror(
         "For Contact anyway just the lagrange multiplier can be condensed, choose SYSTEM = "
@@ -709,106 +709,107 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // adhesive contact
   // *********************************************************************
-  if (INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(contact, "ADHESION") !=
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::AdhesionType>(contact, "ADHESION") !=
           INPAR::CONTACT::adhesion_none and
-      INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none)
+      CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
+          INPAR::WEAR::wear_none)
     dserror("Adhesion combined with wear not yet tested!");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(contact, "ADHESION") !=
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::AdhesionType>(contact, "ADHESION") !=
           INPAR::CONTACT::adhesion_none and
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none)
     dserror("Adhesion combined with friction not yet tested!");
 
   // *********************************************************************
   // generally invalid combinations (nts/mortar)
   // *********************************************************************
-  if ((INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+  if ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_penalty ||
-          INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_nitsche) &&
       contact.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
-  if ((INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+  if ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_penalty ||
-          INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_nitsche) &&
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none &&
       contact.get<double>("PENALTYPARAMTAN") <= 0.0)
     dserror("Tangential penalty parameter eps = 0, must be greater than 0");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       contact.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none &&
       contact.get<double>("PENALTYPARAMTAN") <= 0.0)
     dserror("Tangential penalty parameter eps = 0, must be greater than 0");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       contact.get<int>("UZAWAMAXSTEPS") < 2)
     dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       contact.get<double>("UZAWACONSTRTOL") <= 0.0)
     dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none &&
       contact.get<double>("SEMI_SMOOTH_CT") == 0.0)
     dserror("Parameter ct = 0, must be greater than 0 for frictional contact");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_augmented &&
       contact.get<double>("SEMI_SMOOTH_CN") <= 0.0)
     dserror("Regularization parameter cn, must be greater than 0 for contact problems");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
           INPAR::CONTACT::friction_tresca &&
       dim == 3 &&
-      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
           INPAR::CONTACT::solution_nitsche)
     dserror("3D frictional contact with Tresca's law not yet implemented");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none &&
-      INPUT::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON") != 1 && dim == 3)
+      CORE::UTILS::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON") != 1 && dim == 3)
     dserror("3D frictional contact only implemented with Semi-smooth Newton");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_augmented &&
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none)
     dserror("Frictional contact is for the augmented Lagrange formulation not yet implemented!");
 
-  if (INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true && dim == 3)
+  if (CORE::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true && dim == 3)
     dserror("Crosspoints / edge node modification not yet implemented for 3D");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
           INPAR::CONTACT::friction_tresca &&
-      INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
+      CORE::UTILS::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
     // Hopefully coming soon, when Coulomb and Tresca are combined. Until then, throw error.
     dserror("Frictionless first contact step with Tresca's law not yet implemented");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::Regularization>(contact, "CONTACT_REGULARIZATION") !=
-          INPAR::CONTACT::reg_none &&
-      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::Regularization>(
+          contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
           INPAR::CONTACT::solution_lagmult)
     dserror(
         "Regularized Contact just available for Dual Mortar Contact with Lagrangean "
         "Multiplier!");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::Regularization>(contact, "CONTACT_REGULARIZATION") !=
-          INPAR::CONTACT::reg_none &&
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::Regularization>(
+          contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none)
     dserror("Regularized Contact for contact with friction not implemented yet!");
 
@@ -819,7 +820,8 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     std::cout << ("Warning: Contact search called without inflation of bounding volumes\n")
               << std::endl;
 
-  if (INPUT::IntegralValue<INPAR::WEAR::WearSide>(wearlist, "WEAR_SIDE") != INPAR::WEAR::wear_slave)
+  if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(wearlist, "WEAR_SIDE") !=
+      INPAR::WEAR::wear_slave)
     std::cout << ("\n \n Warning: Contact with both-sided wear is still experimental !")
               << std::endl;
 
@@ -827,51 +829,51 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   //                       MORTAR-SPECIFIC CHECKS
   // *********************************************************************
-  if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
+  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
       INPAR::MORTAR::algorithm_mortar)
   {
     // *********************************************************************
     // invalid parameter combinations
     // *********************************************************************
-    if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
             INPAR::CONTACT::solution_lagmult &&
-        INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_petrovgalerkin)
       dserror("Petrov-Galerkin approach for LM only with Lagrange multiplier strategy");
 
-    if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
             INPAR::CONTACT::solution_lagmult &&
-        (INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+        (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
                 INPAR::MORTAR::shape_standard &&
-            INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") !=
+            CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") !=
                 INPAR::MORTAR::lagmult_const) &&
-        INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") ==
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") ==
             INPAR::CONTACT::system_condensed)
       dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
-    if (INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
-            INPAR::MORTAR::consistent_none &&
-        INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+    if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ConsistentDualType>(
+            mortar, "LM_DUAL_CONSISTENT") != INPAR::MORTAR::consistent_none &&
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
             INPAR::CONTACT::solution_lagmult &&
-        INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
             INPAR::MORTAR::shape_standard)
       dserror(
           "Consistent dual shape functions in boundary elements only for Lagrange "
           "multiplier strategy.");
 
-    if (INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
-            INPAR::MORTAR::consistent_none &&
-        INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") ==
+    if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ConsistentDualType>(
+            mortar, "LM_DUAL_CONSISTENT") != INPAR::MORTAR::consistent_none &&
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") ==
             INPAR::MORTAR::inttype_elements &&
-        (INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+        (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_dual))
       dserror(
           "Consistent dual shape functions in boundary elements not for purely "
           "element-based integration.");
 
-    if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
             INPAR::CONTACT::solution_nitsche &&
-        INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") !=
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") !=
             INPAR::MORTAR::algorithm_gpts)
       dserror("Nitsche contact only with GPTS algorithm.");
 
@@ -880,8 +882,8 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // not (yet) implemented combinations
     // *********************************************************************
 
-    if (INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
-        INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
+    if (CORE::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
             INPAR::MORTAR::lagmult_lin)
       dserror("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
@@ -903,22 +905,23 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
             "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
       dserror("Self contact and parallel redistribution not yet compatible");
 
-    if (INPUT::IntegralValue<int>(contact, "INITCONTACTBYGAP") == true &&
+    if (CORE::UTILS::IntegralValue<int>(contact, "INITCONTACTBYGAP") == true &&
         contact.get<double>("INITCONTACTGAPVALUE") == 0.0)
       dserror("For initialization of init contact with gap, the INITCONTACTGAPVALUE is needed.");
 
-    if (INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none &&
-        INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
+    if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
+            INPAR::WEAR::wear_none &&
+        CORE::UTILS::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
       dserror("Frictionless first contact step with wear not yet implemented");
 
     if (problemtype != GLOBAL::ProblemType::ehl &&
-        INPUT::IntegralValue<int>(contact, "REGULARIZED_NORMAL_CONTACT") == true)
+        CORE::UTILS::IntegralValue<int>(contact, "REGULARIZED_NORMAL_CONTACT") == true)
       dserror("Regularized normal contact only implemented for EHL");
 
     // *********************************************************************
     // Augmented Lagrangian strategy
     // *********************************************************************
-    if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
         INPAR::CONTACT::solution_augmented)
     {
       dserror("No longer supported!");
@@ -928,12 +931,12 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // thermal-structure-interaction contact
     // *********************************************************************
     if (problemtype == GLOBAL::ProblemType::tsi &&
-        INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_standard)
       dserror("Thermal contact only for dual shape functions");
 
     if (problemtype == GLOBAL::ProblemType::tsi &&
-        INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") !=
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") !=
             INPAR::CONTACT::system_condensed)
       dserror("Thermal contact only for dual shape functions with condensed system");
 
@@ -945,46 +948,50 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // *********************************************************************
     // contact with wear
     // *********************************************************************
-    if (INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") == INPAR::WEAR::wear_none &&
+    if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") ==
+            INPAR::WEAR::wear_none &&
         wearlist.get<double>("WEARCOEFF") != 0.0)
       dserror("Wear coefficient only necessary in the context of wear.");
 
     if (problemtype == GLOBAL::ProblemType::structure and
-        INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
+        CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
             INPAR::WEAR::wear_none and
-        INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(wearlist, "WEARTIMINT") !=
+        CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimInt>(wearlist, "WEARTIMINT") !=
             INPAR::WEAR::wear_expl)
       dserror(
           "Wear calculation for pure structure problems only with explicit internal state "
           "variable approach reasonable!");
 
-    if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
+    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
             INPAR::CONTACT::friction_none &&
-        INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none)
+        CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
+            INPAR::WEAR::wear_none)
       dserror("Wear models only applicable to frictional contact.");
 
-    if (INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none &&
+    if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
+            INPAR::WEAR::wear_none &&
         wearlist.get<double>("WEARCOEFF") <= 0.0)
       dserror("No valid wear coefficient provided, must be equal or greater 0.0");
 
-    //    if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") !=
+    //    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") !=
     //    INPAR::CONTACT::solution_lagmult
-    //        && INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")     !=
+    //        && CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")     !=
     //        INPAR::WEAR::wear_none)
     //      dserror("Wear model only applicable in combination with Lagrange multiplier
     //      strategy.");
 
-    if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
+    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
             INPAR::CONTACT::friction_tresca &&
-        INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none)
+        CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
+            INPAR::WEAR::wear_none)
       dserror("Wear only for Coulomb friction!");
 
     // *********************************************************************
     // 3D quadratic mortar (choice of interpolation and testing fcts.)
     // *********************************************************************
-    if (INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
+    if (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
             INPAR::MORTAR::lagmult_pwlin &&
-        INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_dual)
       dserror(
           "No piecewise linear approach (for LM) implemented for quadratic contact with "
@@ -998,17 +1005,17 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         problemtype == GLOBAL::ProblemType::fpsi || problemtype == GLOBAL::ProblemType::fpsi_xfem)
     {
       const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
-      if ((INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+      if ((CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
                   INPAR::MORTAR::shape_dual &&
-              INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+              CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
                   INPAR::MORTAR::shape_petrovgalerkin) &&
-          INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_lagmult)
         dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
       if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
               "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
-          INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_lagmult)
         dserror(
             "POROCONTACT: Parallel Redistribution not implemented yet!");  // Since we use Pointers
@@ -1016,20 +1023,20 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
                                                                            // which are not copied
                                                                            // to other procs!
 
-      if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+      if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
               INPAR::CONTACT::solution_lagmult &&
-          INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
+          CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
         dserror("POROCONTACT: Use Lagrangean Strategy for poro contact!");
 
-      if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
+      if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
               INPAR::CONTACT::friction_none &&
-          INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_lagmult)
         dserror("POROCONTACT: Friction for poro contact not implemented!");
 
-      if (INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") !=
+      if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") !=
               INPAR::CONTACT::system_condensed &&
-          INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_lagmult)
         dserror("POROCONTACT: System has to be condensed for poro contact!");
 
@@ -1037,7 +1044,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       {
         const Teuchos::ParameterList& porodyn =
             GLOBAL::Problem::Instance()->PoroelastDynamicParams();
-        if (INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
+        if (CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
           dserror("POROCONTACT: PoroContact with no penetration just tested for 3d (and 2d)!");
       }
     }
@@ -1046,7 +1053,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // element-based vs. segment-based mortar integration
     // *********************************************************************
     INPAR::MORTAR::IntType inttype =
-        INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
 
     if (inttype == INPAR::MORTAR::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
       dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
@@ -1069,7 +1076,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   //                       NTS-SPECIFIC CHECKS
   // *********************************************************************
-  else if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
+  else if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
            INPAR::MORTAR::algorithm_nts)
   {
     if (problemtype == GLOBAL::ProblemType::poroelast or problemtype == GLOBAL::ProblemType::fpsi or
@@ -1080,7 +1087,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   //                       GPTS-SPECIFIC CHECKS
   // *********************************************************************
-  else if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
+  else if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
            INPAR::MORTAR::algorithm_gpts)
   {
     const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->ContactDynamicParams())
@@ -1097,7 +1104,8 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
           "GPTS algorithm only tested for structural, FSI-CutFEM, FPSI-CutFEM, and "
           "poroelastic problems");
 
-    if (INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none)
+    if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
+        INPAR::WEAR::wear_none)
       dserror("GPTS algorithm not implemented for wear");
 
   }  // END GPTS CHECKS
@@ -1171,7 +1179,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         1 / (stru.sublist("ONESTEPTHETA").get<double>("THETA") * stru.get<double>("TIMESTEP"));
     cparams.set<double>("porotimefac", porotimefac);
     cparams.set<bool>("CONTACTNOPEN",
-        INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
+        CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
   }
   else if (problemtype == GLOBAL::ProblemType::fsi_xfem)
   {
@@ -1186,7 +1194,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         1 / (stru.sublist("ONESTEPTHETA").get<double>("THETA") * stru.get<double>("TIMESTEP"));
     cparams.set<double>("porotimefac", porotimefac);
     cparams.set<bool>("CONTACTNOPEN",
-        INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
+        CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
   }
   else
   {
@@ -1236,7 +1244,7 @@ void CONTACT::Manager::ReadRestart(IO::DiscretizationReader& reader,
 {
   // If Parent Elements are required, we need to reconnect them before contact restart!
   INPAR::MORTAR::AlgorithmType atype =
-      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(GetStrategy().Params(), "ALGORITHM");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(GetStrategy().Params(), "ALGORITHM");
   if (atype == INPAR::MORTAR::algorithm_gpts)
   {
     for (unsigned i = 0;

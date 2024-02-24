@@ -70,45 +70,46 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetParameters(
 
   // reinitialization strategy
   reinittype_ =
-      INPUT::IntegralValue<INPAR::SCATRA::ReInitialAction>(reinitlist, "REINITIALIZATION");
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::ReInitialAction>(reinitlist, "REINITIALIZATION");
 
   // get signum function
   signtype_ =
-      INPUT::IntegralValue<INPAR::SCATRA::SmoothedSignType>(reinitlist, "SMOOTHED_SIGN_TYPE");
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::SmoothedSignType>(reinitlist, "SMOOTHED_SIGN_TYPE");
 
   // characteristic element length for signum function
-  charelelengthreinit_ =
-      INPUT::IntegralValue<INPAR::SCATRA::CharEleLengthReinit>(reinitlist, "CHARELELENGTHREINIT");
+  charelelengthreinit_ = CORE::UTILS::IntegralValue<INPAR::SCATRA::CharEleLengthReinit>(
+      reinitlist, "CHARELELENGTHREINIT");
 
   // interface thickness for signum function
   interfacethicknessfac_ = reinitlist.get<double>("INTERFACE_THICKNESS");
 
   // form of linearization for nonlinear terms
-  linform_ = INPUT::IntegralValue<INPAR::SCATRA::LinReinit>(reinitlist, "LINEARIZATIONREINIT");
+  linform_ =
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::LinReinit>(reinitlist, "LINEARIZATIONREINIT");
 
   // set form of velocity evaluation
   INPAR::SCATRA::VelReinit velreinit =
-      INPUT::IntegralValue<INPAR::SCATRA::VelReinit>(reinitlist, "VELREINIT");
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::VelReinit>(reinitlist, "VELREINIT");
   if (velreinit == INPAR::SCATRA::vel_reinit_node_based) useprojectedreinitvel_ = true;
 
   // set flag for artificial diffusion term
-  artdiff_ = INPUT::IntegralValue<INPAR::SCATRA::ArtDiff>(reinitlist, "ARTDIFFREINIT");
+  artdiff_ = CORE::UTILS::IntegralValue<INPAR::SCATRA::ArtDiff>(reinitlist, "ARTDIFFREINIT");
 
   // set penalty parameter for elliptic reinitialization
   alphapen_ = reinitlist.get<double>("PENALTY_PARA");
 
   // get diffusivity function
-  difffct_ = INPUT::IntegralValue<INPAR::SCATRA::DiffFunc>(reinitlist, "DIFF_FUNC");
+  difffct_ = CORE::UTILS::IntegralValue<INPAR::SCATRA::DiffFunc>(reinitlist, "DIFF_FUNC");
 
   // L2-projection
-  project_ = INPUT::IntegralValue<bool>(reinitlist, "PROJECTION");
+  project_ = CORE::UTILS::IntegralValue<bool>(reinitlist, "PROJECTION");
 
   // diffusion for L2-projection
   projectdiff_ = reinitlist.get<double>("PROJECTION_DIFF");
   if (projectdiff_ < 0.0) dserror("Diffusivity has to be positive!");
 
   // lumping for L2-projection
-  lumping_ = INPUT::IntegralValue<bool>(reinitlist, "LUMPING");
+  lumping_ = CORE::UTILS::IntegralValue<bool>(reinitlist, "LUMPING");
 
   // check for illegal combination
   if (projectdiff_ > 0.0 and lumping_ == true) dserror("Illegal combination!");

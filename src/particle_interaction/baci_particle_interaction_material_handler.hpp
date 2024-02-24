@@ -16,7 +16,6 @@
  *---------------------------------------------------------------------------*/
 #include "baci_config.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_mat_particle_base.hpp"
 #include "baci_mat_particle_dem.hpp"
 #include "baci_mat_particle_sph_boundary.hpp"
@@ -24,6 +23,7 @@
 #include "baci_mat_particle_thermo.hpp"
 #include "baci_particle_engine_enums.hpp"
 #include "baci_particle_engine_typedefs.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 

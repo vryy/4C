@@ -500,8 +500,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
       else
       {
         couplstressdata = params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
-        iocouplstress =
-            INPUT::get<INPAR::STR::StressType>(params, "iocouplstress", INPAR::STR::stress_none);
+        iocouplstress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
+            params, "iocouplstress", INPAR::STR::stress_none);
       }
 
       // get the temperature dependent stress

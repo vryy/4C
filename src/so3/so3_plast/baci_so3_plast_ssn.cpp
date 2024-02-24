@@ -786,7 +786,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
       dserror("so3_ssn_plast elements only with PlasticElastHyper material");
 
     // get dissipation mode
-    auto mode = INPUT::IntegralValue<INPAR::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
+    auto mode =
+        CORE::UTILS::IntegralValue<INPAR::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
 
     // prepare material for tsi
     plmat->SetupTSI(numgpt_, numdofperelement_, (eastype_ != soh8p_easnone), mode);

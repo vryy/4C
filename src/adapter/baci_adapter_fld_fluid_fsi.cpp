@@ -97,11 +97,11 @@ void ADAPTER::FluidFSI::Init()
   // time step size adaptivity in monolithic FSI
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const bool timeadapton =
-      INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      CORE::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
   if (timeadapton)
   {
     // extract the type of auxiliary integrator from the input parameter list
-    auxintegrator_ = INPUT::IntegralValue<INPAR::FSI::FluidMethod>(
+    auxintegrator_ = CORE::UTILS::IntegralValue<INPAR::FSI::FluidMethod>(
         fsidyn.sublist("TIMEADAPTIVITY"), "AUXINTEGRATORFLUID");
 
     if (auxintegrator_ != INPAR::FSI::timada_fld_none)
@@ -231,7 +231,7 @@ void ADAPTER::FluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ive
 
   const Teuchos::ParameterList& fsipart =
       GLOBAL::Problem::Instance()->FSIDynamicParams().sublist("PARTITIONED SOLVER");
-  if (INPUT::IntegralValue<int>(fsipart, "DIVPROJECTION"))
+  if (CORE::UTILS::IntegralValue<int>(fsipart, "DIVPROJECTION"))
   {
     // project the velocity field into a divergence free subspace
     // (might enhance the linear solver, but we are still not sure.)

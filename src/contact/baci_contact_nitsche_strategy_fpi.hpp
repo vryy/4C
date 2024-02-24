@@ -41,10 +41,10 @@ namespace CONTACT
         : NitscheStrategyPoro(
               DofRowMap, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
-          weighting_(
-              INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(params, "NITSCHE_WEIGHTING"))
+          weighting_(CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
+              params, "NITSCHE_WEIGHTING"))
     {
-      if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
+      if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
           INPAR::CONTACT::friction_none)
         dserror("NitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
     }
@@ -57,10 +57,10 @@ namespace CONTACT
         : NitscheStrategyPoro(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim,
               comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
-          weighting_(
-              INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(params, "NITSCHE_WEIGHTING"))
+          weighting_(CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
+              params, "NITSCHE_WEIGHTING"))
     {
-      if (INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
+      if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
           INPAR::CONTACT::friction_none)
         dserror("NitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
     }

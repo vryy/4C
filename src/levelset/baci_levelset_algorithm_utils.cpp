@@ -201,7 +201,7 @@ void SCATRA::LevelSetAlgorithm::MassConservationCheck(
 void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
 {
   const INPAR::SCATRA::CalcErrorLevelSet calcerr =
-      INPUT::IntegralValue<INPAR::SCATRA::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
 
   switch (calcerr)
   {

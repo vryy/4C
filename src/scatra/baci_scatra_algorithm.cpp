@@ -27,7 +27,7 @@ SCATRA::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communic
     const Teuchos::ParameterList& solverparams                     ///< solver parameter list
     )
     : ScaTraFluidCouplingAlgorithm(comm, scatradyn, false, scatra_disname, solverparams),
-      natconv_(INPUT::IntegralValue<int>(scatradyn, "NATURAL_CONVECTION")),
+      natconv_(CORE::UTILS::IntegralValue<int>(scatradyn, "NATURAL_CONVECTION")),
       natconvitmax_(scatradyn.sublist("NONLINEAR").get<int>("ITEMAX_OUTER")),
       natconvittol_(scatradyn.sublist("NONLINEAR").get<double>("CONVTOL_OUTER")),
       velincnp_(Teuchos::null),

@@ -49,7 +49,7 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
-  auto dyntype = INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
+  auto dyntype = CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
   const INPAR::STR::PreStress pre_stress_type = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
       GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
 
