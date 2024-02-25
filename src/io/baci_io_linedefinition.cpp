@@ -306,19 +306,33 @@ namespace
   class GenericComponent
   {
    public:
-    GenericComponent(std::string name, T value, Behavior behavior = Behavior::read_print_name)
-        : name_(std::move(name)), value_(std::move(value)), behavior_(behavior)
+    GenericComponent(std::string name, T value, Behavior behavior = Behavior::read_print_name,
+        std::function<void(LineDefinition&, T& value)> value_prepare = {})
+        : name_(std::move(name)),
+          value_(std::move(value)),
+          behavior_(behavior),
+          value_prepare_(std::move(value_prepare))
     {
     }
 
     void Print(std::ostream& stream) const
     {
-      std::visit(PrintComponent{stream, behavior_, name_}, value_);
+      if (value_prepare_)
+      {
+        // Assume that the custom parsing logic is not printable. Print a placeholder instead.
+        if (behavior_ == Behavior::read_print_name) stream << this->name_ << " ";
+        stream << "[...]";
+      }
+      else
+        std::visit(PrintComponent{stream, behavior_, name_}, value_);
     }
 
     bool ReadOptional(LineDefinition& definition, std::string& name, std::istream& stream)
     {
       if (name != name_) return false;
+
+      if (value_prepare_) value_prepare_(definition, std::get<T>(value_));
+
       return std::visit(ReadValue{stream, name_}, value_);
     }
 
@@ -330,8 +344,7 @@ namespace
         stream >> name;
         if (name != name_) return false;
       }
-
-      return std::visit(ReadValue{stream, name_}, value_);
+      return ReadOptional(definition, name_, stream);
     }
 
     [[nodiscard]] bool IsNamed(const std::string& name) const { return name == name_; }
@@ -349,64 +362,11 @@ namespace
 
     //! Store how the component behaves when reading or writing.
     Behavior behavior_{Behavior::read_print_name};
+
+    //! An optional function that determines how to parse the value. This is useful to
+    //! do prelimiary work, like querying already read data.
+    std::function<void(LineDefinition&, T&)> value_prepare_;
   };
-
-  /// Special LineComponent to describe a string followed by a vector of values with
-  /// arbitrary length. The length is defined by a function object.
-  template <class T>
-  class NamedVariableVectorComponent
-  {
-   public:
-    NamedVariableVectorComponent(std::string name,
-        LineDefinition::Builder::LengthDefinition lengthdef,
-        Behavior behavior = Behavior::read_print_name)
-        : name_(std::move(name)),
-          lengthdef_(std::move(lengthdef)),
-          behavior_(behavior),
-          value_(std::vector<T>{})
-    {
-    }
-
-    void Print(std::ostream& stream) const
-    {
-      if (behavior_ == Behavior::read_print_name) stream << this->name_ << " ";
-      stream << "[...]";
-    }
-
-    bool ReadRequired(LineDefinition& definition, std::istream& stream)
-    {
-      if (behavior_ == Behavior::read_print_name)
-      {
-        std::string name;
-        stream >> name;
-        if (name != name_) return false;
-      }
-
-      return ReadOptional(definition, name_, stream);
-    }
-
-    bool ReadOptional(LineDefinition& definition, std::string& name, std::istream& stream)
-    {
-      // Find expected vector on line. It has to be read already!
-      const std::size_t length = lengthdef_(definition);
-
-      dsassert(std::holds_alternative<std::vector<T>>(value_), "Internal error.");
-      std::get<std::vector<T>>(value_).resize(length);
-
-      return std::visit(ReadValue{stream, name_}, value_);
-    }
-
-    [[nodiscard]] bool IsNamed(const std::string& name) const { return name == name_; }
-
-    [[nodiscard]] const ComponentValue& Value() const { return value_; }
-
-   private:
-    std::string name_;
-    LineDefinition::Builder::LengthDefinition lengthdef_;
-    Behavior behavior_;
-    ComponentValue value_;
-  };
-
 }  // namespace
 
 
@@ -647,8 +607,15 @@ namespace INPUT
   LineDefinition::Builder& LineDefinition::Builder::AddNamedDoubleVector(
       std::string name, LengthDefinition length_definition)
   {
-    pimpl_->components_.emplace_back(
-        NamedVariableVectorComponent<double>(std::move(name), std::move(length_definition)));
+    pimpl_->components_.emplace_back(GenericComponent<std::vector<double>>(name,
+        std::vector<double>{}, Behavior::read_print_name,
+        [lengthdef = std::move(length_definition)](
+            LineDefinition& linedef, std::vector<double>& values)
+        {
+          // Find expected vector on line. It has to be read already!
+          const std::size_t length = lengthdef(linedef);
+          values.resize(length);
+        }));
     return *this;
   }
 
@@ -721,8 +688,16 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(
-        name, NamedVariableVectorComponent<double>(name, std::move(lengthdef)));
+
+    pimpl_->optionaltail_.emplace(name,
+        GenericComponent<std::vector<double>>(name, std::vector<double>{},
+            Behavior::read_print_name,
+            [lengthdef = std::move(lengthdef)](LineDefinition& linedef, std::vector<double>& values)
+            {
+              // Find expected vector on line. It has to be read already!
+              const std::size_t length = lengthdef(linedef);
+              values.resize(length);
+            }));
     return *this;
   }
 
@@ -745,8 +720,16 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
+    using T = std::vector<std::string>;
+
     pimpl_->optionaltail_.emplace(
-        name, NamedVariableVectorComponent<std::string>(name, std::move(lengthdef)));
+        name, GenericComponent<T>(name, T{}, Behavior::read_print_name,
+                  [lengthdef = std::move(lengthdef)](LineDefinition& linedef, T& values)
+                  {
+                    // Find expected vector on line. It has to be read already!
+                    const std::size_t length = lengthdef(linedef);
+                    values.resize(length);
+                  }));
     return *this;
   }
 
@@ -757,8 +740,16 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name,
-        NamedVariableVectorComponent<std::pair<std::string, double>>(name, std::move(lengthdef)));
+    using T = std::vector<std::pair<std::string, double>>;
+
+    pimpl_->optionaltail_.emplace(
+        name, GenericComponent<T>(name, T{}, Behavior::read_print_name,
+                  [lengthdef = std::move(lengthdef)](LineDefinition& linedef, T& values)
+                  {
+                    // Find expected vector on line. It has to be read already!
+                    const std::size_t length = lengthdef(linedef);
+                    values.resize(length);
+                  }));
     return *this;
   }
 
