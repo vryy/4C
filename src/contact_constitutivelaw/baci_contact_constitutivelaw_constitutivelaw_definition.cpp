@@ -18,6 +18,7 @@
 #include "baci_contact_constitutivelaw_bundle.hpp"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "baci_io_inputreader.hpp"
+#include "baci_io_line_parser.hpp"
 #include "baci_utils_exceptions.hpp"
 
 
@@ -59,28 +60,18 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& proble
       condline->seekp(0, condline->end);
       *condline << " ";
 
-      // read header from stringstream and delete it afterwards
-      std::string law, number, name;
-      *condline >> law >> number >> name;
-      condline->str(condline->str().erase(0, (size_t)condline->tellg()));
+      IO::LineParser parser("While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
 
-      if (not(*condline) or law != "LAW")
-        dserror("invalid contact constitutive line in '%s'", name.c_str());
+      parser.Consume(*condline, "LAW");
+      const int id = parser.Read<int>(*condline);
+      const std::string name = parser.Read<std::string>(*condline);
+
+      // Remove the parts that were already read.
+      condline->str(condline->str().erase(0, (size_t)condline->tellg()));
 
       if (name == coconstlawname_)
       {
-        int id = -1;
-        {
-          char* ptr;
-          id = std::strtol(number.c_str(), &ptr, 10);
-          if (ptr == number.c_str())
-            dserror("failed to read contact constitutive law object number '%s'", number.c_str());
-        }
-
-        if (id <= -1)
-          dserror(
-              "Either- failed to convert contact constitutive law ID -or- illegal negative ID "
-              "provided");
+        if (id <= -1) dserror("Illegal negative ID provided");
 
         // check if material ID is already in use
         if (bundle->Find(id) != -1)

@@ -14,6 +14,7 @@
 /* headers */
 #include "baci_io_materialdefinition.hpp"
 
+#include "baci_io_line_parser.hpp"
 #include "baci_mat_material.hpp"
 
 #include <iostream>
@@ -64,32 +65,18 @@ void INPUT::MaterialDefinition::Read(
       condline->seekp(0, condline->end);
       *condline << " ";
 
-      // read header from stringstream and delete it afterwards
-      std::string mat, number, name;
-      *condline >> mat >> number >> name;
-      condline->str(condline->str().erase(0, (size_t)condline->tellg()));
+      IO::LineParser parser("While reading 'MATERIALS' section: ");
 
-      if (not(*condline) or mat != "MAT") dserror("invalid material line in '%s'", name.c_str());
+      parser.Consume(*condline, "MAT");
+      const int matid = parser.Read<int>(*condline);
+      const std::string name = parser.Read<std::string>(*condline);
+
+      // Remove the parts that were already read.
+      condline->str(condline->str().erase(0, (size_t)condline->tellg()));
 
       if (name == materialname_)
       {
-        int matid = -1;
-        {
-          char* ptr;
-          matid = std::strtol(number.c_str(), &ptr, 10);
-          if (ptr == number.c_str())
-            dserror("failed to read material object number '%s'", number.c_str());
-        }
-
-        if (matid <= -1)
-          dserror("Either- failed to convert material ID -or- illegal negative ID provided");
-
-        // what was read
-        // std::cout << "PE=" << reader.Comm()->MyPID()
-        //         << " MAT=" << matid
-        //          << " MaterialType=" << mattype_
-        //          << " Name=" << materialname_
-        //          << std::endl;
+        if (matid <= -1) dserror("Illegal negative ID provided");
 
         // check if material ID is already in use
         if (mmap->Find(matid) != -1) dserror("More than one material with 'MAT %d'", matid);
