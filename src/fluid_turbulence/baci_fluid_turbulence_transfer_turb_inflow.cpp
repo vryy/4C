@@ -98,13 +98,11 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
 
           masteridstoadd = (*cond)->GetNodes();
 
-          for (std::vector<int>::const_iterator idtoadd = (*masteridstoadd).begin();
-               idtoadd != (*masteridstoadd).end(); ++idtoadd)
+          for (int idtoadd : *masteridstoadd)
           {
             // we construct the local octree only with nodes owned by this proc
-            if (dis_->HaveGlobalNode(*idtoadd))
-              if (dis_->gNode(*idtoadd)->Owner() == dis_->Comm().MyPID())
-                masterset.insert(*idtoadd);
+            if (dis_->HaveGlobalNode(idtoadd))
+              if (dis_->gNode(idtoadd)->Owner() == dis_->Comm().MyPID()) masterset.insert(idtoadd);
           }
 
           break;
@@ -319,19 +317,18 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
 void FLD::TransferTurbulentInflowCondition::GetData(
     int& id, int& direction, ToggleType& type, const DRT::Condition* cond)
 {
-  const std::vector<int>* myid = cond->Get<std::vector<int>>("id");
-  id = (*myid)[0];
+  id = *cond->Get<int>("id");
 
-  const std::string* mydirection = cond->Get<std::string>("transfer direction");
-  if (*mydirection == "x")
+  const auto mydirection = *cond->Get<std::string>("transfer direction");
+  if (mydirection == "x")
   {
     direction = 0;
   }
-  else if (*mydirection == "y")
+  else if (mydirection == "y")
   {
     direction = 1;
   }
-  else if (*mydirection == "z")
+  else if (mydirection == "z")
   {
     direction = 2;
   }
@@ -340,12 +337,12 @@ void FLD::TransferTurbulentInflowCondition::GetData(
     dserror("unknown direction");
   }
 
-  const std::string* mytoggle = cond->Get<std::string>("toggle");
-  if (*mytoggle == "master")
+  const auto mytoggle = *cond->Get<std::string>("toggle");
+  if (mytoggle == "master")
   {
     type = master;
   }
-  else if (*mytoggle == "slave")
+  else if (mytoggle == "slave")
   {
     type = slave;
   }
@@ -357,13 +354,11 @@ void FLD::TransferTurbulentInflowCondition::GetData(
   // find out whether we will use a time curve
   if (curve_ == -1)
   {
-    const std::vector<int>* curve = cond->Get<std::vector<int>>("curve");
+    const auto* curve = cond->GetIf<int>("curve");
 
     // set curve number
-    if (curve) curve_ = (*curve)[0];
+    if (curve) curve_ = *curve;
   }
-
-  return;
 }
 
 

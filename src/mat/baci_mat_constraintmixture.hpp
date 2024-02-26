@@ -111,7 +111,7 @@ namespace MAT
       /// maximal factor of mass production
       const double maxmassprodfac_;
       /// store all history variables
-      const int storehistory_;
+      const bool storehistory_;
       /// tolerance for degradation
       const double degtol_;
       //@}

@@ -504,40 +504,38 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   std::vector<double> globalmaxs(0);
   for (size_t i = 0; i < surfacepbcs.size(); ++i)
   {
-    const std::string* ismaster =
-        surfacepbcs[i]->Get<std::string>("Is slave periodic boundary condition");
-    if (*ismaster == "Master")
+    const auto ismaster = *surfacepbcs[i]->Get<std::string>("Is slave periodic boundary condition");
+    if (ismaster == "Master")
     {
-      const int masterid = surfacepbcs[i]->GetInt("Id of periodic boundary condition");
+      const int masterid = *surfacepbcs[i]->Get<int>("Id of periodic boundary condition");
       std::vector<int> nodeids(*(surfacepbcs[i]->GetNodes()));
-      for (size_t j = 0; j < surfacepbcs.size(); ++j)
+      for (auto& surfacepbc : surfacepbcs)
       {
-        const int slaveid = surfacepbcs[j]->GetInt("Id of periodic boundary condition");
+        const int slaveid = *surfacepbc->Get<int>("Id of periodic boundary condition");
         if (masterid == slaveid)
         {
-          const std::string* isslave =
-              surfacepbcs[j]->Get<std::string>("Is slave periodic boundary condition");
-          if (*isslave == "Slave")
+          const auto isslave =
+              *surfacepbc->Get<std::string>("Is slave periodic boundary condition");
+          if (isslave == "Slave")
           {
-            const std::vector<int>* slavenodeids = surfacepbcs[j]->GetNodes();
+            const std::vector<int>* slavenodeids = surfacepbc->GetNodes();
             // append slave node Ids to node Ids for the complete condition
-            for (size_t k = 0; k < slavenodeids->size(); ++k)
-              nodeids.push_back(slavenodeids->at(k));
+            for (int slavenodeid : *slavenodeids) nodeids.push_back(slavenodeid);
           }
         }
       }
 
       // Get normal direction of pbc plane
-      const std::string* pbcplane =
-          surfacepbcs[i]->Get<std::string>("degrees of freedom for the pbc plane");
-      if (*pbcplane == "yz")
+      const auto pbcplane =
+          *surfacepbcs[i]->Get<std::string>("degrees of freedom for the pbc plane");
+      if (pbcplane == "yz")
         planenormal.push_back(0);
-      else if (*pbcplane == "xz")
+      else if (pbcplane == "xz")
         planenormal.push_back(1);
-      else if (*pbcplane == "xy")
+      else if (pbcplane == "xy")
         planenormal.push_back(2);
       else
-        dserror("A PBC condition could not provide a plane normal.");
+        dserror("A PBC condition could not provide a valid plane normal.");
 
       double min = +10e19;
       double max = -10e19;

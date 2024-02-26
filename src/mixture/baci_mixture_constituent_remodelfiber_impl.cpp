@@ -38,15 +38,15 @@ namespace
 MIXTURE::PAR::MixtureConstituent_RemodelFiberImpl::MixtureConstituent_RemodelFiberImpl(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureConstituent(matdata),
-      fiber_id_(matdata->GetInt("FIBER_ID") - 1),
-      init_(matdata->GetInt("INIT")),
-      fiber_material_id_(matdata->GetInt("FIBER_MATERIAL_ID")),
+      fiber_id_(*matdata->Get<int>("FIBER_ID") - 1),
+      init_(*matdata->Get<int>("INIT")),
+      fiber_material_id_(*matdata->Get<int>("FIBER_MATERIAL_ID")),
       fiber_material_(FiberMaterialFactory(fiber_material_id_)),
-      growth_enabled_(matdata->GetInt("GROWTH_ENABLED")),
-      poisson_decay_time_(matdata->GetDouble("DECAY_TIME")),
-      growth_constant_(matdata->GetDouble("GROWTH_CONSTANT")),
-      deposition_stretch_(matdata->GetDouble("DEPOSITION_STRETCH")),
-      deposition_stretch_timefunc_num_(matdata->GetInt("DEPOSITION_STRETCH_TIMEFUNCT"))
+      growth_enabled_(*matdata->Get<bool>("GROWTH_ENABLED")),
+      poisson_decay_time_(*matdata->Get<double>("DECAY_TIME")),
+      growth_constant_(*matdata->Get<double>("GROWTH_CONSTANT")),
+      deposition_stretch_(*matdata->Get<double>("DEPOSITION_STRETCH")),
+      deposition_stretch_timefunc_num_(*matdata->Get<int>("DEPOSITION_STRETCH_TIMEFUNCT"))
 {
 }
 

@@ -37,15 +37,15 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_(matdata->GetDouble("YOUNG")),
-      poissonratio_(matdata->GetDouble("NUE")),
-      density_(matdata->GetDouble("DENS")),
-      yield_(matdata->GetDouble("YIELD")),
-      isohard_(matdata->GetDouble("ISOHARD")),
-      infyield_(matdata->GetDouble("SATHARDENING")),
-      hardexp_(matdata->GetDouble("HARDEXPO")),
-      visc_(matdata->GetDouble("VISC")),
-      rate_dependency_(matdata->GetDouble("RATE_DEPENDENCY"))
+      youngs_(*matdata->Get<double>("YOUNG")),
+      poissonratio_(*matdata->Get<double>("NUE")),
+      density_(*matdata->Get<double>("DENS")),
+      yield_(*matdata->Get<double>("YIELD")),
+      isohard_(*matdata->Get<double>("ISOHARD")),
+      infyield_(*matdata->Get<double>("SATHARDENING")),
+      hardexp_(*matdata->Get<double>("HARDEXPO")),
+      visc_(*matdata->Get<double>("VISC")),
+      rate_dependency_(*matdata->Get<double>("RATE_DEPENDENCY"))
 {
 }
 

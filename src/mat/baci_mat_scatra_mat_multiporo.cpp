@@ -23,9 +23,9 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(Teuchos::RCP<MAT::PAR::Material> matdata)
     : ScatraMat(matdata),
-      phaseID_(matdata->GetInt("PHASEID")),
-      delta_(matdata->GetDouble("DELTA")),
-      min_sat_(matdata->GetDouble("MIN_SAT"))
+      phaseID_(*matdata->Get<int>("PHASEID")),
+      delta_(*matdata->Get<double>("DELTA")),
+      min_sat_(*matdata->Get<double>("MIN_SAT"))
 {
 }
 
@@ -112,7 +112,9 @@ void MAT::ScatraMatMultiPoroFluid::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : ScatraMat(matdata), phaseID_(matdata->GetInt("PHASEID")), delta_(matdata->GetDouble("DELTA"))
+    : ScatraMat(matdata),
+      phaseID_(*matdata->Get<int>("PHASEID")),
+      delta_(*matdata->Get<double>("DELTA"))
 
 {
 }
@@ -201,7 +203,7 @@ void MAT::ScatraMatMultiPoroVolFrac::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 
 MAT::PAR::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : ScatraMat(matdata), delta_(matdata->GetDouble("DELTA"))
+    : ScatraMat(matdata), delta_(*matdata->Get<double>("DELTA"))
 {
 }
 
@@ -287,14 +289,14 @@ void MAT::ScatraMatMultiPoroSolid::Unpack(const std::vector<char>& data)
 MAT::PAR::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : ScatraMat(matdata),
-      numfluidphases_(matdata->GetInt("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
-      numvolfrac_(matdata->GetInt("NUMVOLFRAC")),
+      numfluidphases_(*matdata->Get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
+      numvolfrac_(*matdata->Get<int>("NUMVOLFRAC")),
       cp_fluid_(*(matdata->Get<std::vector<double>>("CP_FLUID"))),
       cp_volfrac_(*(matdata->Get<std::vector<double>>("CP_VOLFRAC"))),
-      cp_solid_(matdata->GetDouble("CP_SOLID")),
+      cp_solid_(*matdata->Get<double>("CP_SOLID")),
       kappa_fluid_(*(matdata->Get<std::vector<double>>("KAPPA_FLUID"))),
       kappa_volfrac_(*(matdata->Get<std::vector<double>>("KAPPA_VOLFRAC"))),
-      kappa_solid_(matdata->GetDouble("KAPPA_SOLID"))
+      kappa_solid_(*matdata->Get<double>("KAPPA_SOLID"))
 {
 }
 

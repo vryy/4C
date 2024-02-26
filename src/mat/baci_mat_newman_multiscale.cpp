@@ -17,7 +17,7 @@ BACI_NAMESPACE_OPEN
  | constructor                                             fang 07/17 |
  *--------------------------------------------------------------------*/
 MAT::PAR::NewmanMultiScale::NewmanMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Newman(matdata), ScatraMultiScale(matdata), sigma_(matdata->GetDouble("SIGMA"))
+    : Newman(matdata), ScatraMultiScale(matdata), sigma_(*matdata->Get<double>("SIGMA"))
 {
   return;
 }

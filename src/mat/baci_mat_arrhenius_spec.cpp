@@ -23,14 +23,14 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ArrheniusSpec::ArrheniusSpec(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      refvisc_(matdata->GetDouble("REFVISC")),
-      reftemp_(matdata->GetDouble("REFTEMP")),
-      suthtemp_(matdata->GetDouble("SUTHTEMP")),
-      schnum_(matdata->GetDouble("SCHNUM")),
-      preexcon_(matdata->GetDouble("PREEXCON")),
-      tempexp_(matdata->GetDouble("TEMPEXP")),
-      actemp_(matdata->GetDouble("ACTEMP")),
-      gasconst_(matdata->GetDouble("GASCON"))
+      refvisc_(*matdata->Get<double>("REFVISC")),
+      reftemp_(*matdata->Get<double>("REFTEMP")),
+      suthtemp_(*matdata->Get<double>("SUTHTEMP")),
+      schnum_(*matdata->Get<double>("SCHNUM")),
+      preexcon_(*matdata->Get<double>("PREEXCON")),
+      tempexp_(*matdata->Get<double>("TEMPEXP")),
+      actemp_(*matdata->Get<double>("ACTEMP")),
+      gasconst_(*matdata->Get<double>("GASCON"))
 {
 }
 

@@ -752,11 +752,11 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
 void STR::TimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
 {
   // get number of mode flags in dat-file
-  const int nummodes = kspcond->GetInt("NUMMODES");
+  const int nummodes = *kspcond->Get<int>("NUMMODES");
 
   // get rigid body mode flags - number and order as in ComputeNullspace
   // e.g. for a 3-D solid: [transx transy transz rotx roty rotz]
-  const std::vector<int>* modeflags = kspcond->Get<std::vector<int>>("ONOFF");
+  const auto* modeflags = kspcond->Get<std::vector<int>>("ONOFF");
 
   // get actual active mode ids given in dat-file
   std::vector<int> activemodeids;

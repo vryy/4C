@@ -213,13 +213,13 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputOxygenPartialPressure()
     double Pb = 0.0;
 
     // read input from condition
-    const int oxyscalar = conditions[0]->GetInt("SCALARID") - 1;
-    const double CaO2_max = conditions[0]->GetDouble("CaO2_max");
-    const double Pb50 = conditions[0]->GetDouble("Pb50");
-    const double n = conditions[0]->GetDouble("n");
-    const double alpha_eff = conditions[0]->GetDouble("alpha_bl_eff");
-    const double rho_oxy = conditions[0]->GetDouble("rho_oxy");
-    const double rho_bl = conditions[0]->GetDouble("rho_bl");
+    const auto oxyscalar = *conditions[0]->Get<int>("SCALARID") - 1;
+    const auto CaO2_max = *conditions[0]->Get<double>("CaO2_max");
+    const auto Pb50 = *conditions[0]->Get<double>("Pb50");
+    const auto n = *conditions[0]->Get<double>("n");
+    const auto alpha_eff = *conditions[0]->Get<double>("alpha_bl_eff");
+    const auto rho_oxy = *conditions[0]->Get<double>("rho_oxy");
+    const auto rho_bl = *conditions[0]->Get<double>("rho_bl");
 
     // loop over all nodes
     for (unsigned inode = 0; inode < nodegids->size(); ++inode)

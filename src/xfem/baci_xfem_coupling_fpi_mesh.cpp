@@ -725,15 +725,15 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
   cutter_dis_->GetCondition(cond_name_, conditions_XFPI);
 
   // Create maps for easy extraction at gausspoint level
-  for (std::vector<DRT::Condition*>::iterator i = conditions_XFPI.begin();
-       i != conditions_XFPI.end(); ++i)
+  auto i = conditions_XFPI.begin();
+  for (const auto& cond : conditions_XFPI)
   {
-    const bool full_BJ = (*(*i)->Get<std::string>("Variant") == "BJ");
-    const bool Sub_tang = (*(*i)->Get<std::string>("Method") == "SUB");
-    const bool contact = (*(*i)->Get<std::string>("Contact") == "contact_yes");
+    const bool full_BJ = (*cond->Get<std::string>("Variant") == "BJ");
+    const bool Sub_tang = (*cond->Get<std::string>("Method") == "SUB");
+    const bool contact = (*cond->Get<std::string>("Contact") == "contact_yes");
     if (i != conditions_XFPI.begin())
     {
-      if (fabs(BJ_coeff_ - (*i)->GetDouble("bj_coeff")) > 1e-16)
+      if (fabs(BJ_coeff_ - *cond->Get<double>("bj_coeff")) > 1e-16)
         dserror(
             "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
             "conditions, with different BJ_coeff!");
@@ -754,10 +754,11 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
             "conditions, with different contact specification!");
     }
 
-    BJ_coeff_ = (*i)->GetDouble("bj_coeff");
+    BJ_coeff_ = *cond->Get<double>("bj_coeff");
     full_BJ_ = full_BJ;
     Sub_tang_ = Sub_tang;
     contact_ = contact;
+    i++;
   }
 
   if (contact_)  // compute h

@@ -47,7 +47,7 @@ void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::DiscretizationF
   if (discret.FaceRowMap() == nullptr) return;
 
   // get onoff toggles
-  const std::vector<int>* onoff = cond.Get<std::vector<int>>("onoff");
+  const auto* onoff = cond.Get<std::vector<int>>("onoff");
 
   if (discret.NumMyRowFaces() > 0)
   {
@@ -165,9 +165,9 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
 
   // get curves, functs, vals, and onoff toggles from the condition
-  const std::vector<int>* funct = cond.Get<std::vector<int>>("funct");
-  const std::vector<double>* val = cond.Get<std::vector<double>>("val");
-  const std::vector<int>* onoff = cond.Get<std::vector<int>>("onoff");
+  const auto* funct = cond.Get<std::vector<int>>("funct");
+  const auto* val = cond.Get<std::vector<double>>("val");
+  const auto* onoff = cond.Get<std::vector<int>>("onoff");
 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to

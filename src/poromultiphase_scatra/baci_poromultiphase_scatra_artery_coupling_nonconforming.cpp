@@ -333,7 +333,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCoup
           RecomputeCoupledDOFsForNTP(coupcond, j);
 
           // get penalty parameter
-          const double penalty = {coupcond[j]->GetDouble("PENALTY")};
+          const auto penalty = *coupcond[j]->Get<double>("PENALTY");
 
           // get eta (parameter coordinate of corresponding node)
           const int eta_ntp = (i == 0) ? -1 : 1;

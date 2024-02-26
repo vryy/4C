@@ -28,20 +28,20 @@ BACI_NAMESPACE_OPEN
 CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams(
     const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      firstmatid_(container->GetDouble("FirstMatID")),
-      secondmatid_(container->GetDouble("SecondMatID")),
-      lateralLength_(container->GetDouble("LateralLength")),
-      resolution_(container->GetDouble("Resolution")),
-      initialTopologyStdDeviation_(container->GetDouble("InitialTopologyStdDeviation")),
-      hurstExponent_(container->GetDouble("HurstExponent")),
-      randomTopologyFlag_(container->GetDouble("RandomTopologyFlag")),
-      randomSeedFlag_(container->GetDouble("RandomSeedFlag")),
-      randomGeneratorSeed_(container->GetDouble("RandomGeneratorSeed")),
-      tolerance_(container->GetDouble("Tolerance")),
-      maxIteration_(container->GetDouble("MaxIteration")),
-      warmStartingFlag_(container->GetDouble("WarmStartingFlag")),
-      finiteDifferenceFraction_(container->GetDouble("FiniteDifferenceFraction")),
-      activeGapTolerance_(container->GetDouble("ActiveGapTolerance")),
+      firstmatid_(*container->Get<double>("FirstMatID")),
+      secondmatid_(*container->Get<double>("SecondMatID")),
+      lateralLength_(*container->Get<double>("LateralLength")),
+      resolution_(*container->Get<double>("Resolution")),
+      initialTopologyStdDeviation_(*container->Get<double>("InitialTopologyStdDeviation")),
+      hurstExponent_(*container->Get<double>("HurstExponent")),
+      randomTopologyFlag_(*container->Get<double>("RandomTopologyFlag")),
+      randomSeedFlag_(*container->Get<double>("RandomSeedFlag")),
+      randomGeneratorSeed_(*container->Get<double>("RandomGeneratorSeed")),
+      tolerance_(*container->Get<double>("Tolerance")),
+      maxIteration_(*container->Get<double>("MaxIteration")),
+      warmStartingFlag_(*container->Get<double>("WarmStartingFlag")),
+      finiteDifferenceFraction_(*container->Get<double>("FiniteDifferenceFraction")),
+      activeGapTolerance_(*container->Get<double>("ActiveGapTolerance")),
       topologyFilePath_(*(container->Get<std::string>("TopologyFilePath")))
 {
   this->SetParameters();
@@ -78,10 +78,10 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
   Teuchos::RCP<MAT::PAR::Material> secondmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(GetSecondMatID());
 
-  const double E1 = firstmat->GetDouble("YOUNG");
-  const double E2 = secondmat->GetDouble("YOUNG");
-  const double nu1 = firstmat->GetDouble("NUE");
-  const double nu2 = secondmat->GetDouble("NUE");
+  const double E1 = *firstmat->Get<double>("YOUNG");
+  const double E2 = *secondmat->Get<double>("YOUNG");
+  const double nu1 = *firstmat->Get<double>("NUE");
+  const double nu2 = *secondmat->Get<double>("NUE");
 
   compositeYoungs_ = pow(((1 - pow(nu1, 2)) / E1 + (1 - pow(nu2, 2)) / E2), -1);
 

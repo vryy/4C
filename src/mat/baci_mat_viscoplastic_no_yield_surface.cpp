@@ -33,19 +33,19 @@ struct MAT::PreCalculatedTerms
 MAT::PAR::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      density_(matdata->GetDouble("DENS")),
-      nue_(matdata->GetDouble("NUE")),
-      young_(matdata->GetDouble("YOUNG")),
-      temperature_(matdata->GetDouble("TEMPERATURE")),
-      pre_exp_fac_(matdata->GetDouble("PRE_EXP_FAC")),
-      activation_energy_(matdata->GetDouble("ACTIVATION_ENERGY")),
-      gas_constant_(matdata->GetDouble("GAS_CONSTANT")),
-      strain_rate_sensitivity_(matdata->GetDouble("STRAIN_RATE_SENS")),
-      init_flow_res_(matdata->GetDouble("INIT_FLOW_RES")),
-      flow_res_exp_(matdata->GetDouble("FLOW_RES_EXP")),
-      flow_res_pre_fac_(matdata->GetDouble("FLOW_RES_PRE_FAC")),
-      flow_res_sat_fac_(matdata->GetDouble("FLOW_RES_SAT_FAC")),
-      flow_res_sat_exp_(matdata->GetDouble("FLOW_RES_SAT_EXP"))
+      density_(*matdata->Get<double>("DENS")),
+      nue_(*matdata->Get<double>("NUE")),
+      young_(*matdata->Get<double>("YOUNG")),
+      temperature_(*matdata->Get<double>("TEMPERATURE")),
+      pre_exp_fac_(*matdata->Get<double>("PRE_EXP_FAC")),
+      activation_energy_(*matdata->Get<double>("ACTIVATION_ENERGY")),
+      gas_constant_(*matdata->Get<double>("GAS_CONSTANT")),
+      strain_rate_sensitivity_(*matdata->Get<double>("STRAIN_RATE_SENS")),
+      init_flow_res_(*matdata->Get<double>("INIT_FLOW_RES")),
+      flow_res_exp_(*matdata->Get<double>("FLOW_RES_EXP")),
+      flow_res_pre_fac_(*matdata->Get<double>("FLOW_RES_PRE_FAC")),
+      flow_res_sat_fac_(*matdata->Get<double>("FLOW_RES_SAT_FAC")),
+      flow_res_sat_exp_(*matdata->Get<double>("FLOW_RES_SAT_EXP"))
 {
 }
 

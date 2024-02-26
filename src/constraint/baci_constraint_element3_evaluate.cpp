@@ -9,7 +9,6 @@
 #include "baci_constraint_element3.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_utils.hpp"
-#include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -77,7 +76,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<DRT::Condition> condition =
             params.get<Teuchos::RCP<DRT::Condition>>("condition");
-        const std::vector<double>* direct = condition->Get<std::vector<double>>("direction");
+        const auto* direct = condition->Get<std::vector<double>>("direction");
         const std::string* value = condition->Get<std::string>("value");
         if (*value == "disp")
           elevec3[0] = ComputeWeightedDistance(mydisp, *direct);

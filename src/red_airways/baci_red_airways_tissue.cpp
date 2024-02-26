@@ -15,10 +15,8 @@
 #include "baci_adapter_str_redairway.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
-#include "baci_io_control.hpp"
 #include "baci_lib_condition.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_resulttest.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_red_airways_implicitintegration.hpp"
 
@@ -58,14 +56,15 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   for (unsigned int i = 0; i < numcond; ++i)
   {
     DRT::Condition* cond = coupcond[i];
-    cond->Add("type", "neum_orthopressure");
+    std::string type = "neum_orthopressure";
+    cond->Add("type", type);
     std::vector<int> onoff(6, 0);
     onoff[0] = 1;
     cond->Add("onoff", onoff);
     std::vector<double> val(6, 0.0);
     cond->Add("val", val);
 
-    int condID = (coupcond[i])->GetInt("coupling id");
+    int condID = *coupcond[i]->Get<int>("coupling id");
     tmp.push_back(condID);
   }
 
@@ -92,7 +91,8 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   for (unsigned int i = 0; i < numnodecoupcond; ++i)
   {
     DRT::Condition* cond = nodecoupcond[i];
-    cond->Add("boundarycond", "flow");
+    std::string bc_data = "flow";
+    cond->Add("boundarycond", bc_data);
     std::vector<double> val(1, 0.0);
     cond->Add("val", val);
   }

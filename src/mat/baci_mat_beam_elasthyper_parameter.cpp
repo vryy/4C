@@ -28,8 +28,8 @@ double MAT::PAR::DetermineShearModulus(const Teuchos::RCP<MAT::PAR::Material>& m
   // We want the flexibility to either specify the shear modulus or the Poisson's ratio.
   // Therefore, both parameters are defined as optional in the definition of the input file line
 
-  shearmodulus = matdata->GetDouble("SHEARMOD");
-  poissonratio = matdata->GetDouble("POISSONRATIO");
+  shearmodulus = *matdata->Get<double>("SHEARMOD");
+  poissonratio = *matdata->Get<double>("POISSONRATIO");
 
   if (shearmodulus != -1.0 and poissonratio == -1.0)
   {
@@ -38,7 +38,7 @@ double MAT::PAR::DetermineShearModulus(const Teuchos::RCP<MAT::PAR::Material>& m
   else if (shearmodulus == -1.0 and poissonratio != -1.0)
   {
     // compute shear modulus from Young's modulus and given Poisson's ratio
-    shearmodulus = matdata->GetDouble("YOUNG") / (2.0 * (1.0 + poissonratio));
+    shearmodulus = *matdata->Get<double>("YOUNG") / (2.0 * (1.0 + poissonratio));
   }
   else if (shearmodulus != -1.0 and poissonratio != -1.0)
   {
@@ -60,10 +60,10 @@ double MAT::PAR::DetermineShearModulus(const Teuchos::RCP<MAT::PAR::Material>& m
  *-----------------------------------------------------------------------------------------------*/
 double MAT::PAR::DetermineDefaultInteractionRadius(const Teuchos::RCP<MAT::PAR::Material>& matdata)
 {
-  double radius = matdata->GetDouble("INTERACTIONRADIUS");
+  double radius = *matdata->Get<double>("INTERACTIONRADIUS");
 
-  double Iyy = matdata->GetDouble("MOMIN2");
-  double Izz = matdata->GetDouble("MOMIN3");
+  double Iyy = *matdata->Get<double>("MOMIN2");
+  double Izz = *matdata->Get<double>("MOMIN3");
 
   // determine default value for interaction radius if no value was given:
   // assume circular cross-section and compute from the area moment of inertia
@@ -77,9 +77,9 @@ double MAT::PAR::DetermineDefaultInteractionRadius(const Teuchos::RCP<MAT::PAR::
 double MAT::PAR::DetermineDefaultInteractionRadiusIsotropic(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
 {
-  double radius = matdata->GetDouble("INTERACTIONRADIUS");
+  double radius = *matdata->Get<double>("INTERACTIONRADIUS");
 
-  double Iyy = matdata->GetDouble("MOMIN");
+  double Iyy = *matdata->Get<double>("MOMIN");
 
   // determine default value for interaction radius if no value was given:
   // assume circular cross-section and compute from the area moment of inertia
@@ -94,7 +94,7 @@ double MAT::PAR::DetermineDefaultInteractionRadiusIsotropic(
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamElastHyperMaterialParameterGeneric::BeamElastHyperMaterialParameterGeneric(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata), use_fad_(matdata->GetInt("FAD"))
+    : Parameter(matdata), use_fad_(*matdata->Get<bool>("FAD"))
 {
   // empty constructor
 }
@@ -124,14 +124,14 @@ Teuchos::RCP<MAT::Material> MAT::PAR::BeamElastHyperMaterialParameterGeneric::Cr
 MAT::PAR::BeamReissnerElastHyperMaterialParams::BeamReissnerElastHyperMaterialParams(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
-      youngs_modulus_(matdata->GetDouble("YOUNG")),
+      youngs_modulus_(*matdata->Get<double>("YOUNG")),
       shear_modulus_(DetermineShearModulus(matdata)),
-      density_(matdata->GetDouble("DENS")),
-      cross_section_area_(matdata->GetDouble("CROSSAREA")),
-      shear_correction_factor_(matdata->GetDouble("SHEARCORR")),
-      area_moment_inertia_polar_(matdata->GetDouble("MOMINPOL")),
-      area_moment_inertia_2_(matdata->GetDouble("MOMIN2")),
-      area_moment_inertia_3_(matdata->GetDouble("MOMIN3")),
+      density_(*matdata->Get<double>("DENS")),
+      cross_section_area_(*matdata->Get<double>("CROSSAREA")),
+      shear_correction_factor_(*matdata->Get<double>("SHEARCORR")),
+      area_moment_inertia_polar_(*matdata->Get<double>("MOMINPOL")),
+      area_moment_inertia_2_(*matdata->Get<double>("MOMIN2")),
+      area_moment_inertia_3_(*matdata->Get<double>("MOMIN3")),
       radius_interaction_(DetermineDefaultInteractionRadius(matdata))
 {
   if (youngs_modulus_ <= 0.0) dserror("Young's modulus must be positive value");
@@ -168,17 +168,17 @@ MAT::PAR::BeamReissnerElastHyperMaterialParams::BeamReissnerElastHyperMaterialPa
 MAT::PAR::BeamReissnerElastHyperMaterialParamsByMode::BeamReissnerElastHyperMaterialParamsByMode(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
-      axial_rigidity_(matdata->GetDouble("EA")),
-      shear_rigidity_2_(matdata->GetDouble("GA2")),
-      shear_rigidity_3_(matdata->GetDouble("GA3")),
-      torsional_rigidity_(matdata->GetDouble("GI_T")),
-      bending_rigidity_2_(matdata->GetDouble("EI2")),
-      bending_rigidity_3_(matdata->GetDouble("EI3")),
-      translational_mass_inertia_(matdata->GetDouble("RhoA")),
-      mass_moment_inertia_polar_(matdata->GetDouble("MASSMOMINPOL")),
-      mass_moment_inertia_2_(matdata->GetDouble("MASSMOMIN2")),
-      mass_moment_inertia_3_(matdata->GetDouble("MASSMOMIN3")),
-      radius_interaction_(matdata->GetDouble("INTERACTIONRADIUS"))
+      axial_rigidity_(*matdata->Get<double>("EA")),
+      shear_rigidity_2_(*matdata->Get<double>("GA2")),
+      shear_rigidity_3_(*matdata->Get<double>("GA3")),
+      torsional_rigidity_(*matdata->Get<double>("GI_T")),
+      bending_rigidity_2_(*matdata->Get<double>("EI2")),
+      bending_rigidity_3_(*matdata->Get<double>("EI3")),
+      translational_mass_inertia_(*matdata->Get<double>("RhoA")),
+      mass_moment_inertia_polar_(*matdata->Get<double>("MASSMOMINPOL")),
+      mass_moment_inertia_2_(*matdata->Get<double>("MASSMOMIN2")),
+      mass_moment_inertia_3_(*matdata->Get<double>("MASSMOMIN3")),
+      radius_interaction_(*matdata->Get<double>("INTERACTIONRADIUS"))
 {
   if (axial_rigidity_ <= 0.0) dserror("axial rigidity must be positive value");
 
@@ -215,13 +215,13 @@ MAT::PAR::BeamReissnerElastHyperMaterialParamsByMode::BeamReissnerElastHyperMate
 MAT::PAR::BeamKirchhoffElastHyperMaterialParams::BeamKirchhoffElastHyperMaterialParams(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
-      youngs_modulus_(matdata->GetDouble("YOUNG")),
+      youngs_modulus_(*matdata->Get<double>("YOUNG")),
       shear_modulus_(DetermineShearModulus(matdata)),
-      density_(matdata->GetDouble("DENS")),
-      cross_section_area_(matdata->GetDouble("CROSSAREA")),
-      area_moment_inertia_polar_(matdata->GetDouble("MOMINPOL")),
-      area_moment_inertia_2_(matdata->GetDouble("MOMIN2")),
-      area_moment_inertia_3_(matdata->GetDouble("MOMIN3")),
+      density_(*matdata->Get<double>("DENS")),
+      cross_section_area_(*matdata->Get<double>("CROSSAREA")),
+      area_moment_inertia_polar_(*matdata->Get<double>("MOMINPOL")),
+      area_moment_inertia_2_(*matdata->Get<double>("MOMIN2")),
+      area_moment_inertia_3_(*matdata->Get<double>("MOMIN3")),
       radius_interaction_(DetermineDefaultInteractionRadius(matdata))
 {
   if (youngs_modulus_ <= 0.0) dserror("Young's modulus must be positive value");
@@ -256,15 +256,15 @@ MAT::PAR::BeamKirchhoffElastHyperMaterialParams::BeamKirchhoffElastHyperMaterial
 MAT::PAR::BeamKirchhoffElastHyperMaterialParamsByMode::BeamKirchhoffElastHyperMaterialParamsByMode(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
-      axial_rigidity_(matdata->GetDouble("EA")),
-      torsional_rigidity_(matdata->GetDouble("GI_T")),
-      bending_rigidity_2_(matdata->GetDouble("EI2")),
-      bending_rigidity_3_(matdata->GetDouble("EI3")),
-      translational_mass_inertia_(matdata->GetDouble("RhoA")),
-      mass_moment_inertia_polar_(matdata->GetDouble("MASSMOMINPOL")),
-      mass_moment_inertia_2_(matdata->GetDouble("MASSMOMIN2")),
-      mass_moment_inertia_3_(matdata->GetDouble("MASSMOMIN3")),
-      radius_interaction_(matdata->GetDouble("INTERACTIONRADIUS"))
+      axial_rigidity_(*matdata->Get<double>("EA")),
+      torsional_rigidity_(*matdata->Get<double>("GI_T")),
+      bending_rigidity_2_(*matdata->Get<double>("EI2")),
+      bending_rigidity_3_(*matdata->Get<double>("EI3")),
+      translational_mass_inertia_(*matdata->Get<double>("RhoA")),
+      mass_moment_inertia_polar_(*matdata->Get<double>("MASSMOMINPOL")),
+      mass_moment_inertia_2_(*matdata->Get<double>("MASSMOMIN2")),
+      mass_moment_inertia_3_(*matdata->Get<double>("MASSMOMIN3")),
+      radius_interaction_(*matdata->Get<double>("INTERACTIONRADIUS"))
 {
   if (axial_rigidity_ <= 0.0) dserror("axial rigidity must be positive value");
 
@@ -298,10 +298,10 @@ MAT::PAR::BeamKirchhoffElastHyperMaterialParamsByMode::BeamKirchhoffElastHyperMa
 MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParams::
     BeamKirchhoffTorsionFreeElastHyperMaterialParams(Teuchos::RCP<MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
-      youngs_modulus_(matdata->GetDouble("YOUNG")),
-      density_(matdata->GetDouble("DENS")),
-      cross_section_area_(matdata->GetDouble("CROSSAREA")),
-      area_moment_inertia_(matdata->GetDouble("MOMIN")),
+      youngs_modulus_(*matdata->Get<double>("YOUNG")),
+      density_(*matdata->Get<double>("DENS")),
+      cross_section_area_(*matdata->Get<double>("CROSSAREA")),
+      area_moment_inertia_(*matdata->Get<double>("MOMIN")),
       radius_interaction_(DetermineDefaultInteractionRadiusIsotropic(matdata))
 {
   if (youngs_modulus_ <= 0.0) dserror("Young's modulus must be positive value");
@@ -329,10 +329,10 @@ MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParams::
 MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode::
     BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode(Teuchos::RCP<MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
-      axial_rigidity_(matdata->GetDouble("EA")),
-      bending_rigidity_(matdata->GetDouble("EI")),
-      translational_mass_inertia_(matdata->GetDouble("RhoA")),
-      radius_interaction_(matdata->GetDouble("INTERACTIONRADIUS"))
+      axial_rigidity_(*matdata->Get<double>("EA")),
+      bending_rigidity_(*matdata->Get<double>("EI")),
+      translational_mass_inertia_(*matdata->Get<double>("RhoA")),
+      radius_interaction_(*matdata->Get<double>("INTERACTIONRADIUS"))
 {
   if (axial_rigidity_ <= 0.0) dserror("axial rigidity must be positive value");
 

@@ -41,13 +41,13 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::PlasticLinElast::PlasticLinElast(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_(matdata->GetDouble("YOUNG")),
-      poissonratio_(matdata->GetDouble("NUE")),
-      density_(matdata->GetDouble("DENS")),
-      yield_(matdata->GetDouble("YIELD")),
-      isohard_(matdata->GetDouble("ISOHARD")),
-      kinhard_(matdata->GetDouble("KINHARD")),
-      abstol_(matdata->GetDouble("TOL"))
+      youngs_(*matdata->Get<double>("YOUNG")),
+      poissonratio_(*matdata->Get<double>("NUE")),
+      density_(*matdata->Get<double>("DENS")),
+      yield_(*matdata->Get<double>("YIELD")),
+      isohard_(*matdata->Get<double>("ISOHARD")),
+      kinhard_(*matdata->Get<double>("KINHARD")),
+      abstol_(*matdata->Get<double>("TOL"))
 {
 }
 

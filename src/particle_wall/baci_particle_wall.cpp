@@ -553,7 +553,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
     currcondition.push_back(conditions[i]);
 
     // get material id for current particle wall condition
-    const int mat = currcondition[0]->GetInt("MAT");
+    const int mat = *currcondition[0]->Get<int>("MAT");
 
     // initialize maps for particle wall conditions
     std::map<int, DRT::Node*> nodes;

@@ -22,7 +22,7 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::StructPoroReactionECM::StructPoroReactionECM(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : StructPoroReaction(matdata), densCollagen_(matdata->GetDouble("DENSCOLLAGEN"))
+    : StructPoroReaction(matdata), densCollagen_(*matdata->Get<double>("DENSCOLLAGEN"))
 {
 }
 

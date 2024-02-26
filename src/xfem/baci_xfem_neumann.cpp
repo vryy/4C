@@ -110,8 +110,6 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
   // evaluate standard Neumann conditions
   EvaluateNeumannStandard(
       condition, time, assemblemat, params, discret, systemvector, systemmatrix);
-
-  return;
 }
 
 
@@ -140,17 +138,19 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
     const std::vector<int>* nodeids = cond.GetNodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
-    const std::vector<int>* funct = cond.Get<std::vector<int>>("funct");
-    const std::vector<int>* onoff = cond.Get<std::vector<int>>("onoff");
-    const std::vector<double>* val = cond.Get<std::vector<double>>("val");
+    const auto* funct = cond.GetIf<std::vector<int>>("funct");
+    const auto* onoff = cond.GetIf<std::vector<int>>("onoff");
+    const auto* val = cond.GetIf<std::vector<double>>("val");
     // Neumann BCs for some historic reason only have one curve
     int functnum = -1;
     if (funct) functnum = (*funct)[0];
     double functfac = 1.0;
     if (functnum >= 0)
+    {
       functfac =
           GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(
               time);
+    }
     for (int i = 0; i < nnode; ++i)
     {
       // do only nodes in my row map
@@ -211,8 +211,6 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
         }
       }
     }
-
-  return;
 }
 
 BACI_NAMESPACE_CLOSE

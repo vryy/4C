@@ -22,11 +22,11 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElchPhase::ElchPhase(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      epsilon_(matdata->GetDouble("EPSILON")),
-      tortuosity_(matdata->GetDouble("TORTUOSITY")),
-      nummat_(matdata->GetInt("NUMMAT")),
+      epsilon_(*matdata->Get<double>("EPSILON")),
+      tortuosity_(*matdata->Get<double>("TORTUOSITY")),
+      nummat_(*matdata->Get<int>("NUMMAT")),
       matids_(*matdata->Get<std::vector<int>>("MATIDS")),
-      local_(matdata->GetInt("LOCAL"))
+      local_(*matdata->Get<bool>("LOCAL"))
 {
   if (nummat_ != (int)matids_.size())
     dserror("number of phases %d does not fit to size of phase vector %d", nummat_, matids_.size());

@@ -131,7 +131,7 @@ void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::DefaultLine(
 void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::Print(
     std::ostream& stream, const INPAR::InputParameterContainer& cond)
 {
-  stream << cond.GetDouble(Name());
+  stream << *cond.Get<double>(Name());
 }
 
 

@@ -35,14 +35,12 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
   if (constrcond_.size())
   {
     // control the constraint by absolute or relative values
-    std::vector<DRT::Condition*>::iterator conditer;
-    for (conditer = constrcond_.begin(); conditer != constrcond_.end(); conditer++)
+    for (auto* conditer : constrcond_)
     {
-      const int condID = (*conditer)->GetInt("ConditionID");
-      const std::vector<double>* mypenalties = (*conditer)->Get<std::vector<double>>("penalty");
-      penalties_[condID] = (*mypenalties)[0];
-      const std::string* type = (*conditer)->Get<std::string>("control");
-      if (*type == "abs")
+      const int condID = *conditer->Get<int>("ConditionID");
+      penalties_[condID] = *conditer->Get<double>("penalty");
+      const std::string type = *conditer->Get<std::string>("control");
+      if (type == "abs")
         absconstraint_[condID] = true;
       else
       {
@@ -86,12 +84,10 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
  *------------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint3Penalty::Initialize(const double& time)
 {
-  for (unsigned int i = 0; i < constrcond_.size(); ++i)
+  for (auto* cond : constrcond_)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("ConditionID");
+    int condID = *cond->Get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
@@ -120,11 +116,9 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(Teuchos::ParameterList& param
 {
   const double time = params.get("total time", -1.0);
 
-  for (unsigned int i = 0; i < constrcond_.size(); i++)
+  for (auto* cond : constrcond_)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
-
-    int condID = cond.GetInt("ConditionID");
+    int condID = *cond->Get<int>("ConditionID");
     // control absolute values
     switch (Type())
     {
@@ -238,14 +232,14 @@ CONSTRAINTS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
       case mpcnodeonplane3d:
       {
         // take three nodes defining plane as specified by user and put them into a set
-        const std::vector<int>* defnvp = (*conditer)->Get<std::vector<int>>("planeNodes");
+        const auto* defnvp = (*conditer)->Get<std::vector<int>>("planeNodes");
         defnv = *defnvp;
       }
       break;
       case mpcnormalcomp3d:
       {
         // take master node
-        const int defn = (*conditer)->GetInt("masterNode");
+        const int defn = *(*conditer)->Get<int>("masterNode");
         defnv.push_back(defn);
       }
       break;
@@ -300,7 +294,7 @@ CONSTRAINTS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
         newdis->AddElement(constraintele);
       }
       // save the connection between element and condition
-      eletocondID_[nodeiter + startID] = (*conditer)->GetInt("ConditionID");
+      eletocondID_[nodeiter + startID] = *(*conditer)->Get<int>("ConditionID");
       eletocondvecindex_[nodeiter + startID] = index;
     }
     // adjust starting ID for next condition, in this case nodeiter=ngid.size(), hence the counter
@@ -327,7 +321,7 @@ CONSTRAINTS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
     constraintnodecolvec.clear();
     newdis->Redistribute(*constraintnoderowmap, *constraintnodecolmap);
     // put new discretization into the map
-    newdiscmap[(*conditer)->GetInt("ConditionID")] = newdis;
+    newdiscmap[*(*conditer)->Get<int>("ConditionID")] = newdis;
     // increase counter
     index++;
   }
@@ -405,9 +399,9 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Dis
       if (err) dserror("Proc %d: Element %d returned err=%d", disc->Comm().MyPID(), eid, err);
 
       // loadcurve business
-      const std::vector<int>* curve = cond->Get<std::vector<int>>("curve");
+      const auto* curve = cond->GetIf<int>("curve");
       int curvenum = -1;
-      if (curve) curvenum = (*curve)[0];
+      if (curve) curvenum = (*curve);
       double curvefac = 1.0;
       bool usetime = true;
       if (time < 0.0) usetime = false;
@@ -428,7 +422,6 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Dis
       CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
     }
   }
-  return;
 }  // end of EvaluateCondition
 
 /*-----------------------------------------------------------------------*
@@ -468,7 +461,7 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discreti
 
     if (absconstraint_.find(condID)->second && init)
     {
-      elevector3[0] = cond->GetDouble("amplitude");
+      elevector3[0] = *cond->Get<double>("amplitude");
     }
     else
     {

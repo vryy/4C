@@ -756,15 +756,13 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
+  for (auto* cond : cardiovascular0dcond_)
   {
-    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("id");
+    int condID = *cond->Get<int>("id");
     params.set("id", condID);
 
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -773,9 +771,9 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
     CORE::LINALG::SerialDenseVector elevector2;
     CORE::LINALG::SerialDenseVector elevector3;
 
-    const std::string* conditiontype = cardiovascular0dcond_[i]->Get<std::string>("type");
+    const std::string conditiontype = *cond->Get<std::string>("type");
 
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
@@ -802,12 +800,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
       std::vector<int> cardiovascular0dlm;
       std::vector<int> cardiovascular0downer;
 
-      if (*conditiontype == "ventricle_left") cardiovascular0dlm.push_back(gindex[2]);
-      if (*conditiontype == "ventricle_right") cardiovascular0dlm.push_back(gindex[10]);
-      if (*conditiontype == "atrium_left") cardiovascular0dlm.push_back(gindex[0]);
-      if (*conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[8]);
+      if (conditiontype == "ventricle_left") cardiovascular0dlm.push_back(gindex[2]);
+      if (conditiontype == "ventricle_right") cardiovascular0dlm.push_back(gindex[10]);
+      if (conditiontype == "atrium_left") cardiovascular0dlm.push_back(gindex[0]);
+      if (conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[8]);
       cardiovascular0downer.push_back(curr->second->Owner());
-      if (assvec1 and *conditiontype != "dummy")
+      if (assvec1 and conditiontype != "dummy")
         CORE::LINALG::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
     }
   }

@@ -2134,7 +2134,7 @@ void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcon
   // revision 17615.
 
   // confirm that mode flags are number of nodal dofs/scalars
-  const int nummodes = kspcond->GetInt("NUMMODES");
+  const int nummodes = *kspcond->Get<int>("NUMMODES");
   if (nummodes != NumDofPerNode())
   {
     dserror(
@@ -3174,7 +3174,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
 
           // compute matrix and vector contributions according to kinetic model for current
           // macro-micro coupling condition
-          const int kinetic_model = condition->GetInt("kinetic model");
+          const int kinetic_model = *condition->Get<int>("kinetic model");
 
           switch (kinetic_model)
           {
@@ -3220,7 +3220,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
                 dserror("Invalid electrode material for multi-scale coupling!");
 
               // access input parameters associated with current condition
-              const int nume = condition->GetInt("e-");
+              const int nume = *condition->Get<int>("e-");
               if (nume != 1)
               {
                 dserror(
@@ -3246,11 +3246,12 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
                   faraday /
                   (gasconstant * (GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>(
                                      "TEMPERATURE")));
-              const double alphaa = condition->GetDouble("alpha_a");  // anodic transfer coefficient
+              const double alphaa =
+                  *condition->Get<double>("alpha_a");  // anodic transfer coefficient
               const double alphac =
-                  condition->GetDouble("alpha_c");  // cathodic transfer coefficient
+                  *condition->Get<double>("alpha_c");  // cathodic transfer coefficient
               const double kr =
-                  condition->GetDouble("k_r");  // rate constant of charge transfer reaction
+                  *condition->Get<double>("k_r");  // rate constant of charge transfer reaction
               if (kr < 0.) dserror("Charge transfer constant k_r is negative!");
 
               // extract saturation value of intercalated lithium concentration from electrode
@@ -3289,7 +3290,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
 
               // Butler-Volmer exchange mass flux density
               const double j0 =
-                  condition->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
+                  *condition->Get<int>("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
                       ? kr
                       : kr * std::pow(conc_el, alphaa) * std::pow(cmax - conc_ed, alphaa) *
                             std::pow(conc_ed, alphac);

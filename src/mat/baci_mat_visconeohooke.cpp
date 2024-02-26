@@ -27,12 +27,12 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::ViscoNeoHooke::ViscoNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_slow_(matdata->GetDouble("YOUNGS_SLOW")),
-      poisson_(matdata->GetDouble("POISSON")),
-      density_(matdata->GetDouble("DENS")),
-      youngs_fast_(matdata->GetDouble("YOUNGS_FAST")),
-      relax_(matdata->GetDouble("RELAX")),
-      theta_(matdata->GetDouble("THETA"))
+      youngs_slow_(*matdata->Get<double>("YOUNGS_SLOW")),
+      poisson_(*matdata->Get<double>("POISSON")),
+      density_(*matdata->Get<double>("DENS")),
+      youngs_fast_(*matdata->Get<double>("YOUNGS_FAST")),
+      relax_(*matdata->Get<double>("RELAX")),
+      theta_(*matdata->Get<double>("THETA"))
 {
 }
 

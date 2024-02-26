@@ -28,9 +28,9 @@ MAT::PAR::ScatraMatAniso::ScatraMatAniso(Teuchos::RCP<MAT::PAR::Material> matdat
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(diff1)->PutScalar(matdata->GetDouble("DIFF1"));
-  matparams_.at(diff2)->PutScalar(matdata->GetDouble("DIFF2"));
-  matparams_.at(diff3)->PutScalar(matdata->GetDouble("DIFF3"));
+  matparams_.at(diff1)->PutScalar(*matdata->Get<double>("DIFF1"));
+  matparams_.at(diff2)->PutScalar(*matdata->Get<double>("DIFF2"));
+  matparams_.at(diff3)->PutScalar(*matdata->Get<double>("DIFF3"));
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatAniso::CreateMaterial()

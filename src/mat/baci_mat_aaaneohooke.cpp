@@ -35,10 +35,10 @@ MAT::PAR::AAAneohooke::AAAneohooke(Teuchos::RCP<MAT::PAR::Material> matdata) : P
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(young)->PutScalar(matdata->GetDouble("YOUNG"));
-  matparams_.at(nue)->PutScalar(matdata->GetDouble("NUE"));
-  matparams_.at(beta)->PutScalar(matdata->GetDouble("BETA"));
-  matparams_.at(density)->PutScalar(matdata->GetDouble("DENS"));
+  matparams_.at(young)->PutScalar(*matdata->Get<double>("YOUNG"));
+  matparams_.at(nue)->PutScalar(*matdata->Get<double>("NUE"));
+  matparams_.at(beta)->PutScalar(*matdata->Get<double>("BETA"));
+  matparams_.at(density)->PutScalar(*matdata->Get<double>("DENS"));
 }
 
 

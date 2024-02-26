@@ -20,7 +20,7 @@ BACI_NAMESPACE_OPEN
 MAT::PAR::Mixture::Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), constituents_(0)
 {
-  const int num_constituents = matdata->GetInt("NUMCONST");
+  const int num_constituents = *matdata->Get<int>("NUMCONST");
   const auto* constituent_matids = matdata->Get<std::vector<int>>("MATIDSCONST");
 
   // check, if size of constituents fits to the number of constituents
@@ -40,7 +40,7 @@ MAT::PAR::Mixture::Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata)
   }
 
   // Create mixture rule
-  mixture_rule_ = MIXTURE::PAR::MixtureRule::Factory(matdata->GetInt("MATIDMIXTURERULE"));
+  mixture_rule_ = MIXTURE::PAR::MixtureRule::Factory(*matdata->Get<int>("MATIDMIXTURERULE"));
 }
 
 // Create a material instance from parameters

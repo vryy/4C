@@ -75,10 +75,10 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       if ((sepcond.size() != 1) and (condition == "TurbulentInflowSection"))
         dserror("Only one separate section with condition TurbulentInflowSection expected!");
       // remark: however, more than one are already considered
-      for (unsigned numcond = 0; numcond < sepcond.size(); ++numcond)
+      for (auto& sepc : sepcond)
       {
         // get nodes ids of all nodes with separtion condition
-        const std::vector<int>* sepcondnodeids = (*sepcond[numcond]).GetNodes();
+        const std::vector<int>* sepcondnodeids = (*sepc).GetNodes();
 
         // and store them
         allcnd_sepcondnodeids.reserve(allcnd_sepcondnodeids.size() + sepcondnodeids->size());
@@ -87,10 +87,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       }
 
       // and change format
-      for (std::vector<int>::iterator id = allcnd_sepcondnodeids.begin();
-           id != allcnd_sepcondnodeids.end(); ++id)
+      for (int& allcnd_sepcondnodeid : allcnd_sepcondnodeids)
       {
-        sepcondnodeset.insert(*id);
+        sepcondnodeset.insert(allcnd_sepcondnodeid);
       }
     }
 

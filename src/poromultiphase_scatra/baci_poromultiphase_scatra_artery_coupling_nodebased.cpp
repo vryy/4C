@@ -56,9 +56,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   std::vector<DRT::Condition*> artCoupcond;
   arterydis_->GetCondition(condname_, artCoupcond);
 
-  for (unsigned iter = 0; iter < artCoupcond.size(); ++iter)
+  for (auto& iter : artCoupcond)
   {
-    int myID = (artCoupcond[iter])->GetInt("coupling id");
+    int myID = *iter->Get<int>("coupling id");
     condIDs[0].push_back(myID);
   }
 
@@ -66,9 +66,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   std::vector<DRT::Condition*> contfieldCoupcond;
   contdis_->GetCondition(condname_, contfieldCoupcond);
 
-  for (unsigned iter = 0; iter < contfieldCoupcond.size(); ++iter)
+  for (auto& iter : contfieldCoupcond)
   {
-    int myID = (contfieldCoupcond[iter])->GetInt("coupling id");
+    int myID = *iter->Get<int>("coupling id");
     condIDs[1].push_back(myID);
   }
 

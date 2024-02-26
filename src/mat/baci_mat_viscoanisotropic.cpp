@@ -28,22 +28,22 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::ViscoAnisotropic::ViscoAnisotropic(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      kappa_(matdata->GetDouble("KAPPA")),
-      mue_(matdata->GetDouble("MUE")),
-      density_(matdata->GetDouble("DENS")),
-      k1_(matdata->GetDouble("K1")),
-      k2_(matdata->GetDouble("K2")),
-      gamma_(matdata->GetDouble("GAMMA")),
+      kappa_(*matdata->Get<double>("KAPPA")),
+      mue_(*matdata->Get<double>("MUE")),
+      density_(*matdata->Get<double>("DENS")),
+      k1_(*matdata->Get<double>("K1")),
+      k2_(*matdata->Get<double>("K2")),
+      gamma_(*matdata->Get<double>("GAMMA")),
       numstresstypes_(3),
       beta_(),
       relax_(),
-      minstretch_(matdata->GetDouble("MINSTRETCH")),
-      elethick_(matdata->GetInt("ELETHICKDIR"))
+      minstretch_(*matdata->Get<double>("MINSTRETCH")),
+      elethick_(*matdata->Get<int>("ELETHICKDIR"))
 {
-  beta_[0] = matdata->GetDouble("BETA_ISO");
-  beta_[1] = matdata->GetDouble("BETA_ANISO");
-  relax_[0] = matdata->GetDouble("RELAX_ISO");
-  relax_[1] = matdata->GetDouble("RELAX_ANISO");
+  beta_[0] = *matdata->Get<double>("BETA_ISO");
+  beta_[1] = *matdata->Get<double>("BETA_ANISO");
+  relax_[0] = *matdata->Get<double>("RELAX_ISO");
+  relax_[1] = *matdata->Get<double>("RELAX_ANISO");
 }
 
 

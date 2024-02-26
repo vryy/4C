@@ -16,9 +16,9 @@ BACI_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::CoupMooneyRivlin::CoupMooneyRivlin(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      c1_(matdata->GetDouble("C1")),
-      c2_(matdata->GetDouble("C2")),
-      c3_(matdata->GetDouble("C3"))
+      c1_(*matdata->Get<double>("C1")),
+      c2_(*matdata->Get<double>("C2")),
+      c3_(*matdata->Get<double>("C3"))
 {
 }
 

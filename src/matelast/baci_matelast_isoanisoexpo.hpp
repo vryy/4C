@@ -51,7 +51,7 @@ namespace MAT
         /// fiber initalization status
         int init_;
         /// adapt angle during remodeling
-        int adapt_angle_;
+        bool adapt_angle_;
         //@}
 
         /// Override this method and throw error, as the material should be created in within the

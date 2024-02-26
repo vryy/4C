@@ -81,7 +81,7 @@ bool FLD::IsSlaveNodeOfRotSymPBC(const DRT::Node* node, double& rotangle)
 /*----------------------------------------------------------------------*/
 double FLD::GetRotAngleFromCondition(const DRT::Condition* cond)
 {
-  const double rotangle_deg = cond->GetDouble("Angle of rotation");
+  const double rotangle_deg = *cond->Get<double>("Angle of rotation");
 
   return rotangle_deg * M_PI / 180.0;  // angle of rotation (RAD);
 }
@@ -118,8 +118,6 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
       }
     }  // end is slave condition?
   }    // end loop periodic boundary conditions
-
-  return;
 }
 
 BACI_NAMESPACE_CLOSE

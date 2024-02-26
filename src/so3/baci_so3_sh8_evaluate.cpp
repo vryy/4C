@@ -1847,7 +1847,7 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMD
 
     for (auto& conu : cond0)
     {
-      int tmp = conu->GetInt("ConditionID");
+      int tmp = *conu->Get<int>("ConditionID");
       if (tmp < condnum0) condnum0 = tmp;
     }
     if (condnum0 ==
@@ -1857,7 +1857,7 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMD
 
     for (auto& conu : cond1)
     {
-      int tmp = conu->GetInt("ConditionID");
+      int tmp = *conu->Get<int>("ConditionID");
       if (tmp < condnum1) condnum1 = tmp;
     }
     if (condnum1 ==

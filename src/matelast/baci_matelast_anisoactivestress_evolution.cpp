@@ -20,18 +20,18 @@ BACI_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
-      sigma_(matdata->GetDouble("SIGMA")),
-      tauc0_(matdata->GetDouble("TAUC0")),
-      maxactiv_(matdata->GetDouble("MAX_ACTIVATION")),
-      minactiv_(matdata->GetDouble("MIN_ACTIVATION")),
-      activationthreshold_(matdata->GetDouble("ACTIVATION_THRES")),
-      sourceactiv_(matdata->GetInt("SOURCE_ACTIVATION")),
-      strain_dep_(matdata->GetInt("STRAIN_DEPENDENCY")),
-      lambda_lower_(matdata->GetDouble("LAMBDA_LOWER")),
-      lambda_upper_(matdata->GetDouble("LAMBDA_UPPER")),
-      gamma_(matdata->GetDouble("GAMMA")),
-      init_(matdata->GetInt("INIT")),
-      adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
+      sigma_(*matdata->Get<double>("SIGMA")),
+      tauc0_(*matdata->Get<double>("TAUC0")),
+      maxactiv_(*matdata->Get<double>("MAX_ACTIVATION")),
+      minactiv_(*matdata->Get<double>("MIN_ACTIVATION")),
+      activationthreshold_(*matdata->Get<double>("ACTIVATION_THRES")),
+      sourceactiv_(*matdata->Get<int>("SOURCE_ACTIVATION")),
+      strain_dep_(*matdata->Get<bool>("STRAIN_DEPENDENCY")),
+      lambda_lower_(*matdata->Get<double>("LAMBDA_LOWER")),
+      lambda_upper_(*matdata->Get<double>("LAMBDA_UPPER")),
+      gamma_(*matdata->Get<double>("GAMMA")),
+      init_(*matdata->Get<int>("INIT")),
+      adapt_angle_(*matdata->Get<bool>("ADAPT_ANGLE"))
 {
 }
 
@@ -73,7 +73,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(int numgp, INPUT::LineDefi
   tauc_np_ = params_->tauc0_;
 
   // reasonability check...
-  if (params_->strain_dep_ != 0)
+  if (params_->strain_dep_)
   {
     if (params_->lambda_lower_ >= params_->lambda_upper_)
     {
@@ -151,7 +151,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
   double lambda = 0.0;
   double scale = 0.0;
   double n0 = 1.0;
-  if (params_->strain_dep_ != 0)
+  if (params_->strain_dep_)
   {
     // squared stretch along fiber direction
     double I4;
@@ -179,7 +179,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
   stress.Update(tauc_np_, A, 1.0);
 
   // only contribution to cmat if we have strain dependency!
-  if (params_->strain_dep_ != 0)
+  if (params_->strain_dep_)
   {
     double dtauc_np_dC;
     // Cmat_active = 2 * dS_active / dC = 2 * dtau(t) / dC \otimes (a_0 \otimes a_0)

@@ -22,10 +22,10 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ModPowerLaw::ModPowerLaw(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      m_cons_(matdata->GetDouble("MCONS")),
-      delta_(matdata->GetDouble("DELTA")),
-      a_exp_(matdata->GetDouble("AEXP")),
-      density_(matdata->GetDouble("DENSITY"))
+      m_cons_(*matdata->Get<double>("MCONS")),
+      delta_(*matdata->Get<double>("DELTA")),
+      a_exp_(*matdata->Get<double>("AEXP")),
+      density_(*matdata->Get<double>("DENSITY"))
 {
 }
 

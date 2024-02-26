@@ -38,25 +38,25 @@ BACI_NAMESPACE_OPEN
 MAT::PAR::GrowthRemodel_ElastHyper::GrowthRemodel_ElastHyper(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      nummat_remodelfiber_(matdata->GetInt("NUMMATRF")),
-      nummat_elastiniso_(matdata->GetInt("NUMMATEL3D")),
-      nummat_elastinmem_(matdata->GetInt("NUMMATEL2D")),
+      nummat_remodelfiber_(*matdata->Get<int>("NUMMATRF")),
+      nummat_elastiniso_(*matdata->Get<int>("NUMMATEL3D")),
+      nummat_elastinmem_(*matdata->Get<int>("NUMMATEL2D")),
       matids_remodelfiber_(matdata->Get<std::vector<int>>("MATIDSRF")),
       matids_elastiniso_(matdata->Get<std::vector<int>>("MATIDSEL3D")),
       matids_elastinmem_(matdata->Get<std::vector<int>>("MATIDSEL2D")),
-      matid_penalty_(matdata->GetInt("MATIDELPENALTY")),
-      init_w_el_(matdata->GetDouble("ELMASSFRAC")),
-      density_(matdata->GetDouble("DENS")),
-      lamb_prestretch_cir_(matdata->GetDouble("PRESTRETCHELASTINCIR")),
-      lamb_prestretch_ax_(matdata->GetDouble("PRESTRETCHELASTINAX")),
-      t_ref_(matdata->GetDouble("THICKNESS")),
-      p_mean_(matdata->GetDouble("MEANPRESSURE")),
-      ri_(matdata->GetDouble("RADIUS")),
-      damage_(matdata->GetInt("DAMAGE")),
-      growthtype_(matdata->GetInt("GROWTHTYPE")),
-      loctimeint_(matdata->GetInt("LOCTIMEINT")),
-      membrane_(matdata->GetInt("MEMBRANE")),
-      cylinder_(matdata->GetInt("CYLINDER"))
+      matid_penalty_(*matdata->Get<int>("MATIDELPENALTY")),
+      init_w_el_(*matdata->Get<double>("ELMASSFRAC")),
+      density_(*matdata->Get<double>("DENS")),
+      lamb_prestretch_cir_(*matdata->Get<double>("PRESTRETCHELASTINCIR")),
+      lamb_prestretch_ax_(*matdata->Get<double>("PRESTRETCHELASTINAX")),
+      t_ref_(*matdata->Get<double>("THICKNESS")),
+      p_mean_(*matdata->Get<double>("MEANPRESSURE")),
+      ri_(*matdata->Get<double>("RADIUS")),
+      damage_(*matdata->Get<int>("DAMAGE")),
+      growthtype_(*matdata->Get<int>("GROWTHTYPE")),
+      loctimeint_(*matdata->Get<int>("LOCTIMEINT")),
+      membrane_(*matdata->Get<int>("MEMBRANE")),
+      cylinder_(*matdata->Get<int>("CYLINDER"))
 {
   // check if sizes fit
   if (nummat_remodelfiber_ != (int)matids_remodelfiber_->size())

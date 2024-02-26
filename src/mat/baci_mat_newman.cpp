@@ -26,12 +26,12 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Newman::Newman(Teuchos::RCP<MAT::PAR::Material> matdata)
     : ElchSingleMat(matdata),
-      valence_(matdata->GetDouble("VALENCE")),
-      transnrcurve_(matdata->GetInt("TRANSNR")),
-      thermfaccurve_(matdata->GetInt("THERMFAC")),
-      transnrparanum_(matdata->GetInt("TRANS_PARA_NUM")),
+      valence_(*matdata->Get<double>("VALENCE")),
+      transnrcurve_(*matdata->Get<int>("TRANSNR")),
+      thermfaccurve_(*matdata->Get<int>("THERMFAC")),
+      transnrparanum_(*matdata->Get<int>("TRANS_PARA_NUM")),
       transnrpara_(*matdata->Get<std::vector<double>>("TRANS_PARA")),
-      thermfacparanum_(matdata->GetInt("THERM_PARA_NUM")),
+      thermfacparanum_(*matdata->Get<int>("THERM_PARA_NUM")),
       thermfacpara_(*matdata->Get<std::vector<double>>("THERM_PARA"))
 {
   if (transnrparanum_ != (int)transnrpara_.size())

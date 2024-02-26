@@ -38,7 +38,7 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
       stiff_comp_((*spring_->Get<std::vector<double>>("stiff"))[0]),
       offset_((*spring_->Get<std::vector<double>>("disploffset"))[0]),
       viscosity_((*spring_->Get<std::vector<double>>("visco"))[0]),
-      coupling_(spring_->GetInt("coupling id")),
+      coupling_(*spring_->Get<int>("coupling id")),
       nodes_(spring_->GetNodes()),
       area_(),
       gap0_(),

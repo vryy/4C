@@ -277,25 +277,24 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
     std::vector<DRT::Condition*> coupcond;
     disscatra->GetCondition("ScaTraCoupling", coupcond);
 
-    for (unsigned iter = 0; iter < coupcond.size(); ++iter)
+    for (auto& iter : coupcond)
     {
-      int myID = (coupcond[iter])->GetInt("coupling id");
+      int myID = *iter->Get<int>("coupling id");
       condIDs[i].insert(myID);
 
       if (!infperm_)  // get all FS3I interface condition parameters from the input file
       {
         // initialize a large enough vector
-        std::vector<double>* params = new std::vector<double>(7, true);
-        params->at(0) = (coupcond[iter])->GetDouble("permeability coefficient");
-        params->at(1) = (coupcond[iter])->GetDouble("hydraulic conductivity");
-        params->at(2) = (coupcond[iter])->GetDouble("filtration coefficient");
-        params->at(3) = (double)(coupcond[iter])->GetInt("wss onoff");
-        const std::vector<double>* mywsscoeffs =
-            (coupcond[iter])->Get<std::vector<double>>("wss coeffs");
+        auto* params = new std::vector<double>(7, true);
+        params->at(0) = *iter->Get<double>("permeability coefficient");
+        params->at(1) = *iter->Get<double>("hydraulic conductivity");
+        params->at(2) = *iter->Get<double>("filtration coefficient");
+        params->at(3) = (double)*iter->Get<int>("wss onoff");
+        const auto* mywsscoeffs = iter->Get<std::vector<double>>("wss coeffs");
         params->at(4) = mywsscoeffs->at(0);
         params->at(5) = mywsscoeffs->at(1);
-        params->at(6) = (double)((coupcond[iter])->GetInt("numscal"));
-        const std::vector<int>* onoffs = (coupcond[iter])->Get<std::vector<int>>("onoff");
+        params->at(6) = (double)(*iter->Get<int>("numscal"));
+        const auto* onoffs = iter->Get<std::vector<int>>("onoff");
         for (int k = 0; k < numscal; k++)
         {
           params->push_back((double)(onoffs->at(k)));

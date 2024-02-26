@@ -62,13 +62,13 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
   {
     bool ConditionIsWrong = true;
     // get the Womersley surface ID
-    int surfID = womersleycond[i]->GetInt("ConditionID");
+    int surfID = *womersleycond[i]->Get<int>("ConditionID");
 
     // loop over all of the border conditions
     for (unsigned int j = 0; j < womersley_border_nodes_cond.size(); j++)
     {
       // get the border ID
-      int lineID = womersley_border_nodes_cond[j]->GetInt("ConditionID");
+      int lineID = *womersley_border_nodes_cond[j]->Get<int>("ConditionID");
       if (lineID == surfID)
       {
         // Since the condition is ok then create the corresponding the condition
@@ -222,13 +222,13 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   dta_ = dta;
 
   // get the cycle period size
-  period_ = (conditions[surf_numcond])->GetDouble("Period");
+  period_ = *conditions[surf_numcond]->Get<double>("Period");
 
   // get the polynomial order of the profile
-  order_ = (conditions[surf_numcond])->GetInt("Order");
+  order_ = *conditions[surf_numcond]->Get<int>("Order");
 
   // get the number of harmonics
-  n_harmonics_ = (conditions[surf_numcond])->GetInt("Harmonics");
+  n_harmonics_ = *conditions[surf_numcond]->Get<int>("Harmonics");
 
   // get the profile type
   flowprofile_type_ = (*(conditions[surf_numcond])->Get<std::string>("ConditionType"));
@@ -262,9 +262,9 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
       std::cout << "Normal is manually setup" << std::endl;
     }
     vnormal_ = Teuchos::rcp(new std::vector<double>);
-    (*vnormal_)[0] = (conditions[surf_numcond])->GetDouble("n1");
-    (*vnormal_)[1] = (conditions[surf_numcond])->GetDouble("n2");
-    (*vnormal_)[2] = (conditions[surf_numcond])->GetDouble("n3");
+    (*vnormal_)[0] = *conditions[surf_numcond]->Get<double>("n1");
+    (*vnormal_)[1] = *conditions[surf_numcond]->Get<double>("n2");
+    (*vnormal_)[2] = *conditions[surf_numcond]->Get<double>("n3");
   }
   else
   {
@@ -289,9 +289,9 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
       std::cout << "Center of mass is manually setup" << std::endl;
     }
     normal_ = Teuchos::rcp(new std::vector<double>);
-    (*cmass_)[0] = (conditions[surf_numcond])->GetDouble("c1");
-    (*cmass_)[1] = (conditions[surf_numcond])->GetDouble("c2");
-    (*cmass_)[2] = (conditions[surf_numcond])->GetDouble("c3");
+    (*cmass_)[0] = *conditions[surf_numcond]->Get<double>("c1");
+    (*cmass_)[1] = *conditions[surf_numcond]->Get<double>("c2");
+    (*cmass_)[2] = *conditions[surf_numcond]->Get<double>("c3");
   }
   else
   {
@@ -1053,8 +1053,8 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
   DRT::Condition* condition = conditions[condnum_s_];
 
   // get curve and curve_factor
-  const int functnum = condition->GetInt("Funct");
-  const double val = condition->GetDouble("Val");
+  const int functnum = *condition->Get<int>("Funct");
+  const double val = *condition->Get<double>("Val");
 
   //  if ( val < 1e-14 )
   //    dserror("Val must be positive!");
@@ -1960,13 +1960,13 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
   {
     bool ConditionIsWrong = true;
     // get the traction surface ID
-    int surfID = tractioncond[i]->GetInt("ConditionID");
+    int surfID = *tractioncond[i]->Get<int>("ConditionID");
 
     // loop over all of the border conditions
     for (unsigned int j = 0; j < traction_border_nodes_cond.size(); j++)
     {
       // get the border ID
-      int lineID = traction_border_nodes_cond[j]->GetInt("ConditionID");
+      int lineID = *traction_border_nodes_cond[j]->Get<int>("ConditionID");
       if (lineID == surfID)
       {
         // Since the condition is ok then create the corresponding the condition

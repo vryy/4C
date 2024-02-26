@@ -2098,11 +2098,11 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   // get values and switches from the condition:
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
 
   // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
+  const auto* val = condition.Get<std::vector<double>>("val");
 
   // compute the load vector based on value, scaling factor and whether condition is active
   CORE::LINALG::Matrix<6, 1, double> load_vector_neumann(true);
@@ -2114,7 +2114,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   if (condition.Type() == DRT::Condition::PointNeumannEB)
   {
     // find out whether we will use a time curve and get the factor
-    const std::vector<int>* funct = condition.Get<std::vector<int>>("funct");
+    const auto* funct = condition.Get<std::vector<int>>("funct");
     // amplitude of load curve at current time called
     std::vector<double> functtimefac(6, 1.0);
 
@@ -2161,7 +2161,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     // funct is related to the 6 "funct" fields after the val field of the Neumann condition
     // in the input file; funct gives the number of the function defined in the section FUNCT
-    const std::vector<int>* function_numbers = condition.Get<std::vector<int>>("funct");
+    const auto* function_numbers = condition.Get<std::vector<int>>("funct");
 
     // Check if distributed moment load is applied and throw error
     if (function_numbers != nullptr)

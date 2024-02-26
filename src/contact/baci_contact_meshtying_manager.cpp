@@ -86,18 +86,14 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
 
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
-    const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
-    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
-    int groupid1 = (*group1v)[0];
+    const auto groupid1 = *currentgroup[0]->Get<int>("Interface ID");
     bool foundit = false;
 
     for (unsigned j = 0; j < contactconditions.size(); ++j)
     {
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
-      const std::vector<int>* group2v = tempcond->Get<std::vector<int>>("Interface ID");
-      if (!group2v) dserror("Contact Conditions does not have value 'Interface ID'");
-      int groupid2 = (*group2v)[0];
+      const auto groupid2 = *tempcond->Get<int>("Interface ID");
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
       currentgroup.push_back(tempcond);    // store it in currentgroup

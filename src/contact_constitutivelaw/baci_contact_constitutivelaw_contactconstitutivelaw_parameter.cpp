@@ -20,7 +20,7 @@ CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
     const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container>
         coconstlawdata  ///< read and validate contactconstitutivelaw data (of 'slow' access)
     )
-    : offset_(coconstlawdata->GetDouble("Offset")){};
+    : offset_(*coconstlawdata->Get<double>("Offset")){};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Container::Container(

@@ -25,10 +25,10 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::AAA_mixedeffects::AAA_mixedeffects(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      nue_(matdata->GetDouble("NUE")),
-      age_(matdata->GetDouble("AGE")),
-      refdia_(matdata->GetDouble("REFDIA")),
-      density_(matdata->GetDouble("DENS"))
+      nue_(*matdata->Get<double>("NUE")),
+      age_(*matdata->Get<double>("AGE")),
+      refdia_(*matdata->Get<double>("REFDIA")),
+      density_(*matdata->Get<double>("DENS"))
 {
 }
 

@@ -70,8 +70,6 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
 
   // initialise all counters, timers and vectors to zero
   ResetComplete();
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean
 
 //----------------------------------------------------------------------
@@ -123,8 +121,6 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
 
   // initialise all counters, timers and vectors to zero
   ResetComplete();
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean
 
 
@@ -178,8 +174,6 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(const double 
 
   // increase number of steps included in this sample
   ++curr_n_;
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage
 
 
@@ -283,35 +277,33 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
         bool is_slave = false;
 
         // yes, we have one
-        for (unsigned numcond = 0; numcond < mypbcs.size(); ++numcond)
+        for (auto* pbc : mypbcs)
         {
-          DRT::Condition* pbc = mypbcs[numcond];
-
           // see whether pbc is active in plane orthogonal to sampling plane
-          const std::string* dofsforpbcplanename =
-              pbc->Get<std::string>("degrees of freedom for the pbc plane");
+          const auto dofsforpbcplanename =
+              *pbc->Get<std::string>("degrees of freedom for the pbc plane");
 
           bool active = false;
 
-          if (*dofsforpbcplanename == "xyz")
+          if (dofsforpbcplanename == "xyz")
           {
             active = true;
           }
-          else if (*dofsforpbcplanename == "xy")
+          else if (dofsforpbcplanename == "xy")
           {
             if (dim == 2)
             {
               active = true;
             }
           }
-          else if (*dofsforpbcplanename == "xz")
+          else if (dofsforpbcplanename == "xz")
           {
             if (dim == 1)
             {
               active = true;
             }
           }
-          else if (*dofsforpbcplanename == "yz")
+          else if (dofsforpbcplanename == "yz")
           {
             if (dim == 0)
             {
@@ -322,10 +314,10 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
           if (active)
           {
             // see whether we have a slave node
-            const std::string* mymasterslavetoggle =
-                pbc->Get<std::string>("Is slave periodic boundary condition");
+            const auto mymasterslavetoggle =
+                *pbc->Get<std::string>("Is slave periodic boundary condition");
 
-            if (*mymasterslavetoggle == "Slave")
+            if (mymasterslavetoggle == "Slave")
             {
               is_slave = true;
             }
@@ -1009,8 +1001,6 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       exporter.ISend(frompid, topid, sblock.data(), sblock.size(), tag, request);
     }
   }
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection
 
 
@@ -1056,8 +1046,6 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToTotalTimeAverage()
 
   // reinitialise curr(ent) counter and averages
   TimeReset();
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::AddToTotalTimeAverage
 
 
@@ -1073,8 +1061,6 @@ void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(IO::DiscretizationR
 
   input.ReadVector(prev_avg_, "averaged_velnp");
   if (withscatra_) input.ReadVector(prev_avg_sca_, "averaged_scanp");
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics
 
 
@@ -1090,8 +1076,6 @@ void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatisticsScaTra(IO::Discretiz
     // read previous averaged vector. That's all
     input.ReadVector(prev_avg_scatra_, "averaged_phinp");
   }
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::ReadOldStatisticsScaTra
 
 
@@ -1127,8 +1111,6 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(IO::Discretization
   // output real pressure
   Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(prev_avg_);
   output.WriteVector("averaged_pressure", pressure);
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec
 
 
@@ -1162,8 +1144,6 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
 
   curr_n_ = 0;
   curr_avg_time_ = 0.0;
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::TimeReset
 
 //----------------------------------------------------------------------
@@ -1180,8 +1160,6 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeResetFluidAvgVectors(const Epetra
     curr_avg_sca_ = Teuchos::null;
     curr_avg_sca_ = CORE::LINALG::CreateVector(dofrowmap, true);
   }
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::TimeResetFluidAvgVectors
 
 //----------------------------------------------------------------------
@@ -1213,8 +1191,6 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
       prev_avg_scatra_ = CORE::LINALG::CreateVector(*scatradofrowmap, true);
     }
   }
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::ResetComplete
 
 
@@ -1244,8 +1220,6 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetFluidAvgVectors(const Epetra_Map
     prev_avg_sca_ = Teuchos::null;
     prev_avg_sca_ = CORE::LINALG::CreateVector(dofrowmap, true);
   }
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::ResetFluidAvgVectors
 
 //----------------------------------------------------------------------
@@ -1315,8 +1289,6 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
       }
     }
   }
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::Redistribute
 
 
@@ -1334,8 +1306,6 @@ void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
 
   // we allocate and reset everything again (but including scatra now)
   ResetComplete();
-
-  return;
 }  // FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults
 
 
@@ -1364,8 +1334,6 @@ void FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
       std::cout << "\n\n";
     }
   }
-
-  return;
 }
 
 BACI_NAMESPACE_CLOSE

@@ -22,11 +22,11 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Ion::Ion(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      valence_(matdata->GetDouble("VALENCE")),
-      diffusivity_(matdata->GetDouble("DIFFUSIVITY")),
-      densification_(matdata->GetDouble("DENSIFICATION")),
-      elimvalence_(matdata->GetDouble("ELIM_VALENCE")),
-      elimdiffusivity_(matdata->GetDouble("ELIM_DIFFUSIVITY"))
+      valence_(*matdata->Get<double>("VALENCE")),
+      diffusivity_(*matdata->Get<double>("DIFFUSIVITY")),
+      densification_(*matdata->Get<double>("DENSIFICATION")),
+      elimvalence_(*matdata->Get<double>("ELIM_VALENCE")),
+      elimdiffusivity_(*matdata->Get<double>("ELIM_DIFFUSIVITY"))
 {
 }
 

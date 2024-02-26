@@ -616,7 +616,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   {
     // add one, since read in of COUPLING parameter in DESIGN SURF SPRING DASHPOT CONDITIONS
     // subtracts one
-    if (coup_conds[i]->GetInt("coupling id") == (coupling_id + 1))
+    if (*coup_conds[i]->Get<int>("coupling id") == (coupling_id + 1))
       conds_master.push_back(coup_conds[i]);
   }
   if (!conds_master.size()) dserror("Coupling ID not found.");

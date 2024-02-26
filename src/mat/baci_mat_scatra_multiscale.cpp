@@ -18,8 +18,8 @@ BACI_NAMESPACE_OPEN
  *--------------------------------------------------------------------*/
 MAT::PAR::ScatraMultiScale::ScatraMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata)
     : microfile_(*(matdata->Get<std::string>("MICROFILE"))),
-      microdisnum_(matdata->GetInt("MICRODIS_NUM")),
-      A_s_(matdata->GetDouble("A_s"))
+      microdisnum_(*matdata->Get<int>("MICRODIS_NUM")),
+      A_s_(*matdata->Get<double>("A_s"))
 {
   return;
 }

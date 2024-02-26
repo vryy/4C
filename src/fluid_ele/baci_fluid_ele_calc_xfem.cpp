@@ -4024,7 +4024,7 @@ namespace DRT
         case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
         {
           // evaluate condition function at Gaussian point
-          if (cond->GetInt("numdof") == 6)
+          if (*cond->Get<int>("numdof") == 6)
           {
             CORE::LINALG::Matrix<6, 1> fulltraction(
                 true);  // sigma_xx, sigma_yy, sigma_zz, sigma_xy, sigma_yz, sigma_zx

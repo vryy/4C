@@ -94,7 +94,7 @@ void INPAR::ALE::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
       true)));
 
   aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("VAL")));
-  aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("val", 1)));
+  aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("val")));
 
   aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("NODENORMALFUNCT")));
   aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("nodenormalfunct")));

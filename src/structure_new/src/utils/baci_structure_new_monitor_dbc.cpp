@@ -187,13 +187,13 @@ void STR::MonitorDbc::Setup()
 void STR::MonitorDbc::CreateReactionMaps(const DRT::Discretization& discret,
     const DRT::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const
 {
-  const std::vector<int>* onoff = rcond.Get<std::vector<int>>("onoff");
-  const std::vector<int>* nids = rcond.GetNodes();
+  const auto* onoff = rcond.Get<std::vector<int>>("onoff");
+  const auto* nids = rcond.GetNodes();
   std::vector<int> my_dofs[DIM];
   int ndof = 0;
   for (int i : *onoff) ndof += i;
 
-  for (unsigned i = 0; i < DIM; ++i) my_dofs[i].reserve(nids->size() * ndof);
+  for (auto& my_dof : my_dofs) my_dof.reserve(nids->size() * ndof);
 
   const Epetra_Comm& comm = discret.Comm();
   for (int nid : *nids)
@@ -535,7 +535,7 @@ double STR::MonitorDbc::GetReactionMoment(CORE::LINALG::Matrix<DIM, 1>& rmoment_
   CORE::LINALG::Matrix<DIM, 1> node_reaction_moment(true);
   std::vector<int> node_gid(3);
 
-  const std::vector<int>* onoff = rcond->Get<std::vector<int>>("onoff");
+  const auto* onoff = rcond->Get<std::vector<int>>("onoff");
   const std::vector<int>* nids = rcond->GetNodes();
   std::vector<int> my_dofs[DIM];
   int ndof = 0;

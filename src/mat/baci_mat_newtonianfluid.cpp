@@ -23,9 +23,9 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::NewtonianFluid::NewtonianFluid(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      viscosity_(matdata->GetDouble("DYNVISCOSITY")),
-      density_(matdata->GetDouble("DENSITY")),
-      gamma_(matdata->GetDouble("GAMMA"))
+      viscosity_(*matdata->Get<double>("DYNVISCOSITY")),
+      density_(*matdata->Get<double>("DENSITY")),
+      gamma_(*matdata->Get<double>("GAMMA"))
 {
 }
 

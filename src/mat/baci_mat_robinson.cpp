@@ -70,20 +70,20 @@ MAT::PAR::Robinson::Robinson(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       kind_((matdata->Get<std::string>("KIND"))),
       youngs_(*(matdata->Get<std::vector<double>>("YOUNG"))),
-      poissonratio_(matdata->GetDouble("NUE")),
-      density_(matdata->GetDouble("DENS")),
-      thermexpans_(matdata->GetDouble("THEXPANS")),
-      inittemp_(matdata->GetDouble("INITTEMP")),
-      hrdn_fact_(matdata->GetDouble("HRDN_FACT")),
-      hrdn_expo_(matdata->GetDouble("HRDN_EXPO")),
+      poissonratio_(*matdata->Get<double>("NUE")),
+      density_(*matdata->Get<double>("DENS")),
+      thermexpans_(*matdata->Get<double>("THEXPANS")),
+      inittemp_(*matdata->Get<double>("INITTEMP")),
+      hrdn_fact_(*matdata->Get<double>("HRDN_FACT")),
+      hrdn_expo_(*matdata->Get<double>("HRDN_EXPO")),
       shrthrshld_(*(matdata->Get<std::vector<double>>("SHRTHRSHLD"))),
-      rcvry_(matdata->GetDouble("RCVRY")),
-      actv_ergy_(matdata->GetDouble("ACTV_ERGY")),
-      actv_tmpr_(matdata->GetDouble("ACTV_TMPR")),
-      g0_(matdata->GetDouble("G0")),
-      m_(matdata->GetDouble("M_EXPO")),
+      rcvry_(*matdata->Get<double>("RCVRY")),
+      actv_ergy_(*matdata->Get<double>("ACTV_ERGY")),
+      actv_tmpr_(*matdata->Get<double>("ACTV_TMPR")),
+      g0_(*matdata->Get<double>("G0")),
+      m_(*matdata->Get<double>("M_EXPO")),
       beta_(*(matdata->Get<std::vector<double>>("BETA"))),
-      h_(matdata->GetDouble("H_FACT"))
+      h_(*matdata->Get<double>("H_FACT"))
 {
 }
 

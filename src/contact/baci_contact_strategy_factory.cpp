@@ -726,14 +726,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
   for (auto& currentgroup : ccond_grps)
   {
     // initialize a reference to the i-th contact condition group
-    const auto* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
-    /* get the interface id
-     * (should be the same for both conditions in the current group!) */
-    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
-    int groupid1 = (*group1v)[0];
+    const auto groupid1 = *currentgroup[0]->Get<int>("Interface ID");
 
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
-    int contactconstitutivelaw_id = currentgroup[0]->GetInt("ConstitutiveLawID");
+    int contactconstitutivelaw_id = *currentgroup[0]->Get<int>("ConstitutiveLawID");
 
     // find out which sides are Master and Slave
     std::vector<bool> isslave(0);
@@ -767,7 +763,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       // read interface COFs
       std::vector<double> frcoeff(currentgroup.size());
       for (std::size_t j = 0; j < currentgroup.size(); ++j)
-        frcoeff[j] = currentgroup[j]->GetDouble("FrCoeffOrBound");
+        frcoeff[j] = *currentgroup[j]->Get<double>("FrCoeffOrBound");
 
       // check consistency of interface COFs
       for (std::size_t j = 1; j < currentgroup.size(); ++j)
@@ -803,7 +799,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       // read interface COFs
       std::vector<double> ad_bound(currentgroup.size());
       for (std::size_t j = 0; j < currentgroup.size(); ++j)
-        ad_bound[j] = currentgroup[j]->GetDouble("AdhesionBound");
+        ad_bound[j] = *currentgroup[j]->Get<double>("AdhesionBound");
 
       // check consistency of interface COFs
       for (std::size_t j = 1; j < currentgroup.size(); ++j)
@@ -2082,10 +2078,10 @@ void CONTACT::STRATEGY::Factory::SetParametersForContactCondition(
     for (const auto& s2ikinetics_cond : s2ikinetics_conditions)
     {
       // only add to parameters if condition ID's match
-      if (s2ikinetics_cond->GetInt("ConditionID") == conditiongroupid)
+      if (*s2ikinetics_cond->Get<int>("ConditionID") == conditiongroupid)
       {
         // only the slave-side stores the parameters
-        if (s2ikinetics_cond->GetInt("interface side") == INPAR::S2I::side_slave)
+        if (*s2ikinetics_cond->Get<int>("interface side") == INPAR::S2I::side_slave)
         {
           // fill the parameters from the s2i condition
           SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToParameterList(

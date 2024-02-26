@@ -64,7 +64,7 @@ MAT::PAR::PoroDensityLaw* MAT::PAR::PoroDensityLaw::CreateDensityLaw(int matID)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::PoroDensityLawExp::PoroDensityLawExp(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : PoroDensityLaw(matdata), bulkmodulus_(matdata->GetDouble("BULKMODULUS"))
+    : PoroDensityLaw(matdata), bulkmodulus_(*matdata->Get<double>("BULKMODULUS"))
 {
   return;
 }

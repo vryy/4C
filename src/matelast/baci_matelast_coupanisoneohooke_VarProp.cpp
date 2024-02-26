@@ -21,12 +21,12 @@ BACI_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
-      c_(matdata->GetDouble("C")),
-      sourceactiv_(matdata->GetInt("SOURCE_ACTIVATION")),
-      gamma_(matdata->GetDouble("GAMMA")),
-      theta_(matdata->GetDouble("THETA")),
-      init_(matdata->GetInt("INIT")),
-      adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
+      c_(*matdata->Get<double>("C")),
+      sourceactiv_(*matdata->Get<int>("SOURCE_ACTIVATION")),
+      gamma_(*matdata->Get<double>("GAMMA")),
+      theta_(*matdata->Get<double>("THETA")),
+      init_(*matdata->Get<int>("INIT")),
+      adapt_angle_(*matdata->Get<bool>("ADAPT_ANGLE"))
 {
 }
 

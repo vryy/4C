@@ -22,9 +22,9 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::MatList::MatList(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      nummat_(matdata->GetInt("NUMMAT")),
+      nummat_(*matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
-      local_((matdata->GetInt("LOCAL")))
+      local_((*matdata->Get<bool>("LOCAL")))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())

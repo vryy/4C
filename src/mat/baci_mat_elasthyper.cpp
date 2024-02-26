@@ -28,10 +28,10 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      nummat_(matdata->GetInt("NUMMAT")),
+      nummat_(*matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
-      density_(matdata->GetDouble("DENS")),
-      polyconvex_(matdata->GetInt("POLYCONVEX"))
+      density_(*matdata->Get<double>("DENS")),
+      polyconvex_(*matdata->Get<int>("POLYCONVEX"))
 
 {
   // check if sizes fit

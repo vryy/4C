@@ -22,9 +22,9 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::TempDepWater::TempDepWater(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      critdens_(matdata->GetDouble("CRITDENS")),
-      crittemp_(matdata->GetDouble("CRITTEMP")),
-      shc_(matdata->GetDouble("SHC"))
+      critdens_(*matdata->Get<double>("CRITDENS")),
+      crittemp_(*matdata->Get<double>("CRITTEMP")),
+      shc_(*matdata->Get<double>("SHC"))
 {
 }
 

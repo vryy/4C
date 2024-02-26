@@ -260,13 +260,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
   if (cond == Teuchos::null) dserror("Cannot access condition 'ElchDomainKinetics'");
 
   // access parameters of the condition
-  const int kinetics = cond->GetInt("kinetic model");
-  double pot0 = cond->GetDouble("pot");
-  const int curvenum = cond->GetInt("funct");
-  const int nume = cond->GetInt("e-");
+  const int kinetics = *cond->Get<int>("kinetic model");
+  double pot0 = *cond->Get<double>("pot");
+  const int curvenum = *cond->Get<int>("funct");
+  const int nume = *cond->Get<int>("e-");
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman
   // condition) but the electrode status is evaluated
-  const int zerocur = cond->GetInt("zero_cur");
+  const int zerocur = *cond->Get<int>("zero_cur");
   if (nume < 0)
   {
     dserror(
@@ -276,7 +276,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
 
   // convention for stoichiometric coefficients s_i:
   // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
-  const std::vector<int>* stoich = cond->Get<std::vector<int>>("stoich");
+  const auto* stoich = cond->Get<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
   {
     dserror(
@@ -467,7 +467,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
       const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, gpid);
 
       // extract specific electrode surface area A_s from condition
-      double A_s = cond->GetDouble("A_s");
+      double A_s = *cond->Get<double>("A_s");
 
       // call utility class for element evaluation
       Utils()->EvaluateElchKineticsAtIntegrationPoint(ele, emat, erhs, ephinp, ehist, timefac, fac,
@@ -534,10 +534,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectro
 
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman
   // condition) but the electrode status is evaluated
-  const int zerocur = cond->GetInt("zero_cur");
+  const int zerocur = *cond->Get<int>("zero_cur");
 
   // extract volumetric electrode surface area A_s from condition
-  double A_s = cond->GetDouble("A_s");
+  double A_s = *cond->Get<double>("A_s");
 
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(

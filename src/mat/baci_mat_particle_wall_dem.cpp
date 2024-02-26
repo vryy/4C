@@ -28,9 +28,9 @@ MAT::ParticleWallMaterialDEMType MAT::ParticleWallMaterialDEMType::instance_;
  *---------------------------------------------------------------------------*/
 MAT::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      frictionTang_(matdata->GetDouble("FRICT_COEFF_TANG")),
-      frictionRoll_(matdata->GetDouble("FRICT_COEFF_ROLL")),
-      adhesionSurfaceEnergy_(matdata->GetDouble("ADHESION_SURFACE_ENERGY"))
+      frictionTang_(*matdata->Get<double>("FRICT_COEFF_TANG")),
+      frictionRoll_(*matdata->Get<double>("FRICT_COEFF_ROLL")),
+      adhesionSurfaceEnergy_(*matdata->Get<double>("ADHESION_SURFACE_ENERGY"))
 {
   // empty constructor
 }

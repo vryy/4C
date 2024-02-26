@@ -55,9 +55,9 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
   {
     cardiovascular0dtype_ = GetCardiovascular0DType(conditionname);
     std::vector<int> curcoupID;
-    for (unsigned int i = 0; i < cardiovascular0dcond_.size(); i++)
+    for (auto& i : cardiovascular0dcond_)
     {
-      curID.push_back(cardiovascular0dcond_[i]->GetInt("id"));
+      curID.push_back(*i->Get<int>("id"));
     }
 
     Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
@@ -72,7 +72,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     std::vector<int> wkID(cardiovascular0dcond_.size());
     for (unsigned int i = 0; i < cardiovascular0dcond_.size(); i++)
     {
-      wkID[i] = (cardiovascular0dcond_[i])->GetInt("id");
+      wkID[i] = *cardiovascular0dcond_[i]->Get<int>("id");
     }
 
     // safety checks for closed-loop vascular model
@@ -162,9 +162,10 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     // set Neumann line to condition
     for (unsigned int i = 0; i < cardiovascular0dstructcoupcond_.size(); i++)
     {
-      coupcondID[i] = (cardiovascular0dstructcoupcond_[i])->GetInt("coupling_id");
+      coupcondID[i] = *cardiovascular0dstructcoupcond_[i]->Get<int>("coupling_id");
 
-      cardiovascular0dstructcoupcond_[i]->Add("type", "neum_orthopressure");
+      std::string type = "neum_orthopressure";
+      cardiovascular0dstructcoupcond_[i]->Add("type", type);
       std::vector<int> onoff(6, 0);
       onoff[0] = 1;
       cardiovascular0dstructcoupcond_[i]->Add("onoff", onoff);
@@ -290,11 +291,9 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
   /* here we do tge loop to assemble the offdiagonal stiffness block dfext/dcvdof (0,1 block)
   this is the derivative of the orthopressure Neumann load (external load vector fext) w.r.t. the
   pressure*/
-  for (unsigned int i = 0; i < cardiovascular0dstructcoupcond_.size(); ++i)
+  for (auto* coupcond : cardiovascular0dstructcoupcond_)
   {
-    DRT::Condition& coupcond = *(cardiovascular0dstructcoupcond_[i]);
-
-    int coupcondID = coupcond.GetInt("coupling_id");
+    int coupcondID = *coupcond->Get<int>("coupling_id");
     params.set("coupling_id", coupcondID);
 
     Teuchos::RCP<const Epetra_Vector> disp =
@@ -306,7 +305,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
     gindex[0] = numdof_per_cond * coupcondID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = coupcond.Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geom = coupcond->Geometry();
     // if (geom.empty()) dserror("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
@@ -433,7 +432,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
           for (unsigned int j = 0; j < cardiovascular0dcond_.size(); ++j)
           {
             DRT::Condition& cond = *(cardiovascular0dcond_[j]);
-            int id_cardvasc0d = cond.GetInt("id");
+            int id_cardvasc0d = *cond.Get<int>("id");
             if (coupcondID == id_cardvasc0d)
             {
               // get the type of the corresponding cardiovascular0D condition
@@ -452,7 +451,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
           for (unsigned int j = 0; j < cardiovascular0dcond_.size(); ++j)
           {
             DRT::Condition& cond = *(cardiovascular0dcond_[j]);
-            int id_cardvasc0d = cond.GetInt("id");
+            int id_cardvasc0d = *cond.Get<int>("id");
             if (coupcondID == id_cardvasc0d)
             {
               // get the type of the corresponding cardiovascular0D condition

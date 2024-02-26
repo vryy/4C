@@ -26,8 +26,8 @@ BACI_NAMESPACE_OPEN
 MIXTURE::PAR::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBase(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureConstituent(matdata),
-      matid_prestress_strategy_(matdata->GetInt("PRESTRESS_STRATEGY")),
-      nummat_(matdata->GetInt("NUMMAT")),
+      matid_prestress_strategy_(*matdata->Get<int>("PRESTRESS_STRATEGY")),
+      nummat_(*matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS"))
 {
   // check, if size of summands fits to the number of summands

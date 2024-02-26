@@ -25,7 +25,7 @@ BACI_NAMESPACE_OPEN
 
 MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),
-      initial_reference_density_(matdata->GetDouble("DENS")),
+      initial_reference_density_(*matdata->Get<double>("DENS")),
       mass_fractions_(*matdata->Get<std::vector<double>>("MASSFRAC"))
 {
   // check, whether the mass frac sums up to 1

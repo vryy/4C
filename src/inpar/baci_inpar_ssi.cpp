@@ -397,7 +397,7 @@ void INPAR::SSI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   surfmanifoldinitfields->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent("Field", "ScaTra",
       Teuchos::tuple<std::string>("ScaTra"), Teuchos::tuple<std::string>("ScaTra"))));
 
-  surfmanifoldinitfields->AddComponent(Teuchos::rcp(new INPUT::IntVectorComponent("funct", 1)));
+  surfmanifoldinitfields->AddComponent(Teuchos::rcp(new INPUT::IntComponent("funct")));
 
   condlist.emplace_back(surfmanifoldinitfields);
 

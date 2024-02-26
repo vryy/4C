@@ -451,7 +451,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
     if (fool->first == condstring)
     {
       DRT::Condition& cond = *(fool->second);
-      if (condid == -1 || condid == cond.GetInt("ConditionID"))
+      if (condid == -1 || condid == *cond.Get<int>("ConditionID"))
       {
         std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
         if (geom.empty())
@@ -461,22 +461,24 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
         std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
 
         // Evaluate Loadcurve if defined. Put current load factor in parameterlist
-        const std::vector<int>* curve = cond.Get<std::vector<int>>("curve");
+        const auto* curve = cond.GetIf<int>("curve");
         int curvenum = -1;
-        if (curve) curvenum = (*curve)[0];
+        if (curve) curvenum = *curve;
         double curvefac = 1.0;
         if (curvenum >= 0 && usetime)
+        {
           curvefac = GLOBAL::Problem::Instance()
                          ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
                          .Evaluate(time);
+        }
 
         // Get ConditionID of current condition if defined and write value in parameterlist
-        const std::vector<int>* CondIDVec = cond.Get<std::vector<int>>("ConditionID");
-        if (CondIDVec)
+        const auto* CondID = cond.GetIf<int>("ConditionID");
+        if (CondID)
         {
-          params.set("ConditionID", (*CondIDVec)[0]);
+          params.set("ConditionID", *CondID);
           char factorname[30];
-          sprintf(factorname, "LoadCurveFactor %d", (*CondIDVec)[0]);
+          sprintf(factorname, "LoadCurveFactor %d", *CondID);
           params.set(factorname, curvefac);
         }
         else

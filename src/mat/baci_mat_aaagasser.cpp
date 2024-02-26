@@ -33,13 +33,13 @@ BACI_NAMESPACE_OPEN
 MAT::PAR::AAAgasser::AAAgasser(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
 
-      density_(matdata->GetDouble("DENS")),
+      density_(*matdata->Get<double>("DENS")),
       vol_(matdata->Get<std::string>("VOL")),
-      nue_(matdata->GetDouble("NUE")),
-      beta_(matdata->GetDouble("BETA")),
-      Clum_(matdata->GetDouble("CLUM")),
-      Cmed_(matdata->GetDouble("CMED")),
-      Cablum_(matdata->GetDouble("CABLUM"))
+      nue_(*matdata->Get<double>("NUE")),
+      beta_(*matdata->Get<double>("BETA")),
+      Clum_(*matdata->Get<double>("CLUM")),
+      Cmed_(*matdata->Get<double>("CMED")),
+      Cablum_(*matdata->Get<double>("CABLUM"))
 {
 }
 

@@ -45,7 +45,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
   // get time period length of first condition, this should always be
   // the same!
   // -------------------------------------------------------------------
-  double period = (impedancecond[0])->GetDouble("TIMEPERIOD");
+  double period = *impedancecond[0]->Get<double>("TIMEPERIOD");
 
   // -------------------------------------------------------------------
   // now care for the fact that there could be more than one input line
@@ -53,9 +53,9 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
   // -------------------------------------------------------------------
   for (int i = 0; i < numcondlines; i++)
   {
-    int condid = (impedancecond[i])->GetInt("ConditionID");
+    int condid = *impedancecond[i]->Get<int>("ConditionID");
 
-    double thisperiod = (impedancecond[i])->GetDouble("TIMEPERIOD");
+    double thisperiod = *impedancecond[i]->Get<double>("TIMEPERIOD");
     if (thisperiod != period)
       dserror("all periods of impedance conditions in one problem have to be the same!!!");
 
@@ -185,12 +185,12 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(
     : discret_(actdis),
       myrank_(discret_->Comm().MyPID()),
       theta_(0.5),
-      treetype_(*(impedancecond->Get<std::string>("TYPE"))),
-      period_(impedancecond->GetDouble("TIMEPERIOD")),
-      R1_(impedancecond->GetDouble("R1")),
-      R2_(impedancecond->GetDouble("R2")),
-      C_(impedancecond->GetDouble("C")),
-      functnum_(impedancecond->GetInt("FUNCT"))
+      treetype_(*impedancecond->Get<std::string>("TYPE")),
+      period_(*impedancecond->Get<double>("TIMEPERIOD")),
+      R1_(*impedancecond->Get<double>("R1")),
+      R2_(*impedancecond->Get<double>("R2")),
+      C_(*impedancecond->Get<double>("C")),
+      functnum_(*impedancecond->Get<int>("FUNCT"))
 {
   if (myrank_ == 0)
   {

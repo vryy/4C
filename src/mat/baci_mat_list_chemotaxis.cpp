@@ -27,7 +27,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<MAT::PAR::Material> matdata)
     : MatList(matdata),
-      numpair_((matdata->GetInt("NUMPAIR"))),
+      numpair_((*matdata->Get<int>("NUMPAIR"))),
       pairids_((matdata->Get<std::vector<int>>("PAIRIDS")))
 {
   // check if sizes fit

@@ -52,7 +52,7 @@ namespace MAT
         /// Where the activation comes from: 0=scatra , >0 Id for FUNCT
         int sourceactiv_;
         /// is there a strain dependency for the active tension?
-        int strain_dep_;
+        bool strain_dep_;
         /// lower stretch threshold
         double lambda_lower_;
         /// upper stretch threshold
@@ -62,7 +62,7 @@ namespace MAT
         /// fiber initalization status
         int init_;
         /// adapt angle during remodeling
-        int adapt_angle_;
+        bool adapt_angle_;
 
         //@}
 

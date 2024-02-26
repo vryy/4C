@@ -81,19 +81,17 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
+  for (auto* cond : cardiovascular0dcond_)
   {
-    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("id");
+    int condID = *cond->Get<int>("id");
     params.set("id", condID);
 
-    double C = cardiovascular0dcond_[condID]->GetDouble("C");
-    double R_p = cardiovascular0dcond_[condID]->GetDouble("R_p");
-    double Z_c = cardiovascular0dcond_[condID]->GetDouble("Z_c");
-    double L = cardiovascular0dcond_[condID]->GetDouble("L");
-    double p_ref = cardiovascular0dcond_[condID]->GetDouble("p_ref");
+    double C = *cardiovascular0dcond_[condID]->Get<double>("C");
+    double R_p = *cardiovascular0dcond_[condID]->Get<double>("R_p");
+    double Z_c = *cardiovascular0dcond_[condID]->Get<double>("Z_c");
+    double L = *cardiovascular0dcond_[condID]->Get<double>("L");
+    double p_ref = *cardiovascular0dcond_[condID]->Get<double>("p_ref");
 
     // Cardiovascular0D stiffness
     CORE::LINALG::SerialDenseMatrix wkstiff(numdof_per_cond, numdof_per_cond);
@@ -138,7 +136,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
     // elements might need condition
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // assemble of Cardiovascular0D stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
@@ -195,7 +193,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
     CORE::LINALG::SerialDenseVector elevector2;
     CORE::LINALG::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
     // if (geom.empty()) dserror("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
@@ -258,8 +256,6 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
     // offdiagonal stiffness block (0,1 block)
     EvaluateDStructDp(params, sysmat3);
   }
-
-  return;
 }  // end of EvaluateCondition
 
 
@@ -281,12 +277,10 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
+  for (auto* cond : cardiovascular0dcond_)
   {
-    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("id");
+    int condID = *cond->Get<int>("id");
     params.set("id", condID);
 
     // global and local ID of this bc in the redundant vectors
@@ -295,7 +289,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
     gindex[0] = numdof_per_cond * condID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    double p_0 = cardiovascular0dcond_[condID]->GetDouble("p_0");
+    double p_0 = *cardiovascular0dcond_[condID]->Get<double>("p_0");
     double q_0 = 0.;
     double s_0 = 0.;
 
@@ -304,7 +298,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
     int err3 = sysvec2->SumIntoGlobalValues(1, &s_0, &gindex[2]);
     if (err1 or err2 or err3) dserror("SumIntoGlobalValues failed!");
 
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -313,7 +307,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
     CORE::LINALG::SerialDenseVector elevector2;
     CORE::LINALG::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
@@ -358,7 +352,6 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
                  "=====================================\n"
               << std::endl;
   }
-  return;
 }  // end of Initialize Cardiovascular0D
 
 BACI_NAMESPACE_CLOSE

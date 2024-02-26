@@ -456,7 +456,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
         dserror("No coupling condition defined on one or both structure or scatra discretization!");
 
       std::set<int> couplingids;
-      for (auto& cond_struct : conds_struct) couplingids.insert(cond_struct->GetInt("coupling id"));
+      for (auto& cond_struct : conds_struct)
+        couplingids.insert(*cond_struct->Get<int>("coupling id"));
 
       Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structgidmatchingdofset =
           Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
@@ -486,7 +487,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
         dserror("No coupling condition defined on one or both structure or scatra discretization!");
 
       std::set<int> couplingids;
-      for (auto& cond_struct : conds_struct) couplingids.insert(cond_struct->GetInt("coupling id"));
+      for (auto& cond_struct : conds_struct)
+        couplingids.insert(*cond_struct->Get<int>("coupling id"));
 
       Teuchos::RCP<DRT::DofSetGIDBasedWrapper> scatragidmatchingdofset =
           Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));

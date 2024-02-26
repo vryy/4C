@@ -39,9 +39,9 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
     : condition_kinetics_(condition_kinetics),
       condition_manifold_(condition_manifold),
       coupling_adapter_(Teuchos::rcp(new CORE::ADAPTER::Coupling())),
-      inv_thickness_(1.0 / condition_manifold->GetDouble("thickness")),
-      manifold_conditionID_(condition_manifold->GetInt("ConditionID")),
-      kinetics_conditionID_(condition_kinetics->GetInt("ConditionID")),
+      inv_thickness_(1.0 / *condition_manifold->Get<double>("thickness")),
+      manifold_conditionID_(*condition_manifold->Get<int>("ConditionID")),
+      kinetics_conditionID_(*condition_kinetics->Get<int>("ConditionID")),
       manifold_map_extractor_(Teuchos::null),
       master_converter_(Teuchos::null),
       scatra_map_extractor_(Teuchos::null),
@@ -124,8 +124,8 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   {
     for (const auto& condition_kinetics : conditions_manifold_kinetics_scatra)
     {
-      if (condition_manifold->GetInt("ConditionID") ==
-          condition_kinetics->GetInt("ManifoldConditionID"))
+      if (*condition_manifold->Get<int>("ConditionID") ==
+          *condition_kinetics->Get<int>("ManifoldConditionID"))
       {
         scatra_manifold_couplings_.emplace_back(Teuchos::rcp(
             new SSI::ManifoldScaTraCoupling(scatra_manifold_->ScaTraField()->Discretization(),
@@ -195,7 +195,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     for (const auto& condition_manifold : conditions_manifold)
     {
       const std::string manifold_string =
-          "manifold " + std::to_string(condition_manifold->GetInt("ConditionID"));
+          "manifold " + std::to_string(*condition_manifold->Get<int>("ConditionID"));
 
       runtime_csvwriter_->RegisterDataVector("Integral of " + manifold_string, 1, 16);
 
@@ -688,33 +688,34 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
   eleparams.set<DRT::Condition::ConditionType>(
       "condition type", DRT::Condition::ConditionType::S2IKinetics);
 
-  switch (scatra_manifold_coupling->ConditionKinetics()->GetInt("kinetic model"))
+  switch (*scatra_manifold_coupling->ConditionKinetics()->Get<int>("kinetic model"))
   {
     case INPAR::S2I::kinetics_constantinterfaceresistance:
     {
       eleparams.set<int>("kinetic model", INPAR::S2I::kinetics_constantinterfaceresistance);
       eleparams.set<double>(
-          "resistance", scatra_manifold_coupling->ConditionKinetics()->GetDouble("resistance"));
+          "resistance", *scatra_manifold_coupling->ConditionKinetics()->Get<double>("resistance"));
       eleparams.set<std::vector<int>*>(
           "onoff", scatra_manifold_coupling->ConditionKinetics()->Get<std::vector<int>>("onoff"));
       eleparams.set<int>(
-          "numelectrons", scatra_manifold_coupling->ConditionKinetics()->GetInt("e-"));
+          "numelectrons", *scatra_manifold_coupling->ConditionKinetics()->Get<int>("e-"));
       break;
     }
     case INPAR::S2I::kinetics_butlervolmerreduced:
     {
       eleparams.set<int>("kinetic model", INPAR::S2I::kinetics_butlervolmerreduced);
       eleparams.set<int>(
-          "numscal", scatra_manifold_coupling->ConditionKinetics()->GetInt("numscal"));
+          "numscal", *scatra_manifold_coupling->ConditionKinetics()->Get<int>("numscal"));
       eleparams.set<std::vector<int>*>("stoichiometries",
           scatra_manifold_coupling->ConditionKinetics()->Get<std::vector<int>>("stoichiometries"));
       eleparams.set<int>(
-          "numelectrons", scatra_manifold_coupling->ConditionKinetics()->GetInt("e-"));
-      eleparams.set<double>("k_r", scatra_manifold_coupling->ConditionKinetics()->GetDouble("k_r"));
+          "numelectrons", *scatra_manifold_coupling->ConditionKinetics()->Get<int>("e-"));
       eleparams.set<double>(
-          "alpha_a", scatra_manifold_coupling->ConditionKinetics()->GetDouble("alpha_a"));
+          "k_r", *scatra_manifold_coupling->ConditionKinetics()->Get<double>("k_r"));
       eleparams.set<double>(
-          "alpha_c", scatra_manifold_coupling->ConditionKinetics()->GetDouble("alpha_c"));
+          "alpha_a", *scatra_manifold_coupling->ConditionKinetics()->Get<double>("alpha_a"));
+      eleparams.set<double>(
+          "alpha_c", *scatra_manifold_coupling->ConditionKinetics()->Get<double>("alpha_c"));
       break;
     }
     case INPAR::S2I::kinetics_nointerfaceflux:

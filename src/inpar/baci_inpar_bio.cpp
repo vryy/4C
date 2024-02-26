@@ -13,6 +13,7 @@
 #include "baci_inpar_bio.hpp"
 
 #include "baci_inpar_validparameters.hpp"
+#include "baci_io_linecomponent.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -191,9 +192,8 @@ void INPAR::ARTNET::SetValidConditions(
           DRT::Condition::ArtPrescribedScatraCond, true, DRT::Condition::Point));
 
   std::vector<Teuchos::RCP<INPUT::LineComponent>> artscatracomponents;
-  artscatracomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("val", 1)));
-  artscatracomponents.push_back(
-      Teuchos::rcp(new INPUT::IntVectorComponent("curve", 1, {0, true, true})));
+  artscatracomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("val")));
+  artscatracomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("curve", {0, true, true})));
   for (unsigned i = 0; i < artscatracomponents.size(); ++i)
     art_scatra_bc->AddComponent(artscatracomponents[i]);
 

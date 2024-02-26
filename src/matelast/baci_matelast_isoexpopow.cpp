@@ -15,9 +15,9 @@ BACI_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      k1_(matdata->GetDouble("K1")),
-      k2_(matdata->GetDouble("K2")),
-      d_(matdata->GetInt("C"))
+      k1_(*matdata->Get<double>("K1")),
+      k2_(*matdata->Get<double>("K2")),
+      d_(*matdata->Get<int>("C"))
 {
 }
 

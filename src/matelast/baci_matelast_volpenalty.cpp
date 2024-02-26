@@ -15,7 +15,9 @@ BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::VolPenalty::VolPenalty(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata), eps_(matdata->GetDouble("EPSILON")), gam_(matdata->GetDouble("GAMMA"))
+    : Parameter(matdata),
+      eps_(*matdata->Get<double>("EPSILON")),
+      gam_(*matdata->Get<double>("GAMMA"))
 {
   if (eps_ < 0. || gam_ <= 0.)
     dserror("VolPenalty parameters EPSILON and GAMMA have to be greater zero");

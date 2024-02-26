@@ -345,7 +345,7 @@ namespace INPUT
 
   void IntComponent::Print(std::ostream& stream, const INPAR::InputParameterContainer& container)
   {
-    int n = container.GetInt(Name());
+    int n = *container.Get<int>(Name());
     if (data_.none_allowed and n == -1)
       stream << "none ";
     else
@@ -556,7 +556,7 @@ namespace INPUT
 
   void RealComponent::Print(std::ostream& stream, const INPAR::InputParameterContainer& container)
   {
-    stream << container.GetDouble(Name());
+    stream << *container.Get<double>(Name());
   }
 
   void RealComponent::Describe(std::ostream& stream) {}
@@ -691,7 +691,7 @@ namespace INPUT
 
   void BoolComponent::Print(std::ostream& stream, const INPAR::InputParameterContainer& container)
   {
-    const bool value = (bool)container.GetInt(Name());
+    const bool value = (bool)*container.Get<int>(Name());
     PrintYesNo(stream, value);
   }
 
@@ -817,7 +817,8 @@ namespace INPUT
     component_for_key_->Print(stream, container);
     stream << " ";
 
-    const KeyType selected_key = static_cast<KeyType>(container.GetInt(component_for_key_->Name()));
+    const KeyType selected_key =
+        static_cast<KeyType>(*container.Get<int>(component_for_key_->Name()));
 
     dsassert(choices_.count(selected_key) == 1, "Internal error.");
     for (const auto& component : choices_[selected_key].second)
@@ -831,7 +832,7 @@ namespace INPUT
       Teuchos::RCP<std::stringstream> condline, INPAR::InputParameterContainer& container)
   {
     component_for_key_->Read(section_name, condline, container);
-    const KeyType key = static_cast<KeyType>(container.GetInt(component_for_key_->Name()));
+    const KeyType key = static_cast<KeyType>(*container.Get<int>(component_for_key_->Name()));
 
     dsassert(choices_.count(key) == 1, "Internal error.");
 

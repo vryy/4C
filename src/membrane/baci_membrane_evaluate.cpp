@@ -473,8 +473,8 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
   SetParamsInterfacePtr(params);
 
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
 
   // find out whether we will use a time curve
   double time = -1.0;
@@ -493,7 +493,7 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
     if ((*onoff)[checkdof] != 0) dserror("membrane pressure on 1st dof only!");
 
   // find out whether we will use time curves and get the factors
-  const std::vector<int>* tmp_funct = condition.Get<std::vector<int>>("funct");
+  const auto* tmp_funct = condition.Get<std::vector<int>>("funct");
   std::vector<double> functfacs(noddof_, 1.0);
   for (int i = 0; i < noddof_; ++i)
   {

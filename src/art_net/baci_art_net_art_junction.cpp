@@ -139,7 +139,8 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
         for (int j = 1; j < i; j++)
         {
           // if Id(j-1) > Id(j) then swap the two values
-          if (myConditions[j - 1]->GetInt("ConditionID") > myConditions[j]->GetInt("ConditionID"))
+          if (*myConditions[j - 1]->Get<int>("ConditionID") >
+              *myConditions[j]->Get<int>("ConditionID"))
           {
             cond_i = myConditions[j];
             IO_i = IOart[j];
@@ -166,7 +167,8 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
           grouped_cond.push_back(myConditions[i++]);
 
           if (i == myConditions.size()) break;
-        } while (myConditions[i]->GetInt("ConditionID") == grouped_cond[0]->GetInt("ConditionID"));
+        } while (
+            *myConditions[i]->Get<int>("ConditionID") == *grouped_cond[0]->Get<int>("ConditionID"));
 
         SortedConds.push_back(grouped_cond);
         grouped_cond.erase(grouped_cond.begin(), grouped_cond.end());
@@ -188,7 +190,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
         // -------------------------------------------------------------------
         // allocate the junction bc class members for every case
         // -------------------------------------------------------------------
-        condid = SortedConds[i][0]->GetInt("ConditionID");
+        condid = *SortedConds[i][0]->Get<int>("ConditionID");
 
         // -------------------------------------------------------------------
         // sort junction BCs in map
@@ -281,11 +283,11 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdi
   if (!IOartFlags_are_fine)
   {
     if (IOartFlag == 1)
-      dserror(
-          "Junction (%d) has all of its nodes defined as outlets", conds[0]->GetInt("ConditionID"));
+      dserror("Junction (%d) has all of its nodes defined as outlets",
+          *conds[0]->Get<int>("ConditionID"));
     else
-      dserror(
-          "Junction (%d) has all of its nodes defined as inlets", conds[0]->GetInt("ConditionID"));
+      dserror("Junction (%d) has all of its nodes defined as inlets",
+          *conds[0]->Get<int>("ConditionID"));
   }
 
   //----------------------------------------------------------------------

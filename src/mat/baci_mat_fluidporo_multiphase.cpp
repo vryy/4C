@@ -26,8 +26,8 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(Teuchos::RCP<MAT::PAR::Material> matdata)
     : MatList(matdata),
-      permeability_(matdata->GetDouble("PERMEABILITY")),
-      numfluidphases_(matdata->GetInt("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
+      permeability_(*matdata->Get<double>("PERMEABILITY")),
+      numfluidphases_(*matdata->Get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
       numvolfrac_(-1),
       dof2pres_(Teuchos::null),
       constraintphaseID_(-1),

@@ -22,13 +22,13 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Sutherland::Sutherland(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      refvisc_(matdata->GetDouble("REFVISC")),
-      reftemp_(matdata->GetDouble("REFTEMP")),
-      suthtemp_(matdata->GetDouble("SUTHTEMP")),
-      shc_(matdata->GetDouble("SHC")),
-      pranum_(matdata->GetDouble("PRANUM")),
-      thermpress_(matdata->GetDouble("THERMPRESS")),
-      gasconst_(matdata->GetDouble("GASCON"))
+      refvisc_(*matdata->Get<double>("REFVISC")),
+      reftemp_(*matdata->Get<double>("REFTEMP")),
+      suthtemp_(*matdata->Get<double>("SUTHTEMP")),
+      shc_(*matdata->Get<double>("SHC")),
+      pranum_(*matdata->Get<double>("PRANUM")),
+      thermpress_(*matdata->Get<double>("THERMPRESS")),
+      gasconst_(*matdata->Get<double>("GASCON"))
 {
 }
 

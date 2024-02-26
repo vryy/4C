@@ -23,12 +23,12 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::CarreauYasuda::CarreauYasuda(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      nu_0_(matdata->GetDouble("NU_0")),
-      nu_inf_(matdata->GetDouble("NU_INF")),
-      lambda_(matdata->GetDouble("LAMBDA")),
-      a_param_(matdata->GetDouble("APARAM")),
-      b_param_(matdata->GetDouble("BPARAM")),
-      density_(matdata->GetDouble("DENSITY"))
+      nu_0_(*matdata->Get<double>("NU_0")),
+      nu_inf_(*matdata->Get<double>("NU_INF")),
+      lambda_(*matdata->Get<double>("LAMBDA")),
+      a_param_(*matdata->Get<double>("APARAM")),
+      b_param_(*matdata->Get<double>("BPARAM")),
+      density_(*matdata->Get<double>("DENSITY"))
 {
 }
 

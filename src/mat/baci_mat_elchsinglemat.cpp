@@ -20,21 +20,21 @@ BACI_NAMESPACE_OPEN
 MAT::PAR::ElchSingleMat::ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       diffusion_coefficient_concentration_dependence_funct_num_(
-          matdata->GetInt("DIFF_COEF_CONC_DEP_FUNCT")),
+          *matdata->Get<int>("DIFF_COEF_CONC_DEP_FUNCT")),
       diffusion_coefficient_temperature_scaling_funct_num_(
-          matdata->GetInt("DIFF_COEF_TEMP_SCALE_FUNCT")),
-      number_diffusion_coefficent_params_(matdata->GetInt("DIFF_PARA_NUM")),
+          *matdata->Get<int>("DIFF_COEF_TEMP_SCALE_FUNCT")),
+      number_diffusion_coefficent_params_(*matdata->Get<int>("DIFF_PARA_NUM")),
       diffusion_coefficent_params_(*matdata->Get<std::vector<double>>("DIFF_PARA")),
       number_diffusion_temp_scale_funct_params_(
-          matdata->GetInt("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")),
+          *matdata->Get<int>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")),
       diffusion_temp_scale_funct_params_(
           *matdata->Get<std::vector<double>>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA")),
-      conductivity_concentration_dependence_funct_num_(matdata->GetInt("COND_CONC_DEP_FUNCT")),
-      conductivity_temperature_scaling_funct_num_(matdata->GetInt("COND_TEMP_SCALE_FUNCT")),
-      number_conductivity_params_(matdata->GetInt("COND_PARA_NUM")),
+      conductivity_concentration_dependence_funct_num_(*matdata->Get<int>("COND_CONC_DEP_FUNCT")),
+      conductivity_temperature_scaling_funct_num_(*matdata->Get<int>("COND_TEMP_SCALE_FUNCT")),
+      number_conductivity_params_(*matdata->Get<int>("COND_PARA_NUM")),
       conductivity_params_(*matdata->Get<std::vector<double>>("COND_PARA")),
       number_conductivity_temp_scale_funct_params_(
-          matdata->GetInt("COND_TEMP_SCALE_FUNCT_PARA_NUM")),
+          *matdata->Get<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM")),
       conductivity_temp_scale_funct_params_(
           *matdata->Get<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA")),
       R_(GLOBAL::Problem::Instance()->ELCHControlParams().get<double>("GAS_CONSTANT"))

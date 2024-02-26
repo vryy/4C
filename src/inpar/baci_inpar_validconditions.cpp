@@ -441,7 +441,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> INPUT::Valid
 
   // give function id - always one single integer
   // (for initial vector fields, use the COMPONENT option of our functions)
-  initial_field_components.emplace_back(Teuchos::rcp(new IntVectorComponent("funct", 1)));
+  initial_field_components.emplace_back(Teuchos::rcp(new IntComponent("funct")));
 
   // general initial field conditions
   Teuchos::RCP<ConditionDefinition> pointinitfields =
@@ -480,7 +480,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> INPUT::Valid
 
   // give function id - always one single integer
   initial_field_components_thermo_on_scatra_dis.emplace_back(
-      Teuchos::rcp(new IntVectorComponent("funct", 1)));
+      Teuchos::rcp(new IntComponent("funct")));
 
   // initial field conditions for temperature on ScaTra discretizations
   Teuchos::RCP<ConditionDefinition> pointthermoinitfields = Teuchos::rcp(
@@ -599,9 +599,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> INPUT::Valid
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorComponent("FUNCT")));
   locsyscomponents.push_back(Teuchos::rcp(new IntVectorComponent("funct", 3)));
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorComponent("USEUPDATEDNODEPOS")));
-  locsyscomponents.push_back(Teuchos::rcp(new IntVectorComponent("useupdatednodepos", 1)));
+  locsyscomponents.push_back(Teuchos::rcp(new IntComponent("useupdatednodepos")));
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorComponent("USECONSISTENTNODENORMAL")));
-  locsyscomponents.push_back(Teuchos::rcp(new IntVectorComponent("useconsistentnodenormal", 1)));
+  locsyscomponents.push_back(Teuchos::rcp(new IntComponent("useconsistentnodenormal")));
 
   Teuchos::RCP<ConditionDefinition> pointlocsys = Teuchos::rcp(new ConditionDefinition(
       "DESIGN POINT LOCSYS CONDITIONS", "Locsys", "Point local coordinate system",

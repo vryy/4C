@@ -33,13 +33,13 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::Myocard::Myocard(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      diff1(matdata->GetDouble("DIFF1")),
-      diff2(matdata->GetDouble("DIFF2")),
+      diff1(*matdata->Get<double>("DIFF1")),
+      diff2(*matdata->Get<double>("DIFF2")),
       diff3(0.0),
-      dt_deriv(matdata->GetDouble("PERTUBATION_DERIV")),
+      dt_deriv(*matdata->Get<double>("PERTUBATION_DERIV")),
       model(matdata->Get<std::string>("MODEL")),
       tissue(matdata->Get<std::string>("TISSUE")),
-      time_scale(matdata->GetDouble("TIME_SCALE")),
+      time_scale(*matdata->Get<double>("TIME_SCALE")),
       num_gp(0)
 {
 }

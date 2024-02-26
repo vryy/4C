@@ -1362,7 +1362,7 @@ void INPAR::FLUID::SetValidConditions(
       Teuchos::rcp(new INPUT::SelectionComponent("transfer direction", "x",
           Teuchos::tuple<std::string>("x", "y", "z"), Teuchos::tuple<std::string>("x", "y", "z"))));
   tbc_turb_inflow_components.push_back(
-      Teuchos::rcp(new INPUT::IntVectorComponent("curve", 1, {0, true, true})));
+      Teuchos::rcp(new INPUT::IntComponent("curve", {0, true, true})));
 
   Teuchos::RCP<ConditionDefinition> tbc_turb_inflow = Teuchos::rcp(new ConditionDefinition(
       "DESIGN SURF TURBULENT INFLOW TRANSFER", "TransferTurbulentInflow", "TransferTurbulentInflow",
@@ -1447,7 +1447,7 @@ void INPAR::FLUID::SetValidConditions(
   std::vector<Teuchos::RCP<INPUT::LineComponent>> slipsuppcomponents;
 
   slipsuppcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("USEUPDATEDNODEPOS")));
-  slipsuppcomponents.push_back(Teuchos::rcp(new INPUT::IntVectorComponent("useupdatednodepos", 1)));
+  slipsuppcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("useupdatednodepos")));
 
   Teuchos::RCP<ConditionDefinition> lineslipsupp = Teuchos::rcp(new ConditionDefinition(
       "DESIGN LINE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS", "LineSlipSupp", "LineSlipSupp",
@@ -1596,7 +1596,7 @@ void INPAR::FLUID::SetValidConditions(
       true)));
 
   freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("VAL")));
-  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("val", 1)));
+  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("val")));
 
   freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("NODENORMALFUNCT")));
   freesurfcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("nodenormalfunct")));

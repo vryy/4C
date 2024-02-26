@@ -31,13 +31,13 @@ MAT::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
     : Parameter(matdata),
       ParticleMaterialBase(matdata),
       ParticleMaterialThermo(matdata),
-      refDensFac_(matdata->GetDouble("REFDENSFAC")),
-      exponent_(matdata->GetDouble("EXPONENT")),
-      backgroundPressure_(matdata->GetDouble("BACKGROUNDPRESSURE")),
-      bulkModulus_(matdata->GetDouble("BULK_MODULUS")),
-      dynamicViscosity_(matdata->GetDouble("DYNAMIC_VISCOSITY")),
-      bulkViscosity_(matdata->GetDouble("BULK_VISCOSITY")),
-      artificialViscosity_(matdata->GetDouble("ARTIFICIAL_VISCOSITY"))
+      refDensFac_(*matdata->Get<double>("REFDENSFAC")),
+      exponent_(*matdata->Get<double>("EXPONENT")),
+      backgroundPressure_(*matdata->Get<double>("BACKGROUNDPRESSURE")),
+      bulkModulus_(*matdata->Get<double>("BULK_MODULUS")),
+      dynamicViscosity_(*matdata->Get<double>("DYNAMIC_VISCOSITY")),
+      bulkViscosity_(*matdata->Get<double>("BULK_VISCOSITY")),
+      artificialViscosity_(*matdata->Get<double>("ARTIFICIAL_VISCOSITY"))
 {
   // empty constructor
 }

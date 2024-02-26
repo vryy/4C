@@ -526,7 +526,7 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
   cardiovascular0darterialproxdistcond->AddComponent(
       Teuchos::rcp(new INPUT::SeparatorComponent("crv")));
   cardiovascular0darterialproxdistcond->AddComponent(
-      Teuchos::rcp(new INPUT::IntVectorComponent("curve", 1, {0, true, true})));
+      Teuchos::rcp(new INPUT::IntComponent("curve", {0, true, true})));
 
   condlist.push_back(cardiovascular0darterialproxdistcond);
 

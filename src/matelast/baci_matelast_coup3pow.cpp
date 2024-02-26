@@ -14,7 +14,7 @@ determinant
 BACI_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::Coup3Pow::Coup3Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))
+    : Parameter(matdata), c_(*matdata->Get<double>("C")), d_(*matdata->Get<int>("D"))
 {
 }
 
