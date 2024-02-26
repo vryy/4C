@@ -23,11 +23,9 @@ Each night a full release and a full debug test are started by a GitLab Schedule
 
 Every time something changes in the `master` branch, a pipeline is created that performs the code checks and a minimal test. Only if the code checks are successful, BACI is build and the minimal tests are run. The code check can be performed by any gitlab-runner that picks it up, the build and minimal tests are performed on all configurations.
 
-### User triggered tests
+### MR testing
 
-Since we allow merges to `master` only for tested commits, the user has to start a pipeline on the commit when submitting a merge request. This can be done under the GitLab web interface: Goto `CI/CD - Pipelines - Run Pipeline`, then select the branch you want to test (the latest commit on that branch will be tested) and push the button `Create pipeline`. This will first perform the code checks and if they pass a full release build and test on all configurations.
-
-> **Note**: To start a pipeline in debug mode, set the variable `CTEST_BUILD_TYPE_GITLAB` to `debug`.
+Since we allow merges to `master` only for tested commits, a pipeline is automatically run on the merged result when submitting a merge request.
 
 ### Output
 

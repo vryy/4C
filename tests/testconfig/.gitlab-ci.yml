@@ -99,8 +99,7 @@ before_script:
 .build-and-test: &build-and-test
 - *build-only
   # test
-- 'echo ctest selection: $CTEST_TEST_SELECTION'
-- time ${CTEST_COMMAND} -VV $CTEST_TEST_SELECTION -j `nproc` --output-junit ${CI_PROJECT_DIR}/junit_test_summary.xml
+- time ${CTEST_COMMAND} -VV -j `nproc` --output-junit ${CI_PROJECT_DIR}/junit_test_summary.xml
   | tee ${CI_PROJECT_DIR}/test.log | grep -e "\*\*\*Failed" -e "\.\.\.   Passed" -e
   " tests passed\,"
 - cd ${CI_PROJECT_DIR}
@@ -116,8 +115,6 @@ before_script:
 - sed -n '/tests passed,/,//p' ${CI_PROJECT_DIR}/test.log
   # Specify which configuration was tested by this pipeline
 - 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
-- 'echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]'
-- 'echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]'
   # Move the log files to the source folder, so it can be found by artifacts.
 - cd ${CI_PROJECT_DIR}
 
