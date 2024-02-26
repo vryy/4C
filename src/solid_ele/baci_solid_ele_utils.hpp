@@ -20,13 +20,35 @@ namespace STR::UTILS
 {
   void NodalBlockInformationSolid(DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
+  /*!
+   * @brief Converts the 2nd Piola-Kirchhoff stress tensor in stress like Voigt notation to the
+   * Cauchy stress tensor in stress like Voigt notation
+   *
+   * @param pk2 (in) : 2nd Piola-Kirchhoff stress tensor in stress like Voigt notation
+   * @param defgrd (in) : Deformation gradient
+   * @param cauchy (out) : Cauchy stress tensor in stress like Voigt notation
+   */
   void Pk2ToCauchy(const CORE::LINALG::Matrix<6, 1>& pk2, const CORE::LINALG::Matrix<3, 3>& defgrd,
       CORE::LINALG::Matrix<6, 1>& cauchy);
 
+  /*!
+   * @brief Convert Green Lagrange strain tensor in strain like Voigt notation to Euler-Almansi
+   * strain tensor in strain like Voigt notation.
+   *
+   * @param gl (in) : Green Lagrange strain tensor in strain like Voigt notation
+   * @return CORE::LINALG::Matrix<6, 1> : Euler-Almansi strain tensor in strain like Voigt notation
+   */
   CORE::LINALG::Matrix<6, 1> GreenLagrangeToEulerAlmansi(
       const CORE::LINALG::Matrix<6, 1>& gl, const CORE::LINALG::Matrix<3, 3>& defgrd);
 
-  CORE::LINALG::Matrix<6, 1> GreenLagrangeToHencky(const CORE::LINALG::Matrix<6, 1>& gl);
+  /*!
+   * @brief Convert Green Lagrange strain tensor in strain like Voigt notation to Lograithmic strain
+   * tensor in strain like Voigt notation.
+   *
+   * @param gl (in) : Green Lagrange strain tensor in strain like Voigt notation
+   * @return CORE::LINALG::Matrix<6, 1> : Logarithmic strain tensor in strain like Voigt notation
+   */
+  CORE::LINALG::Matrix<6, 1> GreenLagrangeToLogStrain(const CORE::LINALG::Matrix<6, 1>& gl);
 
   namespace READELEMENT
   {
