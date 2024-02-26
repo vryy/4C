@@ -29,13 +29,13 @@ BACI_NAMESPACE_OPEN
 MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_(*(matdata->Get<std::vector<double>>("YOUNG"))),
-      poissonratio_(matdata->GetDouble("NUE")),
-      density_(matdata->GetDouble("DENS")),
-      thermexpans_(matdata->GetDouble("THEXPANS")),
-      capa_(matdata->GetDouble("CAPA")),
-      conduct_(matdata->GetDouble("CONDUCT")),
-      thetainit_(matdata->GetDouble("INITTEMP")),
-      thermomat_(matdata->GetInt("THERMOMAT"))
+      poissonratio_(*matdata->Get<double>("NUE")),
+      density_(*matdata->Get<double>("DENS")),
+      thermexpans_(*matdata->Get<double>("THEXPANS")),
+      capa_(*matdata->Get<double>("CAPA")),
+      conduct_(*matdata->Get<double>("CONDUCT")),
+      thetainit_(*matdata->Get<double>("INITTEMP")),
+      thermomat_(*matdata->Get<int>("THERMOMAT"))
 {
   if (poissonratio_ >= 0.5 || poissonratio_ < -1.) dserror("Poisson's ratio must be in [-1;0.5)");
 }

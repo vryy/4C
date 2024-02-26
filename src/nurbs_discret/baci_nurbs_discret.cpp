@@ -215,8 +215,8 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
   const std::vector<int>* nodeids = cond.GetNodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
 
-  const std::vector<int>* funct = cond.Get<std::vector<int>>("funct");
-  const std::vector<double>* val = cond.Get<std::vector<double>>("val");
+  const auto* funct = cond.Get<std::vector<int>>("funct");
+  const auto* val = cond.Get<std::vector<double>>("val");
 
 
   // determine highest degree of time derivative

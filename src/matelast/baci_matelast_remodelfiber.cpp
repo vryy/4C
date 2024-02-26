@@ -21,12 +21,12 @@ BACI_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      nummat_(matdata->GetInt("NUMMAT")),
+      nummat_(*matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
-      t_decay_(matdata->GetDouble("TDECAY")),
-      k_growth_(matdata->GetDouble("GROWTHFAC")),
+      t_decay_(*matdata->Get<double>("TDECAY")),
+      k_growth_(*matdata->Get<double>("GROWTHFAC")),
       init_w_col_(matdata->Get<std::vector<double>>("COLMASSFRAC")),
-      G_(matdata->GetDouble("DEPOSITIONSTRETCH"))
+      G_(*matdata->Get<double>("DEPOSITIONSTRETCH"))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())

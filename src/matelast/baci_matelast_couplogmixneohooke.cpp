@@ -20,8 +20,8 @@ MAT::ELASTIC::PAR::CoupLogMixNeoHooke::CoupLogMixNeoHooke(
     : Parameter(matdata)
 {
   std::string parmode = *(matdata->Get<std::string>("MODE"));
-  double c1 = matdata->GetDouble("C1");
-  double c2 = matdata->GetDouble("C2");
+  double c1 = *matdata->Get<double>("C1");
+  double c2 = *matdata->Get<double>("C2");
 
   if (parmode == "YN")
   {

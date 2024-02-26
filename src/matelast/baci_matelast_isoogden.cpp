@@ -14,7 +14,7 @@ BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::IsoOgden::IsoOgden(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata), mue_(matdata->GetDouble("MUE")), alpha_(matdata->GetDouble("ALPHA"))
+    : Parameter(matdata), mue_(*matdata->Get<double>("MUE")), alpha_(*matdata->Get<double>("ALPHA"))
 {
 }
 

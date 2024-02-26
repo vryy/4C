@@ -16,8 +16,8 @@ BACI_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::GenMax::GenMax(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      tau_(matdata->GetDouble("TAU")),
-      beta_(matdata->GetDouble("BETA")),
+      tau_(*matdata->Get<double>("TAU")),
+      beta_(*matdata->Get<double>("BETA")),
       solve_(*matdata->Get<std::string>("SOLVE"))
 {
 }

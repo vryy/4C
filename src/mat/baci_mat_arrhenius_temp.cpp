@@ -23,16 +23,16 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ArrheniusTemp::ArrheniusTemp(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      refvisc_(matdata->GetDouble("REFVISC")),
-      reftemp_(matdata->GetDouble("REFTEMP")),
-      suthtemp_(matdata->GetDouble("SUTHTEMP")),
-      shc_(matdata->GetDouble("SHC")),
-      pranum_(matdata->GetDouble("PRANUM")),
-      reaheat_(matdata->GetDouble("REAHEAT")),
-      preexcon_(matdata->GetDouble("PREEXCON")),
-      tempexp_(matdata->GetDouble("TEMPEXP")),
-      actemp_(matdata->GetDouble("ACTEMP")),
-      gasconst_(matdata->GetDouble("GASCON"))
+      refvisc_(*matdata->Get<double>("REFVISC")),
+      reftemp_(*matdata->Get<double>("REFTEMP")),
+      suthtemp_(*matdata->Get<double>("SUTHTEMP")),
+      shc_(*matdata->Get<double>("SHC")),
+      pranum_(*matdata->Get<double>("PRANUM")),
+      reaheat_(*matdata->Get<double>("REAHEAT")),
+      preexcon_(*matdata->Get<double>("PREEXCON")),
+      tempexp_(*matdata->Get<double>("TEMPEXP")),
+      actemp_(*matdata->Get<double>("ACTEMP")),
+      gasconst_(*matdata->Get<double>("GASCON"))
 {
 }
 

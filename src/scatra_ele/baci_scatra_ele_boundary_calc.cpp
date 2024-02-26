@@ -303,8 +303,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       if (cond == Teuchos::null) dserror("Cannot access condition 'TransportThermoConvections'!");
 
       // get heat transfer coefficient and surrounding temperature
-      const double heatranscoeff = cond->GetDouble("coeff");
-      const double surtemp = cond->GetDouble("surtemp");
+      const auto heatranscoeff = *cond->Get<double>("coeff");
+      const auto surtemp = *cond->Get<double>("surtemp");
 
       ConvectiveHeatTransfer(
           ele, mat, ephinp, elemat1_epetra, elevec1_epetra, heatranscoeff, surtemp);
@@ -494,12 +494,12 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT:
   // find out whether we will use a time curve
   const double time = scatraparamstimint_->Time();
 
-  // get values, switches and spatial functions from the condition
+  // get values, switches and spatial functions from the  condition
   // (assumed to be constant on element boundary)
-  const int numdof = condition.GetInt("numdof");
+  const int numdof = *condition.Get<int>("numdof");
   const auto* onoff = condition.Get<std::vector<int>>("onoff");
   const auto* val = condition.Get<std::vector<double>>("val");
-  const auto* func = condition.Get<std::vector<int>>("funct");
+  const auto* func = condition.GetIf<std::vector<int>>("funct");
 
   if (numdofpernode_ != numdof)
   {
@@ -1623,8 +1623,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
   }
 
   // extract prefactor and reference value from condition
-  const double prefac = cond->GetDouble("prefactor");
-  const double refval = cond->GetDouble("refvalue");
+  const auto prefac = *cond->Get<double>("prefactor");
+  const auto refval = *cond->Get<double>("refvalue");
 
   //////////////////////////////////////////////////////////////////////
   //                  read nodal values
@@ -1774,11 +1774,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
 
   const auto* onoff = cond->Get<std::vector<int>>("onoff");
 
-  const double perm = cond->GetDouble("permeability coefficient");
+  const auto perm = *cond->Get<double>("permeability coefficient");
 
   // get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no
   // 1->yes
-  const bool wss_onoff = (bool)cond->GetInt("wss onoff");
+  const bool wss_onoff = (bool)*cond->Get<int>("wss onoff");
 
   const auto* coeffs = cond->Get<std::vector<double>>("wss coeffs");
 
@@ -1927,18 +1927,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   const auto* onoff = cond->Get<std::vector<int>>("onoff");
 
   // get the standard permeability of the interface
-  const double perm = cond->GetDouble("permeability coefficient");
+  const auto perm = *cond->Get<double>("permeability coefficient");
 
   // get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no
   // 1->yes
-  const bool wss_onoff = (bool)cond->GetInt("wss onoff");
+  const bool wss_onoff = (bool)*cond->Get<int>("wss onoff");
   const auto* coeffs = cond->Get<std::vector<double>>("wss coeffs");
 
   // hydraulic conductivity at interface
-  const double conductivity = cond->GetDouble("hydraulic conductivity");
+  const auto conductivity = *cond->Get<double>("hydraulic conductivity");
 
   // Staverman filtration coefficient at interface
-  const double sigma = cond->GetDouble("filtration coefficient");
+  const auto sigma = *cond->Get<double>("filtration coefficient");
 
   ///////////////////////////////////////////////////////////////////////////
   // ------------do the actual calculations----------------------------------
@@ -2236,7 +2236,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   bool mixhyb = false;
 
   // stabilization parameter for Nitsche term
-  const double nitsche_stab_para = (*dbc).GetDouble("TauBscaling");
+  const auto nitsche_stab_para = *dbc->Get<double>("TauBscaling");
 
   // if stabilization parameter negative: mixed-hybrid formulation
   if (nitsche_stab_para < 0.0) mixhyb = true;
@@ -2244,13 +2244,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   // pre-factor for adjoint-consistency term:
   // either 1.0 (adjoint-consistent, default) or -1.0 (adjoint-inconsistent)
   double gamma = 1.0;
-  const auto* consistency = (*dbc).Get<std::string>("Choice of gamma parameter");
-  if (*consistency == "adjoint-consistent")
+  const auto consistency = *dbc->Get<std::string>("Choice of gamma parameter");
+  if (consistency == "adjoint-consistent")
     gamma = 1.0;
-  else if (*consistency == "diffusive-optimal")
+  else if (consistency == "diffusive-optimal")
     gamma = -1.0;
   else
-    dserror("unknown definition for gamma parameter: %s", (*consistency).c_str());
+    dserror("unknown definition for gamma parameter: %s", consistency.c_str());
 
   // use one-point Gauss rule to do calculations at element center
   const CORE::FE::IntPointsAndWeights<bnsd> intpoints_tau(

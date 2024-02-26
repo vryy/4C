@@ -21,10 +21,10 @@ BACI_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      c1_(matdata->GetDouble("C1")),
-      c2_(matdata->GetDouble("C2")),
-      c3_(matdata->GetDouble("C3")),
-      c4_(matdata->GetDouble("C4")),
+      c1_(*matdata->Get<double>("C1")),
+      c2_(*matdata->Get<double>("C2")),
+      c3_(*matdata->Get<double>("C3")),
+      c4_(*matdata->Get<double>("C4")),
       distribution_type_(distr_type_undefined),
       strategy_type_(strategy_type_undefined)
 {

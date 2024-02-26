@@ -17,6 +17,7 @@
 #include "baci_binstrategy.hpp"
 #include "baci_discretization_geometry_intersection_math.hpp"
 #include "baci_global_data.hpp"
+#include "baci_inpar_container.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
@@ -390,7 +391,7 @@ namespace BEAMINTERACTION
         if (cond == nullptr) continue;
 
         // get filament number
-        int const currfilnum = cond->GetInt("FilamentId");
+        int const currfilnum = *cond->Get<int>("FilamentId");
 
         // if a filament has already been examined --> continue with next node
         if (relevantfilaments.find(currfilnum) != relevantfilaments.end()) continue;

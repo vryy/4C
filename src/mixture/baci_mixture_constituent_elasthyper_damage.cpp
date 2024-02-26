@@ -22,7 +22,7 @@ BACI_NAMESPACE_OPEN
 MIXTURE::PAR::MixtureConstituent_ElastHyperDamage::MixtureConstituent_ElastHyperDamage(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureConstituent_ElastHyperBase(matdata),
-      damage_function_id_(matdata->GetInt("DAMAGE_FUNCT"))
+      damage_function_id_(*matdata->Get<int>("DAMAGE_FUNCT"))
 {
   // nothing to do here
 }

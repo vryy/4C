@@ -19,16 +19,16 @@ BACI_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
-      A4_(matdata->GetDouble("A4")),
-      B4_(matdata->GetDouble("B4")),
-      A6_(matdata->GetDouble("A6")),
-      B6_(matdata->GetDouble("B6")),
-      A8_(matdata->GetDouble("A8")),
-      B8_(matdata->GetDouble("B8")),
-      gamma_(matdata->GetDouble("GAMMA")),
-      init_(matdata->GetInt("INIT")),
-      fib_comp_(matdata->GetInt("FIB_COMP")),
-      adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
+      A4_(*matdata->Get<double>("A4")),
+      B4_(*matdata->Get<double>("B4")),
+      A6_(*matdata->Get<double>("A6")),
+      B6_(*matdata->Get<double>("B6")),
+      A8_(*matdata->Get<double>("A8")),
+      B8_(*matdata->Get<double>("B8")),
+      gamma_(*matdata->Get<double>("GAMMA")),
+      init_(*matdata->Get<int>("INIT")),
+      fib_comp_(*matdata->Get<bool>("FIB_COMP")),
+      adapt_angle_(*matdata->Get<bool>("ADAPT_ANGLE"))
 {
 }
 

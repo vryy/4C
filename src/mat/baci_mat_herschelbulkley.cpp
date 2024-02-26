@@ -21,13 +21,13 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::HerschelBulkley::HerschelBulkley(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      tau0_(matdata->GetDouble("TAU_0")),
-      kfac_(matdata->GetDouble("KFAC")),
-      nexp_(matdata->GetDouble("NEXP")),
-      mexp_(matdata->GetDouble("MEXP")),
-      lolimshearrate_(matdata->GetDouble("LOLIMSHEARRATE")),
-      uplimshearrate_(matdata->GetDouble("UPLIMSHEARRATE")),
-      density_(matdata->GetDouble("DENSITY"))
+      tau0_(*matdata->Get<double>("TAU_0")),
+      kfac_(*matdata->Get<double>("KFAC")),
+      nexp_(*matdata->Get<double>("NEXP")),
+      mexp_(*matdata->Get<double>("MEXP")),
+      lolimshearrate_(*matdata->Get<double>("LOLIMSHEARRATE")),
+      uplimshearrate_(*matdata->Get<double>("UPLIMSHEARRATE")),
+      density_(*matdata->Get<double>("DENSITY"))
 {
 }
 

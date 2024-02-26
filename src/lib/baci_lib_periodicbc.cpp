@@ -309,13 +309,12 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
           for (unsigned numcond = 0; numcond < mysurfpbcs_.size(); ++numcond)
           {
-            const std::vector<int>* myid =
-                mysurfpbcs_[numcond]->Get<std::vector<int>>("Id of periodic boundary condition");
-            const std::vector<int>* mylayer =
-                mysurfpbcs_[numcond]->Get<std::vector<int>>("Layer of periodic boundary condition");
+            const int myid = *mysurfpbcs_[numcond]->Get<int>("Id of periodic boundary condition");
+            const int mylayer =
+                *mysurfpbcs_[numcond]->Get<int>("Layer of periodic boundary condition");
             // yes, I am the condition with id pbcid and in the desired layer
 
-            if (myid[0][0] == pbcid && (mylayer[0][0] + 1) == nlayer)
+            if (myid == pbcid && (mylayer + 1) == nlayer)
             {
               const std::string* mymasterslavetoggle =
                   mysurfpbcs_[numcond]->Get<std::string>("Is slave periodic boundary condition");
@@ -351,7 +350,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                   }
 
                   // check for angle of rotation (has to be zero for master plane)
-                  const double angle = mastercond->GetDouble("Angle of rotation");
+                  const double angle = *mastercond->Get<double>("Angle of rotation");
                   if (abs(angle) > 1e-13) dserror("Angle is not zero for master plane: %f", angle);
                 }
               }
@@ -385,7 +384,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                   }
 
                   // check for angle of rotation of slave plane and store it
-                  const double angle = slavecond->GetDouble("Angle of rotation");
+                  const double angle = *slavecond->Get<double>("Angle of rotation");
                   if (abs(angle) > 1e-13)
                   {
                     if ((*thisplane != "xz") && (*thisplane != "yz"))
@@ -410,7 +409,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
               // set tolerance for octree
               const double tol =
-                  (mysurfpbcs_[numcond])->GetDouble("Tolerance for nodematching in octree");
+                  *mysurfpbcs_[numcond]->Get<double>("Tolerance for nodematching in octree");
 
               if (!tol_set)
               {

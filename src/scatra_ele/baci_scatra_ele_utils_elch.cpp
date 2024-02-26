@@ -105,12 +105,12 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
     case INPAR::ELCH::butler_volmer_yang1997:
     {
       // read model-specific parameters
-      const double alphaa = cond->GetDouble("alpha_a");
-      const double alphac = cond->GetDouble("alpha_c");
-      const double dlcap = cond->GetDouble("dl_spec_cap");
+      const auto alphaa = *cond->Get<double>("alpha_a");
+      const auto alphac = *cond->Get<double>("alpha_c");
+      const auto dlcap = *cond->Get<double>("dl_spec_cap");
       double pot0hist = 0.0;
-      if (dlcap != 0.0) pot0hist = cond->GetDouble("pot0hist");
-      double i0 = cond->GetDouble("i0");
+      if (dlcap != 0.0) pot0hist = *cond->Get<double>("pot0hist");
+      auto i0 = *cond->Get<double>("i0");
       if (i0 < -1e-14)
         dserror(
             "i0 is negative, \n"
@@ -118,8 +118,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
             i0);
       // add time factor
       i0 *= timefac;
-      const double gamma = cond->GetDouble("gamma");
-      const double refcon = cond->GetDouble("refcon");
+      const auto gamma = *cond->Get<double>("gamma");
+      const auto refcon = *cond->Get<double>("refcon");
       if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
 
       if (valence_k != nume)
@@ -253,13 +253,13 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
     case INPAR::ELCH::tafel:
     {
       // read model-specific parameter
-      const double alpha = cond->GetDouble("alpha");
-      double i0 = cond->GetDouble("i0");
+      const auto alpha = *cond->Get<double>("alpha");
+      auto i0 = *cond->Get<double>("i0");
       i0 *= timefac;
-      const double gamma = cond->GetDouble("gamma");
-      const double refcon = cond->GetDouble("refcon");
+      const auto gamma = *cond->Get<double>("gamma");
+      const auto refcon = *cond->Get<double>("refcon");
       if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
-      const double dlcap = cond->GetDouble("dl_spec_cap");
+      const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
         dserror("double layer charging is not implemented for Tafel electrode kinetics");
 
@@ -330,19 +330,19 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
     case INPAR::ELCH::linear:
     {
       // read model-specific parameter
-      const double alphaa = cond->GetDouble("alpha");
-      double i0 = cond->GetDouble("i0");
-      const double dlcap = cond->GetDouble("dl_spec_cap");
+      const auto alphaa = *cond->Get<double>("alpha");
+      auto i0 = *cond->Get<double>("i0");
+      const auto dlcap = *cond->Get<double>("dl_spec_cap");
       double pot0hist = 0.0;
-      if (dlcap != 0.0) pot0hist = cond->GetDouble("pot0hist");
+      if (dlcap != 0.0) pot0hist = *cond->Get<double>("pot0hist");
       i0 *= timefac;
       if (i0 < -1e-14)
         dserror(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
-      const double gamma = cond->GetDouble("gamma");
-      const double refcon = cond->GetDouble("refcon");
+      const auto gamma = *cond->Get<double>("gamma");
+      const auto refcon = *cond->Get<double>("refcon");
       if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
 
       if (valence_k != nume)
@@ -418,10 +418,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       // n is one if charge transfer is involved, multiple electron transfers "being unlikely in
       // an elementary step
 
-      const double k_a = cond->GetDouble("k_a");
-      const double k_c = cond->GetDouble("k_c");
-      const double beta = cond->GetDouble("beta");
-      const double dlcap = cond->GetDouble("dl_spec_cap");
+      const auto k_a = *cond->Get<double>("k_a");
+      const auto k_c = *cond->Get<double>("k_c");
+      const auto beta = *cond->Get<double>("beta");
+      const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
         dserror(
             "double layer charging is not implemented for Butler-Volmer-Newman electrode kinetics");
@@ -535,12 +535,12 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       // Bard and Faulkner, 2001, pp. 94 ff; pp. 99 eq. 3.4.10
       // reaction model for a one-step, one-electron process (elementar step)
       // O + e -> R
-      const double e0 = cond->GetDouble("e0");
-      const double k0 = cond->GetDouble("k0");
-      const double beta = cond->GetDouble("beta");
-      const double c_c0 = cond->GetDouble("c_c0");
-      const double c_a0 = cond->GetDouble("c_a0");
-      const double dlcap = cond->GetDouble("dl_spec_cap");
+      const auto e0 = *cond->Get<double>("e0");
+      const auto k0 = *cond->Get<double>("k0");
+      const auto beta = *cond->Get<double>("beta");
+      const auto c_c0 = *cond->Get<double>("c_c0");
+      const auto c_a0 = *cond->Get<double>("c_a0");
+      const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
         dserror(
             "double layer charging is not implemented for Butler-Volmer-Bard electrode kinetics");
@@ -739,25 +739,25 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     case INPAR::ELCH::butler_volmer_yang1997:
     {
       // read model-specific parameter
-      const double alphaa = cond->GetDouble("alpha_a");
-      const double alphac = cond->GetDouble("alpha_c");
-      double i0 = cond->GetDouble("i0");
+      const auto alphaa = *cond->Get<double>("alpha_a");
+      const auto alphac = *cond->Get<double>("alpha_c");
+      double i0 = *cond->Get<double>("i0");
       if (i0 < -1e-14)
         dserror(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
-      const double gamma = cond->GetDouble("gamma");
-      const double refcon = cond->GetDouble("refcon");
+      const auto gamma = *cond->Get<double>("gamma");
+      const auto refcon = *cond->Get<double>("refcon");
       if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
 
-      const double dlcap = cond->GetDouble("dl_spec_cap");
+      const auto dlcap = *cond->Get<double>("dl_spec_cap");
       double pot0dtnp = 0.0;
       double pot0hist = 0.0;
       if (dlcap != 0.0)
       {
-        pot0dtnp = cond->GetDouble("pot0dtnp");
-        pot0hist = cond->GetDouble("pot0hist");
+        pot0dtnp = *cond->Get<double>("pot0dtnp");
+        pot0hist = *cond->Get<double>("pot0hist");
       }
 
       // opencircuit potential is assumed to be zero here
@@ -845,13 +845,13 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     case INPAR::ELCH::tafel:
     {
       // read model-specific parameter
-      const double alpha = cond->GetDouble("alpha");
-      double i0 = cond->GetDouble("i0");
+      const auto alpha = *cond->Get<double>("alpha");
+      auto i0 = *cond->Get<double>("i0");
 
-      const double gamma = cond->GetDouble("gamma");
-      const double refcon = cond->GetDouble("refcon");
+      const auto gamma = *cond->Get<double>("gamma");
+      const auto refcon = *cond->Get<double>("refcon");
       if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
-      const double dlcap = cond->GetDouble("dl_spec_cap");
+      const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
         dserror("double layer charging is not implemented for Tafel electrode kinetics");
 
@@ -902,23 +902,23 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     case INPAR::ELCH::linear:
     {
       // read model-specific parameter
-      const double alphaa = cond->GetDouble("alpha");
-      double i0 = cond->GetDouble("i0");
+      const auto alphaa = *cond->Get<double>("alpha");
+      auto i0 = *cond->Get<double>("i0");
       if (i0 < -1e-14)
         dserror(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
-      const double gamma = cond->GetDouble("gamma");
-      const double refcon = cond->GetDouble("refcon");
+      const auto gamma = *cond->Get<double>("gamma");
+      const auto refcon = *cond->Get<double>("refcon");
       if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
-      const double dlcap = cond->GetDouble("dl_spec_cap");
+      const auto dlcap = *cond->Get<double>("dl_spec_cap");
       double pot0dtnp = 0.0;
       double pot0hist = 0.0;
       if (dlcap != 0.0)
       {
-        pot0dtnp = cond->GetDouble("pot0dtnp");
-        pot0hist = cond->GetDouble("pot0hist");
+        pot0dtnp = *cond->Get<double>("pot0dtnp");
+        pot0hist = *cond->Get<double>("pot0hist");
       }
 
       // opencircuit potential is assumed to be zero here
@@ -982,10 +982,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       // n is one if charge transfer is involved, multiple electron transfers "being unlikely in
       // an elementary step
 
-      const double k_a = cond->GetDouble("k_a");
-      const double k_c = cond->GetDouble("k_c");
-      const double beta = cond->GetDouble("beta");
-      const double dlcap = cond->GetDouble("dl_spec_cap");
+      const auto k_a = *cond->Get<double>("k_a");
+      const auto k_c = *cond->Get<double>("k_c");
+      const auto beta = *cond->Get<double>("beta");
+      const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
         dserror(
             "double layer charging is not implemented for Butler-Volmer-Newman electrode kinetics");
@@ -1109,12 +1109,12 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       // Bard and Faulkner, 2001, pp. 94 ff; pp. 99 eq. 3.4.10
       // reaction model for a one-step, one-electron process
       // O + e -> R
-      const double e0 = cond->GetDouble("e0");
-      const double k0 = cond->GetDouble("k0");
-      const double beta = cond->GetDouble("beta");
-      const double c_c0 = cond->GetDouble("c_c0");
-      const double c_a0 = cond->GetDouble("c_a0");
-      const double dlcap = cond->GetDouble("dl_spec_cap");
+      const auto e0 = *cond->Get<double>("e0");
+      const auto k0 = *cond->Get<double>("k0");
+      const auto beta = *cond->Get<double>("beta");
+      const auto c_c0 = *cond->Get<double>("c_c0");
+      const auto c_a0 = *cond->Get<double>("c_a0");
+      const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
         dserror(
             "double layer charging is not implemented for Butler-Volmer-Bard electrode kinetics");
@@ -1215,8 +1215,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
     case INPAR::ELCH::nernst:
     {
-      const double e0 = cond->GetDouble("e0");
-      const double c0 = cond->GetDouble("c0");
+      const auto e0 = *cond->Get<double>("e0");
+      const auto c0 = *cond->Get<double>("c0");
       if (zerocur != 0)
         dserror(
             "The electrode kinetics flag zero_cur is not implemented for this specific kinetic "
@@ -1252,8 +1252,6 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
   scalars(8) += currderiv;
   scalars(9) += currentresidual;
   scalars(10) += boundaryint_porous;
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegrationPoint
 
 
@@ -1293,8 +1291,6 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
       diffmanager->SetIsotropicDiff(mation->ElimDiffusivity(), numscal_);
     }
   }
-
-  return;
 }
 
 

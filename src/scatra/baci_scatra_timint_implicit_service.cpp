@@ -26,7 +26,6 @@
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_scatra_timint_meshtying_strategy_base.hpp"
 #include "baci_scatra_turbulence_hit_scalar_forcing.hpp"
-#include "baci_scatra_utils.hpp"
 
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Workspace.h>
@@ -320,11 +319,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   for (int condid = 0; condid < (int)cond.size(); condid++)
   {
     // is there already a ConditionID?
-    const auto* CondIDVec = cond[condid]->Get<std::vector<int>>("ConditionID");
-    if (CondIDVec)
+    const auto* CondID = cond[condid]->GetIf<int>("ConditionID");
+    if (CondID)
     {
-      if ((*CondIDVec)[0] != condid)
-        dserror("Condition 'ScaTraFluxCalc' has non-matching ConditionID!");
+      if ((*CondID) != condid) dserror("Condition 'ScaTraFluxCalc' has non-matching ConditionID!");
     }
     else
     {
@@ -2211,14 +2209,14 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       for (unsigned icond = 0; icond < ncond; ++icond)
       {
         // extract condition ID
-        const int condid = relerrorconditions[icond]->GetInt("ConditionID");
+        const int condid = *relerrorconditions[icond]->Get<int>("ConditionID");
 
         // create element parameter list for error calculation
         Teuchos::ParameterList eleparams;
         DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
             "action", SCATRA::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", INPAR::SCATRA::calcerror_byfunction);
-        const int errorfunctnumber = relerrorconditions[icond]->GetInt("FunctionID");
+        const int errorfunctnumber = *relerrorconditions[icond]->Get<int>("FunctionID");
         if (errorfunctnumber < 1) dserror("Invalid function number for error calculation!");
         eleparams.set<int>("error function number", errorfunctnumber);
 
@@ -2278,7 +2276,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
             for (unsigned icond = 0; icond < ncond; ++icond)
             {
               // extract condition ID
-              const int condid = relerrorconditions[icond]->GetInt("ConditionID");
+              const int condid = *relerrorconditions[icond]->Get<int>("ConditionID");
 
               // extend headline
               f << " rel. L2-error in domain " << condid << " | rel. H1-error in domain " << condid
@@ -2300,7 +2298,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
           for (unsigned icond = 0; icond < ncond; ++icond)
           {
             // extract condition ID
-            const int condid = relerrorconditions[icond]->GetInt("ConditionID");
+            const int condid = *relerrorconditions[icond]->Get<int>("ConditionID");
 
             // extend error line
             f << " " << (*relerrors_)[condid * NumDofPerNode() * 2 + k * 2] << " "
@@ -2665,7 +2663,7 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->GetInt("ConditionID");
+    const int condid = *condition->Get<int>("ConditionID");
 
     // determine the number of dofs on the current condition
     const int numdofpernode =
@@ -2747,7 +2745,7 @@ void SCATRA::OutputScalarsStrategyCondition::PrintToScreen()
     for (auto* condition : conditions_)
     {
       // extract condition ID
-      const int condid = condition->GetInt("ConditionID");
+      const int condid = *condition->Get<int>("ConditionID");
 
       // determine the number of dofs on the current condition
       const int numdofpernode = numdofpernodepercondition_[condid];
@@ -2782,7 +2780,7 @@ void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->GetInt("ConditionID");
+    const int condid = *condition->Get<int>("ConditionID");
 
     dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
@@ -2925,7 +2923,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->GetInt("ConditionID");
+    const int condid = *condition->Get<int>("ConditionID");
 
     // determine the number of dofs on the current condition
     const int numdofpernode = numdofpernodepercondition_[condid];

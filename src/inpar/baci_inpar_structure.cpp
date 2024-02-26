@@ -447,7 +447,7 @@ namespace INPAR
       robinspringdashpotcomp.emplace_back(
           Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING", "", true)));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::IntVectorComponent("coupling id", 1, {0, true, true})));
+          Teuchos::rcp(new INPUT::IntComponent("coupling id", {0, true, true})));
 
       for (const auto& comp : robinspringdashpotcomp)
       {

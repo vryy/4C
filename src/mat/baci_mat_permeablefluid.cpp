@@ -24,9 +24,9 @@ BACI_NAMESPACE_OPEN
 MAT::PAR::PermeableFluid::PermeableFluid(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       type_(matdata->Get<std::string>("TYPE")),
-      viscosity_(matdata->GetDouble("DYNVISCOSITY")),
-      density_(matdata->GetDouble("DENSITY")),
-      permeability_(matdata->GetDouble("PERMEABILITY"))
+      viscosity_(*matdata->Get<double>("DYNVISCOSITY")),
+      density_(*matdata->Get<double>("DENSITY")),
+      permeability_(*matdata->Get<double>("PERMEABILITY"))
 {
 }
 

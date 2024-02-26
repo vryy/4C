@@ -315,7 +315,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       islaveresidual_->PutScalar(0.);
       for (auto kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
       {
-        if (kinetics_slave_cond.second->GetInt("kinetic model") !=
+        if (*kinetics_slave_cond.second->Get<int>("kinetic model") !=
                 static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux) and
             kinetics_slave_cond.second->GType() != DRT::Condition::GeometryType::Point)
         {
@@ -326,13 +326,13 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           {
             scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
                 imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
-                kinetics_slave_cond.second->GetInt("ConditionID"));
+                *kinetics_slave_cond.second->Get<int>("ConditionID"));
           }
           else
           {
             scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
                 Teuchos::null, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
-                kinetics_slave_cond.second->GetInt("ConditionID"));
+                *kinetics_slave_cond.second->Get<int>("ConditionID"));
           }
         }
       }
@@ -1001,9 +1001,9 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // extract ID of boundary condition for scatra-scatra interface layer growth
           // the corresponding boundary condition for scatra-scatra interface coupling is expected
           // to have the same ID
-          const int condid = scatratimint_->Discretization()
-                                 ->GetCondition("S2IKineticsGrowth")
-                                 ->GetInt("ConditionID");
+          const int condid = *scatratimint_->Discretization()
+                                  ->GetCondition("S2IKineticsGrowth")
+                                  ->Get<int>("ConditionID");
 
           // set global state vectors according to time-integration scheme
           scatratimint_->AddTimeIntegrationSpecificVectors();
@@ -1380,7 +1380,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
   // evaluate scatra-scatra interface coupling
   for (auto kinetics_slave_cond_cap : kinetics_conditions_meshtying_slaveside_)
   {
-    if (kinetics_slave_cond_cap.second->GetInt("kinetic model") ==
+    if (*kinetics_slave_cond_cap.second->Get<int>("kinetic model") ==
         static_cast<int>(INPAR::S2I::kinetics_butlervolmerreducedcapacitance))
     {
       // collect condition specific data and store to scatra boundary parameter class
@@ -1388,7 +1388,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
 
       scatratimint_->Discretization()->EvaluateCondition(capcondparas, islavematrix_,
           imasterslavematrix_, islaveresidual_, imasterresidual_on_slave_side, Teuchos::null,
-          "S2IKinetics", kinetics_slave_cond_cap.second->GetInt("ConditionID"));
+          "S2IKinetics", *kinetics_slave_cond_cap.second->Get<int>("ConditionID"));
     }
   }
 
@@ -1586,7 +1586,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarCells(const DRT::Discretization
 
   // extract mortar integration cells associated with current condition
   const std::vector<std::pair<Teuchos::RCP<MORTAR::IntCell>, INPAR::SCATRA::ImplType>>& cells =
-      imortarcells_.at(condition->GetInt("ConditionID"));
+      imortarcells_.at(*condition->Get<int>("ConditionID"));
 
   // loop over all mortar integration cells
   for (const auto& icell : cells)
@@ -1910,16 +1910,17 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   {
     for (auto* s2ikinetics_cond : s2ikinetics_conditions)
     {
-      const int s2ikinetics_cond_id = s2ikinetics_cond->GetInt("ConditionID");
-      const int s2ikinetics_cond_interface_side = s2ikinetics_cond->GetInt("interface side");
+      const int s2ikinetics_cond_id = *s2ikinetics_cond->Get<int>("ConditionID");
+      const int s2ikinetics_cond_interface_side = *s2ikinetics_cond->Get<int>("interface side");
 
       if (s2ikinetics_cond_id < 0)
         dserror("Invalid condition ID %i for S2IKinetics Condition!", s2ikinetics_cond_id);
 
       // only continue if ID's match
-      if (s2imeshtying_cond->GetInt("S2IKineticsID") != s2ikinetics_cond_id) continue;
+      if (*s2imeshtying_cond->Get<int>("S2IKineticsID") != s2ikinetics_cond_id) continue;
       // only continue if sides match
-      if (s2imeshtying_cond->GetInt("interface side") != s2ikinetics_cond_interface_side) continue;
+      if (*s2imeshtying_cond->Get<int>("interface side") != s2ikinetics_cond_interface_side)
+        continue;
 
       switch (s2ikinetics_cond_interface_side)
       {
@@ -1939,7 +1940,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                 s2ikinetics_cond_id);
           }
 
-          if (s2ikinetics_cond->GetInt("kinetic model") ==
+          if (*s2ikinetics_cond->Get<int>("kinetic model") ==
               static_cast<int>(INPAR::S2I::kinetics_butlervolmerreducedcapacitance))
           {
             has_capacitive_contributions_ = true;
@@ -2024,7 +2025,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                    scatratimint_->NumDofPerNodeInCondition(*kinetics_condition))
             dserror("all S2I conditions must have the same number of dof per node");
 
-          if (kinetics_condition->GetInt("kinetic model") !=
+          if (*kinetics_condition->Get<int>("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
             DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
@@ -2062,7 +2063,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                    scatratimint_->NumDofPerNodeInCondition(*kinetics_condition))
             dserror("all S2I conditions must have the same number of dof per node");
 
-          if (kinetics_condition->GetInt("kinetic model") !=
+          if (*kinetics_condition->Get<int>("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
             DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
@@ -2809,13 +2810,13 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         {
           // check whether current boundary condition is associated with boundary condition for
           // scatra-scatra interface layer growth
-          if (icond->GetInt("ConditionID") == condition->GetInt("ConditionID"))
+          if (*icond->Get<int>("ConditionID") == *condition->Get<int>("ConditionID"))
             // copy conductivity parameter
-            icond->Add("conductivity", condition->GetDouble("conductivity"));
+            icond->Add("conductivity", *condition->Get<double>("conductivity"));
         }
 
         // extract initial scatra-scatra interface layer thickness from condition
-        const double initthickness = condition->GetDouble("initial thickness");
+        const double initthickness = *condition->Get<double>("initial thickness");
 
         // extract nodal cloud from condition
         const std::vector<int>* nodegids = condition->GetNodes();
@@ -2941,7 +2942,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
     DRT::Condition& s2ikinetics_cond, Teuchos::ParameterList& s2icouplingparameters)
 {
   // get kinetic model and condition type
-  const int kineticmodel = s2ikinetics_cond.GetInt("kinetic model");
+  const int kineticmodel = *s2ikinetics_cond.Get<int>("kinetic model");
   const DRT::Condition::ConditionType conditiontype = s2ikinetics_cond.Type();
 
   // set action, kinetic model, condition type and numscal
@@ -2961,22 +2962,23 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         case INPAR::S2I::kinetics_constperm:
         case INPAR::S2I::kinetics_linearperm:
         {
-          s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
+          s2icouplingparameters.set<int>("numscal", *s2ikinetics_cond.Get<int>("numscal"));
           s2icouplingparameters.set<std::vector<double>*>(
               "permeabilities", s2ikinetics_cond.Get<std::vector<double>>("permeabilities"));
           s2icouplingparameters.set<int>(
-              "is_pseudo_contact", s2ikinetics_cond.GetInt("is_pseudo_contact"));
+              "is_pseudo_contact", *s2ikinetics_cond.Get<int>("is_pseudo_contact"));
           break;
         }
 
         case INPAR::S2I::kinetics_constantinterfaceresistance:
         {
-          s2icouplingparameters.set<double>("resistance", s2ikinetics_cond.GetDouble("resistance"));
+          s2icouplingparameters.set<double>(
+              "resistance", *s2ikinetics_cond.Get<double>("resistance"));
           s2icouplingparameters.set<std::vector<int>*>(
               "onoff", s2ikinetics_cond.Get<std::vector<int>>("onoff"));
-          s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
+          s2icouplingparameters.set<int>("numelectrons", *s2ikinetics_cond.Get<int>("e-"));
           s2icouplingparameters.set<int>(
-              "is_pseudo_contact", s2ikinetics_cond.GetInt("is_pseudo_contact"));
+              "is_pseudo_contact", *s2ikinetics_cond.Get<int>("is_pseudo_contact"));
           break;
         }
 
@@ -2996,40 +2998,40 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedresistance:
         {
-          s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
+          s2icouplingparameters.set<int>("numscal", *s2ikinetics_cond.Get<int>("numscal"));
           s2icouplingparameters.set<std::vector<int>*>(
               "stoichiometries", s2ikinetics_cond.Get<std::vector<int>>("stoichiometries"));
-          s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
-          s2icouplingparameters.set<double>("k_r", s2ikinetics_cond.GetDouble("k_r"));
-          s2icouplingparameters.set<double>("alpha_a", s2ikinetics_cond.GetDouble("alpha_a"));
-          s2icouplingparameters.set<double>("alpha_c", s2ikinetics_cond.GetDouble("alpha_c"));
+          s2icouplingparameters.set<int>("numelectrons", *s2ikinetics_cond.Get<int>("e-"));
+          s2icouplingparameters.set<double>("k_r", *s2ikinetics_cond.Get<double>("k_r"));
+          s2icouplingparameters.set<double>("alpha_a", *s2ikinetics_cond.Get<double>("alpha_a"));
+          s2icouplingparameters.set<double>("alpha_c", *s2ikinetics_cond.Get<double>("alpha_c"));
           s2icouplingparameters.set<int>(
-              "is_pseudo_contact", s2ikinetics_cond.GetInt("is_pseudo_contact"));
+              "is_pseudo_contact", *s2ikinetics_cond.Get<int>("is_pseudo_contact"));
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance)
             s2icouplingparameters.set<double>(
-                "capacitance", s2ikinetics_cond.GetDouble("capacitance"));
+                "capacitance", *s2ikinetics_cond.Get<double>("capacitance"));
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerpeltier)
-            s2icouplingparameters.set<double>("peltier", s2ikinetics_cond.GetDouble("peltier"));
+            s2icouplingparameters.set<double>("peltier", *s2ikinetics_cond.Get<double>("peltier"));
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerresistance or
               kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedresistance)
           {
             s2icouplingparameters.set<double>(
-                "resistance", s2ikinetics_cond.GetDouble("resistance"));
-            s2icouplingparameters.set<double>(
-                "CONVTOL_IMPLBUTLERVOLMER", s2ikinetics_cond.GetDouble("CONVTOL_IMPLBUTLERVOLMER"));
+                "resistance", *s2ikinetics_cond.Get<double>("resistance"));
+            s2icouplingparameters.set<double>("CONVTOL_IMPLBUTLERVOLMER",
+                *s2ikinetics_cond.Get<double>("CONVTOL_IMPLBUTLERVOLMER"));
             s2icouplingparameters.set<int>(
-                "ITEMAX_IMPLBUTLERVOLMER", s2ikinetics_cond.GetInt("ITEMAX_IMPLBUTLERVOLMER"));
+                "ITEMAX_IMPLBUTLERVOLMER", *s2ikinetics_cond.Get<int>("ITEMAX_IMPLBUTLERVOLMER"));
           }
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
           {
             s2icouplingparameters.set<double>(
-                "thermoperm", s2ikinetics_cond.GetDouble("thermoperm"));
+                "thermoperm", *s2ikinetics_cond.Get<double>("thermoperm"));
             s2icouplingparameters.set<double>(
-                "molar_heat_capacity", s2ikinetics_cond.GetDouble("molar_heat_capacity"));
+                "molar_heat_capacity", *s2ikinetics_cond.Get<double>("molar_heat_capacity"));
           }
           break;
         }
@@ -3050,20 +3052,22 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
       {
         case INPAR::S2I::growth_kinetics_butlervolmer:
         {
-          s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
+          s2icouplingparameters.set<int>("numscal", *s2ikinetics_cond.Get<int>("numscal"));
           s2icouplingparameters.set<std::vector<int>*>(
               "stoichiometries", s2ikinetics_cond.Get<std::vector<int>>("stoichiometries"));
-          s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
-          s2icouplingparameters.set<double>("k_r", s2ikinetics_cond.GetDouble("k_r"));
-          s2icouplingparameters.set<double>("alpha_a", s2ikinetics_cond.GetDouble("alpha_a"));
-          s2icouplingparameters.set<double>("alpha_c", s2ikinetics_cond.GetDouble("alpha_c"));
-          s2icouplingparameters.set<double>("density", s2ikinetics_cond.GetDouble("density"));
-          s2icouplingparameters.set<double>("molar mass", s2ikinetics_cond.GetDouble("molar mass"));
+          s2icouplingparameters.set<int>("numelectrons", *s2ikinetics_cond.Get<int>("e-"));
+          s2icouplingparameters.set<double>("k_r", *s2ikinetics_cond.Get<double>("k_r"));
+          s2icouplingparameters.set<double>("alpha_a", *s2ikinetics_cond.Get<double>("alpha_a"));
+          s2icouplingparameters.set<double>("alpha_c", *s2ikinetics_cond.Get<double>("alpha_c"));
+          s2icouplingparameters.set<double>("density", *s2ikinetics_cond.Get<double>("density"));
           s2icouplingparameters.set<double>(
-              "regpar", s2ikinetics_cond.GetDouble("regularization parameter"));
-          s2icouplingparameters.set<int>("regtype", s2ikinetics_cond.GetInt("regularization type"));
+              "molar mass", *s2ikinetics_cond.Get<double>("molar mass"));
           s2icouplingparameters.set<double>(
-              "conductivity", s2ikinetics_cond.GetDouble("conductivity"));
+              "regpar", *s2ikinetics_cond.Get<double>("regularization parameter"));
+          s2icouplingparameters.set<int>(
+              "regtype", *s2ikinetics_cond.Get<int>("regularization type"));
+          s2icouplingparameters.set<double>(
+              "conductivity", *s2ikinetics_cond.Get<double>("conductivity"));
           break;
         }
 
@@ -3359,7 +3363,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
           "one-step-theta time integration scheme at the moment!");
     }
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit and
-        conditions[0]->GetInt("regularization type") !=
+        *conditions[0]->Get<int>("regularization type") !=
             INPAR::S2I::RegularizationType::regularization_none)
     {
       dserror(

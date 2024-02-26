@@ -29,14 +29,14 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::Membrane_ActiveStrain::Membrane_ActiveStrain(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      matid_passive_(matdata->GetInt("MATIDPASSIVE")),
-      scalid_voltage_(matdata->GetInt("SCALIDVOLTAGE")),
-      density_(matdata->GetDouble("DENS")),
-      beta1_(matdata->GetDouble("BETA1")),
-      beta2_(matdata->GetDouble("BETA2")),
-      voltage_threshold_(matdata->GetDouble("VOLTHRESH")),
-      alpha1_(matdata->GetDouble("ALPHA1")),
-      alpha2_(matdata->GetDouble("ALPHA2"))
+      matid_passive_(*matdata->Get<int>("MATIDPASSIVE")),
+      scalid_voltage_(*matdata->Get<int>("SCALIDVOLTAGE")),
+      density_(*matdata->Get<double>("DENS")),
+      beta1_(*matdata->Get<double>("BETA1")),
+      beta2_(*matdata->Get<double>("BETA2")),
+      voltage_threshold_(*matdata->Get<double>("VOLTHRESH")),
+      alpha1_(*matdata->Get<double>("ALPHA1")),
+      alpha2_(*matdata->Get<double>("ALPHA2"))
 {
   return;
 }  // MAT::PAR::Membrane_ActiveStrain::Membrane_ActiveStrain

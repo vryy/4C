@@ -151,7 +151,7 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
   const int myrank = dis.Comm().MyPID();
   for (const auto& cond : conds)
   {
-    int id = use_coupling_id ? cond->GetInt("coupling id") : 0;
+    int id = use_coupling_id ? *cond->Get<int>("coupling id") : 0;
     for (int gid : *cond->GetNodes())
     {
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
@@ -177,7 +177,7 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
   const int myrank = dis.Comm().MyPID();
   for (auto* cond : conds)
   {
-    int id = cond->GetInt("coupling id");
+    int id = *cond->Get<int>("coupling id");
     for (int gid : *cond->GetNodes())
     {
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
@@ -319,7 +319,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 
   for (auto& cond : conds)
   {
-    int id = cond->GetInt("coupling id");
+    int id = *cond->Get<int>("coupling id");
     // get this condition's elements
     std::map<int, Teuchos::RCP<DRT::Element>>& geo = cond->Geometry();
     std::map<int, Teuchos::RCP<DRT::Element>>::iterator iter, pos;
@@ -358,7 +358,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
   {
     if (checklabel)
     {
-      const int condlabel = cond->GetInt("label");
+      const int condlabel = *cond->Get<int>("label");
 
       if (condlabel != label) continue;  // do not consider conditions with wrong label
     }

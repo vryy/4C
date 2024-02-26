@@ -25,16 +25,16 @@ BACI_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::IsoMuscleBlemker::IsoMuscleBlemker(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      G1_(matdata->GetDouble("G1")),
-      G2_(matdata->GetDouble("G2")),
-      P1_(matdata->GetDouble("P1")),
-      P2_(matdata->GetDouble("P2")),
-      sigma_max_(matdata->GetDouble("SIGMAMAX")),
-      lambda_ofl_(matdata->GetDouble("LAMBDAOFL")),
-      lambda_star_(matdata->GetDouble("LAMBDASTAR")),
-      alpha_(matdata->GetDouble("ALPHA")),
-      beta_(matdata->GetDouble("BETA")),
-      t_act_start_(matdata->GetDouble("ACTSTARTTIME"))
+      G1_(*matdata->Get<double>("G1")),
+      G2_(*matdata->Get<double>("G2")),
+      P1_(*matdata->Get<double>("P1")),
+      P2_(*matdata->Get<double>("P2")),
+      sigma_max_(*matdata->Get<double>("SIGMAMAX")),
+      lambda_ofl_(*matdata->Get<double>("LAMBDAOFL")),
+      lambda_star_(*matdata->Get<double>("LAMBDASTAR")),
+      alpha_(*matdata->Get<double>("ALPHA")),
+      beta_(*matdata->Get<double>("BETA")),
+      t_act_start_(*matdata->Get<double>("ACTSTARTTIME"))
 {
   // error handling for parameter ranges
   if (G1_ < 0.0) dserror("Material parameter G1 must be positive or zero");

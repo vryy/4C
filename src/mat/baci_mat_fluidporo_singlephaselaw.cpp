@@ -90,10 +90,10 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(Teuchos::RCP<MAT::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(matdata->GetInt("NUMDOF")),
+      numdof_(*matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      reltensions_(matdata->GetDouble("RELTENSION")),
-      sat0_(matdata->GetDouble("SATURATION_0"))
+      reltensions_(*matdata->Get<double>("RELTENSION")),
+      sat0_(*matdata->Get<double>("SATURATION_0"))
 {
   // check if sizes fit
   if (numdof_ != (int)presids_->size())
@@ -178,11 +178,11 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateGenPressure(double saturation)
 MAT::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(matdata->GetInt("NUMDOF")),
+      numdof_(*matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      reltensions_(matdata->GetDouble("RELTENSION")),
-      exp_(matdata->GetDouble("EXP")),
-      sat0_(matdata->GetDouble("SATURATION_0"))
+      reltensions_(*matdata->Get<double>("RELTENSION")),
+      exp_(*matdata->Get<double>("EXP")),
+      sat0_(*matdata->Get<double>("SATURATION_0"))
 {
   // check if sizes fit
   if (numdof_ != (int)presids_->size())
@@ -290,10 +290,10 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateGenPressure(double saturation
 MAT::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(matdata->GetInt("NUMDOF")),
+      numdof_(*matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      functionID_saturation_(matdata->GetInt("FUNCTSAT")),
-      functionID_pressure_(matdata->GetInt("FUNCTPRES"))
+      functionID_saturation_(*matdata->Get<int>("FUNCTSAT")),
+      functionID_pressure_(*matdata->Get<int>("FUNCTPRES"))
 {
   // check if sizes fit
   if (numdof_ != (int)presids_->size())

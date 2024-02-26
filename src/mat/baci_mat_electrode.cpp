@@ -20,17 +20,17 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
     : ElchSingleMat(matdata),
-      cmax_(matdata->GetDouble("C_MAX")),
-      chimax_(matdata->GetDouble("CHI_MAX")),
+      cmax_(*matdata->Get<double>("C_MAX")),
+      chimax_(*matdata->Get<double>("CHI_MAX")),
       ocpmodel_(StringToOCPModel(*matdata->Get<std::string>("OCP_MODEL"))),
-      ocpparanum_(matdata->GetInt("OCP_PARA_NUM")),
+      ocpparanum_(*matdata->Get<int>("OCP_PARA_NUM")),
       ocppara_(*matdata->Get<std::vector<double>>("OCP_PARA")),
       X_(0, 0.0),
       b_(0, 0.0),
       a_(0, 0.0),
       m_(0, 0.0),
-      xmin_(matdata->GetDouble("X_MIN")),
-      xmax_(matdata->GetDouble("X_MAX"))
+      xmin_(*matdata->Get<double>("X_MIN")),
+      xmax_(*matdata->Get<double>("X_MAX"))
 {
   // safety checks
   if (cmax_ < 1.0e-12)

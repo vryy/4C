@@ -79,7 +79,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       // condition
       // ---------------------------------------------------------------
       int Artery_Number;
-      Artery_Number = myConditions[i]->GetInt("ArteryNumber");
+      Artery_Number = *myConditions[i]->Get<int>("ArteryNumber");
       const std::vector<int>* nodes = myConditions[i]->GetNodes();
 
       // ---------------------------------------------------------------

@@ -25,10 +25,10 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      numscal_(matdata->GetInt("NUMSCAL")),
+      numscal_(*matdata->Get<int>("NUMSCAL")),
       stoich_(matdata->Get<std::vector<int>>("STOICH")),
-      reaccoeff_(matdata->GetDouble("REACCOEFF")),
-      distrfunctreaccoeffid_(matdata->GetInt("DISTRFUNCT")),
+      reaccoeff_(*matdata->Get<double>("REACCOEFF")),
+      distrfunctreaccoeffid_(*matdata->Get<int>("DISTRFUNCT")),
       coupling_(SetCouplingType(matdata)),
       couprole_(matdata->Get<std::vector<double>>("ROLE")),
       reacstart_(matdata->Get<std::vector<double>>("REACSTART")),

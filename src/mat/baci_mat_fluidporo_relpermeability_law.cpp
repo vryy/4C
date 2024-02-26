@@ -66,7 +66,7 @@ MAT::PAR::FluidPoroRelPermeabilityLaw::CreateRelPermeabilityLaw(int matID)
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroRelPermeabilityLawConstant::FluidPoroRelPermeabilityLawConstant(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : FluidPoroRelPermeabilityLaw(matdata, true), relpermeability_(matdata->GetDouble("VALUE"))
+    : FluidPoroRelPermeabilityLaw(matdata, true), relpermeability_(*matdata->Get<double>("VALUE"))
 {
   if (relpermeability_ > 1.0)
     dserror(
@@ -79,8 +79,8 @@ MAT::PAR::FluidPoroRelPermeabilityLawConstant::FluidPoroRelPermeabilityLawConsta
 MAT::PAR::FluidPoroRelPermeabilityLawExponent::FluidPoroRelPermeabilityLawExponent(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : FluidPoroRelPermeabilityLaw(matdata, false),
-      exp_(matdata->GetDouble("EXP")),
-      minsat_(matdata->GetDouble("MIN_SAT"))
+      exp_(*matdata->Get<double>("EXP")),
+      minsat_(*matdata->Get<double>("MIN_SAT"))
 {
   if (exp_ <= 1.0) dserror("exponent in relative permeability phase law has to be bigger than 1.0");
   // if(minsat_ < 0.0 or minsat_ > 1.0)

@@ -45,9 +45,9 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
     dserror("Unknown type of LineNeumann condition");
 
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
-  const std::vector<int>* spa_func = condition.Get<std::vector<int>>("funct");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
+  const auto* spa_func = condition.Get<std::vector<int>>("funct");
 
   /*
   **    TIME CURVE BUSINESS

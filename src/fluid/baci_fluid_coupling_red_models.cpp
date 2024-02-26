@@ -90,7 +90,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(
     // which should be the same!
     // -------------------------------------------------------------------
 
-    int N_iter = (couplingcond[0])->GetInt("MaximumIterations");
+    int N_iter = *couplingcond[0]->Get<int>("MaximumIterations");
 
     // -------------------------------------------------------------------
     // make sure that each coupling has two conditions of same ID
@@ -98,10 +98,10 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(
     for (unsigned int i = 0; i < numcondlines; i++)
     {
       bool CondIsFine = false;
-      int condid = (couplingcond[i])->GetInt("ConditionID");
+      int condid = *couplingcond[i]->Get<int>("ConditionID");
       for (unsigned int j = 0; j < numcondlines; j++)
       {
-        int condid2 = (couplingcond2[j])->GetInt("ConditionID");
+        int condid2 = *couplingcond2[j]->Get<int>("ConditionID");
         if (condid2 == condid)
         {
           CondIsFine = true;
@@ -120,7 +120,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(
     // -------------------------------------------------------------------
     for (unsigned int i = 0; i < numcondlines; i++)
     {
-      int condid = (couplingcond[i])->GetInt("ConditionID");
+      int condid = *couplingcond[i]->Get<int>("ConditionID");
 
       // -----------------------------------------------------------------
       // Find the second condition number which has the same id as the
@@ -129,12 +129,12 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(
       unsigned int j = 0;
       for (j = 0; j < numcondlines; j++)
       {
-        if (condid == (couplingcond2[j])->GetInt("ConditionID"))
+        if (condid == *couplingcond2[j]->Get<int>("ConditionID"))
         {
           break;
         }
       }
-      int thisN_iter = (couplingcond[i])->GetInt("MaximumIterations");
+      int thisN_iter = *couplingcond[i]->Get<int>("MaximumIterations");
       if (thisN_iter != N_iter)
         dserror(
             "all maximum number of iterations on the coupling boundary between 3-D and reduced-D "
@@ -175,7 +175,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(
     for (unsigned int i = 0; i < numcondlines; i++)
     {
       // Get condition ID
-      int id = (couplingcond[i])->GetInt("ConditionID");
+      int id = *couplingcond[i]->Get<int>("ConditionID");
 
       // Get returned coupling variable
       std::string variable = *((couplingcond[i])->Get<std::string>("ReturnedVariable"));
@@ -197,7 +197,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(
     for (unsigned int i = 0; i < numcondlines; i++)
     {
       // Get condition ID
-      int id = (couplingcond2[i])->GetInt("ConditionID");
+      int id = *couplingcond2[i]->Get<int>("ConditionID");
 
       // Get returned coupling variable
       std::string variable = *((couplingcond2[i])->Get<std::string>("ReturnedVariable"));
@@ -300,12 +300,12 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(
     // find the parameters that must be calculated and returned by
     // the 3D problem
     //----------------------------------------------------------------
-    for (unsigned int i = 0; i < conds3D.size(); i++)
+    for (auto& i : conds3D)
     {
-      if (conds3D[i]->GetInt("ConditionID") == condID)
+      if (*i->Get<int>("ConditionID") == condID)
       {
         // get returned value name from 3D boundary
-        std::string variable_str = *(conds3D[i]->Get<std::string>("ReturnedVariable"));
+        std::string variable_str = *(i->Get<std::string>("ReturnedVariable"));
 
         // concatenate the variable name with the variable id
         std::stringstream CouplingVariable;
@@ -313,7 +313,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(
 
         if (variable_str == "flow")
         {
-          std::map<std::string, double>::iterator itr = map3_Dnp_->find(CouplingVariable.str());
+          auto itr = map3_Dnp_->find(CouplingVariable.str());
           if (itr == map3_Dnp_->end())
           {
             dserror("[3D/Reduced-D COUPLING] 3D map has no variable %s for condition [%d]",
@@ -372,7 +372,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(
       //----------------------------------------------------------------
       for (unsigned int i = 0; i < conds3D.size(); i++)
       {
-        if (conds_redD[i]->GetInt("ConditionID") == condID)
+        if (*conds_redD[i]->Get<int>("ConditionID") == condID)
         {
           // get returned value name from 3D boundary
           std::string variable_str = *(conds_redD[i]->Get<std::string>("ReturnedVariable"));
@@ -383,7 +383,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(
 
           if (variable_str == "pressure")
           {
-            std::map<std::string, double>::iterator itr = mapRed_Dnp_->find(CouplingVariable.str());
+            auto itr = mapRed_Dnp_->find(CouplingVariable.str());
             if (itr == mapRed_Dnp_->end())
             {
               dserror("[3D/Reduced-D COUPLING] reduced-D map has no variable %s for condition [%d]",
@@ -486,7 +486,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(
   for (unsigned int i = 0; i < conds3D.size(); i++)
   {
     // Get condition ID
-    int ID = conds_redD[i]->GetInt("ConditionID");
+    int ID = *conds_redD[i]->Get<int>("ConditionID");
 
     // Concatenate the returned value with the condition ID
     std::string ReturnedVariable = *(conds_redD[i]->Get<std::string>("ReturnedVariable"));
@@ -1140,7 +1140,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(
   DRT::Condition* cond_red = nullptr;
   for (unsigned int i = 0; i != conds_red.size(); i++)
   {
-    if (conds_red[i]->GetInt("ConditionID") == condid_)
+    if (*conds_red[i]->Get<int>("ConditionID") == condid_)
     {
       cond_red = conds_red[i];
       break;
@@ -1159,7 +1159,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(
   DRT::Condition* cond;
   for (unsigned int i = 0; i != conds.size(); i++)
   {
-    if (conds[i]->GetInt("ConditionID") == condid_)
+    if (*conds[i]->Get<int>("ConditionID") == condid_)
     {
       cond = conds[i];
       break;

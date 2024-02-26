@@ -1479,13 +1479,12 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
       // calculating Q at node i
       const DRT::Condition* condition = ele->Nodes()[i]->GetCondition("ArtPrescribedScatraCond");
 
-      const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
-      double curvefac = 1.0;
-      const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
+      const auto* curve = condition->GetIf<int>("curve");
+      const auto* vals = condition->Get<double>("val");
 
-      curvefac = (*vals)[0];
+      double curvefac = *vals;
       int curvenum = -1;
-      if (curve) curvenum = (*curve)[0];
+      if (curve) curvenum = *curve;
       if (curvenum > 0)
       {
         curvefac = GLOBAL::Problem::Instance()

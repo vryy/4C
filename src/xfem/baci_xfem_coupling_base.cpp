@@ -338,10 +338,9 @@ void XFEM::CouplingBase::GetConditionByCouplingId(const std::vector<DRT::Conditi
   mynewcond.clear();
 
   // select the conditions with specified "couplingID"
-  for (size_t i = 0; i < mycond.size(); ++i)
+  for (auto* cond : mycond)
   {
-    DRT::Condition* cond = mycond[i];
-    const int id = cond->GetInt("label");
+    const int id = *cond->Get<int>("label");
 
     if (id == coupling_id) mynewcond.push_back(cond);
   }
@@ -379,7 +378,7 @@ void XFEM::CouplingBase::SetAveragingStrategy()
     {
       // ask the first cutter element
       const int lid = 0;
-      const int val = cutterele_conds_[lid].second->GetInt("COUPSTRATEGY");
+      const int val = *cutterele_conds_[lid].second->Get<int>("COUPSTRATEGY");
       averaging_strategy_ = static_cast<INPAR::XFEM::AveragingStrategy>(val);
       // check unhandled cased
       if (averaging_strategy_ == INPAR::XFEM::Mean || averaging_strategy_ == INPAR::XFEM::Harmonic)
@@ -397,7 +396,7 @@ void XFEM::CouplingBase::SetAveragingStrategy()
     {
       // ask the first cutter element
       const int lid = 0;
-      const int val = cutterele_conds_[lid].second->GetInt("COUPSTRATEGY");
+      const int val = *cutterele_conds_[lid].second->Get<int>("COUPSTRATEGY");
       averaging_strategy_ = static_cast<INPAR::XFEM::AveragingStrategy>(val);
       break;
     }
@@ -502,10 +501,10 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itr
   std::vector<double> final_values(3, 0.0);
 
   //---------------------------------------
-  const std::string* condtype = cond->Get<std::string>("type");
+  const auto condtype = *cond->Get<std::string>("type");
 
   // get usual body force
-  if (!(*condtype == "neum_dead" or *condtype == "neum_live")) dserror("Unknown Neumann condition");
+  if (!(condtype == "neum_dead" or condtype == "neum_live")) dserror("Unknown Neumann condition");
   //---------------------------------------
 
   EvaluateFunction(final_values, x.A(), cond, time);
@@ -521,10 +520,10 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itr
   std::vector<double> final_values(6, 0.0);
 
   //---------------------------------------
-  const std::string* condtype = cond->Get<std::string>("type");
+  const auto condtype = *cond->Get<std::string>("type");
 
   // get usual body force
-  if (!(*condtype == "neum_dead" or *condtype == "neum_live")) dserror("Unknown Neumann condition");
+  if (!(condtype == "neum_dead" or condtype == "neum_live")) dserror("Unknown Neumann condition");
   //---------------------------------------
 
   EvaluateFunction(final_values, x.A(), cond, time);
@@ -537,7 +536,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 {
   if (cond == nullptr) dserror("invalid condition");
 
-  const int numdof = cond->GetInt("numdof");
+  const int numdof = *cond->Get<int>("numdof");
 
   if (numdof != (int)final_values.size())
     dserror("you specified NUMDOF %i in the input file, however, only %i dofs allowed!", numdof,
@@ -545,14 +544,14 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 
   //---------------------------------------
   // get values and switches from the condition
-  const std::vector<int>* onoff = cond->Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = cond->Get<std::vector<double>>("val");
-  const std::vector<int>* functions = cond->Get<std::vector<int>>("funct");
+  const auto* onoff = cond->Get<std::vector<int>>("onoff");
+  const auto* val = cond->Get<std::vector<double>>("val");
+  const auto* functions = cond->GetIf<std::vector<int>>("funct");
 
   // uniformly distributed random noise
 
-  DRT::Condition& secondary = const_cast<DRT::Condition&>(*cond);
-  const std::vector<double>* percentage = secondary.Get<std::vector<double>>("randnoise");
+  auto& secondary = const_cast<DRT::Condition&>(*cond);
+  const auto* percentage = secondary.GetIf<double>("randnoise");
 
   if (time < -1e-14) dserror("Negative time in curve/function evaluation: time = %f", time);
 
@@ -581,8 +580,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
     double noise = 0.0;
     if (percentage != nullptr)
     {
-      if (percentage->size() != 1) dserror("expect vector of length one!");
-      const double perc = percentage->at(0);
+      const double perc = *percentage;
 
       if (fabs(perc) > 1e-14)
       {
@@ -606,15 +604,11 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
 
   //---------------------------------------
   // get values and switches from the condition
-  const std::vector<int>* functions = cond->Get<std::vector<int>>("funct");
+  const auto* function = cond->GetIf<int>("funct");
 
   // uniformly distributed random noise
-
-  if ((*functions).size() != 1)
-    dserror("Do not call EvaluateScalarFunction with more than one function/value provided");
-
-  DRT::Condition& secondary = const_cast<DRT::Condition&>(*cond);
-  const std::vector<double>* percentage = secondary.Get<std::vector<double>>("randnoise");
+  auto& secondary = const_cast<DRT::Condition&>(*cond);
+  const auto* percentage = secondary.GetIf<double>("randnoise");
 
   if (time < -1e-14) dserror("Negative time in curve/function evaluation: time = %f", time);
 
@@ -625,7 +619,7 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
   {
     // get factor given by spatial function
     int functnum = -1;
-    if (functions) functnum = (*functions)[dof];
+    if (function) functnum = *function;
 
     // initialization of time-curve factor and function factor
     double functionfac = 1.0;
@@ -643,8 +637,7 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
     double noise = 0.0;
     if (percentage != nullptr)
     {
-      if (percentage->size() != 1) dserror("expect vector of length one!");
-      const double perc = percentage->at(0);
+      const double perc = *percentage;
 
       if (fabs(perc) > 1e-14)
       {

@@ -16,9 +16,9 @@ BACI_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::CoupBlatzKo::CoupBlatzKo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      mue_(matdata->GetDouble("MUE")),
-      nue_(matdata->GetDouble("NUE")),
-      f_(matdata->GetDouble("F"))
+      mue_(*matdata->Get<double>("MUE")),
+      nue_(*matdata->Get<double>("NUE")),
+      f_(*matdata->Get<double>("F"))
 {
 }
 

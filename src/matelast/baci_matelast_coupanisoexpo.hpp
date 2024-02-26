@@ -88,7 +88,7 @@ namespace MAT
         /// @name material parameters
         //@{
         /// adapt angle during remodeling
-        int adapt_angle_;
+        bool adapt_angle_;
 
         /// Id of the fiber to be used
         const int fiber_id_;

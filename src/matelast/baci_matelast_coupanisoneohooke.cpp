@@ -18,10 +18,10 @@ BACI_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
-      c_(matdata->GetDouble("C")),
-      gamma_(matdata->GetDouble("GAMMA")),
-      init_(matdata->GetInt("INIT")),
-      adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
+      c_(*matdata->Get<double>("C")),
+      gamma_(*matdata->Get<double>("GAMMA")),
+      init_(*matdata->Get<int>("INIT")),
+      adapt_angle_(*matdata->Get<bool>("ADAPT_ANGLE"))
 {
 }
 

@@ -678,8 +678,8 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const auto* onoff = condition.Get<std::vector<int>>("onoff");
-  const auto* val = condition.Get<std::vector<double>>("val");
+  const auto* onoff = condition.GetIf<std::vector<int>>("onoff");
+  const auto* val = condition.GetIf<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -702,7 +702,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const auto* funct = condition.Get<std::vector<int>>("funct");
+  const auto* funct = condition.GetIf<std::vector<int>>("funct");
   CORE::LINALG::Matrix<nsd_, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)

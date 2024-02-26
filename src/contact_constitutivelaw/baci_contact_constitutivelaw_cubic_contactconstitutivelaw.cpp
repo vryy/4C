@@ -23,10 +23,10 @@ BACI_NAMESPACE_OPEN
 CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams::CubicConstitutiveLawParams(
     const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      a_(container->GetDouble("A")),
-      b_(container->GetDouble("B")),
-      c_(container->GetDouble("C")),
-      d_(container->GetDouble("D"))
+      a_(*container->Get<double>("A")),
+      b_(*container->Get<double>("B")),
+      c_(*container->Get<double>("C")),
+      d_(*container->Get<double>("D"))
 {
 }
 /*----------------------------------------------------------------------*/

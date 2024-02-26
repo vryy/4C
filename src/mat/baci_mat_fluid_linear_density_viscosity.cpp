@@ -20,12 +20,12 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::LinearDensityViscosity::LinearDensityViscosity(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      refdensity_(matdata->GetDouble("REFDENSITY")),
-      refviscosity_(matdata->GetDouble("REFVISCOSITY")),
-      refpressure_(matdata->GetDouble("REFPRESSURE")),
-      coeffdensity_(matdata->GetDouble("COEFFDENSITY")),
-      coeffviscosity_(matdata->GetDouble("COEFFVISCOSITY")),
-      gamma_(matdata->GetDouble("GAMMA"))
+      refdensity_(*matdata->Get<double>("REFDENSITY")),
+      refviscosity_(*matdata->Get<double>("REFVISCOSITY")),
+      refpressure_(*matdata->Get<double>("REFPRESSURE")),
+      coeffdensity_(*matdata->Get<double>("COEFFDENSITY")),
+      coeffviscosity_(*matdata->Get<double>("COEFFVISCOSITY")),
+      gamma_(*matdata->Get<double>("GAMMA"))
 {
 }
 

@@ -21,17 +21,17 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::CrosslinkerMat::CrosslinkerMat(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      link_element_matnum_(matdata->GetDouble("MATNUM")),
+      link_element_matnum_(*matdata->Get<double>("MATNUM")),
       jointtype_(
           INPAR::BEAMINTERACTION::String2JointType(*(matdata->Get<std::string>("JOINTTYPE")))),
-      linkinglength_(matdata->GetDouble("LINKINGLENGTH")),
-      linkinglengthtol_(matdata->GetDouble("LINKINGLENGTHTOL")),
-      linkingangle_(matdata->GetDouble("LINKINGANGLE")),
-      linkingangletol_(matdata->GetDouble("LINKINGANGLETOL")),
-      k_on_(matdata->GetDouble("K_ON")),
-      k_off_(matdata->GetDouble("K_OFF")),
-      deltabelleq_(matdata->GetDouble("DELTABELLEQ")),
-      nobonddistsphere(matdata->GetDouble("NOBONDDISTSPHERE")),
+      linkinglength_(*matdata->Get<double>("LINKINGLENGTH")),
+      linkinglengthtol_(*matdata->Get<double>("LINKINGLENGTHTOL")),
+      linkingangle_(*matdata->Get<double>("LINKINGANGLE")),
+      linkingangletol_(*matdata->Get<double>("LINKINGANGLETOL")),
+      k_on_(*matdata->Get<double>("K_ON")),
+      k_off_(*matdata->Get<double>("K_OFF")),
+      deltabelleq_(*matdata->Get<double>("DELTABELLEQ")),
+      nobonddistsphere(*matdata->Get<double>("NOBONDDISTSPHERE")),
       linkertype_(
           INPAR::BEAMINTERACTION::String2CrosslinkerType(*(matdata->Get<std::string>("TYPE"))))
 {

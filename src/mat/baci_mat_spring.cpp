@@ -21,8 +21,8 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Spring::Spring(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      stiffness_(matdata->GetDouble("STIFFNESS")),
-      density_(matdata->GetDouble("DENS"))
+      stiffness_(*matdata->Get<double>("STIFFNESS")),
+      density_(*matdata->Get<double>("DENS"))
 {
 }
 

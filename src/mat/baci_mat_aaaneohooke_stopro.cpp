@@ -35,10 +35,10 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::AAAneohooke_stopro::AAAneohooke_stopro(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_mean_(matdata->GetDouble("YOUNG")),
-      nue_(matdata->GetDouble("NUE")),
-      beta_mean_(matdata->GetDouble("BETA")),
-      density_(matdata->GetDouble("DENS"))
+      youngs_mean_(*matdata->Get<double>("YOUNG")),
+      nue_(*matdata->Get<double>("NUE")),
+      beta_mean_(*matdata->Get<double>("BETA")),
+      density_(*matdata->Get<double>("DENS"))
 {
   init_ = 0;
 }

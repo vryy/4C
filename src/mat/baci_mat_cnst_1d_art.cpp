@@ -25,18 +25,18 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Cnst_1d_art::Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      viscosity_(matdata->GetDouble("VISCOSITY")),
-      density_(matdata->GetDouble("DENS")),
-      young_(matdata->GetDouble("YOUNG")),
-      nue_(matdata->GetDouble("NUE")),
-      th_(matdata->GetDouble("TH")),
-      pext1_(matdata->GetDouble("PEXT1")),
-      pext2_(matdata->GetDouble("PEXT2")),
+      viscosity_(*matdata->Get<double>("VISCOSITY")),
+      density_(*matdata->Get<double>("DENS")),
+      young_(*matdata->Get<double>("YOUNG")),
+      nue_(*matdata->Get<double>("NUE")),
+      th_(*matdata->Get<double>("TH")),
+      pext1_(*matdata->Get<double>("PEXT1")),
+      pext2_(*matdata->Get<double>("PEXT2")),
       viscositylaw_(viscositylaw_undefined),
       diameterlaw_(diameterlaw_undefined),
-      blood_visc_scale_diam_to_microns_(matdata->GetDouble("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
-      diameter_law_funct_(matdata->GetInt("VARYING_DIAMETER_FUNCTION")),
-      collapse_threshold_(matdata->GetDouble("COLLAPSE_THRESHOLD"))
+      blood_visc_scale_diam_to_microns_(*matdata->Get<double>("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
+      diameter_law_funct_(*matdata->Get<int>("VARYING_DIAMETER_FUNCTION")),
+      collapse_threshold_(*matdata->Get<double>("COLLAPSE_THRESHOLD"))
 {
   const std::string* typestring_visc = matdata->Get<std::string>("VISCOSITYLAW");
 

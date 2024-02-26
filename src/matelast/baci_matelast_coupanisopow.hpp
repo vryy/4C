@@ -52,7 +52,7 @@ namespace MAT
         /// fiber initalization status
         int init_;
         /// adapt angle during remodeling
-        int adapt_angle_;
+        bool adapt_angle_;
 
         //@}
 

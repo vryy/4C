@@ -20,8 +20,8 @@ BACI_NAMESPACE_OPEN
 MIXTURE::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MIXTURE::PAR::MixtureGrowthStrategy(matdata),
-      init_mode_(matdata->GetInt("INIT")),
-      fiber_id_(matdata->GetInt("FIBER_ID"))
+      init_mode_(*matdata->Get<int>("INIT")),
+      fiber_id_(*matdata->Get<int>("FIBER_ID"))
 {
 }
 

@@ -825,8 +825,8 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     std::vector<DRT::Condition*> InterfaceS2IConditions;
     std::vector<DRT::Condition*> InterfaceContactConditions;
 
-    const int S2IKineticsID = conditionToBeTested->GetInt("S2IKineticsID");
-    const int contactconditionID = conditionToBeTested->GetInt("ContactConditionID");
+    const int S2IKineticsID = *conditionToBeTested->Get<int>("S2IKineticsID");
+    const int contactconditionID = *conditionToBeTested->Get<int>("ContactConditionID");
 
     if (S2IKineticsID != contactconditionID)
     {
@@ -839,7 +839,7 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     // loop over all scatra-scatra interface conditions and add them to the vector, if IDs match
     for (auto* s2ikinetics_cond : s2ikinetics_conditions)
     {
-      if (s2ikinetics_cond->GetInt("ConditionID") != S2IKineticsID) continue;
+      if (*s2ikinetics_cond->Get<int>("ConditionID") != S2IKineticsID) continue;
 
       InterfaceS2IConditions.push_back(s2ikinetics_cond);
     }
@@ -847,7 +847,7 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     // loop over all contact conditions and add them to the vector, if IDs match
     for (auto* contactcondition : contactconditions)
     {
-      if (contactcondition->GetInt("Interface ID") != contactconditionID) continue;
+      if (*contactcondition->Get<int>("Interface ID") != contactconditionID) continue;
 
       InterfaceContactConditions.push_back(contactcondition);
     }
@@ -885,7 +885,7 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
             "'Contact' conditions with ID: %i;\n"
             "The last two conditions are NOT defined on the same node-sets which is not "
             "reasonable. Check your Input-File!",
-            conditionToBeTested->GetInt("ConditionID"), S2IKineticsID, contactconditionID);
+            *conditionToBeTested->Get<int>("ConditionID"), S2IKineticsID, contactconditionID);
       }
     }
   }
@@ -1334,7 +1334,7 @@ void SSI::UTILS::SSIMeshTying::FindSlaveSlaveTransformationNodes(
   std::vector<int> original_slave_gids;
   for (auto* meshtying_conditon : meshtying_conditons)
   {
-    if (meshtying_conditon->GetInt("interface side") == INPAR::S2I::side_slave)
+    if (*meshtying_conditon->Get<int>("interface side") == INPAR::S2I::side_slave)
     {
       DRT::UTILS::AddOwnedNodeGIDFromList(
           *dis, *meshtying_conditon->GetNodes(), original_slave_gids);

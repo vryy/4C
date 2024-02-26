@@ -28,9 +28,10 @@ CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<DRT::Discretization> discr,
   if (moncond_.size())
   {
     montype_ = GetMoniType(conditionname);
-    for (unsigned int i = 0; i < moncond_.size(); i++)
+    for (auto& i : moncond_)
     {
-      int condID = (*(moncond_[i]->Get<std::vector<int>>("ConditionID")))[0];
+      int condID = *i->Get<int>("ConditionID");
+
       if (condID > maxID)
       {
         maxID = condID;
@@ -87,7 +88,6 @@ void CONSTRAINTS::Monitor::Evaluate(
       dserror("Unknown monitor type to be evaluated in Monitor class!");
   }
   EvaluateMonitor(params, systemvector);
-  return;
 }
 
 
@@ -105,15 +105,12 @@ void CONSTRAINTS::Monitor::EvaluateMonitor(
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < moncond_.size(); ++i)
+  for (auto* cond : moncond_)
   {
-    DRT::Condition& cond = *(moncond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-    const std::vector<int>* CondIDVec = cond.Get<std::vector<int>>("ConditionID");
-    const int condID = (*CondIDVec)[0];
+    const int condID = *cond->Get<int>("ConditionID");
     const int offsetID = params.get("OffsetID", 0);
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -122,7 +119,7 @@ void CONSTRAINTS::Monitor::EvaluateMonitor(
     CORE::LINALG::SerialDenseVector elevector2;
     CORE::LINALG::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
@@ -152,7 +149,6 @@ void CONSTRAINTS::Monitor::EvaluateMonitor(
       CORE::LINALG::Assemble(*systemvector, elevector3, constrlm, constrowner);
     }
   }
-  return;
 }
 
 /*-----------------------------------------------------------------------*

@@ -116,7 +116,7 @@ void SCATRA::ScaTraTimIntElchOST::WriteRestart() const
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
       DRT::Condition* mycond = (*(fool));
-      const int condid = mycond->GetInt("ConditionID");
+      const int condid = *mycond->Get<int>("ConditionID");
       // galvanostatic mode: only applied potential of cathode is adapted
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -124,19 +124,19 @@ void SCATRA::ScaTraTimIntElchOST::WriteRestart() const
         temp << condid;
 
         // electrode potential of the adjusted electrode kinetics BC at time n+1
-        double pot = mycond->GetDouble("pot");
+        auto pot = *mycond->Get<double>("pot");
         output_->WriteDouble("pot_" + temp.str(), pot);
 
         // electrode potential of the adjusted electrode kinetics BC at time n
-        double pot0n = mycond->GetDouble("pot0n");
+        auto pot0n = *mycond->Get<double>("pot0n");
         output_->WriteDouble("pot0n_" + temp.str(), pot0n);
 
         // electrode potential time derivative of the adjusted electrode kinetics BC at time n
-        double pot0dtn = mycond->GetDouble("pot0dtn");
+        auto pot0dtn = *mycond->Get<double>("pot0dtn");
         output_->WriteDouble("pot0dtn_" + temp.str(), pot0dtn);
 
         // history of electrode potential of the adjusted electrode kinetics BC
-        double pothist = mycond->GetDouble("pot0hist");
+        auto pothist = *mycond->Get<double>("pot0hist");
         output_->WriteDouble("pot0hist_" + temp.str(), pothist);
       }
     }
@@ -177,7 +177,7 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step, Teuchos::RCP<IO::I
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
       DRT::Condition* mycond = (*(fool));
-      const int condid = mycond->GetInt("ConditionID");
+      const int condid = *mycond->Get<int>("ConditionID");
       // galvanostatic mode: only applied potential of cathode is adapted
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -229,10 +229,10 @@ void SCATRA::ScaTraTimIntElchOST::ElectrodeKineticsTimeUpdate()
     for (auto& condition : conditions)  // we update simply every condition!
     {
       {
-        double pot0np = condition->GetDouble("pot");
+        auto pot0np = *condition->Get<double>("pot");
         condition->Add("pot0n", pot0np);
 
-        double pot0dtnp = condition->GetDouble("pot0dtnp");
+        auto pot0dtnp = *condition->Get<double>("pot0dtnp");
         condition->Add("pot0dtn", pot0dtnp);
       }
     }
@@ -265,9 +265,9 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
 
   for (int icond = 0; icond < numcond; icond++)
   {
-    double pot0np = cond[icond]->GetDouble("pot");
-    const int functnum = cond[icond]->GetInt("funct");
-    double dlcap = cond[icond]->GetDouble("dl_spec_cap");
+    auto pot0np = *cond[icond]->Get<double>("pot");
+    const auto functnum = *cond[icond]->Get<int>("funct");
+    auto dlcap = *cond[icond]->Get<double>("dl_spec_cap");
 
     if (init)
     {
@@ -293,8 +293,8 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
       }
       // compute time derivative of applied potential pot0
       // pot0dt(n+1) = (pot0(n+1)-pot0(n)) / (theta*dt) + (1-(1/theta))*pot0dt(n)
-      double pot0n = cond[icond]->GetDouble("pot0n");
-      double pot0dtn = cond[icond]->GetDouble("pot0dtn");
+      auto pot0n = *cond[icond]->Get<double>("pot0n");
+      auto pot0dtn = *cond[icond]->Get<double>("pot0dtn");
       double pot0dtnp = (pot0np - pot0n) / (dta_ * theta_) + (1 - (1 / theta_)) * pot0dtn;
       // add time derivative of applied potential pot0dtnp to BC
       cond[icond]->Add("pot0dtnp", pot0dtnp);
@@ -322,8 +322,8 @@ void SCATRA::ScaTraTimIntElchOST::SetOldPartOfRighthandside()
       // prepare "old part of rhs" for galvanostatic equation (to be used at this time step)
       {
         // re-read values (just to be really sure no mix-up occurs)
-        double pot0n = condition->GetDouble("pot0n");
-        double pot0dtn = condition->GetDouble("pot0dtn");
+        double pot0n = *condition->Get<double>("pot0n");
+        double pot0dtn = *condition->Get<double>("pot0dtn");
         // prepare old part of rhs for galvanostatic mode
         double pothist = pot0n + (1.0 - theta_) * dta_ * pot0dtn;
         condition->Add("pot0hist", pothist);
@@ -405,23 +405,23 @@ void SCATRA::ScaTraTimIntElchBDF2::WriteRestart() const
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
       DRT::Condition* mycond = (*(fool));
-      const int condid = mycond->GetInt("ConditionID");
+      const int condid = *mycond->Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
-        double pot = mycond->GetDouble("pot");
+        auto pot = *mycond->Get<double>("pot");
         output_->WriteDouble("pot", pot);
 
         // electrode potential of the adjusted electrode kinetics BC at time n
-        double potn = mycond->GetDouble("pot0n");
+        auto potn = *mycond->Get<double>("pot0n");
         output_->WriteDouble("pot0n", potn);
 
         // electrode potential of the adjusted electrode kinetics BC at time n -1
-        double potnm = mycond->GetDouble("potnm");
+        auto potnm = *mycond->Get<double>("potnm");
         output_->WriteDouble("potnm", potnm);
 
         // history of electrode potential of the adjusted electrode kinetics BC
-        double pothist = mycond->GetDouble("pothist");
+        auto pothist = *mycond->Get<double>("pothist");
         output_->WriteDouble("pothist", pothist);
       }
     }
@@ -462,7 +462,7 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step, Teuchos::RCP<IO::
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
       DRT::Condition* mycond = (*(fool));
-      const int condid = mycond->GetInt("ConditionID");
+      const int condid = *mycond->Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
         double pot = reader->ReadDouble("pot");
@@ -512,8 +512,8 @@ void SCATRA::ScaTraTimIntElchBDF2::ElectrodeKineticsTimeUpdate()
     for (auto& condition : conditions)  // we update simply every condition!
     {
       {
-        double potnp = condition->GetDouble("pot");
-        double potn = condition->GetDouble("potn");
+        double potnp = *condition->Get<double>("pot");
+        double potn = *condition->Get<double>("potn");
         // shift status variables
         condition->Add("potnm", potn);
         condition->Add("potn", potnp);
@@ -535,7 +535,7 @@ void SCATRA::ScaTraTimIntElchBDF2::ComputeTimeDerivPot0(const bool init)
 
   for (int icond = 0; icond < numcond; icond++)
   {
-    double dlcap = cond[icond]->GetDouble("dl_spec_cap");
+    auto dlcap = *cond[icond]->Get<double>("dl_spec_cap");
 
     if (init)
     {
@@ -584,8 +584,8 @@ void SCATRA::ScaTraTimIntElchBDF2::SetOldPartOfRighthandside()
                                         // equation (to be used at next time step)
     {
       double pothist;
-      double potn = condition->GetDouble("pot0n");
-      double potnm = condition->GetDouble("potnm");
+      double potn = *condition->Get<double>("pot0n");
+      double potnm = *condition->Get<double>("potnm");
       if (step_ > 1)
       {
         // ?? tpdt(n+1) = ((3/2)*tp(n+1)-2*tp(n)+(1/2)*tp(n-1))/dt
@@ -706,15 +706,15 @@ void SCATRA::ScaTraTimIntElchGenAlpha::WriteRestart() const
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
       DRT::Condition* mycond = (*(fool));
-      const int condid = mycond->GetInt("ConditionID");
+      const int condid = *mycond->Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
-        double pot = mycond->GetDouble("pot");
+        double pot = *mycond->Get<double>("pot");
         output_->WriteDouble("pot", pot);
 
         // electrode potential of the adjusted electrode kinetics BC at time n
-        double potn = mycond->GetDouble("pot0n");
+        double potn = *mycond->Get<double>("pot0n");
         output_->WriteDouble("pot0n", potn);
       }
     }
@@ -755,7 +755,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
       DRT::Condition* mycond = (*(fool));
-      const int condid = mycond->GetInt("ConditionID");
+      const int condid = *mycond->Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
         double pot = reader->ReadDouble("pot");
@@ -800,7 +800,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ElectrodeKineticsTimeUpdate()
     for (auto& condition : conditions)  // we update simply every condition!
     {
       {
-        double pot0np = condition->GetDouble("pot");
+        auto pot0np = *condition->Get<double>("pot");
         condition->Add("pot0n", pot0np);
       }
     }
@@ -821,9 +821,9 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
 
   for (int icond = 0; icond < numcond; icond++)
   {
-    double pot0np = cond[icond]->GetDouble("pot");
-    const int functnum = cond[icond]->GetInt("funct");
-    double dlcap = cond[icond]->GetDouble("dl_spec_cap");
+    double pot0np = *cond[icond]->Get<double>("pot");
+    const int functnum = *cond[icond]->Get<int>("funct");
+    double dlcap = *cond[icond]->Get<double>("dl_spec_cap");
 
     if (init)
     {
@@ -858,8 +858,8 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
       }
       // compute time derivative of applied potential pot0
       // pot0dt(n+1) = (pot0(n+1)-pot0(n)) / (theta*dt) + (1-(1/theta))*pot0dt(n)
-      double pot0n = cond[icond]->GetDouble("pot0n");
-      double pot0dtn = cond[icond]->GetDouble("pot0dtn");
+      auto pot0n = *cond[icond]->Get<double>("pot0n");
+      auto pot0dtn = *cond[icond]->Get<double>("pot0dtn");
       double pot0dtnp = (pot0np - pot0n) / (dta_ * gamma_) + (1 - (1 / gamma_)) * pot0dtn;
       // add time derivative of applied potential pot0dtnp to BC
       cond[icond]->Add("pot0dtnp", pot0dtnp);
@@ -944,11 +944,11 @@ void SCATRA::ScaTraTimIntElchStationary::WriteRestart() const
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
       DRT::Condition* mycond = (*(fool));
-      const int condid = mycond->GetInt("ConditionID");
+      const int condid = *mycond->Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
-        double pot = mycond->GetDouble("pot");
+        double pot = *mycond->Get<double>("pot");
         output_->WriteDouble("pot", pot);
       }
     }
@@ -990,7 +990,7 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
       DRT::Condition* mycond = (*(fool));
-      const int condid = mycond->GetInt("ConditionID");
+      const int condid = *mycond->Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
         double pot = reader->ReadDouble("pot");
@@ -1023,7 +1023,7 @@ void SCATRA::ScaTraTimIntElchStationary::ComputeTimeDerivPot0(const bool init)
 
   for (int icond = 0; icond < numcond; icond++)
   {
-    double dlcap = cond[icond]->GetDouble("dl_spec_cap");
+    auto dlcap = *cond[icond]->Get<double>("dl_spec_cap");
 
     if (init)
     {
@@ -1173,8 +1173,8 @@ void SCATRA::ScaTraTimIntElchSCLOST::SetOldPartOfRighthandside()
       // prepare "old part of rhs" for galvanostatic equation (to be used at this time step)
       {
         // re-read values (just to be really sure no mix-up occurs)
-        double pot0n = condition->GetDouble("pot0n");
-        double pot0dtn = condition->GetDouble("pot0dtn");
+        auto pot0n = *condition->Get<double>("pot0n");
+        auto pot0dtn = *condition->Get<double>("pot0dtn");
         // prepare old part of rhs for galvanostatic mode
         double pothist = pot0n + (1.0 - theta_) * dta_ * pot0dtn;
         condition->Add("pot0hist", pothist);

@@ -86,11 +86,9 @@ void ADAPTER::CouplingEhlMortar::Setup(Teuchos::RCP<DRT::Discretization> masterd
   double fr_coeff = -1.;
   for (int i = 0; i < (int)ehl_conditions.size(); ++i)
   {
-    const std::vector<int>* group1v = ehl_conditions[i]->Get<std::vector<int>>("Interface ID");
-    if (!group1v) dserror("no interface Id found");
-    if (group1v->operator[](0) != 1) dserror("only one interface id expected");
-    const double fr = ehl_conditions[i]->GetDouble("FrCoeffOrBound");
-    if (fr != ehl_conditions[0]->GetDouble("FrCoeffOrBound"))
+    [[maybe_unused]] const int group1id = *ehl_conditions[i]->Get<int>("Interface ID");
+    const auto fr = *ehl_conditions[i]->Get<double>("FrCoeffOrBound");
+    if (fr != *ehl_conditions[0]->Get<double>("FrCoeffOrBound"))
       dserror("inconsistency in friction coefficients");
     fr_coeff = fr;
   }

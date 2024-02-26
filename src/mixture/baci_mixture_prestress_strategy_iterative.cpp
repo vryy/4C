@@ -24,8 +24,8 @@ BACI_NAMESPACE_OPEN
 MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : PrestressStrategy(matdata),
-      isochoric_(static_cast<bool>(matdata->GetInt("ISOCHORIC"))),
-      is_active_(static_cast<bool>(matdata->GetInt("ACTIVE")))
+      isochoric_(*matdata->Get<bool>("ISOCHORIC")),
+      is_active_(*matdata->Get<bool>("ACTIVE"))
 {
 }
 

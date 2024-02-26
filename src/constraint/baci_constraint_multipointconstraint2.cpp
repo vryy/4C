@@ -14,9 +14,7 @@
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_dofset_transparent.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_parallel.hpp"
-#include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_utils_function_of_time.hpp"
 
@@ -47,8 +45,6 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> disc
     newdofset = Teuchos::null;
     (constraintdis_.find(0)->second)->FillComplete();
   }
-
-  return;
 }
 
 /*------------------------------------------------------------------------*
@@ -57,12 +53,10 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> disc
 *------------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint2::Initialize(const double& time)
 {
-  for (unsigned int i = 0; i < constrcond_.size(); ++i)
+  for (auto* cond : constrcond_)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("ConditionID");
+    int condID = *cond->Get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
@@ -96,11 +90,11 @@ void CONSTRAINTS::MPConstraint2::Initialize(
   for (unsigned int i = 0; i < constrcond_.size(); i++)
   {
     DRT::Condition& cond = *(constrcond_[i]);
-    int condID = cond.GetInt("ConditionID");
+    int condID = *cond.Get<int>("ConditionID");
     if (inittimes_.find(condID)->second <= time)
     {
-      const int MPCcondID = constrcond_[i]->GetInt("ConditionID");
-      amplit[i] = constrcond_[i]->GetDouble("amplitude");
+      const int MPCcondID = *constrcond_[i]->Get<int>("ConditionID");
+      amplit[i] = *constrcond_[i]->Get<double>("amplitude");
       const int mid = params.get("OffsetID", 0);
       IDs[i] = MPCcondID - mid;
       // remember next time, that this condition is already initialized, i.e. active
@@ -118,8 +112,6 @@ void CONSTRAINTS::MPConstraint2::Initialize(
   {
     systemvector->ReplaceGlobalValues(amplit.size(), amplit.data(), IDs.data());
   }
-
-  return;
 }
 
 /*-----------------------------------------------------------------------*
@@ -144,8 +136,6 @@ void CONSTRAINTS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
   }
   EvaluateConstraint(constraintdis_.find(0)->second, params, systemmatrix1, systemmatrix2,
       systemvector1, systemvector2, systemvector3);
-
-  return;
 }
 
 /*------------------------------------------------------------------------*
@@ -249,15 +239,14 @@ void CONSTRAINTS::MPConstraint2::ReorderConstraintNodes(
   std::vector<int> temp = nodeids;
   if (nodeids.size() == 3)
   {
-    nodeids[0] = temp[cond->GetInt("constrNode 1") - 1];
-    nodeids[1] = temp[cond->GetInt("constrNode 2") - 1];
-    nodeids[2] = temp[cond->GetInt("constrNode 3") - 1];
+    nodeids[0] = temp[*cond->Get<int>("constrNode 1") - 1];
+    nodeids[1] = temp[*cond->Get<int>("constrNode 2") - 1];
+    nodeids[2] = temp[*cond->Get<int>("constrNode 3") - 1];
   }
   else
   {
     dserror("strange number of nodes for an MPC! Should be 3 in 2D.");
   }
-  return;
 }
 
 /*-----------------------------------------------------------------------*
@@ -301,7 +290,7 @@ void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
   {
     DRT::Element* actele = disc->lColElement(i);
     DRT::Condition& cond = *(constrcond_[actele->Id()]);
-    int condID = cond.GetInt("ConditionID");
+    int condID = *cond.Get<int>("ConditionID");
 
     // computation only if time is larger or equal than initialization time for constraint
     if (inittimes_.find(condID)->second <= time)
@@ -377,9 +366,9 @@ void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
       }
 
       // Load curve business
-      const std::vector<int>* curve = cond.Get<std::vector<int>>("curve");
+      const auto* curve = cond.GetIf<int>("curve");
       int curvenum = -1;
-      if (curve) curvenum = (*curve)[0];
+      if (curve) curvenum = *curve;
       double curvefac = 1.0;
       bool usetime = true;
       if (time < 0.0) usetime = false;
@@ -392,7 +381,6 @@ void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
       timefact->ReplaceGlobalValues(1, &curvefac, &gindex);
     }
   }
-  return;
 }  // end of EvaluateCondition
 
 BACI_NAMESPACE_CLOSE

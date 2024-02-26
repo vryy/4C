@@ -51,7 +51,7 @@ namespace MAT
         /// fiber initalization status
         int init_;
         /// adapt angle during remodeling
-        int adapt_angle_;
+        bool adapt_angle_;
         /// maximum contractile stress
         double s_;
         /// stretch at maximum active force generation

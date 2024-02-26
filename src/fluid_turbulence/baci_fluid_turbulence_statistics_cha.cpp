@@ -2541,12 +2541,12 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
             // loop them and check, whether this is a pbc pure master node
             // for all previous conditions
             unsigned ntimesmaster = 0;
-            for (unsigned numcond = 0; numcond < mypbc.size(); ++numcond)
+            for (auto& numcond : mypbc)
             {
-              const std::string* mymasterslavetoggle =
-                  mypbc[numcond]->Get<std::string>("Is slave periodic boundary condition");
+              const auto mymasterslavetoggle =
+                  *numcond->Get<std::string>("Is slave periodic boundary condition");
 
-              if (*mymasterslavetoggle == "Master")
+              if (mymasterslavetoggle == "Master")
               {
                 ++ntimesmaster;
               }  // end is slave?

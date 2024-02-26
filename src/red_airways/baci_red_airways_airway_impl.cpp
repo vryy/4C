@@ -90,9 +90,9 @@ namespace
       std::string Bc = *(condition->Get<std::string>(optionName));
       if (Bc == condType)
       {
-        const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
+        const auto* curve = condition->GetIf<std::vector<int>>("curve");
         double curvefac = 1.0;
-        const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
+        const auto* vals = condition->Get<std::vector<double>>("val");
 
         // -----------------------------------------------------------------
         // Read in the value of the applied BC
@@ -109,12 +109,9 @@ namespace
         bcVal = (*vals)[0] * curvefac;
 
         // get funct 1
-        const std::vector<int>* functions = condition->Get<std::vector<int>>("funct");
+        const int* function = condition->GetIf<int>("funct");
         int functnum = -1;
-        if (functions)
-          functnum = (*functions)[0];
-        else
-          functnum = -1;
+        if (function) functnum = (*function);
 
         double functionfac = 0.0;
         if (functnum > 0)
@@ -766,9 +763,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
         // -----------------------------------------------------
         if (ele->Nodes()[sci]->GetCondition("RedAirwayScatraHemoglobinCond"))
         {
-          double intSat = ele->Nodes()[sci]
-                              ->GetCondition("RedAirwayScatraHemoglobinCond")
-                              ->GetDouble("INITIAL_CONCENTRATION");
+          double intSat = *ele->Nodes()[sci]
+                               ->GetCondition("RedAirwayScatraHemoglobinCond")
+                               ->Get<double>("INITIAL_CONCENTRATION");
 
           int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
               INPAR::MAT::m_0d_o2_hemoglobin_saturation);
@@ -780,8 +777,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
           }
           const MAT::PAR::Parameter* smat =
               GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-          const MAT::PAR::Hemoglobin_0d_O2_saturation* actmat =
-              static_cast<const MAT::PAR::Hemoglobin_0d_O2_saturation*>(smat);
+          const auto* actmat = static_cast<const MAT::PAR::Hemoglobin_0d_O2_saturation*>(smat);
 
           // how much of blood satisfies this rule
           double per_volume_blood = actmat->per_volume_blood_;
@@ -803,9 +799,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
         }
         else if (ele->Nodes()[sci]->GetCondition("RedAirwayScatraAirCond"))
         {
-          double intSat = ele->Nodes()[sci]
-                              ->GetCondition("RedAirwayScatraAirCond")
-                              ->GetDouble("INITIAL_CONCENTRATION");
+          double intSat = *ele->Nodes()[sci]
+                               ->GetCondition("RedAirwayScatraAirCond")
+                               ->Get<double>("INITIAL_CONCENTRATION");
           int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
               INPAR::MAT::m_0d_o2_air_saturation);
           // check if O2 properties material exists
@@ -816,8 +812,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
           }
           const MAT::PAR::Parameter* smat =
               GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-          const MAT::PAR::Air_0d_O2_saturation* actmat =
-              static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
+          const auto* actmat = static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
 
           // get atmospheric pressure
           double patm = actmat->atmospheric_p_;
@@ -1026,9 +1021,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             DRT::Condition* switchCondition =
                 ele->Nodes()[i]->GetCondition("RedAirwaySwitchFlowPressureCond");
 
-            const int funct_id_flow = switchCondition->GetInt("FUNCT_ID_FLOW");
-            const int funct_id_pressure = switchCondition->GetInt("FUNCT_ID_PRESSURE");
-            const int funct_id_switch = switchCondition->GetInt("FUNCT_ID_PRESSURE_ACTIVE");
+            const int funct_id_flow = *switchCondition->Get<int>("FUNCT_ID_FLOW");
+            const int funct_id_pressure = *switchCondition->Get<int>("FUNCT_ID_PRESSURE");
+            const int funct_id_switch = *switchCondition->Get<int>("FUNCT_ID_PRESSURE_ACTIVE");
 
             const double pressure_active =
                 GLOBAL::Problem::Instance()
@@ -1067,20 +1062,22 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             // Read in the value of the applied BC
             //  Val = curve1*val1 + curve2*func
             // -----------------------------------------------------------------
-            const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
-            const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
+            const auto* curve = condition->GetIf<std::vector<int>>("curve");
+            const auto* vals = condition->Get<std::vector<double>>("val");
 
             // get factor of curve1 or curve2
             const auto curvefac = [&](unsigned id)
             {
               int curvenum = -1;
               if (curve)
+              {
                 if ((curvenum = (*curve)[id]) >= 0)
                   return GLOBAL::Problem::Instance()
                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
                       .Evaluate(time);
                 else
                   return 1.0;
+              }
               else
                 return 1.0;
             };
@@ -1090,7 +1087,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                 [&]()
                 {
                   int functnum = -1;
-                  const std::vector<int>* functions = condition->Get<std::vector<int>>("funct");
+                  const std::vector<int>* functions = condition->GetIf<std::vector<int>>("funct");
                   if (functions)
                     if ((functnum = (*functions)[0]) > 0)
                       return GLOBAL::Problem::Instance()
@@ -1157,7 +1154,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           //     +-----------------------------------------------------------+
           // -----------------------------------------------------------------
 
-          int ID = condition->GetInt("ConditionID");
+          int ID = *condition->Get<int>("ConditionID");
           Teuchos::RCP<std::map<std::string, double>> map3D;
           map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
               "3D map of values");
@@ -1189,11 +1186,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           std::string phase1Smooth = *(condition->Get<std::string>("Phase1Smoothness"));
           std::string phase2Smooth = *(condition->Get<std::string>("Phase2Smoothness"));
 
-          double period = condition->GetDouble("period");
-          double period1 = condition->GetDouble("phase1_period");
+          double period = *condition->Get<double>("period");
+          double period1 = *condition->Get<double>("phase1_period");
 
-          double smoothnessT1 = condition->GetDouble("smoothness_period1");
-          double smoothnessT2 = condition->GetDouble("smoothness_period2");
+          double smoothnessT1 = *condition->Get<double>("smoothness_period1");
+          double smoothnessT2 = *condition->Get<double>("smoothness_period2");
 
           unsigned int phase_number = 0;
 
@@ -1203,9 +1200,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             Bc = *(condition->Get<std::string>("phase2"));
           }
 
-          const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
+          const auto* curve = condition->GetIf<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
+          const auto* vals = condition->Get<std::vector<double>>("val");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
@@ -1630,7 +1627,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
         //     +-----------------------------------------------------------+
         // -----------------------------------------------------------------
 
-        int ID = condition->GetInt("ConditionID");
+        int ID = *condition->Get<int>("ConditionID");
         Teuchos::RCP<std::map<std::string, double>> map1D;
         map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
             "reducedD map of values");
@@ -1820,9 +1817,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
       DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedScatraCond");
       // Get the type of prescribed bc
 
-      const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
+      const auto* curve = condition->GetIf<std::vector<int>>("curve");
       double curvefac = 1.0;
-      const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
+      const auto* vals = condition->Get<std::vector<double>>("val");
 
       // -----------------------------------------------------------------
       // Read in the value of the applied BC
@@ -1836,12 +1833,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
 
       scnp = (*vals)[0] * curvefac;
 
-      const std::vector<int>* functions = condition->Get<std::vector<int>>("funct");
+      // get funct 1
+      const int* function = condition->GetIf<int>("funct");
       int functnum = -1;
-      if (functions)
-        functnum = (*functions)[0];
-      else
-        functnum = -1;
+      if (function) functnum = (*function);
+
 
       double functionfac = 0.0;
       if (functnum > 0)

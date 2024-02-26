@@ -52,7 +52,7 @@ namespace
 MIXTURE::PAR::FunctionMixtureRule::FunctionMixtureRule(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),
-      initial_reference_density_(matdata->GetDouble("DENS")),
+      initial_reference_density_(*matdata->Get<double>("DENS")),
       mass_fractions_funct_ids_(*matdata->Get<std::vector<int>>("MASSFRACFUNCT")){};
 
 std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::FunctionMixtureRule::CreateRule()

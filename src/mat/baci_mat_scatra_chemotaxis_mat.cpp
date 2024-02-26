@@ -22,9 +22,9 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      numscal_(matdata->GetInt("NUMSCAL")),
+      numscal_(*matdata->Get<int>("NUMSCAL")),
       pair_(matdata->Get<std::vector<int>>("PAIR")),
-      chemocoeff_(matdata->GetDouble("CHEMOCOEFF"))
+      chemocoeff_(*matdata->Get<double>("CHEMOCOEFF"))
 {
   // Some checks for more safety
   if (numscal_ != (int)pair_->size())

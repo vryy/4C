@@ -23,7 +23,7 @@ BACI_NAMESPACE_OPEN
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_SolidMaterial::MixtureConstituent_SolidMaterial(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : MixtureConstituent(matdata), matid_(matdata->GetInt("MATID"))
+    : MixtureConstituent(matdata), matid_(*matdata->Get<int>("MATID"))
 {
 }
 

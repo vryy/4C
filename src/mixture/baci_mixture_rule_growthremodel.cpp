@@ -36,8 +36,8 @@ namespace CORE::COMM
 MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),
-      growth_strategy_matid_(matdata->GetInt("GROWTH_STRATEGY")),
-      initial_reference_density_(matdata->GetDouble("DENS")),
+      growth_strategy_matid_(*matdata->Get<int>("GROWTH_STRATEGY")),
+      initial_reference_density_(*matdata->Get<double>("DENS")),
       mass_fractions_(*matdata->Get<std::vector<double>>("MASSFRAC"))
 {
 }

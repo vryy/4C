@@ -1377,10 +1377,10 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     for (int fdpcondid = 0; fdpcondid < (int)fdpcond.size(); fdpcondid++)
     {
       // check for already existing ID and add ID
-      const auto* fdpcondidvec = fdpcond[fdpcondid]->Get<std::vector<int>>("ConditionID");
-      if (fdpcondidvec)
+      const auto* fdpcondid_from_container = fdpcond[fdpcondid]->GetIf<int>("ConditionID");
+      if (fdpcondid_from_container)
       {
-        if ((*fdpcondidvec)[0] != fdpcondid)
+        if ((*fdpcondid_from_container) != fdpcondid)
           dserror("Flow-dependent pressure condition %s has non-matching ID", fdpcondname.c_str());
       }
       else
@@ -1600,7 +1600,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
       // set values for elements
-      const int fdp_cond_id = fdpcond[fdpcondid]->GetInt("ConditionID");
+      const int fdp_cond_id = *fdpcond[fdpcondid]->Get<int>("ConditionID");
       flowdeppressureparams.set<double>("flow rate", flowraterel[fdp_cond_id]);
       flowdeppressureparams.set<double>("flow volume", flowvolumerel[fdp_cond_id]);
 
@@ -1731,10 +1731,10 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     for (int sscbcondid = 0; sscbcondid < (int)sscbcond.size(); sscbcondid++)
     {
       // check for already existing ID and add ID
-      const auto* sscbcondidvec = sscbcond[sscbcondid]->Get<std::vector<int>>("ConditionID");
-      if (sscbcondidvec)
+      const int sscbcondid_from_container = *sscbcond[sscbcondid]->Get<int>("ConditionID");
+      if (sscbcondid_from_container)
       {
-        if ((*sscbcondidvec)[0] != sscbcondid)
+        if (sscbcondid_from_container != sscbcondid)
           dserror("Slip Supplemental Curved Boundary condition %s has non-matching ID",
               sscbcondname.c_str());
       }
@@ -1818,10 +1818,10 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     for (int nscondid = 0; nscondid < (int)nscond.size(); nscondid++)
     {
       // check for already existing ID and add ID
-      const auto* nscondidvec = nscond[nscondid]->Get<std::vector<int>>("ConditionID");
-      if (nscondidvec)
+      const int nscondid_from_container = *nscond[nscondid]->Get<int>("ConditionID");
+      if (nscondid_from_container)
       {
-        if ((*nscondidvec)[0] != nscondid)
+        if (nscondid_from_container != nscondid)
           dserror("Navier slip boundary condition %s has non-matching ID", nscondname.c_str());
       }
       else
@@ -1846,7 +1846,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 
       // set slip coefficient
       DRT::Condition* currnavierslip = nscond[nscondid];
-      const double beta = currnavierslip->GetDouble("slipcoefficient");
+      const double beta = *currnavierslip->Get<double>("slipcoefficient");
       navierslipparams.set<double>("beta", beta);
 
       // evaluate navier slip boundary condition
@@ -2114,7 +2114,7 @@ void FLD::FluidImplicitTimeInt::InitKrylovSpaceProjection()
 void FLD::FluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
 {
   // confirm that mode flags are number of nodal dofs
-  const int nummodes = kspcond->GetInt("NUMMODES");
+  const int nummodes = *kspcond->Get<int>("NUMMODES");
   if (nummodes != (numdim_ + 1))
     dserror("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
 
@@ -2529,12 +2529,12 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
     std::string coupling = *(selectedCond[0]->Get<std::string>("coupling"));
 
     // Get scaling value
-    const auto* scalingValues = selectedCond[0]->Get<std::vector<double>>("val");
-    const double scalingValue = (*scalingValues)[0];
+    const auto* scalingValues = selectedCond[0]->Get<double>("val");
+    const double scalingValue = (*scalingValues);
 
     // Get function for node normal calculation
-    const auto* nodeNormalFuncts = selectedCond[0]->Get<std::vector<int>>("nodenormalfunct");
-    const int nodeNormalFunct = (*nodeNormalFuncts)[0];
+    const auto* nodeNormalFuncts = selectedCond[0]->Get<int>("nodenormalfunct");
+    const int nodeNormalFunct = (*nodeNormalFuncts);
 
     // Get a vector layout from the discretization to construct matching
     // vectors and matrices

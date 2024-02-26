@@ -28,15 +28,15 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
 {
   if (constrcond_.size())
   {
-    for (unsigned int i = 0; i < constrcond_.size(); i++)
+    for (auto* i : constrcond_)
     {
-      const std::vector<double>* mypenalties = constrcond_[i]->Get<std::vector<double>>("penalty");
-      const std::vector<double>* myrhos = constrcond_[i]->Get<std::vector<double>>("rho");
-      int condID = constrcond_[i]->GetInt("ConditionID");
-      if (mypenalties->size() and myrhos->size())
+      const double* mypenalty = i->GetIf<double>("penalty");
+      const double* myrho = i->GetIf<double>("rho");
+      int condID = *i->Get<int>("ConditionID");
+      if (mypenalty and myrho)
       {
-        penalties_.insert(std::pair<int, double>(condID, (*mypenalties)[0]));
-        rho_.insert(std::pair<int, double>(condID, (*myrhos)[0]));
+        penalties_.insert(std::pair<int, double>(condID, *mypenalty));
+        rho_.insert(std::pair<int, double>(condID, *myrho));
       }
       else
       {
@@ -65,8 +65,6 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
   {
     constrtype_ = none;
   }
-
-  return;
 }
 
 void CONSTRAINTS::ConstraintPenalty::Initialize(
@@ -98,19 +96,16 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(Teuchos::ParameterList& params)
   }
   // start computing
   EvaluateError(params, initerror_);
-  return;
 }
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
 void CONSTRAINTS::ConstraintPenalty::Initialize(const double& time)
 {
-  for (unsigned int i = 0; i < constrcond_.size(); ++i)
+  for (auto* cond : constrcond_)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("ConditionID");
+    int condID = *cond->Get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second <= time) && (activecons_.find(condID)->second == false))
@@ -194,15 +189,13 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < constrcond_.size(); ++i)
+  for (auto* cond : constrcond_)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
-
     // get values from time integrator to scale matrices with
     double scStiff = params.get("scaleStiffEntries", 1.0);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("ConditionID");
+    int condID = *cond->Get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // is conditions supposed to be active?
@@ -218,9 +211,9 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
       }
 
       // Evaluate loadcurve if defined. Put current load factor in parameterlist
-      const std::vector<int>* curve = cond.Get<std::vector<int>>("curve");
+      const auto* curve = cond->GetIf<int>("curve");
       int curvenum = -1;
-      if (curve) curvenum = (*curve)[0];
+      if (curve) curvenum = *curve;
       double curvefac = 1.0;
       if (curvenum >= 0)
         curvefac = GLOBAL::Problem::Instance()
@@ -236,7 +229,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
         (*lagrvalues_force_)[condID - 1] = (*lagrvalues_)[condID - 1] + rho_[condID] * diff;
 
       // elements might need condition
-      params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+      params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
       // define element matrices and vectors
       CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -245,7 +238,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
       CORE::LINALG::SerialDenseVector elevector2;
       CORE::LINALG::SerialDenseVector elevector3;
 
-      std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
+      std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
       // if (geom.empty()) dserror("evaluation of condition with empty geometry");
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
@@ -305,7 +298,6 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
       }
     }
   }
-  return;
 }  // end of EvaluateCondition
 
 /*-----------------------------------------------------------------------*
@@ -321,19 +313,17 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateError(
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < constrcond_.size(); ++i)
+  for (auto* cond : constrcond_)
   {
-    DRT::Condition& cond = *(constrcond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
 
-    int condID = cond.GetInt("ConditionID");
+    int condID = *cond->Get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // if current time is larger than initialization time of the condition, start computing
     if (inittimes_.find(condID)->second <= time)
     {
-      params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+      params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
       // define element matrices and vectors
       CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -342,7 +332,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateError(
       CORE::LINALG::SerialDenseVector elevector2;
       CORE::LINALG::SerialDenseVector elevector3;
 
-      std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
+      std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
@@ -386,8 +376,6 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateError(
   Teuchos::RCP<Epetra_Vector> acterrdist = Teuchos::rcp(new Epetra_Vector(*errormap_));
   acterrdist->Export(*systemvector, *errorexport_, Add);
   systemvector->Import(*acterrdist, *errorimport_, Insert);
-
-  return;
 }  // end of EvaluateError
 
 BACI_NAMESPACE_CLOSE

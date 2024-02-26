@@ -45,7 +45,7 @@ namespace MAT
         /// initalization modus;
         int init_;
         /// adapt angle during remodeling
-        int adapt_angle_;
+        bool adapt_angle_;
 
         //@}
 

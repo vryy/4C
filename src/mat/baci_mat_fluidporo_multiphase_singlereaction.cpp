@@ -21,13 +21,13 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      numscal_(matdata->GetInt("NUMSCAL")),
-      numvolfrac_(matdata->GetInt("NUMVOLFRAC")),
-      totalnummultiphasedof_(matdata->GetInt("TOTALNUMDOF")),
+      numscal_(*matdata->Get<int>("NUMSCAL")),
+      numvolfrac_(*matdata->Get<int>("NUMVOLFRAC")),
+      totalnummultiphasedof_(*matdata->Get<int>("TOTALNUMDOF")),
       numfluidphases_(totalnummultiphasedof_ - 2 * numvolfrac_),
       scale_(matdata->Get<std::vector<int>>("SCALE")),
       coupling_(SetCouplingType(matdata)),
-      functID_(matdata->GetInt("FUNCTID")),
+      functID_(*matdata->Get<int>("FUNCTID")),
       isinit_(false),
       scalarnames_(numscal_),
       pressurenames_(numfluidphases_),

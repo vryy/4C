@@ -254,7 +254,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
     dsassert(slave_peid == -1 || slave_peid == gElement(slave_peid)->Id(), "Internal error");
 
     // check for potential periodic boundary conditions and connect respective faces/elements
-    std::map<int, std::vector<int>>::iterator masternodes = col_pbcmapmastertoslave->begin();
+    auto masternodes = col_pbcmapmastertoslave->begin();
     if (masternodes != col_pbcmapmastertoslave->end())
     {
       // unconnected face is potential pbc face
@@ -280,36 +280,33 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
         // for master and slave
         std::map<int, std::set<int>> mastertopbcset;
         std::map<int, std::set<int>> slavetopbcset;
-        for (std::size_t numcond = 0; numcond < mypbcs.size(); numcond++)
+        for (auto& mypbc : mypbcs)
         {
-          const std::vector<int>* myid =
-              mypbcs[numcond]->Get<std::vector<int>>("Id of periodic boundary condition");
+          const int myid = *mypbc->Get<int>("Id of periodic boundary condition");
 
-          const std::string* mymasterslavetoggle =
-              mypbcs[numcond]->Get<std::string>("Is slave periodic boundary condition");
+          const auto mymasterslavetoggle =
+              *mypbc->Get<std::string>("Is slave periodic boundary condition");
 
-          if (*mymasterslavetoggle == "Master")
+          if (mymasterslavetoggle == "Master")
           {
             // get global master node ids
-            const std::vector<int>* masteridstoadd = mypbcs[numcond]->GetNodes();
+            const std::vector<int>* masteridstoadd = mypbc->GetNodes();
 
             // store them in list depending on the pbc id
-            for (std::vector<int>::const_iterator idtoadd = (*masteridstoadd).begin();
-                 idtoadd != (*masteridstoadd).end(); ++idtoadd)
+            for (int idtoadd : *masteridstoadd)
             {
-              (mastertopbcset[myid[0][0]]).insert(*idtoadd);
+              (mastertopbcset[myid]).insert(idtoadd);
             }
           }
-          else if (*mymasterslavetoggle == "Slave")
+          else if (mymasterslavetoggle == "Slave")
           {
             // get global slave node ids
-            const std::vector<int>* slaveidstoadd = mypbcs[numcond]->GetNodes();
+            const std::vector<int>* slaveidstoadd = mypbc->GetNodes();
 
             // store them in list depending on the pbc id
-            for (std::vector<int>::const_iterator idtoadd = (*slaveidstoadd).begin();
-                 idtoadd != (*slaveidstoadd).end(); ++idtoadd)
+            for (int idtoadd : *slaveidstoadd)
             {
-              (slavetopbcset[myid[0][0]]).insert(*idtoadd);
+              (slavetopbcset[myid]).insert(idtoadd);
             }
           }
           else

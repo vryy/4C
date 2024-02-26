@@ -90,9 +90,9 @@ void FS3I::ACFSI::Init()
 
   std::vector<DRT::Condition*> ImpCond;
   GLOBAL::Problem::Instance()->GetDis("fluid")->GetCondition("ImpedanceCond", ImpCond);
-  for (unsigned int i = 0; i < ImpCond.size(); i++)
+  for (auto& i : ImpCond)
   {
-    const double thisperiod = (ImpCond[i])->GetDouble("TIMEPERIOD");
+    const double thisperiod = *i->Get<double>("TIMEPERIOD");
 
     if (thisperiod != fsiperiod_)
     {

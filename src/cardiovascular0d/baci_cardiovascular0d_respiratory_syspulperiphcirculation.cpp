@@ -935,7 +935,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     // elements might need condition
     params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
 
-    const std::string* conditiontype = cardiovascular0dcond_[i]->Get<std::string>("type");
+    const std::string conditiontype = *cardiovascular0dcond_[i]->Get<std::string>("type");
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -985,7 +985,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
       // assembly
       int eid = curr->second->Id();
 
-      if (assmat2 and *conditiontype != "dummy")
+      if (assmat2 and conditiontype != "dummy")
       {
         // assemble the offdiagonal stiffness block (1,0 block) arising from dR_cardvasc0d/dd
         // -> this matrix is later on transposed when building the whole block matrix
@@ -1000,17 +1000,17 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
         {
           case INPAR::CARDIOVASCULAR0D::resp_none:
           {
-            if (*conditiontype == "ventricle_left") colvec[0] = gindex[2];
-            if (*conditiontype == "ventricle_right") colvec[0] = gindex[26];
-            if (*conditiontype == "atrium_left") colvec[0] = gindex[0];
-            if (*conditiontype == "atrium_right") colvec[0] = gindex[24];
+            if (conditiontype == "ventricle_left") colvec[0] = gindex[2];
+            if (conditiontype == "ventricle_right") colvec[0] = gindex[26];
+            if (conditiontype == "atrium_left") colvec[0] = gindex[0];
+            if (conditiontype == "atrium_right") colvec[0] = gindex[24];
             elevector2.scale(-1. / ts_size);
             sysmat2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
           }
           break;
           case INPAR::CARDIOVASCULAR0D::resp_standard:
           {
-            if (*conditiontype == "ventricle_left")
+            if (conditiontype == "ventricle_left")
             {
               colvec[0] = gindex[2];
               elevector2.scale(-1. / ts_size);
@@ -1022,7 +1022,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
               elevector2b.scale(-f_np[57] / V_v_l_np);
               sysmat2->Assemble(eid, lmstride, elevector2b, lm, lmowner, colvec_b);
             }
-            if (*conditiontype == "ventricle_right")
+            if (conditiontype == "ventricle_right")
             {
               colvec[0] = gindex[26];
               elevector2.scale(-1. / ts_size);
@@ -1034,7 +1034,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
               elevector2b.scale(-f_np[47] / V_v_r_np);
               sysmat2->Assemble(eid, lmstride, elevector2b, lm, lmowner, colvec_b);
             }
-            if (*conditiontype == "atrium_left")
+            if (conditiontype == "atrium_left")
             {
               colvec[0] = gindex[0];
               elevector2.scale(-1. / ts_size);
@@ -1046,7 +1046,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
               elevector2b.scale(-f_np[55] / V_at_l_np);
               sysmat2->Assemble(eid, lmstride, elevector2b, lm, lmowner, colvec_b);
             }
-            if (*conditiontype == "atrium_right")
+            if (conditiontype == "atrium_right")
             {
               colvec[0] = gindex[24];
               elevector2.scale(-1. / ts_size);
@@ -1062,16 +1062,16 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
           break;
         }
       }
-      if (assvec3 and *conditiontype != "dummy")
+      if (assvec3 and conditiontype != "dummy")
       {
         // assemble the current volume of the enclosed surface of the cardiovascular0d condition
         std::vector<int> cardiovascular0dlm;
         std::vector<int> cardiovascular0downer;
 
-        if (*conditiontype == "ventricle_left") cardiovascular0dlm.push_back(gindex[2]);
-        if (*conditiontype == "ventricle_right") cardiovascular0dlm.push_back(gindex[26]);
-        if (*conditiontype == "atrium_left") cardiovascular0dlm.push_back(gindex[0]);
-        if (*conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[24]);
+        if (conditiontype == "ventricle_left") cardiovascular0dlm.push_back(gindex[2]);
+        if (conditiontype == "ventricle_right") cardiovascular0dlm.push_back(gindex[26]);
+        if (conditiontype == "atrium_left") cardiovascular0dlm.push_back(gindex[0]);
+        if (conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[24]);
         cardiovascular0downer.push_back(curr->second->Owner());
         CORE::LINALG::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
       }
@@ -1083,8 +1083,6 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     // offdiagonal stiffness block (0,1 block)
     EvaluateDStructDp(params, sysmat3);
   }
-
-  return;
 }  // end of EvaluateCondition
 
 
@@ -9088,15 +9086,13 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
+  for (auto* cond : cardiovascular0dcond_)
   {
-    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("id");
+    int condID = *cond->Get<int>("id");
     params.set("id", condID);
 
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -9105,9 +9101,9 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
     CORE::LINALG::SerialDenseVector elevector2;
     CORE::LINALG::SerialDenseVector elevector3;
 
-    const std::string* conditiontype = cardiovascular0dcond_[i]->Get<std::string>("type");
+    const std::string conditiontype = *cond->Get<std::string>("type");
 
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
@@ -9134,12 +9130,12 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
       std::vector<int> cardiovascular0dlm;
       std::vector<int> cardiovascular0downer;
 
-      if (*conditiontype == "ventricle_left") cardiovascular0dlm.push_back(gindex[2]);
-      if (*conditiontype == "ventricle_right") cardiovascular0dlm.push_back(gindex[26]);
-      if (*conditiontype == "atrium_left") cardiovascular0dlm.push_back(gindex[0]);
-      if (*conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[24]);
+      if (conditiontype == "ventricle_left") cardiovascular0dlm.push_back(gindex[2]);
+      if (conditiontype == "ventricle_right") cardiovascular0dlm.push_back(gindex[26]);
+      if (conditiontype == "atrium_left") cardiovascular0dlm.push_back(gindex[0]);
+      if (conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[24]);
       cardiovascular0downer.push_back(curr->second->Owner());
-      if (assvec1 and *conditiontype != "dummy")
+      if (assvec1 and conditiontype != "dummy")
         CORE::LINALG::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
     }
   }

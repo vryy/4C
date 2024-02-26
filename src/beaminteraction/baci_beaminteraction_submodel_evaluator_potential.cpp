@@ -151,20 +151,20 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
     GetBeamPotentialConditionsAppliedToThisElementPair(
         *elepairptr, conditions_element1, conditions_element2);
 
-    for (unsigned int k = 0; k < conditions_element1.size(); ++k)
+    for (auto& k : conditions_element1)
     {
-      int npotlaw1 = conditions_element1[k]->GetInt("potlaw");
+      int npotlaw1 = *k->Get<int>("potlaw");
 
-      for (unsigned int j = 0; j < conditions_element2.size(); ++j)
+      for (auto& j : conditions_element2)
       {
-        int npotlaw2 = conditions_element2[j]->GetInt("potlaw");
+        int npotlaw2 = *j->Get<int>("potlaw");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
           std::vector<DRT::Condition*> currconds;
           currconds.clear();
-          currconds.push_back(conditions_element1[k]);
-          currconds.push_back(conditions_element2[j]);
+          currconds.push_back(k);
+          currconds.push_back(j);
 
           // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
           if (npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
@@ -242,11 +242,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
 
     for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
-      int npotlaw1 = conditions_element1[k]->GetInt("potlaw");
+      int npotlaw1 = *conditions_element1[k]->Get<int>("potlaw");
 
       for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
-        int npotlaw2 = conditions_element2[j]->GetInt("potlaw");
+        int npotlaw2 = *conditions_element2[j]->Get<int>("potlaw");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -342,11 +342,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
 
     for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
-      int npotlaw1 = conditions_element1[k]->GetInt("potlaw");
+      int npotlaw1 = *conditions_element1[k]->Get<int>("potlaw");
 
       for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
-        int npotlaw2 = conditions_element2[j]->GetInt("potlaw");
+        int npotlaw2 = *conditions_element2[j]->Get<int>("potlaw");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -685,11 +685,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 
       for (unsigned int i = 0; i < conds1.size(); ++i)
       {
-        int npotlaw1 = conds1[i]->GetInt("potlaw");
+        int npotlaw1 = *conds1[i]->Get<int>("potlaw");
 
         for (unsigned int j = 0; j < conds2.size(); ++j)
         {
-          int npotlaw2 = conds2[j]->GetInt("potlaw");
+          int npotlaw2 = *conds2[j]->Get<int>("potlaw");
 
           // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical
           // beam

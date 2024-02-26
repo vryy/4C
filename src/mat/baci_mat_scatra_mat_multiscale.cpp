@@ -19,8 +19,8 @@ BACI_NAMESPACE_OPEN
 MAT::PAR::ScatraMatMultiScale::ScatraMatMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata)
     : ScatraMat(matdata),
       ScatraMultiScale(matdata),
-      porosity_(matdata->GetDouble("POROSITY")),
-      tortuosity_(matdata->GetDouble("TORTUOSITY"))
+      porosity_(*matdata->Get<double>("POROSITY")),
+      tortuosity_(*matdata->Get<double>("TORTUOSITY"))
 {
   return;
 }

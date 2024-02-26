@@ -27,11 +27,11 @@ BACI_NAMESPACE_OPEN
 MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      nummat_elast_(matdata->GetInt("NUMMATEL")),
+      nummat_elast_(*matdata->Get<int>("NUMMATEL")),
       matids_elast_(matdata->Get<std::vector<int>>("MATIDSEL")),
-      numfac_inel_(matdata->GetInt("NUMFACINEL")),
+      numfac_inel_(*matdata->Get<int>("NUMFACINEL")),
       inel_defgradfacids_(matdata->Get<std::vector<int>>("INELDEFGRADFACIDS")),
-      density_(matdata->GetDouble("DENS"))
+      density_(*matdata->Get<double>("DENS"))
 {
   // check if sizes fit
   if (nummat_elast_ != static_cast<int>(matids_elast_->size()))

@@ -54,10 +54,10 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret)
     id_[i] = locsysconds_[i]->Id();
 
     // Check for already existing ConditionID and add it, if not already existing
-    const auto* locsysIdVec = locsysconds_[i]->Get<std::vector<int>>("ConditionID");
-    if (locsysIdVec)
+    const int* locsysId = locsysconds_[i]->GetIf<int>("ConditionID");
+    if (locsysId)
     {
-      if ((*locsysIdVec)[0] != i) dserror("Locsys condition has non-matching ID");
+      if ((*locsysId) != i) dserror("Locsys condition has non-matching ID");
     }
     else
     {
@@ -136,12 +136,12 @@ void DRT::UTILS::LocsysManager::Update(
 
         const auto* rotangle = currlocsys->Get<std::vector<double>>("rotangle");
         const auto* funct = currlocsys->Get<std::vector<int>>("funct");
-        const auto* useUpdatedNodePos = currlocsys->Get<std::vector<int>>("useupdatednodepos");
+        const auto* useUpdatedNodePos = currlocsys->Get<int>("useupdatednodepos");
 
         const auto* useConsistentNodeNormal =
             (currlocsys->Type() == DRT::Condition::SurfaceLocsys or
                 currlocsys->Type() == DRT::Condition::LineLocsys)
-                ? currlocsys->Get<std::vector<int>>("useconsistentnodenormal")
+                ? currlocsys->GetIf<int>("useconsistentnodenormal")
                 : nullptr;
 
         const std::vector<int>* nodes = currlocsys->GetNodes();
@@ -151,7 +151,7 @@ void DRT::UTILS::LocsysManager::Update(
         {
           // Check, if we have time dependent locsys conditions (through functions)
           if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0) or
-              (((*useConsistentNodeNormal)[0] == 1) and ((*useUpdatedNodePos)[0] == 1)))
+              (((*useConsistentNodeNormal) == 1) and ((*useUpdatedNodePos) == 1)))
             locsysfunct_ = true;
         }
         else if (currlocsys->Type() == DRT::Condition::VolumeLocsys or
@@ -171,14 +171,14 @@ void DRT::UTILS::LocsysManager::Update(
 
         if ((currlocsys->Type() == DRT::Condition::SurfaceLocsys or
                 currlocsys->Type() == DRT::Condition::LineLocsys) and
-            (*useConsistentNodeNormal)[0] == 1)
+            (*useConsistentNodeNormal) == 1)
           CalcRotationVectorForNormalSystem(i, time);
         else
         {
           // Check, if the updated node positions shall be used for evaluation of the functions
           // 'funct'
           Teuchos::RCP<const Epetra_Vector> dispnp;
-          if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
+          if (((*useUpdatedNodePos) == 1) && (time >= 0.0))
           {
             dispnp = Discret().GetState("dispnp");
             if (dispnp == Teuchos::null)
@@ -210,7 +210,7 @@ void DRT::UTILS::LocsysManager::Update(
 
                 // Determine node position, which shall be used for evaluating the function, and
                 // evaluate it
-                if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
+                if (((*useUpdatedNodePos) == 1) && (time >= 0.0))
                 {
                   // Obtain current displacement for node
                   std::vector<int> lm;

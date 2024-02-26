@@ -87,34 +87,32 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
+  for (auto* cond : cardiovascular0dcond_)
   {
-    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("id");
+    int condID = *cond->Get<int>("id");
     params.set("id", condID);
 
-    double R_arvalve_max = cardiovascular0dcond_[condID]->GetDouble("R_arvalve_max");
-    double R_arvalve_min = cardiovascular0dcond_[condID]->GetDouble("R_arvalve_min");
-    double R_atvalve_max = cardiovascular0dcond_[condID]->GetDouble("R_atvalve_max");
-    double R_atvalve_min = cardiovascular0dcond_[condID]->GetDouble("R_atvalve_min");
-    double k_p = cardiovascular0dcond_[condID]->GetDouble("k_p");
+    double R_arvalve_max = *cardiovascular0dcond_[condID]->Get<double>("R_arvalve_max");
+    double R_arvalve_min = *cardiovascular0dcond_[condID]->Get<double>("R_arvalve_min");
+    double R_atvalve_max = *cardiovascular0dcond_[condID]->Get<double>("R_atvalve_max");
+    double R_atvalve_min = *cardiovascular0dcond_[condID]->Get<double>("R_atvalve_min");
+    double k_p = *cardiovascular0dcond_[condID]->Get<double>("k_p");
 
-    double L_arp = cardiovascular0dcond_[condID]->GetDouble("L_arp");
-    double C_arp = cardiovascular0dcond_[condID]->GetDouble("C_arp");
-    double R_arp = cardiovascular0dcond_[condID]->GetDouble("R_arp");
-    double C_ard = cardiovascular0dcond_[condID]->GetDouble("C_ard");
-    double R_ard = cardiovascular0dcond_[condID]->GetDouble("R_ard");
+    double L_arp = *cardiovascular0dcond_[condID]->Get<double>("L_arp");
+    double C_arp = *cardiovascular0dcond_[condID]->Get<double>("C_arp");
+    double R_arp = *cardiovascular0dcond_[condID]->Get<double>("R_arp");
+    double C_ard = *cardiovascular0dcond_[condID]->Get<double>("C_ard");
+    double R_ard = *cardiovascular0dcond_[condID]->Get<double>("R_ard");
 
-    double p_ref = cardiovascular0dcond_[condID]->GetDouble("p_ref");
+    double p_ref = *cardiovascular0dcond_[condID]->Get<double>("p_ref");
 
-    double p_at_fac = cardiovascular0dcond_[condID]->GetDouble("fac");
+    double p_at_fac = *cardiovascular0dcond_[condID]->Get<double>("fac");
 
     // find out whether we will use a time curve and get the factor
-    const std::vector<int>* curve = cardiovascular0dcond_[condID]->Get<std::vector<int>>("curve");
+    const int* curve = cardiovascular0dcond_[condID]->Get<int>("curve");
     int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
+    if (curve) curvenum = (*curve);
     double curvefac_np = 1.0;
 
     if (curvenum >= 0 && usetime)
@@ -201,7 +199,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
     // elements might need condition
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // assemble of Cardiovascular0D stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
@@ -271,7 +269,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
     CORE::LINALG::SerialDenseVector elevector2;
     CORE::LINALG::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
     // if (geom.empty()) dserror("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
@@ -357,12 +355,10 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
+  for (auto* cond : cardiovascular0dcond_)
   {
-    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
-
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("id");
+    int condID = *cond->Get<int>("id");
     params.set("id", condID);
 
     // global and local ID of this bc in the redundant vectors
@@ -371,10 +367,10 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
     gindex[0] = numdof_per_cond * condID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    double p_v_0 = cardiovascular0dcond_[condID]->GetDouble("p_v_0");
-    double p_arp_0 = cardiovascular0dcond_[condID]->GetDouble("p_arp_0");
-    double q_arp_0 = cardiovascular0dcond_[condID]->GetDouble("y_arp_0");
-    double p_ard_0 = cardiovascular0dcond_[condID]->GetDouble("p_ard_0");
+    double p_v_0 = *cardiovascular0dcond_[condID]->Get<double>("p_v_0");
+    double p_arp_0 = *cardiovascular0dcond_[condID]->Get<double>("p_arp_0");
+    double q_arp_0 = *cardiovascular0dcond_[condID]->Get<double>("y_arp_0");
+    double p_ard_0 = *cardiovascular0dcond_[condID]->Get<double>("p_ard_0");
 
     int err1 = sysvec2->SumIntoGlobalValues(1, &p_v_0, &gindex[0]);
     int err2 = sysvec2->SumIntoGlobalValues(1, &p_arp_0, &gindex[1]);
@@ -382,7 +378,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
     int err4 = sysvec2->SumIntoGlobalValues(1, &p_ard_0, &gindex[3]);
     if (err1 or err2 or err3 or err4) dserror("SumIntoGlobalValues failed!");
 
-    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -391,7 +387,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
     CORE::LINALG::SerialDenseVector elevector2;
     CORE::LINALG::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry

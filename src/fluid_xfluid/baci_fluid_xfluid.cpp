@@ -2696,8 +2696,8 @@ void FLD::XFluid::InitKrylovSpaceProjection()
   // check if for fluid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
-    if (*name == "fluid")
+    const auto name = *KSPcond[icond]->Get<std::string>("discretization");
+    if (name == "fluid")
     {
       numfluid++;
       kspcond = KSPcond[icond];
@@ -2717,7 +2717,6 @@ void FLD::XFluid::InitKrylovSpaceProjection()
   }
   else
     dserror("Received more than one KrylovSpaceCondition for fluid field");
-  return;
 }
 
 
@@ -2748,12 +2747,12 @@ void FLD::XFluid::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
    */
 
   // confirm that mode flags are number of nodal dofs
-  const int nummodes = kspcond->GetInt("NUMMODES");
+  const int nummodes = *kspcond->Get<int>("NUMMODES");
   if (nummodes != (numdim_ + 1))
     dserror("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
-  const std::vector<int>* modeflags = kspcond->Get<std::vector<int>>("ONOFF");
+  const auto* modeflags = kspcond->Get<std::vector<int>>("ONOFF");
 
   // confirm that only the pressure mode is selected for Krylov projection in dat-file
   for (int rr = 0; rr < numdim_; ++rr)

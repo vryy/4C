@@ -177,9 +177,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
     // try to build contact group around this condition
     currentgroup.push_back(contactconditions[i]);
-    const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
-    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
-    int groupid1 = (*group1v)[0];
+    int groupid1 = *currentgroup[0]->Get<int>("Interface ID");
     bool foundit = false;
 
     // only one surface per group is ok for self contact
@@ -190,9 +188,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
     {
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
-      const std::vector<int>* group2v = tempcond->Get<std::vector<int>>("Interface ID");
-      if (!group2v) dserror("Contact Conditions does not have value 'Interface ID'");
-      int groupid2 = (*group2v)[0];
+      int groupid2 = *currentgroup[0]->Get<int>("Interface ID");
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
       currentgroup.push_back(tempcond);    // store it in currentgroup
@@ -248,7 +244,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
       // read interface COFs
       std::vector<double> frcoeff((int)currentgroup.size());
       for (int j = 0; j < (int)currentgroup.size(); ++j)
-        frcoeff[j] = currentgroup[j]->GetDouble("FrCoeffOrBound");
+        frcoeff[j] = *currentgroup[j]->Get<double>("FrCoeffOrBound");
 
       // check consistency of interface COFs
       for (int j = 1; j < (int)currentgroup.size(); ++j)
@@ -279,7 +275,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
       // read interface COFs
       std::vector<double> ad_bound((int)currentgroup.size());
       for (int j = 0; j < (int)currentgroup.size(); ++j)
-        ad_bound[j] = currentgroup[j]->GetDouble("AdhesionBound");
+        ad_bound[j] = *currentgroup[j]->Get<double>("AdhesionBound");
 
       // check consistency of interface COFs
       for (int j = 1; j < (int)currentgroup.size(); ++j)

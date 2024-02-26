@@ -16,7 +16,7 @@ BACI_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::GeneralizedGenMax::GeneralizedGenMax(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      numbranch_(matdata->GetInt("NUMBRANCH")),
+      numbranch_(*matdata->Get<int>("NUMBRANCH")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
       solve_(*matdata->Get<std::string>("SOLVE"))
 
@@ -69,7 +69,7 @@ void MAT::ELASTIC::GeneralizedGenMax::ReadMaterialParameters(
 // Viscobranch
 MAT::ELASTIC::PAR::ViscoBranch::ViscoBranch(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      nummat_(matdata->GetInt("NUMMAT")),
+      nummat_(*matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS"))
 {
 }
@@ -85,7 +85,7 @@ void MAT::ELASTIC::ViscoBranch::ReadMaterialParameters(
 
 // Viscopart
 MAT::ELASTIC::PAR::ViscoPart::ViscoPart(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata), tau_(matdata->GetDouble("TAU"))
+    : Parameter(matdata), tau_(*matdata->Get<double>("TAU"))
 {
 }
 

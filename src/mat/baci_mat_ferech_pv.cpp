@@ -22,19 +22,19 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::FerEchPV::FerEchPV(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      refvisc_(matdata->GetDouble("REFVISC")),
-      reftemp_(matdata->GetDouble("REFTEMP")),
-      suthtemp_(matdata->GetDouble("SUTHTEMP")),
-      pranum_(matdata->GetDouble("PRANUM")),
-      reacratecon_(matdata->GetDouble("REACRATECON")),
-      pvcrit_(matdata->GetDouble("PVCRIT")),
-      unbshc_(matdata->GetDouble("UNBSHC")),
-      burshc_(matdata->GetDouble("BURSHC")),
-      unbtemp_(matdata->GetDouble("UNBTEMP")),
-      burtemp_(matdata->GetDouble("BURTEMP")),
-      unbdens_(matdata->GetDouble("UNBDENS")),
-      burdens_(matdata->GetDouble("BURDENS")),
-      mod_(matdata->GetDouble("MOD"))
+      refvisc_(*matdata->Get<double>("REFVISC")),
+      reftemp_(*matdata->Get<double>("REFTEMP")),
+      suthtemp_(*matdata->Get<double>("SUTHTEMP")),
+      pranum_(*matdata->Get<double>("PRANUM")),
+      reacratecon_(*matdata->Get<double>("REACRATECON")),
+      pvcrit_(*matdata->Get<double>("PVCRIT")),
+      unbshc_(*matdata->Get<double>("UNBSHC")),
+      burshc_(*matdata->Get<double>("BURSHC")),
+      unbtemp_(*matdata->Get<double>("UNBTEMP")),
+      burtemp_(*matdata->Get<double>("BURTEMP")),
+      unbdens_(*matdata->Get<double>("UNBDENS")),
+      burdens_(*matdata->Get<double>("BURDENS")),
+      mod_(*matdata->Get<double>("MOD"))
 {
 }
 

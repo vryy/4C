@@ -40,18 +40,18 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_(matdata->GetDouble("YOUNG")),
-      poissonratio_(matdata->GetDouble("NUE")),
-      density_(matdata->GetDouble("DENS")),
-      cte_(matdata->GetDouble("CTE")),
-      inittemp_(matdata->GetDouble("INITTEMP")),
-      yield_(matdata->GetDouble("YIELD")),
-      isohard_(matdata->GetDouble("ISOHARD")),
-      sathardening_(matdata->GetDouble("SATHARDENING")),
-      hardexpo_(matdata->GetDouble("HARDEXPO")),
-      yieldsoft_(matdata->GetDouble("YIELDSOFT")),
-      hardsoft_(matdata->GetDouble("HARDSOFT")),
-      abstol_(matdata->GetDouble("TOL"))
+      youngs_(*matdata->Get<double>("YOUNG")),
+      poissonratio_(*matdata->Get<double>("NUE")),
+      density_(*matdata->Get<double>("DENS")),
+      cte_(*matdata->Get<double>("CTE")),
+      inittemp_(*matdata->Get<double>("INITTEMP")),
+      yield_(*matdata->Get<double>("YIELD")),
+      isohard_(*matdata->Get<double>("ISOHARD")),
+      sathardening_(*matdata->Get<double>("SATHARDENING")),
+      hardexpo_(*matdata->Get<double>("HARDEXPO")),
+      yieldsoft_(*matdata->Get<double>("YIELDSOFT")),
+      hardsoft_(*matdata->Get<double>("HARDSOFT")),
+      abstol_(*matdata->Get<double>("TOL"))
 {
   if (sathardening_ < yield_)
     dserror("Saturation hardening must not be less than initial yield stress!");

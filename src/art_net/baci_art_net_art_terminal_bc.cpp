@@ -67,9 +67,9 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
     // Read in the bc curve information
     // -----------------------------------------------------------------
-    const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
+    const auto* curve = condition->Get<std::vector<int>>("curve");
     double curvefac = 1.0;
-    const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
+    const auto* vals = condition->Get<std::vector<double>>("val");
 
     // -----------------------------------------------------------------
     // Check whether the BC is absorbing or forced
@@ -165,7 +165,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     //     +-----------------------------------------------------------+
     // -----------------------------------------------------------------
 
-    int ID = condition->GetInt("ConditionID");
+    int ID = *condition->Get<int>("ConditionID");
     Teuchos::RCP<std::map<std::string, double>> map3D;
     map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>("3D map of values");
 
@@ -465,7 +465,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     //     +-----------------------------------------------------------+
     // -----------------------------------------------------------------
 
-    int ID = condition->GetInt("ConditionID");
+    int ID = *condition->Get<int>("ConditionID");
     Teuchos::RCP<std::map<std::string, double>> map1D;
     map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
         "reducedD map of values");
@@ -546,9 +546,9 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
   // -------------------------------------------------------------------
   // Read in the bc curve information
   // -------------------------------------------------------------------
-  const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
+  const auto* curve = condition->Get<std::vector<int>>("curve");
   double curvefac = 1.0;
-  const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
+  const auto* vals = condition->Get<std::vector<double>>("val");
 
   // if the curve exist => Rf = val*curve(time)
   if ((*curve)[0] >= 0)
@@ -625,9 +625,9 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------------------
   // Read in the bc curve information
   // -------------------------------------------------------------------
-  const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
+  const auto* curve = condition->Get<std::vector<int>>("curve");
   double curvefac = 1.0;
-  const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
+  const auto* vals = condition->Get<std::vector<double>>("val");
 
   double Wb;
   if (int_type == "ExplicitWindkessel")

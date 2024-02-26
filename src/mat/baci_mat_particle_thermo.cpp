@@ -22,11 +22,11 @@ BACI_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 MAT::PAR::ParticleMaterialThermo::ParticleMaterialThermo(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      initTemperature_(matdata->GetDouble("INITTEMPERATURE")),
-      thermalCapacity_(matdata->GetDouble("THERMALCAPACITY")),
+      initTemperature_(*matdata->Get<double>("INITTEMPERATURE")),
+      thermalCapacity_(*matdata->Get<double>("THERMALCAPACITY")),
       invThermalCapacity_((thermalCapacity_ > 0.0) ? (1.0 / thermalCapacity_) : 0.0),
-      thermalConductivity_(matdata->GetDouble("THERMALCONDUCTIVITY")),
-      thermalAbsorptivity_(matdata->GetDouble("THERMALABSORPTIVITY"))
+      thermalConductivity_(*matdata->Get<double>("THERMALCONDUCTIVITY")),
+      thermalAbsorptivity_(*matdata->Get<double>("THERMALABSORPTIVITY"))
 {
   // empty constructor
 }

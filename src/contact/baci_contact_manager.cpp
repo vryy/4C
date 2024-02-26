@@ -143,12 +143,10 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
 
     // try to build contact group around this condition
     currentgroup.push_back(contactconditions[i]);
-    const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
-    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
-    int groupid1 = (*group1v)[0];
+    const int groupid1 = *currentgroup[0]->Get<int>("Interface ID");
 
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
-    int contactconstitutivelawid = currentgroup[0]->GetInt("ConstitutiveLawID");
+    int contactconstitutivelawid = *currentgroup[0]->Get<int>("ConstitutiveLawID");
 
     bool foundit = false;
 
@@ -160,9 +158,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
     {
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
-      const std::vector<int>* group2v = tempcond->Get<std::vector<int>>("Interface ID");
-      if (!group2v) dserror("Contact Conditions does not have value 'Interface ID'");
-      int groupid2 = (*group2v)[0];
+      const int groupid2 = *tempcond->Get<int>("Interface ID");
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
       currentgroup.push_back(tempcond);    // store it in currentgroup
@@ -223,7 +219,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
       std::vector<double> frcoeff(currentgroup.size());
 
       for (unsigned j = 0; j < currentgroup.size(); ++j)
-        frcoeff[j] = currentgroup[j]->GetDouble("FrCoeffOrBound");
+        frcoeff[j] = *currentgroup[j]->Get<double>("FrCoeffOrBound");
 
       // check consistency of interface COFs
       for (unsigned j = 1; j < currentgroup.size(); ++j)
@@ -261,7 +257,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf)
       // read interface COFs
       std::vector<double> ad_bound(currentgroup.size());
       for (unsigned j = 0; j < currentgroup.size(); ++j)
-        ad_bound[j] = currentgroup[j]->GetDouble("AdhesionBound");
+        ad_bound[j] = *currentgroup[j]->Get<double>("AdhesionBound");
 
       // check consistency of interface COFs
       for (unsigned j = 1; j < currentgroup.size(); ++j)

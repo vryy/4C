@@ -14,9 +14,9 @@ BACI_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::Fract::Fract(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      tau_(matdata->GetDouble("TAU")),
-      alpha_(matdata->GetDouble("ALPHA")),
-      beta_(matdata->GetDouble("BETA"))
+      tau_(*matdata->Get<double>("TAU")),
+      alpha_(*matdata->Get<double>("ALPHA")),
+      beta_(*matdata->Get<double>("BETA"))
 {
 }
 

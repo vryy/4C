@@ -934,9 +934,9 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
-  const std::vector<int>* funct = condition.Get<std::vector<int>>("funct");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
+  const auto* funct = condition.Get<std::vector<int>>("funct");
 
   // check total time
   double time = -1.0;
@@ -986,10 +986,6 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // gaussian points
   const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
-
-  //  std::vector<double>* thick = data_.Get<std::vector<double> >("thick");
-  //  if (!thick) dserror("Cannot find vector of nodal thickness");
-
   // shape functions
   CORE::LINALG::SerialDenseVector shapefcts(iel);
   // natural derivatives of shape funcions

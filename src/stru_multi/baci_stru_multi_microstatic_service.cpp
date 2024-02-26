@@ -29,18 +29,16 @@ void STRUMULTI::MicroStatic::DetermineToggle()
 
   std::vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (auto& cond : conds)
   {
-    const std::vector<int>* nodeids = conds[i]->GetNodes();
-    if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
-    const int nnode = (*nodeids).size();
+    const std::vector<int> nodeids = *cond->GetNodes();
 
-    for (int i = 0; i < nnode; ++i)
+    for (int i : nodeids)
     {
       // do only nodes in my row map
-      if (!discret_->NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      DRT::Node* actnode = discret_->gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node %d", (*nodeids)[i]);
+      if (!discret_->NodeRowMap()->MyGID(i)) continue;
+      DRT::Node* actnode = discret_->gNode(i);
+      if (!actnode) dserror("Cannot find global node %d", i);
       std::vector<int> dofs = discret_->Dof(actnode);
       const unsigned numdf = dofs.size();
 
@@ -107,18 +105,16 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
 
   std::vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (auto& cond : conds)
   {
-    const std::vector<int>* nodeids = conds[i]->GetNodes();
-    if (!nodeids) dserror("MicroBoundary condition does not have nodal cloud");
-    const int nnode = (*nodeids).size();
+    const std::vector<int> nodeids = *cond->GetNodes();
 
-    for (int i = 0; i < nnode; ++i)
+    for (int i : nodeids)
     {
       // do only nodes in my row map
-      if (!discret_->NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      DRT::Node* actnode = discret_->gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node %d", (*nodeids)[i]);
+      if (!discret_->NodeRowMap()->MyGID(i)) continue;
+      DRT::Node* actnode = discret_->gNode(i);
+      if (!actnode) dserror("Cannot find global node %d", i);
 
       // nodal coordinates
       const auto& x = actnode->X();

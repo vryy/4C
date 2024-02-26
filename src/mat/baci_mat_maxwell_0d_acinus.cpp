@@ -34,10 +34,10 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Maxwell_0d_acinus::Maxwell_0d_acinus(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      stiffness1_(matdata->GetDouble("Stiffness1")),
-      stiffness2_(matdata->GetDouble("Stiffness2")),
-      viscosity1_(matdata->GetDouble("Viscosity1")),
-      viscosity2_(matdata->GetDouble("Viscosity2"))
+      stiffness1_(*matdata->Get<double>("Stiffness1")),
+      stiffness2_(*matdata->Get<double>("Stiffness2")),
+      viscosity1_(*matdata->Get<double>("Viscosity1")),
+      viscosity2_(*matdata->Get<double>("Viscosity2"))
 {
 }
 

@@ -15,12 +15,12 @@ BACI_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : k1_(matdata->GetDouble("K1")),
-      k2_(matdata->GetDouble("K2")),
-      gamma_(matdata->GetDouble("GAMMA")),
-      k1comp_(matdata->GetDouble("K1COMP")),
-      k2comp_(matdata->GetDouble("K2COMP")),
-      init_(matdata->GetInt("INIT"))
+    : k1_(*matdata->Get<double>("K1")),
+      k2_(*matdata->Get<double>("K2")),
+      gamma_(*matdata->Get<double>("GAMMA")),
+      k1comp_(*matdata->Get<double>("K1COMP")),
+      k2comp_(*matdata->Get<double>("K2COMP")),
+      init_(*matdata->Get<int>("INIT"))
 {
 }
 

@@ -23,7 +23,7 @@ BACI_NAMESPACE_OPEN
 MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : FluidPoroMultiPhase(matdata),
-      numreac_((matdata->GetInt("NUMREAC"))),
+      numreac_((*matdata->Get<int>("NUMREAC"))),
       reacids_((matdata->Get<std::vector<int>>("REACIDS")))
 {
   // check if sizes fit

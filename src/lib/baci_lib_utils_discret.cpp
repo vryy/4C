@@ -69,9 +69,7 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Conditi
 
   // loop nodes to identify and evaluate spatial distributions
   // of Initfield boundary conditions
-  const auto* funct = cond.Get<std::vector<int>>("funct");
-  if (funct->empty()) dserror("Cannot get function.");
-  if (funct->size() != 1) dserror("Only one function expected function.");
+  const auto funct_num = *cond.Get<int>("funct");
 
   for (const int cond_nodeid : cond_nodeids)
   {
@@ -106,7 +104,6 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Conditi
         if (localdof == locid)
         {
           const double time = 0.0;  // dummy time here
-          const int funct_num = (*funct)[0];
           const double functfac =
               funct_num > 0 ? GLOBAL::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)

@@ -52,9 +52,9 @@ namespace MAT
         /// fiber initalization status
         int init_;
         /// fibers support compression - or not
-        int fib_comp_;
+        bool fib_comp_;
         /// adapt angle during remodeling
-        int adapt_angle_;
+        bool adapt_angle_;
 
         //@}
 

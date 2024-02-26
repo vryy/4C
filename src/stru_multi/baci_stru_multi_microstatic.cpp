@@ -791,18 +791,16 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
 {
   std::vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (auto& cond : conds)
   {
-    const std::vector<int>* nodeids = conds[i]->GetNodes();
-    if (!nodeids) dserror("MicroBoundary condition does not have nodal cloud");
-    const int nnode = (*nodeids).size();
+    const auto nodeids = *cond->GetNodes();
 
-    for (int j = 0; j < nnode; ++j)
+    for (int nodeid : nodeids)
     {
       // do only nodes in my row map
-      if (!discret_->NodeRowMap()->MyGID((*nodeids)[j])) continue;
-      DRT::Node* actnode = discret_->gNode((*nodeids)[j]);
-      if (!actnode) dserror("Cannot find global node %d", (*nodeids)[j]);
+      if (!discret_->NodeRowMap()->MyGID(nodeid)) continue;
+      DRT::Node* actnode = discret_->gNode(nodeid);
+      if (!actnode) dserror("Cannot find global node %d", nodeid);
 
       // nodal coordinates
       const auto& x = actnode->X();

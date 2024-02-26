@@ -24,16 +24,16 @@ BACI_NAMESPACE_OPEN
 
 MAT::PAR::Muscle_Combo::Muscle_Combo(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      alpha_(matdata->GetDouble("ALPHA")),
-      beta_(matdata->GetDouble("BETA")),
-      gamma_(matdata->GetDouble("GAMMA")),
-      kappa_(matdata->GetDouble("KAPPA")),
-      omega0_(matdata->GetDouble("OMEGA0")),
-      Popt_(matdata->GetDouble("POPT")),
-      lambdaMin_(matdata->GetDouble("LAMBDAMIN")),
-      lambdaOpt_(matdata->GetDouble("LAMBDAOPT")),
-      actFunctId_(matdata->GetInt("ACTFUNCT")),
-      density_(matdata->GetDouble("DENS"))
+      alpha_(*matdata->Get<double>("ALPHA")),
+      beta_(*matdata->Get<double>("BETA")),
+      gamma_(*matdata->Get<double>("GAMMA")),
+      kappa_(*matdata->Get<double>("KAPPA")),
+      omega0_(*matdata->Get<double>("OMEGA0")),
+      Popt_(*matdata->Get<double>("POPT")),
+      lambdaMin_(*matdata->Get<double>("LAMBDAMIN")),
+      lambdaOpt_(*matdata->Get<double>("LAMBDAOPT")),
+      actFunctId_(*matdata->Get<int>("ACTFUNCT")),
+      density_(*matdata->Get<double>("DENS"))
 {
   // error handling for parameter ranges
   // passive material parameters

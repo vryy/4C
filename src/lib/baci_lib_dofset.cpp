@@ -276,9 +276,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(
           specialtreatment = true;
 
           // check total number of dofs and determine which dofs are to be coupled
-          if (couplingconditions[relevantcondid]->GetInt("numdof") != numdfrownodes[i])
+          if (*couplingconditions[relevantcondid]->Get<int>("numdof") != numdfrownodes[i])
             dserror("ERROR: Number of DoFs in coupling condition (%i) does not match node (%i)",
-                couplingconditions[relevantcondid]->GetInt("numdof"), numdfrownodes[i]);
+                *couplingconditions[relevantcondid]->Get<int>("numdof"), numdfrownodes[i]);
           const std::vector<int>* onoffcond =
               couplingconditions[relevantcondid]->Get<std::vector<int>>("onoff");
 

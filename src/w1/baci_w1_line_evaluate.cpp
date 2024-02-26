@@ -65,9 +65,9 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     dserror("Unknown type of SurfaceNeumann condition");
 
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
-  const std::vector<int>* funct = condition.Get<std::vector<int>>("funct");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
+  const auto* funct = condition.Get<std::vector<int>>("funct");
 
   // check total time
   double time = -1.0;

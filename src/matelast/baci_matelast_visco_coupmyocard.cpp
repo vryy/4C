@@ -15,7 +15,7 @@ BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupMyocard::CoupMyocard(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata), n_(matdata->GetDouble("N"))
+    : Parameter(matdata), n_(*matdata->Get<double>("N"))
 {
 }
 

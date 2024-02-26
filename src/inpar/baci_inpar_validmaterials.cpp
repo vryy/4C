@@ -3308,8 +3308,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedReal(matdef, "YIELDM", "initial yield stress M", -1.0, true);
     AddNamedReal(matdef, "ISOHARDN", "isotropic hardening modulus of forces", -1.0, true);
     AddNamedReal(matdef, "ISOHARDM", "isotropic hardening modulus of moments", -1.0, true);
-    AddNamedReal(matdef, "TORSIONPLAST",
-        "defines whether torsional moment contributes to plasticity", 0, true);
+    AddNamedBool(matdef, "TORSIONPLAST",
+        "defines whether torsional moment contributes to plasticity", false, true);
 
     /* note: we define both of the two following (redundant) parameters to be optional.
      *       upon initialization of the material, we assure that one of them is

@@ -119,7 +119,7 @@ void ADAPTER::FluidLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& MinL
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
     DRT::Condition& cond = *(constrcond_[i]);
-    int condID = cond.GetInt("coupling id");
+    int condID = *cond.Get<int>("coupling id");
     if (LungVolConIDs.find(condID) == LungVolConIDs.end())
     {
       if (condID < MinLungVolConID) MinLungVolConID = condID;
@@ -151,7 +151,7 @@ void ADAPTER::FluidLung::InitializeVolCon(
 
     // Get ConditionID of current condition if defined and write value in parameterlist
 
-    int condID = cond.GetInt("coupling id");
+    int condID = *cond.Get<int>("coupling id");
 
     Teuchos::ParameterList params;
     params.set("ConditionID", condID);
@@ -231,7 +231,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(
     DRT::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("coupling id");
+    int condID = *cond.Get<int>("coupling id");
     Teuchos::ParameterList params;
     params.set("ConditionID", condID);
     const double dt = Dt();

@@ -17,7 +17,7 @@ BACI_NAMESPACE_OPEN
  | constructor                                               fang 06/15 |
  *----------------------------------------------------------------------*/
 MAT::PAR::Soret::Soret(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : FourierIso(matdata), soretcoefficient_(matdata->GetDouble("SORET"))
+    : FourierIso(matdata), soretcoefficient_(*matdata->Get<double>("SORET"))
 {
   return;
 }

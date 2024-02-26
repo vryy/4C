@@ -23,12 +23,12 @@ BACI_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
-      alpha_(matdata->GetDouble("ALPHA")),
-      beta_(matdata->GetDouble("BETA")),
-      gamma_(matdata->GetDouble("GAMMA")),
-      angle_(matdata->GetDouble("ANGLE")),
-      fiber_gid_(matdata->GetInt("FIBER")),
-      init_(matdata->GetInt("INIT"))
+      alpha_(*matdata->Get<double>("ALPHA")),
+      beta_(*matdata->Get<double>("BETA")),
+      gamma_(*matdata->Get<double>("GAMMA")),
+      angle_(*matdata->Get<double>("ANGLE")),
+      fiber_gid_(*matdata->Get<int>("FIBER")),
+      init_(*matdata->Get<int>("INIT"))
 {
   /* empty */
 }

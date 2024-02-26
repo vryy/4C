@@ -49,14 +49,14 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::ActiveFiber::ActiveFiber(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      density_(matdata->GetDouble("DENS")),
-      decayconst_(matdata->GetDouble("DECAY")),
-      idmatpassive_(matdata->GetInt("IDMATPASSIVE")),
-      kforwards_(matdata->GetDouble("KFOR")),
-      kbackwards_(matdata->GetDouble("KBACK")),
-      kvariance_(matdata->GetDouble("KVAR")),
-      sigmamax_(matdata->GetDouble("SIGMAX")),
-      epsilonnull_(matdata->GetDouble("EPSNULL"))
+      density_(*matdata->Get<double>("DENS")),
+      decayconst_(*matdata->Get<double>("DECAY")),
+      idmatpassive_(*matdata->Get<int>("IDMATPASSIVE")),
+      kforwards_(*matdata->Get<double>("KFOR")),
+      kbackwards_(*matdata->Get<double>("KBACK")),
+      kvariance_(*matdata->Get<double>("KVAR")),
+      sigmamax_(*matdata->Get<double>("SIGMAX")),
+      epsilonnull_(*matdata->Get<double>("EPSNULL"))
 {
   analyticalmaterialtangent_ =
       INPUT::IntegralValue<int>(

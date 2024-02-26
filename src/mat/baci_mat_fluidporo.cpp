@@ -645,10 +645,10 @@ namespace MAT::FLUIDPORO
 
 MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      viscosity_(matdata->GetDouble("DYNVISCOSITY")),
-      density_(matdata->GetDouble("DENSITY")),
-      permeability_(matdata->GetDouble("PERMEABILITY")),
-      axial_permeability_(matdata->GetDouble("AXIALPERMEABILITY")),
+      viscosity_(*matdata->Get<double>("DYNVISCOSITY")),
+      density_(*matdata->Get<double>("DENSITY")),
+      permeability_(*matdata->Get<double>("PERMEABILITY")),
+      axial_permeability_(*matdata->Get<double>("AXIALPERMEABILITY")),
       type_(undefined),
       varying_permeability_(false),
       permeability_func_(MAT::PAR::pf_undefined),
@@ -682,7 +682,7 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
   {
     for (int dim = 0; dim < 3; ++dim)
       orthotropic_permeabilities_[dim] =
-          matdata->GetDouble("ORTHOPERMEABILITY" + std::to_string(dim + 1));
+          *matdata->Get<double>("ORTHOPERMEABILITY" + std::to_string(dim + 1));
   }
 }
 

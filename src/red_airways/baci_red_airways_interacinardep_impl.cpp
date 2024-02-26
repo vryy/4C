@@ -203,10 +203,10 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           // Get the type of prescribed bc
           Bc = *(condition->Get<std::string>("boundarycond"));
 
-          const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
+          const auto* curve = condition->Get<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
-          const std::vector<int>* functions = condition->Get<std::vector<int>>("funct");
+          const auto* vals = condition->Get<std::vector<double>>("val");
+          const auto* functions = condition->Get<std::vector<int>>("funct");
 
           // Read in the value of the applied BC
           // Get factor of first CURVE
@@ -273,9 +273,9 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             double Pp_np = 0.0;
             if (pplCond)
             {
-              const std::vector<int>* curve = pplCond->Get<std::vector<int>>("curve");
+              const auto* curve = pplCond->Get<std::vector<int>>("curve");
               double curvefac = 1.0;
-              const std::vector<double>* vals = pplCond->Get<std::vector<double>>("val");
+              const auto* vals = pplCond->Get<std::vector<double>>("val");
 
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
@@ -287,12 +287,12 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
 
               // Get parameters for VolumeDependentPleuralPressure condition
               std::string ppl_Type = *(pplCond->Get<std::string>("TYPE"));
-              double ap = pplCond->GetDouble("P_PLEURAL_0");
-              double bp = pplCond->GetDouble("P_PLEURAL_LIN");
-              double cp = pplCond->GetDouble("P_PLEURAL_NONLIN");
-              double dp = pplCond->GetDouble("TAU");
-              double RV = pplCond->GetDouble("RV");
-              double TLC = pplCond->GetDouble("TLC");
+              auto ap = *pplCond->Get<double>("P_PLEURAL_0");
+              auto bp = *pplCond->Get<double>("P_PLEURAL_LIN");
+              auto cp = *pplCond->Get<double>("P_PLEURAL_NONLIN");
+              auto dp = *pplCond->Get<double>("TAU");
+              auto RV = *pplCond->Get<double>("RV");
+              auto TLC = *pplCond->Get<double>("TLC");
 
               // Safety check: in case of polynomial TLC is not used
               if (((ppl_Type == "Linear_Polynomial") or (ppl_Type == "Nonlinear_Polynomial")) and

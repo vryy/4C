@@ -13,7 +13,7 @@ BACI_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupVarga::CoupVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata), mue_(matdata->GetDouble("MUE")), beta_(matdata->GetDouble("BETA"))
+    : Parameter(matdata), mue_(*matdata->Get<double>("MUE")), beta_(*matdata->Get<double>("BETA"))
 {
 }
 

@@ -46,19 +46,19 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::Damage::Damage(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_(matdata->GetDouble("YOUNG")),
-      poissonratio_(matdata->GetDouble("NUE")),
-      density_(matdata->GetDouble("DENS")),
+      youngs_(*matdata->Get<double>("YOUNG")),
+      poissonratio_(*matdata->Get<double>("NUE")),
+      density_(*matdata->Get<double>("DENS")),
       sigma_y_(*(matdata->Get<std::vector<double>>("SIGMA_Y"))),
       strainbar_p_ref_(*(matdata->Get<std::vector<double>>("EPSBAR_P"))),
-      damden_(matdata->GetDouble("DAMDEN")),
-      damexp_(matdata->GetDouble("DAMEXP")),
-      epsbarD_(matdata->GetDouble("DAMTHRESHOLD")),
-      kinhard_(matdata->GetDouble("KINHARD")),
-      kinhard_rec_(matdata->GetDouble("KINHARD_REC")),
-      sathardening_(matdata->GetDouble("SATHARDENING")),
-      hardexpo_(matdata->GetDouble("HARDEXPO")),
-      abstol_(matdata->GetDouble("TOL"))
+      damden_(*matdata->Get<double>("DAMDEN")),
+      damexp_(*matdata->Get<double>("DAMEXP")),
+      epsbarD_(*matdata->Get<double>("DAMTHRESHOLD")),
+      kinhard_(*matdata->Get<double>("KINHARD")),
+      kinhard_rec_(*matdata->Get<double>("KINHARD_REC")),
+      sathardening_(*matdata->Get<double>("SATHARDENING")),
+      hardexpo_(*matdata->Get<double>("HARDEXPO")),
+      abstol_(*matdata->Get<double>("TOL"))
 {
   if (hardexpo_ < 0.0) dserror("Nonlinear hardening exponent must be non-negative!");
   if (damden_ == 0.0)

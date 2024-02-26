@@ -57,11 +57,10 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   // to be part of the volume coupling, too
 
   std::map<int, std::set<int>> AllConstrDofMap;
-  for (auto& i : constrcond_)
+  for (auto& constrcond : constrcond_)
   {
-    DRT::Condition& constrcond = *i;
-    int condID = constrcond.GetInt("coupling id");
-    const std::vector<int>* constrnodeIDs = constrcond.GetNodes();
+    int condID = *constrcond->Get<int>("coupling id");
+    const std::vector<int>* constrnodeIDs = constrcond->GetNodes();
     std::set<int>& constrdofs = AllConstrDofMap[condID];
     for (int gid : *constrnodeIDs)
     {
@@ -76,7 +75,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   std::map<int, std::set<int>> AllAsiDofMap;
   for (auto& asicond : asicond_)
   {
-    int asicondID = asicond->GetInt("coupling id");
+    int asicondID = *asicond->Get<int>("coupling id");
     std::set<int>& asidofs = AllAsiDofMap[asicondID];
     const std::vector<int>* asinodeIDs = asicond->GetNodes();
     for (int gid : *asinodeIDs)
@@ -138,7 +137,7 @@ void ADAPTER::StructureLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& 
 
   for (auto& cond : constrcond_)
   {
-    int condID = cond->GetInt("coupling id");
+    int condID = *cond->Get<int>("coupling id");
     if (LungVolConIDs.find(condID) == LungVolConIDs.end())
     {
       if (condID < MinLungVolConID) MinLungVolConID = condID;
@@ -178,7 +177,7 @@ void ADAPTER::StructureLung::InitializeVolCon(
 
     {
       // Get ConditionID of current condition if defined and write value in parameterlist
-      int condID = cond.GetInt("coupling id");
+      int condID = *cond.Get<int>("coupling id");
       params.set("ConditionID", condID);
       params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
 
@@ -281,7 +280,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(
     DRT::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.GetInt("coupling id");
+    int condID = *cond.Get<int>("coupling id");
     params.set("ConditionID", condID);
 
     // elements might need condition

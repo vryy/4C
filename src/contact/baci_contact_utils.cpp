@@ -91,9 +91,7 @@ void CONTACT::UTILS::GetContactConditionGroups(
 
     // try to build contact group around this condition
     current_grp.push_back(cconds[i]);
-    const auto* group1v = current_grp[0]->Get<std::vector<int>>("Interface ID");
-    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
-    int groupid1 = (*group1v)[0];
+    const auto groupid1 = *current_grp[0]->Get<int>("Interface ID");
     bool foundit = false;
 
     // only one surface per group is ok for self contact
@@ -105,9 +103,8 @@ void CONTACT::UTILS::GetContactConditionGroups(
       // do not compare ids of one and the same contact condition
       if (j == i) continue;
       tempcond = cconds[j];
-      const auto* group2v = tempcond->Get<std::vector<int>>("Interface ID");
-      if (!group2v) dserror("Contact Conditions does not have value 'Interface ID'");
-      int groupid2 = (*group2v)[0];
+      const auto groupid2 = *tempcond->Get<int>("Interface ID");
+
       // Do the IDs coincide?
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
@@ -247,12 +244,12 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
     }
 
     // check for two half pass approach
-    two_half_pass[j] = cond_grp[j]->GetDouble("TwoHalfPass");
+    two_half_pass[j] = *cond_grp[j]->Get<double>("TwoHalfPass");
     if (two_half_pass[j]) Two_half_pass = true;
 
     // check for reference configuration check for non-smooth self contact surfaces
     check_nonsmooth_selfcontactsurface[j] =
-        cond_grp[j]->GetDouble("RefConfCheckNonSmoothSelfContactSurface");
+        *cond_grp[j]->Get<double>("RefConfCheckNonSmoothSelfContactSurface");
     if (check_nonsmooth_selfcontactsurface[j]) Check_nonsmooth_selfcontactsurface = true;
   }
 
@@ -428,7 +425,7 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodesAndElements(
 
       const DRT::Condition* sl_cond = ccond_grp[i];
 
-      const int dbc_handling_id = sl_cond->GetInt("dbc_handling");
+      const int dbc_handling_id = *sl_cond->Get<int>("dbc_handling");
       const auto dbc_handling = static_cast<INPAR::MORTAR::DBCHandling>(dbc_handling_id);
 
       switch (dbc_handling)

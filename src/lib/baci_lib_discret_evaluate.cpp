@@ -186,7 +186,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
     }
     const std::vector<int>* nodeids = cond->GetNodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
-    const auto* tmp_funct = cond->Get<std::vector<int>>("funct");
+    const auto* tmp_funct = cond->GetIf<std::vector<int>>("funct");
     const auto& onoff = *cond->Get<std::vector<int>>("onoff");
     const auto& val = *cond->Get<std::vector<double>>("val");
 
@@ -378,7 +378,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
   {
     if (name == condstring)
     {
-      if (condid == -1 || condid == cond->GetInt("ConditionID"))
+      if (condid == -1 || condid == *cond->Get<int>("ConditionID"))
       {
         std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
         // if (geom.empty()) dserror("evaluation of condition with empty geometry");
@@ -387,9 +387,9 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
         // to the condition geometry
 
         // Evaluate Loadcurve if defined. Put current load factor in parameter list
-        const auto* curve = cond->Get<std::vector<int>>("curve");
+        const auto* curve = cond->GetIf<int>("curve");
         int curvenum = -1;
-        if (curve) curvenum = (*curve)[0];
+        if (curve) curvenum = *curve;
         double curvefac = 1.0;
         if (curvenum >= 0)
         {
@@ -399,11 +399,11 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
         }
 
         // Get ConditionID of current condition if defined and write value in parameter list
-        const auto* condIDVec = cond->Get<std::vector<int>>("ConditionID");
-        if (condIDVec)
+        const auto* condID = cond->GetIf<int>("ConditionID");
+        if (condID)
         {
-          params.set("ConditionID", (*condIDVec)[0]);
-          params.set("LoadCurveFactor " + std::to_string((*condIDVec)[0]), curvefac);
+          params.set("ConditionID", *condID);
+          params.set("LoadCurveFactor " + std::to_string(*condID), curvefac);
         }
         else
         {
@@ -542,7 +542,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
     if (name == condstring)
     {
       // additional filtering by condition ID if explicitly provided
-      if (condid == -1 or condid == condition->GetInt("ConditionID"))
+      if (condid == -1 or condid == *condition->Get<int>("ConditionID"))
       {
         // extract geometry map of current condition
         std::map<int, Teuchos::RCP<DRT::Element>>& geometry = condition->Geometry();
@@ -579,7 +579,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
             cpuscalars += elescalars;
           }  // if(element.Owner() == Comm().MyPID())
         }    // loop over elements
-      }      // if(condid == -1 or condid == condition.GetInt("ConditionID"))
+      }      // if(condid == -1 or condid == *condition.Get<int>("ConditionID"))
     }        // if(conditionpair->first == condstring)
   }          // loop over conditions
 
