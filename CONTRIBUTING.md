@@ -197,13 +197,7 @@ move the issue card from **In Progress** to **Under Review** on our
    * Assign some of your fellow developers as *Reviewers* to request their review and **required** approval.
    * Assign the MR to yourself, as you are probably the person that will work the most on this MR.
    
-* Trigger the execution of the test suite manually:
-   * Go to BACI's [CI/CD](https://gitlab.lrz.de/baci/baci/pipelines) page and select `Run Pipeline`
-   * Select your branch `<branchName>` and start the pipeline
-   * A manually triggered pipeline has to pass on the `feature` branch at least once.
-For subsequent minor changes on the `feature` branch, the reviewers and the MR author can agree to reduce the additional testing scope.
-   > **Note** This pipeline tests only the standard BACI release configuration for workstations (Not included is testing of the debug version, cluster configurations, ...). In contrast to that, all configurations are tested once a day by the @baci_test_bot. These additional BACI configurations can be tested by setting appropriate variables if desired.
-
+After opening the MR, a testing pipeline is automatically created. All test jobs need to pass before the MR can be merged.
 
 [↑ Contents](#contents)
 
@@ -264,7 +258,7 @@ modifications during review these should be squashed into the appropriate commit
 When these conditions are met,
 the merge can be triggered using the "Merge" button on the merge request page on GitLab.
 It is good practice that the MR author triggers the merge,
-since he/she is in the best position to decide, whether he/she wants to merge right now or maybe wants to include more changes in this MR.
+since they are in the best position to decide, whether they want to merge right now or want to include more changes in this MR.
 
 > Yet, basically every @baci/baci_developers can press the "Merge" button.
 
