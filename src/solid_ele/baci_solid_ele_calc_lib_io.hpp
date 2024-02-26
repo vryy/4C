@@ -136,6 +136,15 @@ namespace DRT::ELEMENTS
         DETAILS::AssembleVectorToMatrixRow(ea_stress_like, data, row);
         return;
       }
+      case INPAR::STR::strain_log:
+      {
+        const CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> log_strain =
+            STR::UTILS::GreenLagrangeToLogStrain(gl_strain);
+        CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> log_strain_stress_like;
+        CORE::LINALG::VOIGT::Strains::ToStressLike(log_strain, log_strain_stress_like);
+        DETAILS::AssembleVectorToMatrixRow(log_strain_stress_like, data, row);
+        return;
+      }
       case INPAR::STR::strain_none:
         return;
       default:
