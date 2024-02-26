@@ -1120,7 +1120,8 @@ namespace DRT
       CORE::LINALG::Matrix<nsd_, nen_> edispnp_;
       //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
       CORE::LINALG::Matrix<nen_, 1> eprenp_;
-
+      //! nodal external force velocity values at t_(n+1)
+      CORE::LINALG::Matrix<nsd_, nen_> eforcevelocity_;
 
       /*========================================================================*/
       //! @name element coefficients and related extracted in evaluate
@@ -1303,11 +1304,12 @@ namespace DRT
       ScaTraEleInternalVariableManager(int numscal)
           : phinp_(numscal, 0.0),
             phin_(numscal, 0.0),
-            convelint_(true),
-            conv_(true),
+            convelint_(numscal),
+            conv_(numscal),
             gradphi_(numscal),
             conv_phi_(numscal, 0.0),
             hist_(numscal, 0.0),
+            reacts_to_force_(numscal, false),
             numscal_(numscal)
       {
       }
@@ -1325,16 +1327,29 @@ namespace DRT
           const CORE::LINALG::Matrix<NSD, NEN>&
               econvelnp,  //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
           const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
-              ehist  //! history vector of transported scalars
+              ehist,  //! history vector of transported scalars
+          const CORE::LINALG::Matrix<NSD, NEN>&
+              eforcevelocity  //! nodal velocity due to external force
       )
       {
-        // convective velocity
-        convelint_.Multiply(econvelnp, funct);
-        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-        conv_.MultiplyTN(derxy, convelint_);
+        // fluid velocity
+        CORE::LINALG::Matrix<NSD, 1> convective_fluid_velocity;
+        convective_fluid_velocity.Multiply(econvelnp, funct);
+
+        // velocity due to the external force
+        CORE::LINALG::Matrix<NSD, 1> force_velocity;
+        force_velocity.Multiply(eforcevelocity, funct);
 
         for (int k = 0; k < numscal_; ++k)
         {
+          convelint_[k].Update(1.0, convective_fluid_velocity);
+          // if the scalar reacts to the external force, add the velocity due to the external force
+          if (reacts_to_force_[k])
+          {
+            convelint_[k].Update(1.0, force_velocity);
+          }
+          // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+          conv_[k].MultiplyTN(derxy, convelint_[k]);
           // calculate scalar at t_(n+1) or t_(n+alpha_F)
           phinp_[k] = funct.Dot(ephinp[k]);
           // calculate scalar at t_(n)
@@ -1342,7 +1357,7 @@ namespace DRT
           // spatial gradient of current scalar value
           gradphi_[k].Multiply(derxy, ephinp[k]);
           // convective term
-          conv_phi_[k] = convelint_.Dot(gradphi_[k]);
+          conv_phi_[k] = convelint_[k].Dot(gradphi_[k]);
           // history data (or acceleration)
           hist_[k] = funct.Dot(ehist[k]);
         }
@@ -1361,9 +1376,15 @@ namespace DRT
       //! return scalar value at t_(n)
       virtual const double& Phin(const int k) const { return phin_[k]; };
       //! return convective velocity
-      virtual const CORE::LINALG::Matrix<NSD, 1>& ConVel(const int k) const { return convelint_; };
+      [[nodiscard]] virtual const CORE::LINALG::Matrix<NSD, 1>& ConVel(const int k) const
+      {
+        return convelint_[k];
+      };
       //! return convective part in convective form
-      virtual const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const { return conv_; };
+      [[nodiscard]] virtual const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const
+      {
+        return conv_[k];
+      };
       //! return spatial gradient of all scalar values
       virtual const std::vector<CORE::LINALG::Matrix<NSD, 1>>& GradPhi() const { return gradphi_; };
       //! return spatial gradient of current scalar value
@@ -1397,6 +1418,11 @@ namespace DRT
       virtual void AddToConvPhi(const int k, double conv_phi) { conv_phi_[k] += conv_phi; };
       //! set convective term of current scalar value
       virtual void ScaleConvPhi(const int k, double scale) { conv_phi_[k] *= scale; };
+      //! set whether current scalar reacts to external force
+      virtual void SetReactsToForce(const bool reacts_to_force, const int k)
+      {
+        reacts_to_force_[k] = reacts_to_force;
+      };
 
      protected:
       /*========================================================================*/
@@ -1408,15 +1434,17 @@ namespace DRT
       //! scalar at t_(n)
       std::vector<double> phin_;
       //! convective velocity
-      CORE::LINALG::Matrix<NSD, 1> convelint_;
+      std::vector<CORE::LINALG::Matrix<NSD, 1>> convelint_;
       //! convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      CORE::LINALG::Matrix<NEN, 1> conv_;
+      std::vector<CORE::LINALG::Matrix<NEN, 1>> conv_;
       //! spatial gradient of current scalar value
       std::vector<CORE::LINALG::Matrix<NSD, 1>> gradphi_;
       //! convective term
       std::vector<double> conv_phi_;
       //! history data (or acceleration)
       std::vector<double> hist_;
+      //! flag whether scalar reacts to external force
+      std::vector<bool> reacts_to_force_;
 
       /*========================================================================*/
       //! @name number of scalars

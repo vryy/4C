@@ -1374,6 +1374,8 @@ post_processing(scatra_1D_line2_multiscale_constperm_macro 1 3 "" "" 250 "" "_mi
 baci_test(scatra_1D_line2_multiscale_constperm_macro_partitioned_macrotomicro 3 200)
 baci_test(scatra_1D_line2_multiscale_constperm_macro_partitioned_microtomacro 3 "")
 baci_test(scatra_1D_straight_convection 2 "")
+baci_test(scatra_2D_external_force 2 28)
+baci_test(scatra_2D_external_force_supg 2 28)
 baci_test(scatra_2D_quad4_s2i_constperm 2 "")
 post_processing(scatra_2D_quad4_s2i_constperm 2 2 "" "" 20)
 baci_test(scatra_2D_straight_convection_direct 2 "")

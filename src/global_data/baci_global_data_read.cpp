@@ -1797,6 +1797,7 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
   reader.ReadSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
   reader.ReadSection("--SCALAR TRANSPORT DYNAMIC/S2I COUPLING", *list);
   reader.ReadSection("--SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING", *list);
+  reader.ReadSection("--SCALAR TRANSPORT DYNAMIC/EXTERNAL FORCE", *list);
   reader.ReadSection("--STI DYNAMIC", *list);
   reader.ReadSection("--STI DYNAMIC/MONOLITHIC", *list);
   reader.ReadSection("--STI DYNAMIC/PARTITIONED", *list);

@@ -331,11 +331,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaShakibCodina(
   const double c3 = 4.0 / (mk * mk);
   // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-  tau = 1.0 / (sqrt(c1 * ((densnp) * (densnp)) * ((sigma_tot) * (sigma_tot)) +
-                    c2 * ((densnp) * (densnp)) * ((vel_norm) * (vel_norm)) / ((h) * (h)) +
-                    c3 * ((diffus) * (diffus)) / (((h) * (h)) * ((h) * (h)))));
-
-  return;
+  if (densnp == 0.0)
+  {
+    tau = 0.0;
+  }
+  else
+  {
+    tau = 1.0 / (sqrt(c1 * ((densnp) * (densnp)) * ((sigma_tot) * (sigma_tot)) +
+                      c2 * ((densnp) * (densnp)) * ((vel_norm) * (vel_norm)) / ((h) * (h)) +
+                      c3 * ((diffus) * (diffus)) / (((h) * (h)) * ((h) * (h)))));
+  }
 }
 
 

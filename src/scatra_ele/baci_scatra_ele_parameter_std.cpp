@@ -67,6 +67,7 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
       partitioned_multiscale_(false),
       is_emd_(false),
       emd_source_(-1),
+      has_external_force_(false),
       stabtype_(INPAR::SCATRA::stabtype_no_stabilization),
       whichtau_(INPAR::SCATRA::tau_zero),
       charelelength_(INPAR::SCATRA::streamlength),
@@ -237,6 +238,9 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
 
   // electromagnetic diffusion source function
   emd_source_ = parameters.get<int>("electromagnetic_diffusion_source", -1);
+
+  // set flag for external force
+  has_external_force_ = parameters.get<bool>("has_external_force", false);
 }
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsDisp() const

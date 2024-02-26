@@ -355,7 +355,8 @@ namespace DRT
           const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ehist, bool do_setfrt = true)
       {
         // call base class (scatra)
-        my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist);
+        const CORE::LINALG::Matrix<NSD, NEN> eforcevelocity(true);
+        my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
 
         // loop over all transported scalars
         // get concentration of transported scalar k at integration point

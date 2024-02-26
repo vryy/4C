@@ -395,10 +395,9 @@ namespace DRT
         return;
       };
       //! set convective velocity
-      void SetConVel(CORE::LINALG::Matrix<NSD, 1>& convel)
+      void SetConVel(const int k, CORE::LINALG::Matrix<NSD, 1>& convel)
       {
-        my::convelint_ = convel;
-        return;
+        my::convelint_[k] = convel;
       };
       //! set history term of current scalar value
       void SetHist(const int k, double hist)
@@ -407,10 +406,9 @@ namespace DRT
         return;
       };
       //! set convective part in convective form
-      virtual void SetConv(CORE::LINALG::Matrix<NEN, 1>& conv)
+      virtual void SetConv(const int k, CORE::LINALG::Matrix<NEN, 1>& conv)
       {
-        my::conv_ = conv;
-        return;
+        my::conv_[k] = conv;
       };
 
       /*========================================================================*/
@@ -445,10 +443,11 @@ namespace DRT
           (my::gradphi_[kk]).Clear();
           my::conv_phi_[kk] = 0.0;
           my::hist_[kk] = 0.0;
+          my::convelint_[kk].Clear();
+          my::conv_[kk].Clear();
         }
 
-        my::convelint_.Clear();
-        my::conv_.Clear();
+
 
         return;
       }

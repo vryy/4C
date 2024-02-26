@@ -170,6 +170,10 @@ void scatra_dyn(int restart)
       // PrepareTimeStep()-call
       scatraonly->ScaTraField()->SetVelocityField();
 
+      // set external force
+      if (scatraonly->ScaTraField()->HasExternalForce())
+        scatraonly->ScaTraField()->SetExternalForce();
+
       // enter time loop to solve problem with given convective velocity
       scatraonly->ScaTraField()->TimeLoop();
 

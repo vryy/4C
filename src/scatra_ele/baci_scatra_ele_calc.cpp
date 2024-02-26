@@ -117,6 +117,28 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
   // rotationally symmetric periodic bc's: do setup for current element
   rotsymmpbc_->Setup(ele);
 
+  Teuchos::RCP<MAT::Material> material = ele->Material();
+  if (material->MaterialType() == INPAR::MAT::m_matlist or
+      material->MaterialType() == INPAR::MAT::m_matlist_reactions)
+  {
+    const Teuchos::RCP<const MAT::MatList>& material_list =
+        Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
+    if (material_list->NumMat() < numscal_) dserror("Not enough materials in MatList.");
+
+    for (int k = 0; k < numscal_; ++k)
+    {
+      const int material_id = material_list->MatID(k);
+
+      if (material_list->MaterialById(material_id)->MaterialType() == INPAR::MAT::m_scatra)
+      {
+        Teuchos::RCP<const MAT::ScatraMat> single_material =
+            Teuchos::rcp_static_cast<const MAT::ScatraMat>(
+                material_list->MaterialById(material_id));
+        scatravarmanager_->SetReactsToForce(single_material->ReactsToExternalForce(), k);
+      }
+    }
+  }
+
   return 0;
 }
 
@@ -186,8 +208,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
   const int ndsvel = scatrapara_->NdsVel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
-  Teuchos::RCP<const Epetra_Vector> convel =
-      discretization.GetState(ndsvel, "convective velocity field");
+  auto convel = discretization.GetState(ndsvel, "convective velocity field");
   if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
@@ -198,6 +219,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
   for (unsigned inode = 0; inode < nen_; ++inode)
     for (unsigned idim = 0; idim < nsd_; ++idim)
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
+
+  if (scatrapara_->HasExternalForce())
+  {
+    auto force_velocity = discretization.GetState(ndsvel, "force_velocity");
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(
+        *force_velocity, eforcevelocity_, lmvel);
+  }
 
   // extract local values of convective velocity field from global state vector
   DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
@@ -418,6 +446,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
 
   // the stabilization parameters (one per transported scalar)
   std::vector<double> tau(numscal_, 0.0);
+  // stabilization parameters for the external force term (one per transported scalar)
+  // std::vector<double> tau_force(numscal_, 0.0);
   // subgrid-scale diffusion coefficient
   double sgdiff(0.0);
 
@@ -789,7 +819,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
       // the term includes the divergence og the electric current
       //----------------------------------------------------------------
       if (scatrapara_->IsEMD()) CalcRHSEMD(ele, erhs, rhsfac);
-
     }  // end loop all scalars
   }    // end loop Gauss points
 }
@@ -2084,7 +2113,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetInternalVariablesForMatAndRHS()
 {
-  scatravarmanager_->SetInternalVariables(funct_, derxy_, ephinp_, ephin_, econvelnp_, ehist_);
+  scatravarmanager_->SetInternalVariables(
+      funct_, derxy_, ephinp_, ephin_, econvelnp_, ehist_, eforcevelocity_);
 }
 
 BACI_NAMESPACE_CLOSE
