@@ -16,6 +16,8 @@
 #include <Teuchos_RCP.hpp>
 
 #include <functional>
+#include <string>
+#include <utility>
 #include <variant>
 
 BACI_NAMESPACE_OPEN
@@ -364,7 +366,6 @@ namespace INPUT
   };
 
 
-
   /**
    * This component contains a series of LineComponents that are selected by a key parameter.
    */
@@ -406,6 +407,57 @@ namespace INPUT
 
     //! Helper component to read the selected key from input.
     std::unique_ptr<INPUT::SelectionComponent> component_for_key_;
+  };
+
+
+  /**
+   * A LineComponent where an input string is processed by a user-defined operation.
+   */
+  class ProcessedComponent : public INPUT::LineComponent
+  {
+   public:
+    /*!
+     * @brief Define a component that reads the component value as string, and conducts a given
+     * @p process_operation on this string @p read_string. @p process_operation returns a type
+     * @p T object. Add this object to a @p container for the given key @p name .
+     *
+     * As an example, you can use this class to:
+     * - post-process a given string as a LINALG matrix and store this LINALG matrix in the
+     *   container. Therefore, define a process_operation parsing the string into the LINALG
+     *   matrix.
+     * - post-process a file path to read the content of this file and store this content in the
+     *   container. Therefore, define a process_operation that reads the file into the desired
+     *   object of type T.
+     * - post-process a given string into a boolean flag. Therefore, define the logic whether for
+     *   the given string, the stored boolean is true or false.
+     */
+    template <typename T>
+    ProcessedComponent(const std::string& name,
+        std::function<T(const std::string&)> process_operation, std::string print_string,
+        bool optional = false)
+        : LineComponent(name, optional),
+          insert_operation_(
+              [process_operation](const std::string& name, const std::string& read_string,
+                  INPAR::InputParameterContainer& container)
+              { container.Add(name, process_operation(read_string)); }),
+          print_string_(std::move(print_string)){};
+
+    void DefaultLine(std::ostream& stream) override;
+
+    void Print(std::ostream& stream, const INPAR::InputParameterContainer& container) override;
+
+    Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+        Teuchos::RCP<std::stringstream> condline,
+        INPAR::InputParameterContainer& container) override;
+
+   private:
+    //! add processed data to the container
+    std::function<void(
+        const std::string&, const std::string&, INPAR::InputParameterContainer& container)>
+        insert_operation_;
+
+    //! string defining print out for this component
+    std::string print_string_;
   };
 
 
@@ -516,7 +568,6 @@ namespace INPUT
         Teuchos::rcp(new INPUT::StringComponent(name, defaultvalue, optional)));
   }
 
-
   /// add a separator followed by a single Boolean value
   ///
   /// The name on the input line becomes the name used to put the bool value into
@@ -530,11 +581,9 @@ namespace INPUT
     definition->AddComponent(Teuchos::rcp(new INPUT::BoolComponent(name, defaultvalue, optional)));
   }
 
-
   /// add a separator
   /// add additional separator to indicate end of line which is important, e.g., for the validity
   /// check of the std::vector<>
-  ///
   template <typename DefinitionType>
   inline void AddNamedSeparator(const Teuchos::RCP<DefinitionType>& definition,
       const std::string& name, const std::string& description, const bool optional = false)
@@ -543,6 +592,47 @@ namespace INPUT
         Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
   }
 
+  /*!
+   * @brief Add a separator followed by a post processed component
+   *
+   * This function adds two components to the @p definition:
+   *  1. A SeparatorComponent with a provided @p name, and a @p separator_description .
+   *  2. A ProcessedComponent with the same @p name , an @p process_operation function,
+   *     and a given @p print_string
+   *
+   * The @p process_operation function constructs an object of type @p T from the substring that
+   * is parsed from the input line definition for the ProcessedComponent. The @p print_string is
+   * used to print this ProcessedComponent.
+   *
+   * The example below serves to clarify the usage of this function. There are several other use
+   * cases as well, see e.g. the examples in the documentation of the ProcessedComponent.
+   *
+   * Assume you specify a file path in your input file and want to store not the actual file path
+   * string, but rather the content of the file as an std::vector<int>.
+   *
+   * You can use this function to add the following two components to the given definition:
+   * 1. add a separator "FILE"
+   * 2. add a postprocessed component with the name "FILE", a process_operation
+   * @code {.cpp}
+   * std::function<std::vector<int>(const std::string&)> process_operation =
+   *     [](const std::string& file) -> std::vector<int>
+   * {
+   *    // your logic to read the file and process its content into an integer vector
+   * }
+   * @endcode
+   * and a print_string "integer vector retrieved from the FILE".
+   */
+  template <typename T, typename DefinitionType>
+  inline void AddNamedProcessedComponent(const Teuchos::RCP<DefinitionType>& definition,
+      const std::string& name, const std::string& separator_description,
+      const std::function<T(const std::string&)>& process_operation,
+      const std::string& print_string, const bool optional = false)
+  {
+    definition->AddComponent(
+        Teuchos::rcp(new INPUT::SeparatorComponent(name, separator_description, optional)));
+    definition->AddComponent(Teuchos::rcp(
+        new INPUT::ProcessedComponent(name, process_operation, print_string, optional)));
+  }
 }  // namespace INPUT
 
 BACI_NAMESPACE_CLOSE
