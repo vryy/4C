@@ -42,7 +42,7 @@ namespace DRT::ELEMENTS
         CORE::FE::apply_celltype_sequence<DisplacementBasedLinearKinematicsSolidIntegrator,
             ImplementedSolidCellTypes>;
 
-    using FbarEvaluators = CORE::FE::apply_celltype_sequence<SolidEleCalcFbar,
+    using FbarEvaluators = CORE::FE::apply_celltype_sequence<FBarSolidIntegrator,
         CORE::FE::celltype_sequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
     using EASEvaluators = CORE::FE::BaseTypeList<
         SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>,
