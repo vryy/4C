@@ -117,12 +117,12 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
     std::cout << "\n Coupling variable for partitioned FSI scheme :  Force " << std::endl;
 
   // set switch for interface velocity correction
-  correct_boundary_velocities_ = (INPUT::IntegralValue<int>(
+  correct_boundary_velocities_ = (CORE::UTILS::IntegralValue<int>(
       globalproblem_->ImmersedMethodParams(), "CORRECT_BOUNDARY_VELOCITIES"));
 
   // set switch for output in every nln. iteration (for debugging)
-  output_evry_nlniter_ =
-      (INPUT::IntegralValue<int>(globalproblem_->ImmersedMethodParams(), "OUTPUT_EVRY_NLNITER"));
+  output_evry_nlniter_ = (CORE::UTILS::IntegralValue<int>(
+      globalproblem_->ImmersedMethodParams(), "OUTPUT_EVRY_NLNITER"));
 
   // print acceleration method
   if (globalproblem_->FSIDynamicParams().get<std::string>("COUPALGO") ==

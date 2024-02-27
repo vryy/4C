@@ -230,7 +230,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
-      INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   SetDefaultParameters(fsidyn, NOXParameterList());
 
@@ -268,7 +268,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // ---------------------------------------------------------------------------
 
   // enable debugging
-  if (INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
+  if (CORE::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
   {
     pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
   }
@@ -283,7 +283,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   if (restart)
   {
     const bool restartfrompartfsi =
-        INPUT::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+        CORE::UTILS::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
       Teuchos::RCP<Epetra_Vector> lambdafullfluid =
@@ -812,7 +812,7 @@ void FSI::MonolithicStructureSplit::ScaleSystem(
 {
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -864,7 +864,7 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(
 {
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1284,7 +1284,8 @@ void FSI::MonolithicStructureSplit::Update()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicStructureSplit::ReadRestart(int step)
 {
-  const bool restartfrompartfsi = INPUT::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+  const bool restartfrompartfsi =
+      CORE::UTILS::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
 
   // read Lagrange multiplier
   if (not restartfrompartfsi)  // standard restart

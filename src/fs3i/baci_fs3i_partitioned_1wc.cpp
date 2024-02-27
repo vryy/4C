@@ -58,7 +58,7 @@ void FS3I::PartFS3I_1WC::Timeloop()
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
   if (GLOBAL::Problem::Instance()->Restart() and
-      INPUT::IntegralValue<int>(
+      CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
     scatravec_[0]->ScaTraField()->PrepareFirstTimeStep();
@@ -157,7 +157,7 @@ bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
 {
   const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
   INPAR::SCATRA::SolverType scatra_solvtype =
-      INPUT::IntegralValue<INPAR::SCATRA::SolverType>(fs3idyn, "SCATRA_SOLVERTYPE");
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::SolverType>(fs3idyn, "SCATRA_SOLVERTYPE");
 
   double conresnorm(0.0);
   scatrarhs_->Norm2(&conresnorm);

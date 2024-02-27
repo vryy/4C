@@ -15,9 +15,9 @@
 #include "baci_fsi_debugwriter.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io_control.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_linear_solver_preconditioner_linalg.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -46,8 +46,8 @@ FSI::ConstrOverlappingBlockMatrix::ConstrOverlappingBlockMatrix(
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   alpha_ = fsidyn.sublist("CONSTRAINT").get<double>("ALPHA");
   simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
-  prec_ =
-      INPUT::IntegralValue<INPAR::FSI::PrecConstr>(fsidyn.sublist("CONSTRAINT"), "PRECONDITIONER");
+  prec_ = CORE::UTILS::IntegralValue<INPAR::FSI::PrecConstr>(
+      fsidyn.sublist("CONSTRAINT"), "PRECONDITIONER");
 }
 
 
@@ -404,7 +404,7 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
     interconA->Scale(-1.0);
 
     Teuchos::ParameterList constrsolvparams;
-    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+    CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
         "SOLVER", INPAR::SOLVER::SolverType::umfpack, constrsolvparams);
     Teuchos::RCP<Epetra_Vector> interconsol =
         Teuchos::rcp(new Epetra_Vector(ConStructOp.RangeMap()));

@@ -57,7 +57,7 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(DRT::Discretization& dis
   // Sanity check for writing output for each interface
   {
     const bool writeInterfaceOutput =
-        INPUT::IntegralValue<bool>(GetStrategy().Params(), "OUTPUT_INTERFACES");
+        CORE::UTILS::IntegralValue<bool>(GetStrategy().Params(), "OUTPUT_INTERFACES");
 
     if (writeInterfaceOutput && HaveContact() && ContactManager()->GetStrategy().Friction())
       dserror(
@@ -128,7 +128,7 @@ void CONTACT::MeshtyingContactBridge::PostprocessQuantitiesPerInterface(
 {
   // This is an optional feature, so we check if it has been enabled in the input file
   const bool writeInterfaceOutput =
-      INPUT::IntegralValue<bool>(GetStrategy().Params(), "OUTPUT_INTERFACES");
+      CORE::UTILS::IntegralValue<bool>(GetStrategy().Params(), "OUTPUT_INTERFACES");
   if (writeInterfaceOutput)
   {
     // contact

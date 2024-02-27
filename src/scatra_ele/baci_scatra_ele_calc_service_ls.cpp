@@ -91,7 +91,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
       SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const INPAR::SCATRA::CalcError errortype =
-      INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+      CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
     case INPAR::SCATRA::calcerror_initial_field:

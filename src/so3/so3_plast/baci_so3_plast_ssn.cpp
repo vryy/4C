@@ -15,12 +15,12 @@
 #include "baci_global_data.hpp"
 #include "baci_inpar_tsi.hpp"
 #include "baci_io_linedefinition.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_mat_plasticelasthyper.hpp"
 #include "baci_so3_line.hpp"
 #include "baci_so3_surface.hpp"
 #include "baci_thermo_ele_impl_utils.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -660,7 +660,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   dDp_inc_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
 
   Teuchos::ParameterList plparams = GLOBAL::Problem::Instance()->SemiSmoothPlastParams();
-  DRT::UTILS::AddEnumClassToParameterList(
+  CORE::UTILS::AddEnumClassToParameterList(
       "GLOBAL::ProblemType", GLOBAL::Problem::Instance()->GetProblemType(), plparams);
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
@@ -786,7 +786,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
       dserror("so3_ssn_plast elements only with PlasticElastHyper material");
 
     // get dissipation mode
-    auto mode = INPUT::IntegralValue<INPAR::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
+    auto mode =
+        CORE::UTILS::IntegralValue<INPAR::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
 
     // prepare material for tsi
     plmat->SetupTSI(numgpt_, numdofperelement_, (eastype_ != soh8p_easnone), mode);

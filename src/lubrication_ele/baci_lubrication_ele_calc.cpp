@@ -1221,7 +1221,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(DRT::El
   if (SetupCalc(ele, discretization) == -1) return 0;
 
   // check for the action parameter
-  const LUBRICATION::Action action = INPUT::get<LUBRICATION::Action>(params, "action");
+  const LUBRICATION::Action action = CORE::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action");
 
   // evaluate action
   EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -1298,7 +1298,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalErrorComparedToAnal
     const DRT::Element* ele, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& errors)
 {
-  if (INPUT::get<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
+  if (CORE::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
     dserror("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
@@ -1311,7 +1311,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalErrorComparedToAnal
       LUBRICATION::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const INPAR::LUBRICATION::CalcError errortype =
-      INPUT::get<INPAR::LUBRICATION::CalcError>(params, "calcerrorflag");
+      CORE::UTILS::GetAsEnum<INPAR::LUBRICATION::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
     case INPAR::LUBRICATION::calcerror_byfunction:

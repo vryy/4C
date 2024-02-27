@@ -318,7 +318,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   const GLOBAL::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
 
   INPAR::CONTACT::SolvingStrategy stype =
-      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams, "STRATEGY");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams, "STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
   {
     // finally we should use another criteria to decide which strategy
@@ -400,37 +400,37 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_penalty &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps <= 0, must be greater than 0");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps <= 0, must be greater than 0");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       meshtying.get<int>("UZAWAMAXSTEPS") < 2)
     dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       meshtying.get<double>("UZAWACONSTRTOL") <= 0.0)
     dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
-  if (onlymeshtying && INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(meshtying, "FRICTION") !=
-                           INPAR::CONTACT::friction_none)
+  if (onlymeshtying && CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(
+                           meshtying, "FRICTION") != INPAR::CONTACT::friction_none)
     dserror("Friction law supplied for mortar meshtying");
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_lagmult &&
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
           INPAR::MORTAR::shape_standard &&
-      (INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") ==
+      (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") ==
               INPAR::CONTACT::system_condensed ||
-          INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") ==
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") ==
               INPAR::CONTACT::system_condensed_lagmult))
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
@@ -445,42 +445,42 @@ bool CONTACT::MtManager::ReadAndCheckInput(
     dserror(
         "ERROR: Minimum number of elements per processor for parallel redistribution must be >= 0");
 
-  if (INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
+  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
           INPAR::MORTAR::consistent_none &&
-      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
           INPAR::CONTACT::solution_lagmult &&
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
           INPAR::MORTAR::shape_standard)
     dserror(
         "ERROR: Consistent dual shape functions in boundary elements only for Lagrange multiplier "
         "strategy.");
 
-  if (INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
+  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
           INPAR::MORTAR::consistent_none &&
-      INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") ==
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") ==
           INPAR::MORTAR::inttype_elements &&
-      (INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+      (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
               INPAR::MORTAR::shape_dual ||
-          INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+          CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
               INPAR::MORTAR::shape_petrovgalerkin))
 
     // *********************************************************************
     // not (yet) implemented combinations
     // *********************************************************************
-    if (INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true && spatialDim == 3)
+    if (CORE::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true && spatialDim == 3)
       dserror("Crosspoints / edge node modification not yet implemented for 3D");
 
-  if (INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
-      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
+  if (CORE::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
           INPAR::MORTAR::lagmult_lin)
     dserror("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
-  if (INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
+  if (CORE::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     dserror("Crosspoints and parallel redistribution not yet compatible");
 
-  if (INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
           INPAR::MORTAR::shape_petrovgalerkin and
       onlymeshtying)
     dserror("Petrov-Galerkin approach makes no sense for meshtying");
@@ -488,9 +488,9 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
-  if (INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
+  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
           INPAR::MORTAR::lagmult_pwlin &&
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
           INPAR::MORTAR::shape_dual)
     dserror(
         "ERROR: No pwlin approach (for LM) implemented for quadratic meshtying with DUAL shape "
@@ -499,7 +499,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // *********************************************************************
   // element-based vs. segment-based mortar integration
   // *********************************************************************
-  INPAR::MORTAR::IntType inttype = INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
+  INPAR::MORTAR::IntType inttype =
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
 
   if (inttype == INPAR::MORTAR::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
     dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
@@ -571,9 +572,9 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   // *********************************************************************
   if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
           problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
-      (INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+      (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
               INPAR::MORTAR::shape_dual &&
-          INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+          CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
               INPAR::MORTAR::shape_petrovgalerkin))
     dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
@@ -588,13 +589,13 @@ bool CONTACT::MtManager::ReadAndCheckInput(
 
   if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
           problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
-      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
           INPAR::CONTACT::solution_lagmult)
     dserror("POROCONTACT: Use Lagrangean Strategy for poro meshtying!");
 
   if ((problemtype == GLOBAL::ProblemType::poroelast || problemtype == GLOBAL::ProblemType::fpsi ||
           problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
-      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") !=
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") !=
           INPAR::CONTACT::system_condensed_lagmult)
     dserror("POROCONTACT: Just lagrange multiplier should be condensed for poro meshtying!");
 
@@ -603,7 +604,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(
       (spatialDim != 3) && (spatialDim != 2))
   {
     const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
-    if (INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
+    if (CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
       dserror("POROCONTACT: PoroMeshtying with no penetration just tested for 3d (and 2d)!");
   }
 

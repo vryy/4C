@@ -36,9 +36,9 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
       ndsporofluid_scatra_(-1),
       timertimestep_("PoroMultiPhaseScaTraBase", true),
       dttimestep_(0.0),
-      divcontype_(INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::DivContAct>(
+      divcontype_(CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASESCATRA::DivContAct>(
           globaltimeparams, "DIVERCONT")),
-      artery_coupl_(INPUT::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
+      artery_coupl_(CORE::UTILS::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
 {
 }
 
@@ -67,9 +67,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   // -------------------------------------------------------------------
   // first of all check for possible couplings
   INPAR::POROMULTIPHASE::SolutionSchemeOverFields solschemeporo =
-      INPUT::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(poroparams, "COUPALGO");
+      CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(
+          poroparams, "COUPALGO");
   INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields solschemescatraporo =
-      INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields>(
+      CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields>(
           algoparams, "COUPALGO");
 
   // partitioned -- monolithic not possible --> error
@@ -96,8 +97,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
         "                                    monolithic  -- monolithic\n"
         "YOUR CHOICE                       : monolithic  -- partitioned_sequential");
 
-  fluxreconmethod_ = INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
-      fluidparams, "FLUX_PROJ_METHOD");
+  fluxreconmethod_ =
+      CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
+          fluidparams, "FLUX_PROJ_METHOD");
 
   if (solschemescatraporo ==
           INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_monolithic &&

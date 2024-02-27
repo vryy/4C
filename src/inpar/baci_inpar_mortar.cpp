@@ -12,8 +12,8 @@
 
 #include "baci_inpar_mortar.hpp"
 
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -48,10 +48,10 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<std::string>("BottomUp", "TopDown"),
       tuple<int>(binarytree_bottom_up, binarytree_top_down), &mortar);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "SEARCH_PARAM", 0.3, "Radius / Bounding volume inflation for contact search", &mortar);
 
-  BoolParameter("SEARCH_USE_AUX_POS", "Yes",
+  CORE::UTILS::BoolParameter("SEARCH_USE_AUX_POS", "Yes",
       "If chosen auxiliary position is used for computing dops", &mortar);
 
   setStringToIntegralParameter<int>("LM_QUAD", "undefined",
@@ -62,7 +62,7 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           lagmult_lin, lagmult_lin, lagmult_const),
       &mortar);
 
-  BoolParameter("CROSSPOINTS", "No",
+  CORE::UTILS::BoolParameter("CROSSPOINTS", "No",
       "If chosen, multipliers are removed from crosspoints / edge nodes", &mortar);
 
   setStringToIntegralParameter<int>("LM_DUAL_CONSISTENT", "boundary",
@@ -92,7 +92,8 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           inttype_elements_BS, inttype_elements_BS),
       &mortar);
 
-  IntParameter("NUMGP_PER_DIM", 0, "Number of employed integration points per dimension", &mortar);
+  CORE::UTILS::IntParameter(
+      "NUMGP_PER_DIM", 0, "Number of employed integration points per dimension", &mortar);
 
   setStringToIntegralParameter<int>("TRIANGULATION", "Delaunay",
       "Type of triangulation for segment-based integration",
@@ -101,10 +102,10 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           triangulation_center),
       &mortar);
 
-  BoolParameter("RESTART_WITH_MESHTYING", "No",
+  CORE::UTILS::BoolParameter("RESTART_WITH_MESHTYING", "No",
       "Must be chosen if a non-meshtying simulation is to be restarted with meshtying", &mortar);
 
-  BoolParameter("OUTPUT_INTERFACES", "No",
+  CORE::UTILS::BoolParameter("OUTPUT_INTERFACES", "No",
       "Write output for each mortar interface separately.\nThis is an additional feature, purely "
       "to enhance visualization. Currently, this is limited to solid meshtying and contact w/o "
       "friction.",
@@ -115,7 +116,7 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   Teuchos::ParameterList& parallelRedist = mortar.sublist("PARALLEL REDISTRIBUTION", false,
       "Parameters to control parallel redistribution of mortar interfaces");
 
-  BoolParameter("EXPLOIT_PROXIMITY", "Yes",
+  CORE::UTILS::BoolParameter("EXPLOIT_PROXIMITY", "Yes",
       "Exploit information on geometric proximity to split slave interface into close and "
       "non-close parts and redistribute them independently. [Contact only]",
       &parallelRedist);
@@ -127,20 +128,20 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           ExtendGhosting::roundrobin, ExtendGhosting::binning),
       &parallelRedist);
 
-  DoubleParameter("IMBALANCE_TOL", 1.1,
+  CORE::UTILS::DoubleParameter("IMBALANCE_TOL", 1.1,
       "Max. relative imbalance of subdomain size after redistribution", &parallelRedist);
 
-  DoubleParameter("MAX_BALANCE_EVAL_TIME", 2.0,
+  CORE::UTILS::DoubleParameter("MAX_BALANCE_EVAL_TIME", 2.0,
       "Max-to-min ratio of contact evalation time per processor to triggger parallel "
       "redistribution",
       &parallelRedist);
 
-  DoubleParameter("MAX_BALANCE_SLAVE_ELES", 0.5,
+  CORE::UTILS::DoubleParameter("MAX_BALANCE_SLAVE_ELES", 0.5,
       "Max-to-min ratio of mortar slave elements per processor to triggger parallel "
       "redistribution",
       &parallelRedist);
 
-  IntParameter("MIN_ELEPROC", 0,
+  CORE::UTILS::IntParameter("MIN_ELEPROC", 0,
       "Minimum no. of elements per processor for parallel redistribution", &parallelRedist);
 
   setStringToIntegralParameter<ParallelRedist>("PARALLEL_REDIST", "Static",
@@ -152,7 +153,7 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           ParallelRedist::redist_dynamic),
       &parallelRedist);
 
-  BoolParameter("PRINT_DISTRIBUTION", "Yes",
+  CORE::UTILS::BoolParameter("PRINT_DISTRIBUTION", "Yes",
       "Print details of the parallel distribution, i.e. number of nodes/elements for each rank.",
       &parallelRedist);
 }

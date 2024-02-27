@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 #include "baci_inpar_cardiac_monodomain.hpp"
 
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -24,12 +24,12 @@ void INPAR::EP::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
 
   // Parameters for reaction-diffusion systems (for example cardiac electrophysiology)
-  IntParameter("WRITEMAXINTSTATE", 0,
+  CORE::UTILS::IntParameter("WRITEMAXINTSTATE", 0,
       "number of maximal internal state variables to be postprocessed", &epcontrol);
-  IntParameter("WRITEMAXIONICCURRENTS", 0, "number of maximal ionic currents to be postprocessed",
-      &epcontrol);
+  CORE::UTILS::IntParameter("WRITEMAXIONICCURRENTS", 0,
+      "number of maximal ionic currents to be postprocessed", &epcontrol);
 
-  DoubleParameter("ACTTHRES", 1.0,
+  CORE::UTILS::DoubleParameter("ACTTHRES", 1.0,
       "threshold for the potential for computing and postprocessing activation time ", &epcontrol);
 }
 

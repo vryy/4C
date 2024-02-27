@@ -14,10 +14,10 @@
 
 #include "baci_fluid_ele_action.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_scatra_ele_action.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -28,7 +28,7 @@ FLD::Boxfilter::Boxfilter(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::Par
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type")),
+      physicaltype_(CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type")),
       //  available control settings
       apply_dynamic_smagorinsky_(false),
       vreman_dynamic_(false),
@@ -941,7 +941,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
   // generate a parameterlist for communication and control
   Teuchos::ParameterList filterparams;
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_box_filter, filterparams);
 
   filterparams.set("thermpress", thermpress);

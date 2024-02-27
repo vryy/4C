@@ -17,7 +17,6 @@
 #include "baci_io_control.hpp"
 #include "baci_lib_assemblestrategy.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -25,6 +24,7 @@
 #include "baci_poroelast_scatra_utils.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_timint_implicit.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -51,7 +51,7 @@ POROELASTSCATRA::PoroScatraMono::PoroScatraMono(
 
   // some solver paramaters are red form the structure dynamic list (this is not the best way to do
   // it ...)
-  solveradapttol_ = (INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradapttol_ = (CORE::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
@@ -584,15 +584,16 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
   // Get the parameters for the Newton iteration
   itermax_ = poroscatradyn.get<int>("ITEMAX");
   itermin_ = poroscatradyn.get<int>("ITEMIN");
-  normtypeinc_ = INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_INC");
-  normtypeinc_ = INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_INC");
-  normtypefres_ = INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_RESF");
+  normtypeinc_ = CORE::UTILS::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_INC");
+  normtypeinc_ = CORE::UTILS::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_INC");
+  normtypefres_ =
+      CORE::UTILS::IntegralValue<INPAR::POROELAST::ConvNorm>(poroscatradyn, "NORM_RESF");
   combincfres_ =
-      INPUT::IntegralValue<INPAR::POROELAST::BinaryOp>(poroscatradyn, "NORMCOMBI_RESFINC");
+      CORE::UTILS::IntegralValue<INPAR::POROELAST::BinaryOp>(poroscatradyn, "NORMCOMBI_RESFINC");
   vectornormfres_ =
-      INPUT::IntegralValue<INPAR::POROELAST::VectorNorm>(poroscatradyn, "VECTORNORM_RESF");
+      CORE::UTILS::IntegralValue<INPAR::POROELAST::VectorNorm>(poroscatradyn, "VECTORNORM_RESF");
   vectornorminc_ =
-      INPUT::IntegralValue<INPAR::POROELAST::VectorNorm>(poroscatradyn, "VECTORNORM_INC");
+      CORE::UTILS::IntegralValue<INPAR::POROELAST::VectorNorm>(poroscatradyn, "VECTORNORM_INC");
 
   tolinc_ = poroscatradyn.get<double>("TOLINC_GLOBAL");
   tolfres_ = poroscatradyn.get<double>("TOLRES_GLOBAL");
@@ -1138,7 +1139,7 @@ void POROELASTSCATRA::PoroScatraMono::EvaluateODBlockMatScatra()
 
   k_sps_->Zero();
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, sparams_struct);
   // other parameters that might be needed by the elements
   sparams_struct.set("delta time", Dt());
@@ -1171,7 +1172,7 @@ void POROELASTSCATRA::PoroScatraMono::EvaluateODBlockMatScatra()
   // create the parameters for the discretization
   Teuchos::ParameterList sparams_fluid;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_fluid, sparams_fluid);
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", Dt());

@@ -14,8 +14,8 @@
 
 #include "baci_inpar.hpp"
 #include "baci_inpar_turbulence.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -42,11 +42,12 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &fdyn);
 
   // number of linear solver used for fluid problem
-  IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for fluid dynamics", &fdyn);
+  CORE::UTILS::IntParameter(
+      "LINEAR_SOLVER", -1, "number of linear solver used for fluid dynamics", &fdyn);
 
   // number of linear solver used for fluid problem (former fluid pressure solver for SIMPLER
   // preconditioning with fluid)
-  IntParameter("SIMPLER_SOLVER", -1,
+  CORE::UTILS::IntParameter("SIMPLER_SOLVER", -1,
       "number of linear solver used for fluid dynamics (ONLY NECESSARY FOR BlockGaussSeidel solver "
       "block within fluid mehstying case any more!!!!)",
       &fdyn);
@@ -60,7 +61,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // Set ML-solver number for smooting of residual-based calculated wallshearstress via plain
   // aggregation.
-  IntParameter("WSS_ML_AGR_SOLVER", -1,
+  CORE::UTILS::IntParameter("WSS_ML_AGR_SOLVER", -1,
       "Set ML-solver number for smoothing of residual-based calculated wallshearstress via plain "
       "aggregation.",
       &fdyn);
@@ -96,7 +97,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("compute L2 errors of increments (relative) and residuals (absolute)"),
       tuple<int>(fncc_L2), &fdyn);
 
-  BoolParameter("INCONSISTENT_RESIDUAL", "No",
+  CORE::UTILS::BoolParameter("INCONSISTENT_RESIDUAL", "No",
       "do not evaluate residual after solution has converged (->faster)", &fdyn);
 
   {
@@ -130,9 +131,11 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
         "INITIALFIELD", "zero_field", "Initial field for fluid problem", name, label, &fdyn);
   }
 
-  IntParameter("OSEENFIELDFUNCNO", -1, "function number of Oseen advective field", &fdyn);
+  CORE::UTILS::IntParameter(
+      "OSEENFIELDFUNCNO", -1, "function number of Oseen advective field", &fdyn);
 
-  BoolParameter("LIFTDRAG", "No", "Calculate lift and drag forces along specified boundary", &fdyn);
+  CORE::UTILS::BoolParameter(
+      "LIFTDRAG", "No", "Calculate lift and drag forces along specified boundary", &fdyn);
 
   setStringToIntegralParameter<int>("CONVFORM", "convective", "form of convective term",
       tuple<std::string>("convective", "conservative"), tuple<int>(0, 1), &fdyn);
@@ -152,7 +155,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "scheme for determination of gridvelocity from displacements",
       tuple<std::string>("BE", "BDF2", "OST"), tuple<int>(BE, BDF2, OST), &fdyn);
 
-  BoolParameter("ALLDOFCOUPLED", "Yes", "all dof (incl. pressure) are coupled", &fdyn);
+  CORE::UTILS::BoolParameter("ALLDOFCOUPLED", "Yes", "all dof (incl. pressure) are coupled", &fdyn);
 
   {
     Teuchos::Tuple<std::string, 16> name;
@@ -194,25 +197,25 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     setStringToIntegralParameter<int>(
         "CALCERROR", "no", "Flag to (de)activate error calculations", name, label, &fdyn);
   }
-  IntParameter("CALCERRORFUNCNO", -1, "Function for Error Calculation", &fdyn);
+  CORE::UTILS::IntParameter("CALCERRORFUNCNO", -1, "Function for Error Calculation", &fdyn);
 
-  IntParameter("CORRTERMFUNCNO", -1,
+  CORE::UTILS::IntParameter("CORRTERMFUNCNO", -1,
       "Function for calculation of the correction term for the weakly compressible problem", &fdyn);
 
-  IntParameter("BODYFORCEFUNCNO", -1,
+  CORE::UTILS::IntParameter("BODYFORCEFUNCNO", -1,
       "Function for calculation of the body force for the weakly compressible problem", &fdyn);
 
-  DoubleParameter("STAB_DEN_REF", 0.0,
+  CORE::UTILS::DoubleParameter("STAB_DEN_REF", 0.0,
       "Reference stabilization parameter for the density for the HDG weakly compressible "
       "formulation",
       &fdyn);
 
-  DoubleParameter("STAB_MOM_REF", 0.0,
+  CORE::UTILS::DoubleParameter("STAB_MOM_REF", 0.0,
       "Reference stabilization parameter for the momentum for the HDG weakly compressible "
       "formulation",
       &fdyn);
 
-  IntParameter("VARVISCFUNCNO", -1,
+  CORE::UTILS::IntParameter("VARVISCFUNCNO", -1,
       "Function for calculation of a variable viscosity for the weakly compressible problem",
       &fdyn);
 
@@ -231,52 +234,55 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
         name, label, &fdyn);
   }
 
-  DoubleParameter("REFMACH", 1.0, "Reference Mach number", &fdyn);
+  CORE::UTILS::DoubleParameter("REFMACH", 1.0, "Reference Mach number", &fdyn);
 
-  BoolParameter("SIMPLER", "no",
+  CORE::UTILS::BoolParameter("SIMPLER", "no",
       "Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!",
       &fdyn);
 
-  BoolParameter("ADAPTCONV", "No",
+  CORE::UTILS::BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution", &fdyn);
-  DoubleParameter("ADAPTCONV_BETTER", 0.1,
+  CORE::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &fdyn);
 
-  BoolParameter("INFNORMSCALING", "no", "Scale blocks of matrix with row infnorm?", &fdyn);
+  CORE::UTILS::BoolParameter(
+      "INFNORMSCALING", "no", "Scale blocks of matrix with row infnorm?", &fdyn);
 
-  BoolParameter("GMSH_OUTPUT", "No", "write output to gmsh files", &fdyn);
-  BoolParameter(
+  CORE::UTILS::BoolParameter("GMSH_OUTPUT", "No", "write output to gmsh files", &fdyn);
+  CORE::UTILS::BoolParameter(
       "COMPUTE_DIVU", "No", "Compute divergence of velocity field at the element center", &fdyn);
-  BoolParameter("COMPUTE_EKIN", "No",
+  CORE::UTILS::BoolParameter("COMPUTE_EKIN", "No",
       "Compute kinetic energy at the end of each time step and write it to file.", &fdyn);
-  BoolParameter("NEW_OST", "No",
+  CORE::UTILS::BoolParameter("NEW_OST", "No",
       "Solve the Navier-Stokes equation with the new One Step Theta algorithm",
       &fdyn);  // TODO: To be removed.
-  IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &fdyn);
-  IntParameter("RESTARTEVRY", 20, "Increment for writing restart", &fdyn);
-  IntParameter("NUMSTEP", 1, "Total number of Timesteps", &fdyn);
-  IntParameter("STEADYSTEP", -1, "steady state check every step", &fdyn);
-  IntParameter("NUMSTASTEPS", 0, "Number of Steps for Starting Scheme", &fdyn);
-  IntParameter("STARTFUNCNO", -1, "Function for Initial Starting Field", &fdyn);
-  IntParameter("ITEMAX", 10, "max. number of nonlin. iterations", &fdyn);
-  IntParameter("INITSTATITEMAX", 5,
+  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &fdyn);
+  CORE::UTILS::IntParameter("RESTARTEVRY", 20, "Increment for writing restart", &fdyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 1, "Total number of Timesteps", &fdyn);
+  CORE::UTILS::IntParameter("STEADYSTEP", -1, "steady state check every step", &fdyn);
+  CORE::UTILS::IntParameter("NUMSTASTEPS", 0, "Number of Steps for Starting Scheme", &fdyn);
+  CORE::UTILS::IntParameter("STARTFUNCNO", -1, "Function for Initial Starting Field", &fdyn);
+  CORE::UTILS::IntParameter("ITEMAX", 10, "max. number of nonlin. iterations", &fdyn);
+  CORE::UTILS::IntParameter("INITSTATITEMAX", 5,
       "max number of nonlinear iterations for initial stationary solution", &fdyn);
-  DoubleParameter("TIMESTEP", 0.01, "Time increment dt", &fdyn);
-  DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &fdyn);
-  DoubleParameter("ALPHA_M", 1.0, "Time integration factor", &fdyn);
-  DoubleParameter("ALPHA_F", 1.0, "Time integration factor", &fdyn);
-  DoubleParameter("GAMMA", 1.0, "Time integration factor", &fdyn);
-  DoubleParameter("THETA", 0.66, "Time integration factor", &fdyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.01, "Time increment dt", &fdyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &fdyn);
+  CORE::UTILS::DoubleParameter("ALPHA_M", 1.0, "Time integration factor", &fdyn);
+  CORE::UTILS::DoubleParameter("ALPHA_F", 1.0, "Time integration factor", &fdyn);
+  CORE::UTILS::DoubleParameter("GAMMA", 1.0, "Time integration factor", &fdyn);
+  CORE::UTILS::DoubleParameter("THETA", 0.66, "Time integration factor", &fdyn);
 
-  DoubleParameter("START_THETA", 1.0, "Time integration factor for starting scheme", &fdyn);
+  CORE::UTILS::DoubleParameter(
+      "START_THETA", 1.0, "Time integration factor for starting scheme", &fdyn);
 
   setStringToIntegralParameter<int>("STRONG_REDD_3D_COUPLING_TYPE", "no",
       "Flag to (de)activate potential Strong 3D redD coupling", tuple<std::string>("no", "yes"),
       tuple<std::string>("Weak coupling", "Strong coupling"), tuple<int>(0, 1), &fdyn);
 
-  IntParameter("VELGRAD_PROJ_SOLVER", -1, "Number of linear solver used for L2 projection", &fdyn);
+  CORE::UTILS::IntParameter(
+      "VELGRAD_PROJ_SOLVER", -1, "Number of linear solver used for L2 projection", &fdyn);
 
   setStringToIntegralParameter<int>("VELGRAD_PROJ_METHOD", "none",
       "Flag to (de)activate gradient reconstruction.",
@@ -290,23 +296,23 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           ),
       &fdyn);
 
-  BoolParameter("OFF_PROC_ASSEMBLY", "No",
+  CORE::UTILS::BoolParameter("OFF_PROC_ASSEMBLY", "No",
       "Do not evaluate ghosted elements but communicate them --> faster if element call is "
       "expensive",
       &fdyn);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_nln = fdyn.sublist("NONLINEAR SOLVER TOLERANCES", false, "");
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "TOL_VEL_RES", 1e-6, "Tolerance for convergence check of velocity residual", &fdyn_nln);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "TOL_VEL_INC", 1e-6, "Tolerance for convergence check of velocity increment", &fdyn_nln);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "TOL_PRES_RES", 1e-6, "Tolerance for convergence check of pressure residual", &fdyn_nln);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "TOL_PRES_INC", 1e-6, "Tolerance for convergence check of pressure increment", &fdyn_nln);
 
   /*----------------------------------------------------------------------*/
@@ -326,11 +332,11 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           stabtype_nostab, stabtype_residualbased, stabtype_edgebased, stabtype_pressureprojection),
       &fdyn_stab);
 
-  BoolParameter("INCONSISTENT", "No",
+  CORE::UTILS::BoolParameter("INCONSISTENT", "No",
       "residual based without second derivatives (i.e. only consistent for tau->0, but faster)",
       &fdyn_stab);
 
-  BoolParameter("Reconstruct_Sec_Der", "No",
+  CORE::UTILS::BoolParameter("Reconstruct_Sec_Der", "No",
       "residual computed with a reconstruction of the second derivatives via projection or "
       "superconvergent patch recovery",
       &fdyn_stab);
@@ -352,9 +358,9 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Use transient term including a linearisation of 1/tau"),
       tuple<int>(inertia_stab_drop, inertia_stab_keep, inertia_stab_keep_complete), &fdyn_stab);
 
-  BoolParameter("PSPG", "Yes", "Flag to (de)activate PSPG stabilization.", &fdyn_stab);
-  BoolParameter("SUPG", "Yes", "Flag to (de)activate SUPG stabilization.", &fdyn_stab);
-  BoolParameter("GRAD_DIV", "Yes", "Flag to (de)activate grad-div term.", &fdyn_stab);
+  CORE::UTILS::BoolParameter("PSPG", "Yes", "Flag to (de)activate PSPG stabilization.", &fdyn_stab);
+  CORE::UTILS::BoolParameter("SUPG", "Yes", "Flag to (de)activate SUPG stabilization.", &fdyn_stab);
+  CORE::UTILS::BoolParameter("GRAD_DIV", "Yes", "Flag to (de)activate grad-div term.", &fdyn_stab);
 
   setStringToIntegralParameter<int>("VSTAB", "no_vstab",
       "Flag to (de)activate viscous term in residual-based stabilization.",
@@ -474,7 +480,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // these parameters active additional terms in loma continuity equation
   // which might be identified as SUPG-/cross- and Reynolds-stress term
-  BoolParameter("LOMA_CONTI_SUPG", "No",
+  CORE::UTILS::BoolParameter("LOMA_CONTI_SUPG", "No",
       "Flag to (de)activate SUPG stabilization in loma continuity equation.", &fdyn_stab);
 
   setStringToIntegralParameter<int>("LOMA_CONTI_CROSS_STRESS", "no_cross",
@@ -575,7 +581,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   //! special least-squares condition for pseudo 2D examples where pressure level is determined via
   //! Krylov-projection
-  BoolParameter("PRES_KRYLOV_2Dz", "No",
+  CORE::UTILS::BoolParameter("PRES_KRYLOV_2Dz", "No",
       "residual based without second derivatives (i.e. only consistent for tau->0, but faster)",
       &fdyn_edge_based_stab);
 
@@ -636,8 +642,9 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_porostab = fdyn.sublist("POROUS-FLOW STABILIZATION", false, "");
 
-  BoolParameter("STAB_BIOT", "No", "Flag to (de)activate BIOT stabilization.", &fdyn_porostab);
-  DoubleParameter("STAB_BIOT_SCALING", 1.0,
+  CORE::UTILS::BoolParameter(
+      "STAB_BIOT", "No", "Flag to (de)activate BIOT stabilization.", &fdyn_porostab);
+  CORE::UTILS::DoubleParameter("STAB_BIOT_SCALING", 1.0,
       "Scaling factor for stabilization parameter for biot stabilization of porous flow.",
       &fdyn_porostab);
 
@@ -652,11 +659,11 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Use an edge-based stabilization, especially for XFEM"),
       tuple<int>(stabtype_nostab, stabtype_residualbased, stabtype_edgebased), &fdyn_porostab);
 
-  BoolParameter("INCONSISTENT", "No",
+  CORE::UTILS::BoolParameter("INCONSISTENT", "No",
       "residual based without second derivatives (i.e. only consistent for tau->0, but faster)",
       &fdyn_porostab);
 
-  BoolParameter("Reconstruct_Sec_Der", "No",
+  CORE::UTILS::BoolParameter("Reconstruct_Sec_Der", "No",
       "residual computed with a reconstruction of the second derivatives via projection or "
       "superconvergent patch recovery",
       &fdyn_porostab);
@@ -678,9 +685,12 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Use transient term including a linearisation of 1/tau"),
       tuple<int>(inertia_stab_drop, inertia_stab_keep, inertia_stab_keep_complete), &fdyn_porostab);
 
-  BoolParameter("PSPG", "Yes", "Flag to (de)activate PSPG stabilization.", &fdyn_porostab);
-  BoolParameter("SUPG", "Yes", "Flag to (de)activate SUPG stabilization.", &fdyn_porostab);
-  BoolParameter("GRAD_DIV", "Yes", "Flag to (de)activate grad-div term.", &fdyn_porostab);
+  CORE::UTILS::BoolParameter(
+      "PSPG", "Yes", "Flag to (de)activate PSPG stabilization.", &fdyn_porostab);
+  CORE::UTILS::BoolParameter(
+      "SUPG", "Yes", "Flag to (de)activate SUPG stabilization.", &fdyn_porostab);
+  CORE::UTILS::BoolParameter(
+      "GRAD_DIV", "Yes", "Flag to (de)activate grad-div term.", &fdyn_porostab);
 
   setStringToIntegralParameter<int>("VSTAB", "no_vstab",
       "Flag to (de)activate viscous term in residual-based stabilization.",
@@ -778,7 +788,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // these parameters active additional terms in loma continuity equation
   // which might be identified as SUPG-/cross- and Reynolds-stress term
-  BoolParameter("LOMA_CONTI_SUPG", "No",
+  CORE::UTILS::BoolParameter("LOMA_CONTI_SUPG", "No",
       "Flag to (de)activate SUPG stabilization in loma continuity equation.", &fdyn_porostab);
 
   setStringToIntegralParameter<int>("LOMA_CONTI_CROSS_STRESS", "no_cross",
@@ -848,19 +858,21 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // turbulence specific output and statistics
   //----------------------------------------------------------------------
 
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "SAMPLING_START", 10000000, "Time step after when sampling shall be started", &fdyn_turbu);
-  IntParameter("SAMPLING_STOP", 1, "Time step when sampling shall be stopped", &fdyn_turbu);
-  IntParameter("DUMPING_PERIOD", 1,
+  CORE::UTILS::IntParameter(
+      "SAMPLING_STOP", 1, "Time step when sampling shall be stopped", &fdyn_turbu);
+  CORE::UTILS::IntParameter("DUMPING_PERIOD", 1,
       "Period of time steps after which statistical data shall be dumped", &fdyn_turbu);
 
-  BoolParameter("SUBGRID_DISSIPATION", "No",
+  CORE::UTILS::BoolParameter("SUBGRID_DISSIPATION", "No",
       "Flag to (de)activate estimation of subgrid-scale dissipation (only for seclected flows).",
       &fdyn_turbu);
 
-  BoolParameter("OUTMEAN", "No", "Flag to (de)activate averaged paraview output", &fdyn_turbu);
+  CORE::UTILS::BoolParameter(
+      "OUTMEAN", "No", "Flag to (de)activate averaged paraview output", &fdyn_turbu);
 
-  BoolParameter("TURBMODEL_LS", "Yes",
+  CORE::UTILS::BoolParameter("TURBMODEL_LS", "Yes",
       "Flag to (de)activate turbulence model in level-set equation", &fdyn_turbu);
 
   //----------------------------------------------------------------------
@@ -1001,7 +1013,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // CHANNEL FLOW
   //--------------
 
-  DoubleParameter("CHAN_AMPL_INIT_DIST", 0.1,
+  CORE::UTILS::DoubleParameter("CHAN_AMPL_INIT_DIST", 0.1,
       "Max. amplitude of the random disturbance in percent of the initial value in mean flow "
       "direction.",
       &fdyn_turbu);
@@ -1011,23 +1023,23 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("linear_compensation_from_intermediate_spectrum", "fixed_power_input"),
       tuple<int>(linear_compensation_from_intermediate_spectrum, fixed_power_input), &fdyn_turbu);
 
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "CHA_NUMSUBDIVISIONS", 5, "Number of homogenious sampling planes in element", &fdyn_turbu);
 
   // HIT
   //--------------
 
-  IntParameter("FORCING_TIME_STEPS", 0,
+  CORE::UTILS::IntParameter("FORCING_TIME_STEPS", 0,
       "Number of time steps during which forcing is applied. Decaying homogeneous isotropic "
       "turbulence only.",
       &fdyn_turbu);
 
-  DoubleParameter("THRESHOLD_WAVENUMBER", 0.0,
+  CORE::UTILS::DoubleParameter("THRESHOLD_WAVENUMBER", 0.0,
       "Forcing is only applied to wave numbers lower or equal than the given threshold wave "
       "number.",
       &fdyn_turbu);
 
-  DoubleParameter("POWER_INPUT", 0.0, "power of forcing", &fdyn_turbu);
+  CORE::UTILS::DoubleParameter("POWER_INPUT", 0.0, "power of forcing", &fdyn_turbu);
 
   setStringToIntegralParameter<int>("SCALAR_FORCING", "no", "Define forcing for scalar field.",
       tuple<std::string>("no", "isotropic", "mean_scalar_gradient"),
@@ -1036,30 +1048,31 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Force scalar field by imposed mean-scalar gradient."),
       tuple<int>(0, 1, 2), &fdyn_turbu);
 
-  DoubleParameter("MEAN_SCALAR_GRADIENT", 0.0,
+  CORE::UTILS::DoubleParameter("MEAN_SCALAR_GRADIENT", 0.0,
       "Value of imposed mean-scalar gradient to force scalar field.", &fdyn_turbu);
 
   // filtering with xfem
   //--------------
 
-  BoolParameter("EXCLUDE_XFEM", "No",
+  CORE::UTILS::BoolParameter("EXCLUDE_XFEM", "No",
       "Flag to (de)activate XFEM dofs in calculation of fine-scale velocity.", &fdyn_turbu);
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for Smagorinsky model
   Teuchos::ParameterList& fdyn_turbsgv = fdyn.sublist("SUBGRID VISCOSITY", false, "");
 
-  DoubleParameter("C_SMAGORINSKY", 0.0,
+  CORE::UTILS::DoubleParameter("C_SMAGORINSKY", 0.0,
       "Constant for the Smagorinsky model. Something between 0.1 to 0.24. Vreman constant if the "
       "constant vreman model is applied (something between 0.07 and 0.01).",
       &fdyn_turbsgv);
-  DoubleParameter("C_YOSHIZAWA", -1.0,
+  CORE::UTILS::DoubleParameter("C_YOSHIZAWA", -1.0,
       "Constant for the compressible Smagorinsky model: isotropic part of subgrid-stress tensor. "
       "About 0.09 or 0.0066. Ci will not be squared!",
       &fdyn_turbsgv);
-  BoolParameter("C_SMAGORINSKY_AVERAGED", "No",
+  CORE::UTILS::BoolParameter("C_SMAGORINSKY_AVERAGED", "No",
       "Flag to (de)activate averaged Smagorinksy constant", &fdyn_turbsgv);
-  BoolParameter("C_INCLUDE_CI", "No", "Flag to (de)inclusion of Yoshizawa model", &fdyn_turbsgv);
+  CORE::UTILS::BoolParameter(
+      "C_INCLUDE_CI", "No", "Flag to (de)inclusion of Yoshizawa model", &fdyn_turbsgv);
   // remark: following Moin et al. 1991, the extension of the dynamic Smagorinsky model to
   // compressibel flow
   //        also contains a model for the isotropic part of the subgrid-stress tensor according to
@@ -1071,12 +1084,12 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   //           if C_INCLUDE_CI==true and C_YOSHIZAWA<0.0 then C_YOSHIZAWA is determined dynamically
   //        else all values are taken from input
 
-  DoubleParameter("CHANNEL_L_TAU", 0.0,
+  CORE::UTILS::DoubleParameter("CHANNEL_L_TAU", 0.0,
       "Used for normalisation of the wall normal distance in the Van \nDriest Damping function. "
       "May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",
       &fdyn_turbsgv);
 
-  DoubleParameter("C_TURBPRANDTL", 1.0,
+  CORE::UTILS::DoubleParameter("C_TURBPRANDTL", 1.0,
       "(Constant) turbulent Prandtl number for the Smagorinsky model in scalar transport.",
       &fdyn_turbsgv);
 
@@ -1090,7 +1103,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // sublist with additional input parameters for Smagorinsky model
   Teuchos::ParameterList& fdyn_wallmodel = fdyn.sublist("WALL MODEL", false, "");
 
-  BoolParameter("X_WALL", "No", "Flag to switch on the xwall model", &fdyn_wallmodel);
+  CORE::UTILS::BoolParameter("X_WALL", "No", "Flag to switch on the xwall model", &fdyn_wallmodel);
 
   setStringToIntegralParameter<int>("Tauw_Type", "constant",
       "Methods for calculating/updating the wall shear stress necessary for Spalding's law.",
@@ -1107,7 +1120,8 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Gradient via shape functions and nodal values.", "First gradient, then residual."),
       tuple<int>(0, 1, 3), &fdyn_wallmodel);
 
-  IntParameter("Switch_Step", -1, "Switch from gradient to residual based tauw.", &fdyn_wallmodel);
+  CORE::UTILS::IntParameter(
+      "Switch_Step", -1, "Switch from gradient to residual based tauw.", &fdyn_wallmodel);
 
   setStringToIntegralParameter<int>("Projection", "No",
       "Flag to switch projection of the enriched dofs after updating tauw, alternatively with or "
@@ -1117,13 +1131,13 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "L2 projection with continuity constraint."),
       tuple<int>(0, 1, 2), &fdyn_wallmodel);
 
-  DoubleParameter("C_Tauw", 1.0, "Constant wall shear stress for Spalding's law, if applicable",
-      &fdyn_wallmodel);
+  CORE::UTILS::DoubleParameter("C_Tauw", 1.0,
+      "Constant wall shear stress for Spalding's law, if applicable", &fdyn_wallmodel);
 
-  DoubleParameter("Min_Tauw", 2.0e-9,
+  CORE::UTILS::DoubleParameter("Min_Tauw", 2.0e-9,
       "Minimum wall shear stress preventing system to become singular", &fdyn_wallmodel);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "Inc_Tauw", 1.0, "Increment of Tauw of full step, between 0.0 and 1.0", &fdyn_wallmodel);
 
   setStringToIntegralParameter<int>("Blending_Type", "none",
@@ -1133,22 +1147,26 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "interface"),
       tuple<int>(0, 1), &fdyn_wallmodel);
 
-  IntParameter("GP_Wall_Normal", 3, "Gauss points in wall normal direction", &fdyn_wallmodel);
-  IntParameter("GP_Wall_Normal_Off_Wall", 3,
+  CORE::UTILS::IntParameter(
+      "GP_Wall_Normal", 3, "Gauss points in wall normal direction", &fdyn_wallmodel);
+  CORE::UTILS::IntParameter("GP_Wall_Normal_Off_Wall", 3,
       "Gauss points in wall normal direction, off-wall elements", &fdyn_wallmodel);
-  IntParameter("GP_Wall_Parallel", 3, "Gauss points in wall parallel direction", &fdyn_wallmodel);
+  CORE::UTILS::IntParameter(
+      "GP_Wall_Parallel", 3, "Gauss points in wall parallel direction", &fdyn_wallmodel);
 
-  BoolParameter("Treat_Tauw_on_Dirichlet_Inflow", "No",
+  CORE::UTILS::BoolParameter("Treat_Tauw_on_Dirichlet_Inflow", "No",
       "Flag to treat residual on Dirichlet inflow nodes for calculation of wall shear stress",
       &fdyn_wallmodel);
 
-  IntParameter("PROJECTION_SOLVER", -1, "Set solver number for l2-projection.", &fdyn_wallmodel);
+  CORE::UTILS::IntParameter(
+      "PROJECTION_SOLVER", -1, "Set solver number for l2-projection.", &fdyn_wallmodel);
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for multifractal subgrid-scales
   Teuchos::ParameterList& fdyn_turbmfs = fdyn.sublist("MULTIFRACTAL SUBGRID SCALES", false, "");
 
-  DoubleParameter("CSGS", 0.0, "Modelparameter of multifractal subgrid-scales.", &fdyn_turbmfs);
+  CORE::UTILS::DoubleParameter(
+      "CSGS", 0.0, "Modelparameter of multifractal subgrid-scales.", &fdyn_turbmfs);
 
   setStringToIntegralParameter<int>("SCALE_SEPARATION", "no_scale_sep",
       "Specify the filter type for scale separation in LES",
@@ -1157,15 +1175,15 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "scale separation by algebraic multigrid operator"),
       tuple<int>(0, 1, 2), &fdyn_turbmfs);
 
-  IntParameter("ML_SOLVER", -1,
+  CORE::UTILS::IntParameter("ML_SOLVER", -1,
       "Set solver number for scale separation via level set transfer operators from plain "
       "aggregation.",
       &fdyn_turbmfs);
 
-  BoolParameter("CALC_N", "No", "Flag to (de)activate calculation of N from the Reynolds number.",
-      &fdyn_turbmfs);
+  CORE::UTILS::BoolParameter("CALC_N", "No",
+      "Flag to (de)activate calculation of N from the Reynolds number.", &fdyn_turbmfs);
 
-  DoubleParameter("N", 1.0, "Set grid to viscous scale ratio.", &fdyn_turbmfs);
+  CORE::UTILS::DoubleParameter("N", 1.0, "Set grid to viscous scale ratio.", &fdyn_turbmfs);
 
   setStringToIntegralParameter<int>("REF_LENGTH", "cube_edge",
       "Specify the reference length for Re-dependent N.",
@@ -1183,52 +1201,53 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("norm of strain rate", "resolved velocity", "fine-scale velocity"),
       tuple<int>(0, 1, 2), &fdyn_turbmfs);
 
-  DoubleParameter("C_NU", 1.0,
+  CORE::UTILS::DoubleParameter("C_NU", 1.0,
       "Proportionality constant between Re and ratio viscous scale to element length.",
       &fdyn_turbmfs);
 
-  BoolParameter("NEAR_WALL_LIMIT", "No", "Flag to (de)activate near-wall limit.", &fdyn_turbmfs);
+  CORE::UTILS::BoolParameter(
+      "NEAR_WALL_LIMIT", "No", "Flag to (de)activate near-wall limit.", &fdyn_turbmfs);
 
   setStringToIntegralParameter<int>("EVALUATION_B", "element_center",
       "Location where B is evaluated", tuple<std::string>("element_center", "integration_point"),
       tuple<std::string>("evaluate B at element center", "evaluate B at integration point"),
       tuple<int>(0, 1), &fdyn_turbmfs);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "BETA", 0.0, "Cross- and Reynolds-stress terms only on right-hand-side.", &fdyn_turbmfs);
 
   setStringToIntegralParameter<int>("CONVFORM", "convective", "form of convective term",
       tuple<std::string>("convective", "conservative"), tuple<int>(0, 1), &fdyn_turbmfs);
 
-  DoubleParameter("CSGS_PHI", 0.0,
+  CORE::UTILS::DoubleParameter("CSGS_PHI", 0.0,
       "Modelparameter of multifractal subgrid-scales for scalar transport.", &fdyn_turbmfs);
 
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "ADAPT_CSGS_PHI", "No", "Flag to (de)activate adaption of CsgsD to CsgsB.", &fdyn_turbmfs);
 
-  BoolParameter("NEAR_WALL_LIMIT_CSGS_PHI", "No",
+  CORE::UTILS::BoolParameter("NEAR_WALL_LIMIT_CSGS_PHI", "No",
       "Flag to (de)activate near-wall limit for scalar field.", &fdyn_turbmfs);
 
-  BoolParameter("CONSISTENT_FLUID_RESIDUAL", "No",
+  CORE::UTILS::BoolParameter("CONSISTENT_FLUID_RESIDUAL", "No",
       "Flag to (de)activate the consistency term for residual-based stabilization.", &fdyn_turbmfs);
 
-  DoubleParameter("C_DIFF", 1.0,
+  CORE::UTILS::DoubleParameter("C_DIFF", 1.0,
       "Proportionality constant between Re*Pr and ratio dissipative scale to element length. "
       "Usually equal cnu.",
       &fdyn_turbmfs);
 
-  BoolParameter("SET_FINE_SCALE_VEL", "No",
+  CORE::UTILS::BoolParameter("SET_FINE_SCALE_VEL", "No",
       "Flag to set fine-scale velocity for parallel nightly tests.", &fdyn_turbmfs);
 
   // activate cross- and Reynolds-stress terms in loma continuity equation
-  BoolParameter("LOMA_CONTI", "No",
+  CORE::UTILS::BoolParameter("LOMA_CONTI", "No",
       "Flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation.",
       &fdyn_turbmfs);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_turbinf = fdyn.sublist("TURBULENT INFLOW", false, "");
 
-  BoolParameter("TURBULENTINFLOW", "No",
+  CORE::UTILS::BoolParameter("TURBULENTINFLOW", "No",
       "Flag to (de)activate potential separate turbulent inflow section", &fdyn_turbinf);
 
   setStringToIntegralParameter<int>("INITIALINFLOWFIELD", "zero_field",
@@ -1238,16 +1257,16 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           initfield_disturbed_field_from_function),
       &fdyn_turbinf);
 
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "INFLOWFUNC", -1, "Function number for initial flow field in inflow section", &fdyn_turbinf);
 
-  DoubleParameter("INFLOW_INIT_DIST", 0.1,
+  CORE::UTILS::DoubleParameter("INFLOW_INIT_DIST", 0.1,
       "Max. amplitude of the random disturbance in percent of the initial value in mean flow "
       "direction.",
       &fdyn_turbinf);
 
-  IntParameter("NUMINFLOWSTEP", 1, "Total number of time steps for development of turbulent flow",
-      &fdyn_turbinf);
+  CORE::UTILS::IntParameter("NUMINFLOWSTEP", 1,
+      "Total number of time steps for development of turbulent flow", &fdyn_turbinf);
 
   setStringToIntegralParameter<int>("CANONICAL_INFLOW", "no",
       "Sampling is different for different canonical flows \n--- so specify what kind of flow "
@@ -1266,7 +1285,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "is essentially a statistically one dimensional flow."),
       tuple<int>(0, 1, 2, 3, 4), &fdyn_turbinf);
 
-  DoubleParameter("INFLOW_CHA_SIDE", 0.0,
+  CORE::UTILS::DoubleParameter("INFLOW_CHA_SIDE", 0.0,
       "Most right side of inflow channel. Necessary to define sampling domain.", &fdyn_turbinf);
 
   setStringToIntegralParameter<int>("INFLOW_HOMDIR", "not_specified",
@@ -1280,11 +1299,11 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Wall normal direction is x, average in y and z direction"),
       tuple<int>(0, 1, 2, 3, 4, 5, 6), &fdyn_turbinf);
 
-  IntParameter("INFLOW_SAMPLING_START", 10000000, "Time step after when sampling shall be started",
-      &fdyn_turbinf);
-  IntParameter(
+  CORE::UTILS::IntParameter("INFLOW_SAMPLING_START", 10000000,
+      "Time step after when sampling shall be started", &fdyn_turbinf);
+  CORE::UTILS::IntParameter(
       "INFLOW_SAMPLING_STOP", 1, "Time step when sampling shall be stopped", &fdyn_turbinf);
-  IntParameter("INFLOW_DUMPING_PERIOD", 1,
+  CORE::UTILS::IntParameter("INFLOW_DUMPING_PERIOD", 1,
       "Period of time steps after which statistical data shall be dumped", &fdyn_turbinf);
 
   /*----------------------------------------------------------------------*/
@@ -1299,12 +1318,13 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           ),
       tuple<int>(const_dt, cfl_number, only_print_cfl_number), &fdyn_timintada);
 
-  DoubleParameter("CFL_NUMBER", -1.0, "CFL number for adaptive time step", &fdyn_timintada);
-  IntParameter("FREEZE_ADAPTIVE_DT_AT", 1000000,
+  CORE::UTILS::DoubleParameter(
+      "CFL_NUMBER", -1.0, "CFL number for adaptive time step", &fdyn_timintada);
+  CORE::UTILS::IntParameter("FREEZE_ADAPTIVE_DT_AT", 1000000,
       "keep time step constant after this step, otherwise turbulence statistics sampling is not "
       "consistent",
       &fdyn_timintada);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "ADAPTIVE_DT_INC", 0.8, "Increment of whole step for adaptive dt via CFL", &fdyn_timintada);
 }
 
@@ -1319,25 +1339,26 @@ void INPAR::LOMA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& lomacontrol = list->sublist(
       "LOMA CONTROL", false, "control parameters for low-Mach-number flow problems\n");
 
-  BoolParameter("MONOLITHIC", "no", "monolithic solver", &lomacontrol);
-  IntParameter("NUMSTEP", 24, "Total number of time steps", &lomacontrol);
-  DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &lomacontrol);
-  DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &lomacontrol);
-  IntParameter("ITEMAX", 10, "Maximum number of outer iterations", &lomacontrol);
-  IntParameter("ITEMAX_BEFORE_SAMPLING", 1,
+  CORE::UTILS::BoolParameter("MONOLITHIC", "no", "monolithic solver", &lomacontrol);
+  CORE::UTILS::IntParameter("NUMSTEP", 24, "Total number of time steps", &lomacontrol);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &lomacontrol);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &lomacontrol);
+  CORE::UTILS::IntParameter("ITEMAX", 10, "Maximum number of outer iterations", &lomacontrol);
+  CORE::UTILS::IntParameter("ITEMAX_BEFORE_SAMPLING", 1,
       "Maximum number of outer iterations before sampling (for turbulent flows only)",
       &lomacontrol);
-  DoubleParameter("CONVTOL", 1e-6, "Tolerance for convergence check", &lomacontrol);
-  IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &lomacontrol);
-  IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &lomacontrol);
+  CORE::UTILS::DoubleParameter("CONVTOL", 1e-6, "Tolerance for convergence check", &lomacontrol);
+  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &lomacontrol);
+  CORE::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &lomacontrol);
   setStringToIntegralParameter<int>("CONSTHERMPRESS", "Yes",
       "treatment of thermodynamic pressure in time",
       tuple<std::string>("No_energy", "No_mass", "Yes"), tuple<int>(0, 1, 2), &lomacontrol);
-  BoolParameter("SGS_MATERIAL_UPDATE", "no", "update material by adding subgrid-scale scalar field",
-      &lomacontrol);
+  CORE::UTILS::BoolParameter("SGS_MATERIAL_UPDATE", "no",
+      "update material by adding subgrid-scale scalar field", &lomacontrol);
 
   // number of linear solver used for LOMA solver
-  IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for LOMA problem", &lomacontrol);
+  CORE::UTILS::IntParameter(
+      "LINEAR_SOLVER", -1, "number of linear solver used for LOMA problem", &lomacontrol);
 }
 
 

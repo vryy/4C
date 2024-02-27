@@ -22,7 +22,6 @@
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
 #include "baci_lib_utils_gid_vector.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_equilibrate.hpp"
 #include "baci_linalg_matrixtransform.hpp"
 #include "baci_linalg_multiply.hpp"
@@ -41,6 +40,7 @@
 #include "baci_scatra_ele_parameter_timint.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -56,7 +56,7 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       icoupmortar_(),
       imortarcells_(),
       imortarredistribution_(
-          INPUT::IntegralValue<INPAR::S2I::CouplingType>(parameters.sublist("S2I COUPLING"),
+          CORE::UTILS::IntegralValue<INPAR::S2I::CouplingType>(parameters.sublist("S2I COUPLING"),
               "COUPLINGTYPE") == INPAR::S2I::coupling_mortar_standard and
           Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
               GLOBAL::Problem::Instance()->MortarCouplingParams().sublist(
@@ -70,7 +70,7 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       islavematrix_(Teuchos::null),
       imastermatrix_(Teuchos::null),
       imasterslavematrix_(Teuchos::null),
-      couplingtype_(INPUT::IntegralValue<INPAR::S2I::CouplingType>(
+      couplingtype_(CORE::UTILS::IntegralValue<INPAR::S2I::CouplingType>(
           parameters.sublist("S2I COUPLING"), "COUPLINGTYPE")),
       D_(Teuchos::null),
       M_(Teuchos::null),
@@ -89,11 +89,11 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       islavephidtnp_(Teuchos::null),
       imasterphidt_on_slave_side_np_(Teuchos::null),
       imasterphi_on_slave_side_np_(Teuchos::null),
-      lmside_(INPUT::IntegralValue<INPAR::S2I::InterfaceSides>(
+      lmside_(CORE::UTILS::IntegralValue<INPAR::S2I::InterfaceSides>(
           parameters.sublist("S2I COUPLING"), "LMSIDE")),
       matrixtype_(Teuchos::getIntegralValue<CORE::LINALG::MatrixType>(parameters, "MATRIXTYPE")),
       ntsprojtol_(parameters.sublist("S2I COUPLING").get<double>("NTSPROJTOL")),
-      intlayergrowth_evaluation_(INPUT::IntegralValue<INPAR::S2I::GrowthEvaluation>(
+      intlayergrowth_evaluation_(CORE::UTILS::IntegralValue<INPAR::S2I::GrowthEvaluation>(
           parameters.sublist("S2I COUPLING"), "INTLAYERGROWTH_EVALUATION")),
       intlayergrowth_convtol_(
           parameters.sublist("S2I COUPLING").get<double>("INTLAYERGROWTH_CONVTOL")),
@@ -117,8 +117,8 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       equilibration_(Teuchos::null),
       has_capacitive_contributions_(false),
       kinetics_conditions_meshtying_slaveside_(),
-      slaveonly_(INPUT::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY")),
-      indepedent_setup_of_conditions_(INPUT::IntegralValue<bool>(
+      slaveonly_(CORE::UTILS::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY")),
+      indepedent_setup_of_conditions_(CORE::UTILS::IntegralValue<bool>(
           parameters.sublist("S2I COUPLING"), "MESHTYING_CONDITIONS_INDEPENDENT_SETUP"))
 {
   // empty constructor
@@ -303,7 +303,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       Teuchos::ParameterList condparams;
 
       // action for elements
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
           "action", SCATRA::BoundaryAction::calc_s2icoupling, condparams);
 
       // set global state vectors according to time-integration scheme
@@ -881,7 +881,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         Teuchos::ParameterList conditionparams;
 
         // action for elements
-        DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
             "action", SCATRA::BoundaryAction::calc_s2icoupling, conditionparams);
 
         // set global state vectors according to time-integration scheme
@@ -1039,7 +1039,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+                CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
                     "action", SCATRA::BoundaryAction::calc_s2icoupling_scatragrowth, condparams);
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
@@ -1129,7 +1129,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+                CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
                     "action", SCATRA::BoundaryAction::calc_s2icoupling_growthscatra, condparams);
 
                 // evaluate off-diagonal linearizations
@@ -1180,7 +1180,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+                CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
                     "action", SCATRA::BoundaryAction::calc_s2icoupling_scatragrowth, condparams);
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
@@ -1261,7 +1261,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+                CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
                     "action", SCATRA::BoundaryAction::calc_s2icoupling_growthscatra, condparams);
 
                 // evaluate off-diagonal linearizations
@@ -1327,7 +1327,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             Teuchos::ParameterList condparams;
 
             // set action for elements
-            DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+            CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
                 "action", SCATRA::BoundaryAction::calc_s2icoupling_growthgrowth, condparams);
 
             // set history vector associated with discrete scatra-scatra interface layer thicknesses
@@ -1364,7 +1364,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
   Teuchos::ParameterList capcondparas;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_capacitance, capcondparas);
 
   // set global state vectors according to time-integration scheme
@@ -1945,7 +1945,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           {
             has_capacitive_contributions_ = true;
 
-            auto timeintscheme = INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(
+            auto timeintscheme = CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(
                 *scatratimint_->ScatraParameterList(), "TIMEINTEGR");
             if (not(timeintscheme == INPAR::SCATRA::timeint_bdf2 or
                     timeintscheme == INPAR::SCATRA::timeint_one_step_theta))
@@ -2143,7 +2143,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             "Parallel redistribution only implemented for scatra-scatra interface coupling based "
             "on standard mortar approach!");
       }
-      if (INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+      if (CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
               GLOBAL::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") !=
           INPAR::MORTAR::relocation_none)
         dserror("Mesh relocation not yet implemented for scatra-scatra interface coupling!");
@@ -2946,7 +2946,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
   const DRT::Condition::ConditionType conditiontype = s2ikinetics_cond.Type();
 
   // set action, kinetic model, condition type and numscal
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_scatra_ele_boundary_parameter, s2icouplingparameters);
   s2icouplingparameters.set<int>("kinetic model", kineticmodel);
   s2icouplingparameters.set<DRT::Condition::ConditionType>("condition type", conditiontype);
@@ -3427,7 +3427,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   // safety checks associated with adaptive time stepping for scatra-scatra interface layer growth
   if (intlayergrowth_timestep_ > 0.)
   {
-    if (not INPUT::IntegralValue<bool>(
+    if (not CORE::UTILS::IntegralValue<bool>(
             *scatratimint_->ScatraParameterList(), "ADAPTIVE_TIMESTEPPING"))
     {
       dserror(
@@ -4032,7 +4032,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(const DRT::Discretizat
     CORE::LINALG::SerialDenseVector& cellvector2)
 {
   // extract and evaluate action
-  switch (INPUT::get<INPAR::S2I::EvaluationActions>(params, "action"))
+  switch (CORE::UTILS::GetAsEnum<INPAR::S2I::EvaluationActions>(params, "action"))
   {
     case INPAR::S2I::evaluate_mortar_matrices:
     {
@@ -4072,7 +4072,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(const DRT::Discreti
     CORE::LINALG::SerialDenseVector& ntsvector1, CORE::LINALG::SerialDenseVector& ntsvector2)
 {
   // extract and evaluate action
-  switch (INPUT::get<INPAR::S2I::EvaluationActions>(params, "action"))
+  switch (CORE::UTILS::GetAsEnum<INPAR::S2I::EvaluationActions>(params, "action"))
   {
     case INPAR::S2I::evaluate_condition_nts:
     {
@@ -4111,7 +4111,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarElement(
     CORE::LINALG::SerialDenseVector& elevector2)
 {
   // extract and evaluate action
-  switch (INPUT::get<INPAR::S2I::EvaluationActions>(params, "action"))
+  switch (CORE::UTILS::GetAsEnum<INPAR::S2I::EvaluationActions>(params, "action"))
   {
     case INPAR::S2I::evaluate_nodal_area_fractions:
     {

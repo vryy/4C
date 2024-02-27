@@ -32,7 +32,7 @@ Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::StructureFactory::Buil
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase = Teuchos::null;
 
   const enum INPAR::STR::IntegrationStrategy intstrat =
-      INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+      CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
   switch (intstrat)
   {

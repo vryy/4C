@@ -78,13 +78,15 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
       GLOBAL::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
-  INPAR::STR::PredEnum pred = INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
+  INPAR::STR::PredEnum pred =
+      CORE::UTILS::IntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
   pred_ = pred;
-  combdisifres_ = INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
-  normtypedisi_ = INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_micro, "NORM_DISP");
-  normtypefres_ = INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_micro, "NORM_RESF");
+  combdisifres_ =
+      CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
+  normtypedisi_ = CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdyn_micro, "NORM_DISP");
+  normtypefres_ = CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdyn_micro, "NORM_RESF");
   INPAR::STR::VectorNorm iternorm =
-      INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdyn_micro, "ITERNORM");
+      CORE::UTILS::IntegralValue<INPAR::STR::VectorNorm>(sdyn_micro, "ITERNORM");
   iternorm_ = iternorm;
 
   dt_ = sdyn_macro.get<double>("TIMESTEP");
@@ -106,21 +108,21 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   restart_ = GLOBAL::Problem::Instance()->Restart();
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
-  iodisp_ = INPUT::IntegralValue<int>(ioflags, "STRUCT_DISP");
+  iodisp_ = CORE::UTILS::IntegralValue<int>(ioflags, "STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");
   INPAR::STR::StressType iostress =
-      INPUT::IntegralValue<INPAR::STR::StressType>(ioflags, "STRUCT_STRESS");
+      CORE::UTILS::IntegralValue<INPAR::STR::StressType>(ioflags, "STRUCT_STRESS");
   iostress_ = iostress;
   resevrystrs_ = sdyn_micro.get<int>("RESULTSEVRY");
   INPAR::STR::StrainType iostrain =
-      INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags, "STRUCT_STRAIN");
+      CORE::UTILS::IntegralValue<INPAR::STR::StrainType>(ioflags, "STRUCT_STRAIN");
   iostrain_ = iostrain;
   INPAR::STR::StrainType ioplstrain =
-      INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
+      CORE::UTILS::IntegralValue<INPAR::STR::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
   ioplstrain_ = ioplstrain;
-  iosurfactant_ = INPUT::IntegralValue<int>(ioflags, "STRUCT_SURFACTANT");
+  iosurfactant_ = CORE::UTILS::IntegralValue<int>(ioflags, "STRUCT_SURFACTANT");
 
-  isadapttol_ = (INPUT::IntegralValue<int>(sdyn_micro, "ADAPTCONV") == 1);
+  isadapttol_ = (CORE::UTILS::IntegralValue<int>(sdyn_micro, "ADAPTCONV") == 1);
   adaptolbetter_ = sdyn_micro.get<double>("ADAPTCONV_BETTER");
 
   // broadcast important data that must be consistent on macro and micro scale (master and

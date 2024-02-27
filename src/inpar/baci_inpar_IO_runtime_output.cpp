@@ -11,8 +11,7 @@
 #include "baci_inpar_IO_runtime_output.hpp"
 
 #include "baci_inpar.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -26,7 +25,6 @@ namespace INPAR
      *----------------------------------------------------------------------*/
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     {
-      using namespace INPUT;
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
@@ -37,12 +35,12 @@ namespace INPAR
 
 
       // output interval regarding steps: write output every INTERVAL_STEPS steps
-      IntParameter("INTERVAL_STEPS", -1,
+      CORE::UTILS::IntParameter("INTERVAL_STEPS", -1,
           "write visualization output at runtime every INTERVAL_STEPS steps",
           &sublist_IO_VTK_structure);
 
 
-      IntParameter("STEP_OFFSET", 0,
+      CORE::UTILS::IntParameter("STEP_OFFSET", 0,
           "An offset added to the current step to shift the steps to be written.",
           &sublist_IO_VTK_structure);
 
@@ -56,22 +54,22 @@ namespace INPAR
           &sublist_IO_VTK_structure);
 
       // specify the maximum digits in the number of time steps that shall be written
-      IntParameter("TIMESTEP_RESERVE_DIGITS", 5,
+      CORE::UTILS::IntParameter("TIMESTEP_RESERVE_DIGITS", 5,
           "Specify the maximum digits in the number of time steps that shall be written. This only "
           "affects the number of leading zeros in the output file names.",
           &sublist_IO_VTK_structure);
 
       // whether to write output in every iteration of the nonlinear solver
-      BoolParameter("EVERY_ITERATION", "No",
+      CORE::UTILS::BoolParameter("EVERY_ITERATION", "No",
           "write output in every iteration of the nonlinear solver", &sublist_IO_VTK_structure);
 
       // virtual time increment that is added for each nonlinear output state
-      DoubleParameter("EVERY_ITERATION_VIRTUAL_TIME_INCREMENT", 1e-8,
+      CORE::UTILS::DoubleParameter("EVERY_ITERATION_VIRTUAL_TIME_INCREMENT", 1e-8,
           "Specify the virtual time increment that is added for each nonlinear output state",
           &sublist_IO_VTK_structure);
 
       // specify the maximum digits in the number of iterations that shall be written
-      IntParameter("EVERY_ITERATION_RESERVE_DIGITS", 4,
+      CORE::UTILS::IntParameter("EVERY_ITERATION_RESERVE_DIGITS", 4,
           "Specify the maximum digits in the number of iterations that shall be written. This only "
           "affects the number of leading zeros in the output file names.",
           &sublist_IO_VTK_structure);

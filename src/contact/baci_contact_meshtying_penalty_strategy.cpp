@@ -11,7 +11,6 @@
 
 #include "baci_contact_meshtying_defines.hpp"
 #include "baci_inpar_contact.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -20,6 +19,7 @@
 #include "baci_mortar_interface.hpp"
 #include "baci_mortar_node.hpp"
 #include "baci_mortar_utils.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -75,7 +75,7 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
   {
     // type of LM interpolation for quadratic elements
     INPAR::MORTAR::LagMultQuad lagmultquad =
-        INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+        CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
 
     if (lagmultquad != INPAR::MORTAR::lagmult_lin)
     {
@@ -135,7 +135,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
   TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::MeshInitialization");
 
   // get out of here is NTS algorithm is activated
-  if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==
+  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==
       INPAR::MORTAR::algorithm_nts)
     return Teuchos::null;
 
@@ -166,7 +166,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
 
   // solve with default solver
   Teuchos::ParameterList solvparams;
-  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
       "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
   CORE::LINALG::Solver solver(solvparams, Comm());
 
@@ -371,7 +371,7 @@ void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   // (only for Uzawa Augmented Lagrange strategy)
   //********************************************************************
   INPAR::CONTACT::SolvingStrategy soltype =
-      INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
   if (soltype == INPAR::CONTACT::solution_uzawa)
   {

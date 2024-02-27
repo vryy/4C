@@ -13,11 +13,11 @@ transport problems
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
 #include "baci_scatra_timint_ost.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <filesystem>
 
@@ -103,17 +103,17 @@ void MAT::ScatraMultiScaleGP::Init()
           "Must have one-dimensional micro scale in multi-scale simulations of scalar transport "
           "problems!");
     }
-    if (INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(sdyn_macro, "TIMEINTEGR") !=
-            INPAR::SCATRA::timeint_one_step_theta or
-        INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*sdyn_micro, "TIMEINTEGR") !=
-            INPAR::SCATRA::timeint_one_step_theta)
+    if (CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(
+            sdyn_macro, "TIMEINTEGR") != INPAR::SCATRA::timeint_one_step_theta or
+        CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(
+            *sdyn_micro, "TIMEINTEGR") != INPAR::SCATRA::timeint_one_step_theta)
     {
       dserror(
           "Multi-scale calculations for scalar transport only implemented for one-step-theta time "
           "integration scheme!");
     }
-    if (INPUT::IntegralValue<bool>(sdyn_macro, "SKIPINITDER") !=
-        INPUT::IntegralValue<bool>(*sdyn_micro, "SKIPINITDER"))
+    if (CORE::UTILS::IntegralValue<bool>(sdyn_macro, "SKIPINITDER") !=
+        CORE::UTILS::IntegralValue<bool>(*sdyn_micro, "SKIPINITDER"))
       dserror("Flag SKIPINITDER in input file must be equal on macro and micro scales!");
     if (sdyn_macro.get<double>("TIMESTEP") != sdyn_micro->get<double>("TIMESTEP"))
       dserror("Must have identical time step size on macro and micro scales!");
@@ -310,7 +310,7 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentration() const
 
   // set parameters for micro-scale elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
@@ -343,7 +343,7 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative() const
 
   // set parameters for micro-scale elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_mean_scalar_time_derivatives, eleparams);
 
   // initialize result vector: first component = integral of concentration time derivative, second
@@ -421,7 +421,7 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
         microdis->Comm(), "Scalar_Transport", microproblem->SpatialApproximationType(),
         "micro-input-file-not-known", restartname_, newfilename, ndim, restart,
         GLOBAL::Problem::Instance(microdisnum_)->IOParams().get<int>("FILESTEPS"),
-        INPUT::IntegralValue<bool>(
+        CORE::UTILS::IntegralValue<bool>(
             GLOBAL::Problem::Instance(microdisnum_)->IOParams(), "OUTPUT_BIN"),
         adaptname));
 

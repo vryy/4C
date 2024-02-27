@@ -12,10 +12,10 @@
 #include "baci_inpar_bio.hpp"
 #include "baci_inpar_fluid.hpp"
 #include "baci_inpar_s2i.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_linalg_equilibrate.hpp"
 #include "baci_linalg_sparseoperator.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -44,23 +44,27 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<int>(timeint_stationary, timeint_one_step_theta, timeint_bdf2, timeint_gen_alpha),
       &scatradyn);
 
-  DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &scatradyn);
-  IntParameter("NUMSTEP", 20, "Total number of time steps", &scatradyn);
-  DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &scatradyn);
-  DoubleParameter("THETA", 0.5, "One-step-theta time integration factor", &scatradyn);
-  DoubleParameter("ALPHA_M", 0.5, "Generalized-alpha time integration factor", &scatradyn);
-  DoubleParameter("ALPHA_F", 0.5, "Generalized-alpha time integration factor", &scatradyn);
-  DoubleParameter("GAMMA", 0.5, "Generalized-alpha time integration factor", &scatradyn);
-  IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &scatradyn);
-  IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &scatradyn);
-  IntParameter("MATID", -1, "Material ID for automatic mesh generation", &scatradyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &scatradyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 20, "Total number of time steps", &scatradyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &scatradyn);
+  CORE::UTILS::DoubleParameter("THETA", 0.5, "One-step-theta time integration factor", &scatradyn);
+  CORE::UTILS::DoubleParameter(
+      "ALPHA_M", 0.5, "Generalized-alpha time integration factor", &scatradyn);
+  CORE::UTILS::DoubleParameter(
+      "ALPHA_F", 0.5, "Generalized-alpha time integration factor", &scatradyn);
+  CORE::UTILS::DoubleParameter(
+      "GAMMA", 0.5, "Generalized-alpha time integration factor", &scatradyn);
+  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &scatradyn);
+  CORE::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &scatradyn);
+  CORE::UTILS::IntParameter("MATID", -1, "Material ID for automatic mesh generation", &scatradyn);
 
   setStringToIntegralParameter<int>("VELOCITYFIELD", "zero",
       "type of velocity field used for scalar transport problems",
       tuple<std::string>("zero", "function", "Navier_Stokes"),
       tuple<int>(velocity_zero, velocity_function, velocity_Navier_Stokes), &scatradyn);
 
-  IntParameter("VELFUNCNO", -1, "function number for scalar transport velocity field", &scatradyn);
+  CORE::UTILS::IntParameter(
+      "VELFUNCNO", -1, "function number for scalar transport velocity field", &scatradyn);
 
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
@@ -97,9 +101,10 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         "Initial Field for scalar transport problem", name, label, &scatradyn);
   }
 
-  IntParameter("INITFUNCNO", -1, "function number for scalar transport initial field", &scatradyn);
+  CORE::UTILS::IntParameter(
+      "INITFUNCNO", -1, "function number for scalar transport initial field", &scatradyn);
 
-  BoolParameter("SPHERICALCOORDS", "No", "use of spherical coordinates", &scatradyn);
+  CORE::UTILS::BoolParameter("SPHERICALCOORDS", "No", "use of spherical coordinates", &scatradyn);
 
   setStringToIntegralParameter<int>("CALCERROR", "No",
       "compute error compared to analytical solution",
@@ -110,7 +115,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           calcerror_AnalyticSeries),
       &scatradyn);
 
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "CALCERRORNO", -1, "function number for scalar transport error computation", &scatradyn);
 
   setStringToIntegralParameter<int>("CALCFLUX_DOMAIN", "No",
@@ -118,7 +123,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<std::string>("No", "total", "diffusive"),
       tuple<int>(flux_none, flux_total, flux_diffusive), &scatradyn);
 
-  BoolParameter("CALCFLUX_DOMAIN_LUMPED", "Yes",
+  CORE::UTILS::BoolParameter("CALCFLUX_DOMAIN_LUMPED", "Yes",
       "perform approximate domain flux calculation involving matrix lumping", &scatradyn);
 
   setStringToIntegralParameter<int>("CALCFLUX_BOUNDARY", "No",
@@ -126,7 +131,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<std::string>("No", "total", "diffusive", "convective"),
       tuple<int>(flux_none, flux_total, flux_diffusive, flux_convective), &scatradyn);
 
-  BoolParameter("CALCFLUX_BOUNDARY_LUMPED", "Yes",
+  CORE::UTILS::BoolParameter("CALCFLUX_BOUNDARY_LUMPED", "Yes",
       "perform approximate boundary flux calculation involving matrix lumping", &scatradyn);
 
   setNumericStringParameter("WRITEFLUX_IDS", "-1",
@@ -139,24 +144,27 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<int>(outputscalars_none, outputscalars_entiredomain, outputscalars_condition,
           outputscalars_entiredomain_condition),
       &scatradyn);
-  BoolParameter("OUTPUTSCALARSMEANGRAD", "No", "Output of mean gradient of scalars", &scatradyn);
-  BoolParameter("OUTINTEGRREAC", "No", "Output of integral reaction values", &scatradyn);
-  BoolParameter("OUTPUT_GMSH", "No", "Do you want to write Gmsh postprocessing files?", &scatradyn);
+  CORE::UTILS::BoolParameter(
+      "OUTPUTSCALARSMEANGRAD", "No", "Output of mean gradient of scalars", &scatradyn);
+  CORE::UTILS::BoolParameter(
+      "OUTINTEGRREAC", "No", "Output of integral reaction values", &scatradyn);
+  CORE::UTILS::BoolParameter(
+      "OUTPUT_GMSH", "No", "Do you want to write Gmsh postprocessing files?", &scatradyn);
 
-  BoolParameter("MATLAB_STATE_OUTPUT", "No",
+  CORE::UTILS::BoolParameter("MATLAB_STATE_OUTPUT", "No",
       "Do you want to write the state solution to Matlab file?", &scatradyn);
 
   setStringToIntegralParameter<int>("CONVFORM", "convective", "form of convective term",
       tuple<std::string>("convective", "conservative"),
       tuple<int>(convform_convective, convform_conservative), &scatradyn);
 
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "NEUMANNINFLOW", "no", "Flag to (de)activate potential Neumann inflow term(s)", &scatradyn);
 
-  BoolParameter("CONV_HEAT_TRANS", "no",
+  CORE::UTILS::BoolParameter("CONV_HEAT_TRANS", "no",
       "Flag to (de)activate potential convective heat transfer boundary conditions", &scatradyn);
 
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "SKIPINITDER", "no", "Flag to skip computation of initial time derivative", &scatradyn);
 
   setStringToIntegralParameter<int>("FSSUGRDIFF", "No", "fine-scale subgrid diffusivity",
@@ -166,11 +174,11 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       &scatradyn);
 
   // flag for output of performance statistics associated with nonlinear solver into *.csv file
-  BoolParameter("ELECTROMAGNETICDIFFUSION", "No",
+  CORE::UTILS::BoolParameter("ELECTROMAGNETICDIFFUSION", "No",
       "flag to activate electromagnetic diffusion problems", &scatradyn);
 
   // Current density source function for EMD problems
-  IntParameter("EMDSOURCE", -1, "Current density source", &scatradyn);
+  CORE::UTILS::IntParameter("EMDSOURCE", -1, "Current density source", &scatradyn);
 
   setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",
       tuple<std::string>("no", "Condensed_Smat", "Condensed_Bmat",
@@ -186,13 +194,13 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<int>(coupling_match, coupling_volmortar), &scatradyn);
 
   // linear solver id used for scalar transport/elch problems
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for scalar transport/elch...", &scatradyn);
   // linear solver id used for l2 projection problems (e.g. gradient projections)
-  IntParameter("L2_PROJ_LINEAR_SOLVER", -1,
+  CORE::UTILS::IntParameter("L2_PROJ_LINEAR_SOLVER", -1,
       "number of linear solver used for l2-projection sub-problems", &scatradyn);
-  // IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with
-  // SIMPLER)...",&scatradyn);
+  // CORE::UTILS::IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved
+  // with SIMPLER)...",&scatradyn);
 
   // flag for equilibration of global system of equations
   setStringToIntegralParameter<CORE::LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
@@ -217,7 +225,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       &scatradyn);
 
   // flag for natural convection effects
-  BoolParameter("NATURAL_CONVECTION", "No", "Include natural convection effects", &scatradyn);
+  CORE::UTILS::BoolParameter(
+      "NATURAL_CONVECTION", "No", "Include natural convection effects", &scatradyn);
 
   // parameters for finite difference check
   setStringToIntegralParameter<int>("FDCHECK", "none",
@@ -230,11 +239,11 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           "local"             // perform finite difference check on element level
           ),
       tuple<int>(fdcheck_none, fdcheck_global, fdcheck_global_extended, fdcheck_local), &scatradyn);
-  DoubleParameter("FDCHECKEPS", 1.e-6,
+  CORE::UTILS::DoubleParameter("FDCHECKEPS", 1.e-6,
       "dof perturbation magnitude for finite difference check (1.e-6 seems to work very well, "
       "whereas smaller values don't)",
       &scatradyn);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "FDCHECKTOL", 1.e-6, "relative tolerance for finite difference check", &scatradyn);
 
   // parameter for optional computation of domain and boundary integrals, i.e., of surface areas and
@@ -247,57 +256,59 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // parameter for using p-adpativity and semi-implicit evaluation of the reaction term (at the
   // moment only used for HDG and cardiac monodomain problems)
-  BoolParameter("PADAPTIVITY", "no", "Flag to (de)activate p-adativity", &scatradyn);
-  DoubleParameter("PADAPTERRORTOL", 1e-6,
+  CORE::UTILS::BoolParameter("PADAPTIVITY", "no", "Flag to (de)activate p-adativity", &scatradyn);
+  CORE::UTILS::DoubleParameter("PADAPTERRORTOL", 1e-6,
       "The error tolerance to calculate the variation of the elemental degree", &scatradyn);
-  DoubleParameter("PADAPTERRORBASE", 1.66,
+  CORE::UTILS::DoubleParameter("PADAPTERRORBASE", 1.66,
       "The error tolerance base to calculate the variation of the elemental degree", &scatradyn);
-  IntParameter("PADAPTDEGREEMAX", 4, "The max. degree of the shape functions", &scatradyn);
-  BoolParameter("SEMIIMPLICIT", "no",
+  CORE::UTILS::IntParameter(
+      "PADAPTDEGREEMAX", 4, "The max. degree of the shape functions", &scatradyn);
+  CORE::UTILS::BoolParameter("SEMIIMPLICIT", "no",
       "Flag to (de)activate semi-implicit calculation of the reaction term", &scatradyn);
 
   // flag for output of performance statistics associated with linear solver into *.csv file
-  BoolParameter("OUTPUTLINSOLVERSTATS", "No",
+  CORE::UTILS::BoolParameter("OUTPUTLINSOLVERSTATS", "No",
       "flag for output of performance statistics associated with linear solver into csv file",
       &scatradyn);
 
   // flag for output of performance statistics associated with nonlinear solver into *.csv file
-  BoolParameter("OUTPUTNONLINSOLVERSTATS", "No",
+  CORE::UTILS::BoolParameter("OUTPUTNONLINSOLVERSTATS", "No",
       "flag for output of performance statistics associated with nonlinear solver into csv file",
       &scatradyn);
 
   // flag for point-based null space calculation
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "NULLSPACE_POINTBASED", "No", "flag for point-based null space calculation", &scatradyn);
 
   // flag for adaptive time stepping
-  BoolParameter("ADAPTIVE_TIMESTEPPING", "No", "flag for adaptive time stepping", &scatradyn);
+  CORE::UTILS::BoolParameter(
+      "ADAPTIVE_TIMESTEPPING", "No", "flag for adaptive time stepping", &scatradyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR", false, "control parameters for solving nonlinear SCATRA problems\n");
 
-  IntParameter("ITEMAX", 10, "max. number of nonlin. iterations", &scatra_nonlin);
-  DoubleParameter("CONVTOL", 1e-6, "Tolerance for convergence check", &scatra_nonlin);
-  IntParameter("ITEMAX_OUTER", 10,
+  CORE::UTILS::IntParameter("ITEMAX", 10, "max. number of nonlin. iterations", &scatra_nonlin);
+  CORE::UTILS::DoubleParameter("CONVTOL", 1e-6, "Tolerance for convergence check", &scatra_nonlin);
+  CORE::UTILS::IntParameter("ITEMAX_OUTER", 10,
       "Maximum number of outer iterations in partitioned coupling schemes (natural convection, "
       "multi-scale simulations etc.)",
       &scatra_nonlin);
-  DoubleParameter("CONVTOL_OUTER", 1e-6,
+  CORE::UTILS::DoubleParameter("CONVTOL_OUTER", 1e-6,
       "Convergence check tolerance for outer loop in partitioned coupling schemes (natural "
       "convection, multi-scale simulations etc.)",
       &scatra_nonlin);
-  BoolParameter("EXPLPREDICT", "no",
+  CORE::UTILS::BoolParameter("EXPLPREDICT", "no",
       "do an explicit predictor step before starting nonlinear iteration", &scatra_nonlin);
-  DoubleParameter("ABSTOLRES", 1e-14,
+  CORE::UTILS::DoubleParameter("ABSTOLRES", 1e-14,
       "Absolute tolerance for deciding if residual of nonlinear problem is already zero",
       &scatra_nonlin);
 
   // convergence criteria adaptivity
-  BoolParameter("ADAPTCONV", "No",
+  CORE::UTILS::BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &scatra_nonlin);
-  DoubleParameter("ADAPTCONV_BETTER", 0.1,
+  CORE::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &scatra_nonlin);
@@ -317,11 +328,11 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       &scatradyn_stab);
 
   // this parameter governs whether subgrid-scale velocity is included
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "SUGRVEL", "no", "potential incorporation of subgrid-scale velocity", &scatradyn_stab);
 
   // this parameter governs whether all-scale subgrid diffusivity is included
-  BoolParameter("ASSUGRDIFF", "no",
+  CORE::UTILS::BoolParameter("ASSUGRDIFF", "no",
       "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) "
       "term",
       &scatradyn_stab);
@@ -388,7 +399,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<int>(consistency_no, consistency_l2_projection_lumped), &scatradyn_stab);
 
   // this parameter defines the numerical value, if stabilization with numerical values is used
-  DoubleParameter("TAU_VALUE", 0.0, "Numerical value for tau for stabilization", &scatradyn_stab);
+  CORE::UTILS::DoubleParameter(
+      "TAU_VALUE", 0.0, "Numerical value for tau for stabilization", &scatradyn_stab);
 
   // ----------------------------------------------------------------------
   // artery mesh tying
@@ -411,7 +423,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       &scatradyn_art);
 
   // penalty parameter
-  DoubleParameter("PENALTY", 1000.0, "Penalty parameter for line-based coupling", &scatradyn_art);
+  CORE::UTILS::DoubleParameter(
+      "PENALTY", 1000.0, "Penalty parameter for line-based coupling", &scatradyn_art);
 
   // coupled artery dofs for mesh tying
   setNumericStringParameter(
@@ -442,16 +455,16 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       scatradyn.sublist("EXTERNAL FORCE", false, "Parameters for magnetics");
 
   // Flag for external force
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "EXTERNAL_FORCE", "No", "Flag to activate external force", &scatradyn_external_force);
 
   // Function ID for external force
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "FORCE_FUNCTION_ID", -1, "Function ID for external force", &scatradyn_external_force);
 
   // Function ID for mobility of the scalar
-  IntParameter("INTRINSIC_MOBILITY_FUNCTION_ID", -1, "Function ID for intrinsic mobility",
-      &scatradyn_external_force);
+  CORE::UTILS::IntParameter("INTRINSIC_MOBILITY_FUNCTION_ID", -1,
+      "Function ID for intrinsic mobility", &scatradyn_external_force);
 }
 
 

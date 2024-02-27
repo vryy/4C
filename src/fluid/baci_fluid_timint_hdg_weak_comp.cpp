@@ -486,7 +486,7 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDGWeakComp::EvaluateErrorComparedT
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
   INPAR::FLUID::CalcError calcerr =
-      INPUT::get<INPAR::FLUID::CalcError>(*params_, "calculate error");
+      CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {

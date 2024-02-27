@@ -114,7 +114,7 @@ void STR::NLN::SOLVER::ConvertModelType2QuantityType(
       // check for friction
       const Teuchos::ParameterList& p_contact = GLOBAL::Problem::Instance()->ContactDynamicParams();
       enum INPAR::CONTACT::FrictionType frictiontype =
-          INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(p_contact, "FRICTION");
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(p_contact, "FRICTION");
       switch (frictiontype)
       {
         case INPAR::CONTACT::friction_none:

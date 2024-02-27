@@ -60,7 +60,7 @@ void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstic
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
   if (ftype != INPAR::CONTACT::friction_coulomb) dserror("only coulomb friction for CTSI");
 
   double frcoeff_in =
@@ -68,8 +68,8 @@ void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstic
   double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool gp_slip = INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
-  bool frilessfirst = INPUT::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
+  bool gp_slip = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
+  bool frilessfirst = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
   if (gp_slip || frilessfirst)
     dserror("this fancy option for the contact algorithm is not implemented for TSI");
 
@@ -180,7 +180,7 @@ void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipL
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
   if (ftype != INPAR::CONTACT::friction_coulomb) dserror("only coulomb friction for CTSI");
 
   if (Dim() != 3) dserror("CTSI only for 3D");
@@ -191,8 +191,8 @@ void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipL
   double cn_input = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool gp_slip = INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
-  bool frilessfirst = INPUT::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
+  bool gp_slip = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
+  bool frilessfirst = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
   if (gp_slip || frilessfirst)
     dserror("this fancy option for the contact algorithm is not implemented for TSI");
 
@@ -327,7 +327,7 @@ void CONTACT::TSIInterface::AssembleDualMassLumped(
     double thermo_lm = conode->TSIData().ThermoLM();
     std::map<int, std::map<int, double>>& derivDualMass = conode->Data().GetDerivD();
 
-    if (INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(InterfaceParams(), "LM_QUAD") !=
+    if (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(InterfaceParams(), "LM_QUAD") !=
         INPAR::MORTAR::lagmult_const)
     {
       /**********************************************dual mass matrix ******/

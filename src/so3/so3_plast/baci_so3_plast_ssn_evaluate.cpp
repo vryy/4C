@@ -292,8 +292,10 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        iostrain = INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
+            params, "iostress", INPAR::STR::stress_none);
+        iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
+            params, "iostrain", INPAR::STR::strain_none);
       }
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");

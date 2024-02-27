@@ -38,7 +38,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildStrategy(
   Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
 
   const enum INPAR::STR::IntegrationStrategy intstrat =
-      INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+      CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
   switch (intstrat)
   {
@@ -68,7 +68,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
 
   // get the dynamic type
   const enum INPAR::STR::DynamicType dyntype =
-      INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
+      CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
   const bool is_prestress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
                                 GLOBAL::Problem::Instance()->StructuralDynamicParams(),
@@ -98,7 +98,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildExplicitStrategy(
     dserror("No explicit time integration with fsi");
 
   const enum INPAR::STR::DynamicType dyntype =
-      INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
+      CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
   if (dyntype == INPAR::STR::dyna_expleuler or dyntype == INPAR::STR::dyna_centrdiff or
       dyntype == INPAR::STR::dyna_ab2 or dyntype == INPAR::STR::dyna_ab4)
@@ -115,7 +115,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::Factory::BuildDataSDyn(
   Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyndata_ptr = Teuchos::null;
 
   const enum INPAR::STR::DynamicType dyntype =
-      INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
+      CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
   switch (dyntype)
   {

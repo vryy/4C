@@ -54,7 +54,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   }
 
   // check for matching fluid and ale meshes (==true in default case)
-  if (INPUT::IntegralValue<bool>(
+  if (CORE::UTILS::IntegralValue<bool>(
           GLOBAL::Problem::Instance()->FSIDynamicParams(), "MATCHGRID_FLUIDALE"))
   {
     // the fluid-ale coupling matches
@@ -71,7 +71,8 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
         Teuchos::rcp(new CORE::ADAPTER::Coupling());
     coupfa_matching->SetupCoupling(*FluidField()->Discretization(), *AleField()->Discretization(),
         *fluidnodemap, *alenodemap, ndim,
-        INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "MATCHALL"),
+        CORE::UTILS::IntegralValue<bool>(
+            GLOBAL::Problem::Instance()->FSIDynamicParams(), "MATCHALL"),
         tolerance, nds_master, nds_slave);
     coupfa_ = coupfa_matching;
   }
@@ -108,8 +109,9 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   }
 
   // Apply initial ALE mesh displacement
-  if (INPUT::IntegralValue<INPAR::ALE::InitialDisp>(GLOBAL::Problem::Instance()->AleDynamicParams(),
-          "INITIALDISP") != INPAR::ALE::initdisp_zero_disp)
+  if (CORE::UTILS::IntegralValue<INPAR::ALE::InitialDisp>(
+          GLOBAL::Problem::Instance()->AleDynamicParams(), "INITIALDISP") !=
+      INPAR::ALE::initdisp_zero_disp)
   {
     FluidField()->SetMeshMap(coupfa_->MasterDofMap(), nds_master);
     Teuchos::RCP<Epetra_Vector> initfluiddisp = AleToFluidField(AleField()->Dispn());
@@ -123,7 +125,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
       GLOBAL::Problem::Instance()->FluidDynamicParams());  // call from base algorithm
 
 
-  if (INPUT::IntegralValue<bool>(
+  if (CORE::UTILS::IntegralValue<bool>(
           GLOBAL::Problem::Instance()->FSIDynamicParams(), "MATCHGRID_STRUCTALE"))
   {
     Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa = Teuchos::rcp(new CORE::ADAPTER::Coupling());
@@ -253,7 +255,7 @@ void ADAPTER::FluidAle::NonlinearSolve(
   {
     // if we have values at the interface we need to apply them
     AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
-    if (INPUT::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
+    if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
     {
       FluidField()->ApplyInterfaceVelocities(ivel);
     }
@@ -285,7 +287,7 @@ void ADAPTER::FluidAle::NonlinearSolve(
   FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   // no computation of fluid velocities in case only structure and ALE are to compute
-  if (INPUT::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
+  if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
   {
     FluidField()->Solve();
   }
@@ -301,7 +303,7 @@ void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp
   if (idisp != Teuchos::null)
   {
     AleField()->ApplyInterfaceDisplacements(AleField()->Interface()->ExtractFSICondVector(idisp));
-    if (INPUT::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
+    if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
     {
       FluidField()->ApplyInterfaceVelocities(ivel);
     }
@@ -335,7 +337,7 @@ void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp
   FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   // no computation of fluid velocities in case only structure and ALE are to compute
-  if (INPUT::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
+  if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
   {
     FluidField()->Solve();
   }
@@ -352,7 +354,7 @@ void ADAPTER::FluidAle::ApplyInterfaceValues(
   {
     // if we have values at the interface we need to apply them
     AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
-    if (INPUT::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
+    if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
     {
       FluidField()->ApplyInterfaceVelocities(ivel);
     }

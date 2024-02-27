@@ -63,9 +63,9 @@ void FS3I::PartFS3I::Init()
   // call setup in base class
   FS3I::FS3I_Base::Init();
 
-  volume_fieldcouplings_.push_back(INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(
+  volume_fieldcouplings_.push_back(CORE::UTILS::IntegralValue<INPAR::FS3I::VolumeCoupling>(
       GLOBAL::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_FIELDCOUPLING"));
-  volume_fieldcouplings_.push_back(INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(
+  volume_fieldcouplings_.push_back(CORE::UTILS::IntegralValue<INPAR::FS3I::VolumeCoupling>(
       GLOBAL::Problem::Instance()->FS3IDynamicParams(), "STRUCTSCAL_FIELDCOUPLING"));
 
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
@@ -113,8 +113,9 @@ void FS3I::PartFS3I::Init()
   //  dserror("At least two material lists required for partitioned FS3I!");
 
   // determine type of scalar transport
-  const INPAR::SCATRA::ImplType impltype_fluid = INPUT::IntegralValue<INPAR::SCATRA::ImplType>(
-      GLOBAL::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_SCATRATYPE");
+  const INPAR::SCATRA::ImplType impltype_fluid =
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::ImplType>(
+          GLOBAL::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
   // create discretization for fluid-based scalar transport from and
@@ -412,7 +413,8 @@ void FS3I::PartFS3I::ReadRestart()
   if (restart)
   {
     const Teuchos::ParameterList& fs3idynac = GLOBAL::Problem::Instance()->FS3IDynamicParams();
-    const bool restartfrompartfsi = INPUT::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
+    const bool restartfrompartfsi =
+        CORE::UTILS::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
 
     if (not restartfrompartfsi)  // standard restart
     {
@@ -540,7 +542,7 @@ void FS3I::PartFS3I::SetupSystem()
       (scatravec_[0])->ScaTraField()->Discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
-  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
       "SOLVER", INPAR::SOLVER::SolverType::umfpack, scatrasolvparams);
   scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(scatrasolvparams, firstscatradis->Comm()));
 #else
@@ -747,8 +749,9 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
 
   Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->CalculateWallShearStresses();
 
-  if (INPUT::IntegralValue<INPAR::FLUID::WSSType>(GLOBAL::Problem::Instance()->FluidDynamicParams(),
-          "WSS_TYPE") != INPAR::FLUID::wss_standard)
+  if (CORE::UTILS::IntegralValue<INPAR::FLUID::WSSType>(
+          GLOBAL::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE") !=
+      INPAR::FLUID::wss_standard)
     dserror("WSS_TYPE not supported for FS3I!");
 
   wss.push_back(WallShearStress);

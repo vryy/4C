@@ -14,10 +14,10 @@
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_turbulence_boxfilter.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_scatra_ele_action.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -29,7 +29,7 @@ FLD::DynSmagFilter::DynSmagFilter(
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
+      physicaltype_(CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
 {
   // the default is do nothing
   apply_dynamic_smagorinsky_ = false;
@@ -49,7 +49,7 @@ FLD::DynSmagFilter::DynSmagFilter(
       apply_dynamic_smagorinsky_ = true;
 
       // check, if averaging is desired
-      if (INPUT::IntegralValue<int>(
+      if (CORE::UTILS::IntegralValue<int>(
               params_.sublist("SUBGRID VISCOSITY"), "C_SMAGORINSKY_AVERAGED") == true)
       {
         if (discret_->Comm().MyPID() == 0)
@@ -82,7 +82,8 @@ FLD::DynSmagFilter::DynSmagFilter(
       // check whether we would like to include a model for the isotropic part
       if (physicaltype_ == INPAR::FLUID::loma)
       {
-        if (INPUT::IntegralValue<int>(params_.sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI") == true)
+        if (CORE::UTILS::IntegralValue<int>(params_.sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI") ==
+            true)
         {
           if (discret_->Comm().MyPID() == 0)
             std::cout << "------->  Ci is included for loma problem" << std::endl;
@@ -790,7 +791,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_turb_prandtl_params;
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_turbulent_prandtl_number, calc_turb_prandtl_params);
 
   // hand filtered global vectors down to the element

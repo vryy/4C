@@ -208,7 +208,7 @@ int DRT::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = INPUT::get<FLD::Action>(params, "action");
+  const FLD::Action act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
   Teuchos::RCP<MAT::Material> mat = Material();

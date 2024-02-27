@@ -98,14 +98,15 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Init(
 
   blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
-  fdcheck_ = INPUT::IntegralValue<INPAR::POROMULTIPHASE::FDCheck>(
+  fdcheck_ = CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASE::FDCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
   equilibration_method_ = Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
       algoparams.sublist("MONOLITHIC"), "EQUILIBRATION");
 
   solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
-  solveradapttol_ = (INPUT::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
+  solveradapttol_ =
+      (CORE::UTILS::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
 }
 
 /*----------------------------------------------------------------------*
@@ -600,9 +601,9 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSolver()
 
   CreateLinearSolver(solverparams, solvertype);
 
-  vectornormfres_ = INPUT::IntegralValue<INPAR::POROMULTIPHASE::VectorNorm>(
+  vectornormfres_ = CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASE::VectorNorm>(
       poromultdyn.sublist("MONOLITHIC"), "VECTORNORM_RESF");
-  vectornorminc_ = INPUT::IntegralValue<INPAR::POROMULTIPHASE::VectorNorm>(
+  vectornorminc_ = CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASE::VectorNorm>(
       poromultdyn.sublist("MONOLITHIC"), "VECTORNORM_INC");
 
   return true;

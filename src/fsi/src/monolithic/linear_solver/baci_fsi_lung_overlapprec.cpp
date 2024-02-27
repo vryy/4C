@@ -14,10 +14,10 @@
 #include "baci_adapter_str_fsiwrapper.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io_control.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_linear_solver_preconditioner_linalg.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -47,11 +47,11 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   alpha_ = fsidyn.sublist("CONSTRAINT").get<double>("ALPHA");
   simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
-  prec_ =
-      INPUT::IntegralValue<INPAR::FSI::PrecConstr>(fsidyn.sublist("CONSTRAINT"), "PRECONDITIONER");
+  prec_ = CORE::UTILS::IntegralValue<INPAR::FSI::PrecConstr>(
+      fsidyn.sublist("CONSTRAINT"), "PRECONDITIONER");
 
   Teuchos::ParameterList constrsolvparams;
-  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
       "SOLVER", INPAR::SOLVER::SolverType::umfpack, constrsolvparams);
   constraintsolver_ = Teuchos::rcp(new CORE::LINALG::Solver(constrsolvparams, maps.Map(0)->Comm()));
 }

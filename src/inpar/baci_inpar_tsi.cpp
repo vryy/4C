@@ -14,7 +14,7 @@
 #include "baci_inpar_tsi.hpp"
 
 #include "baci_inpar_contact.hpp"
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -22,7 +22,6 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -39,7 +38,7 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           IterStaggFixedRel, Monolithic),
       &tsidyn);
 
-  BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &tsidyn);
+  CORE::UTILS::BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &tsidyn);
 
   // coupling strategy for BACI-INCA coupling
   setStringToIntegralParameter<int>("TFSI_COUPALGO", "tfsi",
@@ -48,15 +47,16 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(TFSI, FSI, ConjHeatTransfer, NoIncaFSI), &tsidyn);
 
   // output type
-  IntParameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &tsidyn);
+  CORE::UTILS::IntParameter(
+      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &tsidyn);
 
   // time loop control
-  IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &tsidyn);
-  DoubleParameter("MAXTIME", 1000.0, "total simulation time", &tsidyn);
-  DoubleParameter("TIMESTEP", 0.05, "time step size dt", &tsidyn);
-  IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &tsidyn);
-  IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &tsidyn);
-  IntParameter("RESULTSEVRY", 1, "increment for writing solution", &tsidyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &tsidyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "total simulation time", &tsidyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size dt", &tsidyn);
+  CORE::UTILS::IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &tsidyn);
+  CORE::UTILS::IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &tsidyn);
+  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "increment for writing solution", &tsidyn);
 
   setStringToIntegralParameter<int>("NORM_INC", "Abs",
       "type of norm for convergence check of primary variables in TSI",
@@ -70,9 +70,10 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Dynamic section for monolithic TSI");
 
   // convergence tolerance of tsi residual
-  DoubleParameter("CONVTOL", 1e-6, "tolerance for convergence check of TSI", &tsidynmono);
+  CORE::UTILS::DoubleParameter(
+      "CONVTOL", 1e-6, "tolerance for convergence check of TSI", &tsidynmono);
   // Iterationparameters
-  DoubleParameter("TOLINC", 1.0e-6,
+  CORE::UTILS::DoubleParameter("TOLINC", 1.0e-6,
       "tolerance for convergence check of TSI-increment in monolithic TSI", &tsidynmono);
 
   setStringToIntegralParameter<int>("NORM_RESF", "Abs",
@@ -94,32 +95,33 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("fullnewton", "ptc"), tuple<int>(soltech_newtonfull, soltech_ptc),
       &tsidynmono);
 
-  DoubleParameter("PTCDT", 0.1,
+  CORE::UTILS::DoubleParameter("PTCDT", 0.1,
       "pseudo time step for pseudo-transient continuation (PTC) stabilised Newton procedure",
       &tsidynmono);
 
   // number of linear solver used for monolithic TSI
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for monolithic TSI problems", &tsidynmono);
 
   // convergence criteria adaptivity of monolithic TSI solver
-  BoolParameter("ADAPTCONV", "No",
+  CORE::UTILS::BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution", &tsidynmono);
-  DoubleParameter("ADAPTCONV_BETTER", 0.1,
+  CORE::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &tsidynmono);
 
-  BoolParameter("INFNORMSCALING", "yes", "Scale blocks of matrix with row infnorm?", &tsidynmono);
+  CORE::UTILS::BoolParameter(
+      "INFNORMSCALING", "yes", "Scale blocks of matrix with row infnorm?", &tsidynmono);
 
   // merge TSI block matrix to enable use of direct solver in monolithic TSI
   // default: "No", i.e. use block matrix
-  BoolParameter("MERGE_TSI_BLOCK_MATRIX", "No", "Merge TSI block matrix", &tsidynmono);
+  CORE::UTILS::BoolParameter("MERGE_TSI_BLOCK_MATRIX", "No", "Merge TSI block matrix", &tsidynmono);
 
   // in case of monolithic TSI nodal values (displacements, temperatures and
   // reaction forces) at fix points of the body can be calculated
   // default: "No", i.e. nothing is calculated
-  BoolParameter("CALC_NECKING_TSI_VALUES", "No",
+  CORE::UTILS::BoolParameter("CALC_NECKING_TSI_VALUES", "No",
       "Calculate nodal values for evaluation and validation of necking", &tsidynmono);
 
   /*----------------------------------------------------------------------*/
@@ -133,29 +135,29 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("Displacement", "Temperature"), tuple<int>(0, 1), &tsidynpart);
 
   // Solver parameter for relaxation of iterative staggered partitioned TSI
-  DoubleParameter("MAXOMEGA", 0.0,
+  CORE::UTILS::DoubleParameter("MAXOMEGA", 0.0,
       "largest omega allowed for Aitken relaxation (0.0 means no constraint)", &tsidynpart);
-  DoubleParameter("FIXEDOMEGA", 1.0, "fixed relaxation parameter", &tsidynpart);
+  CORE::UTILS::DoubleParameter("FIXEDOMEGA", 1.0, "fixed relaxation parameter", &tsidynpart);
 
   // convergence tolerance of outer iteration loop
-  DoubleParameter("CONVTOL", 1e-6,
+  CORE::UTILS::DoubleParameter("CONVTOL", 1e-6,
       "tolerance for convergence check of outer iteraiton within partitioned TSI", &tsidynpart);
 
   /*----------------------------------------------------------------------*/
   /* parameters for tsi contact */
   Teuchos::ParameterList& tsic = list->sublist("TSI CONTACT", false, "");
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "HEATTRANSSLAVE", 0.0, "Heat transfer parameter for slave side in thermal contact", &tsic);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "HEATTRANSMASTER", 0.0, "Heat transfer parameter for master side in thermal contact", &tsic);
-  DoubleParameter("TEMP_DAMAGE", 1.0e12,
+  CORE::UTILS::DoubleParameter("TEMP_DAMAGE", 1.0e12,
       "damage temperatue at contact interface: friction coefficient zero there", &tsic);
-  DoubleParameter("TEMP_REF", 0.0,
+  CORE::UTILS::DoubleParameter("TEMP_REF", 0.0,
       "reference temperatue at contact interface: friction coefficient equals the given value",
       &tsic);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "NITSCHE_THETA_TSI", 0.0, "+1: symmetric, 0: non-symmetric, -1: skew-symmetric", &tsic);
 
   setStringToIntegralParameter<int>("NITSCHE_WEIGHTING_TSI", "harmonic",
@@ -165,10 +167,10 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           INPAR::CONTACT::NitWgt_harmonic, INPAR::CONTACT::NitWgt_phyiscal),
       &tsic);
 
-  BoolParameter("NITSCHE_PENALTY_ADAPTIVE_TSI", "yes",
+  CORE::UTILS::BoolParameter("NITSCHE_PENALTY_ADAPTIVE_TSI", "yes",
       "adapt penalty parameter after each converged time step", &tsic);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "PENALTYPARAM_THERMO", 0.0, "Penalty parameter for Nitsche solution strategy", &tsic);
 
   setStringToIntegralParameter<int>("NITSCHE_METHOD_TSI", "nitsche",

@@ -10,8 +10,7 @@
 #include "baci_inpar_IO_monitor_structure_dbc.hpp"
 
 #include "baci_inpar.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -25,7 +24,6 @@ namespace INPAR
      *----------------------------------------------------------------------*/
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     {
-      using namespace INPUT;
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
@@ -35,15 +33,16 @@ namespace INPAR
           sublist_IO.sublist("MONITOR STRUCTURE DBC", false, "");
 
       // output interval regarding steps: write output every INTERVAL_STEPS steps
-      IntParameter("INTERVAL_STEPS", -1, "write reaction force output every INTERVAL_STEPS steps",
+      CORE::UTILS::IntParameter("INTERVAL_STEPS", -1,
+          "write reaction force output every INTERVAL_STEPS steps",
           &sublist_IO_monitor_structure_dbc);
 
       // precision for file
-      IntParameter(
+      CORE::UTILS::IntParameter(
           "PRECISION_FILE", 16, "precision for written file", &sublist_IO_monitor_structure_dbc);
 
       // precision for screen
-      IntParameter("PRECISION_SCREEN", 5, "precision for written screen output",
+      CORE::UTILS::IntParameter("PRECISION_SCREEN", 5, "precision for written screen output",
           &sublist_IO_monitor_structure_dbc);
 
       // type of written output file
@@ -55,7 +54,7 @@ namespace INPAR
           &sublist_IO_monitor_structure_dbc);
 
       // whether to write output in every iteration of the nonlinear solver
-      BoolParameter("WRITE_HEADER", "No",
+      CORE::UTILS::BoolParameter("WRITE_HEADER", "No",
           "write information about monitored boundary condition to output file",
           &sublist_IO_monitor_structure_dbc);
     }

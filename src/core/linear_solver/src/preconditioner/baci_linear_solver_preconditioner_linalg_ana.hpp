@@ -12,10 +12,10 @@
 // Trilinos includes
 #include "baci_config.hpp"
 
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_utils_exceptions.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <functional>
 
@@ -578,7 +578,7 @@ namespace CORE::LINALG
                 [&]()
                 {
                   Teuchos::ParameterList solvparams;
-                  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+                  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
                       "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
                   return Teuchos::rcp(new CORE::LINALG::Solver(solvparams, op.Comm()));
                 })),
@@ -593,7 +593,7 @@ namespace CORE::LINALG
                 [&]()
                 {
                   Teuchos::ParameterList solvparams;
-                  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+                  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
                       "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
                   return Teuchos::rcp(new CORE::LINALG::Solver(solvparams, op.Comm()));
                 })),

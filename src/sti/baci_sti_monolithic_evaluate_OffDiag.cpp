@@ -13,7 +13,6 @@
 #include "baci_coupling_adapter_converter.hpp"
 #include "baci_lib_assemblestrategy.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_matrixtransform.hpp"
 #include "baci_linalg_sparseoperator.hpp"
@@ -21,6 +20,7 @@
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <utility>
 
@@ -64,7 +64,7 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockScatraThermoDomain(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_scatrathermo, eleparams);
 
   // remove state vectors from scatra discretization
@@ -124,7 +124,7 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockThermoScatraDomain(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_thermoscatra, eleparams);
 
   // remove state vectors from thermo discretization
@@ -280,11 +280,11 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
   Teuchos::ParameterList condparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // set type of differentiation to temperature
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::temp, condparams);
 
   // remove state vectors from scalar transport discretization
@@ -463,11 +463,11 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
   Teuchos::ParameterList condparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // set differentiation type to elch
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
       "differentiationtype", SCATRA::DifferentiationType::elch, condparams);
 
   // create strategy for assembly of auxiliary system matrices

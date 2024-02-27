@@ -86,7 +86,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale", reader.Comm()));
       }
-      else if (INPUT::IntegralValue<int>(
+      else if (CORE::UTILS::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
       {
         structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -97,7 +97,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       {
         structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
-        if (INPUT::IntegralValue<bool>(
+        if (CORE::UTILS::IntegralValue<bool>(
                 problem.XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
           xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
@@ -252,10 +252,11 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
           Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
       problem.AddDis("structure", structdis);
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          INPUT::IntegralValue<INPAR::GeometryType>(problem.StructuralDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<INPAR::GeometryType>(
+              problem.StructuralDynamicParams(), "GEOMETRY"),
           nullptr);
 
-      if (INPUT::IntegralValue<int>(
+      if (CORE::UTILS::IntegralValue<int>(
               problem.XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
       {
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
@@ -279,7 +280,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         problem.AddDis("fluid", fluiddis);
 
         meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-            INPUT::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
+            CORE::UTILS::IntegralValue<INPAR::GeometryType>(
+                problem.FluidDynamicParams(), "GEOMETRY"),
             nullptr);
       }
 
@@ -315,7 +317,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          INPUT::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
       meshreader.AddElementReader(INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
@@ -368,7 +370,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         fluiddis->SetWriter(
             Teuchos::rcp(new IO::DiscretizationWriter(fluiddis, output_control, distype)));
       }
-      else if (INPUT::IntegralValue<int>(
+      else if (CORE::UTILS::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
       {
         fluiddis = Teuchos::rcp(new DRT::DiscretizationXWall("fluid", reader.Comm()));
@@ -390,7 +392,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("fluid", fluiddis);
 
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          INPUT::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
       break;
@@ -489,7 +491,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale", reader.Comm()));
       }
-      else if (INPUT::IntegralValue<int>(
+      else if (CORE::UTILS::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
       {
         fluiddis = Teuchos::rcp(new DRT::DiscretizationXWall("fluid", reader.Comm()));
@@ -498,7 +500,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       else
       {
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
-        if (INPUT::IntegralValue<bool>(
+        if (CORE::UTILS::IntegralValue<bool>(
                 problem.XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
           xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
@@ -563,10 +565,12 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("thermo", thermdis);
 
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          INPUT::IntegralValue<INPAR::GeometryType>(problem.StructuralDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<INPAR::GeometryType>(
+              problem.StructuralDynamicParams(), "GEOMETRY"),
           nullptr);
       meshreader.AddAdvancedReader(thermdis, reader, "THERMO",
-          INPUT::IntegralValue<INPAR::GeometryType>(problem.ThermalDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<INPAR::GeometryType>(
+              problem.ThermalDynamicParams(), "GEOMETRY"),
           nullptr);
 
       break;
@@ -621,7 +625,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structure", structdis);
 
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          INPUT::IntegralValue<INPAR::GeometryType>(problem.StructuralDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<INPAR::GeometryType>(
+              problem.StructuralDynamicParams(), "GEOMETRY"),
           nullptr);
 
       break;
@@ -694,7 +699,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          INPUT::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
       // meshreader.AddElementReader(Teuchos::rcp(new INPUT::ElementReader(fluiddis, reader,
       // "--FLUID ELEMENTS")));
@@ -852,7 +857,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
-      if (INPUT::IntegralValue<bool>(problem.PoroMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
+      if (CORE::UTILS::IntegralValue<bool>(
+              problem.PoroMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
         arterydis->SetWriter(
@@ -901,7 +907,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       meshreader.AddElementReader(INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
-      if (INPUT::IntegralValue<bool>(
+      if (CORE::UTILS::IntegralValue<bool>(
               problem.PoroMultiPhaseScatraDynamicParams(), "ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
@@ -946,7 +952,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       meshreader.AddElementReader(INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
-      if (INPUT::IntegralValue<bool>(problem.PoroFluidMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
+      if (CORE::UTILS::IntegralValue<bool>(
+              problem.PoroFluidMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm()));
         arterydis->SetWriter(
@@ -1001,7 +1008,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          INPUT::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
       break;
@@ -1131,7 +1138,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("scatra", scatradis);
 
       // consider case of additional scatra manifold
-      if (INPUT::IntegralValue<bool>(
+      if (CORE::UTILS::IntegralValue<bool>(
               problem.SSIControlParams().sublist("MANIFOLD"), "ADD_MANIFOLD"))
       {
         auto scatra_manifold_dis =
@@ -1933,11 +1940,11 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
 
   // 1) get the problem type
   const Teuchos::ParameterList& type = problem.ProblemTypeParams();
-  problem.SetProblemType(INPUT::IntegralValue<GLOBAL::ProblemType>(type, "PROBLEMTYP"));
+  problem.SetProblemType(CORE::UTILS::IntegralValue<GLOBAL::ProblemType>(type, "PROBLEMTYP"));
 
   // 2) get the spatial approximation type
   problem.SetSpatialApproximationType(
-      INPUT::IntegralValue<CORE::FE::ShapeFunctionType>(type, "SHAPEFCT"));
+      CORE::UTILS::IntegralValue<CORE::FE::ShapeFunctionType>(type, "SHAPEFCT"));
 
   int restart_step = problem.Restart();
   // 3) do the restart business with the four options we support (partially)

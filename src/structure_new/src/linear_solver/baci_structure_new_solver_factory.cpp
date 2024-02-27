@@ -188,10 +188,11 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
   const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->ContactDynamicParams();
 
   const enum INPAR::CONTACT::SolvingStrategy sol_type =
-      static_cast<INPAR::CONTACT::SolvingStrategy>(INPUT::IntegralValue<int>(mcparams, "STRATEGY"));
+      static_cast<INPAR::CONTACT::SolvingStrategy>(
+          CORE::UTILS::IntegralValue<int>(mcparams, "STRATEGY"));
 
   const enum INPAR::CONTACT::SystemType sys_type =
-      static_cast<INPAR::CONTACT::SystemType>(INPUT::IntegralValue<int>(mcparams, "SYSTEM"));
+      static_cast<INPAR::CONTACT::SystemType>(CORE::UTILS::IntegralValue<int>(mcparams, "SYSTEM"));
 
   const int lin_solver_id = mcparams.get<int>("LINEAR_SOLVER");
 
@@ -333,7 +334,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
 
   // solution algorithm - direct, simple or Uzawa
   INPAR::STR::ConSolveAlgo algochoice =
-      INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(strparams, "UZAWAALGO");
+      CORE::UTILS::IntegralValue<INPAR::STR::ConSolveAlgo>(strparams, "UZAWAALGO");
 
   switch (algochoice)
   {
@@ -427,7 +428,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLi
 
   // solution algorithm - direct or simple
   INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice =
-      INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(
+      CORE::UTILS::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(
           cardvasc0dstructparams, "SOLALGORITHM");
 
   switch (algochoice)

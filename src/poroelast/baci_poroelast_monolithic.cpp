@@ -93,14 +93,14 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
 
   // some solver paramaters are red form the structure dynamic list (this is not the best way to do
   // it ...)
-  solveradapttol_ = (INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradapttol_ = (CORE::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   const Teuchos::ParameterList& poroparams = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
   equilibration_method_ =
       Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(poroparams, "EQUILIBRATION");
 
-  strmethodname_ = INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
+  strmethodname_ = CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
   no_penetration_ = false;
   nit_contact_ = false;
   // if inpar is set to nopenetration for contact!!! to be done!
@@ -1593,14 +1593,14 @@ bool POROELAST::Monolithic::SetupSolver()
   // Get the parameters for the Newton iteration
   itermax_ = poroelastdyn.get<int>("ITEMAX");
   itermin_ = poroelastdyn.get<int>("ITEMIN");
-  normtypeinc_ = INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroelastdyn, "NORM_INC");
-  normtypefres_ = INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(poroelastdyn, "NORM_RESF");
+  normtypeinc_ = CORE::UTILS::IntegralValue<INPAR::POROELAST::ConvNorm>(poroelastdyn, "NORM_INC");
+  normtypefres_ = CORE::UTILS::IntegralValue<INPAR::POROELAST::ConvNorm>(poroelastdyn, "NORM_RESF");
   combincfres_ =
-      INPUT::IntegralValue<INPAR::POROELAST::BinaryOp>(poroelastdyn, "NORMCOMBI_RESFINC");
+      CORE::UTILS::IntegralValue<INPAR::POROELAST::BinaryOp>(poroelastdyn, "NORMCOMBI_RESFINC");
   vectornormfres_ =
-      INPUT::IntegralValue<INPAR::POROELAST::VectorNorm>(poroelastdyn, "VECTORNORM_RESF");
+      CORE::UTILS::IntegralValue<INPAR::POROELAST::VectorNorm>(poroelastdyn, "VECTORNORM_RESF");
   vectornorminc_ =
-      INPUT::IntegralValue<INPAR::POROELAST::VectorNorm>(poroelastdyn, "VECTORNORM_INC");
+      CORE::UTILS::IntegralValue<INPAR::POROELAST::VectorNorm>(poroelastdyn, "VECTORNORM_INC");
 
   tolinc_ = poroelastdyn.get<double>("TOLINC_GLOBAL");
   tolfres_ = poroelastdyn.get<double>("TOLRES_GLOBAL");

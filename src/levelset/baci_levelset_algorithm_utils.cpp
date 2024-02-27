@@ -15,7 +15,6 @@
 #include "baci_io_pstream.hpp"
 #include "baci_levelset_algorithm.hpp"
 #include "baci_levelset_intersection_utils.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -23,6 +22,7 @@
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_ele_calc_utils.hpp"
 #include "baci_utils_function.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -201,7 +201,7 @@ void SCATRA::LevelSetAlgorithm::MassConservationCheck(
 void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
 {
   const INPAR::SCATRA::CalcErrorLevelSet calcerr =
-      INPUT::IntegralValue<INPAR::SCATRA::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
 
   switch (calcerr)
   {
@@ -229,7 +229,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
       {
         // create the parameters for the error calculation
         Teuchos::ParameterList eleparams;
-        DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+        CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
             "action", SCATRA::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", calcerr);
 
@@ -913,7 +913,7 @@ void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_mass_center_smoothingfunct, eleparams);
 
   // give access to interface thickness from smoothing function (TPF module) in element calculations

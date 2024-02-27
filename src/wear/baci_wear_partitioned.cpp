@@ -40,7 +40,6 @@
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_elementtype.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -52,6 +51,7 @@
 #include "baci_so3_tet10.hpp"
 #include "baci_so3_tet4.hpp"
 #include "baci_structure_aux.hpp"
+#include "baci_utils_parameter_list.hpp"
 #include "baci_w1.hpp"
 #include "baci_wear_utils.hpp"
 
@@ -71,7 +71,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
   const Epetra_Map* structdofmap = StructureField()->Discretization()->NodeRowMap();
   const Epetra_Map* aledofmap = AleField().Discretization()->NodeRowMap();
 
-  if (INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->WearParams(), "MATCHINGGRID"))
+  if (CORE::UTILS::IntegralValue<bool>(GLOBAL::Problem::Instance()->WearParams(), "MATCHINGGRID"))
   {
     // if there are two identical nodes (i.e. for initial contact) the nodes matching creates an
     // error !!!
@@ -149,10 +149,10 @@ void WEAR::Partitioned::TimeLoop()
       alestep = true;
     }
 
-    if (INPUT::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
+    if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
         INPAR::WEAR::wear_stagg)
       TimeLoopStagg(alestep);
-    else if (INPUT::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
+    else if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
              INPAR::WEAR::wear_iterstagg)
       TimeLoopIterStagg();
     else
@@ -407,7 +407,7 @@ void WEAR::Partitioned::UpdateSpatConf()
       StructureField()->WriteAccessDispnp();  // change to ExtractDispn() for overlap
 
   // get info about wear conf
-  INPAR::WEAR::WearShapeEvo wconf = INPUT::IntegralValue<INPAR::WEAR::WearShapeEvo>(
+  INPAR::WEAR::WearShapeEvo wconf = CORE::UTILS::IntegralValue<INPAR::WEAR::WearShapeEvo>(
       GLOBAL::Problem::Instance()->WearParams(), "WEAR_SHAPE_EVO");
 
   // for shape evol in spat conf
@@ -549,15 +549,15 @@ void WEAR::Partitioned::InterfaceDisp(
     Teuchos::RCP<Epetra_Vector>& disinterface_s, Teuchos::RCP<Epetra_Vector>& disinterface_m)
 {
   // get info about wear side
-  INPAR::WEAR::WearSide wside = INPUT::IntegralValue<INPAR::WEAR::WearSide>(
+  INPAR::WEAR::WearSide wside = CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(
       GLOBAL::Problem::Instance()->WearParams(), "WEAR_SIDE");
 
   // get info about wear type
-  INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
+  INPAR::WEAR::WearType wtype = CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(
       GLOBAL::Problem::Instance()->WearParams(), "WEARTYPE");
 
   // get info about wear coeff conf
-  INPAR::WEAR::WearCoeffConf wcoeffconf = INPUT::IntegralValue<INPAR::WEAR::WearCoeffConf>(
+  INPAR::WEAR::WearCoeffConf wcoeffconf = CORE::UTILS::IntegralValue<INPAR::WEAR::WearCoeffConf>(
       GLOBAL::Problem::Instance()->WearParams(), "WEARCOEFF_CONF");
 
   if (interfaces_.size() > 1)
@@ -714,7 +714,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
     dmat->Complete();
 
     Teuchos::ParameterList solvparams;
-    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+    CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
         "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
     CORE::LINALG::Solver solver(solvparams, Comm());
 
@@ -736,7 +736,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
 void WEAR::Partitioned::WearSpatialMaster(Teuchos::RCP<Epetra_Vector>& disinterface_m)
 {
   // get info about wear conf
-  INPAR::WEAR::WearTimeScale wtime = INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(
+  INPAR::WEAR::WearTimeScale wtime = CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimeScale>(
       GLOBAL::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
 
   for (int i = 0; i < (int)interfaces_.size(); ++i)
@@ -805,13 +805,13 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
-  INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
+  INPAR::WEAR::WearType wtype = CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(
       GLOBAL::Problem::Instance()->WearParams(), "WEARTYPE");
 
-  INPAR::WEAR::WearTimInt wtimint = INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(
+  INPAR::WEAR::WearTimInt wtimint = CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimInt>(
       GLOBAL::Problem::Instance()->WearParams(), "WEARTIMINT");
 
-  INPAR::WEAR::WearTimeScale wtime = INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(
+  INPAR::WEAR::WearTimeScale wtime = CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimeScale>(
       GLOBAL::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
 
   if (!(wtype == INPAR::WEAR::wear_intstate and wtimint == INPAR::WEAR::wear_impl))
@@ -894,7 +894,7 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
 
       // solve with default solver
       Teuchos::ParameterList solvparams;
-      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
@@ -987,13 +987,13 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   WEAR::LagrangeStrategyWear& cstrategy = dynamic_cast<WEAR::LagrangeStrategyWear&>(strategy);
 
-  INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
+  INPAR::WEAR::WearType wtype = CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(
       GLOBAL::Problem::Instance()->WearParams(), "WEARTYPE");
 
-  INPAR::WEAR::WearTimInt wtimint = INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(
+  INPAR::WEAR::WearTimInt wtimint = CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimInt>(
       GLOBAL::Problem::Instance()->WearParams(), "WEARTIMINT");
 
-  INPAR::WEAR::WearTimeScale wtime = INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(
+  INPAR::WEAR::WearTimeScale wtime = CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimeScale>(
       GLOBAL::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
 
   if (!(wtype == INPAR::WEAR::wear_intstate and wtimint == INPAR::WEAR::wear_impl))
@@ -1116,7 +1116,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 
       // solve with default solver
       Teuchos::ParameterList solvparams;
-      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
@@ -1134,7 +1134,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 
       // solve with default solver
       Teuchos::ParameterList solvparams;
-      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
@@ -1170,10 +1170,10 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
  *----------------------------------------------------------------------*/
 void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinterface_m)
 {
-  INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
+  INPAR::WEAR::WearType wtype = CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(
       GLOBAL::Problem::Instance()->WearParams(), "WEARTYPE");
 
-  INPAR::WEAR::WearTimeScale wtime = INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(
+  INPAR::WEAR::WearTimeScale wtime = CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimeScale>(
       GLOBAL::Problem::Instance()->WearParams(), "WEAR_TIMESCALE");
 
   // loop over all interfaces
@@ -1361,7 +1361,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
 
       // solve with default solver
       Teuchos::ParameterList solvparams;
-      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
@@ -1380,7 +1380,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
 
       // solve with default solver
       Teuchos::ParameterList solvparams;
-      DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
           "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
@@ -1426,7 +1426,7 @@ void WEAR::Partitioned::UpdateMatConf()
       ->SetState(0, "material_displacement", StructureField()->DispMat());
 
   // get info about wear conf
-  INPAR::WEAR::WearShapeEvo wconf = INPUT::IntegralValue<INPAR::WEAR::WearShapeEvo>(
+  INPAR::WEAR::WearShapeEvo wconf = CORE::UTILS::IntegralValue<INPAR::WEAR::WearShapeEvo>(
       GLOBAL::Problem::Instance()->WearParams(), "WEAR_SHAPE_EVO");
 
   // if shape evol. in mat conf: ale dispnp = material displ.
@@ -1704,10 +1704,10 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
 {
   // get info about ale dynamic
   // INPAR::ALE::AleDynamic aletype =
-  INPUT::IntegralValue<INPAR::ALE::AleDynamic>(ParamsAle(), "ALE_TYPE");
+  CORE::UTILS::IntegralValue<INPAR::ALE::AleDynamic>(ParamsAle(), "ALE_TYPE");
 
   // get info about wear conf
-  INPAR::WEAR::WearShapeEvo wconf = INPUT::IntegralValue<INPAR::WEAR::WearShapeEvo>(
+  INPAR::WEAR::WearShapeEvo wconf = CORE::UTILS::IntegralValue<INPAR::WEAR::WearShapeEvo>(
       GLOBAL::Problem::Instance()->WearParams(), "WEAR_SHAPE_EVO");
 
   //  if(aletype != INPAR::ALE::solid)

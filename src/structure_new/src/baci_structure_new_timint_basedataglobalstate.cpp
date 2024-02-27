@@ -276,11 +276,12 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
     }
     case INPAR::STR::model_contact:
     {
-      enum INPAR::CONTACT::SystemType systype = INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
-          problem->ContactDynamicParams(), "SYSTEM");
+      enum INPAR::CONTACT::SystemType systype =
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+              problem->ContactDynamicParams(), "SYSTEM");
 
       enum INPAR::CONTACT::SolvingStrategy soltype =
-          INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
               problem->ContactDynamicParams(), "STRATEGY");
 
       // systems without additional dofs
@@ -312,7 +313,7 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
       enum INPAR::CONTACT::SystemType systype = mt_me.Strategy().SystemType();
 
       enum INPAR::CONTACT::SolvingStrategy soltype =
-          INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
               mt_me.Strategy().Params(), "STRATEGY");
 
       // systems without additional dofs

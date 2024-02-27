@@ -13,7 +13,7 @@
 
 #include "baci_inpar_volmortar.hpp"
 
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -21,7 +21,6 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::VOLMORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -58,10 +57,10 @@ void INPAR::VOLMORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
           dualquad_quad_mod, dualquad_quad_mod),
       &volmortar);
 
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "MESH_INIT", "No", "If chosen, mesh initialization procedure is performed", &volmortar);
 
-  BoolParameter("KEEP_EXTENDEDGHOSTING", "Yes",
+  CORE::UTILS::BoolParameter("KEEP_EXTENDEDGHOSTING", "Yes",
       "If chosen, extended ghosting is kept for simulation", &volmortar);
 }
 

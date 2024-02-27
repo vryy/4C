@@ -56,7 +56,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
   itmax_ = algoparams.get<int>("ITEMAX");
   ittol_ = algoparams.sublist("PARTITIONED").get<double>("CONVTOL");
 
-  artery_coupling_active_ = INPUT::IntegralValue<int>(algoparams, "ARTERY_COUPLING");
+  artery_coupling_active_ = CORE::UTILS::IntegralValue<int>(algoparams, "ARTERY_COUPLING");
 
   // initialize increment vectors
   scaincnp_ = Teuchos::rcp(

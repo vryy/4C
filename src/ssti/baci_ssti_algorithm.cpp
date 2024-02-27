@@ -112,16 +112,16 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   if (thermodis->AddDofSet(thermodofset) != 3) dserror("unexpected dof sets in thermo field");
 
   // is adaptive time stepping activated?
-  if (INPUT::IntegralValue<bool>(sstitimeparams, "ADAPTIVE_TIMESTEPPING"))
+  if (CORE::UTILS::IntegralValue<bool>(sstitimeparams, "ADAPTIVE_TIMESTEPPING"))
   {
     // safety check: adaptive time stepping in one of the subproblems?
-    if (!INPUT::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
+    if (!CORE::UTILS::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
       dserror(
           "Must provide adaptive time stepping in one of the subproblems. (Currently just ScaTra)");
-    if (INPUT::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
+    if (CORE::UTILS::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
         INPAR::STR::timada_kind_none)
       dserror("Adaptive time stepping in SSI currently just from ScaTra");
-    if (INPUT::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
+    if (CORE::UTILS::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
       dserror("Currently, only one step methods are allowed for adaptive time stepping");
   }
 
@@ -444,7 +444,7 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::CloneThermoParams(
   thermoparams_copy.set<int>("INITFUNCNO", thermoparams.get<int>("INITTHERMOFUNCT"));
   thermoparams_copy.sublist("S2I COUPLING").set<std::string>("SLAVEONLY", "No");
 
-  if (INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
+  if (CORE::UTILS::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       INPAR::SCATRA::outputscalars_none)
     thermoparams_copy.set<bool>("output_file_name_discretization", true);
 

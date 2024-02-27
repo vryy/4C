@@ -9,10 +9,9 @@
 
 #include "baci_inpar_plasticity.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_inpar_structure.hpp"
 #include "baci_inpar_tsi.hpp"
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -28,8 +27,10 @@ void INPAR::PLASTICITY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
   /* parameters for semi-smooth Newton plasticity algorithm */
   Teuchos::ParameterList& iplast = list->sublist("SEMI-SMOOTH PLASTICITY", false, "");
 
-  DoubleParameter("SEMI_SMOOTH_CPL", 1.0, "Weighting factor cpl for semi-smooth PDASS", &iplast);
-  DoubleParameter("STABILIZATION_S", 1.0, "Stabilization factor s for semi-smooth PDASS", &iplast);
+  CORE::UTILS::DoubleParameter(
+      "SEMI_SMOOTH_CPL", 1.0, "Weighting factor cpl for semi-smooth PDASS", &iplast);
+  CORE::UTILS::DoubleParameter(
+      "STABILIZATION_S", 1.0, "Stabilization factor s for semi-smooth PDASS", &iplast);
 
   // solver convergence test parameters for semi-smooth plasticity formulation
   setStringToIntegralParameter<int>("NORMCOMBI_RESFPLASTCONSTR", "And",
@@ -43,9 +44,9 @@ void INPAR::PLASTICITY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
       tuple<std::string>("And", "Or"), tuple<int>(INPAR::STR::bop_and, INPAR::STR::bop_or),
       &iplast);
 
-  DoubleParameter("TOLPLASTCONSTR", 1.0E-8,
+  CORE::UTILS::DoubleParameter("TOLPLASTCONSTR", 1.0E-8,
       "tolerance in the plastic constraint norm for the newton iteration", &iplast);
-  DoubleParameter("TOLDELTALP", 1.0E-8,
+  CORE::UTILS::DoubleParameter("TOLDELTALP", 1.0E-8,
       "tolerance in the plastic flow (Delta Lp) norm for the Newton iteration", &iplast);
 
   setStringToIntegralParameter<int>("NORMCOMBI_EASRES", "And",
@@ -58,9 +59,9 @@ void INPAR::PLASTICITY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
       tuple<std::string>("And", "Or"), tuple<int>(INPAR::STR::bop_and, INPAR::STR::bop_or),
       &iplast);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "TOLEASRES", 1.0E-8, "tolerance in the EAS residual norm for the newton iteration", &iplast);
-  DoubleParameter("TOLEASINCR", 1.0E-8,
+  CORE::UTILS::DoubleParameter("TOLEASINCR", 1.0E-8,
       "tolerance in the EAS increment norm for the Newton iteration", &iplast);
 
   setStringToIntegralParameter<int>("DISSIPATION_MODE", "pl_multiplier",

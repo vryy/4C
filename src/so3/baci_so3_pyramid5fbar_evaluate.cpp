@@ -214,10 +214,10 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D> stress;
       CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D> strain;
-      auto iostress =
-          INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-      auto iostrain =
-          INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+      auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
+          params, "iostress", INPAR::STR::stress_none);
+      auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
+          params, "iostrain", INPAR::STR::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
@@ -226,8 +226,8 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
       if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
       CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D> plstrain;
-      auto ioplstrain =
-          INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
+      auto ioplstrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
+          params, "ioplstrain", INPAR::STR::strain_none);
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
           nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);

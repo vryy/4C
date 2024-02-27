@@ -31,7 +31,7 @@ PARTICLEINTERACTION::SPHTemperature::SPHTemperature(const Teuchos::ParameterList
     : params_sph_(params),
       time_(0.0),
       dt_(0.0),
-      temperaturegradient_(INPUT::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT"))
+      temperaturegradient_(CORE::UTILS::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT"))
 {
   // empty constructor
 }
@@ -178,7 +178,7 @@ void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
 {
   // get type of heat source
   INPAR::PARTICLE::HeatSourceType heatsourcetype =
-      INPUT::IntegralValue<INPAR::PARTICLE::HeatSourceType>(params_sph_, "HEATSOURCETYPE");
+      CORE::UTILS::IntegralValue<INPAR::PARTICLE::HeatSourceType>(params_sph_, "HEATSOURCETYPE");
 
   // create heat source handler
   switch (heatsourcetype)
@@ -213,7 +213,7 @@ void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
 
 void PARTICLEINTERACTION::SPHTemperature::InitHeatLossEvaporationHandler()
 {
-  if (INPUT::IntegralValue<int>(params_sph_, "VAPOR_HEATLOSS"))
+  if (CORE::UTILS::IntegralValue<int>(params_sph_, "VAPOR_HEATLOSS"))
     heatlossevaporation_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatLossEvaporation>(
         new PARTICLEINTERACTION::SPHHeatLossEvaporation(params_sph_));
 

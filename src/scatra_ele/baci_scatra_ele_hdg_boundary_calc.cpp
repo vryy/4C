@@ -12,9 +12,9 @@
 #include "baci_scatra_ele_hdg_boundary_calc.hpp"
 
 #include "baci_lib_node.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_ele_hdg.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -119,7 +119,7 @@ int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
   CORE::LINALG::SerialDenseVector dummy_vec2, dummy_vec3;
   CORE::LINALG::SerialDenseMatrix dummy_mat2;
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::project_neumann_field, params);
 
   const int* nodeids = ele->NodeIds();

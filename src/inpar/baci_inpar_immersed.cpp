@@ -14,8 +14,8 @@
 
 #include "baci_inpar_fsi.hpp"
 #include "baci_inpar_structure.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -69,10 +69,11 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "summarize time monitor every nln iteration", tuple<std::string>("everyiter", "endofsim"),
       tuple<int>(1, 0), &immersedmethod);
 
-  DoubleParameter("FLD_SRCHRADIUS_FAC", 1.0, "fac times fluid ele. diag. length", &immersedmethod);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
+      "FLD_SRCHRADIUS_FAC", 1.0, "fac times fluid ele. diag. length", &immersedmethod);
+  CORE::UTILS::DoubleParameter(
       "STRCT_SRCHRADIUS_FAC", 0.5, "fac times structure bounding box diagonal", &immersedmethod);
-  IntParameter("NUM_GP_FLUID_BOUND", 8,
+  CORE::UTILS::IntParameter("NUM_GP_FLUID_BOUND", 8,
       "number of gp in fluid elements cut by surface of immersed structure (higher number yields "
       "better mass conservation)",
       &immersedmethod);
@@ -93,13 +94,14 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "Coupling variable at the fsi interface", tuple<std::string>("Displacement", "Force"),
       tuple<int>(0, 1), &immersedpart);
 
-  DoubleParameter("CONVTOL", 1e-6,
+  CORE::UTILS::DoubleParameter("CONVTOL", 1e-6,
       "Tolerance for iteration over fields in case of partitioned scheme", &immersedpart);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "RELAX", 1.0, "fixed relaxation parameter for partitioned FSI solvers", &immersedpart);
-  DoubleParameter("MAXOMEGA", 0.0,
+  CORE::UTILS::DoubleParameter("MAXOMEGA", 0.0,
       "largest omega allowed for Aitken relaxation (0.0 means no constraint)", &immersedpart);
-  IntParameter("ITEMAX", 100, "Maximum number of iterations over fields", &immersedpart);
+  CORE::UTILS::IntParameter(
+      "ITEMAX", 100, "Maximum number of iterations over fields", &immersedpart);
 }
 
 

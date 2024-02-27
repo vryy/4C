@@ -201,7 +201,7 @@ void SSI::SSIPart1WCSolidToScatra::Init(const Epetra_Comm& comm,
 
   // do some checks
   {
-    auto convform = INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams, "CONVFORM");
+    auto convform = CORE::UTILS::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams, "CONVFORM");
     if (convform != INPAR::SCATRA::convform_conservative)
     {
       dserror(
@@ -272,7 +272,7 @@ void SSI::SSIPart1WCScatraToSolid::Init(const Epetra_Comm& comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // Flag for reading scatra result from restart file instead of computing it
-  isscatrafromfile_ = INPUT::IntegralValue<bool>(
+  isscatrafromfile_ = CORE::UTILS::IntegralValue<bool>(
       GLOBAL::Problem::Instance()->SSIControlParams(), "SCATRA_FROM_RESTART_FILE");
 }
 

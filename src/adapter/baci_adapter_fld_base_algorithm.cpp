@@ -143,7 +143,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::null;
 
-  switch (INPUT::IntegralValue<INPAR::FLUID::MeshTying>(fdyn, "MESHTYING"))
+  switch (CORE::UTILS::IntegralValue<INPAR::FLUID::MeshTying>(fdyn, "MESHTYING"))
   {
     case INPAR::FLUID::condensed_bmat:
     {
@@ -263,11 +263,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       probtype != GLOBAL::ProblemType::fluid_xfem and
       probtype != GLOBAL::ProblemType::fluid_xfem_ls and
       !(probtype == GLOBAL::ProblemType::fsi and
-          INPUT::IntegralValue<bool>(
+          CORE::UTILS::IntegralValue<bool>(
               GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
               "XFLUIDFLUID")))
   {
-    switch (INPUT::IntegralValue<int>(fdyn, "MESHTYING"))
+    switch (CORE::UTILS::IntegralValue<int>(fdyn, "MESHTYING"))
     {
       // switch types
       case INPAR::FLUID::condensed_bmat:
@@ -321,21 +321,21 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma,
   // temperature-dependent water, poro)
-  fluidtimeparams->set<int>(
-      "Physical Type", INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE"));
+  fluidtimeparams->set<int>("Physical Type",
+      CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE"));
   // and  check correct setting
   if (probtype == GLOBAL::ProblemType::loma and
-      (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
+      (CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
               INPAR::FLUID::loma and
-          INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
+          CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
               INPAR::FLUID::tempdepwater))
     dserror(
         "Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' or "
         "'Temp_dep_water' for low-Mach-number flow!");
   if ((probtype == GLOBAL::ProblemType::thermo_fsi) and
-      (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
+      (CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
               INPAR::FLUID::loma and
-          INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
+          CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
               INPAR::FLUID::tempdepwater))
     dserror(
         "Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' or "
@@ -346,8 +346,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       disname == "porofluid")
   {
     const Teuchos::ParameterList& pedyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
-    fluidtimeparams->set<int>(
-        "Physical Type", INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE"));
+    fluidtimeparams->set<int>("Physical Type",
+        CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE"));
     if (fluidtimeparams->get<int>("Physical Type") != INPAR::FLUID::poro and
         fluidtimeparams->get<int>("Physical Type") != INPAR::FLUID::poro_p1)
       dserror(
@@ -355,7 +355,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           "'Poro_P1' for poro-elasticity!");
 
     fluidtimeparams->set<int>("Transient Terms Poro Fluid",
-        INPUT::IntegralValue<INPAR::POROELAST::TransientEquationsOfPoroFluid>(
+        CORE::UTILS::IntegralValue<INPAR::POROELAST::TransientEquationsOfPoroFluid>(
             pedyn, "TRANSIENT_TERMS"));
   }
 
@@ -380,17 +380,17 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // get also scatra stabilization sublist
   const Teuchos::ParameterList& lomadyn = GLOBAL::Problem::Instance()->LOMAControlParams();
   fluidtimeparams->sublist("LOMA").set<bool>(
-      "update material", INPUT::IntegralValue<int>(lomadyn, "SGS_MATERIAL_UPDATE"));
+      "update material", CORE::UTILS::IntegralValue<int>(lomadyn, "SGS_MATERIAL_UPDATE"));
 
   // ----------------------------- sublist for general xfem-specific parameters
   if (probtype == GLOBAL::ProblemType::fluid_xfem or probtype == GLOBAL::ProblemType::fsi_xfem or
       (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "fluid") or
       (probtype == GLOBAL::ProblemType::fluid_ale and
-          INPUT::IntegralValue<bool>(
+          CORE::UTILS::IntegralValue<bool>(
               GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
               "XFLUIDFLUID")) or
       (probtype == GLOBAL::ProblemType::fsi and
-          INPUT::IntegralValue<bool>(
+          CORE::UTILS::IntegralValue<bool>(
               GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
               "XFLUIDFLUID")) or
       probtype == GLOBAL::ProblemType::fluid_xfem_ls)
@@ -419,7 +419,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   INPAR::FLUID::TimeIntegrationScheme timeint =
-      INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
+      CORE::UTILS::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
 
   // sanity checks and default flags
   if (probtype == GLOBAL::ProblemType::fsi or probtype == GLOBAL::ProblemType::fsi_lung or
@@ -437,11 +437,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
     fluidtimeparams->set<bool>(
-        "interface second order", INPUT::IntegralValue<int>(fsidyn, "SECONDORDER"));
+        "interface second order", CORE::UTILS::IntegralValue<int>(fsidyn, "SECONDORDER"));
     fluidtimeparams->set<bool>(
-        "shape derivatives", INPUT::IntegralValue<int>(fsimono, "SHAPEDERIVATIVES"));
+        "shape derivatives", CORE::UTILS::IntegralValue<int>(fsimono, "SHAPEDERIVATIVES"));
 
-    const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+    const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
     if (coupling == fsi_iter_lung_monolithicstructuresplit or
         coupling == fsi_iter_lung_monolithicfluidsplit or
@@ -467,11 +467,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
     fluidtimeparams->set<bool>(
-        "interface second order", INPUT::IntegralValue<int>(fsidyn, "SECONDORDER"));
+        "interface second order", CORE::UTILS::IntegralValue<int>(fsidyn, "SECONDORDER"));
     fluidtimeparams->set<bool>(
-        "shape derivatives", INPUT::IntegralValue<int>(fsimono, "SHAPEDERIVATIVES"));
+        "shape derivatives", CORE::UTILS::IntegralValue<int>(fsimono, "SHAPEDERIVATIVES"));
 
-    const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+    const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or coupling == fsi_iter_monolithicstructuresplit)
     {
       // No explicit predictor for monolithic free surface flow schemes, yet.
@@ -489,7 +489,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>(
-        "interface second order", INPUT::IntegralValue<int>(fsidyn, "SECONDORDER"));
+        "interface second order", CORE::UTILS::IntegralValue<int>(fsidyn, "SECONDORDER"));
   }
 
   // sanity checks and default flags
@@ -498,7 +498,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
 
-    const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+    const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
     if (coupling == fsi_iter_monolithicfluidsplit or coupling == fsi_iter_monolithicstructuresplit)
     {
@@ -514,7 +514,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       (probtype == GLOBAL::ProblemType::fpsi_xfem and disname == "fluid"))
   {
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-    const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+    const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
     fluidtimeparams->set<int>("COUPALGO", coupling);
   }
 
@@ -522,7 +522,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>(
-        "interface second order", INPUT::IntegralValue<int>(fsidyn, "SECONDORDER"));
+        "interface second order", CORE::UTILS::IntegralValue<int>(fsidyn, "SECONDORDER"));
   }
 
   if (probtype == GLOBAL::ProblemType::poroelast or probtype == GLOBAL::ProblemType::poroscatra or
@@ -533,12 +533,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
     fluidtimeparams->set<bool>("poroelast", true);
     fluidtimeparams->set<bool>(
-        "interface second order", INPUT::IntegralValue<int>(porodyn, "SECONDORDER"));
+        "interface second order", CORE::UTILS::IntegralValue<int>(porodyn, "SECONDORDER"));
     fluidtimeparams->set<bool>("shape derivatives", false);
     fluidtimeparams->set<bool>(
-        "conti partial integration", INPUT::IntegralValue<int>(porodyn, "CONTIPARTINT"));
+        "conti partial integration", CORE::UTILS::IntegralValue<int>(porodyn, "CONTIPARTINT"));
     fluidtimeparams->set<bool>(
-        "convective term", INPUT::IntegralValue<bool>(porodyn, "CONVECTIVE_TERM"));
+        "convective term", CORE::UTILS::IntegralValue<bool>(porodyn, "CONVECTIVE_TERM"));
   }
   else if ((probtype == GLOBAL::ProblemType::fpsi and disname == "fluid") or
            (probtype == GLOBAL::ProblemType::fps3i and disname == "fluid"))
@@ -547,9 +547,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       dserror("Stationary fluid solver not allowed for FPSI.");
 
     fluidtimeparams->set<bool>(
-        "interface second order", INPUT::IntegralValue<int>(prbdyn, "SECONDORDER"));
+        "interface second order", CORE::UTILS::IntegralValue<int>(prbdyn, "SECONDORDER"));
     fluidtimeparams->set<bool>(
-        "shape derivatives", INPUT::IntegralValue<int>(prbdyn, "SHAPEDERIVATIVES"));
+        "shape derivatives", CORE::UTILS::IntegralValue<int>(prbdyn, "SHAPEDERIVATIVES"));
   }
 
   // =================================================================================
@@ -590,12 +590,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // parameter theta for potential start algorithm
     fluidtimeparams->set<double>("start theta", fdyn.get<double>("START_THETA"));
     // parameter for grid velocity interpolation
-    fluidtimeparams->set<int>("order gridvel", INPUT::IntegralValue<int>(fdyn, "GRIDVEL"));
+    fluidtimeparams->set<int>("order gridvel", CORE::UTILS::IntegralValue<int>(fdyn, "GRIDVEL"));
     // handling of pressure and continuity discretization in new one step theta framework
     fluidtimeparams->set<int>("ost cont and press",
-        INPUT::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn, "OST_CONT_PRESS"));
+        CORE::UTILS::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn, "OST_CONT_PRESS"));
     // flag to switch on the new One Step Theta implementation
-    bool ostnew = INPUT::IntegralValue<bool>(fdyn, "NEW_OST");
+    bool ostnew = CORE::UTILS::IntegralValue<bool>(fdyn, "NEW_OST");
     // if the time integration strategy is not even a one step theta strategy, it cannot be the
     // new one step theta strategy either. As it seems, so far there is no sanity check of the
     // input file
@@ -628,7 +628,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-      const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+      const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
           coupling == fsi_iter_lung_monolithicstructuresplit or
@@ -669,17 +669,17 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
                 CORE::FE::ShapeFunctionType::hdg &&
             timeint != INPAR::FLUID::timeint_stationary &&
-            INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
+            CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 INPAR::FLUID::weakly_compressible_dens_mom &&
-            INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
+            CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 INPAR::FLUID::weakly_compressible_stokes_dens_mom)
           fluid_ = Teuchos::rcp(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
         else if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
                      CORE::FE::ShapeFunctionType::hdg &&
-                 (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
+                 (CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          INPAR::FLUID::weakly_compressible_dens_mom ||
-                     INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
-                         INPAR::FLUID::weakly_compressible_stokes_dens_mom))
+                     CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,
+                         "PHYSICAL_TYPE") == INPAR::FLUID::weakly_compressible_stokes_dens_mom))
           fluid_ = Teuchos::rcp(
               new FLD::TimIntHDGWeakComp(actdis, solver, fluidtimeparams, output, isale));
         else if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
@@ -725,7 +725,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       break;
       case GLOBAL::ProblemType::loma:
       {
-        if (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
+        if (CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
             INPAR::FLUID::tempdepwater)
         {
           if (timeint == INPAR::FLUID::timeint_afgenalpha or
@@ -760,7 +760,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       break;
       case GLOBAL::ProblemType::fluid_xfem:
       {
-        if (INPUT::IntegralValue<bool>(
+        if (CORE::UTILS::IntegralValue<bool>(
                 GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
                 "XFLUIDFLUID"))
         {
@@ -820,7 +820,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
         // FSI input parameters
         const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-        const int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+        const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
         if (coupling == fsi_iter_xfem_monolithic)
         {
           condition_name = "XFEMSurfFSIMono";  // not used anymore!
@@ -842,7 +842,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         Teuchos::RCP<DRT::Discretization> soliddis =
             GLOBAL::Problem::Instance()->GetDis("structure");
         Teuchos::RCP<FLD::XFluid> tmpfluid;
-        if (INPUT::IntegralValue<bool>(
+        if (CORE::UTILS::IntegralValue<bool>(
                 GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
                 "XFLUIDFLUID"))
         {
@@ -916,9 +916,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
         if (GLOBAL::Problem::Instance()->SpatialApproximationType() ==
                 CORE::FE::ShapeFunctionType::hdg &&
-            (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
+            (CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                     INPAR::FLUID::weakly_compressible_dens_mom ||
-                INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
+                CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                     INPAR::FLUID::weakly_compressible_stokes_dens_mom))
           tmpfluid = Teuchos::rcp(
               new FLD::TimIntHDGWeakComp(actdis, solver, fluidtimeparams, output, isale));
@@ -939,9 +939,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           dserror("Unknown time integration for this fluid problem type\n");
 
         const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-        int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+        int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
-        if (INPUT::IntegralValue<bool>(
+        if (CORE::UTILS::IntegralValue<bool>(
                 GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
                 "XFLUIDFLUID"))
         {
@@ -969,7 +969,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       case GLOBAL::ProblemType::thermo_fsi:
       {
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-        if (INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
+        if (CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
             INPAR::FLUID::tempdepwater)
         {
           if (timeint == INPAR::FLUID::timeint_afgenalpha or
@@ -1002,7 +1002,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         }
 
         const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-        int coupling = INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+        int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
         if (coupling == fsi_iter_sliding_monolithicfluidsplit or
             coupling == fsi_iter_sliding_monolithicstructuresplit)
@@ -1135,7 +1135,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             GLOBAL::Problem::Instance()->ELCHControlParams();
         // is ALE needed or not?
         const INPAR::ELCH::ElchMovingBoundary withale =
-            INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol, "MOVINGBOUNDARY");
+            CORE::UTILS::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(
+                elchcontrol, "MOVINGBOUNDARY");
         if (withale != INPAR::ELCH::elch_mov_bndry_no)
         {
           Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
@@ -1208,7 +1209,7 @@ void ADAPTER::FluidBaseAlgorithm::SetInitialFlowField(const Teuchos::ParameterLi
   // set initial field by given function
   // we do this here, since we have direct access to all necessary parameters
   INPAR::FLUID::InitialField initfield =
-      INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn, "INITIALFIELD");
+      CORE::UTILS::IntegralValue<INPAR::FLUID::InitialField>(fdyn, "INITIALFIELD");
   if (initfield != INPAR::FLUID::initfield_zero_field)
   {
     int startfuncno = fdyn.get<int>("STARTFUNCNO");
@@ -1227,7 +1228,7 @@ void ADAPTER::FluidBaseAlgorithm::SetInitialInflowField(const Teuchos::Parameter
 {
   // set initial field for inflow section by given function
   // we do this here, since we have direct access to all necessary parameters
-  INPAR::FLUID::InitialField initfield = INPUT::IntegralValue<INPAR::FLUID::InitialField>(
+  INPAR::FLUID::InitialField initfield = CORE::UTILS::IntegralValue<INPAR::FLUID::InitialField>(
       fdyn.sublist("TURBULENT INFLOW"), "INITIALINFLOWFIELD");
   if (initfield != INPAR::FLUID::initfield_zero_field)
   {
@@ -1306,8 +1307,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma,
   // temperature-dependent water)
-  fluidtimeparams->set<int>(
-      "Physical Type", INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE"));
+  fluidtimeparams->set<int>("Physical Type",
+      CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE"));
 
   // now, set general parameters required for all problems
   SetGeneralParameters(fluidtimeparams, prbdyn, fdyn);
@@ -1336,7 +1337,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   INPAR::FLUID::TimeIntegrationScheme timeint =
-      INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
+      CORE::UTILS::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
 
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
@@ -1359,12 +1360,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     // parameter theta for potential start algorithm
     fluidtimeparams->set<double>("start theta", fdyn.get<double>("START_THETA"));
     // parameter for grid velocity interpolation
-    fluidtimeparams->set<int>("order gridvel", INPUT::IntegralValue<int>(fdyn, "GRIDVEL"));
+    fluidtimeparams->set<int>("order gridvel", CORE::UTILS::IntegralValue<int>(fdyn, "GRIDVEL"));
     // handling of pressure and continuity discretization in new one step theta framework
     fluidtimeparams->set<int>("ost cont and press",
-        INPUT::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn, "OST_CONT_PRESS"));
+        CORE::UTILS::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn, "OST_CONT_PRESS"));
     // flag to switch on the new One Step Theta implementation
-    bool ostnew = INPUT::IntegralValue<bool>(fdyn, "NEW_OST");
+    bool ostnew = CORE::UTILS::IntegralValue<bool>(fdyn, "NEW_OST");
     // if the time integration strategy is not even a one step theta strategy, it cannot be the
     // new one step theta strategy either. As it seems, so far there is no sanity check of the
     // input file
@@ -1428,7 +1429,8 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
     const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,
     const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn)
 {
-  fluidtimeparams->set<int>("Simple Preconditioner", INPUT::IntegralValue<int>(fdyn, "SIMPLER"));
+  fluidtimeparams->set<int>(
+      "Simple Preconditioner", CORE::UTILS::IntegralValue<int>(fdyn, "SIMPLER"));
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
@@ -1460,8 +1462,8 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // type of predictor
   fluidtimeparams->set<std::string>("predictor", fdyn.get<std::string>("PREDICTOR"));
   // set linearisation scheme
-  fluidtimeparams->set<int>(
-      "Linearisation", INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn, "NONLINITER"));
+  fluidtimeparams->set<int>("Linearisation",
+      CORE::UTILS::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn, "NONLINITER"));
   // maximum number of nonlinear iteration steps
   fluidtimeparams->set<int>("max nonlin iter steps", fdyn.get<int>("ITEMAX"));
   // maximum number of nonlinear iteration steps for initial stationary solution
@@ -1488,14 +1490,14 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<std::string>("CONVCHECK", fdyn.get<std::string>("CONVCHECK"));
   // set recomputation of residual after solution has convergenced
   fluidtimeparams->set<bool>(
-      "INCONSISTENT_RESIDUAL", INPUT::IntegralValue<int>(fdyn, "INCONSISTENT_RESIDUAL") == 1);
+      "INCONSISTENT_RESIDUAL", CORE::UTILS::IntegralValue<int>(fdyn, "INCONSISTENT_RESIDUAL") == 1);
   // set solver for L2 projection of gradients for reconstruction of consistent residual
   fluidtimeparams->set<int>("VELGRAD_PROJ_SOLVER", fdyn.get<int>("VELGRAD_PROJ_SOLVER"));
   // set adaptive linear solver tolerance
-  fluidtimeparams->set<bool>("ADAPTCONV", INPUT::IntegralValue<int>(fdyn, "ADAPTCONV") == 1);
+  fluidtimeparams->set<bool>("ADAPTCONV", CORE::UTILS::IntegralValue<int>(fdyn, "ADAPTCONV") == 1);
   fluidtimeparams->set<double>("ADAPTCONV_BETTER", fdyn.get<double>("ADAPTCONV_BETTER"));
   fluidtimeparams->set<bool>(
-      "INFNORMSCALING", (INPUT::IntegralValue<int>(fdyn, "INFNORMSCALING") == 1));
+      "INFNORMSCALING", (CORE::UTILS::IntegralValue<int>(fdyn, "INFNORMSCALING") == 1));
 
   // ----------------------------------------------- restart and output
   const Teuchos::ParameterList& ioflags = GLOBAL::Problem::Instance()->IOParams();
@@ -1504,45 +1506,50 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // solution output
   fluidtimeparams->set<int>("write solution every", prbdyn.get<int>("RESULTSEVRY"));
   // flag for writing stresses
-  fluidtimeparams->set<int>("write stresses", INPUT::IntegralValue<int>(ioflags, "FLUID_STRESS"));
-  // flag for writing wall shear stress
   fluidtimeparams->set<int>(
-      "write wall shear stresses", INPUT::IntegralValue<int>(ioflags, "FLUID_WALL_SHEAR_STRESS"));
+      "write stresses", CORE::UTILS::IntegralValue<int>(ioflags, "FLUID_STRESS"));
+  // flag for writing wall shear stress
+  fluidtimeparams->set<int>("write wall shear stresses",
+      CORE::UTILS::IntegralValue<int>(ioflags, "FLUID_WALL_SHEAR_STRESS"));
   // flag for writing element data in every step and not only once (i.e. at step == 0 or step ==
   // upres)
   fluidtimeparams->set<int>("write element data in every step",
-      INPUT::IntegralValue<int>(ioflags, "FLUID_ELEDATA_EVRY_STEP"));
+      CORE::UTILS::IntegralValue<int>(ioflags, "FLUID_ELEDATA_EVRY_STEP"));
   // flag for writing node data in the first time step
   fluidtimeparams->set<int>("write node data in first step",
-      INPUT::IntegralValue<int>(ioflags, "FLUID_NODEDATA_FIRST_STEP"));
+      CORE::UTILS::IntegralValue<int>(ioflags, "FLUID_NODEDATA_FIRST_STEP"));
   // flag for writing fluid field to gmsh
-  if (INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH") == false)
+  if (CORE::UTILS::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH") ==
+      false)
   {
     fluidtimeparams->set<bool>("GMSH_OUTPUT", false);
-    if (INPUT::IntegralValue<bool>(fdyn, "GMSH_OUTPUT") == true)
+    if (CORE::UTILS::IntegralValue<bool>(fdyn, "GMSH_OUTPUT") == true)
       std::cout << "WARNING! Conflicting GMSH parameter in IO and fluid sections. No GMSH output "
                    "is written!"
                 << std::endl;
   }
   else
-    fluidtimeparams->set<bool>("GMSH_OUTPUT", INPUT::IntegralValue<bool>(fdyn, "GMSH_OUTPUT"));
+    fluidtimeparams->set<bool>(
+        "GMSH_OUTPUT", CORE::UTILS::IntegralValue<bool>(fdyn, "GMSH_OUTPUT"));
   // flag for computing divergence
-  fluidtimeparams->set<bool>("COMPUTE_DIVU", INPUT::IntegralValue<bool>(fdyn, "COMPUTE_DIVU"));
+  fluidtimeparams->set<bool>(
+      "COMPUTE_DIVU", CORE::UTILS::IntegralValue<bool>(fdyn, "COMPUTE_DIVU"));
   // flag for computing kinetix energy
-  fluidtimeparams->set<bool>("COMPUTE_EKIN", INPUT::IntegralValue<bool>(fdyn, "COMPUTE_EKIN"));
+  fluidtimeparams->set<bool>(
+      "COMPUTE_EKIN", CORE::UTILS::IntegralValue<bool>(fdyn, "COMPUTE_EKIN"));
   // flag for computing lift and drag values
-  fluidtimeparams->set<bool>("LIFTDRAG", INPUT::IntegralValue<bool>(fdyn, "LIFTDRAG"));
+  fluidtimeparams->set<bool>("LIFTDRAG", CORE::UTILS::IntegralValue<bool>(fdyn, "LIFTDRAG"));
 
   // -------------------------------------------------- Oseen advection
   // set function number of given Oseen advective field
   fluidtimeparams->set<int>("OSEENFIELDFUNCNO", fdyn.get<int>("OSEENFIELDFUNCNO"));
 
   // ---------------------------------------------------- lift and drag
-  fluidtimeparams->set<int>("liftdrag", INPUT::IntegralValue<int>(fdyn, "LIFTDRAG"));
+  fluidtimeparams->set<int>("liftdrag", CORE::UTILS::IntegralValue<int>(fdyn, "LIFTDRAG"));
 
   // -----------evaluate error for test flows with analytical solutions
   INPAR::FLUID::InitialField initfield =
-      INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn, "INITIALFIELD");
+      CORE::UTILS::IntegralValue<INPAR::FLUID::InitialField>(fdyn, "INITIALFIELD");
   fluidtimeparams->set<int>("eval err for analyt sol", initfield);
 
   // ------------------------------------------ form of convective term
@@ -1558,9 +1565,10 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 
   //--------------------------------------  mesh tying for fluid
   fluidtimeparams->set<int>(
-      "MESHTYING", INPUT::IntegralValue<INPAR::FLUID::MeshTying>(fdyn, "MESHTYING"));
+      "MESHTYING", CORE::UTILS::IntegralValue<INPAR::FLUID::MeshTying>(fdyn, "MESHTYING"));
 
-  fluidtimeparams->set<bool>("ALLDOFCOUPLED", INPUT::IntegralValue<bool>(fdyn, "ALLDOFCOUPLED"));
+  fluidtimeparams->set<bool>(
+      "ALLDOFCOUPLED", CORE::UTILS::IntegralValue<bool>(fdyn, "ALLDOFCOUPLED"));
 
   //--------------------------------------analytical error evaluation
   fluidtimeparams->set<int>("calculate error", Teuchos::getIntegralValue<int>(fdyn, "CALCERROR"));
@@ -1592,7 +1600,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 
   // ---------------------------parallel evaluation
   fluidtimeparams->set<bool>(
-      "OFF_PROC_ASSEMBLY", INPUT::IntegralValue<int>(fdyn, "OFF_PROC_ASSEMBLY") == 1);
+      "OFF_PROC_ASSEMBLY", CORE::UTILS::IntegralValue<int>(fdyn, "OFF_PROC_ASSEMBLY") == 1);
 
   return;
 }
@@ -1606,7 +1614,7 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
   // The SIMPLER (yes,no) parameter only controls whether the fluid matrix is
   // assembled into a 2x2 blocked operator or a plain 1x1 block matrix
   // A "second solver" for the preconditioner is only needed if SIMPLER == yes
-  if (INPUT::IntegralValue<int>(fdyn, "SIMPLER"))
+  if (CORE::UTILS::IntegralValue<int>(fdyn, "SIMPLER"))
   {
     const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
     const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(

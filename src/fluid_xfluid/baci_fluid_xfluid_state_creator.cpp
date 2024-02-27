@@ -16,7 +16,6 @@
 #include "baci_fluid_xfluid_fluid_state.hpp"
 #include "baci_fluid_xfluid_state.hpp"
 #include "baci_global_data.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_io_linedefinition.hpp"
@@ -24,6 +23,7 @@
 #include "baci_lib_discret_xfem.hpp"
 #include "baci_lib_xfem_dofset.hpp"
 #include "baci_linalg_mapextractor.hpp"
+#include "baci_utils_parameter_list.hpp"
 #include "baci_xfem_condition_manager.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

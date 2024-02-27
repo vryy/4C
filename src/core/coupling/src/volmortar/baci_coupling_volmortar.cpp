@@ -25,7 +25,6 @@
 #include "baci_inpar_volmortar.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_sparsematrix.hpp"
@@ -38,6 +37,7 @@
 #include "baci_mortar_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_pairedvector.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_Time.hpp>
 
@@ -194,7 +194,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
    ***********************************************************/
   // CheckInitialResiduum();
   // mesh initialization procedure
-  if (INPUT::IntegralValue<int>(Params(), "MESH_INIT")) MeshInit();
+  if (CORE::UTILS::IntegralValue<int>(Params(), "MESH_INIT")) MeshInit();
 
   /***********************************************************
    * initialize global matrices                              *
@@ -204,14 +204,14 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
   /***********************************************************
    * Segment-based integration                               *
    ***********************************************************/
-  if (INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(Params(), "INTTYPE") ==
+  if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::IntType>(Params(), "INTTYPE") ==
       INPAR::VOLMORTAR::inttype_segments)
     EvaluateSegments();
 
   /***********************************************************
    * Element-based Integration                               *
    ***********************************************************/
-  else if (INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(Params(), "INTTYPE") ==
+  else if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::IntType>(Params(), "INTTYPE") ==
            INPAR::VOLMORTAR::inttype_elements)
     EvaluateElements();
 
@@ -1022,7 +1022,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput(
     const Teuchos::ParameterList& volmortar_parameters)
 {
   // check validity
-  if (INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar_parameters, "INTTYPE") ==
+  if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar_parameters, "INTTYPE") ==
       INPAR::VOLMORTAR::inttype_segments)
   {
     if (myrank_ == 0)
@@ -1036,14 +1036,15 @@ void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput(
     }
   }
 
-  if (INPUT::IntegralValue<int>(volmortar_parameters, "MESH_INIT") and
-      INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar_parameters, "INTTYPE") ==
+  if (CORE::UTILS::IntegralValue<int>(volmortar_parameters, "MESH_INIT") and
+      CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar_parameters, "INTTYPE") ==
           INPAR::VOLMORTAR::inttype_segments)
   {
     dserror("ERROR: MeshInit only for ele-based integration!!!");
   }
 
-  if (INPUT::IntegralValue<int>(volmortar_parameters, "SHAPEFCN") == INPAR::VOLMORTAR::shape_std)
+  if (CORE::UTILS::IntegralValue<int>(volmortar_parameters, "SHAPEFCN") ==
+      INPAR::VOLMORTAR::shape_std)
   {
     std::cout << "WARNING: Standard shape functions are employed! D is lumped!" << std::endl;
   }
@@ -1052,7 +1053,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput(
   params_.setParameters(volmortar_parameters);
 
   // get specific and frequently reused parameters
-  dualquad_ = INPUT::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params_, "DUALQUAD");
+  dualquad_ = CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params_, "DUALQUAD");
 }
 
 /*----------------------------------------------------------------------*
@@ -1379,7 +1380,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     // solve with default solver
 
     Teuchos::ParameterList solvparams;
-    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+    CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
         "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
     CORE::LINALG::Solver solver(solvparams, *comm_);
 
@@ -1620,7 +1621,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
 
   // *************************************
   // TESSELATION *************************
-  if (INPUT::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(), "CUTTYPE") ==
+  if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(), "CUTTYPE") ==
       INPAR::VOLMORTAR::cuttype_tessellation)
   {
     // Set options for the cut wizard
@@ -1683,7 +1684,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
 
   // *******************************************
   // DIRECT DIVERGENCE *************************
-  else if (INPUT::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(), "CUTTYPE") ==
+  else if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(), "CUTTYPE") ==
            INPAR::VOLMORTAR::cuttype_directdivergence)
   {
     // Set options for the cut wizard

@@ -77,8 +77,9 @@ void STR::TimIntExpl::Setup()
   // explicit time integrators can only handle penalty contact / meshtying
   if (HaveContactMeshtying())
   {
-    INPAR::CONTACT::SolvingStrategy soltype = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-        cmtbridge_->GetStrategy().Params(), "STRATEGY");
+    INPAR::CONTACT::SolvingStrategy soltype =
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+            cmtbridge_->GetStrategy().Params(), "STRATEGY");
     if (soltype != INPAR::CONTACT::solution_penalty &&
         (soltype != INPAR::CONTACT::solution_multiscale))
       dserror(

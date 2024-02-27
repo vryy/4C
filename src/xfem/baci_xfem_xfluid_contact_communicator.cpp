@@ -47,23 +47,25 @@ void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::Cut
 
   Teuchos::ParameterList& params_xf_stab = fluidparams->sublist("XFLUID DYNAMIC/STABILIZATION");
 
-  visc_stab_trace_estimate_ = INPUT::IntegralValue<INPAR::XFEM::ViscStab_TraceEstimate>(
+  visc_stab_trace_estimate_ = CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStab_TraceEstimate>(
       params_xf_stab, "VISC_STAB_TRACE_ESTIMATE");
-  visc_stab_hk_ = INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab, "VISC_STAB_HK");
+  visc_stab_hk_ =
+      CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab, "VISC_STAB_HK");
   nit_stab_gamma_ = params_xf_stab.get<double>("NIT_STAB_FAC");
-  is_pseudo_2D_ = (bool)INPUT::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
-  mass_conservation_scaling_ = INPUT::IntegralValue<INPAR::XFEM::MassConservationScaling>(
+  is_pseudo_2D_ = (bool)CORE::UTILS::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
+  mass_conservation_scaling_ = CORE::UTILS::IntegralValue<INPAR::XFEM::MassConservationScaling>(
       params_xf_stab, "MASS_CONSERVATION_SCALING");
-  mass_conservation_combination_ = INPUT::IntegralValue<INPAR::XFEM::MassConservationCombination>(
-      params_xf_stab, "MASS_CONSERVATION_COMBO");
+  mass_conservation_combination_ =
+      CORE::UTILS::IntegralValue<INPAR::XFEM::MassConservationCombination>(
+          params_xf_stab, "MASS_CONSERVATION_COMBO");
 
 
   INPAR::XFEM::ConvStabScaling ConvStabScaling =
-      INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab, "CONV_STAB_SCALING");
+      CORE::UTILS::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab, "CONV_STAB_SCALING");
   if (ConvStabScaling != INPAR::XFEM::ConvStabScaling_none)
     dserror("ConvStabScaling not handled correctly!");
 
-  extrapolate_to_zero_ = (bool)INPUT::IntegralValue<int>(
+  extrapolate_to_zero_ = (bool)CORE::UTILS::IntegralValue<int>(
       GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("XFPSI MONOLITHIC"),
       "EXTRAPOLATE_TO_ZERO");
 

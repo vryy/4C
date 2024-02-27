@@ -35,7 +35,7 @@ BACI_NAMESPACE_OPEN
 CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele)
     : MORTAR::Coupling3d(idiscret, dim, quad, params, sele, mele),
-      stype_(INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   // empty constructor
 
@@ -96,7 +96,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
   /**********************************************************************/
 
   static const INPAR::MORTAR::AlgorithmType algo =
-      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   // do nothing if there are no cells
   if (Cells().size() == 0) return false;
@@ -1070,7 +1070,7 @@ CONTACT::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int
       sele_(sele),
       mele_(mele),
       ncells_(0),
-      stype_(INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   return;
 }
@@ -1098,7 +1098,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
 {
   // get algorithm
   INPAR::MORTAR::AlgorithmType algo =
-      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   // prepare linearizations
   if (algo == INPAR::MORTAR::algorithm_mortar)
@@ -1251,7 +1251,7 @@ bool CONTACT::Coupling3dManager::EvaluateCoupling(
 {
   // decide which type of coupling should be evaluated
   INPAR::MORTAR::AlgorithmType algo =
-      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -1280,7 +1280,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // get algorithm type
-  INPAR::MORTAR::AlgorithmType algo = INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
+  INPAR::MORTAR::AlgorithmType algo = CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(
       MORTAR::Coupling3dQuadManager::imortar_, "ALGORITHM");
 
   // prepare linearizations
@@ -1451,7 +1451,7 @@ bool CONTACT::Coupling3dQuadManager::EvaluateCoupling(
 {
   // decide which type of coupling should be evaluated
   INPAR::MORTAR::AlgorithmType algo =
-      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -1475,13 +1475,13 @@ bool CONTACT::Coupling3dQuadManager::EvaluateCoupling(
 void CONTACT::Coupling3dManager::ConsistDualShape()
 {
   static const INPAR::MORTAR::AlgorithmType algo =
-      INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
   if (algo != INPAR::MORTAR::algorithm_mortar) return;
 
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
   INPAR::MORTAR::ConsistentDualType consistent =
-      INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
   if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent == INPAR::MORTAR::consistent_none)
     return;
 

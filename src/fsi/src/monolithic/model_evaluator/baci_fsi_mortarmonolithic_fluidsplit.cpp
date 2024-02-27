@@ -225,9 +225,9 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     linearsolverstrategy_ =
-        INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+        CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-    aleproj_ = INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
+    aleproj_ = CORE::UTILS::IntegralValue<INPAR::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
 
     SetDefaultParameters(fsidyn, NOXParameterList());
 
@@ -292,7 +292,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     // -------------------------------------------------------------------------
 
     // enable debugging
-    if (INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
+    if (CORE::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
@@ -319,7 +319,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
   if (restart)
   {
     const bool restartfrompartfsi =
-        INPUT::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+        CORE::UTILS::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
       if (comm_.MyPID() == 0)
@@ -998,7 +998,7 @@ void FSI::MortarMonolithicFluidSplit::ScaleSystem(
 {
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1049,7 +1049,7 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(
 {
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1522,7 +1522,8 @@ void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
   auto input_control_file = GLOBAL::Problem::Instance()->InputControlFile();
 
   // read Lagrange multiplier
-  const bool restartfrompartfsi = INPUT::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+  const bool restartfrompartfsi =
+      CORE::UTILS::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
   if (not restartfrompartfsi)  // standard restart
   {
     Teuchos::RCP<Epetra_Vector> lambdafull =

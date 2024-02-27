@@ -122,7 +122,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   if (!GState().GetRestartStep())
   {
     // perform mesh initialization if required by input parameter MESH_RELOCATION
-    auto mesh_relocation_parameter = INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(
+    auto mesh_relocation_parameter = CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
         GLOBAL::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION");
 
     if (mesh_relocation_parameter == INPAR::MORTAR::relocation_initial)
@@ -161,7 +161,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
 bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
-  if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
+  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
           INPAR::MORTAR::algorithm_gpts ||
       Strategy().IsPenalty())
   {
@@ -202,7 +202,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
   // ---------------------------------------------------------------------
   // Penalty / gpts / Nitsche system: no additional/condensed dofs
   // ---------------------------------------------------------------------
-  if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
+  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
           INPAR::MORTAR::algorithm_gpts ||
       Strategy().IsPenalty())
   {
@@ -308,7 +308,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::GetBlockDofRowMap
   else
   {
     enum INPAR::CONTACT::SystemType systype =
-        INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Strategy().Params(), "SYSTEM");
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Strategy().Params(), "SYSTEM");
 
     if (systype == INPAR::CONTACT::system_saddlepoint)
       return Strategy().LMDoFRowMapPtr(true);
@@ -324,7 +324,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetCurrentSolu
   //  //TODO: this should be removed!
   //  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   //  enum INPAR::CONTACT::SystemType systype =
-  //      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+  //      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
   //          problem->ContactDynamicParams(),"SYSTEM");
   //  if (systype == INPAR::CONTACT::system_condensed)
   //    return Teuchos::null;
@@ -350,7 +350,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetLastTimeSte
 {
   //  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   //  enum INPAR::CONTACT::SystemType systype =
-  //      INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+  //      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
   //          problem->ContactDynamicParams(),"SYSTEM");
   //  if (systype == INPAR::CONTACT::system_condensed)
   //    return Teuchos::null;

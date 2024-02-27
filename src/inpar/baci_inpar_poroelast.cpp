@@ -14,8 +14,8 @@
 #include "baci_inpar_poroelast.hpp"
 
 #include "baci_inpar_fluid.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_linalg_equilibrate.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -54,39 +54,40 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
       &poroelastdyn);
 
   // Output type
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &poroelastdyn);
   // Time loop control
-  IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &poroelastdyn);
-  DoubleParameter("MAXTIME", 1000.0, "total simulation time", &poroelastdyn);
-  DoubleParameter("TIMESTEP", 0.05, "time step size dt", &poroelastdyn);
-  IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &poroelastdyn);
-  IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &poroelastdyn);
-  IntParameter("RESULTSEVRY", 1, "increment for writing solution", &poroelastdyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &poroelastdyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "total simulation time", &poroelastdyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size dt", &poroelastdyn);
+  CORE::UTILS::IntParameter(
+      "ITEMAX", 10, "maximum number of iterations over fields", &poroelastdyn);
+  CORE::UTILS::IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &poroelastdyn);
+  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "increment for writing solution", &poroelastdyn);
 
   // Iterationparameters
-  DoubleParameter("TOLRES_GLOBAL", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poroelastdyn);
-  DoubleParameter("TOLINC_GLOBAL", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poroelastdyn);
-  DoubleParameter("TOLRES_DISP", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poroelastdyn);
-  DoubleParameter("TOLINC_DISP", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poroelastdyn);
-  DoubleParameter("TOLRES_PORO", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poroelastdyn);
-  DoubleParameter("TOLINC_PORO", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poroelastdyn);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter("TOLRES_GLOBAL", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
+  CORE::UTILS::DoubleParameter("TOLINC_GLOBAL", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poroelastdyn);
+  CORE::UTILS::DoubleParameter("TOLRES_DISP", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
+  CORE::UTILS::DoubleParameter("TOLINC_DISP", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poroelastdyn);
+  CORE::UTILS::DoubleParameter("TOLRES_PORO", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
+  CORE::UTILS::DoubleParameter("TOLINC_PORO", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poroelastdyn);
+  CORE::UTILS::DoubleParameter(
       "TOLRES_VEL", 1e-8, "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
-  DoubleParameter("TOLINC_VEL", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poroelastdyn);
-  DoubleParameter("TOLRES_PRES", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poroelastdyn);
-  DoubleParameter("TOLINC_PRES", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poroelastdyn);
-  DoubleParameter("TOLRES_NCOUP", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poroelastdyn);
+  CORE::UTILS::DoubleParameter("TOLINC_VEL", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poroelastdyn);
+  CORE::UTILS::DoubleParameter("TOLRES_PRES", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
+  CORE::UTILS::DoubleParameter("TOLINC_PRES", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poroelastdyn);
+  CORE::UTILS::DoubleParameter("TOLRES_NCOUP", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
 
   setStringToIntegralParameter<int>("NORM_INC", "AbsSingleFields",
       "type of norm for primary variables convergence check",
@@ -112,22 +113,23 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
       tuple<int>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf), &poroelastdyn);
 
-  BoolParameter("SECONDORDER", "Yes", "Second order coupling at the interface.", &poroelastdyn);
+  CORE::UTILS::BoolParameter(
+      "SECONDORDER", "Yes", "Second order coupling at the interface.", &poroelastdyn);
 
-  BoolParameter("CONTIPARTINT", "No",
+  CORE::UTILS::BoolParameter("CONTIPARTINT", "No",
       "Partial integration of porosity gradient in continuity equation", &poroelastdyn);
 
-  BoolParameter("CONTACTNOPEN", "No",
+  CORE::UTILS::BoolParameter("CONTACTNOPEN", "No",
       "No-Penetration Condition on active contact surface in case of poro contact problem!",
       &poroelastdyn);
 
-  BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &poroelastdyn);
+  CORE::UTILS::BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &poroelastdyn);
 
-  BoolParameter("CONVECTIVE_TERM", "No", "convective term ", &poroelastdyn);
+  CORE::UTILS::BoolParameter("CONVECTIVE_TERM", "No", "convective term ", &poroelastdyn);
 
   // number of linear solver used for poroelasticity
-  IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for poroelasticity problems",
-      &poroelastdyn);
+  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
+      "number of linear solver used for poroelasticity problems", &poroelastdyn);
 
   // flag for equilibration of global system of equations
   setStringToIntegralParameter<CORE::LINALG::EquilibrationMethod>("EQUILIBRATION", "none",

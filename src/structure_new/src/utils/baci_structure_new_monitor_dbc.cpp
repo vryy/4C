@@ -163,7 +163,7 @@ void STR::MonitorDbc::Setup()
   full_filepaths_ = CreateFilePaths(rconds, full_dirpath, filename_only_prefix, filetype);
   // ... clear them and write header
   ClearFilesAndWriteHeader(rconds, full_filepaths_,
-      INPUT::IntegralValue<int>(sublist_IO_monitor_structure_dbc, "WRITE_HEADER"));
+      CORE::UTILS::IntegralValue<int>(sublist_IO_monitor_structure_dbc, "WRITE_HEADER"));
 
   // handle restart
   if (GLOBAL::Problem::Instance()->Restart())

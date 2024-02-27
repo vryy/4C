@@ -14,8 +14,8 @@
 
 #include "baci_inpar_beam_to_solid.hpp"
 #include "baci_inpar_beamcontact.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -57,21 +57,21 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   Teuchos::ParameterList& crosslinking = beaminteraction.sublist("CROSSLINKING", false, "");
 
   // remove this some day
-  BoolParameter("CROSSLINKER", "No", "Crosslinker in problem", &crosslinking);
+  CORE::UTILS::BoolParameter("CROSSLINKER", "No", "Crosslinker in problem", &crosslinking);
 
   // bounding box for initial random crosslinker position
-  StringParameter("INIT_LINKER_BOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
+  CORE::UTILS::StringParameter("INIT_LINKER_BOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
       "Linker are initially set randomly within this bounding box", &crosslinking);
 
   // time step for stochastic events concerning crosslinking
-  DoubleParameter("TIMESTEP", -1.0,
+  CORE::UTILS::DoubleParameter("TIMESTEP", -1.0,
       "time step for stochastic events concerning crosslinking (e.g. diffusion, p_link, p_unlink) ",
       &crosslinking);
   // Reading double parameter for viscosity of background fluid
-  DoubleParameter("VISCOSITY", 0.0, "viscosity", &crosslinking);
+  CORE::UTILS::DoubleParameter("VISCOSITY", 0.0, "viscosity", &crosslinking);
   // Reading double parameter for thermal energy in background fluid (temperature * Boltzmann
   // constant)
-  DoubleParameter("KT", 0.0, "thermal energy", &crosslinking);
+  CORE::UTILS::DoubleParameter("KT", 0.0, "thermal energy", &crosslinking);
   // number of initial (are set right in the beginning) crosslinker of certain type
   setNumericStringParameter("MAXNUMINITCROSSLINKERPERTYPE", "0",
       "number of initial crosslinker of certain type (additional to NUMCROSSLINKERPERTYPE) ",
@@ -93,10 +93,10 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       "distance between two binding spots on current filament", &crosslinking);
   // start and end for bspots on a filament in arc parameter (same on each filament independent of
   // their length)
-  StringParameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
+  CORE::UTILS::StringParameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
   // start and end for bspots on a filament in percent of reference filament length
-  StringParameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
+  CORE::UTILS::StringParameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
 
 
@@ -105,13 +105,13 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
   Teuchos::ParameterList& spherebeamlink = beaminteraction.sublist("SPHERE BEAM LINK", false, "");
 
-  BoolParameter("SPHEREBEAMLINKING", "No", "Integrins in problem", &spherebeamlink);
+  CORE::UTILS::BoolParameter("SPHEREBEAMLINKING", "No", "Integrins in problem", &spherebeamlink);
 
   // Reading double parameter for contraction rate for active linker
-  DoubleParameter("CONTRACTIONRATE", 0.0,
+  CORE::UTILS::DoubleParameter("CONTRACTIONRATE", 0.0,
       "contraction rate of cell (integrin linker) in [microm/s]", &spherebeamlink);
   // time step for stochastic events concerning sphere beam linking
-  DoubleParameter("TIMESTEP", -1.0,
+  CORE::UTILS::DoubleParameter("TIMESTEP", -1.0,
       "time step for stochastic events concerning sphere beam linking (e.g. catch-slip-bond "
       "behavior) ",
       &spherebeamlink);
@@ -128,10 +128,10 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       "distance between two binding spots on current filament", &spherebeamlink);
   // start and end for bspots on a filament in arc parameter (same on each filament independent of
   // their length)
-  StringParameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
+  CORE::UTILS::StringParameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &spherebeamlink);
   // start and end for bspots on a filament in percent of reference filament length
-  StringParameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
+  CORE::UTILS::StringParameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &spherebeamlink);
 
   /*----------------------------------------------------------------------*/
@@ -160,8 +160,8 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       tuple<std::string>("None", "none", "Penalty", "penalty"),
       tuple<int>(bstr_none, bstr_none, bstr_penalty, bstr_penalty), &beamtospherecontact);
 
-  DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-rigidsphere contact",
-      &beamtospherecontact);
+  CORE::UTILS::DoubleParameter("PENALTY_PARAMETER", 0.0,
+      "Penalty parameter for beam-to-rigidsphere contact", &beamtospherecontact);
 
   // ...
 

@@ -393,12 +393,12 @@ namespace CONTACT
     */
     double GetEnergy() override
     {
-      if (INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
-              INPAR::BEAMCONTACT::pl_lp and
-          INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
-              INPAR::BEAMCONTACT::pl_qp and
-          INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
-              INPAR::BEAMCONTACT::pl_lpqp)
+      if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lp and
+          CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp and
+          CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
         dserror("Contact Energy calculation not implemented for the chosen penalty law!");
 
 
@@ -433,12 +433,12 @@ namespace CONTACT
     */
     double GetUnscaledPerpEnergy() override
     {
-      if (INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
-              INPAR::BEAMCONTACT::pl_lp and
-          INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
-              INPAR::BEAMCONTACT::pl_qp and
-          INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
-              INPAR::BEAMCONTACT::pl_lpqp)
+      if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lp and
+          CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp and
+          CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
         dserror("Contact Energy calculation not implemented for the chosen penalty law!");
 
 
@@ -458,12 +458,12 @@ namespace CONTACT
     */
     double GetUnscaledParallelEnergy() override
     {
-      if (INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
-              INPAR::BEAMCONTACT::pl_lp and
-          INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
-              INPAR::BEAMCONTACT::pl_qp and
-          INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
-              INPAR::BEAMCONTACT::pl_lpqp)
+      if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lp and
+          CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp and
+          CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+              bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
         dserror("Contact Energy calculation not implemented for the chosen penalty law!");
 
       double energy = 0.0;

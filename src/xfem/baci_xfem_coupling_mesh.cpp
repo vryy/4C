@@ -323,7 +323,7 @@ void XFEM::MeshVolCoupling::Init()
     ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int, double>());
 
     traceEstimate_eigenvalue_update_ =
-        INPUT::IntegralValue<INPAR::XFEM::TraceEstimate_eigenvalue_update>(
+        CORE::UTILS::IntegralValue<INPAR::XFEM::TraceEstimate_eigenvalue_update>(
             GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("STABILIZATION"),
             "UPDATE_EIGENVALUE_TRACE_ESTIMATE");
   }

@@ -10,8 +10,7 @@
 #include "baci_inpar_IO_runtime_vtp_output_structure.hpp"
 
 #include "baci_inpar.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -25,7 +24,6 @@ namespace INPAR
      *----------------------------------------------------------------------*/
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     {
-      using namespace INPUT;
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
@@ -36,30 +34,31 @@ namespace INPAR
 
 
       // output interval regarding steps: write output every INTERVAL_STEPS steps
-      IntParameter("INTERVAL_STEPS", -1, "write VTP output at runtime every INTERVAL_STEPS steps",
-          &sublist_IO_VTP_structure);
+      CORE::UTILS::IntParameter("INTERVAL_STEPS", -1,
+          "write VTP output at runtime every INTERVAL_STEPS steps", &sublist_IO_VTP_structure);
 
-      IntParameter("STEP_OFFSET", 0,
+      CORE::UTILS::IntParameter("STEP_OFFSET", 0,
           "An offset added to the current step to shift the steps to be written.",
           &sublist_IO_VTP_structure);
 
       // whether to write output in every iteration of the nonlinear solver
-      BoolParameter("EVERY_ITERATION", "No",
+      CORE::UTILS::BoolParameter("EVERY_ITERATION", "No",
           "write output in every iteration of the nonlinear solver", &sublist_IO_VTP_structure);
 
       // write owner at every visualization point
-      BoolParameter("OWNER", "No", "write owner of every point", &sublist_IO_VTP_structure);
+      CORE::UTILS::BoolParameter(
+          "OWNER", "No", "write owner of every point", &sublist_IO_VTP_structure);
 
       // write orientation at every visualization point
-      BoolParameter("ORIENTATIONANDLENGTH", "No", "write orientation at every point",
+      CORE::UTILS::BoolParameter("ORIENTATIONANDLENGTH", "No", "write orientation at every point",
           &sublist_IO_VTP_structure);
 
       // write number of bonds at every visualization point
-      BoolParameter(
+      CORE::UTILS::BoolParameter(
           "NUMBEROFBONDS", "No", "write number of bonds of every point", &sublist_IO_VTP_structure);
 
       // write force actin in linker
-      BoolParameter(
+      CORE::UTILS::BoolParameter(
           "LINKINGFORCE", "No", "write force acting in linker", &sublist_IO_VTP_structure);
     }
 

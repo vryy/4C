@@ -86,31 +86,33 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     output_ = output;
     printscreen_ = ioparams.get<int>("STDOUTEVRY");
     printlogo_ = printscreen_ > 0;
-    gmsh_out_ = (bool)INPUT::IntegralValue<int>(ioparams, "OUTPUT_GMSH");
+    gmsh_out_ = (bool)CORE::UTILS::IntegralValue<int>(ioparams, "OUTPUT_GMSH");
     printiter_ = true;
     p_io_every_iteration_ =
         Teuchos::rcp(new Teuchos::ParameterList(ioparams.sublist("EVERY ITERATION")));
-    outputeveryiter_ = INPUT::IntegralValue<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
+    outputeveryiter_ =
+        CORE::UTILS::IntegralValue<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
     writetimestepoffset_ = sdynparams.get<int>("OUTPUT_STEP_OFFSET");
-    writestate_ = (bool)INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP");
-    writevelacc_ = (bool)INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
-    writejac2matlab_ = (bool)INPUT::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
+    writestate_ = (bool)CORE::UTILS::IntegralValue<int>(ioparams, "STRUCT_DISP");
+    writevelacc_ = (bool)CORE::UTILS::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
+    writejac2matlab_ = (bool)CORE::UTILS::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
     conditionnumbertype_ =
         Teuchos::getIntegralValue<INPAR::STR::ConditionNumber>(ioparams, "STRUCT_CONDITION_NUMBER");
     firstoutputofrun_ = true;
     writeresultsevery_ = sdynparams.get<int>("RESULTSEVRY");
-    writecurrentelevolume_ = (bool)INPUT::IntegralValue<int>(ioparams, "STRUCT_CURRENT_VOLUME");
-    writestress_ = INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_STRESS");
+    writecurrentelevolume_ =
+        (bool)CORE::UTILS::IntegralValue<int>(ioparams, "STRUCT_CURRENT_VOLUME");
+    writestress_ = CORE::UTILS::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_STRESS");
     writecouplstress_ =
-        INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
-    writestrain_ = INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_STRAIN");
+        CORE::UTILS::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
+    writestrain_ = CORE::UTILS::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_STRAIN");
     writeplstrain_ =
-        INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
+        CORE::UTILS::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
     writeenergyevery_ = sdynparams.get<int>("RESEVRYERGY");
-    writesurfactant_ = (bool)INPUT::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT");
-    writeoptquantity_ =
-        INPUT::IntegralValue<INPAR::STR::OptQuantityType>(ioparams, "STRUCT_OPTIONAL_QUANTITY");
+    writesurfactant_ = (bool)CORE::UTILS::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT");
+    writeoptquantity_ = CORE::UTILS::IntegralValue<INPAR::STR::OptQuantityType>(
+        ioparams, "STRUCT_OPTIONAL_QUANTITY");
 
     // build params container for monitoring reaction forces
     params_monitor_dbc_ = Teuchos::rcp(new ParamsMonitorDBC());

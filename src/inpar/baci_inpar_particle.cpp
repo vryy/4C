@@ -13,9 +13,8 @@
  *---------------------------------------------------------------------------*/
 #include "baci_inpar_particle.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -49,42 +48,44 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       &particledyn);
 
   // output type
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "RESULTSEVRY", 1, "write particle runtime output every RESULTSEVRY steps", &particledyn);
-  IntParameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &particledyn);
+  CORE::UTILS::IntParameter(
+      "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &particledyn);
 
   // write ghosted particles
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "WRITE_GHOSTED_PARTICLES", "no", "write ghosted particles (debug feature)", &particledyn);
 
   // time loop control
-  DoubleParameter("TIMESTEP", 0.01, "time step size", &particledyn);
-  IntParameter("NUMSTEP", 100, "maximum number of steps", &particledyn);
-  DoubleParameter("MAXTIME", 1.0, "maximum time", &particledyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.01, "time step size", &particledyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 100, "maximum number of steps", &particledyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1.0, "maximum time", &particledyn);
 
   // gravity acceleration control
-  StringParameter(
+  CORE::UTILS::StringParameter(
       "GRAVITY_ACCELERATION", "0.0 0.0 0.0", "acceleration due to gravity", &particledyn);
-  IntParameter("GRAVITY_RAMP_FUNCT", -1, "number of function governing gravity ramp", &particledyn);
+  CORE::UTILS::IntParameter(
+      "GRAVITY_RAMP_FUNCT", -1, "number of function governing gravity ramp", &particledyn);
 
   // viscous damping factor
-  DoubleParameter("VISCOUS_DAMPING", -1.0,
+  CORE::UTILS::DoubleParameter("VISCOUS_DAMPING", -1.0,
       "apply viscous damping force to determine static equilibrium solutions", &particledyn);
 
   // transfer particles to new bins every time step
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "TRANSFER_EVERY", "no", "transfer particles to new bins every time step", &particledyn);
 
   // considered particle phases with dynamic load balance weighting factor
-  StringParameter("PHASE_TO_DYNLOADBALFAC", "none",
+  CORE::UTILS::StringParameter("PHASE_TO_DYNLOADBALFAC", "none",
       "considered particle phases with dynamic load balance weighting factor", &particledyn);
 
   // relate particle phase to material id
-  StringParameter(
+  CORE::UTILS::StringParameter(
       "PHASE_TO_MATERIAL_ID", "none", "relate particle phase to material id", &particledyn);
 
   // amplitude of noise added to initial position for each spatial direction
-  StringParameter("INITIAL_POSITION_AMPLITUDE", "0.0 0.0 0.0",
+  CORE::UTILS::StringParameter("INITIAL_POSITION_AMPLITUDE", "0.0 0.0 0.0",
       "amplitude of noise added to initial position for each spatial direction", &particledyn);
 
   // type of particle wall source
@@ -96,17 +97,19 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       &particledyn);
 
   // material id for particle wall from bounding box source
-  IntParameter("PARTICLE_WALL_MAT", -1, "material id for particle wall from bounding box source",
-      &particledyn);
+  CORE::UTILS::IntParameter("PARTICLE_WALL_MAT", -1,
+      "material id for particle wall from bounding box source", &particledyn);
 
   // flags defining considered states of particle wall
-  BoolParameter("PARTICLE_WALL_MOVING", "no", "consider a moving particle wall", &particledyn);
-  BoolParameter("PARTICLE_WALL_LOADED", "no", "consider loading on particle wall", &particledyn);
+  CORE::UTILS::BoolParameter(
+      "PARTICLE_WALL_MOVING", "no", "consider a moving particle wall", &particledyn);
+  CORE::UTILS::BoolParameter(
+      "PARTICLE_WALL_LOADED", "no", "consider loading on particle wall", &particledyn);
 
   // consider rigid body motion
-  BoolParameter("RIGID_BODY_MOTION", "no", "consider rigid body motion", &particledyn);
+  CORE::UTILS::BoolParameter("RIGID_BODY_MOTION", "no", "consider rigid body motion", &particledyn);
 
-  DoubleParameter("RIGID_BODY_PHASECHANGE_RADIUS", -1.0,
+  CORE::UTILS::DoubleParameter("RIGID_BODY_PHASECHANGE_RADIUS", -1.0,
       "search radius for neighboring rigid bodies in case of phase change", &particledyn);
 
   /*-------------------------------------------------------------------------*
@@ -117,23 +120,23 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           "control parameters for initial/boundary conditions in particle simulations\n");
 
   // initial temperature field of particle phase given by function
-  StringParameter("INITIAL_TEMP_FIELD", "none",
+  CORE::UTILS::StringParameter("INITIAL_TEMP_FIELD", "none",
       "initial temperature field of particle phase given by function", &particledynconditions);
 
   // initial velocity field of particle phase given by function
-  StringParameter("INITIAL_VELOCITY_FIELD", "none",
+  CORE::UTILS::StringParameter("INITIAL_VELOCITY_FIELD", "none",
       "initial velocity field of particle phase given by function", &particledynconditions);
 
   // initial acceleration field of particle phase given by function
-  StringParameter("INITIAL_ACCELERATION_FIELD", "none",
+  CORE::UTILS::StringParameter("INITIAL_ACCELERATION_FIELD", "none",
       "initial acceleration field of particle phase given by function", &particledynconditions);
 
   // dirichlet boundary condition of particle phase given by function
-  StringParameter("DIRICHLET_BOUNDARY_CONDITION", "none",
+  CORE::UTILS::StringParameter("DIRICHLET_BOUNDARY_CONDITION", "none",
       "dirichlet boundary condition of particle phase given by function", &particledynconditions);
 
   // temperature boundary condition of particle phase given by function
-  StringParameter("TEMPERATURE_BOUNDARY_CONDITION", "none",
+  CORE::UTILS::StringParameter("TEMPERATURE_BOUNDARY_CONDITION", "none",
       "temperature boundary condition of particle phase given by function", &particledynconditions);
 
   /*-------------------------------------------------------------------------*
@@ -143,8 +146,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "SPH", false, "control parameters for smoothed particle hydrodynamics (SPH) simulations\n");
 
   // write particle-wall interaction output
-  BoolParameter("WRITE_PARTICLE_WALL_INTERACTION", "no", "write particle-wall interaction output",
-      &particledynsph);
+  CORE::UTILS::BoolParameter("WRITE_PARTICLE_WALL_INTERACTION", "no",
+      "write particle-wall interaction output", &particledynsph);
 
   // type of smoothed particle hydrodynamics kernel
   setStringToIntegralParameter<int>("KERNEL", "CubicSpline",
@@ -158,7 +161,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::Kernel1D, INPAR::PARTICLE::Kernel2D, INPAR::PARTICLE::Kernel3D),
       &particledynsph);
 
-  DoubleParameter("INITIALPARTICLESPACING", 0.0, "initial spacing of particles", &particledynsph);
+  CORE::UTILS::DoubleParameter(
+      "INITIALPARTICLESPACING", 0.0, "initial spacing of particles", &particledynsph);
 
   // type of smoothed particle hydrodynamics equation of state
   setStringToIntegralParameter<int>("EQUATIONOFSTATE", "GenTait",
@@ -230,7 +234,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::NoTemperatureEvaluation, INPAR::PARTICLE::TemperatureIntegration),
       &particledynsph);
 
-  BoolParameter("TEMPERATUREGRADIENT", "no", "evaluate temperature gradient", &particledynsph);
+  CORE::UTILS::BoolParameter(
+      "TEMPERATUREGRADIENT", "no", "evaluate temperature gradient", &particledynsph);
 
   // type of heat source
   setStringToIntegralParameter<int>("HEATSOURCETYPE", "NoHeatSource", "type of heat source",
@@ -239,30 +244,32 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::SurfaceHeatSource),
       &particledynsph);
 
-  IntParameter("HEATSOURCE_FUNCT", -1, "number of function governing heat source", &particledynsph);
+  CORE::UTILS::IntParameter(
+      "HEATSOURCE_FUNCT", -1, "number of function governing heat source", &particledynsph);
 
-  StringParameter(
+  CORE::UTILS::StringParameter(
       "HEATSOURCE_DIRECTION", "0.0 0.0 0.0", "direction of surface heat source", &particledynsph);
 
   // evaporation induced heat loss
-  BoolParameter("VAPOR_HEATLOSS", "no", "evaluate evaporation induced heat loss", &particledynsph);
-  DoubleParameter(
+  CORE::UTILS::BoolParameter(
+      "VAPOR_HEATLOSS", "no", "evaluate evaporation induced heat loss", &particledynsph);
+  CORE::UTILS::DoubleParameter(
       "VAPOR_HEATLOSS_LATENTHEAT", 0.0, "latent heat in heat loss formula", &particledynsph);
-  DoubleParameter("VAPOR_HEATLOSS_ENTHALPY_REFTEMP", 0.0,
+  CORE::UTILS::DoubleParameter("VAPOR_HEATLOSS_ENTHALPY_REFTEMP", 0.0,
       "enthalpy reference temperature in heat loss formula", &particledynsph);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "VAPOR_HEATLOSS_PFAC", 0.0, "pressure factor in heat loss formula", &particledynsph);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "VAPOR_HEATLOSS_TFAC", 0.0, "temperature factor in heat loss formula", &particledynsph);
 
   // evaporation induced recoil pressure
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "VAPOR_RECOIL", "no", "evaluate evaporation induced recoil pressure", &particledynsph);
-  DoubleParameter("VAPOR_RECOIL_BOILINGTEMPERATURE", 0.0,
+  CORE::UTILS::DoubleParameter("VAPOR_RECOIL_BOILINGTEMPERATURE", 0.0,
       "boiling temperature in recoil pressure formula", &particledynsph);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "VAPOR_RECOIL_PFAC", 0.0, "pressure factor in recoil pressure formula", &particledynsph);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "VAPOR_RECOIL_TFAC", 0.0, "temperature factor in recoil pressure formula", &particledynsph);
 
   // type of surface tension formulation
@@ -272,61 +279,63 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::NoSurfaceTension, INPAR::PARTICLE::ContinuumSurfaceForce),
       &particledynsph);
 
-  IntParameter("SURFACETENSION_RAMP_FUNCT", -1, "number of function governing surface tension ramp",
-      &particledynsph);
+  CORE::UTILS::IntParameter("SURFACETENSION_RAMP_FUNCT", -1,
+      "number of function governing surface tension ramp", &particledynsph);
 
-  DoubleParameter("SURFACETENSIONCOEFFICIENT", -1.0, "constant part of surface tension coefficient",
-      &particledynsph);
-  DoubleParameter("SURFACETENSIONMINIMUM", 0.0,
+  CORE::UTILS::DoubleParameter("SURFACETENSIONCOEFFICIENT", -1.0,
+      "constant part of surface tension coefficient", &particledynsph);
+  CORE::UTILS::DoubleParameter("SURFACETENSIONMINIMUM", 0.0,
       "minimum surface tension coefficient in case of temperature dependence", &particledynsph);
-  DoubleParameter("SURFACETENSIONTEMPFAC", 0.0,
+  CORE::UTILS::DoubleParameter("SURFACETENSIONTEMPFAC", 0.0,
       "factor of dependence of surface tension coefficient on temperature", &particledynsph);
-  DoubleParameter("SURFACETENSIONREFTEMP", 0.0,
+  CORE::UTILS::DoubleParameter("SURFACETENSIONREFTEMP", 0.0,
       "reference temperature for surface tension coefficient", &particledynsph);
 
   // wetting
-  DoubleParameter("STATICCONTACTANGLE", 0.0, "static contact angle in degree with wetting effects",
-      &particledynsph);
-  DoubleParameter("TRIPLEPOINTNORMAL_CORR_CF_LOW", 0.0,
+  CORE::UTILS::DoubleParameter("STATICCONTACTANGLE", 0.0,
+      "static contact angle in degree with wetting effects", &particledynsph);
+  CORE::UTILS::DoubleParameter("TRIPLEPOINTNORMAL_CORR_CF_LOW", 0.0,
       "triple point normal correction wall color field low", &particledynsph);
-  DoubleParameter("TRIPLEPOINTNORMAL_CORR_CF_UP", 0.0,
+  CORE::UTILS::DoubleParameter("TRIPLEPOINTNORMAL_CORR_CF_UP", 0.0,
       "triple point normal correction wall color field up", &particledynsph);
 
   // interface viscosity
-  BoolParameter("INTERFACE_VISCOSITY", "no", "evaluate interface viscosity", &particledynsph);
-  DoubleParameter("INTERFACE_VISCOSITY_LIQUIDGAS", 0.0,
+  CORE::UTILS::BoolParameter(
+      "INTERFACE_VISCOSITY", "no", "evaluate interface viscosity", &particledynsph);
+  CORE::UTILS::DoubleParameter("INTERFACE_VISCOSITY_LIQUIDGAS", 0.0,
       "artificial viscosity on liquid-gas interface", &particledynsph);
-  DoubleParameter("INTERFACE_VISCOSITY_SOLIDLIQUID", 0.0,
+  CORE::UTILS::DoubleParameter("INTERFACE_VISCOSITY_SOLIDLIQUID", 0.0,
       "artificial viscosity on solid-liquid interface", &particledynsph);
 
   // barrier force
-  BoolParameter("BARRIER_FORCE", "no", "evaluate barrier force", &particledynsph);
-  DoubleParameter("BARRIER_FORCE_DISTANCE", 0.0, "barrier force distance", &particledynsph);
-  DoubleParameter(
+  CORE::UTILS::BoolParameter("BARRIER_FORCE", "no", "evaluate barrier force", &particledynsph);
+  CORE::UTILS::DoubleParameter(
+      "BARRIER_FORCE_DISTANCE", 0.0, "barrier force distance", &particledynsph);
+  CORE::UTILS::DoubleParameter(
       "BARRIER_FORCE_TEMPSCALE", 0.0, "barrier force temperature scaling", &particledynsph);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "BARRIER_FORCE_STIFF_HEAVY", -1.0, "barrier force stiffness of heavy phase", &particledynsph);
-  DoubleParameter("BARRIER_FORCE_DAMP_HEAVY", 0.0, "barrier force damping parameter of heavy phase",
-      &particledynsph);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter("BARRIER_FORCE_DAMP_HEAVY", 0.0,
+      "barrier force damping parameter of heavy phase", &particledynsph);
+  CORE::UTILS::DoubleParameter(
       "BARRIER_FORCE_STIFF_GAS", -1.0, "barrier force stiffness of gas phase", &particledynsph);
-  DoubleParameter("BARRIER_FORCE_DAMP_GAS", 0.0, "barrier force damping parameter of gas phase",
-      &particledynsph);
+  CORE::UTILS::DoubleParameter("BARRIER_FORCE_DAMP_GAS", 0.0,
+      "barrier force damping parameter of gas phase", &particledynsph);
 
   // linear transition in surface tension evaluation
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "TRANS_REF_TEMPERATURE", 0.0, "transition reference temperature", &particledynsph);
-  DoubleParameter("TRANS_DT_SURFACETENSION", 0.0,
+  CORE::UTILS::DoubleParameter("TRANS_DT_SURFACETENSION", 0.0,
       "transition temperature difference for surface tension evaluation", &particledynsph);
-  DoubleParameter("TRANS_DT_MARANGONI", 0.0,
+  CORE::UTILS::DoubleParameter("TRANS_DT_MARANGONI", 0.0,
       "transition temperature difference for marangoni evaluation", &particledynsph);
-  DoubleParameter("TRANS_DT_CURVATURE", 0.0,
+  CORE::UTILS::DoubleParameter("TRANS_DT_CURVATURE", 0.0,
       "transition temperature difference for curvature evaluation", &particledynsph);
-  DoubleParameter("TRANS_DT_WETTING", 0.0,
+  CORE::UTILS::DoubleParameter("TRANS_DT_WETTING", 0.0,
       "transition temperature difference for wetting evaluation", &particledynsph);
-  DoubleParameter("TRANS_DT_INTVISC", 0.0,
+  CORE::UTILS::DoubleParameter("TRANS_DT_INTVISC", 0.0,
       "transition temperature difference for interface viscosity evaluation", &particledynsph);
-  DoubleParameter("TRANS_DT_BARRIER", 0.0,
+  CORE::UTILS::DoubleParameter("TRANS_DT_BARRIER", 0.0,
       "transition temperature difference for barrier force evaluation", &particledynsph);
 
   // type of dirichlet open boundary
@@ -336,14 +345,14 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::NoDirichletOpenBoundary, INPAR::PARTICLE::DirichletNormalToPlane),
       &particledynsph);
 
-  IntParameter("DIRICHLET_FUNCT", -1,
+  CORE::UTILS::IntParameter("DIRICHLET_FUNCT", -1,
       "number of function governing velocity condition on dirichlet open boundary",
       &particledynsph);
 
-  StringParameter("DIRICHLET_OUTWARD_NORMAL", "0.0 0.0 0.0",
+  CORE::UTILS::StringParameter("DIRICHLET_OUTWARD_NORMAL", "0.0 0.0 0.0",
       "direction of outward normal on dirichlet open boundary", &particledynsph);
-  StringParameter("DIRICHLET_PLANE_POINT", "0.0 0.0 0.0", "point on dirichlet open boundary plane",
-      &particledynsph);
+  CORE::UTILS::StringParameter("DIRICHLET_PLANE_POINT", "0.0 0.0 0.0",
+      "point on dirichlet open boundary plane", &particledynsph);
 
   // type of neumann open boundary
   setStringToIntegralParameter<int>("NEUMANNBOUNDARYTYPE", "NoNeumannOpenBoundary",
@@ -352,13 +361,13 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::NoNeumannOpenBoundary, INPAR::PARTICLE::NeumannNormalToPlane),
       &particledynsph);
 
-  IntParameter("NEUMANN_FUNCT", -1,
+  CORE::UTILS::IntParameter("NEUMANN_FUNCT", -1,
       "number of function governing pressure condition on neumann open boundary", &particledynsph);
 
-  StringParameter("NEUMANN_OUTWARD_NORMAL", "0.0 0.0 0.0",
+  CORE::UTILS::StringParameter("NEUMANN_OUTWARD_NORMAL", "0.0 0.0 0.0",
       "direction of outward normal on neumann open boundary", &particledynsph);
-  StringParameter("NEUMANN_PLANE_POINT", "0.0 0.0 0.0", "point on neumann open boundary plane",
-      &particledynsph);
+  CORE::UTILS::StringParameter("NEUMANN_PLANE_POINT", "0.0 0.0 0.0",
+      "point on neumann open boundary plane", &particledynsph);
 
   // type of phase change
   setStringToIntegralParameter<int>("PHASECHANGETYPE", "NoPhaseChange", "type of phase change",
@@ -371,7 +380,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       &particledynsph);
 
   // definition of phase change
-  StringParameter("PHASECHANGEDEFINITION", "none", "phase change definition", &particledynsph);
+  CORE::UTILS::StringParameter(
+      "PHASECHANGEDEFINITION", "none", "phase change definition", &particledynsph);
 
   // type of rigid particle contact
   setStringToIntegralParameter<int>("RIGIDPARTICLECONTACTTYPE", "NoRigidParticleContact",
@@ -381,9 +391,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::NoRigidParticleContact, INPAR::PARTICLE::ElasticRigidParticleContact),
       &particledynsph);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "RIGIDPARTICLECONTACTSTIFF", -1.0, "rigid particle contact stiffness", &particledynsph);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "RIGIDPARTICLECONTACTDAMP", 0.0, "rigid particle contact damping parameter", &particledynsph);
 
   /*-------------------------------------------------------------------------*
@@ -393,11 +403,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "DEM", false, "control parameters for discrete element method (DEM) simulations\n");
 
   // write particle energy output
-  BoolParameter("WRITE_PARTICLE_ENERGY", "no", "write particle energy output", &particledyndem);
+  CORE::UTILS::BoolParameter(
+      "WRITE_PARTICLE_ENERGY", "no", "write particle energy output", &particledyndem);
 
   // write particle-wall interaction output
-  BoolParameter("WRITE_PARTICLE_WALL_INTERACTION", "no", "write particle-wall interaction output",
-      &particledyndem);
+  CORE::UTILS::BoolParameter("WRITE_PARTICLE_WALL_INTERACTION", "no",
+      "write particle-wall interaction output", &particledyndem);
 
   // type of normal contact law
   setStringToIntegralParameter<int>("NORMALCONTACTLAW", "NormalLinearSpring",
@@ -442,9 +453,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::LogNormalSurfaceEnergyDistribution),
       &particledyndem);
 
-  DoubleParameter("MIN_RADIUS", 0.0, "minimum allowed particle radius", &particledyndem);
-  DoubleParameter("MAX_RADIUS", 0.0, "maximum allowed particle radius", &particledyndem);
-  DoubleParameter("MAX_VELOCITY", -1.0, "maximum expected particle velocity", &particledyndem);
+  CORE::UTILS::DoubleParameter(
+      "MIN_RADIUS", 0.0, "minimum allowed particle radius", &particledyndem);
+  CORE::UTILS::DoubleParameter(
+      "MAX_RADIUS", 0.0, "maximum allowed particle radius", &particledyndem);
+  CORE::UTILS::DoubleParameter(
+      "MAX_VELOCITY", -1.0, "maximum expected particle velocity", &particledyndem);
 
   // type of initial particle radius assignment
   setStringToIntegralParameter<int>("INITIAL_RADIUS", "RadiusFromParticleMaterial",
@@ -456,51 +470,54 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::LogNormalRadiusDistribution),
       &particledyndem);
 
-  DoubleParameter("RADIUSDISTRIBUTION_SIGMA", -1.0, "sigma of random particle radius distribution",
-      &particledyndem);
+  CORE::UTILS::DoubleParameter("RADIUSDISTRIBUTION_SIGMA", -1.0,
+      "sigma of random particle radius distribution", &particledyndem);
 
-  DoubleParameter("REL_PENETRATION", -1.0, "maximum allowed relative penetration", &particledyndem);
-  DoubleParameter("NORMAL_STIFF", -1.0, "normal contact stiffness", &particledyndem);
-  DoubleParameter("NORMAL_DAMP", -1.0, "normal contact damping parameter", &particledyndem);
-  DoubleParameter("COEFF_RESTITUTION", -1.0, "coefficient of restitution", &particledyndem);
-  DoubleParameter("DAMP_REG_FAC", -1.0,
+  CORE::UTILS::DoubleParameter(
+      "REL_PENETRATION", -1.0, "maximum allowed relative penetration", &particledyndem);
+  CORE::UTILS::DoubleParameter("NORMAL_STIFF", -1.0, "normal contact stiffness", &particledyndem);
+  CORE::UTILS::DoubleParameter(
+      "NORMAL_DAMP", -1.0, "normal contact damping parameter", &particledyndem);
+  CORE::UTILS::DoubleParameter(
+      "COEFF_RESTITUTION", -1.0, "coefficient of restitution", &particledyndem);
+  CORE::UTILS::DoubleParameter("DAMP_REG_FAC", -1.0,
       "linearly regularized damping normal force in the interval "
       "\f$|g| < (\\text{DAMP_REG_FAC} \\cdot r_{\\min})\f$",
       &particledyndem);
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "TENSION_CUTOFF", "yes", "evaluate tension cutoff of normal contact force", &particledyndem);
 
-  DoubleParameter("POISSON_RATIO", -1.0, "poisson ratio", &particledyndem);
-  DoubleParameter("YOUNG_MODULUS", -1.0, "young's modulus", &particledyndem);
+  CORE::UTILS::DoubleParameter("POISSON_RATIO", -1.0, "poisson ratio", &particledyndem);
+  CORE::UTILS::DoubleParameter("YOUNG_MODULUS", -1.0, "young's modulus", &particledyndem);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "FRICT_COEFF_TANG", -1.0, "friction coefficient for tangential contact", &particledyndem);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "FRICT_COEFF_ROLL", -1.0, "friction coefficient for rolling contact", &particledyndem);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "ADHESION_DISTANCE", -1.0, "adhesion distance between interacting surfaces", &particledyndem);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "ADHESION_MAX_CONTACT_PRESSURE", 0.0, "adhesion maximum contact pressure", &particledyndem);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "ADHESION_MAX_CONTACT_FORCE", 0.0, "adhesion maximum contact force", &particledyndem);
-  BoolParameter("ADHESION_USE_MAX_CONTACT_FORCE", "no",
+  CORE::UTILS::BoolParameter("ADHESION_USE_MAX_CONTACT_FORCE", "no",
       "use maximum contact force instead of maximum contact pressure", &particledyndem);
 
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "ADHESION_VDW_CURVE_SHIFT", "no", "shifts van-der-Waals-curve to g = 0", &particledyndem);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "ADHESION_HAMAKER", -1.0, "hamaker constant of van-der-Waals interaction", &particledyndem);
 
-  DoubleParameter("ADHESION_SURFACE_ENERGY", -1.0,
+  CORE::UTILS::DoubleParameter("ADHESION_SURFACE_ENERGY", -1.0,
       "adhesion surface energy for the calculation of the pull-out force", &particledyndem);
-  DoubleParameter("ADHESION_SURFACE_ENERGY_DISTRIBUTION_VAR", -1.0,
+  CORE::UTILS::DoubleParameter("ADHESION_SURFACE_ENERGY_DISTRIBUTION_VAR", -1.0,
       "variance of adhesion surface energy distribution", &particledyndem);
-  DoubleParameter("ADHESION_SURFACE_ENERGY_DISTRIBUTION_CUTOFF_FACTOR", -1.0,
+  CORE::UTILS::DoubleParameter("ADHESION_SURFACE_ENERGY_DISTRIBUTION_CUTOFF_FACTOR", -1.0,
       "adhesion surface energy distribution limited by multiple of variance", &particledyndem);
-  DoubleParameter("ADHESION_SURFACE_ENERGY_FACTOR", 1.0,
+  CORE::UTILS::DoubleParameter("ADHESION_SURFACE_ENERGY_FACTOR", 1.0,
       "factor to calculate minimum adhesion surface energy", &particledyndem);
 }
 

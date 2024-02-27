@@ -108,7 +108,7 @@ void CONTACT::NitscheStrategyTsi::Setup(bool redistributed, bool init)
 void CONTACT::NitscheStrategyTsi::UpdateTraceIneqEtimates()
 {
   auto NitWgt =
-      INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
   for (auto& interface : interface_)
   {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)

@@ -82,17 +82,18 @@ namespace FLD
         statistics_hit_(Teuchos::null),
         statistics_tgv_(Teuchos::null)
   {
-    subgrid_dissipation_ =
-        INPUT::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"), "SUBGRID_DISSIPATION");
+    subgrid_dissipation_ = CORE::UTILS::IntegralValue<int>(
+        params_->sublist("TURBULENCE MODEL"), "SUBGRID_DISSIPATION");
     // initialize
     withscatra_ = false;
 
     // toogle statistics output for turbulent inflow
-    inflow_ =
-        INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") == true;
+    inflow_ = CORE::UTILS::IntegralValue<int>(
+                  params_->sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") == true;
 
     // toogle output of mean velocity for paraview
-    out_mean_ = INPUT::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"), "OUTMEAN") == true;
+    out_mean_ =
+        CORE::UTILS::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"), "OUTMEAN") == true;
 
     // the flow parameter will control for which geometry the
     // sampling is done
@@ -671,7 +672,7 @@ namespace FLD
                 "need statistics_bfs_ to do a time sample for a flow over a backward-facing step "
                 "at low Mach number");
 
-          if (INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") ==
+          if (CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") ==
               INPAR::FLUID::incompressible)
           {
             if (not withscatra_)
@@ -846,15 +847,15 @@ namespace FLD
               if (scatradis_ != Teuchos::null) dserror("Not supported!");
             }
 
-            if (INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") ==
-                    INPAR::FLUID::timeint_afgenalpha or
-                INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") ==
-                    INPAR::FLUID::timeint_npgenalpha)
+            if (CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha or
+                CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
             {
               statevecs.insert(
                   std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("velaf", myvelaf_));
-              if (INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") ==
-                  INPAR::FLUID::timeint_npgenalpha)
+              if (CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
+                      *params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
                 statevecs.insert(
                     std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("velnp", myvelnp_));
 
@@ -887,7 +888,7 @@ namespace FLD
                   std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("fsvelaf", myfsvelaf_));
               if (myfsvelaf_ == Teuchos::null) dserror("Have not got fsvel!");
 
-              if (INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") ==
+              if (CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") ==
                       INPAR::FLUID::loma and
                   turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
               {
@@ -960,10 +961,10 @@ namespace FLD
           case channel_flow_of_height_2:
           {
             // add parameters of multifractal subgrid-scales model
-            if (INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") ==
-                    INPAR::FLUID::timeint_afgenalpha or
-                INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") ==
-                    INPAR::FLUID::timeint_npgenalpha)
+            if (CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha or
+                CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
               statistics_channel_->AddModelParamsMultifractal(myvelaf_, myfsvelaf_, false);
             else
               statistics_channel_->AddModelParamsMultifractal(myvelnp_, myfsvelaf_, false);
@@ -972,10 +973,10 @@ namespace FLD
           case scatra_channel_flow_of_height_2:
           {
             // add parameters of multifractal subgrid-scales model
-            if (INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") ==
-                    INPAR::FLUID::timeint_afgenalpha or
-                INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") ==
-                    INPAR::FLUID::timeint_npgenalpha)
+            if (CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha or
+                CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
               statistics_channel_->AddModelParamsMultifractal(myvelaf_, myfsvelaf_, true);
             else
               statistics_channel_->AddModelParamsMultifractal(myvelnp_, myfsvelaf_, false);
@@ -1281,7 +1282,7 @@ namespace FLD
                 "need statistics_bfs_ to do a time sample for a flow over a backward-facing step "
                 "at low Mach number");
 
-          if (INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") ==
+          if (CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") ==
               INPAR::FLUID::incompressible)
           {
             if (not withscatra_)

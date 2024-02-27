@@ -30,7 +30,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::BoundaryAction act = INPUT::get<FLD::BoundaryAction>(params, "action");
+  const FLD::BoundaryAction act = CORE::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(const Discretization& dis, Loc
     bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
 {
   // get the action required
-  const FLD::BoundaryAction act = INPUT::get<FLD::BoundaryAction>(params, "action");
+  const FLD::BoundaryAction act = CORE::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {

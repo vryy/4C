@@ -360,7 +360,7 @@ int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(
 )
 {
   FLD::IntFaceAction act = FLD::ifa_none;
-  act = INPUT::get<FLD::IntFaceAction>(params, "action");
+  act = CORE::UTILS::GetAsEnum<FLD::IntFaceAction>(params, "action");
 
   switch (act)
   {

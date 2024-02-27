@@ -48,7 +48,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     : discret_(actdis),
       myrank_(actdis->Comm().MyPID()),
       solver_(solver),
-      solveradapttol_(INPUT::IntegralValue<int>(tdynparams, "ADAPTCONV") == 1),
+      solveradapttol_(CORE::UTILS::IntegralValue<int>(tdynparams, "ADAPTCONV") == 1),
       solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),
       dbcmaps_(Teuchos::rcp(new CORE::LINALG::MapExtractor())),
       output_(output),
@@ -56,13 +56,15 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
       printiter_(true),  // ADD INPUT PARAMETER
       writerestartevery_(tdynparams.get<int>("RESTARTEVRY")),
-      writeglob_((bool)INPUT::IntegralValue<int>(ioparams, "THERM_TEMPERATURE")),
+      writeglob_((bool)CORE::UTILS::IntegralValue<int>(ioparams, "THERM_TEMPERATURE")),
       writeglobevery_(tdynparams.get<int>("RESULTSEVRY")),
-      writeheatflux_(INPUT::IntegralValue<INPAR::THR::HeatFluxType>(ioparams, "THERM_HEATFLUX")),
-      writetempgrad_(INPUT::IntegralValue<INPAR::THR::TempGradType>(ioparams, "THERM_TEMPGRAD")),
+      writeheatflux_(
+          CORE::UTILS::IntegralValue<INPAR::THR::HeatFluxType>(ioparams, "THERM_HEATFLUX")),
+      writetempgrad_(
+          CORE::UTILS::IntegralValue<INPAR::THR::TempGradType>(ioparams, "THERM_TEMPGRAD")),
       writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
       energyfile_(nullptr),
-      calcerror_(INPUT::IntegralValue<INPAR::THR::CalcError>(tdynparams, "CALCERROR")),
+      calcerror_(CORE::UTILS::IntegralValue<INPAR::THR::CalcError>(tdynparams, "CALCERROR")),
       errorfunctno_(tdynparams.get<int>("CALCERRORFUNCNO")),
       time_(Teuchos::null),
       timen_(0.0),
@@ -72,7 +74,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       step_(0),
       stepn_(0),
       firstoutputofrun_(true),
-      lumpcapa_(INPUT::IntegralValue<int>(tdynparams, "LUMPCAPA") == 1),
+      lumpcapa_(CORE::UTILS::IntegralValue<int>(tdynparams, "LUMPCAPA") == 1),
       zeros_(Teuchos::null),
       temp_(Teuchos::null),
       rate_(Teuchos::null),
@@ -139,8 +141,8 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   // set initial field
   // -------------------------------------------------------------------
   const int startfuncno = tdynparams.get<int>("INITFUNCNO");
-  SetInitialField(
-      INPUT::IntegralValue<INPAR::THR::InitialField>(tdynparams, "INITIALFIELD"), startfuncno);
+  SetInitialField(CORE::UTILS::IntegralValue<INPAR::THR::InitialField>(tdynparams, "INITIALFIELD"),
+      startfuncno);
 
   // stay with us
   return;

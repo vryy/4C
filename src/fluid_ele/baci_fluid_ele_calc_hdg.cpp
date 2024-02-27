@@ -259,7 +259,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Flui
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = INPUT::get<FLD::Action>(params, "action");
+  const FLD::Action act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -337,8 +337,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* 
   CORE::LINALG::Matrix<nsd_, 1> xyz(true);
 
   const INPAR::FLUID::CalcError calcerr =
-      INPUT::get<INPAR::FLUID::CalcError>(params, "calculate error");
-  const int calcerrfunctno = INPUT::get<INPAR::FLUID::CalcError>(params, "error function number");
+      CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(params, "calculate error");
+  const int calcerrfunctno =
+      CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(params, "error function number");
 
   double err_u = 0., err_p = 0., err_h = 0., norm_u = 0., norm_p = 0., norm_h = 0.;
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -1348,7 +1349,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMEN
   // get function used to evaluate the error
   const Teuchos::ParameterList fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   const INPAR::FLUID::CalcError calcerr =
-      INPUT::IntegralValue<INPAR::FLUID::CalcError>(fluidparams, "CALCERROR");
+      CORE::UTILS::IntegralValue<INPAR::FLUID::CalcError>(fluidparams, "CALCERROR");
   const int calcerrfunctno = fluidparams.get<int>("CALCERRORFUNCNO");
 
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)

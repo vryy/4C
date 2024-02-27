@@ -80,7 +80,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
     bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
 {
   // get the action required
-  const FLD::BoundaryAction act = INPUT::get<FLD::BoundaryAction>(params, "action");
+  const FLD::BoundaryAction act = CORE::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {

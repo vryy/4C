@@ -15,10 +15,10 @@
 #include "baci_fluid_turbulence_dyn_vreman.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_turbulence_hit_scalar_forcing.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -138,7 +138,7 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
   discret_->SetState("phinp", phiaf_);
 
   // set action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_domain_and_bodyforce, eleparams);
   SetElementTimeParameter();
 
@@ -154,7 +154,7 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
   double parbofint = (*scalars)[1];
 
   // set action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_loma_therm_press, eleparams);
 
   // variables for integrals of normal velocity and diffusive flux

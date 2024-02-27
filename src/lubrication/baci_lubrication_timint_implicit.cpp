@@ -46,12 +46,12 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
       myrank_(actdis->Comm().MyPID()),
       isale_(extraparams->get<bool>("isale")),
       incremental_(true),
-      modified_reynolds_(INPUT::IntegralValue<int>(*params, "MODIFIED_REYNOLDS_EQU")),
-      addsqz_(INPUT::IntegralValue<int>(*params, "ADD_SQUEEZE_TERM")),
-      purelub_(INPUT::IntegralValue<int>(*params, "PURE_LUB")),
-      outmean_(INPUT::IntegralValue<int>(*params, "OUTMEAN")),
-      outputgmsh_(INPUT::IntegralValue<int>(*params, "OUTPUT_GMSH")),
-      output_state_matlab_(INPUT::IntegralValue<int>(*params, "MATLAB_STATE_OUTPUT")),
+      modified_reynolds_(CORE::UTILS::IntegralValue<int>(*params, "MODIFIED_REYNOLDS_EQU")),
+      addsqz_(CORE::UTILS::IntegralValue<int>(*params, "ADD_SQUEEZE_TERM")),
+      purelub_(CORE::UTILS::IntegralValue<int>(*params, "PURE_LUB")),
+      outmean_(CORE::UTILS::IntegralValue<int>(*params, "OUTMEAN")),
+      outputgmsh_(CORE::UTILS::IntegralValue<int>(*params, "OUTPUT_GMSH")),
+      output_state_matlab_(CORE::UTILS::IntegralValue<int>(*params, "MATLAB_STATE_OUTPUT")),
       time_(0.0),
       maxtime_(params->get<double>("MAXTIME")),
       step_(0),
@@ -679,7 +679,7 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
   const double ittol = params_->get<double>("CONVTOL");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool isadapttol = (INPUT::IntegralValue<int>(*params_, "ADAPTCONV"));
+  const bool isadapttol = (CORE::UTILS::IntegralValue<int>(*params_, "ADAPTCONV"));
   const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER");
   const double abstolres = params_->get<double>("ABSTOLRES");
   double actresidual(0.0);
@@ -1031,7 +1031,7 @@ inline void LUBRICATION::TimIntImpl::IncrementTimeAndStep()
 void LUBRICATION::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 {
   const INPAR::LUBRICATION::CalcError calcerr =
-      INPUT::IntegralValue<INPAR::LUBRICATION::CalcError>(*params_, "CALCERROR");
+      CORE::UTILS::IntegralValue<INPAR::LUBRICATION::CalcError>(*params_, "CALCERROR");
 
   if (calcerr == INPAR::LUBRICATION::calcerror_no)  // do nothing (the usual case))
     return;

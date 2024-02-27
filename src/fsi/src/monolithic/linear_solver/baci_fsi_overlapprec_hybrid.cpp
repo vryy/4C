@@ -47,10 +47,10 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
-  additiveschwarzeverywhere_ = INPUT::IntegralValue<bool>(fsimono, "HYBRIDFULL");
+  additiveschwarzeverywhere_ = CORE::UTILS::IntegralValue<bool>(fsimono, "HYBRIDFULL");
 
   INPAR::FSI::LinearBlockSolver innerstrategy =
-      INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "INNERPREC");
+      CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "INNERPREC");
 
   if (innerstrategy != INPAR::FSI::PreconditionedKrylov)
     dserror("Type of INNERPREC parameter not recognized by this class");
@@ -82,7 +82,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 
   // check whether ILU or LU (Amesos) should be used to calculate processor-local inverse
   INPAR::FSI::HybridASType type =
-      INPUT::IntegralValue<INPAR::FSI::HybridASType>(fsimono, "HYBRID_AS_TYPE");
+      CORE::UTILS::IntegralValue<INPAR::FSI::HybridASType>(fsimono, "HYBRID_AS_TYPE");
 
   switch (type)
   {

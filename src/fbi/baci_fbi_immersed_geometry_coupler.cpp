@@ -40,7 +40,7 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
                         .get<double>("SEARCH_RADIUS")),
       edgebased_fluidstabilization_(false)
 {
-  edgebased_fluidstabilization_ = (INPUT::IntegralValue<INPAR::FLUID::StabType>(
+  edgebased_fluidstabilization_ = (CORE::UTILS::IntegralValue<INPAR::FLUID::StabType>(
                                        GLOBAL::Problem::Instance()->FluidDynamicParams().sublist(
                                            "RESIDUAL-BASED STABILIZATION"),
                                        "STABTYPE") == INPAR::FLUID::stabtype_edgebased);

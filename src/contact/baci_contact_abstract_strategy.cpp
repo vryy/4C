@@ -17,7 +17,6 @@
 #include "baci_contact_utils_parallel.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_contact.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_discret.hpp"
@@ -30,6 +29,7 @@
 #include "baci_mortar_defines.hpp"
 #include "baci_mortar_utils.hpp"
 #include "baci_solver_nonlin_nox_group.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
@@ -189,23 +189,24 @@ CONTACT::AbstractStrategy::AbstractStrategy(
       noxinterface_ptr_(Teuchos::null)
 {
   // set data container pointer (only PRIVATE direct access!)
-  data_ptr_->SolType() = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
-  data_ptr_->ConstrDirection() =
-      INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(params, "CONSTRAINT_DIRECTIONS");
+  data_ptr_->SolType() =
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
+  data_ptr_->ConstrDirection() = CORE::UTILS::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
+      params, "CONSTRAINT_DIRECTIONS");
   data_ptr_->ParType() = Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
       params.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
 
   INPAR::CONTACT::FrictionType ftype =
-      INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // set frictional contact status
   if (ftype != INPAR::CONTACT::friction_none) friction_ = true;
 
   // set nonsmooth contact status
-  if (INPUT::IntegralValue<int>(Params(), "NONSMOOTH_GEOMETRIES")) nonSmoothContact_ = true;
+  if (CORE::UTILS::IntegralValue<int>(Params(), "NONSMOOTH_GEOMETRIES")) nonSmoothContact_ = true;
 
-  if (INPUT::IntegralValue<INPAR::CONTACT::Regularization>(Params(), "CONTACT_REGULARIZATION") !=
-      INPAR::CONTACT::reg_none)
+  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::Regularization>(
+          Params(), "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none)
     regularized_ = true;
 
   // initialize storage fields for parallel redistribution
@@ -556,7 +557,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
   }
 
   // initialize vertex, edge and surface maps for nonsmooth case
-  if (INPUT::IntegralValue<int>(Params(), "NONSMOOTH_GEOMETRIES"))
+  if (CORE::UTILS::IntegralValue<int>(Params(), "NONSMOOTH_GEOMETRIES"))
   {
     gsdofVertex_ = Teuchos::null;
     gsdofEdge_ = Teuchos::null;
@@ -633,7 +634,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
     }
 
     // define maps for nonsmooth case
-    if (INPUT::IntegralValue<int>(Params(), "NONSMOOTH_GEOMETRIES"))
+    if (CORE::UTILS::IntegralValue<int>(Params(), "NONSMOOTH_GEOMETRIES"))
     {
       gsdofVertex_ = CORE::LINALG::MergeMap(gsdofVertex_, Interfaces()[i]->SdofVertexRowmap());
       gsdofEdge_ = CORE::LINALG::MergeMap(gsdofEdge_, Interfaces()[i]->SdofEdgeRowmap());
@@ -660,7 +661,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
 
   // TODO: check if necessary!
   // due to boundary modification we have to extend master map to slave dofs
-  //  if(INPUT::IntegralValue<int>(Params(),"NONSMOOTH_GEOMETRIES"))
+  //  if(CORE::UTILS::IntegralValue<int>(Params(),"NONSMOOTH_GEOMETRIES"))
   //  {
   //    gmdofrowmap_ = CORE::LINALG::MergeMap(SlDoFRowMap(true), *gmdofrowmap_, false);
   //  }
@@ -780,9 +781,9 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
   INPAR::MORTAR::ShapeFcn shapefcn =
-      INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
   INPAR::MORTAR::LagMultQuad lagmultquad =
-      INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
   if ((shapefcn == INPAR::MORTAR::shape_dual || shapefcn == INPAR::MORTAR::shape_petrovgalerkin) &&
       (Dim() == 3 || (Dim() == 2 && lagmultquad == INPAR::MORTAR::lagmult_lin)))
     for (int i = 0; i < (int)Interfaces().size(); ++i)
@@ -915,7 +916,8 @@ void CONTACT::AbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> d
   iter_ = nonlinearIteration;
 
   // Create timing reports?
-  bool doAccurateTimeMeasurements = INPUT::IntegralValue<bool>(Data().SContact(), "TIMING_DETAILS");
+  bool doAccurateTimeMeasurements =
+      CORE::UTILS::IntegralValue<bool>(Data().SContact(), "TIMING_DETAILS");
 
   if (doAccurateTimeMeasurements)
   {
@@ -1490,7 +1492,7 @@ void CONTACT::AbstractStrategy::AssembleMortar()
 void CONTACT::AbstractStrategy::EvaluateReferenceState()
 {
   // flag for initialization of contact with nodal gaps
-  bool initcontactbygap = INPUT::IntegralValue<int>(Params(), "INITCONTACTBYGAP");
+  bool initcontactbygap = CORE::UTILS::IntegralValue<int>(Params(), "INITCONTACTBYGAP");
 
   // only do something for frictional case
   // or for initialization of initial contact set with nodal gap
@@ -1611,7 +1613,7 @@ void CONTACT::AbstractStrategy::EvaluateRelMov()
   // evaluation of obj. invariant slip increment
   // do the evaluation on the interface
   // loop over all slave row nodes on the current interface
-  if (INPUT::IntegralValue<int>(Params(), "GP_SLIP_INCR") == false)
+  if (CORE::UTILS::IntegralValue<int>(Params(), "GP_SLIP_INCR") == false)
     for (int i = 0; i < (int)Interfaces().size(); ++i)
       Interfaces()[i]->EvaluateRelMov(xsmod, dmatrixmod_, doldmod_);
 
@@ -2080,7 +2082,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   // to try to read certain, in this case non-existing, vectors
   // such as the activetoggle or sliptoggle vectors, but rather
   // initialize the restart active and slip sets as being empty)
-  bool restartwithcontact = INPUT::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = CORE::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
 
   // set restart displacement state
   SetState(MORTAR::state_new_displacement, *dis);
@@ -2240,7 +2242,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
 {
   // check chosen output option
   INPAR::CONTACT::EmOutputType emtype =
-      INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(Params(), "EMOUTPUT");
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::EmOutputType>(Params(), "EMOUTPUT");
 
   // get out of here if no output wanted
   if (emtype == INPAR::CONTACT::output_none) return;
@@ -2841,7 +2843,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
   int gcornernodes = 0;
 
   // nonsmooth contact active?
-  bool nonsmooth = INPUT::IntegralValue<int>(Params(), "NONSMOOTH_GEOMETRIES");
+  bool nonsmooth = CORE::UTILS::IntegralValue<int>(Params(), "NONSMOOTH_GEOMETRIES");
 
   // loop over all interfaces
   for (int i = 0; i < (int)Interfaces().size(); ++i)

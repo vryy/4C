@@ -18,7 +18,6 @@
 #include "baci_io_control.hpp"
 #include "baci_lib_assemblestrategy.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_equilibrate.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
@@ -28,6 +27,7 @@
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_scatra_timint_meshtying_strategy_artery.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -106,18 +106,19 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Init(
 
   blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
-  fdcheck_ = INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::FDCheck>(
+  fdcheck_ = CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASESCATRA::FDCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
   equilibration_method_ = Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
       algoparams.sublist("MONOLITHIC"), "EQUILIBRATION");
 
   solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
-  solveradapttol_ = (INPUT::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
+  solveradapttol_ =
+      (CORE::UTILS::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
 
   // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh
   // deformation
-  solve_structure_ = INPUT::IntegralValue<int>(poroparams, "SOLVE_STRUCTURE");
+  solve_structure_ = CORE::UTILS::IntegralValue<int>(poroparams, "SOLVE_STRUCTURE");
   if (!solve_structure_) struct_offset_ = 0;
 }
 
@@ -270,9 +271,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
 
   CreateLinearSolver(solverparams, solvertype);
 
-  vectornormfres_ = INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
+  vectornormfres_ = CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
       poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_RESF");
-  vectornorminc_ = INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
+  vectornorminc_ = CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
       poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_INC");
 }
 
@@ -596,7 +597,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraStru
 
   if (solve_structure_)
   {
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::calc_scatra_mono_odblock_mesh, sparams_struct);
     // other parameters that might be needed by the elements
     sparams_struct.set("delta time", Dt());
@@ -640,7 +641,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraPoro
 
   k_spf->Zero();
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_fluid, sparams_fluid);
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", Dt());
@@ -1608,7 +1609,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
 
   k_asa->Zero();
 
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_scatra_mono_odblock_fluid, sparams_artery);
   // other parameters that might be needed by the elements
   sparams_artery.set("delta time", Dt());

@@ -64,7 +64,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     : Base(comm, globaltimeparams, lubricationparams, structparams, struct_disname,
           lubrication_disname),
       solveradapttol_(
-          INPUT::IntegralValue<int>(
+          CORE::UTILS::IntegralValue<int>(
               ((GLOBAL::Problem::Instance()->ElastoHydroDynamicParams()).sublist("MONOLITHIC")),
               "ADAPTCONV") == 1),
       solveradaptolbetter_(
@@ -72,16 +72,18 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
               .get<double>("ADAPTCONV_BETTER")),
       printiter_(true),  // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
-      strmethodname_(INPUT::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP")),
+      strmethodname_(
+          CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP")),
       ehldyn_(GLOBAL::Problem::Instance()->ElastoHydroDynamicParams()),
       ehldynmono_((GLOBAL::Problem::Instance()->ElastoHydroDynamicParams()).sublist("MONOLITHIC")),
       blockrowdofmap_(Teuchos::null),
       systemmatrix_(Teuchos::null),
       k_sl_(Teuchos::null),
       k_ls_(Teuchos::null),
-      merge_ehl_blockmatrix_(INPUT::IntegralValue<bool>(ehldynmono_, "MERGE_EHL_BLOCK_MATRIX")),
-      soltech_(INPUT::IntegralValue<INPAR::EHL::NlnSolTech>(ehldynmono_, "NLNSOL")),
-      iternorm_(INPUT::IntegralValue<INPAR::EHL::VectorNorm>(ehldynmono_, "ITERNORM")),
+      merge_ehl_blockmatrix_(
+          CORE::UTILS::IntegralValue<bool>(ehldynmono_, "MERGE_EHL_BLOCK_MATRIX")),
+      soltech_(CORE::UTILS::IntegralValue<INPAR::EHL::NlnSolTech>(ehldynmono_, "NLNSOL")),
+      iternorm_(CORE::UTILS::IntegralValue<INPAR::EHL::VectorNorm>(ehldynmono_, "ITERNORM")),
       iter_(0),
       sdyn_(structparams),
       timernewton_("EHL_Monolithic_newton", true)
@@ -490,7 +492,7 @@ void EHL::Monolithic::NewtonFull()
   {
     PrintNewtonConv();
   }
-  else if (INPUT::IntegralValue<INPAR::STR::DivContAct>(sdyn_, "DIVERCONT") ==
+  else if (CORE::UTILS::IntegralValue<INPAR::STR::DivContAct>(sdyn_, "DIVERCONT") ==
            INPAR::STR::divcont_continue)
     ;
   else if (iter_ >= itermax_)
@@ -640,7 +642,7 @@ void EHL::Monolithic::SetupSystemMatrix()
 
   // Time integration specific parameters..
   double alphaf = -1.;
-  switch (INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_, "DYNAMICTYP"))
+  switch (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn_, "DYNAMICTYP"))
   {
     case INPAR::STR::dyna_genalpha:
     {
@@ -1499,7 +1501,7 @@ Teuchos::RCP<Epetra_Map> EHL::Monolithic::CombinedDBCMap()
 void EHL::Monolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
-  const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(ehldynmono_, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(ehldynmono_, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1543,7 +1545,7 @@ void EHL::Monolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epet
 void EHL::Monolithic::UnscaleSolution(
     CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const bool scaling_infnorm = (bool)INPUT::IntegralValue<int>(ehldynmono_, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(ehldynmono_, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1654,19 +1656,20 @@ void EHL::Monolithic::SetDefaultParameters()
   itermin_ = ehldyn_.get<int>("ITEMIN");
 
   // what kind of norm do we wanna test for coupled EHL problem
-  normtypeinc_ = INPUT::IntegralValue<INPAR::EHL::ConvNorm>(ehldynmono_, "NORM_INC");
-  normtyperhs_ = INPUT::IntegralValue<INPAR::EHL::ConvNorm>(ehldynmono_, "NORM_RESF");
+  normtypeinc_ = CORE::UTILS::IntegralValue<INPAR::EHL::ConvNorm>(ehldynmono_, "NORM_INC");
+  normtyperhs_ = CORE::UTILS::IntegralValue<INPAR::EHL::ConvNorm>(ehldynmono_, "NORM_RESF");
   // what kind of norm do we wanna test for the single fields
-  normtypedisi_ = INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_, "NORM_DISP");
-  normtypestrrhs_ = INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_, "NORM_RESF");
+  normtypedisi_ = CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdyn_, "NORM_DISP");
+  normtypestrrhs_ = CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdyn_, "NORM_RESF");
   enum INPAR::STR::VectorNorm striternorm =
-      INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdyn_, "ITERNORM");
-  normtypeprei_ = INPUT::IntegralValue<INPAR::LUBRICATION::ConvNorm>(ldyn, "NORM_PRE");
-  normtypelubricationrhs_ = INPUT::IntegralValue<INPAR::LUBRICATION::ConvNorm>(ldyn, "NORM_RESF");
+      CORE::UTILS::IntegralValue<INPAR::STR::VectorNorm>(sdyn_, "ITERNORM");
+  normtypeprei_ = CORE::UTILS::IntegralValue<INPAR::LUBRICATION::ConvNorm>(ldyn, "NORM_PRE");
+  normtypelubricationrhs_ =
+      CORE::UTILS::IntegralValue<INPAR::LUBRICATION::ConvNorm>(ldyn, "NORM_RESF");
   enum INPAR::LUBRICATION::VectorNorm lubricationiternorm =
-      INPUT::IntegralValue<INPAR::LUBRICATION::VectorNorm>(ldyn, "ITERNORM");
+      CORE::UTILS::IntegralValue<INPAR::LUBRICATION::VectorNorm>(ldyn, "ITERNORM");
   // in total when do we reach a converged state for complete problem
-  combincrhs_ = INPUT::IntegralValue<INPAR::EHL::BinaryOp>(ehldynmono_, "NORMCOMBI_RESFINC");
+  combincrhs_ = CORE::UTILS::IntegralValue<INPAR::EHL::BinaryOp>(ehldynmono_, "NORMCOMBI_RESFINC");
 
   switch (combincrhs_)
   {

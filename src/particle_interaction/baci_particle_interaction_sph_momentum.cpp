@@ -40,13 +40,13 @@ BACI_NAMESPACE_OPEN
 PARTICLEINTERACTION::SPHMomentum::SPHMomentum(const Teuchos::ParameterList& params)
     : params_sph_(params),
       boundaryparticleinteraction_(
-          INPUT::IntegralValue<INPAR::PARTICLE::BoundaryParticleInteraction>(
+          CORE::UTILS::IntegralValue<INPAR::PARTICLE::BoundaryParticleInteraction>(
               params_sph_, "BOUNDARYPARTICLEINTERACTION")),
       transportvelocityformulation_(
-          INPUT::IntegralValue<INPAR::PARTICLE::TransportVelocityFormulation>(
+          CORE::UTILS::IntegralValue<INPAR::PARTICLE::TransportVelocityFormulation>(
               params_sph_, "TRANSPORTVELOCITYFORMULATION")),
       writeparticlewallinteraction_(
-          INPUT::IntegralValue<int>(params_sph_, "WRITE_PARTICLE_WALL_INTERACTION"))
+          CORE::UTILS::IntegralValue<int>(params_sph_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }
@@ -195,7 +195,7 @@ void PARTICLEINTERACTION::SPHMomentum::InitMomentumFormulationHandler()
 {
   // get type of smoothed particle hydrodynamics momentum formulation
   INPAR::PARTICLE::MomentumFormulationType momentumformulationtype =
-      INPUT::IntegralValue<INPAR::PARTICLE::MomentumFormulationType>(
+      CORE::UTILS::IntegralValue<INPAR::PARTICLE::MomentumFormulationType>(
           params_sph_, "MOMENTUMFORMULATION");
 
   // create momentum formulation handler

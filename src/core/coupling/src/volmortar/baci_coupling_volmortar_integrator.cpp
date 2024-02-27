@@ -36,10 +36,10 @@ CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBa
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
-  dualquad_ = INPUT::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params, "DUALQUAD");
+  dualquad_ = CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params, "DUALQUAD");
 
   // get type of quadratic modification
-  shape_ = INPUT::IntegralValue<INPAR::VOLMORTAR::Shapefcn>(params, "SHAPEFCN");
+  shape_ = CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::Shapefcn>(params, "SHAPEFCN");
 }
 
 /*----------------------------------------------------------------------*
@@ -684,10 +684,10 @@ CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
-  dualquad_ = INPUT::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params, "DUALQUAD");
+  dualquad_ = CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params, "DUALQUAD");
 
   // get type of quadratic modification
-  shape_ = INPUT::IntegralValue<INPAR::VOLMORTAR::Shapefcn>(params, "SHAPEFCN");
+  shape_ = CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::Shapefcn>(params, "SHAPEFCN");
 
   // define gp rule
   InitializeGP();

@@ -13,7 +13,6 @@
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_krylov_projector.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
@@ -21,6 +20,7 @@
 #include "baci_mat_material.hpp"
 #include "baci_nurbs_discret.hpp"
 #include "baci_scatra_ele_action.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -117,7 +117,7 @@ void SCATRA::TimIntCardiacMonodomain::OutputState()
   if (material_internal_state_np_ != Teuchos::null and nb_max_mat_int_state_vars_)
   {
     Teuchos::ParameterList params;
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::get_material_internal_state, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state",
         material_internal_state_np_);  // Probably do it once at the beginning
@@ -140,7 +140,7 @@ void SCATRA::TimIntCardiacMonodomain::OutputState()
   if (material_ionic_currents_np_ != Teuchos::null and nb_max_mat_ionic_currents_)
   {
     Teuchos::ParameterList params;
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::get_material_ionic_currents, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents",
         material_ionic_currents_np_);  // Probably do it once at the beginning
@@ -170,7 +170,7 @@ void SCATRA::TimIntCardiacMonodomain::ElementMaterialTimeUpdate()
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::time_update_material, p);
   // further required parameter
   p.set<int>("time-step length", dta_);
@@ -193,15 +193,15 @@ void SCATRA::TimIntCardiacMonodomain::SetElementSpecificScaTraParameters(
     Teuchos::ParameterList& eleparams) const
 {
   // safety check
-  if (INPUT::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
+  if (CORE::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
     if (INPAR::SCATRA::timeint_gen_alpha ==
-        INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
+        CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
       if (params_->get<double>("ALPHA_M") < 1.0 or params_->get<double>("ALPHA_F") < 1.0)
         dserror(
             "EP calculation with semiimplicit timestepping scheme only tested for gen-alpha with "
             "alpha_f = alpha_m = 1!");
 
-  eleparams.set<bool>("semiimplicit", INPUT::IntegralValue<int>(*params_, "SEMIIMPLICIT"));
+  eleparams.set<bool>("semiimplicit", CORE::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"));
 
   return;
 }

@@ -16,12 +16,12 @@
 #include "baci_fluid_utils.hpp"
 #include "baci_fluid_xwall.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_scatra_mat.hpp"
 #include "baci_mat_sutherland.hpp"
 #include "baci_scatra_ele_action.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -46,7 +46,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       statistics_outfilename_(statistics_outfilename),
       subgrid_dissipation_(subgrid_dissipation),
       inflowchannel_(
-          INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
+          CORE::UTILS::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
       inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE", 0.0)),
       dens_(1.0),
       visc_(1.0),
@@ -84,7 +84,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   // switches, control parameters, material parameters
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
-  physicaltype_ = INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
+  physicaltype_ = CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params, "Physical Type");
 
   // get the plane normal direction from the parameterlist
   {
@@ -3048,7 +3048,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     // add velafgrad
     Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
-    if (INPUT::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
+    if (CORE::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
     {
       for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
            state != statevecs.end(); ++state)
@@ -3088,12 +3088,12 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       // add dissipation and residuals of scalar field
 
       // set action for elements
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_dissipation, scatraeleparams_);
       // set parameters required for evaluation of residuals, etc.
       scatraeleparams_.set<double>("time-step length", scatraparams_->get<double>("TIMESTEP"));
       scatraeleparams_.set<int>("fs subgrid diffusivity",
-          INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*scatraparams_, "FSSUGRDIFF"));
+          CORE::UTILS::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*scatraparams_, "FSSUGRDIFF"));
       scatraeleparams_.sublist("TURBULENCE MODEL") =
           scatraextraparams_->sublist("TURBULENCE MODEL");
       scatraeleparams_.sublist("SUBGRID VISCOSITY") =

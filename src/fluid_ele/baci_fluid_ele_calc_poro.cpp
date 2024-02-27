@@ -105,7 +105,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateService(DRT::ELEMENTS::Flu
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = INPUT::get<FLD::Action>(params, "action");
+  const auto act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -6246,7 +6246,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
   CORE::LINALG::Matrix<nsd_, 1> deltavel(true);
   double deltap = 0.0;
 
-  const int calcerr = INPUT::get<INPAR::FLUID::CalcError>(params, "calculate error");
+  const int calcerr = CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(params, "calculate error");
 
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors

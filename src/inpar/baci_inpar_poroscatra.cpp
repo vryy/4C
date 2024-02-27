@@ -14,7 +14,7 @@
 
 #include "baci_inpar_poroelast.hpp"
 #include "baci_inpar_scatra.hpp"
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -30,40 +30,42 @@ void INPAR::PORO_SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "POROSCATRA CONTROL", false, "Control paramters for scatra porous media coupling");
 
   // Output type
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &poroscatradyn);
   // Time loop control
-  IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &poroscatradyn);
-  DoubleParameter("MAXTIME", 1000.0, "total simulation time", &poroscatradyn);
-  DoubleParameter("TIMESTEP", 0.05, "time step size dt", &poroscatradyn);
-  IntParameter("RESULTSEVRY", 1, "increment for writing solution", &poroscatradyn);
-  IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &poroscatradyn);
-  IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &poroscatradyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &poroscatradyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "total simulation time", &poroscatradyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size dt", &poroscatradyn);
+  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "increment for writing solution", &poroscatradyn);
+  CORE::UTILS::IntParameter(
+      "ITEMAX", 10, "maximum number of iterations over fields", &poroscatradyn);
+  CORE::UTILS::IntParameter(
+      "ITEMIN", 1, "minimal number of iterations over fields", &poroscatradyn);
 
   // Iterationparameters
-  DoubleParameter("TOLRES_GLOBAL", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poroscatradyn);
-  DoubleParameter("TOLINC_GLOBAL", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poroscatradyn);
-  DoubleParameter("TOLRES_DISP", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poroscatradyn);
-  DoubleParameter("TOLINC_DISP", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poroscatradyn);
-  //  DoubleParameter("TOLRES_PORO",1e-8,"tolerance in the residual norm for the Newton
-  //  iteration",&poroscatradyn); DoubleParameter("TOLINC_PORO",1e-8,"tolerance in the increment
-  //  norm for the Newton iteration",&poroscatradyn);
-  DoubleParameter("TOLRES_VEL", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poroscatradyn);
-  DoubleParameter("TOLINC_VEL", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poroscatradyn);
-  DoubleParameter("TOLRES_PRES", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poroscatradyn);
-  DoubleParameter("TOLINC_PRES", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poroscatradyn);
-  DoubleParameter("TOLRES_SCALAR", 1e-8, "tolerance in the residual norm for the Newton iteration",
-      &poroscatradyn);
-  DoubleParameter("TOLINC_SCALAR", 1e-8, "tolerance in the increment norm for the Newton iteration",
-      &poroscatradyn);
+  CORE::UTILS::DoubleParameter("TOLRES_GLOBAL", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
+  CORE::UTILS::DoubleParameter("TOLINC_GLOBAL", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
+  CORE::UTILS::DoubleParameter("TOLRES_DISP", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
+  CORE::UTILS::DoubleParameter("TOLINC_DISP", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
+  //  CORE::UTILS::DoubleParameter("TOLRES_PORO",1e-8,"tolerance in the residual norm for the Newton
+  //  iteration",&poroscatradyn); CORE::UTILS::DoubleParameter("TOLINC_PORO",1e-8,"tolerance in the
+  //  increment norm for the Newton iteration",&poroscatradyn);
+  CORE::UTILS::DoubleParameter("TOLRES_VEL", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
+  CORE::UTILS::DoubleParameter("TOLINC_VEL", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
+  CORE::UTILS::DoubleParameter("TOLRES_PRES", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
+  CORE::UTILS::DoubleParameter("TOLINC_PRES", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
+  CORE::UTILS::DoubleParameter("TOLRES_SCALAR", 1e-8,
+      "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
+  CORE::UTILS::DoubleParameter("TOLINC_SCALAR", 1e-8,
+      "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
 
   setStringToIntegralParameter<int>("NORM_INC", "AbsSingleFields",
       "type of norm for primary variables convergence check",
@@ -99,7 +101,7 @@ void INPAR::PORO_SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       &poroscatradyn);
 
   // number of linear solver used for poroelasticity
-  IntParameter("LINEAR_SOLVER", -1,
+  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
       "number of linear solver used for monolithic poroscatra problems", &poroscatradyn);
 
   // Coupling strategy for poroscatra solvers
@@ -108,7 +110,7 @@ void INPAR::PORO_SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       tuple<std::string>("monolithic", "scatra_to_solid", "solid_to_scatra", "two_way"),
       tuple<int>(Monolithic, Part_ScatraToPoro, Part_PoroToScatra, Part_TwoWay), &poroscatradyn);
 
-  BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &poroscatradyn);
+  CORE::UTILS::BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &poroscatradyn);
 }
 
 BACI_NAMESPACE_CLOSE

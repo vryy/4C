@@ -13,7 +13,7 @@
 
 #include "baci_inpar_wear.hpp"
 
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -21,7 +21,6 @@ BACI_NAMESPACE_OPEN
 
 void INPAR::WEAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -32,7 +31,7 @@ void INPAR::WEAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("None", "none", "Archard", "archard"),
       tuple<int>(wear_none, wear_none, wear_archard, wear_archard), &wear);
 
-  BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &wear);
+  CORE::UTILS::BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &wear);
 
   setStringToIntegralParameter<int>("WEARCOEFF_CONF", "material",
       "configuration in which wcoeff is defined",
@@ -51,15 +50,16 @@ void INPAR::WEAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           wear_shape_standard),
       &wear);
 
-  DoubleParameter("WEARCOEFF", 0.0, "Wear coefficient for slave surface", &wear);
-  DoubleParameter("WEARCOEFF_MASTER", 0.0, "Wear coefficient for master surface", &wear);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter("WEARCOEFF", 0.0, "Wear coefficient for slave surface", &wear);
+  CORE::UTILS::DoubleParameter(
+      "WEARCOEFF_MASTER", 0.0, "Wear coefficient for master surface", &wear);
+  CORE::UTILS::DoubleParameter(
       "WEAR_TIMERATIO", 1.0, "Time step ratio between wear and spatial time scale", &wear);
-  DoubleParameter("SSSLIP", 1.0, "Fixed slip for steady state wear", &wear);
+  CORE::UTILS::DoubleParameter("SSSLIP", 1.0, "Fixed slip for steady state wear", &wear);
 
-  BoolParameter("SSWEAR", "No", "flag for steady state wear", &wear);
+  CORE::UTILS::BoolParameter("SSWEAR", "No", "flag for steady state wear", &wear);
 
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "VOLMASS_OUTPUT", "No", "flag for output of mass/volume in ref,mat and cur. conf.", &wear);
 
   setStringToIntegralParameter<int>("WEAR_SIDE", "slave", "Definition of wear side",

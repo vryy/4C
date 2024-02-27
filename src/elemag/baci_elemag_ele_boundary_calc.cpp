@@ -12,8 +12,8 @@
 #include "baci_elemag_ele.hpp"
 #include "baci_elemag_ele_action.hpp"
 #include "baci_global_data.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_lib_node.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -136,7 +136,7 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
    * unknowns we build K with G as summand. Hence, we can just add the terms
    * resulting from this boundary condition to K (and hence G)
    */
-  const ELEMAG::Action action = INPUT::get<ELEMAG::Action>(params, "action");
+  const ELEMAG::Action action = CORE::UTILS::GetAsEnum<ELEMAG::Action>(params, "action");
   switch (action)
   {
     case ELEMAG::calc_abc:

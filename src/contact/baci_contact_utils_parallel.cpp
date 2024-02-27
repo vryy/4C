@@ -32,7 +32,7 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
   {
     const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
     const enum INPAR::STR::IntegrationStrategy intstrat =
-        INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+        CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
     if (intstrat == INPAR::STR::int_old)
     {
@@ -50,7 +50,7 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
        * - Everything porous media related has to stick to the old code branch as well.
        * - "Large" wear, i.e. using Structure-ALE.
        */
-      if (INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(contactParams, "ALGORITHM") ==
+      if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(contactParams, "ALGORITHM") ==
               INPAR::MORTAR::algorithm_mortar &&
           (GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::poroelast &&
               GLOBAL::Problem::Instance()->GetProblemType() != GLOBAL::ProblemType::poroscatra &&

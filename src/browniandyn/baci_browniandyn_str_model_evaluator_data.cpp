@@ -59,7 +59,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
 
   // the way how damping coefficient values for beams are specified
   beam_damping_coeff_specified_via_ =
-      INPUT::IntegralValue<INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType>(
+      CORE::UTILS::IntegralValue<INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType>(
           browndyn_params_list, "BEAMS_DAMPING_COEFF_SPECIFIED_VIA");
 
   // if input file is chosen, get the required values and check them for sanity

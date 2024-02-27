@@ -10,9 +10,9 @@
 #include "baci_inpar_elch.hpp"
 
 #include "baci_inpar_scatra.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_linalg_sparseoperator.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -25,19 +25,19 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& elchcontrol =
       list->sublist("ELCH CONTROL", false, "control parameters for electrochemistry problems\n");
 
-  IntParameter("MOVBOUNDARYITEMAX", 10,
+  CORE::UTILS::IntParameter("MOVBOUNDARYITEMAX", 10,
       "Maximum number of outer iterations in electrode shape change computations", &elchcontrol);
-  DoubleParameter("MOVBOUNDARYCONVTOL", 1e-6,
+  CORE::UTILS::DoubleParameter("MOVBOUNDARYCONVTOL", 1e-6,
       "Convergence check tolerance for outer loop in electrode shape change computations",
       &elchcontrol);
-  DoubleParameter("TEMPERATURE", 298.0, "Constant temperature (Kelvin)", &elchcontrol);
-  IntParameter("TEMPERATURE_FROM_FUNCT", -1,
+  CORE::UTILS::DoubleParameter("TEMPERATURE", 298.0, "Constant temperature (Kelvin)", &elchcontrol);
+  CORE::UTILS::IntParameter("TEMPERATURE_FROM_FUNCT", -1,
       "Homogeneous temperature within electrochemistry field that can be time dependent according "
       "to function definition",
       &elchcontrol);
-  DoubleParameter("FARADAY_CONSTANT", 9.64853399e4,
+  CORE::UTILS::DoubleParameter("FARADAY_CONSTANT", 9.64853399e4,
       "Faraday constant (in unit system as chosen in input file)", &elchcontrol);
-  DoubleParameter("GAS_CONSTANT", 8.314472,
+  CORE::UTILS::DoubleParameter("GAS_CONSTANT", 8.314472,
       "(universal) gas constant (in unit system as chosen in input file)", &elchcontrol);
   // parameter for possible types of ELCH algorithms for deforming meshes
   setStringToIntegralParameter<int>("MOVINGBOUNDARY", "No", "ELCH algorithm for deforming meshes",
@@ -48,11 +48,11 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(
           elch_mov_bndry_no, elch_mov_bndry_pseudo_transient, elch_mov_bndry_fully_transient),
       &elchcontrol);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "MOLARVOLUME", 0.0, "Molar volume for electrode shape change computations", &elchcontrol);
-  DoubleParameter("MOVBOUNDARYTHETA", 0.0,
+  CORE::UTILS::DoubleParameter("MOVBOUNDARYTHETA", 0.0,
       "One-step-theta factor in electrode shape change computations", &elchcontrol);
-  BoolParameter("GALVANOSTATIC", "No", "flag for galvanostatic mode", &elchcontrol);
+  CORE::UTILS::BoolParameter("GALVANOSTATIC", "No", "flag for galvanostatic mode", &elchcontrol);
   setStringToIntegralParameter<int>("GSTAT_APPROX_ELECT_RESIST", "relation_pot_cur",
       "relation of potential and current flow",
       tuple<std::string>("relation_pot_cur", "effective_length_with_initial_cond",
@@ -60,18 +60,18 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(approxelctresist_relpotcur, approxelctresist_effleninitcond,
           approxelctresist_efflenintegcond),
       &elchcontrol);
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "GSTATCONDID_CATHODE", 0, "condition id of electrode kinetics for cathode", &elchcontrol);
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "GSTATCONDID_ANODE", 1, "condition id of electrode kinetics for anode", &elchcontrol);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "GSTATCONVTOL", 1.e-5, "Convergence check tolerance for galvanostatic mode", &elchcontrol);
-  DoubleParameter("GSTATCURTOL", 1.e-15, "Current Tolerance", &elchcontrol);
-  IntParameter(
+  CORE::UTILS::DoubleParameter("GSTATCURTOL", 1.e-15, "Current Tolerance", &elchcontrol);
+  CORE::UTILS::IntParameter(
       "GSTATFUNCTNO", -1, "function number defining the imposed current curve", &elchcontrol);
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "GSTATITEMAX", 10, "maximum number of iterations for galvanostatic mode", &elchcontrol);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "GSTAT_LENGTH_CURRENTPATH", 0.0, "average length of the current path", &elchcontrol);
 
   setStringToIntegralParameter<int>("EQUPOT", "Undefined",
@@ -81,23 +81,23 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(equpot_undefined, equpot_enc, equpot_enc_pde, equpot_enc_pde_elim, equpot_poisson,
           equpot_laplace, equpot_divi),
       &elchcontrol);
-  BoolParameter("BLOCKPRECOND", "NO",
+  CORE::UTILS::BoolParameter("BLOCKPRECOND", "NO",
       "Switch to block-preconditioned family of solvers, only works with block preconditioners "
       "like CheapSIMPLE!",
       &elchcontrol);
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "DIFFCOND_FORMULATION", "No", "Activation of diffusion-conduction formulation", &elchcontrol);
-  BoolParameter("INITPOTCALC", "No", "Automatically calculate initial field for electric potential",
-      &elchcontrol);
-  BoolParameter("ONLYPOTENTIAL", "no",
+  CORE::UTILS::BoolParameter("INITPOTCALC", "No",
+      "Automatically calculate initial field for electric potential", &elchcontrol);
+  CORE::UTILS::BoolParameter("ONLYPOTENTIAL", "no",
       "Coupling of general ion transport equation with Laplace equation", &elchcontrol);
-  BoolParameter("COUPLE_BOUNDARY_FLUXES", "Yes",
+  CORE::UTILS::BoolParameter("COUPLE_BOUNDARY_FLUXES", "Yes",
       "Coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann "
       "boundaries",
       &elchcontrol);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "CYCLING_TIMESTEP", -1., "modified time step size for CCCV cell cycling", &elchcontrol);
-  BoolParameter("ELECTRODE_INFO_EVERY_STEP", "No",
+  CORE::UTILS::BoolParameter("ELECTRODE_INFO_EVERY_STEP", "No",
       "the cell voltage, SOC, and C-Rate will be written to the csv file every step, even if "
       "RESULTSEVRY is not 1",
       &elchcontrol);
@@ -107,9 +107,9 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& elchdiffcondcontrol = elchcontrol.sublist(
       "DIFFCOND", false, "control parameters for electrochemical diffusion conduction problems\n");
 
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "CURRENT_SOLUTION_VAR", "No", "Current as a solution variable", &elchdiffcondcontrol);
-  BoolParameter("MAT_DIFFCOND_DIFFBASED", "Yes",
+  CORE::UTILS::BoolParameter("MAT_DIFFCOND_DIFFBASED", "Yes",
       "Coupling terms of chemical diffusion for current equation are based on t and kappa",
       &elchdiffcondcontrol);
 
@@ -123,16 +123,16 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   ///         C
   //
   // default: concentrated solution theory according to Newman
-  DoubleParameter("MAT_NEWMAN_CONST_A", 2.0,
+  CORE::UTILS::DoubleParameter("MAT_NEWMAN_CONST_A", 2.0,
       "Constant A for the Newman model(term for the concentration overpotential)",
       &elchdiffcondcontrol);
-  DoubleParameter("MAT_NEWMAN_CONST_B", -2.0,
+  CORE::UTILS::DoubleParameter("MAT_NEWMAN_CONST_B", -2.0,
       "Constant B for the Newman model(term for the concentration overpotential)",
       &elchdiffcondcontrol);
-  DoubleParameter("MAT_NEWMAN_CONST_C", -1.0,
+  CORE::UTILS::DoubleParameter("MAT_NEWMAN_CONST_C", -1.0,
       "Constant C for the Newman model(term for the concentration overpotential)",
       &elchdiffcondcontrol);
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "PERMITTIVITY_VACUUM", 8.8541878128e-12, "Vacuum permittivity", &elchdiffcondcontrol);
 
   /*----------------------------------------------------------------------*/
@@ -140,21 +140,22 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   auto& sclcontrol = elchcontrol.sublist(
       "SCL", false, "control parameters for coupled probelms with space-charge layer formation\n");
 
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "ADD_MICRO_MACRO_COUPLING", "No", "flag for micro macro coupling with scls", &sclcontrol);
-  BoolParameter("COUPLING_OUTPUT", "No", "write coupled node gids and node coordinates to csv file",
-      &sclcontrol);
-  BoolParameter("INITPOTCALC", "No", "calculate initial potential field?", &sclcontrol);
-  IntParameter("SOLVER", -1, "solver for coupled SCL problem", &sclcontrol);
+  CORE::UTILS::BoolParameter("COUPLING_OUTPUT", "No",
+      "write coupled node gids and node coordinates to csv file", &sclcontrol);
+  CORE::UTILS::BoolParameter(
+      "INITPOTCALC", "No", "calculate initial potential field?", &sclcontrol);
+  CORE::UTILS::IntParameter("SOLVER", -1, "solver for coupled SCL problem", &sclcontrol);
   setStringToIntegralParameter<CORE::LINALG::MatrixType>("MATRIXTYPE", "undefined",
       "type of global system matrix in global system of equations",
       tuple<std::string>("undefined", "block", "sparse"),
       tuple<CORE::LINALG::MatrixType>(CORE::LINALG::MatrixType::undefined,
           CORE::LINALG::MatrixType::block_field, CORE::LINALG::MatrixType::sparse),
       &sclcontrol);
-  IntParameter("ADAPT_TIME_STEP", -1,
+  CORE::UTILS::IntParameter("ADAPT_TIME_STEP", -1,
       "time step when time step size should be updated to 'ADAPTED_TIME_STEP_SIZE'.", &sclcontrol);
-  DoubleParameter("ADAPTED_TIME_STEP_SIZE", -1.0, "new time step size.", &sclcontrol);
+  CORE::UTILS::DoubleParameter("ADAPTED_TIME_STEP_SIZE", -1.0, "new time step size.", &sclcontrol);
 
   setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
       "Initial Field for scalar transport problem",
@@ -163,7 +164,8 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           SCATRA::initfield_field_by_condition),
       &sclcontrol);
 
-  IntParameter("INITFUNCNO", -1, "function number for scalar transport initial field", &sclcontrol);
+  CORE::UTILS::IntParameter(
+      "INITFUNCNO", -1, "function number for scalar transport initial field", &sclcontrol);
 }
 
 

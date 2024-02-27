@@ -32,8 +32,8 @@ void PARTICLEWALL::WallDataState::Init(const Teuchos::RCP<DRT::Discretization> w
   walldiscretization_ = walldiscretization;
 
   // get flags defining considered states of particle wall
-  bool ismoving = INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_MOVING");
-  bool isloaded = INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
+  bool ismoving = CORE::UTILS::IntegralValue<int>(params_, "PARTICLE_WALL_MOVING");
+  bool isloaded = CORE::UTILS::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
 
   // set current dof row and column map
   curr_dof_row_map_ = Teuchos::rcp(new Epetra_Map(*walldiscretization_->DofRowMap()));

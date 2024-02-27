@@ -11,10 +11,10 @@
 #include "baci_global_data.hpp"
 #include "baci_global_data_read.hpp"
 #include "baci_global_legacy_module.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_io_inputreader.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <utility>
 
@@ -106,11 +106,11 @@ void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Com
 
   // configure the parallel output environment
   const Teuchos::ParameterList& io = GLOBAL::Problem::Instance()->IOParams();
-  bool screen = INPUT::IntegralValue<int>(io, "WRITE_TO_SCREEN");
-  bool file = INPUT::IntegralValue<int>(io, "WRITE_TO_FILE");
-  bool preGrpID = INPUT::IntegralValue<int>(io, "PREFIX_GROUP_ID");
+  bool screen = CORE::UTILS::IntegralValue<int>(io, "WRITE_TO_SCREEN");
+  bool file = CORE::UTILS::IntegralValue<int>(io, "WRITE_TO_FILE");
+  bool preGrpID = CORE::UTILS::IntegralValue<int>(io, "PREFIX_GROUP_ID");
   int oproc = io.get<int>("LIMIT_OUTP_TO_PROC");
-  auto level = INPUT::IntegralValue<IO::verbositylevel>(io, "VERBOSITY");
+  auto level = CORE::UTILS::IntegralValue<IO::verbositylevel>(io, "VERBOSITY");
 
   IO::cout.setup(screen, file, preGrpID, level, std::move(lcomm), oproc, group, outputfile_kenner);
 }

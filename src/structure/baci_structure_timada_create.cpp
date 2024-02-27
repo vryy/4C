@@ -37,7 +37,7 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate(
   Teuchos::RCP<STR::TimAda> sta = Teuchos::null;
 
   // auxiliary time integrator
-  switch (INPUT::IntegralValue<INPAR::STR::TimAdaKind>(tap, "KIND"))
+  switch (CORE::UTILS::IntegralValue<INPAR::STR::TimAdaKind>(tap, "KIND"))
   {
     case INPAR::STR::timada_kind_none:
       // No adaptivity in time

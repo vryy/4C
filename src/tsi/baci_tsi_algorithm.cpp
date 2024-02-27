@@ -51,7 +51,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     : AlgorithmBase(comm, GLOBAL::Problem::Instance()->TSIDynamicParams()),
       dispnp_(Teuchos::null),
       tempnp_(Teuchos::null),
-      matchinggrid_(INPUT::IntegralValue<bool>(
+      matchinggrid_(CORE::UTILS::IntegralValue<bool>(
           GLOBAL::Problem::Instance()->TSIDynamicParams(), "MATCHINGGRID")),
       volcoupl_(Teuchos::null)
 {
@@ -81,7 +81,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     volcoupl_->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
   }
 
-  if (INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
+  if (CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
           GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
       INPAR::STR::int_old)
     dserror("old structural time integration no longer supported in tsi");
@@ -102,7 +102,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 
     // set the temperature; Monolithic does this in it's own constructor with potentially
     // redistributed discretizations
-    if (INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(
+    if (CORE::UTILS::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(
             GLOBAL::Problem::Instance()->TSIDynamicParams(), "COUPALGO") != INPAR::TSI::Monolithic)
     {
       if (matchinggrid_)
@@ -117,7 +117,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
         Teuchos::rcp_dynamic_cast<ADAPTER::StructureWrapper>(adapterbase_ptr->StructureField());
 
     if (restart &&
-        INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(
+        CORE::UTILS::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(
             GLOBAL::Problem::Instance()->TSIDynamicParams(), "COUPALGO") == INPAR::TSI::Monolithic)
       structure_->Setup();
 
@@ -430,12 +430,13 @@ void TSI::Algorithm::ApplyStructCouplingState(
 /*----------------------------------------------------------------------*/
 void TSI::Algorithm::GetContactStrategy()
 {
-  INPAR::CONTACT::SolvingStrategy stype = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-      GLOBAL::Problem::Instance()->ContactDynamicParams(), "STRATEGY");
+  INPAR::CONTACT::SolvingStrategy stype =
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+          GLOBAL::Problem::Instance()->ContactDynamicParams(), "STRATEGY");
 
   if (stype == INPAR::CONTACT::solution_nitsche)
   {
-    if (INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
+    if (CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
             GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") !=
         INPAR::STR::int_standard)
       dserror("thermo-mechanical contact only with new structural time integration");
@@ -514,7 +515,7 @@ void TSI::Algorithm::GetContactStrategy()
     contact_strategy_lagrange_->EvaluateReferenceState();
     contact_strategy_lagrange_->Inttime_init();
     contact_strategy_lagrange_->SetTimeIntegrationInfo(StructureField()->TimIntParam(),
-        INPUT::IntegralValue<INPAR::STR::DynamicType>(
+        CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(
             GLOBAL::Problem::Instance()->StructuralDynamicParams(), "DYNAMICTYP"));
     contact_strategy_lagrange_->RedistributeContact(
         StructureField()->Dispn(), StructureField()->Veln());

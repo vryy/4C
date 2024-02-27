@@ -10,7 +10,7 @@
 
 #include "baci_inpar_solver.hpp"
 
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <BelosTypes.hpp>
 
@@ -22,7 +22,6 @@ namespace INPAR::SOLVER
   {
     using Teuchos::setStringToIntegralParameter;
     using Teuchos::tuple;
-    using namespace INPUT;
 
     // Solver options
     {
@@ -89,10 +88,10 @@ namespace INPAR::SOLVER
 
     // Ifpack options
     {
-      IntParameter("IFPACKOVERLAP", 0,
+      CORE::UTILS::IntParameter("IFPACKOVERLAP", 0,
           "The amount of overlap used for the ifpack \"ilu\" preconditioner.", &list);
 
-      IntParameter("IFPACKGFILL", 0,
+      CORE::UTILS::IntParameter("IFPACKGFILL", 0,
           "The amount of fill allowed for an internal \"ilu\" preconditioner.", &list);
 
       setStringToIntegralParameter<int>("IFPACKCOMBINE", "Add",
@@ -102,11 +101,11 @@ namespace INPAR::SOLVER
 
     // Iterative solver options
     {
-      IntParameter("AZITER", 1000,
+      CORE::UTILS::IntParameter("AZITER", 1000,
           "The maximum number of iterations the underlying iterative solver is allowed to perform",
           &list);
 
-      DoubleParameter("AZTOL", 1e-8,
+      CORE::UTILS::DoubleParameter("AZTOL", 1e-8,
           "The level the residual norms must reach to decide about successful convergence", &list);
 
       setStringToIntegralParameter<Belos::ScaleType>("AZCONV", "AZ_r0",
@@ -114,48 +113,48 @@ namespace INPAR::SOLVER
           tuple<std::string>("AZ_r0", "AZ_noscaled"),
           tuple<Belos::ScaleType>(Belos::ScaleType::NormOfInitRes, Belos::ScaleType::None), &list);
 
-      IntParameter("AZOUTPUT", 0,
+      CORE::UTILS::IntParameter("AZOUTPUT", 0,
           "The number of iterations between each output of the solver's progress is written to "
           "screen",
           &list);
-      IntParameter(
+      CORE::UTILS::IntParameter(
           "AZREUSE", 0, "The number specifying how often to recompute some preconditioners", &list);
 
-      IntParameter("AZSUB", 50,
+      CORE::UTILS::IntParameter("AZSUB", 50,
           "The maximum size of the Krylov subspace used with \"GMRES\" before\n"
           "a restart is performed.",
           &list);
 
-      IntParameter("AZGRAPH", 0, "unused", &list);
-      IntParameter("AZBDIAG", 0, "unused", &list);
-      DoubleParameter("AZOMEGA", 0.0, "unused", &list);
+      CORE::UTILS::IntParameter("AZGRAPH", 0, "unused", &list);
+      CORE::UTILS::IntParameter("AZBDIAG", 0, "unused", &list);
+      CORE::UTILS::DoubleParameter("AZOMEGA", 0.0, "unused", &list);
     }
 
     // ML options
     {
-      IntParameter("ML_PRINT", 0, "ML print-out level (0-10)", &list);
-      IntParameter(
+      CORE::UTILS::IntParameter("ML_PRINT", 0, "ML print-out level (0-10)", &list);
+      CORE::UTILS::IntParameter(
           "ML_MAXCOARSESIZE", 5000, "ML stop coarsening when coarse ndof smaller then this", &list);
-      IntParameter("ML_MAXLEVEL", 5, "ML max number of levels", &list);
-      IntParameter("ML_AGG_SIZE", 27,
+      CORE::UTILS::IntParameter("ML_MAXLEVEL", 5, "ML max number of levels", &list);
+      CORE::UTILS::IntParameter("ML_AGG_SIZE", 27,
           "objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27", &list);
 
-      DoubleParameter("ML_DAMPFINE", 1., "damping fine grid", &list);
-      DoubleParameter("ML_DAMPMED", 1., "damping med grids", &list);
-      DoubleParameter("ML_DAMPCOARSE", 1., "damping coarse grid", &list);
-      DoubleParameter("ML_PROLONG_SMO", 0.,
+      CORE::UTILS::DoubleParameter("ML_DAMPFINE", 1., "damping fine grid", &list);
+      CORE::UTILS::DoubleParameter("ML_DAMPMED", 1., "damping med grids", &list);
+      CORE::UTILS::DoubleParameter("ML_DAMPCOARSE", 1., "damping coarse grid", &list);
+      CORE::UTILS::DoubleParameter("ML_PROLONG_SMO", 0.,
           "damping factor for prolongator smoother (usually 1.33 or 0.0)", &list);
-      DoubleParameter(
+      CORE::UTILS::DoubleParameter(
           "ML_PROLONG_THRES", 0., "threshold for prolongator smoother/aggregation", &list);
 
-      StringParameter("ML_SMOTIMES", "1 1 1 1 1",
+      CORE::UTILS::StringParameter("ML_SMOTIMES", "1 1 1 1 1",
           "no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)",
           &list);
 
       setStringToIntegralParameter<int>("ML_COARSEN", "UC", "",
           tuple<std::string>("UC", "METIS", "VBMETIS", "MIS"), tuple<int>(0, 1, 2, 3), &list);
 
-      BoolParameter("ML_REBALANCE", "Yes",
+      CORE::UTILS::BoolParameter("ML_REBALANCE", "Yes",
           "Performe ML-internal rebalancing of coarse level operators.", &list);
 
       setStringToIntegralParameter<int>("ML_SMOOTHERFINE", "ILU", "",
@@ -173,12 +172,12 @@ namespace INPAR::SOLVER
               "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
           tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
 
-      IntParameter("SUB_SOLVER1", -1,
+      CORE::UTILS::IntParameter("SUB_SOLVER1", -1,
           "sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable "
           "on "
           "all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)",
           &list);
-      IntParameter("SUB_SOLVER2", -1,
+      CORE::UTILS::IntParameter("SUB_SOLVER2", -1,
           "sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all "
           "levels, "
           "BS: used for coarse BraessSarazin (BS) level smoother)",
@@ -187,10 +186,11 @@ namespace INPAR::SOLVER
 
     // MueLu options
     {
-      StringParameter(
+      CORE::UTILS::StringParameter(
           "MUELU_XML_FILE", "none", "xml file defining any MueLu preconditioner", &list);
 
-      BoolParameter("MUELU_XML_ENFORCE", "Yes", "option defining xml file usage", &list);
+      CORE::UTILS::BoolParameter(
+          "MUELU_XML_ENFORCE", "Yes", "option defining xml file usage", &list);
     }
 
     // BGS2x2 options
@@ -202,11 +202,11 @@ namespace INPAR::SOLVER
           &list);
 
       // damping parameter for BGS2X2
-      DoubleParameter(
+      CORE::UTILS::DoubleParameter(
           "BGS2X2_GLOBAL_DAMPING", 1., "damping parameter for BGS2X2 preconditioner", &list);
-      DoubleParameter(
+      CORE::UTILS::DoubleParameter(
           "BGS2X2_BLOCK1_DAMPING", 1., "damping parameter for BGS2X2 preconditioner block1", &list);
-      DoubleParameter(
+      CORE::UTILS::DoubleParameter(
           "BGS2X2_BLOCK2_DAMPING", 1., "damping parameter for BGS2X2 preconditioner block2", &list);
     }
 
@@ -221,18 +221,19 @@ namespace INPAR::SOLVER
     }
 
     // user-given name of solver block (just for beauty)
-    StringParameter("NAME", "No_name", "User specified name for solver block", &list);
+    CORE::UTILS::StringParameter("NAME", "No_name", "User specified name for solver block", &list);
 
     // damping parameter for SIMPLE
-    DoubleParameter("SIMPLE_DAMPING", 1., "damping parameter for SIMPLE preconditioner", &list);
+    CORE::UTILS::DoubleParameter(
+        "SIMPLE_DAMPING", 1., "damping parameter for SIMPLE preconditioner", &list);
 
     // Parameters for AMGnxn Preconditioner
     {
-      StringParameter("AMGNXN_TYPE", "AMG(BGS)",
+      CORE::UTILS::StringParameter("AMGNXN_TYPE", "AMG(BGS)",
           "Name of the pre-built preconditioner to be used. If set to\"XML\" the preconditioner "
           "is defined using a xml file",
           &list);
-      StringParameter(
+      CORE::UTILS::StringParameter(
           "AMGNXN_XML_FILE", "none", "xml file defining the AMGnxn preconditioner", &list);
     }
   }

@@ -78,7 +78,7 @@ void FS3I::PartFS3I_2WC::Timeloop()
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
   if (GLOBAL::Problem::Instance()->Restart() and
-      INPUT::IntegralValue<int>(
+      CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
     scatravec_[0]->ScaTraField()->PrepareFirstTimeStep();

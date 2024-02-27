@@ -87,14 +87,14 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
   }
 
   /****************************************************************************/
-  strategy_ = INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialStrategy>(
+  strategy_ = CORE::UTILS::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialStrategy>(
       beam_potential_params_list, "STRATEGY");
 
   if (strategy_ == INPAR::BEAMPOTENTIAL::strategy_vague)
     dserror("You must specify a strategy to be used to evaluate beam interaction potential!");
 
   /****************************************************************************/
-  potential_type_ = INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialType>(
+  potential_type_ = CORE::UTILS::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialType>(
       beam_potential_params_list, "BEAMPOTENTIAL_TYPE");
 
   if (potential_type_ == INPAR::BEAMPOTENTIAL::beampot_vague)
@@ -114,7 +114,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
 
   /****************************************************************************/
   regularization_type_ =
-      INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType>(
+      CORE::UTILS::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType>(
           beam_potential_params_list, "REGULARIZATION_TYPE");
 
   if ((regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
@@ -149,7 +149,8 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
   if (num_GPs_ <= 0) dserror("Invalid number of Gauss points per integration segment!");
 
   /****************************************************************************/
-  useFAD_ = INPUT::IntegralValue<int>(beam_potential_params_list, "AUTOMATIC_DIFFERENTIATION");
+  useFAD_ =
+      CORE::UTILS::IntegralValue<int>(beam_potential_params_list, "AUTOMATIC_DIFFERENTIATION");
 
   /****************************************************************************/
   choice_master_slave_ = Teuchos::getIntegralValue<INPAR::BEAMPOTENTIAL::MasterSlaveChoice>(
@@ -162,7 +163,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
 
   /****************************************************************************/
   // check for vtk output which is to be handled by an own writer object
-  visualization_output_ = (bool)INPUT::IntegralValue<int>(
+  visualization_output_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"), "VTK_OUTPUT_BEAM_POTENTIAL");
 
   // create and initialize parameter container object for runtime output
@@ -182,7 +183,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
   /****************************************************************************/
 
   // outdated: octtree for search of potential-based interaction pairs
-  if (INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(
+  if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(
           beam_potential_params_list, "BEAMPOT_OCTREE") != INPAR::BEAMCONTACT::boct_none)
   {
     dserror("Octree-based search for potential-based beam interactions is deprecated!");
@@ -190,7 +191,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
 
   // outdated: flags to indicate, if beam-to-solid or beam-to-sphere potential-based interaction is
   // applied
-  if (INPUT::IntegralValue<int>(beam_potential_params_list, "BEAMPOT_BTSOL") != 0)
+  if (CORE::UTILS::IntegralValue<int>(beam_potential_params_list, "BEAMPOT_BTSOL") != 0)
   {
     dserror(
         "The flag BEAMPOT_BTSOL is outdated! remove them as soon"

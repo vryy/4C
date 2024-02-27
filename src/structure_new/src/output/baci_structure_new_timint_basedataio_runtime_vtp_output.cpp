@@ -12,8 +12,8 @@
 
 #include "baci_beam3_discretization_runtime_output_params.hpp"
 #include "baci_global_data.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_utils_exceptions.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -28,21 +28,21 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
 
   output_every_iteration_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
+      (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
 
   if (output_every_iteration_)
     dserror("Every iteration output not implemented for structure vtp output!");
 
-  output_owner_ = (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
+  output_owner_ = (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
 
   output_orientationandlength_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
+      (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
 
   output_numberofbonds_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
+      (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
 
   output_linkingforce_ =
-      (bool)INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
+      (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
 
 
   isinit_ = true;

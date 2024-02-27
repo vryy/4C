@@ -8,12 +8,12 @@
 #include "baci_global_data.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_sutherland.hpp"
 #include "baci_scatra_ele_action.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -46,7 +46,7 @@ SCATRA::ScaTraTimIntLoma::ScaTraTimIntLoma(Teuchos::RCP<DRT::Discretization> dis
 void SCATRA::ScaTraTimIntLoma::Init()
 {
   // safety check
-  if (INPUT::IntegralValue<int>(*lomaparams_, "SGS_MATERIAL_UPDATE"))
+  if (CORE::UTILS::IntegralValue<int>(*lomaparams_, "SGS_MATERIAL_UPDATE"))
     dserror(
         "Material update using subgrid-scale temperature currently not supported for loMa "
         "problems. Read remark in file 'scatra_ele_calc_loma.H'!");
@@ -153,7 +153,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   discret_->SetState("phinp", phin_);
 
   // set parameters for element evaluation
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_domain_and_bodyforce, eleparams);
 
   // the time = 0.0, since this function is called BEFORE the first IncrementTimeAndStep() in
@@ -172,7 +172,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   double parbofint = (*scalars)[1];
 
   // set action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_loma_therm_press, eleparams);
 
   // variables for integrals of normal velocity and diffusive flux
@@ -241,7 +241,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
   discret_->SetState("phinp", phin_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   // inverted scalar values are required here
   eleparams.set("inverting", true);
@@ -283,7 +283,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
   discret_->SetState("phinp", phinp_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   // inverted scalar values are required here
   eleparams.set("inverting", true);

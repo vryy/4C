@@ -57,17 +57,17 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::Setup()
   /****************************************************************************/
   output_interval_steps_ = beam_contact_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
 
-  output_every_iteration_ = (bool)INPUT::IntegralValue<int>(
+  output_every_iteration_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_contact_visualization_output_paramslist, "EVERY_ITERATION");
   visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   /****************************************************************************/
-  output_forces_ = (bool)INPUT::IntegralValue<int>(
+  output_forces_ = (bool)CORE::UTILS::IntegralValue<int>(
       beam_contact_visualization_output_paramslist, "CONTACT_FORCES");
 
   /****************************************************************************/
   output_gaps_ =
-      (bool)INPUT::IntegralValue<int>(beam_contact_visualization_output_paramslist, "GAPS");
+      (bool)CORE::UTILS::IntegralValue<int>(beam_contact_visualization_output_paramslist, "GAPS");
 
 
   issetup_ = true;

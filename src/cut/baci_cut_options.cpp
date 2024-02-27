@@ -24,21 +24,23 @@ void CORE::GEO::CUT::Options::Init_by_Paramlist()
 /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)
 void CORE::GEO::CUT::Options::Init_by_Paramlist(const Teuchos::ParameterList& cutparams)
 {
-  geomintersect_floattype_ =
-      INPUT::IntegralValue<INPAR::CUT::CUT_Floattype>(cutparams, "KERNEL_INTERSECTION_FLOATTYPE");
+  geomintersect_floattype_ = CORE::UTILS::IntegralValue<INPAR::CUT::CUT_Floattype>(
+      cutparams, "KERNEL_INTERSECTION_FLOATTYPE");
   geomdistance_floattype_ =
-      INPUT::IntegralValue<INPAR::CUT::CUT_Floattype>(cutparams, "KERNEL_DISTANCE_FLOATTYPE");
-  general_position_dist_floattype_ = INPUT::IntegralValue<INPAR::CUT::CUT_Floattype>(
+      CORE::UTILS::IntegralValue<INPAR::CUT::CUT_Floattype>(cutparams, "KERNEL_DISTANCE_FLOATTYPE");
+  general_position_dist_floattype_ = CORE::UTILS::IntegralValue<INPAR::CUT::CUT_Floattype>(
       cutparams, "GENERAL_POSITON_DISTANCE_FLOATTYPE");
-  general_position_pos_floattype_ = INPUT::IntegralValue<INPAR::CUT::CUT_Floattype>(
+  general_position_pos_floattype_ = CORE::UTILS::IntegralValue<INPAR::CUT::CUT_Floattype>(
       cutparams, "GENERAL_POSITON_POSITION_FLOATTYPE");
-  direct_divergence_refplane_ = INPUT::IntegralValue<INPAR::CUT::CUT_DirectDivergence_Refplane>(
-      cutparams, "DIRECT_DIVERGENCE_REFPLANE");
+  direct_divergence_refplane_ =
+      CORE::UTILS::IntegralValue<INPAR::CUT::CUT_DirectDivergence_Refplane>(
+          cutparams, "DIRECT_DIVERGENCE_REFPLANE");
   CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(general_position_dist_floattype_);
   CORE::GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(general_position_pos_floattype_);
-  split_cutsides_ = INPUT::IntegralValue<bool>(cutparams, "SPLIT_CUTSIDES");
-  do_selfcut_ = INPUT::IntegralValue<bool>(cutparams, "DO_SELFCUT");
-  selfcut_do_meshcorrection_ = INPUT::IntegralValue<bool>(cutparams, "SELFCUT_DO_MESHCORRECTION");
+  split_cutsides_ = CORE::UTILS::IntegralValue<bool>(cutparams, "SPLIT_CUTSIDES");
+  do_selfcut_ = CORE::UTILS::IntegralValue<bool>(cutparams, "DO_SELFCUT");
+  selfcut_do_meshcorrection_ =
+      CORE::UTILS::IntegralValue<bool>(cutparams, "SELFCUT_DO_MESHCORRECTION");
   selfcut_island_geom_multiplicator_ = cutparams.get<int>("SELFCUT_MESHCORRECTION_MULTIPLICATOR");
   bc_cubaturedegree_ = cutparams.get<int>("BOUNDARYCELL_CUBATURDEGREE");
 }

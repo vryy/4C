@@ -137,7 +137,8 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
 
     pstype_ = PRESTRESS::GetType();
     pstime_ = PRESTRESS::GetPrestressTime();
-    if (INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent_ = false;
+    if (CORE::UTILS::IntegralValue<int>(sdyn, "MATERIALTANGENT"))
+      analyticalmaterialtangent_ = false;
   }
   if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));

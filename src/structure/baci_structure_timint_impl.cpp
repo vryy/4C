@@ -67,16 +67,19 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      pred_(INPUT::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT")),
-      itertype_(INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams, "NLNSOL")),
-      normtypedisi_(INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_DISP")),
-      normtypefres_(INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_RESF")),
-      normtypepres_(INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_PRES")),
-      normtypepfres_(INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_INCO")),
-      combdispre_(INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES")),
-      combfrespfres_(INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO")),
-      combdisifres_(INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP")),
-      iternorm_(INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdynparams, "ITERNORM")),
+      pred_(CORE::UTILS::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT")),
+      itertype_(CORE::UTILS::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams, "NLNSOL")),
+      normtypedisi_(CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_DISP")),
+      normtypefres_(CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_RESF")),
+      normtypepres_(CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_PRES")),
+      normtypepfres_(CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_INCO")),
+      combdispre_(
+          CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES")),
+      combfrespfres_(
+          CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO")),
+      combdisifres_(
+          CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP")),
+      iternorm_(CORE::UTILS::IntegralValue<INPAR::STR::VectorNorm>(sdynparams, "ITERNORM")),
       itermax_(sdynparams.get<int>("MAXITER")),
       itermin_(sdynparams.get<int>("MINITER")),
       toldisi_(sdynparams.get<double>("TOLDISP")),
@@ -117,7 +120,7 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       fres_(Teuchos::null),
       freact_(Teuchos::null),
       updateprojection_(false),
-      stcscale_(INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdynparams, "STC_SCALING")),
+      stcscale_(CORE::UTILS::IntegralValue<INPAR::STR::STC_Scale>(sdynparams, "STC_SCALING")),
       stclayer_(sdynparams.get<int>("STC_LAYER")),
       ptcdt_(sdynparams.get<double>("PTCDT")),
       dti_(1.0 / ptcdt_)
@@ -228,18 +231,18 @@ void STR::TimIntImpl::Setup()
   combfrescontconstr_ = INPAR::STR::bop_and;  // default values, avoid uninitialized variables
   combdisilagr_ = INPAR::STR::bop_and;
   normtypecontconstr_ = INPAR::STR::
-      convnorm_abs;  // INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF"));
+      convnorm_abs;  // CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF"));
   normtypeplagrincr_ = INPAR::STR::
-      convnorm_abs;  // INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP"));
+      convnorm_abs;  // CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP"));
 
   if (HaveContactMeshtying())
   {
     // extract information from parameter lists
     tolcontconstr_ = cmtbridge_->GetStrategy().Params().get<double>("TOLCONTCONSTR");
     tollagr_ = cmtbridge_->GetStrategy().Params().get<double>("TOLLAGR");
-    combfrescontconstr_ = INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+    combfrescontconstr_ = CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(
         cmtbridge_->GetStrategy().Params(), "NORMCOMBI_RESFCONTCONSTR");
-    combdisilagr_ = INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+    combdisilagr_ = CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(
         cmtbridge_->GetStrategy().Params(), "NORMCOMBI_DISPLAGR");
   }
 
@@ -681,12 +684,13 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   bool bPressure = pressure_ != Teuchos::null;
   bool bContactSP =
       (HaveContactMeshtying() &&
-          INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
               cmtbridge_->GetStrategy().Params(), "STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-          (INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+          (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
                cmtbridge_->GetStrategy().Params(), "SYSTEM") != INPAR::CONTACT::system_condensed ||
-              INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),
-                  "SYSTEM") != INPAR::CONTACT::system_condensed_lagmult));
+              CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+                  cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
+                  INPAR::CONTACT::system_condensed_lagmult));
 
   if (bPressure && bContactSP)
     dserror(
@@ -841,7 +845,7 @@ void STR::TimIntImpl::ApplyForceStiffExternal(const double time,  //!< evaluatio
   if (damping_ == INPAR::STR::damp_material) discret_->SetState(0, "velocity", vel);
   // get load vector
   const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
-  bool loadlin = (INPUT::IntegralValue<int>(sdyn, "LOADLIN") == 1);
+  bool loadlin = (CORE::UTILS::IntegralValue<int>(sdyn, "LOADLIN") == 1);
 
   if (!loadlin)
     discret_->EvaluateNeumann(p, *fext);
@@ -1049,7 +1053,8 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying(
 
     // visualization of current Newton step
 #ifdef MORTARGMSH2
-    bool gmsh = INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
+    bool gmsh =
+        CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
     if (gmsh) cmtbridge_->VisualizeGmsh(stepn_, iter_);
 #endif  // #ifdef MORTARGMSH2
   }
@@ -1234,10 +1239,11 @@ bool STR::TimIntImpl::Converged()
   if (HaveContactMeshtying())
   {
     // check which case (application, strategy) we are in
-    INPAR::CONTACT::SolvingStrategy stype = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-        cmtbridge_->GetStrategy().Params(), "STRATEGY");
+    INPAR::CONTACT::SolvingStrategy stype =
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+            cmtbridge_->GetStrategy().Params(), "STRATEGY");
     bool semismooth =
-        INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
+        CORE::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
     if (cmtbridge_->HaveContact() &&
@@ -1249,7 +1255,7 @@ bool STR::TimIntImpl::Converged()
     // add convergence check for saddlepoint formulations
     // use separate convergence checks for contact constraints and
     // LM increments
-    INPAR::CONTACT::SystemType systype = INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+    INPAR::CONTACT::SystemType systype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
         cmtbridge_->GetStrategy().Params(), "SYSTEM");
     if ((stype == INPAR::CONTACT::solution_lagmult ||
             stype == INPAR::CONTACT::solution_augmented) &&
@@ -1598,16 +1604,16 @@ int STR::TimIntImpl::NewtonFull()
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
     bool bContactSP =
-        (HaveContactMeshtying() && ((INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+        (HaveContactMeshtying() && ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
                                          cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
                                             INPAR::CONTACT::solution_lagmult &&
-                                        (INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+                                        (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
                                              cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
                                                 INPAR::CONTACT::system_condensed ||
-                                            INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+                                            CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
                                                 cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
                                                 INPAR::CONTACT::system_condensed_lagmult)) ||
-                                       (INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+                                       (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
                                             cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
                                            INPAR::CONTACT::solution_augmented)));
 
@@ -1657,9 +1663,9 @@ int STR::TimIntImpl::NewtonFull()
         normlagr_ = -1.0;
 
       // for wear discretization
-      INPAR::WEAR::WearType wtype = INPUT::IntegralValue<INPAR::WEAR::WearType>(
+      INPAR::WEAR::WearType wtype = CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(
           cmtbridge_->GetStrategy().Params(), "WEARTYPE");
-      INPAR::WEAR::WearSide wside = INPUT::IntegralValue<INPAR::WEAR::WearSide>(
+      INPAR::WEAR::WearSide wside = CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(
           cmtbridge_->GetStrategy().Params(), "WEAR_SIDE");
 
       if (wtype == INPAR::WEAR::wear_primvar)
@@ -2662,7 +2668,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
     double dti = cardvasc0dman_->Get_k_ptc();
 
-    const bool ptc_3D0D = INPUT::IntegralValue<int>(
+    const bool ptc_3D0D = CORE::UTILS::IntegralValue<int>(
         GLOBAL::Problem::Instance()->Cardiovascular0DStructuralParams(), "PTC_3D0D");
 
     // equilibrium iteration loop
@@ -2925,12 +2931,13 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   // get some parameters
   //********************************************************************
   // strategy type
-  INPAR::CONTACT::SolvingStrategy soltype = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-      cmtbridge_->GetStrategy().Params(), "STRATEGY");
+  INPAR::CONTACT::SolvingStrategy soltype =
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+          cmtbridge_->GetStrategy().Params(), "STRATEGY");
 
   // semi-smooth Newton type
   bool semismooth =
-      INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
+      CORE::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
 
   // iteration type
   if (itertype_ != INPAR::STR::soltech_newtonfull) dserror("Unknown type of equilibrium iteration");
@@ -3102,9 +3109,10 @@ void STR::TimIntImpl::CmtLinearSolve()
     solver_params.lin_tol_better = solveradaptolbetter_;
   }
 
-  INPAR::CONTACT::SolvingStrategy soltype = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-      cmtbridge_->GetStrategy().Params(), "STRATEGY");
-  INPAR::CONTACT::SystemType systype = INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+  INPAR::CONTACT::SolvingStrategy soltype =
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+          cmtbridge_->GetStrategy().Params(), "STRATEGY");
+  INPAR::CONTACT::SystemType systype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
       cmtbridge_->GetStrategy().Params(), "SYSTEM");
 
   // update information about active slave dofs
@@ -3240,7 +3248,7 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   // get some parameters
   //********************************************************************
   // strategy type
-  INPAR::BEAMCONTACT::Strategy strategy = INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
+  INPAR::BEAMCONTACT::Strategy strategy = CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
       beamcman_->BeamContactParameters(), "BEAMS_STRATEGY");
 
   // unknown types of nonlinear iteration schemes
@@ -3439,15 +3447,16 @@ int STR::TimIntImpl::PTC()
 
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
-    bool bContactSP =
-        (HaveContactMeshtying() &&
-            INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-                cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
-                INPAR::CONTACT::solution_lagmult &&
-            (INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),
-                 "SYSTEM") != INPAR::CONTACT::system_condensed ||
-                INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),
-                    "SYSTEM") != INPAR::CONTACT::system_condensed));
+    bool bContactSP = (HaveContactMeshtying() &&
+                       CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+                           cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
+                           INPAR::CONTACT::solution_lagmult &&
+                       (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+                            cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
+                               INPAR::CONTACT::system_condensed ||
+                           CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+                               cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
+                               INPAR::CONTACT::system_condensed));
 
     if (bPressure && bContactSP)
       dserror(
@@ -3701,13 +3710,14 @@ void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
   if (HaveContactMeshtying())
   {
     // strategy and system setup types
-    INPAR::CONTACT::SolvingStrategy soltype = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-        cmtbridge_->GetStrategy().Params(), "STRATEGY");
-    INPAR::CONTACT::SystemType systype = INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+    INPAR::CONTACT::SolvingStrategy soltype =
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+            cmtbridge_->GetStrategy().Params(), "STRATEGY");
+    INPAR::CONTACT::SystemType systype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
         cmtbridge_->GetStrategy().Params(), "SYSTEM");
-    INPAR::WEAR::WearType wtype =
-        INPUT::IntegralValue<INPAR::WEAR::WearType>(cmtbridge_->GetStrategy().Params(), "WEARTYPE");
-    INPAR::WEAR::WearSide wside = INPUT::IntegralValue<INPAR::WEAR::WearSide>(
+    INPAR::WEAR::WearType wtype = CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(
+        cmtbridge_->GetStrategy().Params(), "WEARTYPE");
+    INPAR::WEAR::WearSide wside = CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(
         cmtbridge_->GetStrategy().Params(), "WEAR_SIDE");
 
     if ((soltype == INPAR::CONTACT::solution_lagmult ||
@@ -3883,13 +3893,14 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
   if (HaveContactMeshtying())
   {
     // strategy and system setup types
-    INPAR::CONTACT::SolvingStrategy soltype = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-        cmtbridge_->GetStrategy().Params(), "STRATEGY");
-    INPAR::CONTACT::SystemType systype = INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+    INPAR::CONTACT::SolvingStrategy soltype =
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+            cmtbridge_->GetStrategy().Params(), "STRATEGY");
+    INPAR::CONTACT::SystemType systype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
         cmtbridge_->GetStrategy().Params(), "SYSTEM");
-    INPAR::WEAR::WearType wtype =
-        INPUT::IntegralValue<INPAR::WEAR::WearType>(cmtbridge_->GetStrategy().Params(), "WEARTYPE");
-    INPAR::WEAR::WearSide wside = INPUT::IntegralValue<INPAR::WEAR::WearSide>(
+    INPAR::WEAR::WearType wtype = CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(
+        cmtbridge_->GetStrategy().Params(), "WEARTYPE");
+    INPAR::WEAR::WearSide wside = CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(
         cmtbridge_->GetStrategy().Params(), "WEAR_SIDE");
 
     if ((soltype == INPAR::CONTACT::solution_lagmult ||
@@ -3946,10 +3957,11 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
   if (HaveContactMeshtying())
   {
     // only print something for contact, not for meshtying
-    INPAR::CONTACT::SolvingStrategy soltype = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-        cmtbridge_->GetStrategy().Params(), "STRATEGY");
+    INPAR::CONTACT::SolvingStrategy soltype =
+        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+            cmtbridge_->GetStrategy().Params(), "STRATEGY");
     bool semismooth =
-        INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
+        CORE::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
     if (cmtbridge_->HaveContact())
     {
       if (soltype == INPAR::CONTACT::solution_augmented && semismooth)
@@ -4367,12 +4379,13 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
   // get some parameters
   //********************************************************************
   // strategy type
-  INPAR::CONTACT::SolvingStrategy soltype = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-      cmtbridge_->GetStrategy().Params(), "STRATEGY");
+  INPAR::CONTACT::SolvingStrategy soltype =
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+          cmtbridge_->GetStrategy().Params(), "STRATEGY");
 
   // semi-smooth Newton type
   bool semismooth =
-      INPUT::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
+      CORE::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
 
   // iteration type
   if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
@@ -4506,9 +4519,10 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
 int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
 {
   // strategy and system setup types
-  INPAR::CONTACT::SolvingStrategy soltype = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-      cmtbridge_->GetStrategy().Params(), "STRATEGY");
-  INPAR::CONTACT::SystemType systype = INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+  INPAR::CONTACT::SolvingStrategy soltype =
+      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+          cmtbridge_->GetStrategy().Params(), "STRATEGY");
+  INPAR::CONTACT::SystemType systype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
       cmtbridge_->GetStrategy().Params(), "SYSTEM");
 
   int linsolve_error = 0;

@@ -54,7 +54,7 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_STRUCTURE")},
       matrixtype_(Teuchos::getIntegralValue<CORE::LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
-      print_matlab_(INPUT::IntegralValue<bool>(
+      print_matlab_(CORE::UTILS::IntegralValue<bool>(
           globaltimeparams.sublist("MONOLITHIC"), "PRINT_MAT_RHS_MAP_MATLAB")),
       relax_lin_solver_tolerance_(
           globaltimeparams.sublist("MONOLITHIC").get<double>("RELAX_LIN_SOLVER_TOLERANCE")),
@@ -476,12 +476,12 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SSIMono::DofRowMap() const
 void SSI::SSIMono::SetupContactStrategy()
 {
   // get the contact solution strategy
-  auto contact_solution_type = INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+  auto contact_solution_type = CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
       GLOBAL::Problem::Instance()->ContactDynamicParams(), "STRATEGY");
 
   if (contact_solution_type == INPAR::CONTACT::solution_nitsche)
   {
-    if (INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
+    if (CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
             GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") !=
         INPAR::STR::int_standard)
       dserror("ssi contact only with new structural time integration");
@@ -503,11 +503,11 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // check input parameters for scalar transport field
-  if (INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams, "VELOCITYFIELD") !=
+  if (CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams, "VELOCITYFIELD") !=
       INPAR::SCATRA::velocity_Navier_Stokes)
     dserror("Invalid type of velocity field for scalar-structure interaction!");
 
-  if (INPUT::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP") ==
+  if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP") ==
       INPAR::STR::DynamicType::dyna_statics)
     dserror(
         "Mass conservation is not fulfilled if 'Statics' time integration is chosen since the "
@@ -674,10 +674,10 @@ void SSI::SSIMono::Setup()
   }
   const auto ssi_params = GLOBAL::Problem::Instance()->SSIControlParams();
 
-  const bool calc_initial_pot_elch =
-      INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
+  const bool calc_initial_pot_elch = CORE::UTILS::IntegralValue<bool>(
+      GLOBAL::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
   const bool calc_initial_pot_ssi =
-      INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
+      CORE::UTILS::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
 
   if (ScaTraField()->EquilibrationMethod() != CORE::LINALG::EquilibrationMethod::none)
   {
@@ -696,7 +696,7 @@ void SSI::SSIMono::Setup()
           equilibration_method_.scatra != CORE::LINALG::EquilibrationMethod::none))
     dserror("Block based equilibration only for block matrices");
 
-  if (!INPUT::IntegralValue<int>(
+  if (!CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->ScalarTransportDynamicParams(), "SKIPINITDER"))
   {
     dserror(
@@ -917,7 +917,8 @@ void SSI::SSIMono::NewtonLoop()
 
     // output performance statistics associated with linear solver into text file if
     // applicable
-    if (INPUT::IntegralValue<bool>(*ScaTraField()->ScatraParameterList(), "OUTPUTLINSOLVERSTATS"))
+    if (CORE::UTILS::IntegralValue<bool>(
+            *ScaTraField()->ScatraParameterList(), "OUTPUTLINSOLVERSTATS"))
       ScaTraField()->OutputLinSolverStats(*solver_, dt_solve_, Step(), IterationCount(),
           ssi_vectors_->Residual()->Map().NumGlobalElements());
 
@@ -953,7 +954,8 @@ void SSI::SSIMono::Timeloop()
 
     // output performance statistics associated with nonlinear solver into *.csv file if
     // applicable
-    if (INPUT::IntegralValue<int>(*ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
+    if (CORE::UTILS::IntegralValue<int>(
+            *ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
       ScaTraField()->OutputNonlinSolverStats(IterationCount(), dtnonlinsolve, Step(), Comm());
 
     PrepareOutput();
@@ -1203,7 +1205,7 @@ void SSI::SSIMono::DistributeSolutionAllFields(const bool restore_velocity)
  *--------------------------------------------------------------------------------------*/
 void SSI::SSIMono::CalcInitialPotentialField()
 {
-  const auto equpot = INPUT::IntegralValue<INPAR::ELCH::EquPot>(
+  const auto equpot = CORE::UTILS::IntegralValue<INPAR::ELCH::EquPot>(
       GLOBAL::Problem::Instance()->ELCHControlParams(), "EQUPOT");
   if (equpot != INPAR::ELCH::equpot_divi and equpot != INPAR::ELCH::equpot_enc_pde and
       equpot != INPAR::ELCH::equpot_enc_pde_elim)

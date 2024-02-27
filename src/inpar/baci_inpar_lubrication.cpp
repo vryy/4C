@@ -11,31 +11,30 @@
 
 #include "baci_inpar_lubrication.hpp"
 
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
 void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& lubricationdyn =
       list->sublist("LUBRICATION DYNAMIC", false, "control parameters for Lubrication problems\n");
 
-  DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &lubricationdyn);
-  IntParameter("NUMSTEP", 20, "Total number of time steps", &lubricationdyn);
-  DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &lubricationdyn);
-  IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &lubricationdyn);
-  IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &lubricationdyn);
+  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &lubricationdyn);
+  CORE::UTILS::IntParameter("NUMSTEP", 20, "Total number of time steps", &lubricationdyn);
+  CORE::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &lubricationdyn);
+  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &lubricationdyn);
+  CORE::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &lubricationdyn);
 
   setStringToIntegralParameter<int>("CALCERROR", "No",
       "compute error compared to analytical solution",
       tuple<std::string>("No", "error_by_function"), tuple<int>(calcerror_no, calcerror_byfunction),
       &lubricationdyn);
 
-  IntParameter(
+  CORE::UTILS::IntParameter(
       "CALCERRORNO", -1, "function number for lubrication error computation", &lubricationdyn);
 
   setStringToIntegralParameter<int>("VELOCITYFIELD", "zero",
@@ -43,38 +42,42 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       tuple<std::string>("zero", "function", "EHL"),
       tuple<int>(velocity_zero, velocity_function, velocity_EHL), &lubricationdyn);
 
-  IntParameter("VELFUNCNO", -1, "function number for lubrication velocity field", &lubricationdyn);
+  CORE::UTILS::IntParameter(
+      "VELFUNCNO", -1, "function number for lubrication velocity field", &lubricationdyn);
 
   setStringToIntegralParameter<int>("HEIGHTFEILD", "zero",
       "type of height field used for lubrication problems",
       tuple<std::string>("zero", "function", "EHL"),
       tuple<int>(height_zero, height_function, height_EHL), &lubricationdyn);
 
-  IntParameter("HFUNCNO", -1, "function number for lubrication height field", &lubricationdyn);
+  CORE::UTILS::IntParameter(
+      "HFUNCNO", -1, "function number for lubrication height field", &lubricationdyn);
 
-  BoolParameter("OUTMEAN", "No", "Output of mean values for scalars and density", &lubricationdyn);
+  CORE::UTILS::BoolParameter(
+      "OUTMEAN", "No", "Output of mean values for scalars and density", &lubricationdyn);
 
-  BoolParameter(
+  CORE::UTILS::BoolParameter(
       "OUTPUT_GMSH", "No", "Do you want to write Gmsh postprocessing files?", &lubricationdyn);
 
-  BoolParameter("MATLAB_STATE_OUTPUT", "No",
+  CORE::UTILS::BoolParameter("MATLAB_STATE_OUTPUT", "No",
       "Do you want to write the state solution to Matlab file?", &lubricationdyn);
 
   /// linear solver id used for lubrication problems
-  IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for the Lubrication problem",
-      &lubricationdyn);
+  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
+      "number of linear solver used for the Lubrication problem", &lubricationdyn);
 
-  IntParameter("ITEMAX", 10, "max. number of nonlin. iterations", &lubricationdyn);
-  DoubleParameter("ABSTOLRES", 1e-14,
+  CORE::UTILS::IntParameter("ITEMAX", 10, "max. number of nonlin. iterations", &lubricationdyn);
+  CORE::UTILS::DoubleParameter("ABSTOLRES", 1e-14,
       "Absolute tolerance for deciding if residual of nonlinear problem is already zero",
       &lubricationdyn);
-  DoubleParameter("CONVTOL", 1e-13, "Tolerance for convergence check", &lubricationdyn);
+  CORE::UTILS::DoubleParameter(
+      "CONVTOL", 1e-13, "Tolerance for convergence check", &lubricationdyn);
 
   // convergence criteria adaptivity
-  BoolParameter("ADAPTCONV", "No",
+  CORE::UTILS::BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &lubricationdyn);
-  DoubleParameter("ADAPTCONV_BETTER", 0.1,
+  CORE::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &lubricationdyn);
@@ -92,32 +95,33 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       tuple<int>(norm_l1, norm_l2, norm_rms, norm_inf), &lubricationdyn);
 
   /// Iterationparameters
-  DoubleParameter("TOLPRE", 1.0E-06, "tolerance in the temperature norm of the Newton iteration",
-      &lubricationdyn);
+  CORE::UTILS::DoubleParameter("TOLPRE", 1.0E-06,
+      "tolerance in the temperature norm of the Newton iteration", &lubricationdyn);
 
-  DoubleParameter("TOLRES", 1.0E-06, "tolerance in the residual norm for the Newton iteration",
-      &lubricationdyn);
+  CORE::UTILS::DoubleParameter("TOLRES", 1.0E-06,
+      "tolerance in the residual norm for the Newton iteration", &lubricationdyn);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "PENALTY_CAVITATION", 0., "penalty parameter for regularized cavitation", &lubricationdyn);
 
-  DoubleParameter("GAP_OFFSET", 0., "Additional offset to the fluid gap", &lubricationdyn);
+  CORE::UTILS::DoubleParameter(
+      "GAP_OFFSET", 0., "Additional offset to the fluid gap", &lubricationdyn);
 
-  DoubleParameter(
+  CORE::UTILS::DoubleParameter(
       "ROUGHNESS_STD_DEVIATION", 0., "standard deviation of surface roughness", &lubricationdyn);
 
   /// use modified reynolds equ.
-  BoolParameter("MODIFIED_REYNOLDS_EQU", "No",
+  CORE::UTILS::BoolParameter("MODIFIED_REYNOLDS_EQU", "No",
       "the lubrication problem will use the modified reynolds equ. in order to consider surface"
       " roughness",
       &lubricationdyn);
 
   /// Flag for considering the Squeeze term in Reynolds Equation
-  BoolParameter("ADD_SQUEEZE_TERM", "No",
+  CORE::UTILS::BoolParameter("ADD_SQUEEZE_TERM", "No",
       "the squeeze term will also be considered in the Reynolds Equation", &lubricationdyn);
 
   /// Flag for considering the pure Reynolds Equation
-  BoolParameter("PURE_LUB", "No", "the problem is pure lubrication", &lubricationdyn);
+  CORE::UTILS::BoolParameter("PURE_LUB", "No", "the problem is pure lubrication", &lubricationdyn);
 }
 
 BACI_NAMESPACE_CLOSE

@@ -310,10 +310,10 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       // types
       CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D> stress;
       CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D> strain;
-      auto iostress =
-          INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-      auto iostrain =
-          INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+      auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
+          params, "iostress", INPAR::STR::stress_none);
+      auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
+          params, "iostrain", INPAR::STR::strain_none);
       ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, nullptr, nullptr, nullptr, nullptr,
           nullptr, nullptr, nullptr, &stress, &strain, nullptr, params, iostress, iostrain);
       {
@@ -463,7 +463,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
 
     case calc_stc_matrix:
     {
-      const auto stc_scaling = INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::STC_Scale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the querry!");
       else
@@ -475,7 +475,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
     break;
     case calc_stc_matrix_inverse:
     {
-      const auto stc_scaling = INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::STC_Scale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the query!");
       else

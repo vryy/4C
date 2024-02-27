@@ -889,7 +889,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::InitDensityCorrectionHandler
 {
   // get type of density correction scheme
   INPAR::PARTICLE::DensityCorrectionScheme densitycorrectionscheme =
-      INPUT::IntegralValue<INPAR::PARTICLE::DensityCorrectionScheme>(
+      CORE::UTILS::IntegralValue<INPAR::PARTICLE::DensityCorrectionScheme>(
           params_sph_, "DENSITYCORRECTION");
 
   // create density correction handler

@@ -10,11 +10,11 @@
 
 #include "baci_linear_solver_amgnxn_smoothers.hpp"
 
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linear_solver_amgnxn_hierarchies.hpp"
 #include "baci_linear_solver_amgnxn_vcycle.hpp"
 #include "baci_utils_exceptions.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <EpetraExt_RowMatrixOut.h>
 #include <MueLu_EpetraOperator.hpp>
@@ -199,7 +199,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
 
   // Create linear solver
   Teuchos::ParameterList solvparams;
-  DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
       "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solvparams, A_->Comm()));
 
@@ -778,12 +778,12 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
 
   if (solvertype == "umfpack")
   {
-    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+    CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
         "SOLVER", INPAR::SOLVER::SolverType::umfpack, *params);
   }
   else if (solvertype == "superlu")
   {
-    DRT::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
+    CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
         "SOLVER", INPAR::SOLVER::SolverType::superlu, *params);
   }
   else

@@ -17,9 +17,9 @@ additional static parameters required for scalar transport element evaluation.
 #include "baci_scatra_ele_parameter_elch_diffcond.hpp"
 
 #include "baci_inpar_elch.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_utils_exceptions.hpp"
+#include "baci_utils_parameter_list.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -73,12 +73,12 @@ void DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::SetParameters(
   Teuchos::ParameterList& diffcondparams = parameters.sublist("DIFFCOND");
 
   // flag if current is used as a solution variable
-  cursolvar_ = INPUT::IntegralValue<int>(diffcondparams, "CURRENT_SOLUTION_VAR");
+  cursolvar_ = CORE::UTILS::IntegralValue<int>(diffcondparams, "CURRENT_SOLUTION_VAR");
 
   // mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference
   // number
   diffusioncoefbased_ =
-      INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams, "MAT_DIFFCOND_DIFFBASED");
+      CORE::UTILS::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams, "MAT_DIFFCOND_DIFFBASED");
 
   // switch for dilute and concentrated solution theory (diffusion potential in current equation):
   //    A          B

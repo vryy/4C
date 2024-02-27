@@ -247,10 +247,10 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
       if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
       if (straindata == Teuchos::null) dserror("Cannot get strain 'data'");
-      auto iostress =
-          INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-      auto iostrain =
-          INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+      auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
+          params, "iostress", INPAR::STR::stress_none);
+      auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
+          params, "iostrain", INPAR::STR::strain_none);
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());

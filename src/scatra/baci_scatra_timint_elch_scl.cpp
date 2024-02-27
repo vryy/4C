@@ -17,7 +17,6 @@
 #include "baci_lib_dofset_predefineddofnumber.hpp"
 #include "baci_lib_utils_gid_vector.hpp"
 #include "baci_lib_utils_parallel.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_equilibrate.hpp"
 #include "baci_linalg_matrixtransform.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
@@ -29,6 +28,7 @@
 #include "baci_scatra_timint_elch_service.hpp"
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.hpp"
 #include "baci_utils_function_of_time.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -46,13 +46,13 @@ SCATRA::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<DRT::Discretizatio
       matrixtype_elch_scl_ != CORE::LINALG::MatrixType::block_field)
     dserror("Only sparse and block field matrices supported in SCL computations");
 
-  if (INPUT::IntegralValue<int>(*elchparams_, "INITPOTCALC"))
+  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "INITPOTCALC"))
   {
     dserror(
         "Must disable INITPOTCALC for a coupled SCL problem. Use INITPOTCALC in the SCL section "
         "instead.");
   }
-  if (!INPUT::IntegralValue<bool>(*params_, "SKIPINITDER"))
+  if (!CORE::UTILS::IntegralValue<bool>(*params_, "SKIPINITDER"))
   {
     dserror(
         "Must enable SKIPINITDER. Currently, Neumann BCs are not supported in the SCL formulation "
@@ -74,7 +74,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
       Teuchos::rcp(new Teuchos::ParameterList(problem->ScalarTransportDynamicParams()));
 
   std::string initial_field_type;
-  switch (INPUT::IntegralValue<INPAR::SCATRA::InitialField>(
+  switch (CORE::UTILS::IntegralValue<INPAR::SCATRA::InitialField>(
       elchparams_->sublist("SCL"), "INITIALFIELD"))
   {
     case INPAR::SCATRA::initfield_zero_field:
@@ -741,7 +741,7 @@ void SCATRA::ScaTraTimIntElchSCL::SetupCoupling()
     my_micro_permuted_node_gids.emplace_back(mirco_node_gid);
   }
 
-  if (INPUT::IntegralValue<bool>(elchparams_->sublist("SCL"), "COUPLING_OUTPUT"))
+  if (CORE::UTILS::IntegralValue<bool>(elchparams_->sublist("SCL"), "COUPLING_OUTPUT"))
     WriteCouplingToCSV(glob_macro_micro_coupled_node_gids, glob_macro_slave_node_master_node_gids);
 
   // setup Epetra maps for coupled nodes
@@ -856,7 +856,7 @@ void SCATRA::ScaTraTimIntElchSCL::ScaleMicroProblem()
   Teuchos::ParameterList condparams;
 
   // scale micro problem with nodal area of macro discretiaztion
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_nodal_size, condparams);
 
   auto nodal_size_macro = CORE::LINALG::CreateVector(*DofRowMap(), true);
@@ -1081,7 +1081,7 @@ void SCATRA::ScaTraTimIntElchSCL::PrepareTimeLoop()
   // call base class routine
   ScaTraTimIntElch::PrepareTimeLoop();
 
-  if (INPUT::IntegralValue<int>(elchparams_->sublist("SCL"), "INITPOTCALC"))
+  if (CORE::UTILS::IntegralValue<int>(elchparams_->sublist("SCL"), "INITPOTCALC"))
     CalcInitialPotentialField();
 }
 

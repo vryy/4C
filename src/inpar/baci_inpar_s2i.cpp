@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 #include "baci_inpar_s2i.hpp"
 
-#include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -45,12 +45,13 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("slave", "master"), tuple<int>(side_slave, side_master), &s2icoupling);
 
   // flag for evaluation of interface linearizations and residuals on slave side only
-  BoolParameter("SLAVEONLY", "No",
+  CORE::UTILS::BoolParameter("SLAVEONLY", "No",
       "flag for evaluation of interface linearizations and residuals on slave side only",
       &s2icoupling);
 
   // node-to-segment projection tolerance
-  DoubleParameter("NTSPROJTOL", 0.0, "node-to-segment projection tolerance", &s2icoupling);
+  CORE::UTILS::DoubleParameter(
+      "NTSPROJTOL", 0.0, "node-to-segment projection tolerance", &s2icoupling);
 
   // flag for evaluation of scatra-scatra interface coupling involving interface layer growth
   setStringToIntegralParameter<int>("INTLAYERGROWTH_EVALUATION", "none",
@@ -62,32 +63,32 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving
   // interface layer growth
-  DoubleParameter("INTLAYERGROWTH_CONVTOL", 1.e-12,
+  CORE::UTILS::DoubleParameter("INTLAYERGROWTH_CONVTOL", 1.e-12,
       "local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving "
       "interface layer growth",
       &s2icoupling);
 
   // maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling
   // involving interface layer growth
-  IntParameter("INTLAYERGROWTH_ITEMAX", 5,
+  CORE::UTILS::IntParameter("INTLAYERGROWTH_ITEMAX", 5,
       "maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling "
       "involving interface layer growth",
       &s2icoupling);
 
   // ID of linear solver for monolithic scatra-scatra interface coupling involving interface layer
   // growth
-  IntParameter("INTLAYERGROWTH_LINEAR_SOLVER", -1,
+  CORE::UTILS::IntParameter("INTLAYERGROWTH_LINEAR_SOLVER", -1,
       "ID of linear solver for monolithic scatra-scatra interface coupling involving interface "
       "layer growth",
       &s2icoupling);
 
   // modified time step size for scatra-scatra interface coupling involving interface layer growth
-  DoubleParameter("INTLAYERGROWTH_TIMESTEP", -1.,
+  CORE::UTILS::DoubleParameter("INTLAYERGROWTH_TIMESTEP", -1.,
       "modified time step size for scatra-scatra interface coupling involving interface layer "
       "growth",
       &s2icoupling);
 
-  BoolParameter("MESHTYING_CONDITIONS_INDEPENDENT_SETUP", "No",
+  CORE::UTILS::BoolParameter("MESHTYING_CONDITIONS_INDEPENDENT_SETUP", "No",
       "mesh tying for different conditions should be setup independently", &s2icoupling);
 }
 

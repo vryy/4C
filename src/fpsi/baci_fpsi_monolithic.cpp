@@ -209,7 +209,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
       firstcall_(true)
 {
   const Teuchos::ParameterList& sdynparams = GLOBAL::Problem::Instance()->StructuralDynamicParams();
-  solveradapttol_ = (INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradapttol_ = (CORE::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   // hydraulic conductivity (needed for coupling in case of probtype fps3i)
@@ -523,11 +523,12 @@ void FPSI::Monolithic::SetupSolver()
   // Get the parameters for the Newton iteration
   maximumiterations_ = fpsidynamicparams.get<int>("ITEMAX");
   minimumiterations_ = fpsidynamicparams.get<int>("ITEMIN");
-  normtypeinc_ = INPUT::IntegralValue<INPAR::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_INC");
+  normtypeinc_ =
+      CORE::UTILS::IntegralValue<INPAR::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_INC");
   normtypefres_ =
-      INPUT::IntegralValue<INPAR::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_RESF");
+      CORE::UTILS::IntegralValue<INPAR::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_RESF");
   combinedconvergence_ =
-      INPUT::IntegralValue<INPAR::FPSI::BinaryOp>(fpsidynamicparams, "NORMCOMBI_RESFINC");
+      CORE::UTILS::IntegralValue<INPAR::FPSI::BinaryOp>(fpsidynamicparams, "NORMCOMBI_RESFINC");
 
   {
     std::istringstream tolresstream(
@@ -550,7 +551,7 @@ void FPSI::Monolithic::SetupSolver()
 
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
-  linesearch_ = INPUT::IntegralValue<int>(fpsidynparams, "LineSearch");
+  linesearch_ = CORE::UTILS::IntegralValue<int>(fpsidynparams, "LineSearch");
   if (linesearch_ == 1)
     dserror(
         "Parameter 'LineSearch' is set to 'Yes' in the FPSI Dynamic section in your input-file.  \n"

@@ -12,9 +12,9 @@
 #include "baci_io_visualization_parameters.hpp"
 
 #include "baci_inpar_IO_runtime_output.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_io_control.hpp"
 #include "baci_utils_exceptions.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -48,7 +48,7 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
 
   // This value can be overwritten from the physical field
   parameters.every_iteration_ =
-      INPUT::IntegralValue<bool>(visualization_ouput_parameter_list, "EVERY_ITERATION");
+      CORE::UTILS::IntegralValue<bool>(visualization_ouput_parameter_list, "EVERY_ITERATION");
 
   parameters.file_name_prefix_ = output_control.FileNameOnlyPrefix();
 

@@ -68,7 +68,7 @@ THR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
-      midavg_(INPUT::IntegralValue<INPAR::THR::MidAverageEnum>(
+      midavg_(CORE::UTILS::IntegralValue<INPAR::THR::MidAverageEnum>(
           tdynparams.sublist("GENALPHA"), "GENAVG")),
       /* iterupditer_(false), */
       gamma_(tdynparams.sublist("GENALPHA").get<double>("GAMMA")),

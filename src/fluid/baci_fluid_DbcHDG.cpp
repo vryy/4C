@@ -15,7 +15,7 @@
 #include "baci_fluid_ele_hdg.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret_hdg.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -198,7 +198,7 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
     Teuchos::ParameterList initParams;
     if (GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::elemag or
         GLOBAL::Problem::Instance(0)->GetProblemType() == GLOBAL::ProblemType::scatra)
-      DRT::UTILS::AddEnumClassToParameterList<DRT::HDGAction>(
+      CORE::UTILS::AddEnumClassToParameterList<DRT::HDGAction>(
           "action", DRT::HDGAction::project_dirich_field, initParams);
     else
       initParams.set<int>(
@@ -248,7 +248,7 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
 
           // check whether the imposition of the average pressure is requested
           const int dopressavgbc =
-              INPUT::IntegralValue<INPAR::FLUID::PressAvgBc>(params, "PRESSAVGBC");
+              CORE::UTILS::IntegralValue<INPAR::FLUID::PressAvgBc>(params, "PRESSAVGBC");
 
           if (dopressavgbc == INPAR::FLUID::yes_pressure_average_bc)
           {

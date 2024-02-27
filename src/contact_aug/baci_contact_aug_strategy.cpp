@@ -153,23 +153,23 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
   const Teuchos::ParameterList& p_aug = params.sublist("AUGMENTED");
 
   Data().PrintLinearMomConservation() =
-      INPUT::IntegralValue<bool>(p_aug, "PRINT_LINEAR_CONSERVATION");
+      CORE::UTILS::IntegralValue<bool>(p_aug, "PRINT_LINEAR_CONSERVATION");
 
   Data().PrintAngularMomConservation() =
-      INPUT::IntegralValue<bool>(p_aug, "PRINT_ANGULAR_CONSERVATION");
+      CORE::UTILS::IntegralValue<bool>(p_aug, "PRINT_ANGULAR_CONSERVATION");
 
   Data().AddInactivForceContributions() =
-      INPUT::IntegralValue<bool>(p_aug, "ADD_INACTIVE_FORCE_CONTRIBUTIONS");
+      CORE::UTILS::IntegralValue<bool>(p_aug, "ADD_INACTIVE_FORCE_CONTRIBUTIONS");
 
-  Data().SetIsSemiSmoothNewton(INPUT::IntegralValue<bool>(params, "SEMI_SMOOTH_NEWTON"));
+  Data().SetIsSemiSmoothNewton(CORE::UTILS::IntegralValue<bool>(params, "SEMI_SMOOTH_NEWTON"));
 
   Data().SetConstantCn(Params().get<double>("SEMI_SMOOTH_CN"));
 
   Data().SetGhostingStrategy(Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
       Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY"));
 
-  Data().SetVariationalApproachType(
-      INPUT::IntegralValue<INPAR::CONTACT::VariationalApproach>(p_aug, "VARIATIONAL_APPROACH"));
+  Data().SetVariationalApproachType(CORE::UTILS::IntegralValue<INPAR::CONTACT::VariationalApproach>(
+      p_aug, "VARIATIONAL_APPROACH"));
 
   if (Data().AddInactivForceContributions() and
       Data().VariationalApproachType() != INPAR::CONTACT::var_complete)

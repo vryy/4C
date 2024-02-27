@@ -298,12 +298,12 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> stress;
       CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> strain;
       CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> plstrain;
-      auto iostress =
-          INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-      auto iostrain =
-          INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-      auto ioplstrain =
-          INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
+      auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
+          params, "iostress", INPAR::STR::stress_none);
+      auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
+          params, "iostrain", INPAR::STR::strain_none);
+      auto ioplstrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
+          params, "ioplstrain", INPAR::STR::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 

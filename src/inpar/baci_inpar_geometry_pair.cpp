@@ -9,7 +9,7 @@
 
 #include "baci_inpar_geometry_pair.hpp"
 
-#include "baci_inpar_validparameters.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -34,7 +34,7 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
       &list);
 
   // Number of search points for segmentation.
-  INPUT::IntParameter("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 6,
+  CORE::UTILS::IntParameter("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 6,
       "Number of search points for segmentation", &list);
 
   // What to do if not all Gauss points of a segment project valid
@@ -47,11 +47,11 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
       &list);
 
   // Number of integration points on the line.
-  INPUT::IntParameter(
+  CORE::UTILS::IntParameter(
       "GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations", &list);
 
   // Number of integration along the circumference in cross section coupling.
-  INPUT::IntParameter("INTEGRATION_POINTS_CIRCUMFERENCE", 6,
+  CORE::UTILS::IntParameter("INTEGRATION_POINTS_CIRCUMFERENCE", 6,
       "Number of Integration points along the circumferencial direction of the beam. This is "
       "parameter is only used in beam to cylinder meshtying. No gauss integration is "
       "used along the circumferencial direction, equally spaced integration points are used.",

@@ -75,7 +75,8 @@ void wear_dyn_drt(int restart)
   else  // filled ale discretization
   {
     // if we have non-matching meshes:
-    if (!INPUT::IntegralValue<bool>(GLOBAL::Problem::Instance()->WearParams(), "MATCHINGGRID"))
+    if (!CORE::UTILS::IntegralValue<bool>(
+            GLOBAL::Problem::Instance()->WearParams(), "MATCHINGGRID"))
     {
       // create vector of discr.
       std::vector<Teuchos::RCP<DRT::Discretization>> dis;
@@ -90,12 +91,12 @@ void wear_dyn_drt(int restart)
   Teuchos::RCP<WEAR::Algorithm> stru_ale = Teuchos::null;
 
   // structure ale object
-  if (INPUT::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
+  if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
       INPAR::WEAR::wear_stagg)
   {
     stru_ale = Teuchos::rcp(new WEAR::Partitioned(comm));
   }
-  else if (INPUT::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
+  else if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
            INPAR::WEAR::wear_iterstagg)
   {
     stru_ale = Teuchos::rcp(new WEAR::Partitioned(comm));

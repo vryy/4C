@@ -12,7 +12,6 @@
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_utils_parallel.hpp"
-#include "baci_lib_utils_parameter_list.hpp"
 #include "baci_linalg_equilibrate.hpp"
 #include "baci_linalg_krylov_projector.hpp"
 #include "baci_linalg_matrixtransform.hpp"
@@ -30,6 +29,7 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.hpp"
 #include "baci_scatra_timint_meshtying_strategy_std_elch.hpp"
 #include "baci_utils_function_of_time.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <unordered_set>
 
@@ -43,7 +43,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
       elchparams_(params),
-      equpot_(INPUT::IntegralValue<INPAR::ELCH::EquPot>(*elchparams_, "EQUPOT")),
+      equpot_(CORE::UTILS::IntegralValue<INPAR::ELCH::EquPot>(*elchparams_, "EQUPOT")),
       fr_(elchparams_->get<double>("FARADAY_CONSTANT") / elchparams_->get<double>("GAS_CONSTANT")),
       temperature_funct_num_(elchparams_->get<int>("TEMPERATURE_FROM_FUNCT")),
       temperature_(GetCurrentTemperature()),
@@ -64,7 +64,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
       cccv_condition_(Teuchos::null),
       cellcrate_(0.),
       cellcrate_old_(-1.0),
-      cycling_timestep_(INPUT::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING")
+      cycling_timestep_(CORE::UTILS::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING")
                             ? elchparams_->get<double>("CYCLING_TIMESTEP")
                             : 0.0),
       adapted_timestep_active_(false),
@@ -82,7 +82,8 @@ void SCATRA::ScaTraTimIntElch::Init()
 {
   // The diffusion-conduction formulation does not support all options of the Nernst-Planck
   // formulation Let's check for valid options
-  if (INPUT::IntegralValue<int>(*elchparams_, "DIFFCOND_FORMULATION")) ValidParameterDiffCond();
+  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "DIFFCOND_FORMULATION"))
+    ValidParameterDiffCond();
 
   // additional safety checks associated with adaptive time stepping for CCCV cell cycling
   if (cycling_timestep_ > 0.0)
@@ -312,9 +313,9 @@ void SCATRA::ScaTraTimIntElch::Setup()
       }
 
       // new cccv condition
-      cccv_condition_ =
-          Teuchos::rcp(new SCATRA::CCCVCondition(cccvcyclingcondition, cccvhalfcycleconditions,
-              INPUT::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING"), NumDofPerNode()));
+      cccv_condition_ = Teuchos::rcp(new SCATRA::CCCVCondition(cccvcyclingcondition,
+          cccvhalfcycleconditions,
+          CORE::UTILS::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING"), NumDofPerNode()));
 
       break;
     }
@@ -405,16 +406,16 @@ void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(
     Teuchos::ParameterList& eleparams) const
 {
   // overwrite action type
-  if (INPUT::IntegralValue<int>(*elchparams_, "DIFFCOND_FORMULATION"))
+  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "DIFFCOND_FORMULATION"))
   {
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::set_diffcond_scatra_parameter, eleparams);
 
     // parameters for diffusion-conduction formulation
     eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
   }
   else
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::set_elch_scatra_parameter, eleparams);
 
   // general elch parameters
@@ -423,8 +424,8 @@ void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(
   eleparams.set<double>("frt", FRT());
   eleparams.set<double>("temperature", temperature_);
   eleparams.set<int>("equpot", equpot_);
-  eleparams.set<bool>(
-      "boundaryfluxcoupling", INPUT::IntegralValue<bool>(*elchparams_, "COUPLE_BOUNDARY_FLUXES"));
+  eleparams.set<bool>("boundaryfluxcoupling",
+      CORE::UTILS::IntegralValue<bool>(*elchparams_, "COUPLE_BOUNDARY_FLUXES"));
 }
 
 /*----------------------------------------------------------------------*
@@ -601,7 +602,7 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
   if (step_ == 0)
   {
     // calculate initial electric potential field
-    if (INPUT::IntegralValue<int>(*elchparams_, "INITPOTCALC")) CalcInitialPotentialField();
+    if (CORE::UTILS::IntegralValue<int>(*elchparams_, "INITPOTCALC")) CalcInitialPotentialField();
 
     // evaluate SOC, c-rate and cell voltage for output
     EvaluateElectrodeInfoInterior();
@@ -614,7 +615,7 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
 
   // check validity of material and element formulation
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::check_scatra_element_parameter, eleparams);
 
   discret_->Evaluate(
@@ -686,7 +687,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
@@ -734,7 +735,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
@@ -766,7 +767,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<int>("calcerrorflag", calcerror_);
@@ -819,7 +820,7 @@ void SCATRA::ScaTraTimIntElch::CheckAndWriteOutputAndRestart()
   ScaTraTimIntImpl::CheckAndWriteOutputAndRestart();
 
   // output electrode interior status information and cell voltage in every time step
-  if (INPUT::IntegralValue<int>(*elchparams_, "ELECTRODE_INFO_EVERY_STEP") or IsResultStep())
+  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "ELECTRODE_INFO_EVERY_STEP") or IsResultStep())
   {
     // print electrode domain and boundary status information to screen and files
     OutputElectrodeInfoDomain();
@@ -995,10 +996,10 @@ Teuchos::RCP<CORE::LINALG::SerialDenseVector> SCATRA::ScaTraTimIntElch::Evaluate
 
   // set action for elements depending on type of condition to be evaluated
   if (condstring == "ElchDomainKinetics")
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::calc_elch_domain_kinetics, eleparams);
   else if (condstring == "ElchBoundaryKinetics")
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_elch_boundary_kinetics, eleparams);
   else
     dserror("Invalid action " + condstring + " for output of electrode status information!");
@@ -1078,7 +1079,7 @@ SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(Teuchos::RCP<DRT::Con
     Teuchos::ParameterList condparams;
 
     // set action for elements
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::calc_elch_boundary_kinetics_point, condparams);
 
     // set flag for evaluation of status information
@@ -1360,7 +1361,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeInfoInterior()
       Teuchos::ParameterList condparams;
 
       // action for elements
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
           "action", SCATRA::Action::calc_elch_electrode_soc_and_c_rate, condparams);
 
       // initialize result vector
@@ -1481,7 +1482,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateCellVoltage()
         Teuchos::ParameterList condparams;
 
         // action for elements
-        DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+        CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
             "action", SCATRA::BoundaryAction::calc_elch_cell_voltage, condparams);
 
         // initialize result vector
@@ -1638,7 +1639,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
@@ -1703,22 +1704,22 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
 {
   if (myrank_ == 0)
   {
-    if (INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(*elchparams_, "MOVINGBOUNDARY") !=
-        INPAR::ELCH::elch_mov_bndry_no)
+    if (CORE::UTILS::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(
+            *elchparams_, "MOVINGBOUNDARY") != INPAR::ELCH::elch_mov_bndry_no)
       dserror("Moving boundaries are not supported in the ELCH diffusion-conduction framework!!");
 
-    if (INPUT::IntegralValue<int>(*params_, "NATURAL_CONVECTION"))
+    if (CORE::UTILS::IntegralValue<int>(*params_, "NATURAL_CONVECTION"))
       dserror("Natural convection is not supported in the ELCH diffusion-conduction framework!!");
 
-    if (INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
+    if (CORE::UTILS::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
             INPAR::SCATRA::solvertype_nonlinear and
-        INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
+        CORE::UTILS::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
             INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro and
-        INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
+        CORE::UTILS::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
             INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken and
-        INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
+        CORE::UTILS::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
             INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit and
-        INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
+        CORE::UTILS::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
             INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro)
     {
       dserror(
@@ -1728,56 +1729,56 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
 
     if (problem_->GetProblemType() != GLOBAL::ProblemType::ssi and
         problem_->GetProblemType() != GLOBAL::ProblemType::ssti and
-        INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params_, "CONVFORM") !=
+        CORE::UTILS::IntegralValue<INPAR::SCATRA::ConvForm>(*params_, "CONVFORM") !=
             INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");
 
-    if ((static_cast<bool>(INPUT::IntegralValue<int>(*params_, "NEUMANNINFLOW"))))
+    if ((static_cast<bool>(CORE::UTILS::IntegralValue<int>(*params_, "NEUMANNINFLOW"))))
       dserror("Neuman inflow BC's are not supported by the ELCH diffusion-conduction framework!!");
 
-    if ((static_cast<bool>(INPUT::IntegralValue<int>(*params_, "CONV_HEAT_TRANS"))))
+    if ((static_cast<bool>(CORE::UTILS::IntegralValue<int>(*params_, "CONV_HEAT_TRANS"))))
     {
       dserror(
           "Convective heat transfer BC's are not supported by the ELCH diffusion-conduction "
           "framework!!");
     }
 
-    if ((INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params_, "FSSUGRDIFF")) !=
+    if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params_, "FSSUGRDIFF")) !=
         INPAR::SCATRA::fssugrdiff_no)
       dserror("Subgrid diffusivity is not supported by the ELCH diffusion-conduction framework!!");
 
-    if ((static_cast<bool>(INPUT::IntegralValue<int>(*elchparams_, "BLOCKPRECOND"))))
+    if ((static_cast<bool>(CORE::UTILS::IntegralValue<int>(*elchparams_, "BLOCKPRECOND"))))
       dserror("Block preconditioner is not supported so far!!");
 
     // Parameters defined in "SCALAR TRANSPORT DYNAMIC"
     Teuchos::ParameterList& scatrastabparams = params_->sublist("STABILIZATION");
 
-    if ((INPUT::IntegralValue<INPAR::SCATRA::StabType>(scatrastabparams, "STABTYPE")) !=
+    if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::StabType>(scatrastabparams, "STABTYPE")) !=
         INPAR::SCATRA::stabtype_no_stabilization)
       dserror(
           "No stabilization is necessary for solving the ELCH diffusion-conduction framework!!");
 
-    if ((INPUT::IntegralValue<INPAR::SCATRA::TauType>(scatrastabparams, "DEFINITION_TAU")) !=
+    if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::TauType>(scatrastabparams, "DEFINITION_TAU")) !=
         INPAR::SCATRA::tau_zero)
       dserror(
           "No stabilization is necessary for solving the ELCH diffusion-conduction framework!!");
 
-    if ((INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(scatrastabparams, "EVALUATION_TAU")) !=
+    if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::EvalTau>(scatrastabparams, "EVALUATION_TAU")) !=
         INPAR::SCATRA::evaltau_integration_point)
       dserror("Evaluation of stabilization parameter only at Gauss points!!");
 
-    if ((INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(scatrastabparams, "EVALUATION_MAT")) !=
+    if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::EvalMat>(scatrastabparams, "EVALUATION_MAT")) !=
         INPAR::SCATRA::evalmat_integration_point)
       dserror("Evaluation of material only at Gauss points!!");
 
-    if ((INPUT::IntegralValue<INPAR::SCATRA::Consistency>(scatrastabparams, "CONSISTENCY")) !=
+    if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::Consistency>(scatrastabparams, "CONSISTENCY")) !=
         INPAR::SCATRA::consistency_no)
       dserror("Consistence formulation is not in the ELCH diffusion-conduction framework!!");
 
-    if (static_cast<bool>(INPUT::IntegralValue<int>(scatrastabparams, "SUGRVEL")))
+    if (static_cast<bool>(CORE::UTILS::IntegralValue<int>(scatrastabparams, "SUGRVEL")))
       dserror("Subgrid velocity is not incorporated in the ELCH diffusion-conduction framework!!");
 
-    if (static_cast<bool>(INPUT::IntegralValue<int>(scatrastabparams, "ASSUGRDIFF")))
+    if (static_cast<bool>(CORE::UTILS::IntegralValue<int>(scatrastabparams, "ASSUGRDIFF")))
       dserror(
           "Subgrid diffusivity is not incorporated in the ELCH diffusion-conduction framework!!");
   }
@@ -1801,7 +1802,7 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
       if (!Elchcond[icond]->GeometryDescription())
         dserror("Nernst boundary conditions not implemented for one-dimensional domains yet!");
 
-      if (INPUT::IntegralValue<int>(*elchparams_, "DIFFCOND_FORMULATION"))
+      if (CORE::UTILS::IntegralValue<int>(*elchparams_, "DIFFCOND_FORMULATION"))
       {
         if (icond == 0) ektoggle_ = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
@@ -2088,7 +2089,7 @@ double SCATRA::ScaTraTimIntElch::ComputeConductivity(
 
   // create the parameters for the elements
   Teuchos::ParameterList eleparams;
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_elch_conductivity, eleparams);
 
   eleparams.set("effCond", effCond);
@@ -2120,7 +2121,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
   // applied cell voltage and continue Newton-Raphson iterations until
   // we reach the desired value for the electric current.
 
-  if (INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC"))
+  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC"))
   {
     // set time derivative parameters of applied voltage for a double layer capacitance current
     // density,
@@ -2181,7 +2182,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       const double tol = elchparams_->get<double>("GSTATCONVTOL");
       const double effective_length = elchparams_->get<double>("GSTAT_LENGTH_CURRENTPATH");
       if (effective_length < 0.0) dserror("A negative effective length is not possible!");
-      const auto approxelctresist = INPUT::IntegralValue<INPAR::ELCH::ApproxElectResist>(
+      const auto approxelctresist = CORE::UTILS::IntegralValue<INPAR::ELCH::ApproxElectResist>(
           *elchparams_, "GSTAT_APPROX_ELECT_RESIST");
 
       // There are maximal two electrode conditions by definition
@@ -2601,10 +2602,10 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
 
   // set action for elements depending on type of condition to be evaluated
   if (condstring == "ElchDomainKinetics")
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
         "action", SCATRA::Action::calc_elch_domain_kinetics, condparams);
   else if (condstring == "ElchBoundaryKinetics")
-    DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+    CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_elch_boundary_kinetics, condparams);
   else
     dserror("Illegal action for electrode kinetics evaluation!");
@@ -2632,7 +2633,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
   Teuchos::ParameterList condparams;
 
   // set action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_elch_boundary_kinetics_point, condparams);
 
   // set state vectors according to time-integration scheme
@@ -2732,7 +2733,7 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   // update total time for time curve actions
   AddTimeIntegrationSpecificVectors();
   // action for elements
-  DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_elch_linearize_nernst, condparams);
 
   // add element parameters and set state vectors according to time-integration scheme
@@ -2950,7 +2951,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
             Teuchos::ParameterList params;
 
             // set action for elements
-            DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+            CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
                 "action", SCATRA::BoundaryAction::calc_Neumann, params);
 
             // loop over all conditioned elements
@@ -2986,7 +2987,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
 
               constexpr double four_pi = 4.0 * M_PI;
               const double fac =
-                  INPUT::IntegralValue<bool>(*ScatraParameterList(), "SPHERICALCOORDS")
+                  CORE::UTILS::IntegralValue<bool>(*ScatraParameterList(), "SPHERICALCOORDS")
                       ? *node->X().data() * *node->X().data() * four_pi
                       : 1.0;
 
@@ -3109,7 +3110,7 @@ void SCATRA::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint
 
   // adapt number of transported scalars if necessary
   // current is a solution variable
-  if (INPUT::IntegralValue<int>(
+  if (CORE::UTILS::IntegralValue<int>(
           elchtimint->ElchParameterList()->sublist("DIFFCOND"), "CURRENT_SOLUTION_VAR"))
   {
     // shape of local row element(0) -> number of space dimensions
@@ -3162,7 +3163,8 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
   if (MatrixType() == CORE::LINALG::MatrixType::block_condition_dof)
   {
     // safety check
-    if (INPUT::IntegralValue<int>(ElchParameterList()->sublist("DIFFCOND"), "CURRENT_SOLUTION_VAR"))
+    if (CORE::UTILS::IntegralValue<int>(
+            ElchParameterList()->sublist("DIFFCOND"), "CURRENT_SOLUTION_VAR"))
     {
       dserror(
           "For chosen type of global block system matrix, current must not constitute solution "

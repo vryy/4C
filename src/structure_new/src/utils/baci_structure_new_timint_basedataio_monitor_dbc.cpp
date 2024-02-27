@@ -10,8 +10,8 @@
 
 #include "baci_structure_new_timint_basedataio_monitor_dbc.hpp"
 
-#include "baci_inpar_parameterlist_utils.hpp"
 #include "baci_utils_exceptions.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -51,7 +51,8 @@ void STR::TIMINT::ParamsMonitorDBC::Init(
   file_type_ = IO_monitor_dbc_structure_paramslist.get<std::string>("FILE_TYPE");
 
   // write header in csv file
-  write_header_ = INPUT::IntegralValue<int>(IO_monitor_dbc_structure_paramslist, "WRITE_HEADER");
+  write_header_ =
+      CORE::UTILS::IntegralValue<int>(IO_monitor_dbc_structure_paramslist, "WRITE_HEADER");
 
   isinit_ = true;
 }

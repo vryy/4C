@@ -260,7 +260,8 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
       else
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        iostress = INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+        iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
+            params, "iostress", INPAR::STR::stress_none);
       }
 
       const CORE::FE::IntegrationPoints1D intpoints(gaussrule_);

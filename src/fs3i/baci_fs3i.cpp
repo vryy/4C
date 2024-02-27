@@ -44,8 +44,8 @@ BACI_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::FS3I_Base::FS3I_Base()
-    : infperm_(
-          INPUT::IntegralValue<int>(GLOBAL::Problem::Instance()->FS3IDynamicParams(), "INF_PERM")),
+    : infperm_(CORE::UTILS::IntegralValue<int>(
+          GLOBAL::Problem::Instance()->FS3IDynamicParams(), "INF_PERM")),
       timemax_(GLOBAL::Problem::Instance()->FS3IDynamicParams().get<double>("MAXTIME")),
       numstep_(GLOBAL::Problem::Instance()->FS3IDynamicParams().get<int>("NUMSTEP")),
       dt_(GLOBAL::Problem::Instance()->FS3IDynamicParams().get<double>("TIMESTEP")),
@@ -176,11 +176,12 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
   // and rule out unsupported versions of generalized-alpha time-integration
   // scheme (as well as other inappropriate schemes) for fluid subproblem
   INPAR::SCATRA::TimeIntegrationScheme scatratimealgo =
-      INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradynparams, "TIMEINTEGR");
+      CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(
+          scatradynparams, "TIMEINTEGR");
   INPAR::FLUID::TimeIntegrationScheme fluidtimealgo =
-      INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fluiddynparams, "TIMEINTEGR");
+      CORE::UTILS::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fluiddynparams, "TIMEINTEGR");
   INPAR::STR::DynamicType structtimealgo =
-      INPUT::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP");
+      CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP");
 
   if (fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
   {
@@ -230,10 +231,10 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 
 
   // is scatra calculated conservative?
-  if (INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(fs3idyn, "STRUCTSCAL_CONVFORM") ==
+  if (CORE::UTILS::IntegralValue<INPAR::SCATRA::ConvForm>(fs3idyn, "STRUCTSCAL_CONVFORM") ==
           INPAR::SCATRA::convform_convective and
-      INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(fs3idyn, "STRUCTSCAL_FIELDCOUPLING") ==
-          INPAR::FS3I::coupling_match)
+      CORE::UTILS::IntegralValue<INPAR::FS3I::VolumeCoupling>(
+          fs3idyn, "STRUCTSCAL_FIELDCOUPLING") == INPAR::FS3I::coupling_match)
   {
     // get structure discretization
     Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
@@ -250,7 +251,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
   INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
       GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
   // is structure calculated dynamic when not prestressing?
-  if (INPUT::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP") ==
+  if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_statics and
       pstype != INPAR::STR::PreStress::mulf)
     dserror(

@@ -248,7 +248,8 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
   INPAR::FPSI::PartitionedCouplingMethod method =
-      INPUT::IntegralValue<INPAR::FPSI::PartitionedCouplingMethod>(fpsidynparams, "PARTITIONED");
+      CORE::UTILS::IntegralValue<INPAR::FPSI::PartitionedCouplingMethod>(
+          fpsidynparams, "PARTITIONED");
 
   if (method != INPAR::FPSI::nocoupling)
   {

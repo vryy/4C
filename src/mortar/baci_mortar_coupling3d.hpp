@@ -662,7 +662,7 @@ namespace MORTAR
 
     INPAR::MORTAR::LagMultQuad LagMultQuad() override
     {
-      return INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
+      return CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     /*!

@@ -11,7 +11,7 @@
 #include "baci_config.hpp"
 
 #include "baci_global_data_enums.hpp"
-#include "baci_inpar_parameterlist_utils.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <map>
 #include <string>
