@@ -13,8 +13,11 @@
 #include "baci_lib_conditiondefinition.hpp"
 
 #include "baci_global_data.hpp"
+#include "baci_io_line_parser.hpp"
 #include "baci_io_linecomponent.hpp"
 #include "baci_lib_discret.hpp"
+#include "baci_utils_demangle.hpp"
+#include "baci_utils_exceptions.hpp"
 
 #include <algorithm>
 #include <iterator>
@@ -54,104 +57,73 @@ void INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComp
 void INPUT::ConditionDefinition::Read(const GLOBAL::Problem& problem, DatFileReader& reader,
     std::multimap<int, Teuchos::RCP<DRT::Condition>>& cmap)
 {
-  std::string name = "--";
-  name += sectionname_;
-  std::vector<const char*> section = reader.Section(name);
+  std::vector<const char*> section = reader.Section("--" + sectionname_);
 
-  if (!section.empty())
+  if (section.empty()) return;
+
+  IO::LineParser parser("While reading condition section '" + sectionname_ + "': ");
+
+  // First we read a header for the current section: It needs to start with the
+  // geometry type followed by the number of lines:
+  //
+  // ("DPOINT" | "DLINE" | "DSURF" | "DVOL" ) <number>
   {
     std::stringstream line(section[0]);
-    std::string dobj;
-    int condcount = -1;
-    line >> dobj;
-    line >> condcount;
 
-    if (condcount < 0)
-    {
-      dserror("condcount<0 in section %s\n", sectionname_.c_str());
-    }
-
-    bool success = false;
-    switch (gtype_)
-    {
-      case DRT::Condition::Point:
-        success = dobj == "DPOINT";
-        break;
-      case DRT::Condition::Line:
-        success = dobj == "DLINE";
-        break;
-      case DRT::Condition::Surface:
-        success = dobj == "DSURF";
-        break;
-      case DRT::Condition::Volume:
-        success = dobj == "DVOL";
-        break;
-      default:
-        dserror("geometry type unspecified");
-        break;
-    }
-
-    if (not success)
-    {
-      dserror(
-          "expected design object type but got '%s' in '%s'", dobj.c_str(), sectionname_.c_str());
-    }
-
-    if (condcount != static_cast<int>(section.size() - 1))
-    {
-      dserror("Got %d condition lines but expect %d in '%s'", section.size() - 1, condcount,
-          sectionname_.c_str());
-    }
-
-    for (auto i = section.begin() + 1; i != section.end(); ++i)
-    {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
-
-      // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
-      // reading the last entry inside This is required since the material parameters can be
-      // specified in an arbitrary order in the input file. So it might happen that the last entry
-      // is extracted before all of the previous ones are.
-      condline->seekp(0, condline->end);
-      *condline << " ";
-      std::string E;
-      std::string number;
-      std::string minus;
-
-      (*condline) >> E >> number >> minus;
-      if (not(*condline) or E != "E" or minus != "-")
-        dserror("invalid condition line in '%s'", sectionname_.c_str());
-
-      int dobjid = -1;
-      {
-        char* ptr;
-        dobjid = strtol(number.c_str(), &ptr, 10);
-        if (ptr == number.c_str())
-          dserror("Failed to read design object number '%s' in '%s'", number.c_str(),
-              sectionname_.c_str());
-        if (ptr[0])  // check for remaining characters that were not read
+    const std::string expected_geometry_type = std::invoke(
+        [this]()
         {
-          dserror(
-              "Failed to read design object number '%s' in '%s'. Unable to read %s, so the "
-              "specified number format is probably not supported. The design object number has "
-              "to "
-              "be an integer.",
-              number.c_str(), sectionname_.c_str(), ptr, number.c_str());
-        }
+          switch (gtype_)
+          {
+            case DRT::Condition::Point:
+              return "DPOINT";
+            case DRT::Condition::Line:
+              return "DLINE";
+            case DRT::Condition::Surface:
+              return "DSURF";
+            case DRT::Condition::Volume:
+              return "DVOL";
+            default:
+              dserror("Geometry type unspecified");
+          }
+        });
 
-        dobjid -= 1;
-      }
+    parser.Consume(line, expected_geometry_type);
+    const int condition_count = parser.Read<int>(line);
 
-      Teuchos::RCP<DRT::Condition> condition =
-          Teuchos::rcp(new DRT::Condition(dobjid, condtype_, buildgeometry_, gtype_));
-
-      for (auto& j : inputline_)
-      {
-        condline = j->Read(SectionName(), condline, *condition);
-      }
-
-      //------------------------------- put condition in map of conditions
-      cmap.insert(std::pair<int, Teuchos::RCP<DRT::Condition>>(dobjid, condition));
+    if (condition_count != static_cast<int>(section.size() - 1))
+    {
+      dserror("Got %d condition lines but expected %d in section '%s'", section.size() - 1,
+          condition_count, sectionname_.c_str());
     }
+  }
+
+  for (auto i = section.begin() + 1; i != section.end(); ++i)
+  {
+    Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
+
+    // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
+    // reading the last entry inside This is required since the material parameters can be
+    // specified in an arbitrary order in the input file. So it might happen that the last entry
+    // is extracted before all of the previous ones are.
+    condline->seekp(0, condline->end);
+    *condline << " ";
+
+    parser.Consume(*condline, "E");
+    // Read a one-based condition number but convert it to zero-based for internal use.
+    const int dobjid = parser.Read<int>(*condline) - 1;
+    parser.Consume(*condline, "-");
+
+    Teuchos::RCP<DRT::Condition> condition =
+        Teuchos::rcp(new DRT::Condition(dobjid, condtype_, buildgeometry_, gtype_));
+
+    for (auto& j : inputline_)
+    {
+      condline = j->Read(SectionName(), condline, *condition);
+    }
+
+    //------------------------------- put condition in map of conditions
+    cmap.insert(std::pair<int, Teuchos::RCP<DRT::Condition>>(dobjid, condition));
   }
 }
 
