@@ -692,66 +692,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Transport::Surfaces()
 }
 
 /*----------------------------------------------------------------------*
- |  Return names of visualization data (public)                gjb 01/09|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Transport::VisNames(std::map<std::string, int>& names)
-{
-  // see whether we have additional data for visualization in our container
-  for (int k = 0; k < numdofpernode_; k++)
-  {
-    std::ostringstream temp;
-    temp << k;
-
-    // element Peclet number
-    std::string name = "Pe_" + temp.str();
-    const std::vector<double>* Pe = &vis_map_[name];
-    if (Pe) names.insert(std::pair<std::string, int>(name, 1));
-
-    // element Peclet number (only migration term)
-    name = "Pe_mig_" + temp.str();
-    const std::vector<double>* Pe_mig = &vis_map_[name];
-    if (Pe_mig) names.insert(std::pair<std::string, int>(name, 1));
-
-    // characteristic element length
-    name = "hk_" + temp.str();
-    const std::vector<double>* hk = &vis_map_[name];
-    if (hk) names.insert(std::pair<std::string, int>(name, 1));
-
-    // Stabilization parameter at element center
-    name = "tau_" + temp.str();
-    const std::vector<double>* tau = &vis_map_[name];
-    if (tau) names.insert(std::pair<std::string, int>(name, 1));
-
-  }  // loop over transported scalars
-}
-
-
-/*----------------------------------------------------------------------*
- |  Return visualization data (public)                         gjb 01/09|
- *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Transport ::VisData(const std::string& name, std::vector<double>& data)
-{
-  // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name, data)) return true;
-
-  for (int k = 0; k < numdofpernode_; k++)
-  {
-    std::ostringstream temp;
-    temp << k;
-    if ((name == "Pe_" + temp.str()) || (name == "Pe_mig_" + temp.str()) ||
-        (name == "hk_" + temp.str()) || (name == "tau_" + temp.str()))
-    {
-      if ((int)data.size() != 1) dserror("size mismatch");
-      data[0] = name_;
-      return true;
-    }
-  }  // loop over transported scalars
-
-  return false;
-}
-
-
-/*----------------------------------------------------------------------*
  | set implementation type                                   fang 02/15 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Transport ::SetImplType(const INPAR::SCATRA::ImplType impltype)
