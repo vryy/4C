@@ -123,7 +123,7 @@ namespace
   struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::nonlinearTotLag,
       DRT::ELEMENTS::ElementTechnology::none, DRT::ELEMENTS::PrestressTechnology::mulf>
   {
-    using type = DRT::ELEMENTS::SolidEleCalcMulf<celltype>;
+    using type = DRT::ELEMENTS::SolidEleCalc<celltype, DRT::ELEMENTS::MulfFormulation<celltype>>;
   };
 
   /*!

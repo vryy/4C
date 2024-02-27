@@ -105,6 +105,10 @@ namespace DRT::ELEMENTS
         const MAT::So3Material& solid_material,
         STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
+    void UpdatePrestress(const DRT::Element& ele, MAT::So3Material& solid_material,
+        const DRT::Discretization& discretization, const std::vector<int>& lm,
+        Teuchos::ParameterList& params);
+
     void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material);
 
     CauchyNDirAndLinearization<3> GetCauchyNDirAndDerivativesAtXi(const DRT::Element& ele,
