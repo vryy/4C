@@ -1055,9 +1055,9 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_SOP5, 1> funct(true);
       funct = shapefcts[gp];
-      CORE::LINALG::Matrix<1, NUMDIM_SOP5> point(true);
-      point.MultiplyTN(funct, xrefe);
-      params.set("gprefecoord", point);
+      CORE::LINALG::Matrix<NUMDIM_SOP5, 1> point(true);
+      point.MultiplyTN(xrefe, funct);
+      params.set("gp_coords_ref", point);
     }
 
     SolidMaterial()->Evaluate(&defgrd_bar, &glstrain_bar, params, &stress_bar, &cmat, gp, Id());

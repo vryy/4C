@@ -111,12 +111,12 @@ namespace
     nodal_coordinates.reference_coordinates_(7, 1) = 1;
     nodal_coordinates.reference_coordinates_(7, 2) = 2;
 
-    CORE::LINALG::Matrix<1, DRT::ELEMENTS::DETAIL::num_dim<distype>> x_centroid_ref(true);
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid_ref(true);
     x_centroid_ref(0) = 2;
     x_centroid_ref(1) = 0.5;
     x_centroid_ref(2) = 1.0;
 
-    CORE::LINALG::Matrix<1, DRT::ELEMENTS::DETAIL::num_dim<distype>> x_centroid =
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid =
         DRT::ELEMENTS::EvaluateReferenceCoordinateCentroid<distype>(nodal_coordinates);
 
     EXPECT_EQ(x_centroid, x_centroid_ref);
@@ -147,12 +147,12 @@ namespace
     nodal_coordinates.reference_coordinates_(3, 1) = 0;
     nodal_coordinates.reference_coordinates_(3, 2) = 4;
 
-    CORE::LINALG::Matrix<1, DRT::ELEMENTS::DETAIL::num_dim<distype>> x_centroid_ref(true);
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid_ref(true);
     x_centroid_ref(0) = 0.25;
     x_centroid_ref(1) = 0.5;
     x_centroid_ref(2) = 1.0;
 
-    CORE::LINALG::Matrix<1, DRT::ELEMENTS::DETAIL::num_dim<distype>> x_centroid =
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid =
         DRT::ELEMENTS::EvaluateReferenceCoordinateCentroid<distype>(nodal_coordinates);
 
     EXPECT_EQ(x_centroid, x_centroid_ref);
@@ -187,12 +187,12 @@ namespace
     nodal_coordinates.reference_coordinates_(4, 1) = 0;
     nodal_coordinates.reference_coordinates_(4, 2) = 4;
 
-    CORE::LINALG::Matrix<1, DRT::ELEMENTS::DETAIL::num_dim<distype>> x_centroid_ref(true);
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid_ref(true);
     x_centroid_ref(0) = 1.0;
     x_centroid_ref(1) = 0.0;
     x_centroid_ref(2) = 1.0;
 
-    CORE::LINALG::Matrix<1, DRT::ELEMENTS::DETAIL::num_dim<distype>> x_centroid =
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid =
         DRT::ELEMENTS::EvaluateReferenceCoordinateCentroid<distype>(nodal_coordinates);
 
     EXPECT_EQ(x_centroid, x_centroid_ref);
@@ -231,12 +231,12 @@ namespace
     nodal_coordinates.reference_coordinates_(5, 1) = 6;
     nodal_coordinates.reference_coordinates_(5, 2) = 1;
 
-    CORE::LINALG::Matrix<1, DRT::ELEMENTS::DETAIL::num_dim<distype>> x_centroid_ref(true);
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid_ref(true);
     x_centroid_ref(0) = 1;
     x_centroid_ref(1) = 2;
     x_centroid_ref(2) = 0.5;
 
-    CORE::LINALG::Matrix<1, DRT::ELEMENTS::DETAIL::num_dim<distype>> x_centroid =
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid =
         DRT::ELEMENTS::EvaluateReferenceCoordinateCentroid<distype>(nodal_coordinates);
 
     for (int j = 0; j < DRT::ELEMENTS::DETAIL::num_dim<distype>; j++)

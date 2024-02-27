@@ -267,7 +267,7 @@ namespace MAT::UTILS::MUSCLE
    */
   double EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
       const CORE::UTILS::FunctionOfSpaceTime *&activation_function, const double t_current,
-      const CORE::LINALG::Matrix<1, 3> &x);
+      const CORE::LINALG::Matrix<3, 1> &x);
 
   /*!
    *  @brief Returns the fiber stretch in the current configuration

@@ -168,9 +168,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
   // TODO: (thon) actually we do not want this here, since it has nothing to do with scatra specific
   // stuff. But for now we let it be...
-  std::vector<double> center = DRT::UTILS::ElementCenterRefeCoords(this);
-  auto xrefe = Teuchos::rcp(new std::vector<double>(center));
-  params.set<Teuchos::RCP<std::vector<double>>>("position", xrefe);
+  const CORE::LINALG::Matrix<3, 1> center(DRT::UTILS::ElementCenterRefeCoords(this).data());
+  params.set("elecenter_coords_ref", center);
 }
 
 /*----------------------------------------------------------------------*

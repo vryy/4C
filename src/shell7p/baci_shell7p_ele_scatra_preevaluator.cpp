@@ -119,9 +119,8 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::Paramet
       params.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpscalar);
     }
   }
-  std::vector<double> center = {0.0, 0.0};
-  auto xrefe = Teuchos::rcp(new std::vector<double>(center));
-  params.set<Teuchos::RCP<std::vector<double>>>("position", xrefe);
+  CORE::LINALG::Matrix<2, 1> center(true);
+  params.set("elecenter_coords_ref", center);
 }
 
 BACI_NAMESPACE_CLOSE

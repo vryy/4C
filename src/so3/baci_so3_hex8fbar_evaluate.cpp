@@ -1148,14 +1148,14 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
         Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
         Material()->MaterialType() == INPAR::MAT::m_mixture)
     {
-      CORE::LINALG::Matrix<1, NUMDIM_SOH8> point(true);
+      CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(true);
       soh8_GaussPointRefeCoords(point, xrefe, gp);
-      params.set("gprefecoord", point);
+      params.set("gp_coords_ref", point);
 
       // center of element in reference configuration
       point.Clear();
       soh8_ElementCenterRefeCoords(point, xrefe);
-      params.set("elecenter", point);
+      params.set("elecenter_coords_ref", point);
     }
 
     SolidMaterial()->Evaluate(&defgrd_bar, &glstrain_bar, params, &stress_bar, &cmat, gp, Id());
@@ -1690,16 +1690,16 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(false);
 
     // center of element in reference configuration
-    CORE::LINALG::Matrix<1, NUMDIM_SOH8> point(false);
+    CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(false);
     point.Clear();
     soh8_ElementCenterRefeCoords(point, xrefe);
-    params.set("elecenter", point);
+    params.set("elecenter_coords_ref", point);
 
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
     {
-      CORE::LINALG::Matrix<1, NUMDIM_SOH8> point(true);
+      CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(true);
       soh8_GaussPointRefeCoords(point, xrefe, gp);
-      params.set("gprefecoord", point);
+      params.set("gp_coords_ref", point);
 
       /* get the inverse of the Jacobian matrix which looks like:
        **            [ x_,r  y_,r  z_,r ]^-1

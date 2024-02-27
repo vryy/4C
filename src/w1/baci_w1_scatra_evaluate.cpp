@@ -59,16 +59,15 @@ void DRT::ELEMENTS::Wall1_Scatra::PreEvaluate(Teuchos::ParameterList& params,
         Teuchos::rcp_dynamic_cast<MAT::Material>(scatraele->Material());
     params.set<Teuchos::RCP<MAT::Material>>("scatramat", scatramat);
   }
-  Teuchos::RCP<std::vector<double>> xrefe = Teuchos::rcp(new std::vector<double>(2));
+  CORE::LINALG::Matrix<2, 1> xrefe(true);
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnode; ++i)
   {
     const auto& x = nodes[i]->X();
-    (*xrefe)[0] += x[0] / numnode;
-    (*xrefe)[1] += x[1] / numnode;
+    xrefe(0) += x[0] / numnode;
+    xrefe(1) += x[1] / numnode;
   }
-  params.set<Teuchos::RCP<std::vector<double>>>("position", xrefe);
-  return;
+  params.set("elecenter_coords_ref", xrefe);
 }
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |

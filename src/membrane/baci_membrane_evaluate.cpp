@@ -734,16 +734,16 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
       // Gauss-point coordinates in reference configuration
-      CORE::LINALG::Matrix<1, noddof_> gprefecoord(true);
-      gprefecoord.MultiplyTN(shapefcts, xrefe);
-      params.set("gprefecoord", gprefecoord);
+      CORE::LINALG::Matrix<noddof_, 1> gprefecoord(true);
+      gprefecoord.MultiplyTN(xrefe, shapefcts);
+      params.set("gp_coords_ref", gprefecoord);
 
       // center of element in reference configuration
       CORE::LINALG::Matrix<numnod_, 1> funct_center;
       CORE::FE::shape_function_2D(funct_center, 0.0, 0.0, distype);
-      CORE::LINALG::Matrix<1, noddof_> midpoint;
-      midpoint.MultiplyTN(funct_center, xrefe);
-      params.set("elecenter", midpoint);
+      CORE::LINALG::Matrix<noddof_, 1> midpoint;
+      midpoint.MultiplyTN(xrefe, funct_center);
+      params.set("elecenter_coords_ref", midpoint);
     }
 
     if (material_inelastic_thickness != Teuchos::null)

@@ -1196,9 +1196,9 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_SOTET10, 1> funct(true);
       funct = shapefcts_4gp[gp];
-      CORE::LINALG::Matrix<1, NUMDIM_SOTET10> point(true);
-      point.MultiplyTN(funct, xrefe);
-      params.set("gprefecoord", point);
+      CORE::LINALG::Matrix<NUMDIM_SOTET10, 1> point(true);
+      point.MultiplyTN(xrefe, funct);
+      params.set("gp_coords_ref", point);
     }
 
     UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::tet10>(
@@ -1764,9 +1764,9 @@ void DRT::ELEMENTS::So_tet10::Update_element(std::vector<double>& disp,
     params.set<int>("numgp", static_cast<int>(NUMGPT_SOTET10));
     for (unsigned gp = 0; gp < NUMGPT_SOTET10; ++gp)
     {
-      CORE::LINALG::Matrix<1, NUMDIM_SOTET10> point(true);
-      point.MultiplyTN(so_tet10_4gp_shapefcts()[gp], xrefe);
-      params.set("gprefecoord", point);
+      CORE::LINALG::Matrix<NUMDIM_SOTET10, 1> point(true);
+      point.MultiplyTN(xrefe, so_tet10_4gp_shapefcts()[gp]);
+      params.set("gp_coords_ref", point);
       CORE::LINALG::Matrix<3, 10> derivs(false);
       so_tet10_derivs<CORE::FE::GaussRule3D::tet_4point>(derivs, gp);
 

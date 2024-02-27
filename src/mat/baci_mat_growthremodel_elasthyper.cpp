@@ -544,7 +544,7 @@ void MAT::GrowthRemodel_ElastHyper::ReadDir(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::GrowthRemodel_ElastHyper::SetupAxiCirRadCylinder(
-    CORE::LINALG::Matrix<1, 3> elecenter, double const dt)
+    CORE::LINALG::Matrix<3, 1> elecenter, double const dt)
 {
   // Clear dummy directions
   radaxicirc_.Clear();
@@ -558,8 +558,8 @@ void MAT::GrowthRemodel_ElastHyper::SetupAxiCirRadCylinder(
   AaxM_.MultiplyNT(1.0, axdir, axdir, 0.0);
 
   // Radial direction
-  elecenter(0, params_->cylinder_ - 1) = 0.0;
-  raddir.UpdateT(1. / elecenter.Norm2(), elecenter, 0.0);
+  elecenter(params_->cylinder_ - 1, 0) = 0.0;
+  raddir.Update(1. / elecenter.Norm2(), elecenter, 0.0);
   for (int i = 0; i < 3; ++i) radaxicirc_(i, 0) = raddir(i);
   AradM_.MultiplyNT(1.0, raddir, raddir, 0.0);
 
@@ -739,18 +739,16 @@ void MAT::GrowthRemodel_ElastHyper::EvaluatePrestretch(
 void MAT::GrowthRemodel_ElastHyper::SetupGR3D(CORE::LINALG::Matrix<3, 3> const* const defgrd,
     Teuchos::ParameterList& params, const double dt, const int gp, const int eleGID)
 {
-  CORE::LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
-  CORE::LINALG::Matrix<1, 3> axdir(true);
-  CORE::LINALG::Matrix<1, 3> raddir(true);
-  gprefecoord = params.get<CORE::LINALG::Matrix<1, 3>>("gprefecoord");
+  CORE::LINALG::Matrix<3, 1> axdir(true);
+  CORE::LINALG::Matrix<3, 1> raddir(true);
+  const auto& gp_reference_coordinates = params.get<CORE::LINALG::Matrix<3, 1>>("gp_coords_ref");
 
   if ((params_->cylinder_ == 1 || params_->cylinder_ == 2 || params_->cylinder_ == 3) &&
       (setup_[0] == 1))
   {
-    CORE::LINALG::Matrix<1, 3> elerefecoord(
-        true);  // element center coordinates in reference system
-    elerefecoord = params.get<CORE::LINALG::Matrix<1, 3>>("elecenter");
-    SetupAxiCirRadCylinder(elerefecoord, dt);
+    const auto& ele_center_reference_coordinates =
+        params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
+    SetupAxiCirRadCylinder(ele_center_reference_coordinates, dt);
     if (params_->growthtype_ == 1) SetupAnisoGrowthTensors();
 
     // Update fiber directions with new local coordinate system (radaxicirc_)
@@ -760,11 +758,11 @@ void MAT::GrowthRemodel_ElastHyper::SetupGR3D(CORE::LINALG::Matrix<3, 3> const* 
   // Evaluate radial and axial distance between origin and current Gauss-Point
   for (int i = 0; i < 3; ++i)
   {
-    axdir(0, i) = radaxicirc_(i, 1);
-    raddir(0, i) = radaxicirc_(i, 0);
+    axdir(i, 0) = radaxicirc_(i, 1);
+    raddir(i, 0) = radaxicirc_(i, 0);
   }
-  gp_ax_[gp] = axdir.Dot(gprefecoord);
-  gp_rad_[gp] = raddir.Dot(gprefecoord);
+  gp_ax_[gp] = axdir.Dot(gp_reference_coordinates);
+  gp_rad_[gp] = raddir.Dot(gp_reference_coordinates);
 
   // TODO: BE CAREFULL! So far, this prestretching procedure is only valid for certain materials and
   // a cylindrical geometry.
@@ -1569,25 +1567,23 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateGrowthDefGrad(CORE::LINALG::Matrix<3
 void MAT::GrowthRemodel_ElastHyper::SetupGR2D(
     Teuchos::ParameterList& params, const double dt, const int gp)
 {
-  CORE::LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
-  CORE::LINALG::Matrix<1, 3> axdir(true);
-  gprefecoord = params.get<CORE::LINALG::Matrix<1, 3>>("gprefecoord");
+  CORE::LINALG::Matrix<3, 1> axdir(true);
+  const auto& gp_coords_ref = params.get<CORE::LINALG::Matrix<3, 1>>("gp_coords_ref");
 
   if ((params_->cylinder_ == 1 || params_->cylinder_ == 2 || params_->cylinder_ == 3) &&
       (setup_[0] == 1))
   {
-    CORE::LINALG::Matrix<1, 3> elerefecoord(
-        true);  // element center coordinates in reference system
-    elerefecoord = params.get<CORE::LINALG::Matrix<1, 3>>("elecenter");
-    SetupAxiCirRadCylinder(elerefecoord, dt);
+    const auto& element_center_reference_coordinates =
+        params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
+    SetupAxiCirRadCylinder(element_center_reference_coordinates, dt);
     if (params_->growthtype_ == 1) SetupAnisoGrowthTensors();
 
     // Update fiber directions with new local coordinate system (radaxicirc_)
     for (auto& k : potsumrf_) k->UpdateFiberDirs(radaxicirc_, dt);
   }
 
-  for (int i = 0; i < 3; ++i) axdir(0, i) = radaxicirc_(i, 1);
-  gp_ax_[gp] = axdir.Dot(gprefecoord);
+  for (int i = 0; i < 3; ++i) axdir(i, 0) = radaxicirc_(i, 1);
+  gp_ax_[gp] = axdir.Dot(gp_coords_ref);
 
   // update elastin prestretch in radial direction
   GM_[gp].Update(params_->lamb_prestretch_cir_, AcirM_, 0.0);

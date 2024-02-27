@@ -215,8 +215,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Update(
     CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
-  CORE::LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
-  gprefecoord = params.get<CORE::LINALG::Matrix<1, 3>>("gprefecoord");
+  const auto& reference_coordinates = params.get<CORE::LINALG::Matrix<3, 1>>("gp_coords_ref");
 
   double totaltime = params.get<double>("total time", -1);
   if (totaltime < 0.0)
@@ -227,7 +226,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Update(
   current_reference_growth_[gp] =
       GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
-          .Evaluate(gprefecoord.A(), totaltime, 0);
+          .Evaluate(reference_coordinates.A(), totaltime, 0);
 
   MixtureConstituent_ElastHyperBase::Update(defgrd, params, gp, eleGID);
 

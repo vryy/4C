@@ -111,13 +111,12 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
         "strategy!");
   }
 
-  CORE::LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
-  gprefecoord = params.get<CORE::LINALG::Matrix<1, 3>>("gprefecoord");
+  const auto& reference_coordinates = params.get<CORE::LINALG::Matrix<3, 1>>("gp_coords_ref");
 
   double r = 0;
   for (unsigned i = 0; i < 3; ++i)
   {
-    r += cylinderCosy->GetRad()(i) * gprefecoord(i);
+    r += cylinderCosy->GetRad()(i) * reference_coordinates(i);
   }
 
   double initial_constituent_reference_density =

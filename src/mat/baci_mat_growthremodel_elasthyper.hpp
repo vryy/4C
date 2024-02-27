@@ -285,7 +285,7 @@ namespace MAT
 
     /// Calculates AXI, CIR and RAD structural tensors and sets new fiber directions in the case of
     /// a cylinder
-    void SetupAxiCirRadCylinder(CORE::LINALG::Matrix<1, 3> elecenter, double const dt);
+    void SetupAxiCirRadCylinder(CORE::LINALG::Matrix<3, 1> elecenter, double const dt);
 
     /// Setup anisotropic growth tensors. Here we assume that the growth direction corresponds with
     /// the radial/ thickness direction

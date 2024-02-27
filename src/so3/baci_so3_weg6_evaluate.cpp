@@ -812,9 +812,9 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_WEG6, 1> funct(true);
       funct = shapefcts[gp];
-      CORE::LINALG::Matrix<1, NUMDIM_WEG6> point(true);
-      point.MultiplyTN(funct, xrefe);
-      params.set("gprefecoord", point);
+      CORE::LINALG::Matrix<NUMDIM_WEG6, 1> point(true);
+      point.MultiplyTN(xrefe, funct);
+      params.set("gp_coords_ref", point);
     }
 
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());

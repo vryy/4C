@@ -276,16 +276,16 @@ namespace DRT::ELEMENTS
    * @tparam celltype : Cell type
    * @param nodal_coordinates_reference (in) : Reference coordinates of the nodes of the element
    * @param shape_functions_point (in) : Shape functions evaluated at the specific point
-   * @return CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype>> : point's reference coordinates
+   * @return CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1> : point's reference coordinates
    */
   template <CORE::FE::CellType celltype>
-  CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype>> EvaluateReferenceCoordinate(
+  CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1> EvaluateReferenceCoordinate(
       const CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>&
           nodal_coordinates_reference,
       const CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1>& shape_functions_point)
   {
-    CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype>> coordinates_reference(true);
-    coordinates_reference.MultiplyTN(shape_functions_point, nodal_coordinates_reference);
+    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> coordinates_reference(true);
+    coordinates_reference.MultiplyTN(nodal_coordinates_reference, shape_functions_point);
 
     return coordinates_reference;
   }
@@ -295,12 +295,12 @@ namespace DRT::ELEMENTS
    *
    * @tparam celltype : Cell type
    * @param nodal_coordinates (in) : Reference coordinates of the nodes of the element
-   * @return CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype>> : Element centroid's coordinates in
+   * @return CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1> : Element centroid's coordinates in
    * reference configuration
    */
   template <CORE::FE::CellType celltype,
       std::enable_if_t<CORE::FE::use_lagrange_shapefnct<celltype>, int> = 0>
-  CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype>> EvaluateReferenceCoordinateCentroid(
+  CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1> EvaluateReferenceCoordinateCentroid(
       const ElementNodes<celltype>& nodal_coordinates)
   {
     const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
@@ -309,15 +309,12 @@ namespace DRT::ELEMENTS
     CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1> shape_functions_centroid(true);
     CORE::FE::shape_function<celltype>(xi_centroid, shape_functions_centroid);
 
-    const CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype>> centroid_coordinates_reference =
-        EvaluateReferenceCoordinate<celltype>(
-            nodal_coordinates.reference_coordinates_, shape_functions_centroid);
-
-    return centroid_coordinates_reference;
+    return EvaluateReferenceCoordinate<celltype>(
+        nodal_coordinates.reference_coordinates_, shape_functions_centroid);
   }
 
   template <CORE::FE::CellType celltype, std::enable_if_t<CORE::FE::is_nurbs<celltype>, int> = 0>
-  CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype>> EvaluateReferenceCoordinateCentroid(
+  CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1> EvaluateReferenceCoordinateCentroid(
       const ElementNodes<celltype>& nodal_coordinates)
   {
     const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
@@ -327,11 +324,8 @@ namespace DRT::ELEMENTS
     CORE::FE::NURBS::nurbs_shape_function_dim(shape_functions_centroid, xi_centroid,
         nodal_coordinates.knots_, nodal_coordinates.weights_, celltype);
 
-    const CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype>> centroid_coordinates_reference =
-        EvaluateReferenceCoordinate<celltype>(
-            nodal_coordinates.reference_coordinates_, shape_functions_centroid);
-
-    return centroid_coordinates_reference;
+    return EvaluateReferenceCoordinate<celltype>(
+        nodal_coordinates.reference_coordinates_, shape_functions_centroid);
   }
 
   /*!
@@ -857,7 +851,7 @@ namespace DRT::ELEMENTS
   {
     auto gp_ref_coord = EvaluateReferenceCoordinate<celltype>(
         nodal_coordinates.reference_coordinates_, shape_functions_gp.shapefunctions_);
-    params.set("gprefecoord", gp_ref_coord);
+    params.set("gp_coords_ref", gp_ref_coord);
   }
 
   /*!
@@ -873,7 +867,7 @@ namespace DRT::ELEMENTS
       const ElementNodes<celltype>& nodal_coordinates, Teuchos::ParameterList& params)
   {
     auto element_center = EvaluateReferenceCoordinateCentroid<celltype>(nodal_coordinates);
-    params.set("elecenter", element_center);
+    params.set("elecenter_coords_ref", element_center);
   }
 
   /*!

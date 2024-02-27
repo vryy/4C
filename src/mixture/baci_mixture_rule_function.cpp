@@ -101,13 +101,12 @@ void MIXTURE::FunctionMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
     // coordinates (and the current time)
 
     // get gauss point reference coordinates and current time
-    const CORE::LINALG::Matrix<1, 3> gp_ref_coords =
-        params.get<CORE::LINALG::Matrix<1, 3>>("gprefecoord");
-    const std::vector<double> x_vec{gp_ref_coords(0), gp_ref_coords(1), gp_ref_coords(2)};
+    const auto& reference_coordinates = params.get<CORE::LINALG::Matrix<3, 1>>("gp_coords_ref");
     const double time = params.get<double>("total time");
 
     // evaluate the mass fraction function at the gauss point reference coordinates and current time
-    const double massfrac = mass_fractions_functions_[i]->Evaluate(&x_vec.front(), time, 0);
+    const double massfrac =
+        mass_fractions_functions_[i]->Evaluate(reference_coordinates.A(), time, 0);
     sum += massfrac;
     double constituent_density = params_->initial_reference_density_ * massfrac;
 

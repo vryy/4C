@@ -418,7 +418,7 @@ namespace MAT
 
     /// function of elastin degradation (initial)
     void ElastinDegradation(
-        CORE::LINALG::Matrix<1, 3> coord,  ///< gp coordinate in reference configuration
+        CORE::LINALG::Matrix<3, 1> coord,  ///< gp coordinate in reference configuration
         double& elastin_survival           ///< amount of elastin which is still there
     );
 
