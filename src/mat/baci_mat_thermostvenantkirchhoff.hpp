@@ -114,8 +114,7 @@ namespace MAT
     /// check if element kinematics and material kinematics are compatible
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::linear ||
-              kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (kinem != INPAR::STR::KinemType::linear && kinem != INPAR::STR::KinemType::nonlinearTotLag)
         dserror("element and material kinematics are not compatible");
     }
 

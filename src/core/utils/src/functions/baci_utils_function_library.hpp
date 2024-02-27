@@ -15,8 +15,12 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 #include "baci_config.hpp"
 
-#include "baci_utils_function.hpp"
+#include "baci_discretization_fem_general_utils_polynomial.hpp"
 #include "baci_utils_function_of_scalar.hpp"
+
+#include <memory>
+#include <string>
+#include <vector>
 
 BACI_NAMESPACE_OPEN
 

@@ -23,7 +23,9 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include <Teuchos_RCP.hpp>
 
 #include <filesystem>
+#include <string>
 #include <utility>
+#include <vector>
 
 BACI_NAMESPACE_OPEN
 
@@ -53,8 +55,7 @@ namespace
       if (csv_file.empty())
         dserror("You forgot to specify the *.csv file for cubic spline interpolation!");
 
-      const std::string input_file =
-          GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName();
+      // csv file needs to be placed in same folder as input file
       std::filesystem::path input_file_path =
           GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName();
       const auto csv_file_path = input_file_path.replace_filename(csv_file);
@@ -73,21 +74,20 @@ void CORE::UTILS::AddValidLibraryFunctions(CORE::UTILS::FunctionManager& functio
 {
   using namespace INPUT;
 
-  LineDefinition fastpolynomial_funct =
+  LineDefinition fast_polynomial_funct =
       LineDefinition::Builder()
           .AddTag("FASTPOLYNOMIAL")
           .AddNamedInt("NUMCOEFF")
           .AddNamedDoubleVector("COEFF", LengthFromIntNamed("NUMCOEFF"))
           .Build();
 
-  LineDefinition cubicsplinefromcsv_funct =
+  LineDefinition cubic_spline_from_csv_funct =
       LineDefinition::Builder().AddTag("CUBIC_SPLINE_FROM_CSV").AddNamedString("CSV").Build();
 
   function_manager.AddFunctionDefinition(
-      {std::move(fastpolynomial_funct), std::move(cubicsplinefromcsv_funct)},
+      {std::move(fast_polynomial_funct), std::move(cubic_spline_from_csv_funct)},
       CreateLibraryFunctionScalar);
 }
-
 
 
 CORE::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double> coefficients)
