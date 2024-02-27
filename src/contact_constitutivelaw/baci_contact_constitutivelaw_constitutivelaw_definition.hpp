@@ -122,59 +122,6 @@ namespace CONTACT
     };
 
 
-    /**
-     * \brief This is a floating point number component within a contact constitutive law definition
-     *
-     */
-    class RealContactConstitutiveLawComponent : public INPUT::LineComponent
-    {
-     public:
-      /**
-       * \brief default constructor
-       *
-       * \param[in] name name of contact constitutive law
-       * \param[in] description of contact constitutive law type
-       * \param[in] type of contact constitutive law to be built
-       */
-      RealContactConstitutiveLawComponent(std::string name,  ///< variable name in DRT::Material
-          const double defaultvalue = 0.0,                   ///< a default value
-          bool optional = false);
-
-      /**
-       * \brief write my part of the default line of the contact constitutive law
-       * definition
-       */
-      void DefaultLine(std::ostream& stream) override;
-
-      /**
-       * \brief write my part of the actual line of the contact constitutive law
-       * definition
-       */
-      void Print(std::ostream& stream, const INPAR::InputParameterContainer& cond) override;
-
-      /**
-       * \brief describe my part of the default (comment) line of the contact constitutive law
-       * definition
-       */
-      void Describe(std::ostream& stream) override;
-
-      /**
-       * \brief read my part of the the contact constitutive law
-       * definition
-       *
-       *\param[in] def Contact Constitutive Law definition
-       *\param[in] condline read input line
-       *\params[inout] container container to add the read parameter to
-       */
-      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-          Teuchos::RCP<std::stringstream> condline,
-          INPAR::InputParameterContainer& container) override;
-
-     private:
-      /// a default value
-      double defaultvalue_;
-    };
-
     /** Add contact constitutive law definition to list of defined definitions
      *
      * \params[inout] list list of defined contact constitutive law definitions
