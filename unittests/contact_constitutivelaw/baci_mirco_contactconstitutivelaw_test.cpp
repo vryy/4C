@@ -60,7 +60,7 @@ namespace
       container->Add("Offset", 2.0);
       container->Add("FiniteDifferenceFraction", 0.001);
       container->Add("ActiveGapTolerance", 1e-6);
-      container->Add("TopologyFilePath", "sup6.dat");
+      container->Add("TopologyFilePath", std::string("sup6.dat"));
 
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> mircococonstlaw =
           CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(container);
