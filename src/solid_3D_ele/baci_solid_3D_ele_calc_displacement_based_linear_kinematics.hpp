@@ -54,16 +54,6 @@ namespace DRT::ELEMENTS
     }
   }  // namespace DETAILS
 
-  struct DisplacementBasedLinearKinematicsPreparationData
-  {
-    // no preparation data needed
-  };
-
-  struct DisplacementBasedLinearKinematicsHistoryData
-  {
-    // no history data needed
-  };
-
   /*!
    * @brief A container holding the linearization of the displacement based linear kinematics solid
    * element formulation
@@ -85,22 +75,20 @@ namespace DRT::ELEMENTS
   template <CORE::FE::CellType celltype>
   struct DisplacementBasedLinearKinematicsFormulation
   {
-    static DisplacementBasedLinearKinematicsPreparationData Prepare(const DRT::Element& ele,
-        const ElementNodes<celltype>& nodal_coordinates,
-        DisplacementBasedLinearKinematicsHistoryData& history_data)
-    {
-      // do nothing for simple displacement based evaluation
-      return {};
-    }
+    static constexpr bool has_gauss_point_history = false;
+    static constexpr bool has_global_history = false;
+    static constexpr bool has_preparation_data = false;
+
+
+    using LinearizationContainer =
+        DisplacementBasedLinearKinematicsLinearizationContainer<celltype>;
 
     template <typename Evaluator>
     static inline auto Evaluate(const DRT::Element& ele,
         const ElementNodes<celltype>& nodal_coordinates,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-        const JacobianMapping<celltype>& jacobian_mapping,
-        const DisplacementBasedLinearKinematicsPreparationData& preparation_data,
-        DisplacementBasedLinearKinematicsHistoryData& history_data, Evaluator evaluator)
+        const JacobianMapping<celltype>& jacobian_mapping, Evaluator evaluator)
     {
       const DisplacementBasedLinearKinematicsLinearizationContainer<celltype> linearization{
           DETAILS::EvaluateLinearStrainGradient(jacobian_mapping)};
@@ -125,9 +113,7 @@ namespace DRT::ELEMENTS
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
-            deformation_gradient,
-        const DisplacementBasedLinearKinematicsPreparationData& preparation_data,
-        DisplacementBasedLinearKinematicsHistoryData& history_data)
+            deformation_gradient)
     {
       dserror(
           "The full linearization is not yet implemented for the displacement based formulation "
@@ -137,8 +123,6 @@ namespace DRT::ELEMENTS
     static void AddInternalForceVector(
         const DisplacementBasedLinearKinematicsLinearizationContainer<celltype>& linearization,
         const Stress<celltype>& stress, const double integration_factor,
-        const DisplacementBasedLinearKinematicsPreparationData& preparation_data,
-        DisplacementBasedLinearKinematicsHistoryData& history_data,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1>&
             force_vector)
     {
@@ -150,33 +134,17 @@ namespace DRT::ELEMENTS
         const DisplacementBasedLinearKinematicsLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
         const double integration_factor,
-        const DisplacementBasedLinearKinematicsPreparationData& preparation_data,
-        DisplacementBasedLinearKinematicsHistoryData& history_data,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>,
             CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>& stiffness_matrix)
     {
       DRT::ELEMENTS::AddElasticStiffnessMatrix(
           linearization.linear_b_operator_, stress, integration_factor, stiffness_matrix);
     }
-
-    static void Pack(const DisplacementBasedLinearKinematicsHistoryData& history_data,
-        CORE::COMM::PackBuffer& data)
-    {
-      // nothing to pack
-    }
-
-    static void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data,
-        DisplacementBasedLinearKinematicsHistoryData& history_data)
-    {
-      // nothing to unpack
-    }
   };
 
   template <CORE::FE::CellType celltype>
   using DisplacementBasedLinearKinematicsSolidIntegrator =
-      SolidEleCalc<celltype, DisplacementBasedLinearKinematicsFormulation<celltype>,
-          DisplacementBasedLinearKinematicsPreparationData,
-          DisplacementBasedLinearKinematicsHistoryData>;
+      SolidEleCalc<celltype, DisplacementBasedLinearKinematicsFormulation<celltype>>;
 
 
 }  // namespace DRT::ELEMENTS

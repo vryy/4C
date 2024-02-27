@@ -19,16 +19,6 @@ BACI_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS
 {
-  struct DisplacementBasedPreparationData
-  {
-    // no preparation data needed
-  };
-
-  struct DisplacementBasedHistoryData
-  {
-    // no history data needed
-  };
-
   template <CORE::FE::CellType celltype>
   struct DisplacementBasedLinearizationContainer
   {
@@ -45,21 +35,18 @@ namespace DRT::ELEMENTS
   template <CORE::FE::CellType celltype>
   struct DisplacementBasedFormulation
   {
-    static DisplacementBasedPreparationData Prepare(const DRT::Element& ele,
-        const ElementNodes<celltype>& nodal_coordinates, DisplacementBasedHistoryData& history_data)
-    {
-      // do nothing for simple displacement based evaluation
-      return {};
-    }
+    static constexpr bool has_gauss_point_history = false;
+    static constexpr bool has_global_history = false;
+    static constexpr bool has_preparation_data = false;
+
+    using LinearizationContainer = DisplacementBasedLinearizationContainer<celltype>;
 
     template <typename Evaluator>
     static inline auto Evaluate(const DRT::Element& ele,
         const ElementNodes<celltype>& nodal_coordinates,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-        const JacobianMapping<celltype>& jacobian_mapping,
-        const DisplacementBasedPreparationData& preparation_data,
-        DisplacementBasedHistoryData& history_data, Evaluator evaluator)
+        const JacobianMapping<celltype>& jacobian_mapping, Evaluator evaluator)
     {
       const SpatialMaterialMapping<celltype> spatial_material_mapping =
           EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
@@ -88,9 +75,7 @@ namespace DRT::ELEMENTS
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
-            deformation_gradient,
-        const DisplacementBasedPreparationData& preparation_data,
-        DisplacementBasedHistoryData& history_data)
+            deformation_gradient)
     {
       if constexpr (!CORE::FE::use_lagrange_shapefnct<celltype>)
       {
@@ -206,8 +191,6 @@ namespace DRT::ELEMENTS
     static void AddInternalForceVector(
         const DisplacementBasedLinearizationContainer<celltype>& linearization,
         const Stress<celltype>& stress, const double integration_factor,
-        const DisplacementBasedPreparationData& preparation_data,
-        DisplacementBasedHistoryData& history_data,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1>&
             force_vector)
     {
@@ -218,8 +201,7 @@ namespace DRT::ELEMENTS
     static void AddStiffnessMatrix(
         const DisplacementBasedLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
-        const double integration_factor, const DisplacementBasedPreparationData& preparation_data,
-        DisplacementBasedHistoryData& history_data,
+        const double integration_factor,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>,
             CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>& stiffness_matrix)
     {
@@ -228,23 +210,11 @@ namespace DRT::ELEMENTS
       DRT::ELEMENTS::AddGeometricStiffnessMatrix(
           jacobian_mapping.N_XYZ_, stress, integration_factor, stiffness_matrix);
     }
-
-    static void Pack(const DisplacementBasedHistoryData& history_data, CORE::COMM::PackBuffer& data)
-    {
-      // nothing to pack
-    }
-
-    static void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data,
-        DisplacementBasedHistoryData& history_data)
-    {
-      // nothing to unpack
-    }
   };
 
   template <CORE::FE::CellType celltype>
   using DisplacementBasedSolidIntegrator =
-      SolidEleCalc<celltype, DisplacementBasedFormulation<celltype>,
-          DisplacementBasedPreparationData, DisplacementBasedHistoryData>;
+      SolidEleCalc<celltype, DisplacementBasedFormulation<celltype>>;
 
 
 }  // namespace DRT::ELEMENTS

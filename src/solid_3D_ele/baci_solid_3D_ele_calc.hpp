@@ -18,6 +18,7 @@
 #include "baci_solid_3D_ele_calc_lib_integration.hpp"
 #include "baci_solid_3D_ele_calc_lib_io.hpp"
 #include "baci_solid_3D_ele_calc_lib_nitsche.hpp"
+#include "baci_solid_3D_ele_formulation.hpp"
 
 #include <memory>
 #include <string>
@@ -58,11 +59,8 @@ namespace DRT::ELEMENTS
    * @tparam celltype : celltype of the evaluator
    * @tparam ElementFormulation : A type that defines the element formulation in static member
    * functions
-   * @tparam PreparationData : evaluation data that is constant within the element
-   * @tparam HistoryData : default constructable history data
    */
-  template <CORE::FE::CellType celltype, typename ElementFormulation, typename PreparationData,
-      typename HistoryData>
+  template <CORE::FE::CellType celltype, typename ElementFormulation>
   class SolidEleCalc
   {
    public:
@@ -124,7 +122,7 @@ namespace DRT::ELEMENTS
     CORE::FE::GaussIntegration stiffness_matrix_integration_;
     CORE::FE::GaussIntegration mass_matrix_integration_;
 
-    HistoryData history_data_{};
+    SolidFormulationHistory<ElementFormulation> history_data_{};
 
   };  // class SolidEleCalc
 }  // namespace DRT::ELEMENTS

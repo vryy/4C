@@ -37,8 +37,7 @@ namespace DRT::ELEMENTS
 
     template <CORE::FE::CellType celltype>
     using DisplacementBasedSolidScatraIntegrator =
-        SolidScatraEleCalc<celltype, DisplacementBasedFormulation<celltype>,
-            DisplacementBasedPreparationData, DisplacementBasedHistoryData>;
+        SolidScatraEleCalc<celltype, DisplacementBasedFormulation<celltype>>;
 
     using DisplacementBasedSolidScatraEvaluator =
         CORE::FE::apply_celltype_sequence<DisplacementBasedSolidScatraIntegrator,

@@ -127,36 +127,31 @@ namespace
   }
 }  // namespace
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::SolidScatraEleCalc()
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::SolidScatraEleCalc()
     : stiffness_matrix_integration_(
           CreateGaussIntegration<celltype>(GetGaussRuleStiffnessMatrix<celltype>())),
       mass_matrix_integration_(CreateGaussIntegration<celltype>(GetGaussRuleMassMatrix<celltype>()))
 {
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::Pack(CORE::COMM::PackBuffer& data) const
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Pack(
+    CORE::COMM::PackBuffer& data) const
 {
-  SolidFormulation::Pack(history_data_, data);
+  DRT::ELEMENTS::Pack(data, history_data_);
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Unpack(
+    std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  SolidFormulation::Unpack(position, data, history_data_);
+  DRT::ELEMENTS::Unpack(position, data, history_data_);
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
+    SolidFormulation>::EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
     MAT::So3Material& solid_material, const DRT::Discretization& discretization,
     const DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector* force_vector,
@@ -182,8 +177,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
 
   EvaluateCentroidCoordinatesAndAddToParameterList(nodal_coordinates, params);
 
-  const PreparationData preparation_data =
-      SolidFormulation::Prepare(ele, nodal_coordinates, history_data_);
+  const PreparationData<SolidFormulation> preparation_data =
+      Prepare(ele, nodal_coordinates, history_data_);
 
   double element_mass = 0.0;
   double element_volume = 0.0;
@@ -193,8 +188,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         EvaluateGPCoordinatesAndAddToParameterList(nodal_coordinates, shape_functions, params);
-        SolidFormulation::Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping,
-            preparation_data, history_data_,
+        Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
+            history_data_, gp,
             [&](const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>&
                     deformation_gradient,
                 const CORE::LINALG::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
@@ -204,14 +199,14 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
 
               if (force.has_value())
               {
-                SolidFormulation::AddInternalForceVector(linearization, stress, integration_factor,
-                    preparation_data, history_data_, *force);
+                AddInternalForceVector(linearization, stress, integration_factor, preparation_data,
+                    history_data_, gp, *force);
               }
 
               if (stiff.has_value())
               {
-                SolidFormulation::AddStiffnessMatrix(linearization, jacobian_mapping, stress,
-                    integration_factor, preparation_data, history_data_, *stiff);
+                AddStiffnessMatrix(linearization, jacobian_mapping, stress, integration_factor,
+                    preparation_data, history_data_, gp, *stiff);
               }
 
               if (mass.has_value())
@@ -243,10 +238,9 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
   }
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::EvaluateDStressDScalar(const DRT::Element& ele, MAT::So3Material& solid_material,
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::EvaluateDStressDScalar(
+    const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix_dScalar)
 {
@@ -270,8 +264,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
 
   EvaluateCentroidCoordinatesAndAddToParameterList(nodal_coordinates, params);
 
-  const PreparationData preparation_data =
-      SolidFormulation::Prepare(ele, nodal_coordinates, history_data_);
+  const PreparationData<SolidFormulation> preparation_data =
+      Prepare(ele, nodal_coordinates, history_data_);
 
   ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
@@ -279,8 +273,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         EvaluateGPCoordinatesAndAddToParameterList(nodal_coordinates, shape_functions, params);
-        SolidFormulation::Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping,
-            preparation_data, history_data_,
+        Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
+            history_data_, gp,
             [&](const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>&
                     deformation_gradient,
                 const CORE::LINALG::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
@@ -316,21 +310,18 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
       });
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
-    const DRT::Element::LocationArray& la, Teuchos::ParameterList& params)
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Recover(const DRT::Element& ele,
+    const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
+    Teuchos::ParameterList& params)
 {
   // nothing needs to be done for simple displacement based elements
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::Update(const DRT::Element& ele, MAT::So3Material& solid_material,
-    const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
-    Teuchos::ParameterList& params)
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(const DRT::Element& ele,
+    MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+    const DRT::Element::LocationArray& la, Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =
       EvaluateElementNodes<celltype>(ele, discretization, la[0].lm_);
@@ -341,8 +332,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
 
   EvaluateCentroidCoordinatesAndAddToParameterList(nodal_coordinates, params);
 
-  const PreparationData preparation_data =
-      SolidFormulation::Prepare(ele, nodal_coordinates, history_data_);
+  const PreparationData<SolidFormulation> preparation_data =
+      Prepare(ele, nodal_coordinates, history_data_);
 
   DRT::ELEMENTS::ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
@@ -350,8 +341,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         EvaluateGPCoordinatesAndAddToParameterList(nodal_coordinates, shape_functions, params);
-        SolidFormulation::Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping,
-            preparation_data, history_data_,
+        Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
+            history_data_, gp,
             [&](const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>&
                     deformation_gradient,
                 const CORE::LINALG::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
@@ -361,10 +352,9 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
   solid_material.Update();
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::CalculateInternalEnergy(const DRT::Element& ele, MAT::So3Material& solid_material,
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::CalculateInternalEnergy(
+    const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const DRT::Element::LocationArray& la,
     Teuchos::ParameterList& params)
 {
@@ -377,8 +367,8 @@ double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, Preparation
 
   EvaluateCentroidCoordinatesAndAddToParameterList(nodal_coordinates, params);
 
-  const PreparationData preparation_data =
-      SolidFormulation::Prepare(ele, nodal_coordinates, history_data_);
+  const PreparationData<SolidFormulation> preparation_data =
+      Prepare(ele, nodal_coordinates, history_data_);
 
   double intenergy = 0;
   DRT::ELEMENTS::ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
@@ -387,8 +377,8 @@ double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, Preparation
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         EvaluateGPCoordinatesAndAddToParameterList(nodal_coordinates, shape_functions, params);
-        SolidFormulation::Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping,
-            preparation_data, history_data_,
+        Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
+            history_data_, gp,
             [&](const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>&
                     deformation_gradient,
                 const CORE::LINALG::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
@@ -402,11 +392,10 @@ double DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, Preparation
   return intenergy;
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
-    const StressIO& stressIO, const StrainIO& strainIO, const DRT::Discretization& discretization,
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::CalculateStress(
+    const DRT::Element& ele, MAT::So3Material& solid_material, const StressIO& stressIO,
+    const StrainIO& strainIO, const DRT::Discretization& discretization,
     const DRT::Element::LocationArray& la, Teuchos::ParameterList& params)
 {
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
@@ -423,8 +412,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
 
   EvaluateCentroidCoordinatesAndAddToParameterList(nodal_coordinates, params);
 
-  const PreparationData preparation_data =
-      SolidFormulation::Prepare(ele, nodal_coordinates, history_data_);
+  const PreparationData<SolidFormulation> preparation_data =
+      Prepare(ele, nodal_coordinates, history_data_);
 
   DRT::ELEMENTS::ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
@@ -432,8 +421,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         EvaluateGPCoordinatesAndAddToParameterList(nodal_coordinates, shape_functions, params);
-        SolidFormulation::Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping,
-            preparation_data, history_data_,
+        Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
+            history_data_, gp,
             [&](const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>&
                     deformation_gradient,
                 const CORE::LINALG::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
@@ -452,18 +441,16 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
   Serialize(strain_data, serialized_strain_data);
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::Setup(MAT::So3Material& solid_material, INPUT::LineDefinition* linedef)
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Setup(
+    MAT::So3Material& solid_material, INPUT::LineDefinition* linedef)
 {
   solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material)
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::MaterialPostSetup(
+    const DRT::Element& ele, MAT::So3Material& solid_material)
 {
   Teuchos::ParameterList params{};
 
@@ -475,11 +462,9 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
   solid_material.PostSetup(params, ele.Id());
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::InitializeGaussPointDataOutput(const DRT::Element& ele,
-    const MAT::So3Material& solid_material,
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::InitializeGaussPointDataOutput(
+    const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   dsassert(ele.IsParamsInterface(),
@@ -489,11 +474,9 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
       stiffness_matrix_integration_.NumPoints(), solid_material, gp_data_output_manager);
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::EvaluateGaussPointDataOutput(const DRT::Element& ele,
-    const MAT::So3Material& solid_material,
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::EvaluateGaussPointDataOutput(
+    const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   dsassert(ele.IsParamsInterface(),
@@ -503,10 +486,9 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
       stiffness_matrix_integration_, solid_material, ele, gp_data_output_manager);
 }
 
-template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-    typename HistoryData>
-void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationData,
-    HistoryData>::ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material)
+template <CORE::FE::CellType celltype, typename SolidFormulation>
+void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::ResetToLastConverged(
+    const DRT::Element& ele, MAT::So3Material& solid_material)
 {
   solid_material.ResetStep();
 }
@@ -516,16 +498,12 @@ struct VerifyPackable
 {
   static constexpr bool are_all_packable =
       (DRT::ELEMENTS::IsPackable<DRT::ELEMENTS::SolidScatraEleCalc<celltypes,
-              DRT::ELEMENTS::DisplacementBasedFormulation<celltypes>,
-              DRT::ELEMENTS::DisplacementBasedPreparationData,
-              DRT::ELEMENTS::DisplacementBasedHistoryData>*> &&
+              DRT::ELEMENTS::DisplacementBasedFormulation<celltypes>>*> &&
           ...);
 
   static constexpr bool are_all_unpackable =
       (DRT::ELEMENTS::IsUnpackable<DRT::ELEMENTS::SolidScatraEleCalc<celltypes,
-              DRT::ELEMENTS::DisplacementBasedFormulation<celltypes>,
-              DRT::ELEMENTS::DisplacementBasedPreparationData,
-              DRT::ELEMENTS::DisplacementBasedHistoryData>*> &&
+              DRT::ELEMENTS::DisplacementBasedFormulation<celltypes>>*> &&
           ...);
 
   void StaticAsserts() const
@@ -541,16 +519,12 @@ template struct VerifyPackable<CORE::FE::CellType::hex8, CORE::FE::CellType::hex
 // explicit instantiations of template classes
 // for displacement based formulation
 template class DRT::ELEMENTS::SolidScatraEleCalc<CORE::FE::CellType::hex8,
-    DRT::ELEMENTS::DisplacementBasedFormulation<CORE::FE::CellType::hex8>,
-    DRT::ELEMENTS::DisplacementBasedPreparationData, DRT::ELEMENTS::DisplacementBasedHistoryData>;
+    DRT::ELEMENTS::DisplacementBasedFormulation<CORE::FE::CellType::hex8>>;
 template class DRT::ELEMENTS::SolidScatraEleCalc<CORE::FE::CellType::hex27,
-    DRT::ELEMENTS::DisplacementBasedFormulation<CORE::FE::CellType::hex27>,
-    DRT::ELEMENTS::DisplacementBasedPreparationData, DRT::ELEMENTS::DisplacementBasedHistoryData>;
+    DRT::ELEMENTS::DisplacementBasedFormulation<CORE::FE::CellType::hex27>>;
 template class DRT::ELEMENTS::SolidScatraEleCalc<CORE::FE::CellType::tet4,
-    DRT::ELEMENTS::DisplacementBasedFormulation<CORE::FE::CellType::tet4>,
-    DRT::ELEMENTS::DisplacementBasedPreparationData, DRT::ELEMENTS::DisplacementBasedHistoryData>;
+    DRT::ELEMENTS::DisplacementBasedFormulation<CORE::FE::CellType::tet4>>;
 template class DRT::ELEMENTS::SolidScatraEleCalc<CORE::FE::CellType::tet10,
-    DRT::ELEMENTS::DisplacementBasedFormulation<CORE::FE::CellType::tet10>,
-    DRT::ELEMENTS::DisplacementBasedPreparationData, DRT::ELEMENTS::DisplacementBasedHistoryData>;
+    DRT::ELEMENTS::DisplacementBasedFormulation<CORE::FE::CellType::tet10>>;
 
 BACI_NAMESPACE_CLOSE
