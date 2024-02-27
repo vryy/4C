@@ -1452,9 +1452,9 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_SOTET4, 1> funct(true);
       funct = shapefcts[gp];
-      CORE::LINALG::Matrix<1, NUMDIM_SOTET4> point(true);
-      point.MultiplyTN(funct, xrefe);
-      params.set("gprefecoord", point);
+      CORE::LINALG::Matrix<NUMDIM_SOTET4, 1> point(true);
+      point.MultiplyTN(xrefe, funct);
+      params.set("gp_coords_ref", point);
     }
 
     UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::tet4>(shapefcts[gp], params);

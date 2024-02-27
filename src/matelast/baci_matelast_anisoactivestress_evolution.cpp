@@ -139,13 +139,12 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     {
       dserror("Parameter 'total time' could not be read!");
     }
-    Teuchos::RCP<std::vector<double>> pos_ =
-        params.get<Teuchos::RCP<std::vector<double>>>("position");
-    const double* coordgpref_ = pos_->data();
+    const auto& element_center_coordinates_ref =
+        params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
     activationFunction =
         GLOBAL::Problem::Instance()
             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
-            .Evaluate(coordgpref_, totaltime, 0);
+            .Evaluate(element_center_coordinates_ref.A(), totaltime, 0);
   }
 
   double lambda = 0.0;

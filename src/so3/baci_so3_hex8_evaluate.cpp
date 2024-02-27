@@ -2346,14 +2346,14 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
         Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
         Material()->MaterialType() == INPAR::MAT::m_mixture)
     {
-      CORE::LINALG::Matrix<1, NUMDIM_SOH8> point(true);
+      CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(true);
       soh8_GaussPointRefeCoords(point, xrefe, gp);
-      params.set("gprefecoord", point);
+      params.set("gp_coords_ref", point);
 
       // center of element in reference configuration
       point.Clear();
       soh8_ElementCenterRefeCoords(point, xrefe);
-      params.set("elecenter", point);
+      params.set("elecenter_coords_ref", point);
     }
 
     // if output is requested only active stresses are written.
@@ -3354,15 +3354,15 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
     params.set<int>("numgp", static_cast<int>(NUMGPT_SOH8));
 
     // center of element in reference configuration
-    CORE::LINALG::Matrix<1, NUMDIM_SOH8> point(false);
+    CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(false);
     point.Clear();
     soh8_ElementCenterRefeCoords(point, xrefe);
-    params.set("elecenter", point);
+    params.set("elecenter_coords_ref", point);
 
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
     {
       soh8_GaussPointRefeCoords(point, xrefe, gp);
-      params.set("gprefecoord", point);
+      params.set("gp_coords_ref", point);
       CORE::LINALG::Matrix<3, 8> derivs(false);
       soh8_derivs(derivs, gp);
 

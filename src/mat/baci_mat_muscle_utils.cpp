@@ -329,7 +329,7 @@ double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(const double si
 
 double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
     const CORE::UTILS::FunctionOfSpaceTime *&activation_function, const double t_current,
-    const CORE::LINALG::Matrix<1, 3> &x)
+    const CORE::LINALG::Matrix<3, 1> &x)
 {
   const std::vector<double> x_vec{x(0), x(1), x(2)};
 

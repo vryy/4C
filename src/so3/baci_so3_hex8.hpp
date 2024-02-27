@@ -360,13 +360,13 @@ namespace DRT
       // const vector<double> GetFibervec(){return fiberdirection_;};
       /// Evaluate center coordinates in reference system
       void soh8_ElementCenterRefeCoords(
-          CORE::LINALG::Matrix<1, NUMDIM_SOH8>&
+          CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&
               centercoord,  ///< center coordinates in reference system
           CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe)
           const;  ///< material coord. of element
 
       /// Evaluate Gauss-Point coordinates in reference system
-      void soh8_GaussPointRefeCoords(CORE::LINALG::Matrix<1, NUMDIM_SOH8>&
+      void soh8_GaussPointRefeCoords(CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&
                                          gpcoord,  ///< Gauss-Point coordinates in reference system
           CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const&
               xrefe,      ///< material coord. of element

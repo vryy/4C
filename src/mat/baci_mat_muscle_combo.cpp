@@ -346,12 +346,12 @@ void MAT::Muscle_Combo::EvaluateActiveNominalStress(Teuchos::ParameterList& para
   const double Popt = params_->Popt_;
 
   // get element center coordinates in reference configuration
-  const CORE::LINALG::Matrix<1, 3> eleCenterCoords =
-      params.get<CORE::LINALG::Matrix<1, 3>>("elecenter");
+  const auto& element_center_reference_coordinates =
+      params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
 
   // compute force-time-space dependency Poptft
   double Poptft = MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(
-      Popt, activationFunction_, t_tot, eleCenterCoords);
+      Popt, activationFunction_, t_tot, element_center_reference_coordinates);
 
   // compute the force-stretch dependency fxi, its integral in the boundaries lambdaMin to lambdaM,
   // and its derivative w.r.t. lambdaM

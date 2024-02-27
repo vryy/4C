@@ -762,9 +762,10 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     if (*params_->elastindegrad_ == "Rectangle" || *params_->elastindegrad_ == "RectanglePlate" ||
         *params_->elastindegrad_ == "Wedge" || *params_->elastindegrad_ == "Circles")
     {
-      CORE::LINALG::Matrix<1, 3> point_refe(true);
-      point_refe = params.get<CORE::LINALG::Matrix<1, 3>>("gprefecoord");
-      ElastinDegradation(point_refe, elastin_survival);
+      const auto& ele_center_reference_coordinates =
+          params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
+
+      ElastinDegradation(ele_center_reference_coordinates, elastin_survival);
     }
     else if (*params_->elastindegrad_ == "Time")
     {
@@ -777,9 +778,10 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     if (*params_->elastindegrad_ == "Rectangle" || *params_->elastindegrad_ == "RectanglePlate" ||
         *params_->elastindegrad_ == "Wedge" || *params_->elastindegrad_ == "Circles")
     {
-      CORE::LINALG::Matrix<1, 3> point_refe(true);
-      point_refe = params.get<CORE::LINALG::Matrix<1, 3>>("gprefecoord");
-      ElastinDegradation(point_refe, elastin_survival);
+      const auto& gp_reference_coordinates =
+          params.get<CORE::LINALG::Matrix<3, 1>>("gp_coords_ref");
+
+      ElastinDegradation(gp_reference_coordinates, elastin_survival);
     }
   }
   if (*params_->elastindegrad_ == "InvEla")
@@ -2062,7 +2064,7 @@ void MAT::ConstraintMixture::Degradation(double t, double& degr)
  |  ElastinDegradation                            (private)        05/13|
  *----------------------------------------------------------------------*/
 void MAT::ConstraintMixture::ElastinDegradation(
-    CORE::LINALG::Matrix<1, 3> coord, double& elastin_survival)
+    CORE::LINALG::Matrix<3, 1> coord, double& elastin_survival)
 {
   if (*params_->elastindegrad_ == "Rectangle")
   {
@@ -2181,7 +2183,7 @@ void MAT::ConstraintMixture::ElastinDegradation(
     center1(0) = 12.0;
     center1(1) = 0.0;
     center1(2) = 10.0;
-    CORE::LINALG::Matrix<1, 3> diff(coord);
+    CORE::LINALG::Matrix<1, 3> diff(coord.A());
     diff.Update(-1.0, center1, 1.0);
     double rad1 = diff.Norm2();
     if (rad1 < radmin)
@@ -2197,7 +2199,7 @@ void MAT::ConstraintMixture::ElastinDegradation(
     center2(0) = -12.0;
     center2(1) = 0.0;
     center2(2) = -10.0;
-    diff.Update(coord);
+    diff.UpdateT(coord);
     diff.Update(-1.0, center2, 1.0);
     double rad2 = diff.Norm2();
     if (rad2 < radmin)
@@ -3065,7 +3067,7 @@ bool MAT::ConstraintMixture::VisData(
       {
         DRT::Node* locnode = mynodes[idnodes];
         double elastin_survival = 0.0;
-        CORE::LINALG::Matrix<1, 3> point_refe;
+        CORE::LINALG::Matrix<3, 1> point_refe;
         point_refe(0) = locnode->X()[0];
         point_refe(1) = locnode->X()[1];
         point_refe(2) = locnode->X()[2];

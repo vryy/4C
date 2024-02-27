@@ -131,13 +131,12 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
     const int eleGID)
 {
   double time_ = params.get<double>("total time", 0.0);
-  Teuchos::RCP<std::vector<double>> pos_ =
-      params.get<Teuchos::RCP<std::vector<double>>>("position");
-  const double* coordgpref_ = pos_->data();
+  const auto& element_center_coordinates_ref =
+      params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
   double stressFact_ =
       GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
-          .Evaluate(coordgpref_, time_, 0);
+          .Evaluate(element_center_coordinates_ref.A(), time_, 0);
 
 
   // double stressFact_=params.get<double>("scalar");

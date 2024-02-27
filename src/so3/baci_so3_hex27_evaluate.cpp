@@ -1043,9 +1043,9 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_SOH27, 1> funct(true);
       funct = shapefcts[gp];
-      CORE::LINALG::Matrix<1, NUMDIM_SOH27> point(true);
-      point.MultiplyTN(funct, xrefe);
-      params.set("gprefecoord", point);
+      CORE::LINALG::Matrix<NUMDIM_SOH27, 1> point(true);
+      point.MultiplyTN(xrefe, funct);
+      params.set("gp_coords_ref", point);
     }
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1412,9 +1412,9 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_SOH27, 1> funct(true);
       funct = shapefcts[gp];
-      CORE::LINALG::Matrix<1, NUMDIM_SOH27> point(true);
-      point.MultiplyTN(funct, xrefe);
-      params.set("gprefecoord", point);
+      CORE::LINALG::Matrix<NUMDIM_SOH27, 1> point(true);
+      point.MultiplyTN(xrefe, funct);
+      params.set("gp_coords_ref", point);
     }
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
