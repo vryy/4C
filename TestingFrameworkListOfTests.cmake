@@ -1042,6 +1042,7 @@ baci_test(new_solid_ele_pyramid5_Old_dynamic 2 1)
 baci_test(new_solid_ele_pyramid5_Standard_fbar 2 1)
 baci_test(new_solid_ele_pyramid5_Old_fbar 2 1)
 baci_test(new_solid_ele_pyramid5_Standard_linear 2 1)
+baci_test(new_solid_ele_viscoelasthyper 2 50)
 
 baci_test(new_solidporo_ele_3D_hex27 2 "")
 baci_test(new_solidporo_ele_3D_hex8 2 "")
