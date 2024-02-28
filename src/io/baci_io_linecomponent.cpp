@@ -7,6 +7,7 @@
 
 #include "baci_io_linecomponent.hpp"
 
+#include "baci_inpar_container.hpp"
 #include "baci_utils_exceptions.hpp"
 
 #include <iterator>
@@ -839,6 +840,49 @@ namespace INPUT
     for (const auto& component : choices_[key].second)
     {
       component->Read(section_name, condline, container);
+    }
+
+    return condline;
+  }
+
+
+  void ProcessedComponent::DefaultLine(std::ostream& stream) { stream << "none"; }
+
+  void ProcessedComponent::Print(
+      std::ostream& stream, const INPAR::InputParameterContainer& container)
+  {
+    stream << print_string_;
+  }
+
+  Teuchos::RCP<std::stringstream> ProcessedComponent::Read(const std::string& section_name,
+      Teuchos::RCP<std::stringstream> condline, INPAR::InputParameterContainer& container)
+  {
+    // initialize string parameter value to be read
+    std::string str = "";
+
+    // get current position in stringstream "condline"
+    std::streampos position = condline->tellg();
+
+    // only try to read string parameter value in case the associated parameter label appears in
+    // line of input file
+    if ((size_t)position != condline->str().size())
+    {
+      // extract string parameter value from stringstream "condline"
+      *condline >> str;
+
+      // return error in case the extraction was not successful
+      if (str.empty())
+        dserror("Value of parameter '%s' for section '%s' not properly specified in input file!",
+            Name().c_str(), section_name.c_str());
+
+      // remove string parameter value from stringstream "condline"
+      condline->str(condline->str().erase((size_t)condline->tellg() - str.size(), str.size()));
+
+      // reset current position in stringstream "condline"
+      condline->seekg(position);
+
+      // add parameter value to line parameter list
+      insert_operation_(Name(), str, container);
     }
 
     return condline;
