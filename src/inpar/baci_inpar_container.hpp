@@ -140,7 +140,7 @@ namespace INPAR
         const auto it = map.find(name);
         if (it != map.end())
         {
-          TryGetAnyData(name, it->second);
+          return INTERNAL::TryGetAnyData<T>(name, it->second);
         }
         else
         {
@@ -209,7 +209,7 @@ namespace INPAR
         const auto it = map.find(name);
         if (it != map.end())
         {
-          TryGetAnyData(name, it->second);
+          return INTERNAL::TryGetAnyData<T>(name, it->second);
         }
         else
         {
