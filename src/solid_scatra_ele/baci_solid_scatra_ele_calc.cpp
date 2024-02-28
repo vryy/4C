@@ -357,6 +357,8 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation, PreparationDa
                 const CORE::LINALG::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
             { solid_material.Update(deformation_gradient, gp, params, ele.Id()); });
       });
+
+  solid_material.Update();
 }
 
 template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
