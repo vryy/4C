@@ -341,7 +341,15 @@ namespace INPAR
       vp_robinson_kind_arya_narloyz,    ///< Arya, 1992 [3]
       vp_robinson_kind_butler           ///< Butler et al, 2005 [1]
     };                                  // RobinsonType
-  }                                     // namespace MAT
+
+    //! valid types for prescription of time-/space-dependent muscle activation
+    enum ActivationType
+    {
+      function_of_space_time,  ///< activation prescription via a symbolic function of space and
+                               ///< time
+      map_from_csv             ///< activation prescription via an input csv file
+    };
+  }  // namespace MAT
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/

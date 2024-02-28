@@ -11,15 +11,51 @@
 
 #include "baci_mat_muscle_utils.hpp"
 
-#include "baci_global_data.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_function.hpp"
 
 #include <cmath>
-#include <functional>
 
 BACI_NAMESPACE_OPEN
+
+namespace
+{
+  double LineralyInterpolateBetweenTimes(
+      const std::vector<std::pair<double, double>> &time_value_pairs, double time)
+  {
+    // iterator pointing to the first element greater than time
+    auto upper_bound_time = std::upper_bound(time_value_pairs.begin(), time_value_pairs.end(), time,
+        [](double t, const std::pair<double, double> &pair) { return t < pair.first; });
+
+    // catch errors if time is smaller or larger than the time range
+    if (upper_bound_time == time_value_pairs.begin() || upper_bound_time == time_value_pairs.end())
+    {
+      dserror(
+          "Linear interpolation failed. The given time %f is outside the range of provided "
+          "time-value pairs.",
+          time);
+    }
+    // check if exact time value is present (within tolerance)
+    else if (std::abs(upper_bound_time->first - time) < 1.0e-12)
+    {
+      return upper_bound_time->second;
+    }
+    // linear interpolation for time between times
+    else
+    {
+      auto lower_bound_time = std::prev(upper_bound_time);
+
+      double lower_value = lower_bound_time->second;
+      double upper_value = upper_bound_time->second;
+      double t1 = lower_bound_time->first;
+      double t2 = upper_bound_time->first;
+
+      // do linear interpolation
+      return lower_value + (upper_value - lower_value) * (time - t1) / (t2 - t1);
+    }
+  }
+}  // namespace
 
 void MAT::UTILS::MUSCLE::EvaluateLambert(
     const double xi, double &W0, const double tol, const int maxiter)
@@ -328,19 +364,40 @@ double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(const double si
 }
 
 double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
-    const CORE::UTILS::FunctionOfSpaceTime *&activation_function, const double t_current,
+    const CORE::UTILS::FunctionOfSpaceTime &activation_function, const double t_current,
     const CORE::LINALG::Matrix<3, 1> &x)
 {
   const std::vector<double> x_vec{x(0), x(1), x(2)};
 
   // compute time-dependency ft
-  dsassert(activation_function != nullptr, "pointer to activation function is nullptr!");
-  const double ft = activation_function->Evaluate(&x_vec.front(), t_current, 0);
+  const double ft = activation_function.Evaluate(&x_vec.front(), t_current, 0);
 
   // ft needs to be in interval [0, 1]
   if (ft < 0.00 || ft > 1.00)
     dserror(
         "Function value not physical, please prescribe a function with values in interval [0,1].");
+
+  const double sigma_max_ft = sigma_max * ft;
+
+  return sigma_max_ft;
+}
+
+double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
+    const std::unordered_map<int, std::vector<std::pair<double, double>>> &activation_map,
+    const double t_current, const int activation_map_key)
+{
+  // compute time-dependency ft
+  auto it = activation_map.find(activation_map_key);
+
+  if (it == activation_map.end())
+  {
+    dserror("Key %d not found in csv mapping data.", activation_map_key);
+  }
+  const double ft = LineralyInterpolateBetweenTimes(it->second, t_current);
+
+  // ft needs to be in interval [0, 1]
+  if (ft < 0.00 || ft > 1.00)
+    dserror("Function value not physical, please prescribe activation values in interval [0,1].");
 
   const double sigma_max_ft = sigma_max * ft;
 

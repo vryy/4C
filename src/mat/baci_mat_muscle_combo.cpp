@@ -18,8 +18,83 @@ activations
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_service.hpp"
 #include "baci_matelast_aniso_structuraltensor_strategy.hpp"
+#include "baci_utils_exceptions.hpp"
+
+#include <variant>
 
 BACI_NAMESPACE_OPEN
+
+namespace
+{
+  using ActivationMapType = std::unordered_map<int, std::vector<std::pair<double, double>>>;
+
+  MAT::PAR::Muscle_Combo::ActivationParameterVariant GetActivationParams(
+      const Teuchos::RCP<MAT::PAR::Material>& matdata,
+      const INPAR::MAT::ActivationType& activation_type)
+  {
+    if (activation_type == INPAR::MAT::ActivationType::function_of_space_time)
+    {
+      auto actFunctId = *matdata->Get<int>("ACTFUNCT");
+      if (actFunctId <= 0) dserror("Function id must be positive");
+      return actFunctId;
+    }
+    else if (activation_type == INPAR::MAT::ActivationType::map_from_csv)
+    {
+      return *matdata->Get<const ActivationMapType>("ACTCSV");
+    }
+    else
+      return std::monostate{};
+  }
+
+  struct ActivationParamsVisitor
+  {
+    MAT::Muscle_Combo::ActivationEvaluatorVariant operator()(const int function_id) const
+    {
+      return &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+          function_id - 1);
+    }
+
+    MAT::Muscle_Combo::ActivationEvaluatorVariant operator()(
+        const ActivationMapType& activation_csv_data_map) const
+    {
+      return &activation_csv_data_map;
+    }
+
+    MAT::Muscle_Combo::ActivationEvaluatorVariant operator()(const std::monostate& /*unused*/) const
+    {
+      dserror(
+          "Error in ActivationParamsVisitor. You're calling it with the default-constructed "
+          "state.");
+    }
+  };
+
+  struct ActivationEvalVisitor
+  {
+    double operator()(const ActivationMapType*& csvMap) const
+    {
+      // use one-based element ids in the csv files (corresponding to the ones in the dat-file)
+      return MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(
+          Popt_, *csvMap, t_tot_, eleGID_ + 1);
+    }
+
+    double operator()(const CORE::UTILS::FunctionOfSpaceTime*& spaceTimeFunction) const
+    {
+      return MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(
+          Popt_, *spaceTimeFunction, t_tot_, element_center_reference_coordinates_);
+    }
+
+    double operator()(const std::monostate& /*unused*/) const
+    {
+      dserror(
+          "Error in ActivationEvalVisitor. You're calling it with the default-constructed state.");
+    }
+
+    const double& Popt_;
+    const double& t_tot_;
+    const BACI::CORE::LINALG::Matrix<3, 1>& element_center_reference_coordinates_;
+    const int& eleGID_;
+  };
+}  // namespace
 
 
 MAT::PAR::Muscle_Combo::Muscle_Combo(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -32,9 +107,11 @@ MAT::PAR::Muscle_Combo::Muscle_Combo(Teuchos::RCP<MAT::PAR::Material> matdata)
       Popt_(*matdata->Get<double>("POPT")),
       lambdaMin_(*matdata->Get<double>("LAMBDAMIN")),
       lambdaOpt_(*matdata->Get<double>("LAMBDAOPT")),
-      actFunctId_(*matdata->Get<int>("ACTFUNCT")),
+      activationType_(static_cast<INPAR::MAT::ActivationType>(*matdata->Get<int>("ACTEVALTYPE"))),
+      activationParams_(GetActivationParams(matdata, activationType_)),
       density_(*matdata->Get<double>("DENS"))
 {
+  printf("ACTEVALTYOPE IS %d", *matdata->Get<int>("ACTEVALTYPE"));
   // error handling for parameter ranges
   // passive material parameters
   if (alpha_ <= 0.0) dserror("Material parameter ALPHA must be greater zero");
@@ -51,10 +128,6 @@ MAT::PAR::Muscle_Combo::Muscle_Combo(Teuchos::RCP<MAT::PAR::Material> matdata)
   // stretch dependent parameters
   if (lambdaMin_ <= 0.0) dserror("Material parameter LAMBDAMIN must be postive");
   if (lambdaOpt_ <= 0.0) dserror("Material parameter LAMBDAOPT must be postive");
-
-  // id of the function prescribing the time-/space-dependent activation
-  if (actFunctId_ <= 0) dserror("Function id must be positive");
-  // function manager checks whether function with given id is available
 
   // density
   if (density_ < 0.0) dserror("DENS should be positive");
@@ -81,7 +154,7 @@ MAT::Muscle_Combo::Muscle_Combo()
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0}),
-      activationFunction_(nullptr)
+      activationEvaluator_(std::monostate{})
 {
 }
 
@@ -92,7 +165,7 @@ MAT::Muscle_Combo::Muscle_Combo(MAT::PAR::Muscle_Combo* params)
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0}),
-      activationFunction_(nullptr)
+      activationEvaluator_(std::monostate{})
 {
   // register anisotropy extension to global anisotropy
   anisotropy_.RegisterAnisotropyExtension(anisotropyExtension_);
@@ -146,9 +219,7 @@ void MAT::Muscle_Combo::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
       {
         params_ = static_cast<MAT::PAR::Muscle_Combo*>(mat);
-        activationFunction_ =
-            &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-                params_->actFunctId_ - 1);
+        activationEvaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
       }
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
@@ -167,9 +238,7 @@ void MAT::Muscle_Combo::Setup(int numgp, INPUT::LineDefinition* linedef)
   anisotropy_.SetNumberOfGaussPoints(numgp);
   anisotropy_.ReadAnisotropyFromElement(linedef);
 
-  activationFunction_ =
-      &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
-          params_->actFunctId_ - 1);
+  activationEvaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
 }
 
 void MAT::Muscle_Combo::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
@@ -234,8 +303,8 @@ void MAT::Muscle_Combo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   double derivPa = 0.0;
   if (params_->Popt_ != 0)
   {  // if active material
-    EvaluateActiveNominalStress(params, lambdaM, intPa, Pa, derivPa);
-  }  // else: Pa and derivPa remain 0.0
+    EvaluateActiveNominalStress(params, eleGID, lambdaM, intPa, Pa, derivPa);
+  }  // else: intPa, Pa and derivPa remain 0.0
 
   // computation of activation level omegaa and derivative \frac{\partial omegaa}{\partial C}
   double omegaa = 0.0;
@@ -247,7 +316,7 @@ void MAT::Muscle_Combo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   double dEta = 0;
 
   // compute activation level and derivative only if active nominal stress is not zero
-  if (Pa != 0.0)
+  if (Pa >= 1E-12)
   {
     EvaluateActivationLevel(lambdaM, intPa, Pa, derivPa, omegaa, derivOmegaa, derivDerivOmegaa);
 
@@ -330,7 +399,7 @@ void MAT::Muscle_Combo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 }
 
 void MAT::Muscle_Combo::EvaluateActiveNominalStress(Teuchos::ParameterList& params,
-    const double lambdaM, double& intPa, double& Pa, double& derivPa)
+    const int eleGID, const double lambdaM, double& intPa, double& Pa, double& derivPa)
 {
   // save current simulation time
   double t_tot = params.get<double>("total time", -1);
@@ -350,8 +419,9 @@ void MAT::Muscle_Combo::EvaluateActiveNominalStress(Teuchos::ParameterList& para
       params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
 
   // compute force-time-space dependency Poptft
-  double Poptft = MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(
-      Popt, activationFunction_, t_tot, element_center_reference_coordinates);
+  const double Poptft =
+      std::visit(ActivationEvalVisitor{Popt, t_tot, element_center_reference_coordinates, eleGID},
+          activationEvaluator_);
 
   // compute the force-stretch dependency fxi, its integral in the boundaries lambdaMin to lambdaM,
   // and its derivative w.r.t. lambdaM
