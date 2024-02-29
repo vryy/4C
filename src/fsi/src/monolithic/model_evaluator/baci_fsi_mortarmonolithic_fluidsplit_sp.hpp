@@ -207,6 +207,18 @@ namespace FSI
     //! Set #notsetup_ = true after redistribution
     void SetNotSetup() override { notsetup_ = true; }
 
+    //! @name Methods for infnorm-scaling of the system
+    //!@{
+
+    /// apply infnorm scaling to linear block system
+    void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
+
+    /// undo infnorm scaling from scaled solution
+    void UnscaleSolution(
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
+
+    //!@}
+
     /*! block system matrix
      *  System matrix has a 6x6-block structure corresponding to the vector of unknowns
      *
@@ -232,6 +244,16 @@ namespace FSI
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> fluid_mesh_inner_inner_transform_;
 
     ///@}
+
+    /// @name infnorm scaling
+    //!@{
+
+    Teuchos::RCP<Epetra_Vector> srowsum_;
+    Teuchos::RCP<Epetra_Vector> scolsum_;
+    Teuchos::RCP<Epetra_Vector> arowsum_;
+    Teuchos::RCP<Epetra_Vector> acolsum_;
+
+    //!@}
 
     /// additional ale residual to avoid incremental ale errors
     Teuchos::RCP<Epetra_Vector> aleresidual_;
