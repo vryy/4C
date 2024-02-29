@@ -118,6 +118,8 @@ INPUT::ValidContactConstitutiveLaws()
     AddNamedReal(m, "SecondMatID", "Second material ID");
     AddNamedReal(m, "LateralLength", "length of lateral side of the BEM patch");
     AddNamedReal(m, "Resolution", "resolution of the surface");
+    AddNamedReal(m, "PressureGreenFunFlag",
+        "Use pressure-based Green function instead of a point-force-based", 1, true);
     AddNamedReal(m, "InitialTopologyStdDeviation",
         "Initial Standard deviation for the random-midpoint generator", 20, true);
     AddNamedReal(m, "HurstExponent", "Hurst exponent of the surface", 0.7, true);

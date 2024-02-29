@@ -49,6 +49,7 @@ namespace
       container->Add("SecondMatID", 1.0);
       container->Add("LateralLength", 1000.0);
       container->Add("Resolution", 6.0);
+      container->Add("PressureGreenFunFlag", 0.0);
       container->Add("InitialTopologyStdDeviation", 20.0);
       container->Add("HurstExponent", 0.7);
       container->Add("RandomTopologyFlag", 1.0);

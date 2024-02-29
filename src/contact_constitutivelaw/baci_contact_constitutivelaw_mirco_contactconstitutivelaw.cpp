@@ -32,6 +32,7 @@ CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams
       secondmatid_(*container->Get<double>("SecondMatID")),
       lateralLength_(*container->Get<double>("LateralLength")),
       resolution_(*container->Get<double>("Resolution")),
+      pressureGreenFunFlag_(*container->Get<double>("PressureGreenFunFlag")),
       initialTopologyStdDeviation_(*container->Get<double>("InitialTopologyStdDeviation")),
       hurstExponent_(*container->Get<double>("HurstExponent")),
       randomTopologyFlag_(*container->Get<double>("RandomTopologyFlag")),
@@ -83,19 +84,49 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
   const double nu1 = *firstmat->Get<double>("NUE");
   const double nu2 = *secondmat->Get<double>("NUE");
 
+  // Composite Young's modulus
   compositeYoungs_ = pow(((1 - pow(nu1, 2)) / E1 + (1 - pow(nu2, 2)) / E2), -1);
+
+  // Composite Shear modulus
+  double G1 = E1 / (2 * (1 + nu1));
+  double G2 = E2 / (2 * (1 + nu2));
+  double CompositeShear = pow(((2 - nu1) / (4 * G1) + (2 - nu2) / (4 * G2)), -1);
+
+  // Composite Poisson's ratio
+  compositePoissonsRatio_ = compositeYoungs_ / (2 * CompositeShear) - 1;
 
   gridSize_ = lateralLength_ / (pow(2, resolution_) + 1);
 
-  // Correction factor vector
-  // These are the correction factors to calculate the elastic compliance of the micro-scale contact
-  // constitutive law for various resolutions. These constants are taken from Table 1 of Bonari et
-  // al. (2020). https://doi.org/10.1007/s00466-019-01791-3
-  std::vector<double> alpha_con{0.778958541513360, 0.805513388666376, 0.826126871395416,
-      0.841369158110513, 0.851733020725652, 0.858342234203154, 0.862368243479785,
-      0.864741597831785};
-  const double alpha = alpha_con[resolution_ - 1];
-  elasticComplianceCorrection_ = lateralLength_ * compositeYoungs_ / alpha;
+  // Shape factors (See section 3.3 of https://doi.org/10.1007/s00466-019-01791-3)
+  // These are the shape factors to calculate the elastic compliance correction of the micro-scale
+  // contact constitutive law for various resolutions.
+  // NOTE: Currently MIRCO works for resouluion of 1 to 8. The following map store the shape
+  // factors for resolution of 1 to 8.
+
+  // The following pressure based constants are calculated by solving a flat indentor problem using
+  // the pressure based Green function described in Pohrt and Li (2014).
+  // http://dx.doi.org/10.1134/s1029959914040109
+  const std::map<int, double> shape_factors_pressure{{1, 0.961389237917602}, {2, 0.924715342432435},
+      {3, 0.899837531880697}, {4, 0.884976751041942}, {5, 0.876753783192863},
+      {6, 0.872397956576882}, {7, 0.871958228537090}, {8, 0.882669916668780}};
+
+  // The following force based constants are taken from Table 1 of Bonari et al. (2020).
+  // https://doi.org/10.1007/s00466-019-01791-3
+  const std::map<int, double> shape_factors_force{{1, 0.778958541513360}, {2, 0.805513388666376},
+      {3, 0.826126871395416}, {4, 0.841369158110513}, {5, 0.851733020725652},
+      {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}};
+
+  double ShapeFactor;
+  if (pressureGreenFunFlag_)
+  {
+    ShapeFactor = shape_factors_pressure.at(resolution_);
+  }
+  else
+  {
+    ShapeFactor = shape_factors_force.at(resolution_);
+  }
+
+  elasticComplianceCorrection_ = lateralLength_ * compositeYoungs_ / ShapeFactor;
 
   const int iter = int(ceil((lateralLength_ - (gridSize_ / 2)) / gridSize_));
   meshgrid_ = Teuchos::Ptr(new std::vector<double>(iter));
@@ -131,9 +162,9 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(double gap)
   double pressure = 0.0;
   MIRCO::Evaluate(pressure, -(gap + params_->GetOffset()), params_->GetLateralLength(),
       params_->GetGridSize(), params_->GetTolerance(), params_->GetMaxIteration(),
-      params_->GetCompositeYoungs(), params_->GetWarmStartingFlag(),
-      params_->GetComplianceCorrection(), *params_->GetTopology(), params_->GetMaxTopologyHeight(),
-      *params_->GetMeshGrid());
+      params_->GetCompositeYoungs(), params_->GetCompositePoissonsRatio(),
+      params_->GetWarmStartingFlag(), params_->GetComplianceCorrection(), *params_->GetTopology(),
+      params_->GetMaxTopologyHeight(), *params_->GetMeshGrid(), params_->GetPressureGreenFunFlag());
 
   return (-1 * pressure);
 }  // end of mirco_coconstlaw evaluate
@@ -155,15 +186,16 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(double gap)
   // using backward difference approach
   MIRCO::Evaluate(pressure1, -1.0 * (gap + params_->GetOffset()), params_->GetLateralLength(),
       params_->GetGridSize(), params_->GetTolerance(), params_->GetMaxIteration(),
-      params_->GetCompositeYoungs(), params_->GetWarmStartingFlag(),
-      params_->GetComplianceCorrection(), *params_->GetTopology(), params_->GetMaxTopologyHeight(),
-      *params_->GetMeshGrid());
+      params_->GetCompositeYoungs(), params_->GetCompositePoissonsRatio(),
+      params_->GetWarmStartingFlag(), params_->GetComplianceCorrection(), *params_->GetTopology(),
+      params_->GetMaxTopologyHeight(), *params_->GetMeshGrid(), params_->GetPressureGreenFunFlag());
   MIRCO::Evaluate(pressure2,
       -(1 - params_->GetFiniteDifferenceFraction()) * (gap + params_->GetOffset()),
       params_->GetLateralLength(), params_->GetGridSize(), params_->GetTolerance(),
-      params_->GetMaxIteration(), params_->GetCompositeYoungs(), params_->GetWarmStartingFlag(),
+      params_->GetMaxIteration(), params_->GetCompositeYoungs(),
+      params_->GetCompositePoissonsRatio(), params_->GetWarmStartingFlag(),
       params_->GetComplianceCorrection(), *params_->GetTopology(), params_->GetMaxTopologyHeight(),
-      *params_->GetMeshGrid());
+      *params_->GetMeshGrid(), params_->GetPressureGreenFunFlag());
   return ((pressure1 - pressure2) /
           (-(params_->GetFiniteDifferenceFraction()) * (gap + params_->GetOffset())));
 }
