@@ -31,6 +31,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 
+#include <stdexcept>
+
 BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
@@ -287,7 +289,7 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
     {
       xmlParams = *(Teuchos::getParametersFromXmlFile(xmlfilename));
     }
-    catch (CORE::Exception& e)
+    catch (const std::runtime_error&)
     {
       dserror(
           "The \"Status Test\"->\"XML File\" was not found! "
