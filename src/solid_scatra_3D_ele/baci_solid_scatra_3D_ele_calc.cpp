@@ -49,6 +49,53 @@ namespace
   }
 
   template <CORE::FE::CellType celltype>
+  auto ProjectQuantityToGaussPoint(
+      const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+      const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, 1>>& nodal_quantities)
+  {
+    std::vector<double> quantities_at_gp(nodal_quantities.size(), 0.0);
+
+    for (std::size_t k = 0; k < nodal_quantities.size(); ++k)
+    {
+      quantities_at_gp[k] = shape_functions.shapefunctions_.Dot(nodal_quantities[k]);
+    }
+    return quantities_at_gp;
+  }
+
+  template <CORE::FE::CellType celltype>
+  auto ProjectQuantityToGaussPoint(
+      const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+      const CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, 1>& nodal_quantity)
+  {
+    return shape_functions.shapefunctions_.Dot(nodal_quantity);
+  }
+
+
+  template <bool is_scalar, CORE::FE::CellType celltype>
+  auto GetElementQuantities(const int num_scalars, const std::vector<double>& quantities_at_dofs)
+  {
+    if constexpr (is_scalar)
+    {
+      CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, 1> nodal_quantities(num_scalars);
+      for (int i = 0; i < CORE::FE::num_nodes<celltype>; ++i)
+        nodal_quantities(i, 0) = quantities_at_dofs.at(i);
+
+      return nodal_quantities;
+    }
+    else
+    {
+      std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, 1>> nodal_quantities(
+          num_scalars);
+
+      for (int k = 0; k < num_scalars; ++k)
+        for (int i = 0; i < CORE::FE::num_nodes<celltype>; ++i)
+          (nodal_quantities[k])(i, 0) = quantities_at_dofs.at(num_scalars * i + k);
+
+      return nodal_quantities;
+    }
+  }
+
+  template <bool is_scalar, CORE::FE::CellType celltype>
   void PrepareScatraQuantityInParameterList(const DRT::Discretization& discretization,
       const DRT::Element::LocationArray& la,
       const DRT::ELEMENTS::ElementNodes<celltype>& element_nodes, const std::string& field_name,
@@ -59,9 +106,8 @@ namespace
     dsassert(discretization.HasState(field_index, field_name),
         "Could not find the requested field in the discretization.");
 
-    // the material expects the gp-quantities at the Gauss points in a rcp-std::vector
-    auto quantity_at_gp = Teuchos::rcp(new std::vector<std::vector<double>>(
-        gauss_integration.NumPoints(), std::vector<double>(num_scalars, 0.0)));
+    dsassert(
+        !is_scalar || num_scalars == 1, "numscalars must be 1 if result type is not a vector!");
 
     // get quantitiy from discretization
     Teuchos::RCP<const Epetra_Vector> quantitites_np =
@@ -73,12 +119,18 @@ namespace
     auto my_quantities = std::vector<double>(la[field_index].lm_.size(), 0.0);
     DRT::UTILS::ExtractMyValues(*quantitites_np, my_quantities, la[field_index].lm_);
 
-    // element vector for k-th scalar
-    std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, 1>> element_quantity(
-        num_scalars);
-    for (int k = 0; k < num_scalars; ++k)
-      for (int i = 0; i < CORE::FE::num_nodes<celltype>; ++i)
-        (element_quantity[k])(i, 0) = my_quantities.at(num_scalars * i + k);
+    // get nodal quantities for the scalars
+    auto nodal_quantities = GetElementQuantities<is_scalar, celltype>(num_scalars, my_quantities);
+
+    // Determine quantity type at Gauss point (can be double (for scalar) or a std::vector of
+    // scalars)
+    using gp_quantity_type = decltype(ProjectQuantityToGaussPoint(
+        std::declval<const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>&>(),
+        nodal_quantities));
+
+    // the material expects the gp-quantities at the Gauss points in a rcp-std::vector
+    auto quantity_at_gp =
+        Teuchos::rcp(new std::vector<gp_quantity_type>(gauss_integration.NumPoints()));
 
     DRT::ELEMENTS::ForEachGaussPoint(element_nodes, gauss_integration,
         [&](const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1>& xi,
@@ -86,19 +138,11 @@ namespace
             const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
             double integration_factor, int gp)
         {
-          // concentrations at current gauss point
-          std::vector<double> conc_gp_k(num_scalars, 0.0);
-
-          for (int k = 0; k < num_scalars; ++k)
-          {
-            // identical shapefunctions for displacements and temperatures
-            conc_gp_k[k] = shape_functions.shapefunctions_.Dot(element_quantity[k]);
-          }
-
-          (*quantity_at_gp)[gp] = conc_gp_k;
+          // Project to Gauss point
+          (*quantity_at_gp)[gp] = ProjectQuantityToGaussPoint(shape_functions, nodal_quantities);
         });
 
-    params.set<Teuchos::RCP<std::vector<std::vector<double>>>>(target_name, quantity_at_gp);
+    params.set(target_name, quantity_at_gp);
   };
 
   template <CORE::FE::CellType celltype>
@@ -113,15 +157,17 @@ namespace
       if (discretization.HasState(1, "scalarfield"))
       {
         const int num_scalars = discretization.NumDof(1, element.Nodes()[0]);
-        PrepareScatraQuantityInParameterList(discretization, la, element_nodes, "scalarfield", 1,
-            num_scalars, gauss_integration, params, "gp_conc");
+        constexpr bool is_scalar = false;
+        PrepareScatraQuantityInParameterList<is_scalar>(discretization, la, element_nodes,
+            "scalarfield", 1, num_scalars, gauss_integration, params, "gp_conc");
       }
 
       // additionally prepare temperature-filed if available
       if (discretization.NumDofSets() == 3 && discretization.HasState(2, "tempfield"))
       {
-        PrepareScatraQuantityInParameterList(discretization, la, element_nodes, "tempfield", 2, 1,
-            gauss_integration, params, "gp_temp");
+        constexpr bool is_scalar = true;
+        PrepareScatraQuantityInParameterList<is_scalar>(discretization, la, element_nodes,
+            "tempfield", 2, 1, gauss_integration, params, "gp_temp");
       }
     }
   }
