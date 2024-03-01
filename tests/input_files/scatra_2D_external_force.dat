@@ -50,8 +50,8 @@ MAT 11 MAT_scatra DIFFUSIVITY 0.0
 MAT 20 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 2 0
 ----------------------------------------------------------------------FUNCT1
 // velocity field for convection (v_x und v_y)
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
-COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0e-3
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.5e-3
 ----------------------------------------------------------------------FUNCT2
 // reaction term
 VARFUNCTION gamma_drain*phi2 NUMCONSTANTS 1 CONSTANTS gamma_drain 1e-14 //base value: 1e-7
@@ -71,8 +71,8 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1/(1.0+exp(-200.0*(-sqrt((x-0.5)^2+
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0e-4*(y+0.5)  //base value: 0.35
 ----------------------------------------------------------------------FUNCT7
 // external force
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.0e-3
-COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 5.0e-3
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0e-3
+COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.5e-3
 ----------------------------------------------------------------------FUNCT8
 // intrinsic mobility
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1
