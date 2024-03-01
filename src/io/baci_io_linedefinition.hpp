@@ -14,6 +14,7 @@
 
 #include "baci_config.hpp"
 
+#include "baci_inpar_container.hpp"
 #include "baci_io_inputreader.hpp"
 
 #include <functional>
@@ -90,7 +91,8 @@ namespace INPUT
        * A function type that may be supplied to some of the Add... functions in this class to
        * define how the number of vector entries should be determined from the @p already_read_line.
        */
-      using LengthDefinition = std::function<std::size_t(const LineDefinition& already_read_line)>;
+      using LengthDefinition =
+          std::function<std::size_t(const INPAR::InputParameterContainer& already_read_line)>;
 
       /**
        * Create a new Builder.
@@ -357,7 +359,7 @@ namespace INPUT
   {
     LengthFromIntNamed(std::string definition_name);
 
-    std::size_t operator()(const LineDefinition& already_read_line);
+    std::size_t operator()(const INPAR::InputParameterContainer& already_read_line);
 
    private:
     std::string definition_name_;
