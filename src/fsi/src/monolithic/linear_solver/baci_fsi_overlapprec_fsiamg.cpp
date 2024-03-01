@@ -640,13 +640,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
         etime.totalElapsedTime(true));
   }
 
-  //---------------------------------- preconditioner analysis if desired
-  if (Analyze())
-  {
-    AnalyzeFSIAMG(myrank, snlevel_, fnlevel_, anlevel_, sparams_, fparams_, aparams_, Ass_, Aff_,
-        Aaa_, Pss_, Rss_, Pff_, Rff_, Paa_, Raa_, ASF_, AFS_, AFA_, AAF_, sml, fml, aml);
-  }
-
   return;
 }
 
