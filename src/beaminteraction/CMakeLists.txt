@@ -15,7 +15,7 @@ set(_dependencies
     mat
     rigidsphere
     so3
-    solid_ele
+    solid_3D_ele
     structure
     structure_new
     timestepping

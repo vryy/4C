@@ -49,7 +49,7 @@
 #include "baci_so3_plast_ssn_sosh18.hpp"
 #include "baci_so3_plast_ssn_sosh8.hpp"
 #include "baci_so3_sh8p8.hpp"
-#include "baci_solid_ele.hpp"
+#include "baci_solid_3D_ele.hpp"
 #include "baci_solver_nonlin_nox_group.hpp"
 #include "baci_solver_nonlin_nox_group_prepostoperator.hpp"
 #include "baci_structure_new_model_evaluator.hpp"

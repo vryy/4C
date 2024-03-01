@@ -19,7 +19,7 @@
 #include "baci_rigidsphere.hpp"
 #include "baci_scatra_ele.hpp"
 #include "baci_so3_base.hpp"
-#include "baci_solid_ele.hpp"
+#include "baci_solid_3D_ele.hpp"
 
 BACI_NAMESPACE_OPEN
 

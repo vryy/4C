@@ -18,7 +18,7 @@
 #include "baci_so3_element_service.hpp"
 #include "baci_so3_poro.hpp"
 #include "baci_so3_poro_p1_eletypes.hpp"
-#include "baci_solid_poro_ele.hpp"
+#include "baci_solid_poro_3D_ele.hpp"
 #include "baci_w1_poro.hpp"
 
 BACI_NAMESPACE_OPEN

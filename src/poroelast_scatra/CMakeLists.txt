@@ -15,7 +15,7 @@ set(_dependencies
     scatra
     scatra_ele
     so3
-    solid_poro_ele
+    solid_poro_3D_ele
     w1
     )
 
