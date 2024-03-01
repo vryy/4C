@@ -19,7 +19,6 @@
 #include "baci_constraint_framework_model_evaluator.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_structure.hpp"
-#include "baci_struct_ale_str_model_evaluator.hpp"
 #include "baci_structure_new_model_evaluator_contact.hpp"
 #include "baci_structure_new_model_evaluator_lagpenconstraint.hpp"
 #include "baci_structure_new_model_evaluator_meshtying.hpp"
@@ -126,22 +125,7 @@ STR::MODELEVALUATOR::Factory::BuildContactModelEvaluator() const
 Teuchos::RCP<STR::MODELEVALUATOR::Generic>
 STR::MODELEVALUATOR::Factory::BuildStructureModelEvaluator() const
 {
-  Teuchos::RCP<STR::MODELEVALUATOR::Generic> structure_model_ptr = Teuchos::null;
-  GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
-  switch (probtype)
-  {
-    case GLOBAL::ProblemType::struct_ale:
-    {
-      structure_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::StructAle());
-      break;
-    }
-    default:
-    {
-      structure_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::Structure());
-      break;
-    }
-  }
-  return structure_model_ptr;
+  return Teuchos::rcp(new STR::MODELEVALUATOR::Structure());
 }
 
 

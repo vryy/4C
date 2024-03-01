@@ -291,8 +291,6 @@ sti/                       @baci/team_scatra
 
 stru_multi/                @baci/team_discretization
 
-struct_ale/                @baci/team_structure
-
 structure/                 @baci/team_structure
 
 structure_new/             @baci/team_structure
