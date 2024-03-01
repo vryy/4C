@@ -17,8 +17,8 @@
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_mat_elasthyper.hpp"
 #include "baci_so3_base.hpp"
-#include "baci_solid_ele.hpp"
-#include "baci_solid_ele_calc_lib_nitsche.hpp"
+#include "baci_solid_3D_ele.hpp"
+#include "baci_solid_3D_ele_calc_lib_nitsche.hpp"
 
 #include <Epetra_FEVector.h>
 

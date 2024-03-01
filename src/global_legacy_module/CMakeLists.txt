@@ -31,9 +31,9 @@ set(_dependencies
     scatra_ele
     shell7p
     so3
-    solid_ele
-    solid_poro_ele
-    solid_scatra_ele
+    solid_3D_ele
+    solid_poro_3D_ele
+    solid_scatra_3D_ele
     structure_new
     thermo
     torsion3

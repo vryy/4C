@@ -16,7 +16,7 @@ set(_dependencies
     rigidsphere
     scatra_ele
     so3
-    solid_ele
+    solid_3D_ele
     )
 
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
