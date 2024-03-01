@@ -157,10 +157,11 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   // kinematic type
   solid_ele_property_.kintype = STR::UTILS::READELEMENT::ReadElementKinematicType(linedef);
 
+  // check element technology
   if (linedef->HaveNamed("TECH"))
   {
-    solid_ele_property_.element_technology =
-        STR::UTILS::READELEMENT::ReadElementTechnology(linedef);
+    if (STR::UTILS::READELEMENT::ReadElementTechnology(linedef) != ElementTechnology::none)
+      dserror("SOLIDPORO elements do not support any element technology!");
   }
 
   // read scalar transport implementation type
