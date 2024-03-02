@@ -764,11 +764,15 @@ namespace INPUT
 
 
 
-  bool LineDefinition::Read(std::istream& stream) { return Read(stream, nullptr); }
+  std::optional<INPAR::InputParameterContainer> LineDefinition::Read(std::istream& stream)
+  {
+    return Read(stream, nullptr);
+  }
 
 
 
-  bool LineDefinition::Read(std::istream& stream, const std::string* skipname)
+  std::optional<INPAR::InputParameterContainer> LineDefinition::Read(
+      std::istream& stream, const std::string* skipname)
   {
     pimpl_->readtailcomponents_.clear();
     for (auto& component : pimpl_->components_)
@@ -777,7 +781,7 @@ namespace INPUT
       {
         if (not component.ReadRequired(pimpl_->container_, stream))
         {
-          return false;
+          return std::nullopt;
         }
       }
     }
@@ -791,11 +795,11 @@ namespace INPUT
       if (pimpl_->readtailcomponents_.find(name) != pimpl_->readtailcomponents_.end())
       {
         // duplicated optional component
-        return false;
+        return std::nullopt;
       }
       auto i = pimpl_->optionaltail_.find(name);
-      if (i == pimpl_->optionaltail_.end()) return false;
-      if (not i->second.ReadOptional(pimpl_->container_, name, stream)) return false;
+      if (i == pimpl_->optionaltail_.end()) return std::nullopt;
+      if (not i->second.ReadOptional(pimpl_->container_, name, stream)) return std::nullopt;
       pimpl_->readtailcomponents_.insert(name);
     }
 
@@ -803,8 +807,12 @@ namespace INPUT
     std::string superfluousstring;
     stream >> superfluousstring;  // stream strips whitespaces
 
+
     // Check that remaining string is either empty or is a comment, i.e., starts with "//"
-    return superfluousstring.empty() || (superfluousstring.rfind("//", 0) == 0);
+    if (!superfluousstring.empty() && (superfluousstring.rfind("//", 0) != 0))
+      return std::nullopt;
+    else
+      return pimpl_->container_;
   }
 
 

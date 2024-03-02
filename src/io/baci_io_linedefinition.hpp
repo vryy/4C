@@ -20,6 +20,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -239,23 +240,16 @@ namespace INPUT
     /// print to dat file comment
     void Print(std::ostream& stream) const;
 
-    /// try to read this line from the stream
-    /*!
-      If reading succeeds, the LineDefinition contains the values of the
-      line. Otherwise, the values are undefined and should not be used.
-
-      @return true on success
+    /**
+     * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
      */
-    bool Read(std::istream& stream);
+    std::optional<INPAR::InputParameterContainer> Read(std::istream& stream);
 
-    /// try to read this line from the stream, but skip the component named name
-    /*!
-      If reading succeeds, the LineDefinition contains the values of the
-      line. Otherwise, the values are undefined and should not be used.
-
-      @return true on success
+    /**
+     * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
      */
-    bool Read(std::istream& stream, const std::string* name);
+    std::optional<INPAR::InputParameterContainer> Read(
+        std::istream& stream, const std::string* name);
 
     /// tell if there is a named component with the given name
     [[nodiscard]] bool HaveNamed(const std::string& name) const;
