@@ -535,4 +535,61 @@ CORE::UTILS::FunctionVariable& CORE::UTILS::PiecewiseVariable::FindPieceForTime(
   return **active_piece;
 }
 
+std::vector<double> CORE::UTILS::INTERNAL::ExtractTimeVector(const INPUT::LineDefinition& timevar)
+{
+  // read the number of points
+  int numpoints;
+  timevar.ExtractInt("NUMPOINTS", numpoints);
+
+  // read whether times are defined by number of points or by vector
+  bool bynum = timevar.HasString("BYNUM");
+
+  // read respectively create times vector
+  std::vector<double> times = std::invoke(
+      [&]()
+      {
+        if (bynum)  // times defined by number of points
+        {
+          // read the time range
+          std::vector<double> timerange;
+          timevar.ExtractDoubleVector("TIMERANGE", timerange);
+
+          std::vector<double> times;
+
+          // get initial and final time
+          double t_initial = timerange[0];
+          double t_final = timerange[1];
+
+          // build the vector of times
+          times.push_back(t_initial);
+          int n = 0;
+          double dt = (t_final - t_initial) / (numpoints - 1);
+          while (times[n] + dt <= t_final + 1.0e-14)
+          {
+            if (times[n] + 2 * dt <= t_final + 1.0e-14)
+            {
+              times.push_back(times[n] + dt);
+            }
+            else
+            {
+              times.push_back(t_final);
+            }
+            ++n;
+          }
+          return times;
+        }
+        else  // times defined by vector
+        {
+          std::vector<double> times;
+          timevar.ExtractDoubleVector("TIMES", times);
+          return times;
+        }
+      });
+
+  // check if the times are in ascending order
+  if (!std::is_sorted(times.begin(), times.end())) dserror("the TIMES must be in ascending order");
+
+  return times;
+}
+
 BACI_NAMESPACE_CLOSE

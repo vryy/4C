@@ -14,6 +14,7 @@
 
 #include "baci_config.hpp"
 
+#include "baci_io_linedefinition.hpp"
 #include "baci_utils_symbolic_expression.hpp"
 
 #include <Sacado.hpp>
@@ -223,6 +224,11 @@ namespace CORE::UTILS
     std::vector<Teuchos::RCP<FunctionVariable>> pieces_;
   };
 
+  namespace INTERNAL
+  {
+    //! Internal helper to figure out the correct time points from input.
+    std::vector<double> ExtractTimeVector(const INPUT::LineDefinition& timevar);
+  }  // namespace INTERNAL
 }  // namespace CORE::UTILS
 
 BACI_NAMESPACE_CLOSE
