@@ -113,11 +113,39 @@ namespace INPAR
 
 
     /*!
-     * \brief Get the const pointer to the data stored at the key @name from the container. An error
-     * is thrown in case the key @name is not existent in the specific data map.
+     * Get the const pointer to the data stored at the key @p name from the container. An error
+     * is thrown in case no value of specified type is stored under @p name in the container.
      */
     template <typename T>
     const T* Get(const std::string& name) const
+    {
+      if (const T* p = GetIf<T>(name))
+        return p;
+      else
+        dserror("Key %s cannot be found in the container's map!", name.c_str());
+    }
+
+    /*!
+     * Get the data stored at the key @p name from the container. Return the @p default_value if no
+     * value of specified type is stored under @p name in the container.
+     *
+     * @note This function returns the value as a copy.
+     */
+    template <typename T>
+    T GetOr(const std::string& name, T default_value) const
+    {
+      if (const T* p = GetIf<T>(name))
+        return *p;
+      else
+        return default_value;
+    }
+
+    /*!
+     * Get the const pointer to the data stored at the key @p name from the container. Return a
+     * `nullptr` if no value of specified type is stored under @p name in the container.
+     */
+    template <typename T>
+    const T* GetIf(const std::string& name) const
     {
       // access function for known types
       [[maybe_unused]] const auto access = [](const auto& map, const std::string& name) -> const T*
@@ -129,7 +157,7 @@ namespace INPAR
         }
         else
         {
-          dserror("Key %s cannot be found in the container's map!", name.c_str());
+          return nullptr;
         }
       };
 
@@ -144,7 +172,7 @@ namespace INPAR
         }
         else
         {
-          dserror("Key %s cannot be found in the container's map!", name.c_str());
+          return nullptr;
         }
       };
 
@@ -167,108 +195,7 @@ namespace INPAR
         return access(matdata_, name);
       else
         return access_any(anydata_, name);
-    };
-
-    /*!
-     * \brief Get the pointer to the data stored at the key @name from the container. An error is
-     * thrown in case the key @name is not existent in the specific data map.
-     */
-    template <typename T>
-    T* Get(const std::string& name)
-    {
-      return const_cast<T*>(const_cast<const InputParameterContainer*>(this)->Get<T>(name));
-    };
-
-
-    /*!
-     * \brief Get the const pointer to the data stored at the key @name from the container. Return
-     * the @default_value if the @name is not existent in the specific data map.
-     */
-    template <typename T>
-    const T* GetOr(const std::string& name, T* default_value) const
-    {
-      // access function for known types
-      [[maybe_unused]] const auto access = [](const auto& map, const std::string& name,
-                                               T* default_value) -> const T*
-      {
-        const auto it = map.find(name);
-        if (it != map.end())
-        {
-          return std::addressof(it->second);
-        }
-        else
-        {
-          return default_value;
-        }
-      };
-
-      // access function for any type
-      [[maybe_unused]] const auto access_any = [](const auto& map, const std::string& name,
-                                                   T* default_value) -> const T*
-      {
-        const auto it = map.find(name);
-        if (it != map.end())
-        {
-          return INTERNAL::TryGetAnyData<T>(name, it->second);
-        }
-        else
-        {
-          return default_value;
-        }
-      };
-
-      // get data from the container
-      if constexpr (std::is_same_v<T, int>)
-        return access(intdata_, name, default_value);
-      else if constexpr (std::is_same_v<T, double>)
-        return access(doubledata_, name, default_value);
-      else if constexpr (std::is_same_v<T, bool>)
-        return access(booldata_, name, default_value);
-      else if constexpr (std::is_same_v<T, std::vector<int>>)
-        return access(vecintdata_, name, default_value);
-      else if constexpr (std::is_same_v<T, std::vector<double>>)
-        return access(vecdoubledata_, name, default_value);
-      else if constexpr (std::is_same_v<T, std::map<int, std::vector<double>>>)
-        return access(mapdata_, name, default_value);
-      else if constexpr (std::is_same_v<T, std::string>)
-        return access(stringdata_, name, default_value);
-      else if constexpr (std::is_same_v<T, CORE::LINALG::SerialDenseMatrix>)
-        return access(matdata_, name, default_value);
-      else
-        return access_any(anydata_, name, default_value);
-    };
-
-    /*!
-     * \brief Get the pointer to the data stored at the key @name from the container. Return
-     * the @default_value if the @name is not existent in the specific data map.
-     */
-    template <typename T>
-    T* GetOr(const std::string& name, T* default_value)
-    {
-      return const_cast<T*>(
-          const_cast<const InputParameterContainer*>(this)->GetOr<T>(name, default_value));
-    };
-
-
-    /*!
-     * \brief Get the const pointer to the data stored at the key @name from the container. Return a
-     * nullpointer if the @name is not existent in the specific data map.
-     */
-    template <typename T>
-    const T* GetIf(const std::string& name) const
-    {
-      return GetOr<T>(name, nullptr);
-    };
-
-    /*!
-     * \brief Get the pointer to the data stored at the key @name from the container. Return a
-     * nullpointer if the @name is not existent in the specific data map.
-     */
-    template <typename T>
-    T* GetIf(const std::string& name)
-    {
-      return const_cast<T*>(const_cast<const InputParameterContainer*>(this)->GetIf<T>(name));
-    };
+    }
 
 
    private:

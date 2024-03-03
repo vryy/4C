@@ -71,14 +71,14 @@ namespace DRT
       double MolarMass() const { return molarmass_; }
       int NumElectrons() const { return numelectrons_; }
       int NumScal() const { return numscal_; }
-      std::vector<int>* OnOff() const { return onoff_; }
+      const std::vector<int>* OnOff() const { return onoff_; }
       double Peltier() const { return peltier_; }
-      std::vector<double>* Permeabilities() const { return permeabilities_; }
+      const std::vector<double>* Permeabilities() const { return permeabilities_; }
       double RegularizationParameter() const { return regularizationparameter_; }
       INPAR::S2I::RegularizationType RegularizationType() const { return regularizationtype_; }
       double Resistance() const { return resistance_; }
       double Resistivity() const { return resistivity_; }
-      std::vector<int>* Stoichiometries() const { return stoichiometries_; }
+      const std::vector<int>* Stoichiometries() const { return stoichiometries_; }
       double ThermoPerm() const { return thermoperm_; }
 
       ///@}
@@ -130,13 +130,13 @@ namespace DRT
       int numscal_;
 
       /// which dofs are constrained by this condition
-      std::vector<int>* onoff_;
+      const std::vector<int>* onoff_;
 
       /// peltier coefficient
       double peltier_;
 
       /// vector of constant permeabilities
-      std::vector<double>* permeabilities_;
+      const std::vector<double>* permeabilities_;
 
       /// regularization factor for S2IKineticsGrowth condition
       double regularizationparameter_;
@@ -154,7 +154,7 @@ namespace DRT
       double capacitance_;
 
       /// vector of stoichiometric coefficients for scatra-scatra interface
-      std::vector<int>* stoichiometries_;
+      const std::vector<int>* stoichiometries_;
 
       /// constant permeability for heat at interface
       double thermoperm_;
