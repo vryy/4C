@@ -56,7 +56,7 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 1 VALUES 0 -10
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 -------------------------------------------------------------CONTACT CONSTITUTIVE LAWS
-LAW 1 CoConstLaw_mirco Offset 0.0 FirstMatID 1 SecondMatID 2 LateralLength 1000 Resolution 6 PressureGreenFunFlag 0 Tolerance 0.01 InitialTopologyStdDeviation 20 HurstExponent 0.7 RandomTopologyFlag 1 RandomSeedFlag 0 RandomGeneratorSeed 71 MaxIteration 100 WarmStartingFlag 1 FiniteDifferenceFraction 0.001
+LAW 1 CoConstLaw_mirco Offset 0.0 FirstMatID 1 SecondMatID 2 LateralLength 1000 Resolution 6 PressureGreenFunFlag false Tolerance 0.01 InitialTopologyStdDeviation 20 HurstExponent 0.7 RandomTopologyFlag true RandomSeedFlag false RandomGeneratorSeed 71 MaxIteration 100 WarmStartingFlag true FiniteDifferenceFraction 0.001
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // ground

@@ -32,15 +32,15 @@ CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams
       secondmatid_(*container->Get<double>("SecondMatID")),
       lateralLength_(*container->Get<double>("LateralLength")),
       resolution_(*container->Get<double>("Resolution")),
-      pressureGreenFunFlag_(*container->Get<double>("PressureGreenFunFlag")),
+      pressureGreenFunFlag_(*container->Get<bool>("PressureGreenFunFlag")),
       initialTopologyStdDeviation_(*container->Get<double>("InitialTopologyStdDeviation")),
       hurstExponent_(*container->Get<double>("HurstExponent")),
-      randomTopologyFlag_(*container->Get<double>("RandomTopologyFlag")),
-      randomSeedFlag_(*container->Get<double>("RandomSeedFlag")),
+      randomTopologyFlag_(*container->Get<bool>("RandomTopologyFlag")),
+      randomSeedFlag_(*container->Get<bool>("RandomSeedFlag")),
       randomGeneratorSeed_(*container->Get<double>("RandomGeneratorSeed")),
       tolerance_(*container->Get<double>("Tolerance")),
       maxIteration_(*container->Get<double>("MaxIteration")),
-      warmStartingFlag_(*container->Get<double>("WarmStartingFlag")),
+      warmStartingFlag_(*container->Get<bool>("WarmStartingFlag")),
       finiteDifferenceFraction_(*container->Get<double>("FiniteDifferenceFraction")),
       activeGapTolerance_(*container->Get<double>("ActiveGapTolerance")),
       topologyFilePath_(*(container->Get<std::string>("TopologyFilePath")))
@@ -103,8 +103,8 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
   // NOTE: Currently MIRCO works for resouluion of 1 to 8. The following map store the shape
   // factors for resolution of 1 to 8.
 
-  // The following pressure based constants are calculated by solving a flat indentor problem using
-  // the pressure based Green function described in Pohrt and Li (2014).
+  // The following pressure based constants are calculated by solving a flat indentor problem in
+  // MIRCO using the pressure based Green function described in Pohrt and Li (2014).
   // http://dx.doi.org/10.1134/s1029959914040109
   const std::map<int, double> shape_factors_pressure{{1, 0.961389237917602}, {2, 0.924715342432435},
       {3, 0.899837531880697}, {4, 0.884976751041942}, {5, 0.876753783192863},
@@ -115,7 +115,7 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
   const std::map<int, double> shape_factors_force{{1, 0.778958541513360}, {2, 0.805513388666376},
       {3, 0.826126871395416}, {4, 0.841369158110513}, {5, 0.851733020725652},
       {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}};
-
+  std::cout << "The pressure flag is " << pressureGreenFunFlag_ << std::endl;
   double ShapeFactor;
   if (pressureGreenFunFlag_)
   {
