@@ -119,6 +119,10 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
           VarManager()->SetDelta(poromat->Delta(), k);
           // set minimum saturation in the variablemanager
           VarManager()->SetMinValOfPhase(poromat->MinSat(), k);
+          // set reacts to external force
+          VarManager()->SetReactsToForce(poromat->ReactsToExternalForce(), k);
+          // set relative mobility function ID
+          VarManager()->SetRelativeMobilityFunctionId(poromat->RelativeMobilityFunctId(), k);
           break;
         }
         case INPAR::MAT::m_scatra_multiporo_volfrac:
@@ -149,6 +153,10 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
               k, poromat->PhaseID(), MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac);
           // set delta in the variablemanager
           VarManager()->SetDelta(poromat->Delta(), k);
+          // set reacts to external force
+          VarManager()->SetReactsToForce(poromat->ReactsToExternalForce(), k);
+          // set relative mobility function ID
+          VarManager()->SetRelativeMobilityFunctionId(poromat->RelativeMobilityFunctId(), k);
 
           break;
         }
@@ -241,6 +249,10 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
         VarManager()->SetDelta(poromat->Delta(), 0);
         // set minimum saturation in the variablemanager
         VarManager()->SetMinValOfPhase(poromat->MinSat(), 0);
+        // set reacts to external force
+        VarManager()->SetReactsToForce(poromat->ReactsToExternalForce(), 0);
+        // set relative mobility function ID
+        VarManager()->SetRelativeMobilityFunctionId(poromat->RelativeMobilityFunctId(), 0);
         break;
       }
       case INPAR::MAT::m_scatra_multiporo_volfrac:
@@ -271,6 +283,10 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
             0, poromat->PhaseID(), MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac);
         // set delta in the variablemanager
         VarManager()->SetDelta(poromat->Delta(), 0);
+        // set reacts to external force
+        VarManager()->SetReactsToForce(poromat->ReactsToExternalForce(), 0);
+        // set relative mobility function ID
+        VarManager()->SetRelativeMobilityFunctionId(poromat->RelativeMobilityFunctId(), 0);
 
         break;
       }
@@ -400,6 +416,25 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
     if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
     DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
+  }
+
+  if (my::scatrapara_->HasExternalForce())
+  {
+    // get number of dofset associated with velocity related dofs
+    const auto ndsvel = my::scatrapara_->NdsVel();
+    const auto force_velocity = discretization.GetState(ndsvel, "force_velocity");
+
+    const int number_dof_per_node = la[ndsvel].lm_.size() / my::nen_;
+    std::vector<int> location_vector(my::nsd_ * my::nen_, -1);
+    for (unsigned inode = 0; inode < my::nen_; ++inode)
+    {
+      for (unsigned idim = 0; idim < my::nsd_; ++idim)
+        location_vector[inode * my::nsd_ + idim] =
+            la[ndsvel].lm_[inode * number_dof_per_node + idim];
+    }
+
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<my::nsd_, my::nen_>>(
+        *force_velocity, my::eforcevelocity_, location_vector);
   }
 
   //---------------------------------------------------------------------------------------------
@@ -747,7 +782,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetInternalVariablesForMatAndRHS()
 {
   VarManager()->SetInternalVariablesMultiPoro(my::funct_, my::derxy_, my::deriv_, my::xjm_,
-      pororeac::xyze0_, my::ephinp_, my::ephin_, my::ehist_);
+      pororeac::xyze0_, my::ephinp_, my::ephin_, my::ehist_, my::eforcevelocity_);
 
   if (L2_projection_)
   {

@@ -129,49 +129,30 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputState()
   // solution
   output_->WriteVector("phinp", phinp_);
 
-  //  // convective velocity (written in case of coupled simulations since volmortar is now
-  //  possible) if ( cdvel_ == INPAR::SCATRA::velocity_function or cdvel_ ==
-  //  INPAR::SCATRA::velocity_Navier_Stokes)
-  //  {
-  //    Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_, "convective velocity
-  //    field"); if(convel == Teuchos::null)
-  //      dserror("Cannot get state vector convective velocity");
-  //
-  //    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-  //    Teuchos::RCP<Epetra_MultiVector> convel_multi = Teuchos::rcp(new
-  //    Epetra_MultiVector(*discret_->NodeRowMap(),nsd_,true)); for (int inode=0;
-  //    inode<discret_->NumMyRowNodes(); ++inode)
-  //    {
-  //      DRT::Node* node = discret_->lRowNode(inode);
-  //      for (int idim=0; idim<nsd_; ++idim)
-  //        (*convel_multi)[idim][inode] =
-  //        (*convel)[convel->Map().LID(discret_->Dof(nds_vel_,node,idim))];
-  //    }
-  //
-  //    output_->WriteVector("convec_velocity", convel_multi, IO::nodevector);
-  //  }
-
   // displacement field
   if (isale_)
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->GetState(NdsDisp(), "dispnp");
+    const auto dispnp = discret_->GetState(NdsDisp(), "dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot extract displacement field from discretization");
 
-    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-    Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
-        Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), nsd_, true));
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
-    {
-      DRT::Node* node = discret_->lRowNode(inode);
-      for (int idim = 0; idim < nsd_; ++idim)
-        (*dispnp_multi)[idim][inode] =
-            (*dispnp)[dispnp->Map().LID(discret_->Dof(NdsDisp(), node, idim))];
-    }
-
+    const auto dispnp_multi = ConvertDofVectorToComponentwiseNodeVector(dispnp, NdsDisp());
     output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
   }
 
-  return;
+  if (has_external_force_)
+  {
+    const int nds_vel = NdsVel();
+
+    const auto external_force = discret_->GetState(nds_vel, "external_force");
+    const auto output_external_force =
+        ConvertDofVectorToComponentwiseNodeVector(external_force, NdsVel());
+    output_->WriteVector("external_force", output_external_force, IO::nodevector);
+
+    const auto mobility = discret_->GetState(nds_vel, "intrinsic_mobility");
+    const auto output_intrinsic_mobility =
+        ConvertDofVectorToComponentwiseNodeVector(mobility, NdsVel());
+    output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, IO::nodevector);
+  }
 }  // ScaTraTimIntImpl::OutputState
 
 /*----------------------------------------------------------------------*
