@@ -167,8 +167,16 @@ namespace DRT::ELEMENTS
   template <CORE::FE::CellType celltype>
   struct FBarFormulation
   {
-    static FBarPreparationData<celltype> Prepare(const DRT::Element& ele,
-        const ElementNodes<celltype>& nodal_coordinates, FBarHistoryData& history_data)
+    static constexpr bool has_gauss_point_history = false;
+    static constexpr bool has_global_history = false;
+    static constexpr bool has_preparation_data = true;
+
+    using LinearizationContainer = FBarLinearizationContainer<celltype>;
+    using PreparationData = FBarPreparationData<celltype>;
+
+
+    static FBarPreparationData<celltype> Prepare(
+        const DRT::Element& ele, const ElementNodes<celltype>& nodal_coordinates)
     {
       const JacobianMapping<celltype> jacobian_mapping_centroid =
           EvaluateJacobianMappingCentroid(nodal_coordinates);
@@ -182,8 +190,7 @@ namespace DRT::ELEMENTS
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
-        const FBarPreparationData<celltype>& preparation_data, FBarHistoryData& history_data,
-        Evaluator evaluator)
+        const FBarPreparationData<celltype>& preparation_data, Evaluator evaluator)
     {
       const SpatialMaterialMapping<celltype> spatial_material_mapping =
           EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
@@ -231,7 +238,7 @@ namespace DRT::ELEMENTS
         const JacobianMapping<celltype>& jacobian_mapping,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
             deformation_gradient,
-        const FBarPreparationData<celltype>& preparation_data, FBarHistoryData& history_data)
+        const FBarPreparationData<celltype>& preparation_data)
     {
       dserror(
           "The full linearization is not yet implemented for the displacement based formulation "
@@ -247,7 +254,7 @@ namespace DRT::ELEMENTS
 
     static void AddInternalForceVector(const FBarLinearizationContainer<celltype>& linearization,
         const Stress<celltype>& stress, const double integration_factor,
-        const FBarPreparationData<celltype>& preparation_data, FBarHistoryData& history_data,
+        const FBarPreparationData<celltype>& preparation_data,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1>&
             force_vector)
     {
@@ -258,7 +265,6 @@ namespace DRT::ELEMENTS
     static void AddStiffnessMatrix(const FBarLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
         const double integration_factor, const FBarPreparationData<celltype>& preparation_data,
-        FBarHistoryData& history_data,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>,
             CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>& stiffness_matrix)
     {
@@ -272,22 +278,10 @@ namespace DRT::ELEMENTS
           linearization.fbar_factor, integration_factor, linearization.cauchygreen, stress,
           stiffness_matrix);
     }
-
-    static void Pack(const FBarHistoryData& history_data, CORE::COMM::PackBuffer& data)
-    {
-      // nothing to pack
-    }
-
-    static void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data,
-        FBarHistoryData& history_data)
-    {
-      // nothing to unpack
-    }
   };
 
   template <CORE::FE::CellType celltype>
-  using FBarSolidIntegrator = SolidEleCalc<celltype, FBarFormulation<celltype>,
-      FBarPreparationData<celltype>, FBarHistoryData>;
+  using FBarSolidIntegrator = SolidEleCalc<celltype, FBarFormulation<celltype>>;
 
 
 }  // namespace DRT::ELEMENTS

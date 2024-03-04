@@ -13,6 +13,7 @@
 #include "baci_discretization_fem_general_utils_gausspoints.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_solid_3D_ele_calc_interface.hpp"
+#include "baci_solid_3D_ele_formulation.hpp"
 #include "baci_structure_new_gauss_point_data_output_manager.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -30,8 +31,7 @@ namespace STR::ELEMENTS
 
 namespace DRT::ELEMENTS
 {
-  template <CORE::FE::CellType celltype, typename SolidFormulation, typename PreparationData,
-      typename HistoryData>
+  template <CORE::FE::CellType celltype, typename SolidFormulation>
   class SolidScatraEleCalc
   {
    public:
@@ -92,7 +92,7 @@ namespace DRT::ELEMENTS
     CORE::FE::GaussIntegration stiffness_matrix_integration_;
     CORE::FE::GaussIntegration mass_matrix_integration_;
 
-    HistoryData history_data_{};
+    SolidFormulationHistory<SolidFormulation> history_data_{};
   };
 }  // namespace DRT::ELEMENTS
 
