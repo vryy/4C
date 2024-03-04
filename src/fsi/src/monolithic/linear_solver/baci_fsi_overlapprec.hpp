@@ -65,15 +65,9 @@ namespace FSI
 
     //@}
 
-    /// setup of block preconditioners
-    void SetupPreconditioner() override;
-
    protected:
     /// (symmetric) Gauss-Seidel block preconditioner
     virtual void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
-
-    /// merge block matrix for direct solve
-    void MergeSolve(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Richardson iteration on one block using the given flags
     static void LocalBlockRichardson(Teuchos::RCP<CORE::LINALG::Preconditioner> solver,
@@ -137,20 +131,9 @@ namespace FSI
         double omega = 1.0, int iterations = 1, double somega = 1.0, int siterations = 0,
         double fomega = 1.0, int fiterations = 0, double aomega = 1.0, int aiterations = 0);
 
-    /** \name Attribute access functions */
-    //@{
-
-    /// Returns a character string describing the operator.
-    const char* Label() const override;
-
-    //@}
-
-    /// setup of block preconditioners
-    void SetupPreconditioner() override;
-
    protected:
     /// symmetric Gauss-Seidel block preconditioner
-    void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+    void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override{};
 
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;

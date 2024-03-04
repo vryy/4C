@@ -116,10 +116,6 @@ namespace FSI
         MLAPI::Operator& Aaa, MLAPI::Operator& Asf, MLAPI::Operator& Afs, MLAPI::Operator& Afa,
         MLAPI::Operator& Aaf, const double omega, const bool structuresplit);
 
-
-    //! methods for performance analysis of FSIAMG preconditioner
-    inline bool Analyze() { return (bool)analyze_; }
-
     //! Operator to analyze multigrid settings of a single field
     class AnalyzeBest
     {
@@ -163,43 +159,6 @@ namespace FSI
       std::vector<int> bestsweeps_;        ///< best set of number of sweeps
       std::vector<Teuchos::RCP<MLAPI::InverseOperator>> S_;
     };
-
-    //! main routine analysis of FSIAMG
-    void AnalyzeFSIAMG(const int myrank, const int snlevel, const int fnlevel, const int anlevel,
-        Teuchos::ParameterList& sparams, Teuchos::ParameterList& fparams,
-        Teuchos::ParameterList& aparams, std::vector<MLAPI::Operator>& Ass,
-        std::vector<MLAPI::Operator>& Aff, std::vector<MLAPI::Operator>& Aaa,
-        std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
-        std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
-        std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
-        std::vector<MLAPI::Operator>& Asf, std::vector<MLAPI::Operator>& Afs,
-        std::vector<MLAPI::Operator>& Afa, std::vector<MLAPI::Operator>& Aaf, ML* sml, ML* fml,
-        ML* aml);
-
-    //! analyze a single field
-    void Analyse_SingleField(const std::string fieldname, const int myrank, std::string field,
-        const int nlevel, Teuchos::ParameterList& params, std::vector<MLAPI::Operator>& A,
-        std::vector<MLAPI::Operator>& P, std::vector<MLAPI::Operator>& R, AnalyzeBest& best);
-
-    //! analyse BGS(AMG)
-    void Analyse_BGSAMG(const int myrank, AnalyzeBest& sbest, AnalyzeBest& fbest,
-        AnalyzeBest& abest, std::vector<MLAPI::Operator>& Ass, std::vector<MLAPI::Operator>& Pss,
-        std::vector<MLAPI::Operator>& Rss, std::vector<MLAPI::Operator>& Aff,
-        std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
-        std::vector<MLAPI::Operator>& Aaa, std::vector<MLAPI::Operator>& Paa,
-        std::vector<MLAPI::Operator>& Raa, std::vector<MLAPI::Operator>& Asf,
-        std::vector<MLAPI::Operator>& Afs, std::vector<MLAPI::Operator>& Afa,
-        std::vector<MLAPI::Operator>& Aaf);
-
-    //! analyse AMG(BGS)
-    void Analyse_AMGBGS(const int myrank, AnalyzeBest& sbest, AnalyzeBest& fbest,
-        AnalyzeBest& abest, std::vector<MLAPI::Operator>& Ass, std::vector<MLAPI::Operator>& Pss,
-        std::vector<MLAPI::Operator>& Rss, std::vector<MLAPI::Operator>& Aff,
-        std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
-        std::vector<MLAPI::Operator>& Aaa, std::vector<MLAPI::Operator>& Paa,
-        std::vector<MLAPI::Operator>& Raa, std::vector<MLAPI::Operator>& Asf,
-        std::vector<MLAPI::Operator>& Afs, std::vector<MLAPI::Operator>& Afa,
-        std::vector<MLAPI::Operator>& Aaf);
 
     //! Compute rate of residual reduction
     double Rate(const int myrank, double t, double r, double initr, double l) const
@@ -285,85 +244,6 @@ namespace FSI
         std::vector<MLAPI::Operator>& Afs, std::vector<MLAPI::Operator>& Afa,
         std::vector<MLAPI::Operator>& Aaf, bool initiguesszero = false, bool analysis = false,
         bool silent = false) const;
-
-    /*! Richardson iteration with Block Gauss Seidel (BGS)
-     *  and Smoother (S) or Vcycle (V) for individual fields
-     */
-    double RichardsonBGS_SV(const int myrank, const int sweeps, const double damp,
-        std::vector<int>* blocksweeps, std::vector<double>* blockdamps, const int level,
-        AnalyzeBest& sbest, AnalyzeBest& fbest, AnalyzeBest& abest, MLAPI::MultiVector& sy,
-        MLAPI::MultiVector& fy, MLAPI::MultiVector& ay, const MLAPI::MultiVector& sf,
-        const MLAPI::MultiVector& ff, const MLAPI::MultiVector& af,
-        std::vector<MLAPI::Operator>& Ass, std::vector<MLAPI::Operator>& Pss,
-        std::vector<MLAPI::Operator>& Rss, std::vector<MLAPI::Operator>& Aff,
-        std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
-        std::vector<MLAPI::Operator>& Aaa, std::vector<MLAPI::Operator>& Paa,
-        std::vector<MLAPI::Operator>& Raa, MLAPI::Operator& Asf, MLAPI::Operator& Afs,
-        MLAPI::Operator& Afa, MLAPI::Operator& Aaf, bool initiguesszero = false,
-        bool analysis = false, bool silent = false) const;
-
-    /*! Richardson iteration with Schurcomplement preconditioner
-     *  for structure split case
-     */
-    double RichardsonSchurStructureSplit_S(const int myrank, const int sweeps, const double damp,
-        std::vector<int>* blocksweeps, std::vector<double>* blockdamps, const int level,
-        AnalyzeBest& sbest, AnalyzeBest& fbest, AnalyzeBest& abest, MLAPI::MultiVector& sy,
-        MLAPI::MultiVector& fy, MLAPI::MultiVector& ay, const MLAPI::MultiVector& sf,
-        const MLAPI::MultiVector& ff, const MLAPI::MultiVector& af,
-        std::vector<MLAPI::Operator>& Ass, std::vector<MLAPI::Operator>& Pss,
-        std::vector<MLAPI::Operator>& Rss, std::vector<MLAPI::Operator>& Aff,
-        std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
-        std::vector<MLAPI::Operator>& Aaa, std::vector<MLAPI::Operator>& Paa,
-        std::vector<MLAPI::Operator>& Raa, MLAPI::Operator& Asf, MLAPI::Operator& Afs,
-        MLAPI::Operator& Afa, MLAPI::Operator& Aaf, bool initiguesszero = false,
-        bool analysis = false, bool silent = false) const;
-
-    /*! Richardson iteration with Schurcomplement preconditioner
-     *  for fluid split case
-     */
-    double RichardsonSchurFluidSplit_S(const int myrank, const int sweeps, const double damp,
-        std::vector<int>* blocksweeps, std::vector<double>* blockdamps, const int level,
-        AnalyzeBest& sbest, AnalyzeBest& fbest, AnalyzeBest& abest, MLAPI::MultiVector& sy,
-        MLAPI::MultiVector& fy, MLAPI::MultiVector& ay, const MLAPI::MultiVector& sf,
-        const MLAPI::MultiVector& ff, const MLAPI::MultiVector& af,
-        std::vector<MLAPI::Operator>& Ass, std::vector<MLAPI::Operator>& Pss,
-        std::vector<MLAPI::Operator>& Rss, std::vector<MLAPI::Operator>& Aff,
-        std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
-        std::vector<MLAPI::Operator>& Aaa, std::vector<MLAPI::Operator>& Paa,
-        std::vector<MLAPI::Operator>& Raa, MLAPI::Operator& Asf, MLAPI::Operator& Afs,
-        MLAPI::Operator& Afa, MLAPI::Operator& Aaf, bool initiguesszero = false,
-        bool analysis = false, bool silent = false) const;
-
-    //! AMG(BGS) Richardson iteration with block V cycle for FSI
-    double Richardson_BlockV(const int myrank, const int sweeps, const double damp,
-        std::vector<int>& Vsweeps, std::vector<double>& Vdamps, std::vector<int>* blocksweeps,
-        std::vector<double>* blockdamps, const std::vector<std::string>& blocksmoother,
-        AnalyzeBest& sbest, AnalyzeBest& fbest, AnalyzeBest& abest, MLAPI::MultiVector& sy,
-        MLAPI::MultiVector& fy, MLAPI::MultiVector& ay, const MLAPI::MultiVector& sf,
-        const MLAPI::MultiVector& ff, const MLAPI::MultiVector& af,
-        std::vector<MLAPI::Operator>& Ass, std::vector<MLAPI::Operator>& Pss,
-        std::vector<MLAPI::Operator>& Rss, std::vector<MLAPI::Operator>& Aff,
-        std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
-        std::vector<MLAPI::Operator>& Aaa, std::vector<MLAPI::Operator>& Paa,
-        std::vector<MLAPI::Operator>& Raa, std::vector<MLAPI::Operator>& Asf,
-        std::vector<MLAPI::Operator>& Afs, std::vector<MLAPI::Operator>& Afa,
-        std::vector<MLAPI::Operator>& Aaf, bool initiguesszero = false, bool analysis = false,
-        bool silent = false) const;
-
-    //! AMG(BGS) block V cycle for FSI
-    void BlockVcycle(const int myrank, std::vector<int>& Vsweeps, std::vector<double>& Vdamps,
-        std::vector<int>* blocksweeps, std::vector<double>* blockdamps,
-        const std::vector<std::string>& blocksmoother, const int level, const int minnlevel,
-        AnalyzeBest& sbest, AnalyzeBest& fbest, AnalyzeBest& abest, MLAPI::MultiVector& sy,
-        MLAPI::MultiVector& fy, MLAPI::MultiVector& ay, const MLAPI::MultiVector& sf,
-        const MLAPI::MultiVector& ff, const MLAPI::MultiVector& af,
-        std::vector<MLAPI::Operator>& Ass, std::vector<MLAPI::Operator>& Pss,
-        std::vector<MLAPI::Operator>& Rss, std::vector<MLAPI::Operator>& Aff,
-        std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
-        std::vector<MLAPI::Operator>& Aaa, std::vector<MLAPI::Operator>& Paa,
-        std::vector<MLAPI::Operator>& Raa, std::vector<MLAPI::Operator>& Asf,
-        std::vector<MLAPI::Operator>& Afs, std::vector<MLAPI::Operator>& Afa,
-        std::vector<MLAPI::Operator>& Aaf) const;
 
     /// @name Access routines
     //!{
