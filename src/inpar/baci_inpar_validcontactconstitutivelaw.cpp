@@ -114,10 +114,10 @@ INPUT::ValidContactConstitutiveLaws()
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_mirco",
             "Mirco function", INPAR::CONTACT::ConstitutiveLawType::colaw_mirco));
 
-    AddNamedReal(m, "FirstMatID", "First material ID");
-    AddNamedReal(m, "SecondMatID", "Second material ID");
+    AddNamedInt(m, "FirstMatID", "First material ID");
+    AddNamedInt(m, "SecondMatID", "Second material ID");
     AddNamedReal(m, "LateralLength", "length of lateral side of the BEM patch");
-    AddNamedReal(m, "Resolution", "resolution of the surface");
+    AddNamedInt(m, "Resolution", "resolution of the surface");
     AddNamedBool(m, "PressureGreenFunFlag",
         "Use pressure-based Green function instead of a point-force-based", true, true);
     AddNamedReal(m, "InitialTopologyStdDeviation",
@@ -125,9 +125,9 @@ INPUT::ValidContactConstitutiveLaws()
     AddNamedReal(m, "HurstExponent", "Hurst exponent of the surface", 0.7, true);
     AddNamedBool(m, "RandomTopologyFlag", "Use random midpoint generator flag", true, true);
     AddNamedBool(m, "RandomSeedFlag", "Random seed flag", false, true);
-    AddNamedReal(m, "RandomGeneratorSeed", "Use random seed to reproduce results", 95, true);
+    AddNamedInt(m, "RandomGeneratorSeed", "Use random seed to reproduce results", 95, true);
     AddNamedReal(m, "Tolerance", "Tolerance for the convergence of force", 0.01, true);
-    AddNamedReal(m, "MaxIteration", "Maximum iteration of NNLS", 1000, true);
+    AddNamedInt(m, "MaxIteration", "Maximum iteration of NNLS", 1000, true);
     AddNamedBool(m, "WarmStartingFlag", "Warm-starting flag, solution accelerator", true, true);
     AddNamedReal(m, "Offset", "offset for contact to start", 0.0, true);
     AddNamedReal(m, "FiniteDifferenceFraction",

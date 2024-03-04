@@ -45,18 +45,18 @@ namespace
               1, INPAR::CONTACT::ConstitutiveLawType::colaw_mirco, "Mirco Constitutivelaw"));
 
       // add parameters to container
-      container->Add("FirstMatID", 1.0);
-      container->Add("SecondMatID", 1.0);
+      container->Add("FirstMatID", 1);
+      container->Add("SecondMatID", 1);
       container->Add("LateralLength", 1000.0);
-      container->Add("Resolution", 6.0);
+      container->Add("Resolution", 6);
       container->Add("PressureGreenFunFlag", false);
       container->Add("InitialTopologyStdDeviation", 20.0);
       container->Add("HurstExponent", 0.7);
       container->Add("RandomTopologyFlag", true);
       container->Add("RandomSeedFlag", false);
-      container->Add("RandomGeneratorSeed", 95.0);
+      container->Add("RandomGeneratorSeed", 95);
       container->Add("Tolerance", 0.01);
-      container->Add("MaxIteration", 100.0);
+      container->Add("MaxIteration", 100);
       container->Add("WarmStartingFlag", true);
       container->Add("Offset", 2.0);
       container->Add("FiniteDifferenceFraction", 0.001);
