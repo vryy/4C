@@ -115,16 +115,9 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
   const std::map<int, double> shape_factors_force{{1, 0.778958541513360}, {2, 0.805513388666376},
       {3, 0.826126871395416}, {4, 0.841369158110513}, {5, 0.851733020725652},
       {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}};
-  std::cout << "The pressure flag is " << pressureGreenFunFlag_ << std::endl;
-  double ShapeFactor;
-  if (pressureGreenFunFlag_)
-  {
-    ShapeFactor = shape_factors_pressure.at(resolution_);
-  }
-  else
-  {
-    ShapeFactor = shape_factors_force.at(resolution_);
-  }
+
+  const double ShapeFactor = pressureGreenFunFlag_ ? shape_factors_pressure.at(resolution_)
+                                                   : shape_factors_force.at(resolution_);
 
   elasticComplianceCorrection_ = lateralLength_ * compositeYoungs_ / ShapeFactor;
 
