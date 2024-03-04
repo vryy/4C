@@ -35,7 +35,7 @@ namespace DRT::ELEMENTS
       out.reshape(b, c);
       CORE::LINALG::Matrix<b, c> out_mat(out.values(), true);
 
-      out_mat.MultiplyTN(1.0, mat1, mat2, 0.0);
+      out_mat.MultiplyTN(mat1, mat2);
     }
   }  // namespace DETAILS
 
@@ -115,7 +115,7 @@ namespace DRT::ELEMENTS
   {
     CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
         d2_cauchyndir_dF2_d_F_dd(false);
-    d2_cauchyndir_dF2_d_F_dd.Multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
+    d2_cauchyndir_dF2_d_F_dd.Multiply(d2_cauchyndir_dF2, d_F_dd);
     DETAILS::MultiplyTN(d_F_dd, d2_cauchyndir_dF2_d_F_dd, d2_cauchyndir_dd_dd);
   }
 
@@ -132,7 +132,7 @@ namespace DRT::ELEMENTS
       const CORE::LINALG::Matrix<9, 1>& d_cauchyndir_dF,
       CORE::LINALG::Matrix<3, 1>& d_cauchyndir_dxi)
   {
-    d_cauchyndir_dxi.MultiplyTN(1.0, d_F_dxi, d_cauchyndir_dF, 0.0);
+    d_cauchyndir_dxi.MultiplyTN(d_F_dxi, d_cauchyndir_dF);
   }
 
   /*!
