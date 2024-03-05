@@ -28,7 +28,6 @@ DRT::ELEMENTS::BeamRuntimeOutputParams::BeamRuntimeOutputParams()
       write_material_crosssection_strains_gausspoints_(false),
       write_material_crosssection_strains_continuous_(false),
       write_material_crosssection_stresses_gausspoints_(false),
-      write_material_crosssection_stresses_continuous_(false),
       write_spatial_crosssection_stresses_gausspoints_(false),
       write_filament_condition_(false),
       write_orientation_parameter_(false),

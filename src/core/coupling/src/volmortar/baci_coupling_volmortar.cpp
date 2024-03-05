@@ -5045,7 +5045,6 @@ bool CORE::VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
     }
 
     // collapse addtriangles (remove double entries)
-    int nadd = 0;
     for (int k = 0; k < (int)addtriangles.size(); ++k)
     {
       bool addbefore = false;
@@ -5072,7 +5071,6 @@ bool CORE::VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
       // add to good triangles
       if (!addbefore)
       {
-        nadd++;
         goodtriangles.push_back(addtriangles[k]);
       }
     }

@@ -58,7 +58,6 @@ namespace FLD
 
    private:
     double density_;
-    double kinviscosity_;
   };
 
   /// special implementation beltrami flow (gradient of velocity)
@@ -79,9 +78,6 @@ namespace FLD
      * \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
      */
     std::size_t NumberComponents() const override { return (9); };
-
-   private:
-    double kinviscosity_;
   };
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (velocity,
@@ -232,7 +228,6 @@ namespace FLD
     double meanvelocityexit_;
     double viscosity_;
     double refdensity_;
-    double refpressure_;
     double comprcoeff_;
   };
 
@@ -311,8 +306,6 @@ namespace FLD
 
    private:
     double refdensity_;
-    double refpressure_;
-    double comprcoeff_;
   };
 
   /// special implementation for weakly compressible flow - Etienne CFD problem (viscosity)
@@ -327,11 +320,6 @@ namespace FLD
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t NumberComponents() const override { return (1); };
-
-   private:
-    double refdensity_;
-    double refpressure_;
-    double comprcoeff_;
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem

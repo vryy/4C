@@ -292,17 +292,10 @@ void CONTACT::IntegratorNitschePoro::IntegratePoroNoOutFlow(const double fac, MO
   double sdphi_dJ;
   GetPoroQuantitiesatGP(ele, xi, spresgp, sJ, sJLin, sporosity, sdphi_dp, sdphi_dJ);
 
-  double opresgp = 0;
   if (otherele.MoData().ParentPFDof().size())  // two sided poro contact case
   {
     sweight = 0.5;
     oweight = 1 - sweight;
-    for (int j = 0; j < otherele.NumNode(); ++j)
-    {
-      int pj = CORE::FE::getParentNodeNumberFromFaceNodeNumber(
-          otherele.ParentElement()->Shape(), otherele.FaceParentNumber(), j);
-      opresgp += otherele.MoData().ParentPFPres()[pj] * othershape(j);
-    }
   }
 
   double val = fac * jac * wgt / dv_dd_;  //*1./dv_dd_;

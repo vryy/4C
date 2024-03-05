@@ -158,9 +158,6 @@ namespace CONTACT
       { /* empty */
       }
 
-      /// default copy constructor
-      UniqueProjInfo(const UniqueProjInfo& projinfo) = default;
-
       /** \brief Fill the container with new information
        *
        *  \param[in] gp               Gauss point id number

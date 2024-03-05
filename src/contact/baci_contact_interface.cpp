@@ -1929,9 +1929,6 @@ void CONTACT::Interface::StoreLTLvalues()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
 {
-  double slaveforce = 0.0;
-  double masterforce = 0.0;
-
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
   const double penaltytan = InterfaceParams().get<double>("PENALTYPARAMTAN");
   const double frcoeff = InterfaceParams().get<double>("FRCOEFF");
@@ -2030,7 +2027,6 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
             const int ltlid = csnode->Dofs()[dim];
             int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
-            slaveforce += value;
           }
         }
       }
@@ -2058,8 +2054,6 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
             const int ltlid = csnode->Dofs()[dim];
             int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
-
-            masterforce += value;
           }
         }
       }
@@ -2071,13 +2065,6 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
       break;
     }
   }
-
-  //  std::cout << "--------------------------------FRICTION:"<<std::endl;
-  //  std::cout << "LTL slaveforce  = " << slaveforce << std::endl;
-  //  std::cout << "LTL masterforce = " << masterforce << std::endl;
-  //  std::cout << "LTL sum         = " << slaveforce+masterforce << std::endl;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2669,9 +2656,6 @@ void CONTACT::Interface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
 {
-  double slaveforce = 0.0;
-  double masterforce = 0.0;
-
   // gap = g_n * n
   // D/M = sval/mval
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
@@ -2710,7 +2694,6 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
             int ltlid = csnode->Dofs()[dim];
             int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
-            slaveforce += value;
           }
         }
       }
@@ -2738,7 +2721,6 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
             int ltlid = {csnode->Dofs()[dim]};
             int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) dserror("stop");
-            masterforce += value;
           }
         }
       }
@@ -2748,12 +2730,6 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
       }
     }
   }
-
-  //  std::cout << "LTL slaveforce  = " << slaveforce << std::endl;
-  //  std::cout << "LTL masterforce = " << masterforce << std::endl;
-  //  std::cout << "LTL sum         = " << slaveforce+masterforce << std::endl;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -6757,9 +6733,6 @@ void CONTACT::Interface::EvaluateSTL()
   // check
   if (Dim() == 2) dserror("LTS algorithm only for 3D simulations!");
 
-  // counter
-  int count = 0;
-
   // loop over slave elements
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
@@ -6855,9 +6828,6 @@ void CONTACT::Interface::EvaluateSTL()
 
             // perform evaluate!
             coup.EvaluateCoupling();
-
-            // count for safety
-            count++;
           }
         }  // end edge loop
       }
@@ -6938,9 +6908,6 @@ void CONTACT::Interface::EvaluateLTSMaster()
 {
   // check
   if (Dim() == 2) dserror("LTS algorithm only for 3D simulations!");
-
-  // counter
-  int count = 0;
 
   // guarantee uniquness
   std::set<std::pair<int, int>> donebefore;
@@ -7154,33 +7121,10 @@ void CONTACT::Interface::EvaluateLTSMaster()
 
           // perform evaluate!
           coup.EvaluateCoupling();
-
-          // count for safety
-          count++;
         }
       }  // end edge loop
     }
-
-
-    // loop over all created line elements
-    //    for(int l = 0; l<(int)lineElements.size(); ++l)
-    //    {
-    //      // create coupling object
-    //      LineToSurfaceCoupling3d coup(
-    //          *idiscret_,
-    //          3,
-    //          InterfaceParams(),
-    //          *selement,
-    //          lineElements[l],
-    //          meleElements,
-    //          LineToSurfaceCoupling3d::lts);
-    //
-    //      // perform evaluate!
-    //      coup.EvaluateCoupling();
-    //    }
   }  // slave ele loop
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -7190,9 +7134,6 @@ void CONTACT::Interface::EvaluateLTS()
 {
   // check
   if (Dim() == 2) dserror("LTS algorithm only for 3D simulations!");
-
-  // counter
-  int count = 0;
 
   // guarantee uniquness
   std::set<std::pair<int, int>> donebefore;
@@ -7391,9 +7332,6 @@ void CONTACT::Interface::EvaluateLTS()
 
         // push back into vector
         lineElements.push_back(lineEle);
-
-        // count for safety
-        count++;
       }
     }  // end edge loop
 
@@ -8713,11 +8651,9 @@ bool CONTACT::Interface::UpdateActiveSetSemiSmooth()
 
     // compute normal part of Lagrange multiplier
     double nz = 0.0;
-    double nzold = 0.0;
     for (int k = 0; k < 3; ++k)
     {
       nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
-      nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
     }
 
     // friction
@@ -9232,8 +9168,6 @@ void CONTACT::Interface::GetForceOfNode(CORE::LINALG::Matrix<3, 1>& nodal_force,
 void CONTACT::Interface::EvalResultantMoment(const Epetra_Vector& fs, const Epetra_Vector& fm,
     CORE::LINALG::SerialDenseMatrix* conservation_data_ptr) const
 {
-  static int step = 0;
-
   double lresMoSl[3] = {0.0, 0.0, 0.0};  // local slave moment
   double gresMoSl[3] = {0.0, 0.0, 0.0};  // global slave moment
   double lresMoMa[3] = {0.0, 0.0, 0.0};  // local master momemnt
@@ -9295,8 +9229,6 @@ void CONTACT::Interface::EvalResultantMoment(const Epetra_Vector& fs, const Epet
   {
     gbalMo[d] = gresMoSl[d] + gresMoMa[d];
     gbalF[d] = gresFSl[d] + gresFMa[d];
-
-    //    if (abs(balMo[d])>1.0e-11) dserror("Conservation of angular momentum is not fulfilled!");
   }
   if (Comm().MyPID() == 0)
   {
@@ -9332,7 +9264,6 @@ void CONTACT::Interface::EvalResultantMoment(const Epetra_Vector& fs, const Epet
     std::copy(gbalMo, gbalMo + 3, conservation_data.values() + 15);
   }
 
-  ++step;
   return;
 }
 

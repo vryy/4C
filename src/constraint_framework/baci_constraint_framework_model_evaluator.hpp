@@ -133,9 +133,6 @@ namespace STR
 
       //! structural stiffness matrix
       Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr_;
-
-      //! Enforcement strategy
-      INPAR::CONSTRAINTS::Strategy strategy_ = INPAR::CONSTRAINTS::Strategy::penalty_regularization;
     };
   }  // namespace MODELEVALUATOR
 }  // namespace STR

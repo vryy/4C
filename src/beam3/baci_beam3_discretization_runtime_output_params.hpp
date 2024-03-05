@@ -215,9 +215,6 @@ namespace DRT
       /// whether to write material cross-section stresses at the Gauss points
       bool write_material_crosssection_stresses_gausspoints_;
 
-      /// whether to write material cross-section stresses at the visualization points
-      bool write_material_crosssection_stresses_continuous_;
-
       /// whether to write spatial cross-section stresses at the Gauss points
       bool write_spatial_crosssection_stresses_gausspoints_;
 

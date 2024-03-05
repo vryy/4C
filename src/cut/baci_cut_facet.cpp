@@ -1324,7 +1324,6 @@ void CORE::GEO::CUT::Facet::CornerPointsLocal(
   cornersLocal.clear();
 
   const std::vector<Point*>& corners = CornerPoints();
-  int mm = 0;
 
   for (std::vector<Point*>::const_iterator k = corners.begin(); k != corners.end(); k++)
   {
@@ -1348,7 +1347,6 @@ void CORE::GEO::CUT::Facet::CornerPointsLocal(
     pt_local.push_back(loc(2, 0));
 
     cornersLocal.push_back(pt_local);
-    mm++;
   }
 }
 
@@ -1360,7 +1358,6 @@ std::vector<std::vector<double>> CORE::GEO::CUT::Facet::CornerPointsGlobal(
     Element* elem1, bool shadow)
 {
   const std::vector<Point*>& corners = CornerPoints();
-  int mm = 0;
   std::vector<std::vector<double>> cornersLocal;
   for (std::vector<Point*>::const_iterator k = corners.begin(); k != corners.end(); k++)
   {
@@ -1371,7 +1368,6 @@ std::vector<std::vector<double>> CORE::GEO::CUT::Facet::CornerPointsGlobal(
     for (unsigned dim = 0; dim < 3; dim++) pt_local[dim] = coords[dim];
 
     cornersLocal.push_back(pt_local);
-    mm++;
   }
   return cornersLocal;
 }

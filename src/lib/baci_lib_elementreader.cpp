@@ -139,7 +139,7 @@ std::pair<int, std::vector<int>> INPUT::ElementReader::GetElementSizeAndIDs() co
 
       // loop all element lines, comments in the element section are not supported!
       std::string line;
-      for (int i = 0; getline(file, line); ++i)
+      while (getline(file, line))
       {
         if (line.find("--") == 0)
           break;
@@ -184,7 +184,6 @@ void INPUT::ElementReader::GetAndDistributeElements(const int nblock, const int 
     file.seekg(reader_.ExcludedSectionPosition(sectionname_));
   }
   std::string line;
-  int filecount = 0;
   bool endofsection = false;
 
   INPUT::ElementDefinition ed;
@@ -197,7 +196,7 @@ void INPUT::ElementReader::GetAndDistributeElements(const int nblock, const int 
     {
       gidlist.reserve(bsize);
       int bcount = 0;
-      for (; getline(file, line); ++filecount)
+      while (getline(file, line))
       {
         if (line.find("--") == 0)
         {
@@ -270,7 +269,6 @@ void INPUT::ElementReader::GetAndDistributeElements(const int nblock, const int 
             {
               if (bcount == bsize)
               {
-                filecount++;
                 break;
               }
             }

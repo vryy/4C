@@ -37,7 +37,7 @@ namespace MAT
 
 namespace CORE::GEOMETRICSEARCH
 {
-  class BoundingVolume;
+  struct BoundingVolume;
   class GeometricSearchParams;
 }  // namespace CORE::GEOMETRICSEARCH
 

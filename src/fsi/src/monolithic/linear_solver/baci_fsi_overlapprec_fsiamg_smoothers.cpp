@@ -83,9 +83,6 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
     initrinf = std::max(initrinf, initfrinf);
   }
   Teuchos::Time timer("", true);
-  double t1 = 0.0;
-  double t2 = 0.0;
-  double t3 = 0.0;
 
   for (int i = 1; i <= sweeps; ++i)
   {
@@ -106,7 +103,6 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
             structuresolver_, sz, stmpf, const_cast<int&>(srun_), true, false, true);
 
       sy.Update(damp, sz, 1.0);
-      if (analysis) t1 += timer.totalElapsedTime(true);
     }
     //---------------------- ale block
     {
@@ -128,7 +124,6 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
             alesolver_, az, atmpf, const_cast<int&>(arun_), true, false, true);
 
       ay.Update(damp, az, 1.0);
-      if (analysis) t2 += timer.totalElapsedTime(true);
     }
     //------------------------ fluid block
     {
@@ -148,7 +143,6 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
             fluidsolver_, fz, ftmpf, const_cast<int&>(frun_), true, false, true);
 
       fy.Update(damp, fz, 1.0);
-      if (analysis) t3 += timer.totalElapsedTime(true);
     }
   }  // iterations
 

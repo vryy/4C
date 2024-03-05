@@ -37,14 +37,11 @@ NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     : utils_(printParams),
       jacInterfacePtr_(iJac),
       jacType_(EpetraOperator),
-      precType_(EpetraOperator),
       jacPtr_(J),
       scaling_(s),
-      conditionNumberEstimate_(0.0),
       callcount_(0),
       solver_(solver),
-      timer_("", true),
-      timeApplyJacbianInverse_(0.0)
+      timer_("", true)
 {
   tmpVectorPtr_ = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
 
