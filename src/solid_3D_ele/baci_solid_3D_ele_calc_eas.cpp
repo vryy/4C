@@ -7,6 +7,7 @@
 
 #include "baci_solid_3D_ele_calc_eas.hpp"
 
+#include "baci_comm_parobject.hpp"
 #include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_densematrix_eigen.hpp"
 #include "baci_mat_so3_material.hpp"
@@ -14,12 +15,13 @@
 #include "baci_solid_3D_ele_calc_lib.hpp"
 #include "baci_solid_3D_ele_calc_lib_integration.hpp"
 #include "baci_solid_3D_ele_calc_lib_io.hpp"
-#include "baci_solid_3D_ele_utils.hpp"
+#include "baci_structure_new_elements_paramsinterface.hpp"
 #include "baci_structure_new_gauss_point_data_output_manager.hpp"
 
+#include <Teuchos_dyn_cast.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
-#include <memory>
 #include <optional>
 
 BACI_NAMESPACE_OPEN
@@ -191,21 +193,18 @@ namespace
   }
 
   /*!
-   * @brief Evaluates and returns the enhanced strains scalar increment
+   * @brief Updates the enhanced strains scalar increment
    *
    * @tparam celltype, eastype
    * @param displ_inc(in) : displacement increment delta_D_{i+1}
    * @param eas_iteration_data(in) : EAS matrices and vectors from iteration i
-   * @return double : enhanced strains scalar increment delta_alpha_{i+1}
    */
   template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> EvaluateAlphaIncrement(
-      const CORE::LINALG::Matrix<num_dof_per_ele<celltype>, 1>& displ_inc,
-      const DRT::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data)
+  void UpdateAlphaIncrement(const CORE::LINALG::Matrix<num_dof_per_ele<celltype>, 1>& displ_inc,
+      DRT::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data)
   {
     // the enhanced strains scalar increment is computed to:
     // delta_alpha_{i+1} = - invKaa_{i} (s_{i} + Kad_{i} delta_D_{i+1})
-    CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> alpha_inc(true);
 
     // init as enhancement vector s_{i}
     CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> tmp(
@@ -215,13 +214,11 @@ namespace
     tmp.MultiplyTN(1.0, eas_iteration_data.Kda_, displ_inc, 1.0);
 
     // multiplication with (- invKaa_{i})
-    alpha_inc.Multiply(-1.0, eas_iteration_data.invKaa_, tmp);
-
-    return alpha_inc;
+    eas_iteration_data.alpha_inc_.Multiply(-1.0, eas_iteration_data.invKaa_, tmp);
   }
 
   /*!
-   * @brief Evaluates the enhanced strain scalars and updates eas_iteration_data.alpha_
+   * @brief Updates the enhanced strain scalars, alpha_inc and alpha in the iteration data
    * accordingly
    *
    * @tparam celltype, eastype
@@ -230,19 +227,36 @@ namespace
    * @param lm(in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    */
   template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  void EvaluateAlpha(DRT::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data,
-      const DRT::Discretization& discretization, const std::vector<int>& lm)
+  void UpdateAlpha(DRT::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data,
+      const DRT::Discretization& discretization, const std::vector<int>& lm,
+      const double step_length = 1.0)
   {
     // residual displacement at the previous step
     CORE::LINALG::Matrix<num_dof_per_ele<celltype>, 1> displ_inc(false);
     displ_inc = GetDisplacementIncrement<celltype>(discretization, lm);
 
     // compute the enhanced strain scalar increment delta_alpha
-    CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> alpha_inc =
-        EvaluateAlphaIncrement<celltype, eastype>(displ_inc, eas_iteration_data);
+    UpdateAlphaIncrement<celltype, eastype>(displ_inc, eas_iteration_data);
 
     // update alpha_i with the increment delta_alpha such that alpha_{i+1} = alpha_{i} + delta_alpha
-    eas_iteration_data.alpha_.Update(1.0, alpha_inc, 1.0);
+    eas_iteration_data.alpha_.Update(step_length, eas_iteration_data.alpha_inc_, 1.0);
+  }
+
+  /*!
+   * @brief Correct alpha in a line search step by adapting the step length
+   *
+   * @tparam celltype
+   * @tparam eastype
+   * @param eas_iteration_data (in/out) : EAS iteration data
+   * @param new_step_length (in) : new step length
+   * @param old_step_length (in) : old step length
+   */
+  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  void CorrectAlpha(DRT::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data,
+      const double new_step_length, const double old_step_length)
+  {
+    eas_iteration_data.alpha_.Update(
+        new_step_length - old_step_length, eas_iteration_data.alpha_inc_, 1.0);
   }
 
   /*!
@@ -602,24 +616,29 @@ template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   constexpr int num_dof_per_element = CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>;
-  DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
+  CORE::COMM::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
+      data, eas_iteration_data_.alpha_inc_);
+  CORE::COMM::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
       data, eas_iteration_data_.alpha_);
-  DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
+  CORE::COMM::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
       data, eas_iteration_data_.s_);
-  DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas,
+  CORE::COMM::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas,
       STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(data, eas_iteration_data_.invKaa_);
-  DRT::ELEMENTS::Solid::AddtoPack<num_dof_per_element,
+  CORE::COMM::ParObject::AddtoPack<num_dof_per_element,
       STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(data, eas_iteration_data_.Kda_);
+  CORE::COMM::ParObject::AddtoPack(data, old_step_length_);
 };
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
 void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
+  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_inc_);
   CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_);
   CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.s_);
   CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.invKaa_);
   CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.Kda_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, old_step_length_);
 };
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
@@ -646,7 +665,11 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceSt
   CentroidTransformation<celltype> centroid_transformation =
       EvaluateCentroidTransformation<celltype>(nodal_coordinates);
 
-  EvaluateAlpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
+  if (!ele.IsParamsInterface())
+  {
+    // Update alpha only in old time integration scheme
+    UpdateAlpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
+  }
 
   // clear for integration
   eas_iteration_data_.invKaa_.Clear();
@@ -745,11 +768,35 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceSt
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(const DRT::Element& ele,
+void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
-  dserror("Recovering is not yet implemented for EAS elements");
+  STR::ELEMENTS::ParamsInterface& params_interface =
+      *Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(ele.ParamsInterfacePtr());
+
+  const double step_length = params_interface.GetStepLength();
+
+  if (params_interface.IsDefaultStep())
+  {
+    params_interface.SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
+        STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, &eas_iteration_data_.alpha_(0, 0),
+        ele.Owner());
+
+    // Update alpha
+    UpdateAlpha(eas_iteration_data_, discretization, lm, step_length);
+  }
+  else
+  {
+    CorrectAlpha(eas_iteration_data_, step_length, old_step_length_);
+  }
+
+  // store old step length
+  old_step_length_ = step_length;
+
+  params_interface.SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+      STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, &eas_iteration_data_.alpha_inc_(0, 0),
+      &eas_iteration_data_.alpha_(0, 0), step_length, ele.Owner());
 }
 
 template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
@@ -813,7 +860,11 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(const DR
   CentroidTransformation<celltype> centroid_transformation =
       EvaluateCentroidTransformation<celltype>(nodal_coordinates);
 
-  EvaluateAlpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
+  if (!ele.IsParamsInterface())
+  {
+    // Update alpha only in old time integration scheme
+    UpdateAlpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
+  }
 
   EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(nodal_coordinates, params);
 
@@ -865,7 +916,11 @@ double DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateInternalEnerg
   CentroidTransformation<celltype> centroid_transformation =
       EvaluateCentroidTransformation<celltype>(nodal_coordinates);
 
-  EvaluateAlpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
+  if (!ele.IsParamsInterface())
+  {
+    // Update alpha only in old time integration scheme
+    UpdateAlpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
+  }
 
   ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,

@@ -95,6 +95,9 @@ namespace DRT
       /// EAS enhacement vector s
       CORE::LINALG::Matrix<num_eas, 1> s_{true};
 
+      /// discrete enhanced strain scalars increment
+      CORE::LINALG::Matrix<num_eas, 1> alpha_inc_{true};
+
       /// discrete enhanced strain scalars alpha
       CORE::LINALG::Matrix<num_eas, 1> alpha_{true};
     };
@@ -120,7 +123,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
           CORE::LINALG::SerialDenseMatrix* mass_matrix);
 
-      void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
+      void Recover(DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params);
 
       void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
@@ -149,6 +152,9 @@ namespace DRT
      private:
       /// EAS matrices and vectors to be stored between iterations
       DRT::ELEMENTS::EasIterationData<celltype, eastype> eas_iteration_data_ = {};
+
+      // line search parameter (old step length)
+      double old_step_length_;
 
       /// static values for matrix sizes
       static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
