@@ -31,10 +31,9 @@ set(_dependencies
     scatra
     shell7p
     so3
-    solid_ele
+    solid_3D_ele
     solver_nonlin_nox
     ssi
-    struct_ale
     structure
     structure_new
     thermo

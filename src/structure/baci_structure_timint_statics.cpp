@@ -365,8 +365,10 @@ void STR::TimIntStatics::UpdateIterIteratively()
 /* update after time step */
 void STR::TimIntStatics::UpdateStepState()
 {
-  // calculate pseudo velocity and acceleration for predictor before updates
-  if (pred_ == INPAR::STR::pred_constvel || pred_ == INPAR::STR::pred_constacc)
+  // calculate pseudo velocity and acceleration for predictor and/or binning
+  // of the contact interface before updates
+  if (pred_ == INPAR::STR::pred_constvel || pred_ == INPAR::STR::pred_constacc ||
+      HaveContactMeshtying())
     veln_->Update(1. / (*(*dt_)(0)), *disn_, -1. / (*(*dt_)(0)), *(*dis_)(0), 0.);
   if (pred_ == INPAR::STR::pred_constacc)
     accn_->Update(1. / (*(*dt_)(0)), *veln_, -1. / (*(*dt_)(0)), *(*vel_)(0), 0.);
@@ -467,5 +469,6 @@ void STR::TimIntStatics::ApplyDirichletBC(const double time, Teuchos::RCP<Epetra
 
   return;
 }
+
 
 BACI_NAMESPACE_CLOSE

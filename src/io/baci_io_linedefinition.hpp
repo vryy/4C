@@ -14,11 +14,13 @@
 
 #include "baci_config.hpp"
 
+#include "baci_inpar_container.hpp"
 #include "baci_io_inputreader.hpp"
 
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -90,7 +92,8 @@ namespace INPUT
        * A function type that may be supplied to some of the Add... functions in this class to
        * define how the number of vector entries should be determined from the @p already_read_line.
        */
-      using LengthDefinition = std::function<std::size_t(const LineDefinition& already_read_line)>;
+      using LengthDefinition =
+          std::function<std::size_t(const INPAR::InputParameterContainer& already_read_line)>;
 
       /**
        * Create a new Builder.
@@ -237,23 +240,16 @@ namespace INPUT
     /// print to dat file comment
     void Print(std::ostream& stream) const;
 
-    /// try to read this line from the stream
-    /*!
-      If reading succeeds, the LineDefinition contains the values of the
-      line. Otherwise, the values are undefined and should not be used.
-
-      @return true on success
+    /**
+     * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
      */
-    bool Read(std::istream& stream);
+    std::optional<INPAR::InputParameterContainer> Read(std::istream& stream);
 
-    /// try to read this line from the stream, but skip the component named name
-    /*!
-      If reading succeeds, the LineDefinition contains the values of the
-      line. Otherwise, the values are undefined and should not be used.
-
-      @return true on success
+    /**
+     * If reading succeeds, returns the data. Otherwise, returns an empty std::optional.
      */
-    bool Read(std::istream& stream, const std::string* name);
+    std::optional<INPAR::InputParameterContainer> Read(
+        std::istream& stream, const std::string* name);
 
     /// tell if there is a named component with the given name
     [[nodiscard]] bool HaveNamed(const std::string& name) const;
@@ -357,7 +353,7 @@ namespace INPUT
   {
     LengthFromIntNamed(std::string definition_name);
 
-    std::size_t operator()(const LineDefinition& already_read_line);
+    std::size_t operator()(const INPAR::InputParameterContainer& already_read_line);
 
    private:
     std::string definition_name_;

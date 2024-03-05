@@ -15,7 +15,7 @@
 #include "baci_membrane_scatra.hpp"
 #include "baci_shell7p_ele_scatra.hpp"
 #include "baci_so3_scatra.hpp"
-#include "baci_solid_scatra_ele.hpp"
+#include "baci_solid_scatra_3D_ele.hpp"
 #include "baci_truss3_scatra.hpp"
 #include "baci_w1_scatra.hpp"
 

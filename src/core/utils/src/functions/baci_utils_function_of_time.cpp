@@ -11,70 +11,6 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace
-{
-  /// creates a vector of times from a given NUMPOINTS and TIMERANGE
-  std::vector<double> CreateTimesFromTimeRange(
-      const std::vector<double>& timerange, const int& numpoints)
-  {
-    std::vector<double> times;
-
-    // get initial and final time
-    double t_initial = timerange[0];
-    double t_final = timerange[1];
-
-    // build the vector of times
-    times.push_back(t_initial);
-    int n = 0;
-    double dt = (t_final - t_initial) / (numpoints - 1);
-    while (times[n] + dt <= t_final + 1.0e-14)
-    {
-      if (times[n] + 2 * dt <= t_final + 1.0e-14)
-      {
-        times.push_back(times[n] + dt);
-      }
-      else
-      {
-        times.push_back(t_final);
-      }
-      ++n;
-    }
-
-    return times;
-  }
-
-  std::vector<double> ExtractTimeVector(const INPUT::LineDefinition& timevar)
-  {
-    // read the number of points
-    int numpoints;
-    timevar.ExtractInt("NUMPOINTS", numpoints);
-
-    // read whether times are defined by number of points or by vector
-    bool bynum = timevar.HasString("BYNUM");
-
-    // read respectively create times vector
-    std::vector<double> times;
-    if (bynum)  // times defined by number of points
-    {
-      // read the time range
-      std::vector<double> timerange;
-      timevar.ExtractDoubleVector("TIMERANGE", timerange);
-
-      // create time vector from number of points and time range
-      times = CreateTimesFromTimeRange(timerange, numpoints);
-    }
-    else  // times defined by vector
-    {
-      timevar.ExtractDoubleVector("TIMES", times);
-    }
-
-    // check if the times are in ascending order
-    if (!std::is_sorted(times.begin(), times.end()))
-      dserror("the TIMES must be in ascending order");
-
-    return times;
-  }
-}  // namespace
 
 CORE::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
     const std::vector<std::string>& expressions,
@@ -255,7 +191,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
           else if (vartype == "linearinterpolation")
           {
             // read times
-            std::vector<double> times = ExtractTimeVector(line);
+            std::vector<double> times = INTERNAL::ExtractTimeVector(line);
 
             // read values
             std::vector<double> values;
@@ -267,7 +203,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
           else if (vartype == "multifunction")
           {
             // read times
-            std::vector<double> times = ExtractTimeVector(line);
+            std::vector<double> times = INTERNAL::ExtractTimeVector(line);
 
             // read descriptions (strings separated with spaces)
             std::vector<std::string> description_vec;
@@ -285,7 +221,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
           else if (vartype == "fourierinterpolation")
           {
             // read times
-            std::vector<double> times = ExtractTimeVector(line);
+            std::vector<double> times = INTERNAL::ExtractTimeVector(line);
 
             // read values
             std::vector<double> values;

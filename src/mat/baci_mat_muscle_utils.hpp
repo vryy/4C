@@ -266,8 +266,34 @@ namespace MAT::UTILS::MUSCLE
    * @param[out]    sigma_max_ft Time-/space-dependent optimal active stress at x, t_current
    */
   double EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
-      const CORE::UTILS::FunctionOfSpaceTime *&activation_function, const double t_current,
+      const CORE::UTILS::FunctionOfSpaceTime &activation_function, const double t_current,
       const CORE::LINALG::Matrix<3, 1> &x);
+
+  /*!
+   * @brief Evaluate the time- and space-dependent optimal (i.e. maximal) active stress through
+   * a csv mapping function ft defined in the input file (MAP_FROM_CSV). This
+   * function takes a csv file as input. The csv file specifies activation values at corresponding
+   * times for each element id. Those values need to be definited according to the following line
+   * string pattern: global element id: time_0, activation_0; time_1, activation_1; ....
+   *
+   * The mapping function ft is evaluated at a given time and element id. Evaluating the
+   * activation_function at the element id (key) returns a vector of pairs (value). Those vector
+   * entries correspond to a time-"activation value"-pair. The activation at the current time
+   * t_current is found via linear interpolation between the prescribed time-"activation
+   * value"-pairs.
+   *
+   * The time-dependent optimal active stress is obtained by sigma_opt = sigma_max * ft
+   *
+   * @param[in]     sigma_max Optimal (i.e. maximal) active stress
+   * @param[in]     activation_map Map to be evaluated
+   * @param[in]     t_current Current time
+   * @param[in]     activation_map_key Global element id serving as key for the defined mapping
+   * @param[out]    sigma_max_ft Time-/space-dependent optimal active stress for the given element
+   *                             id and t_current
+   */
+  double EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
+      const std::unordered_map<int, std::vector<std::pair<double, double>>> &activation_map,
+      const double t_current, const int activation_map_key);
 
   /*!
    *  @brief Returns the fiber stretch in the current configuration

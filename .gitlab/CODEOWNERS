@@ -275,11 +275,11 @@ shell7p/                   @baci/team_structure
 so3/                       @baci/team_structure
 so3/baci_so3_poro*         @baci/team_structure @baci/team_poro
 
-solid_ele/                 @baci/team_structure
+solid_3D_ele/                 @baci/team_structure
 
-solid_poro_ele/             @baci/team_poro
+solid_poro_3D_ele/             @baci/team_poro
 
-solid_scatra_ele           @baci/team_scatra
+solid_scatra_3D_ele/           @baci/team_scatra
 
 solver_nonlin_nox/         @baci/team_solvers
 
@@ -290,8 +290,6 @@ ssti/                      @baci/team_scatra
 sti/                       @baci/team_scatra
 
 stru_multi/                @baci/team_discretization
-
-struct_ale/                @baci/team_structure
 
 structure/                 @baci/team_structure
 

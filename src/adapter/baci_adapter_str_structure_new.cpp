@@ -20,7 +20,6 @@
 #include "baci_adapter_str_pasiwrapper.hpp"
 #include "baci_adapter_str_redairway.hpp"
 #include "baci_adapter_str_ssiwrapper.hpp"
-#include "baci_adapter_str_structalewrapper.hpp"
 #include "baci_adapter_str_timeada.hpp"
 #include "baci_adapter_str_timeloop.hpp"
 #include "baci_adapter_str_timint_adaptive.hpp"
@@ -49,7 +48,7 @@
 #include "baci_so3_plast_ssn_sosh18.hpp"
 #include "baci_so3_plast_ssn_sosh8.hpp"
 #include "baci_so3_sh8p8.hpp"
-#include "baci_solid_ele.hpp"
+#include "baci_solid_3D_ele.hpp"
 #include "baci_solver_nonlin_nox_group.hpp"
 #include "baci_solver_nonlin_nox_group_prepostoperator.hpp"
 #include "baci_structure_new_model_evaluator.hpp"
@@ -907,12 +906,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       {
         str_wrapper_ = Teuchos::rcp(new FPSIStructureWrapper(ti_strategy));
       }
-      break;
-    }
-    case GLOBAL::ProblemType::struct_ale:
-    {
-      str_wrapper_ = Teuchos::rcp(new StructAleWrapper(ti_strategy));
-      dserror("GLOBAL::ProblemType::struct_ale not supported, yet");
       break;
     }
     default:

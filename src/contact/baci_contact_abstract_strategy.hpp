@@ -1186,7 +1186,7 @@ namespace CONTACT
 
     We have two code paths to perform contact load balancing:
     - Using RedistributeWithSafeGhosting() will guarantee, that the master-sided ghosting is
-    sufficiently far and not master elements will be missed in the subsequent contact search.
+    sufficiently far and no master elements will be missed in the subsequent contact search.
     Applicability of this code path is limited to some contact scenarios.
     - RedistributeContactOld() provides the legacy implementation to be used with all specialized
     contact features. However, master-sided interface ghosting might be insufficient.

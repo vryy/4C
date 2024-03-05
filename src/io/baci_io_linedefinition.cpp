@@ -11,6 +11,7 @@
 
 #include "baci_io_linedefinition.hpp"
 
+#include "baci_inpar_container.hpp"
 #include "baci_utils_demangle.hpp"
 #include "baci_utils_exceptions.hpp"
 
@@ -23,10 +24,15 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace
+// Note on the namespace: while implementation details can often be put into an anonymous namespace,
+// this is trickier when these details are part of a forward declared implementation class (in this
+// case LineDefinitionImplementation). Compiling this file multiple times would then lead to
+// different implementations of that class because the anonymous namespace is always unique.
+// Compilers do not always warn about this and this is not guaranteed to be a problem (after all,
+// why would we compile the class twice?). Here we encountered the warning in unity builds, so this
+// is not an anonymous namespace but the INTERNAL one.
+namespace INPUT::INTERNAL
 {
-  using namespace INPUT;
-
   template <class T>
   std::string StringFromDataType()
   {
@@ -50,13 +56,6 @@ namespace
    * without a value.
    */
   using Empty = std::monostate;
-
-  /**
-   * Various types that can be stored in a concrete LineComponent.
-   */
-  using ComponentValue = std::variant<Empty, int, double, std::string, std::vector<int>,
-      std::vector<double>, std::vector<std::string>, std::vector<std::pair<std::string, double>>>;
-
 
   //! Decide on behavior of the component name when reading or printing.
   enum class Behavior
@@ -178,67 +177,64 @@ namespace
   /**
    * A type-erased container for components of a LineDefinition.
    */
-  class LineComponent
+  class LineDefinitionComponent
   {
    private:
     //! The type-erased interface.
-    class LineComponentConcept
+    class LineDefinitionComponentConcept
     {
      public:
-      virtual ~LineComponentConcept() = default;
+      virtual ~LineDefinitionComponentConcept() = default;
 
-      [[nodiscard]] virtual std::unique_ptr<LineComponentConcept> Clone() const = 0;
+      [[nodiscard]] virtual std::unique_ptr<LineDefinitionComponentConcept> Clone() const = 0;
 
       virtual void Print(std::ostream& stream) const = 0;
 
-      virtual bool ReadRequired(LineDefinition& definition, std::istream& stream) = 0;
+      virtual bool ReadRequired(
+          INPAR::InputParameterContainer& container, std::istream& stream) = 0;
 
       virtual bool ReadOptional(
-          LineDefinition& definition, std::string& name, std::istream& stream) = 0;
+          INPAR::InputParameterContainer& container, std::string& name, std::istream& stream) = 0;
 
       [[nodiscard]] virtual bool IsNamed(const std::string& name) const = 0;
-
-      [[nodiscard]] virtual const ComponentValue& Value() const = 0;
     };
 
     //! The wrapper for a concrete type T compatible with the interface.
     //! Forward all calls to the concrete type T.
     template <typename T>
-    class LineComponentModel : public LineComponentConcept
+    class LineDefinitionComponentModel : public LineDefinitionComponentConcept
     {
      public:
       template <typename T2,
           // prevent matching a copy or move constructor
-          typename =
-              std::enable_if_t<!std::is_same_v<std::decay_t<T2>, LineComponentModel<T>>, void>>
-      LineComponentModel(T2&& in) : component_(std::forward<T2>(in))
+          typename = std::enable_if_t<
+              !std::is_same_v<std::decay_t<T2>, LineDefinitionComponentModel<T>>, void>>
+      LineDefinitionComponentModel(T2&& in) : component_(std::forward<T2>(in))
       {
       }
 
-      [[nodiscard]] std::unique_ptr<LineComponentConcept> Clone() const override
+      [[nodiscard]] std::unique_ptr<LineDefinitionComponentConcept> Clone() const override
       {
-        return std::make_unique<LineComponentModel<T>>(*this);
+        return std::make_unique<LineDefinitionComponentModel<T>>(*this);
       }
 
       void Print(std::ostream& stream) const override { component_.Print(stream); }
 
-      bool ReadRequired(LineDefinition& definition, std::istream& stream) override
+      bool ReadRequired(INPAR::InputParameterContainer& container, std::istream& stream) override
       {
-        return component_.ReadRequired(definition, stream);
+        return component_.ReadRequired(container, stream);
       }
 
-      bool ReadOptional(
-          LineDefinition& definition, std::string& name, std::istream& stream) override
+      bool ReadOptional(INPAR::InputParameterContainer& container, std::string& name,
+          std::istream& stream) override
       {
-        return component_.ReadOptional(definition, name, stream);
+        return component_.ReadOptional(container, name, stream);
       }
 
       [[nodiscard]] bool IsNamed(const std::string& name) const override
       {
         return component_.IsNamed(name);
       }
-
-      [[nodiscard]] const ComponentValue& Value() const override { return component_.Value(); }
 
      private:
       T component_;
@@ -251,51 +247,52 @@ namespace
      */
     template <typename T,
         // prevent matching a copy or move constructor
-        typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, LineComponent>, void>>
-    LineComponent(T&& in) : pimpl_(std::make_unique<LineComponentModel<T>>(std::forward<T>(in)))
+        typename =
+            std::enable_if_t<!std::is_same_v<std::decay_t<T>, LineDefinitionComponent>, void>>
+    LineDefinitionComponent(T&& in)
+        : pimpl_(std::make_unique<LineDefinitionComponentModel<T>>(std::forward<T>(in)))
     {
     }
 
     //! Copy constructor.
-    LineComponent(const LineComponent& other) : pimpl_(other.pimpl_->Clone()) {}
+    LineDefinitionComponent(const LineDefinitionComponent& other) : pimpl_(other.pimpl_->Clone()) {}
 
     //! Copy assignment.
-    LineComponent& operator=(const LineComponent& other)
+    LineDefinitionComponent& operator=(const LineDefinitionComponent& other)
     {
       this->pimpl_ = other.pimpl_->Clone();
       return *this;
     }
 
     //! Move constructor.
-    LineComponent(LineComponent&& other) = default;
+    LineDefinitionComponent(LineDefinitionComponent&& other) = default;
 
     //! Move assignment.
-    LineComponent& operator=(LineComponent&& other) = default;
+    LineDefinitionComponent& operator=(LineDefinitionComponent&& other) = default;
 
     /// print to a dat file comment
     void Print(std::ostream& stream) const { pimpl_->Print(stream); }
 
     /// Try to read component from input line
     /// This function is called for required components.
-    bool ReadRequired(LineDefinition& definition, std::istream& stream)
+    bool ReadRequired(INPAR::InputParameterContainer& container, std::istream& stream)
     {
-      return pimpl_->ReadRequired(definition, stream);
+      return pimpl_->ReadRequired(container, stream);
     }
 
     /// Try to read component from input line
     /// This function is called for optional components.
-    bool ReadOptional(LineDefinition& definition, std::string& name, std::istream& stream)
+    bool ReadOptional(
+        INPAR::InputParameterContainer& container, std::string& name, std::istream& stream)
     {
-      return pimpl_->ReadOptional(definition, name, stream);
+      return pimpl_->ReadOptional(container, name, stream);
     }
 
     /// tell if the component has the specified name tag
     [[nodiscard]] bool IsNamed(const std::string& name) const { return pimpl_->IsNamed(name); }
 
-    [[nodiscard]] const ComponentValue& Value() const { return pimpl_->Value(); }
-
    private:
-    std::unique_ptr<LineComponentConcept> pimpl_;
+    std::unique_ptr<LineDefinitionComponentConcept> pimpl_;
   };
 
 
@@ -306,23 +303,44 @@ namespace
   class GenericComponent
   {
    public:
-    GenericComponent(std::string name, T value, Behavior behavior = Behavior::read_print_name)
-        : name_(std::move(name)), value_(std::move(value)), behavior_(behavior)
+    GenericComponent(std::string name, T value, Behavior behavior = Behavior::read_print_name,
+        std::function<void(INPAR::InputParameterContainer&, T& value)> value_prepare = {})
+        : name_(std::move(name)),
+          behavior_(behavior),
+          value_prepare_(std::move(value_prepare)),
+          default_value_(std::move(value))
     {
     }
 
     void Print(std::ostream& stream) const
     {
-      std::visit(PrintComponent{stream, behavior_, name_}, value_);
+      if (value_prepare_)
+      {
+        // Assume that the custom parsing logic is not printable. Print a placeholder instead.
+        if (behavior_ == Behavior::read_print_name) stream << this->name_ << " ";
+        stream << "[...]";
+      }
+      else
+        PrintComponent{stream, behavior_, name_}(default_value_);
     }
 
-    bool ReadOptional(LineDefinition& definition, std::string& name, std::istream& stream)
+    bool ReadOptional(
+        INPAR::InputParameterContainer& container, std::string& name, std::istream& stream)
     {
       if (name != name_) return false;
-      return std::visit(ReadValue{stream, name_}, value_);
+
+      T value = default_value_;
+
+      if (value_prepare_) value_prepare_(container, value);
+
+      bool read_succeeded = ReadValue{stream, name_}(value);
+
+      if (read_succeeded) container.Add(name, value);
+
+      return read_succeeded;
     }
 
-    bool ReadRequired(LineDefinition& definition, std::istream& stream)
+    bool ReadRequired(INPAR::InputParameterContainer& container, std::istream& stream)
     {
       if (behavior_ == Behavior::read_print_name)
       {
@@ -330,84 +348,25 @@ namespace
         stream >> name;
         if (name != name_) return false;
       }
-
-      return std::visit(ReadValue{stream, name_}, value_);
+      return ReadOptional(container, name_, stream);
     }
 
     [[nodiscard]] bool IsNamed(const std::string& name) const { return name == name_; }
-
-    [[nodiscard]] const ComponentValue& Value() const { return value_; }
 
    private:
     //! Name of the component.
     std::string name_;
 
-    //! The value stored as a variant type. This might look strange at first, given that we know the
-    //! type T. However, this design enables us to query values generically through the type-erased
-    //! interface LineComponent.
-    ComponentValue value_{T{}};
-
     //! Store how the component behaves when reading or writing.
     Behavior behavior_{Behavior::read_print_name};
+
+    //! An optional function that determines how to parse the value. This is useful to
+    //! do prelimiary work, like querying already read data.
+    std::function<void(INPAR::InputParameterContainer&, T&)> value_prepare_;
+
+    T default_value_;
   };
-
-  /// Special LineComponent to describe a string followed by a vector of values with
-  /// arbitrary length. The length is defined by a function object.
-  template <class T>
-  class NamedVariableVectorComponent
-  {
-   public:
-    NamedVariableVectorComponent(std::string name,
-        LineDefinition::Builder::LengthDefinition lengthdef,
-        Behavior behavior = Behavior::read_print_name)
-        : name_(std::move(name)),
-          lengthdef_(std::move(lengthdef)),
-          behavior_(behavior),
-          value_(std::vector<T>{})
-    {
-    }
-
-    void Print(std::ostream& stream) const
-    {
-      if (behavior_ == Behavior::read_print_name) stream << this->name_ << " ";
-      stream << "[...]";
-    }
-
-    bool ReadRequired(LineDefinition& definition, std::istream& stream)
-    {
-      if (behavior_ == Behavior::read_print_name)
-      {
-        std::string name;
-        stream >> name;
-        if (name != name_) return false;
-      }
-
-      return ReadOptional(definition, name_, stream);
-    }
-
-    bool ReadOptional(LineDefinition& definition, std::string& name, std::istream& stream)
-    {
-      // Find expected vector on line. It has to be read already!
-      const std::size_t length = lengthdef_(definition);
-
-      dsassert(std::holds_alternative<std::vector<T>>(value_), "Internal error.");
-      std::get<std::vector<T>>(value_).resize(length);
-
-      return std::visit(ReadValue{stream, name_}, value_);
-    }
-
-    [[nodiscard]] bool IsNamed(const std::string& name) const { return name == name_; }
-
-    [[nodiscard]] const ComponentValue& Value() const { return value_; }
-
-   private:
-    std::string name_;
-    LineDefinition::Builder::LengthDefinition lengthdef_;
-    Behavior behavior_;
-    ComponentValue value_;
-  };
-
-}  // namespace
+}  // namespace INPUT::INTERNAL
 
 
 namespace INPUT
@@ -420,7 +379,7 @@ namespace INPUT
     class LineDefinitionImplementation
     {
      public:
-      [[nodiscard]] const LineComponent* FindNamed(const std::string& name) const
+      [[nodiscard]] const LineDefinitionComponent* FindNamed(const std::string& name) const
       {
         if (readtailcomponents_.find(name) != readtailcomponents_.end())
         {
@@ -444,43 +403,26 @@ namespace INPUT
       template <typename T>
       bool HasNamed(const std::string& name)
       {
-        const auto* c = FindNamed(name);
-        return c && std::holds_alternative<T>(c->Value());
+        return container_.GetIf<T>(name) != nullptr;
       }
 
       template <typename T>
       void TryExtract(const std::string& name, T& dst)
       {
-        if (const auto* c = FindNamed(name))
-        {
-          if (const auto* p_value = std::get_if<T>(&c->Value()))
-          {
-            dst = *p_value;
-          }
-          else
-          {
-            const std::string actual = std::visit([](const auto& v)
-                { return CORE::UTILS::TryDemangle(typeid(std::decay_t<decltype(v)>).name()); },
-                c->Value());
-
-            const std::string tried = CORE::UTILS::TryDemangle(typeid(T).name());
-
-            dserror("Line component '%s' has type '%s' but queried type is '%s'.", name.c_str(),
-                actual.c_str(), tried.c_str());
-          }
-        }
-        else
-          dserror("Component names '%s' not found.", name.c_str());
+        dst = *container_.Get<T>(name);
       }
 
       /// Gather all added required components.
-      std::vector<LineComponent> components_;
+      std::vector<LineDefinitionComponent> components_;
 
       /// Gather all added optional components.
-      std::unordered_map<std::string, LineComponent> optionaltail_;
+      std::unordered_map<std::string, LineDefinitionComponent> optionaltail_;
 
       /// Store which optional components have been read.
       std::set<std::string> readtailcomponents_;
+
+      /// Store the read data.
+      INPAR::InputParameterContainer container_;
     };
   }  // namespace INTERNAL
 
@@ -560,7 +502,8 @@ namespace INPUT
 
   LineDefinition::Builder& LineDefinition::Builder::AddTag(std::string name)
   {
-    pimpl_->components_.emplace_back(GenericComponent<Empty>{std::move(name), Empty()});
+    pimpl_->components_.emplace_back(
+        INTERNAL::GenericComponent<INTERNAL::Empty>{std::move(name), INTERNAL::Empty()});
     return *this;
   }
 
@@ -568,8 +511,8 @@ namespace INPUT
 
   LineDefinition::Builder& LineDefinition::Builder::AddString(std::string name)
   {
-    pimpl_->components_.emplace_back(
-        GenericComponent<std::string>{std::move(name), "''", Behavior::ignore_name});
+    pimpl_->components_.emplace_back(INTERNAL::GenericComponent<std::string>{
+        std::move(name), "''", INTERNAL::Behavior::ignore_name});
     return *this;
   }
 
@@ -578,7 +521,7 @@ namespace INPUT
   LineDefinition::Builder& LineDefinition::Builder::AddInt(std::string name)
   {
     pimpl_->components_.emplace_back(
-        GenericComponent<int>{std::move(name), 0, Behavior::ignore_name});
+        INTERNAL::GenericComponent<int>{std::move(name), 0, INTERNAL::Behavior::ignore_name});
     return *this;
   }
 
@@ -586,8 +529,8 @@ namespace INPUT
 
   LineDefinition::Builder& LineDefinition::Builder::AddIntVector(std::string name, int length)
   {
-    pimpl_->components_.emplace_back(
-        GenericComponent(std::move(name), std::vector<int>(length), Behavior::ignore_name));
+    pimpl_->components_.emplace_back(INTERNAL::GenericComponent(
+        std::move(name), std::vector<int>(length), INTERNAL::Behavior::ignore_name));
     return *this;
   }
 
@@ -595,8 +538,8 @@ namespace INPUT
 
   LineDefinition::Builder& LineDefinition::Builder::AddDoubleVector(std::string name, int length)
   {
-    pimpl_->components_.emplace_back(
-        GenericComponent(std::move(name), std::vector<double>(length), Behavior::ignore_name));
+    pimpl_->components_.emplace_back(INTERNAL::GenericComponent(
+        std::move(name), std::vector<double>(length), INTERNAL::Behavior::ignore_name));
     return *this;
   }
 
@@ -604,7 +547,8 @@ namespace INPUT
 
   LineDefinition::Builder& LineDefinition::Builder::AddNamedString(std::string name)
   {
-    pimpl_->components_.emplace_back(GenericComponent<std::string>{std::move(name), "''"});
+    pimpl_->components_.emplace_back(
+        INTERNAL::GenericComponent<std::string>{std::move(name), "''"});
     return *this;
   }
 
@@ -612,7 +556,7 @@ namespace INPUT
 
   LineDefinition::Builder& LineDefinition::Builder::AddNamedInt(std::string name)
   {
-    pimpl_->components_.emplace_back(GenericComponent<int>{std::move(name), 0});
+    pimpl_->components_.emplace_back(INTERNAL::GenericComponent<int>{std::move(name), 0});
     return *this;
   }
 
@@ -620,7 +564,8 @@ namespace INPUT
 
   LineDefinition::Builder& LineDefinition::Builder::AddNamedIntVector(std::string name, int length)
   {
-    pimpl_->components_.emplace_back(GenericComponent(std::move(name), std::vector<int>(length)));
+    pimpl_->components_.emplace_back(
+        INTERNAL::GenericComponent(std::move(name), std::vector<int>(length)));
     return *this;
   }
 
@@ -628,7 +573,7 @@ namespace INPUT
 
   LineDefinition::Builder& LineDefinition::Builder::AddNamedDouble(std::string name)
   {
-    pimpl_->components_.emplace_back(GenericComponent<double>{std::move(name), 0.0});
+    pimpl_->components_.emplace_back(INTERNAL::GenericComponent<double>{std::move(name), 0.0});
     return *this;
   }
 
@@ -638,7 +583,7 @@ namespace INPUT
       std::string name, int length)
   {
     pimpl_->components_.emplace_back(
-        GenericComponent(std::move(name), std::vector<double>(length)));
+        INTERNAL::GenericComponent(std::move(name), std::vector<double>(length)));
     return *this;
   }
 
@@ -647,8 +592,15 @@ namespace INPUT
   LineDefinition::Builder& LineDefinition::Builder::AddNamedDoubleVector(
       std::string name, LengthDefinition length_definition)
   {
-    pimpl_->components_.emplace_back(
-        NamedVariableVectorComponent<double>(std::move(name), std::move(length_definition)));
+    pimpl_->components_.emplace_back(INTERNAL::GenericComponent<std::vector<double>>(name,
+        std::vector<double>{}, INTERNAL::Behavior::read_print_name,
+        [lengthdef = std::move(length_definition)](
+            INPAR::InputParameterContainer& linedef, std::vector<double>& values)
+        {
+          // Find expected vector on line. It has to be read already!
+          const std::size_t length = lengthdef(linedef);
+          values.resize(length);
+        }));
     return *this;
   }
 
@@ -658,7 +610,8 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, GenericComponent<Empty>{name, Empty()});
+    pimpl_->optionaltail_.emplace(
+        name, INTERNAL::GenericComponent<INTERNAL::Empty>{name, INTERNAL::Empty()});
     return *this;
   }
 
@@ -668,7 +621,7 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, GenericComponent<std::string>{name, "''"});
+    pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent<std::string>{name, "''"});
     return *this;
   }
 
@@ -678,7 +631,7 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, GenericComponent<int>{name, 0});
+    pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent<int>{name, 0});
     return *this;
   }
 
@@ -689,7 +642,7 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, GenericComponent(name, std::vector<int>(length)));
+    pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent(name, std::vector<int>(length)));
     return *this;
   }
 
@@ -699,7 +652,7 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, GenericComponent<double>{name, 0.});
+    pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent<double>{name, 0.});
     return *this;
   }
 
@@ -710,7 +663,8 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, GenericComponent(name, std::vector<double>(length)));
+    pimpl_->optionaltail_.emplace(
+        name, INTERNAL::GenericComponent(name, std::vector<double>(length)));
     return *this;
   }
 
@@ -721,8 +675,17 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
+
     pimpl_->optionaltail_.emplace(
-        name, NamedVariableVectorComponent<double>(name, std::move(lengthdef)));
+        name, INTERNAL::GenericComponent<std::vector<double>>(name, std::vector<double>{},
+                  INTERNAL::Behavior::read_print_name,
+                  [lengthdef = std::move(lengthdef)](
+                      INPAR::InputParameterContainer& linedef, std::vector<double>& values)
+                  {
+                    // Find expected vector on line. It has to be read already!
+                    const std::size_t length = lengthdef(linedef);
+                    values.resize(length);
+                  }));
     return *this;
   }
 
@@ -734,7 +697,7 @@ namespace INPUT
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
     pimpl_->optionaltail_.emplace(
-        name, GenericComponent(name, std::vector<std::string>(length, "''")));
+        name, INTERNAL::GenericComponent(name, std::vector<std::string>(length, "''")));
     return *this;
   }
 
@@ -745,8 +708,16 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(
-        name, NamedVariableVectorComponent<std::string>(name, std::move(lengthdef)));
+    using T = std::vector<std::string>;
+
+    pimpl_->optionaltail_.emplace(name,
+        INTERNAL::GenericComponent<T>(name, T{}, INTERNAL::Behavior::read_print_name,
+            [lengthdef = std::move(lengthdef)](INPAR::InputParameterContainer& linedef, T& values)
+            {
+              // Find expected vector on line. It has to be read already!
+              const std::size_t length = lengthdef(linedef);
+              values.resize(length);
+            }));
     return *this;
   }
 
@@ -757,8 +728,16 @@ namespace INPUT
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       dserror("optional component '%s' already defined", name.c_str());
+    using T = std::vector<std::pair<std::string, double>>;
+
     pimpl_->optionaltail_.emplace(name,
-        NamedVariableVectorComponent<std::pair<std::string, double>>(name, std::move(lengthdef)));
+        INTERNAL::GenericComponent<T>(name, T{}, INTERNAL::Behavior::read_print_name,
+            [lengthdef = std::move(lengthdef)](INPAR::InputParameterContainer& linedef, T& values)
+            {
+              // Find expected vector on line. It has to be read already!
+              const std::size_t length = lengthdef(linedef);
+              values.resize(length);
+            }));
     return *this;
   }
 
@@ -785,20 +764,24 @@ namespace INPUT
 
 
 
-  bool LineDefinition::Read(std::istream& stream) { return Read(stream, nullptr); }
+  std::optional<INPAR::InputParameterContainer> LineDefinition::Read(std::istream& stream)
+  {
+    return Read(stream, nullptr);
+  }
 
 
 
-  bool LineDefinition::Read(std::istream& stream, const std::string* skipname)
+  std::optional<INPAR::InputParameterContainer> LineDefinition::Read(
+      std::istream& stream, const std::string* skipname)
   {
     pimpl_->readtailcomponents_.clear();
     for (auto& component : pimpl_->components_)
     {
       if (!skipname || !component.IsNamed(*skipname))
       {
-        if (not component.ReadRequired(*this, stream))
+        if (not component.ReadRequired(pimpl_->container_, stream))
         {
-          return false;
+          return std::nullopt;
         }
       }
     }
@@ -812,11 +795,11 @@ namespace INPUT
       if (pimpl_->readtailcomponents_.find(name) != pimpl_->readtailcomponents_.end())
       {
         // duplicated optional component
-        return false;
+        return std::nullopt;
       }
       auto i = pimpl_->optionaltail_.find(name);
-      if (i == pimpl_->optionaltail_.end()) return false;
-      if (not i->second.ReadOptional(*this, name, stream)) return false;
+      if (i == pimpl_->optionaltail_.end()) return std::nullopt;
+      if (not i->second.ReadOptional(pimpl_->container_, name, stream)) return std::nullopt;
       pimpl_->readtailcomponents_.insert(name);
     }
 
@@ -824,8 +807,12 @@ namespace INPUT
     std::string superfluousstring;
     stream >> superfluousstring;  // stream strips whitespaces
 
+
     // Check that remaining string is either empty or is a comment, i.e., starts with "//"
-    return superfluousstring.empty() || (superfluousstring.rfind("//", 0) == 0);
+    if (!superfluousstring.empty() && (superfluousstring.rfind("//", 0) != 0))
+      return std::nullopt;
+    else
+      return pimpl_->container_;
   }
 
 
@@ -988,10 +975,10 @@ namespace INPUT
   }
 
 
-  std::size_t LengthFromIntNamed::operator()(const LineDefinition& already_read_line)
+  std::size_t LengthFromIntNamed::operator()(
+      const INPAR::InputParameterContainer& already_read_line)
   {
-    int length = 0;
-    already_read_line.ExtractInt(definition_name_, length);
+    int length = *already_read_line.Get<int>(definition_name_);
     return length;
   }
 }  // namespace INPUT

@@ -1346,7 +1346,7 @@ namespace DRT
           // if the scalar reacts to the external force, add the velocity due to the external force
           if (reacts_to_force_[k])
           {
-            convelint_[k].Update(1.0, force_velocity);
+            convelint_[k] += force_velocity;
           }
           // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
           conv_[k].MultiplyTN(derxy, convelint_[k]);

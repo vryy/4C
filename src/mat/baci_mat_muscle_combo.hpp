@@ -14,6 +14,7 @@ active strain approach) with variable time-dependent activation
 #include "baci_config.hpp"
 
 #include "baci_comm_parobjectfactory.hpp"
+#include "baci_inpar_material.hpp"
 #include "baci_mat_anisotropy.hpp"
 #include "baci_mat_anisotropy_extension_default.hpp"
 #include "baci_mat_par_parameter.hpp"
@@ -22,8 +23,10 @@ active strain approach) with variable time-dependent activation
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+#include <unordered_map>
+#include <variant>
 
+BACI_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -60,8 +63,23 @@ namespace MAT
           lambdaOpt_;  ///< optimal active fiber stretch related active nominal stress maximimum
       //! @}
 
-      //! @name function-id in input file for user-prescribed time-dependent activation
-      const int actFunctId_;
+      //! @name time-/space-dependent activation
+
+      //! type of activation prescription
+      const INPAR::MAT::ActivationType activationType_;
+
+      /*!
+       * @brief type-dependent parameters for activation
+       *
+       * Depending on the type of activation prescription this is one of the options below:
+       * - Id of the function in the input file specifying an analytical function
+       * - Map retrieved from the csv file path in the input file specifying a discrete values.
+       *   The integer key refers to the elememt ids, the vector bundles time-activation pairs.
+       */
+      using ActivationParameterVariant = std::variant<std::monostate, const int,
+          const std::unordered_map<int, std::vector<std::pair<double, double>>>>;
+      ActivationParameterVariant activationParams_;
+      //! @}
 
       const double density_;  ///< density
       //@}
@@ -159,31 +177,36 @@ namespace MAT
         CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
+    using ActivationEvaluatorVariant =
+        std::variant<std::monostate, const CORE::UTILS::FunctionOfSpaceTime*,
+            const std::unordered_map<int, std::vector<std::pair<double, double>>>*>;
+
    private:
     /*!
-     *  \brief Evaluate active nominal stress Pa, its integral and its derivative w.r.t. the fiber
+     * \brief Evaluate active nominal stress Pa, its integral and its derivative w.r.t. the fiber
      * stretch
      *
-     *  \param[in] params Container for additional information
-     *  \param[in] lambdaM Fiber stretch
-     *  \param[in] intPa Integral of the active nominal stress from lambdaMin to lambdaM
-     *  \param[out] Pa Active nominal stress
-     *  \param[out] derivPa Derivative of active nominal stress w.r.t. the fiber stretch
+     * \param[in] params Container for additional information
+     * \param[in] eleGID Global element id used for discretely prescribed activation
+     * \param[in] lambdaM Fiber stretch
+     * \param[in] intPa Integral of the active nominal stress from lambdaMin to lambdaM
+     * \param[out] Pa Active nominal stress
+     * \param[out] derivPa Derivative of active nominal stress w.r.t. the fiber stretch
      */
-    void EvaluateActiveNominalStress(Teuchos::ParameterList& params, const double lambdaM,
-        double& intPa, double& Pa, double& derivPa);
+    void EvaluateActiveNominalStress(Teuchos::ParameterList& params, const int eleGID,
+        const double lambdaM, double& intPa, double& Pa, double& derivPa);
 
     /*!
-     *  \brief Evaluate activation level omegaa and its first and second derivatives w.r.t. the
+     * \brief Evaluate activation level omegaa and its first and second derivatives w.r.t. the
      * fiber stretch
      *
-     *  \param[in] lambdaM Fiber stretch
-     *  \param[in] intPa Integral of the active nominal stress from lambdaMin to lambdaM
-     *  \param[in] Pa Active nominal stress
-     *  \param[in] derivPa Derivative of active nominal stress w.r.t. the fiber stretch
-     *  \param[out] omegaa Activation level
-     *  \param[out] derivOmegaa Derivative of the activation level w.r.t. the fiber stretch
-     *  \param[out] derivDerivOmegaa Second derivative of the activation level w.r.t. the fiber
+     * \param[in] lambdaM Fiber stretch
+     * \param[in] intPa Integral of the active nominal stress from lambdaMin to lambdaM
+     * \param[in] Pa Active nominal stress
+     * \param[in] derivPa Derivative of active nominal stress w.r.t. the fiber stretch
+     * \param[out] omegaa Activation level
+     * \param[out] derivOmegaa Derivative of the activation level w.r.t. the fiber stretch
+     * \param[out] derivDerivOmegaa Second derivative of the activation level w.r.t. the fiber
      * stretch
      */
     void EvaluateActivationLevel(const double lambdaM, const double intPa, const double Pa,
@@ -198,8 +221,9 @@ namespace MAT
     /// Anisotropy extension holder
     MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
 
-    /// Activation function
-    const CORE::UTILS::FunctionOfSpaceTime* activationFunction_;
+    /// Activation evaluator, either analytical symbolic function of space and time or discrete
+    /// activation map
+    ActivationEvaluatorVariant activationEvaluator_;
   };  // end class Muscle_Combo
 
 }  // end namespace MAT

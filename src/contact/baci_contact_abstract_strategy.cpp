@@ -1141,35 +1141,22 @@ void CONTACT::AbstractStrategy::CalcMeanVelocityForBinning(const Epetra_Vector& 
   ivel_.clear();
   ivel_.resize(0);
 
-  // for dynamic problems
-  if (alphaf_ != 0.0)  // ToDo Improve this check! alphaf_ = 0 does not guarantee Statics.
+  // create vector of interface velocities
+  for (const auto& interface : Interfaces())
   {
-    // create vector of interface velocities
-    for (const auto& interface : Interfaces())
-    {
-      // interface node map
-      Teuchos::RCP<Epetra_Vector> interfaceVelocity =
-          Teuchos::rcp(new Epetra_Vector(*interface->Discret().DofRowMap()));
-      CORE::LINALG::Export(velocity, *interfaceVelocity);
+    Teuchos::RCP<Epetra_Vector> interfaceVelocity =
+        Teuchos::rcp(new Epetra_Vector(*interface->Discret().DofRowMap()));
+    CORE::LINALG::Export(velocity, *interfaceVelocity);
 
-      double meanVelocity = 0.0;
+    double meanVelocity = 0.0;
 
-      int err = interfaceVelocity->MeanValue(&meanVelocity);
-      if (err)
-        dserror("Calculation of mean velocity for interface %s failed.",
-            interface->Discret().Name().c_str());
-      meanVelocity = abs(meanVelocity);
+    int err = interfaceVelocity->MeanValue(&meanVelocity);
+    if (err)
+      dserror("Calculation of mean velocity for interface %s failed.",
+          interface->Discret().Name().c_str());
+    meanVelocity = abs(meanVelocity);
 
-      ivel_.push_back(meanVelocity);
-    }
-  }
-  // static problems
-  else
-  {
-    // TODO: should be fixed for static problems!
-    dserror(
-        "Binning Strategy is only recommended for dynamic problems! Please use a different "
-        "Parallel Strategy!");
+    ivel_.push_back(meanVelocity);
   }
   return;
 }
