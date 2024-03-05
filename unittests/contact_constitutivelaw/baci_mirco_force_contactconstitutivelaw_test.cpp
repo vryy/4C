@@ -1,7 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief unit testing functionality for the mirco contact constitutivelaw
+\brief unit testing functionality for the mirco contact constitutivelaw with point-force-based Green
+function
 
 \level 2
 
@@ -16,15 +17,14 @@
 
 #ifdef BACI_WITH_MIRCO
 
-#include <omp.h>
 namespace
 {
   using namespace BACI;
 
-  class MircoConstitutiveLawTest : public ::testing::Test
+  class MircoConstitutiveLawForceTest : public ::testing::Test
   {
    public:
-    MircoConstitutiveLawTest()
+    MircoConstitutiveLawForceTest()
     {
       const int problemid(0);
       GLOBAL::Problem& problem = (*GLOBAL::Problem::Instance());
@@ -71,7 +71,7 @@ namespace
   };
 
   //! test member function Evaluate
-  TEST_F(MircoConstitutiveLawTest, TestEvaluate)
+  TEST_F(MircoConstitutiveLawForceTest, TestEvaluate)
   {
     // gap < 0
     EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0));
@@ -82,7 +82,7 @@ namespace
   }
 
   //! test member function EvaluateDeriv
-  TEST_F(MircoConstitutiveLawTest, TestEvaluateDeriv)
+  TEST_F(MircoConstitutiveLawForceTest, TestEvaluateDeriv)
   {
     EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-12), 1.34284789678326e-04, 1.e-10);
     EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25));
