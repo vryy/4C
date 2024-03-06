@@ -2963,7 +2963,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         case INPAR::S2I::kinetics_linearperm:
         {
           s2icouplingparameters.set<int>("numscal", *s2ikinetics_cond.Get<int>("numscal"));
-          s2icouplingparameters.set<std::vector<double>*>(
+          s2icouplingparameters.set<const std::vector<double>*>(
               "permeabilities", s2ikinetics_cond.Get<std::vector<double>>("permeabilities"));
           s2icouplingparameters.set<int>(
               "is_pseudo_contact", *s2ikinetics_cond.Get<int>("is_pseudo_contact"));
@@ -2974,7 +2974,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         {
           s2icouplingparameters.set<double>(
               "resistance", *s2ikinetics_cond.Get<double>("resistance"));
-          s2icouplingparameters.set<std::vector<int>*>(
+          s2icouplingparameters.set<const std::vector<int>*>(
               "onoff", s2ikinetics_cond.Get<std::vector<int>>("onoff"));
           s2icouplingparameters.set<int>("numelectrons", *s2ikinetics_cond.Get<int>("e-"));
           s2icouplingparameters.set<int>(
@@ -2999,7 +2999,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         case INPAR::S2I::kinetics_butlervolmerreducedresistance:
         {
           s2icouplingparameters.set<int>("numscal", *s2ikinetics_cond.Get<int>("numscal"));
-          s2icouplingparameters.set<std::vector<int>*>(
+          s2icouplingparameters.set<const std::vector<int>*>(
               "stoichiometries", s2ikinetics_cond.Get<std::vector<int>>("stoichiometries"));
           s2icouplingparameters.set<int>("numelectrons", *s2ikinetics_cond.Get<int>("e-"));
           s2icouplingparameters.set<double>("k_r", *s2ikinetics_cond.Get<double>("k_r"));
@@ -3053,7 +3053,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         case INPAR::S2I::growth_kinetics_butlervolmer:
         {
           s2icouplingparameters.set<int>("numscal", *s2ikinetics_cond.Get<int>("numscal"));
-          s2icouplingparameters.set<std::vector<int>*>(
+          s2icouplingparameters.set<const std::vector<int>*>(
               "stoichiometries", s2ikinetics_cond.Get<std::vector<int>>("stoichiometries"));
           s2icouplingparameters.set<int>("numelectrons", *s2ikinetics_cond.Get<int>("e-"));
           s2icouplingparameters.set<double>("k_r", *s2ikinetics_cond.Get<double>("k_r"));

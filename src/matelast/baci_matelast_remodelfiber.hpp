@@ -322,7 +322,7 @@ namespace MAT
         const double k_growth_;
 
         /// initial mass fraction of each fiber family in constraint mixture
-        std::vector<double>* init_w_col_;
+        const std::vector<double>* init_w_col_;
 
         /// deposition stretch of collagen fibers
         const double G_;

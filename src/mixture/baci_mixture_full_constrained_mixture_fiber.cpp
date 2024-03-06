@@ -796,7 +796,9 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
           {
             if (interval.timesteps.size() >= 4)
             {
-              const auto [erase_item, adaptivity_info] =
+              std::vector<bool> erase_item;
+              TimestepAdaptivityInfo adaptivity_info;
+              std::tie(erase_item, adaptivity_info) =
                   OptimizeHistoryIntegration(interval.adaptivity_info, interval.timesteps.size(),
                       [&](const std::array<std::optional<unsigned int>, 5>& indices)
                       {

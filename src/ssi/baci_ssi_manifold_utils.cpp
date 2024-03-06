@@ -695,7 +695,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
       eleparams.set<int>("kinetic model", INPAR::S2I::kinetics_constantinterfaceresistance);
       eleparams.set<double>(
           "resistance", *scatra_manifold_coupling->ConditionKinetics()->Get<double>("resistance"));
-      eleparams.set<std::vector<int>*>(
+      eleparams.set<const std::vector<int>*>(
           "onoff", scatra_manifold_coupling->ConditionKinetics()->Get<std::vector<int>>("onoff"));
       eleparams.set<int>(
           "numelectrons", *scatra_manifold_coupling->ConditionKinetics()->Get<int>("e-"));
@@ -706,7 +706,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
       eleparams.set<int>("kinetic model", INPAR::S2I::kinetics_butlervolmerreduced);
       eleparams.set<int>(
           "numscal", *scatra_manifold_coupling->ConditionKinetics()->Get<int>("numscal"));
-      eleparams.set<std::vector<int>*>("stoichiometries",
+      eleparams.set<const std::vector<int>*>("stoichiometries",
           scatra_manifold_coupling->ConditionKinetics()->Get<std::vector<int>>("stoichiometries"));
       eleparams.set<int>(
           "numelectrons", *scatra_manifold_coupling->ConditionKinetics()->Get<int>("e-"));
