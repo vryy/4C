@@ -69,6 +69,8 @@ namespace MAT
       const double delta_;
       // minimum saturation under which also corresponding mass fraction is equal to zero
       const double min_sat_;
+      /// function ID of relative mobility function
+      const int relative_mobility_funct_id_;
     };
     // class Scatra
 
@@ -87,6 +89,8 @@ namespace MAT
       const int phaseID_;
       /// delta used for modelling dependency of diffusivity on volfrac^delta
       const double delta_;
+      /// function ID of relative mobility function
+      const int relative_mobility_funct_id_;
     };
     // class Scatra
     /*----------------------------------------------------------------------*/
@@ -261,6 +265,12 @@ namespace MAT
     /// return minimum saturation
     virtual double MinSat() const { return params_->min_sat_; }
 
+    /// return ID of relative mobility function
+    [[nodiscard]] int RelativeMobilityFunctId() const
+    {
+      return params_->relative_mobility_funct_id_;
+    }
+
    private:
     /// my material parameters
     MAT::PAR::ScatraMatMultiPoroFluid* params_;
@@ -338,6 +348,12 @@ namespace MAT
 
     /// return delta
     virtual double Delta() const { return params_->delta_; }
+
+    /// return ID of relative mobility function
+    [[nodiscard]] int RelativeMobilityFunctId() const
+    {
+      return params_->relative_mobility_funct_id_;
+    }
 
    private:
     /// my material parameters

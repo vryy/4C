@@ -332,6 +332,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
         "minimum saturation under which also corresponding mass fraction is equal to zero", 1.0e-9,
         true);
     AddNamedBool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
+    AddNamedInt(m, "RELATIVE_MOBILITY_FUNCTION_ID", "relative mobility function ID", 0, true);
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -350,6 +351,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
     AddNamedReal(m, "DELTA", "delta", 0.0, true);
     AddNamedBool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
+    AddNamedInt(m, "RELATIVE_MOBILITY_FUNCTION_ID", "relative mobility function ID", 0, true);
 
     AppendMaterialDefinition(matlist, m);
   }

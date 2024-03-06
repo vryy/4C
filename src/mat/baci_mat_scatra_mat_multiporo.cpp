@@ -25,7 +25,8 @@ MAT::PAR::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(Teuchos::RCP<MAT::PAR
     : ScatraMat(matdata),
       phaseID_(*matdata->Get<int>("PHASEID")),
       delta_(*matdata->Get<double>("DELTA")),
-      min_sat_(*matdata->Get<double>("MIN_SAT"))
+      min_sat_(*matdata->Get<double>("MIN_SAT")),
+      relative_mobility_funct_id_(*matdata->Get<int>("RELATIVE_MOBILITY_FUNCTION_ID"))
 {
 }
 
@@ -114,8 +115,8 @@ MAT::PAR::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : ScatraMat(matdata),
       phaseID_(*matdata->Get<int>("PHASEID")),
-      delta_(*matdata->Get<double>("DELTA"))
-
+      delta_(*matdata->Get<double>("DELTA")),
+      relative_mobility_funct_id_(*matdata->Get<int>("RELATIVE_MOBILITY_FUNCTION_ID"))
 {
 }
 
