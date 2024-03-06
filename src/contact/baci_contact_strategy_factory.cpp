@@ -16,6 +16,8 @@
 #include "baci_contact_aug_lagrange_strategy.hpp"
 #include "baci_contact_aug_steepest_ascent_interface.hpp"
 #include "baci_contact_aug_steepest_ascent_strategy.hpp"
+#include "baci_contact_constitutivelaw_bundle.hpp"
+#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "baci_contact_constitutivelaw_interface.hpp"
 #include "baci_contact_element.hpp"
 #include "baci_contact_friction_node.hpp"
@@ -28,6 +30,7 @@
 #include "baci_contact_nitsche_strategy_tsi.hpp"
 #include "baci_contact_paramsinterface.hpp"
 #include "baci_contact_penalty_strategy.hpp"
+#include "baci_contact_rough_node.hpp"
 #include "baci_contact_tsi_interface.hpp"
 #include "baci_contact_utils.hpp"
 #include "baci_contact_wear_interface.hpp"
@@ -739,6 +742,31 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
     int contactconstitutivelaw_id = *currentgroup[0]->Get<int>("ConstitutiveLawID");
 
+    int resolution = 0;
+    bool randomtopologyflag = false;
+    bool randomseedflag = false;
+    int randomgeneratorseed = 0;
+    int hurstexponentfunction = 0;
+    int initialtopologystddeviationfunction = 0;
+
+    if (contactconstitutivelaw_id != 0)
+    {
+      const int probinst =
+          GLOBAL::Problem::Instance()->ContactConstitutiveLaws()->GetReadFromProblem();
+      auto coconstlaw = GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws()->ById(
+          contactconstitutivelaw_id);
+      if (coconstlaw->Name() == "CoConstLaw_mirco")
+      {
+        resolution = *coconstlaw->Get<int>("Resolution");
+        randomtopologyflag = coconstlaw->Get<bool>("RandomTopologyFlag");
+        randomseedflag = coconstlaw->Get<bool>("RandomSeedFlag");
+        randomgeneratorseed = *coconstlaw->Get<int>("RandomGeneratorSeed");
+        hurstexponentfunction = *coconstlaw->Get<int>("HurstExponentFunct");
+        initialtopologystddeviationfunction =
+            *coconstlaw->Get<int>("InitialTopologyStdDeviationFunct");
+      }
+    }
+
     // find out which sides are Master and Slave
     std::vector<bool> isslave(0);
     std::vector<bool> isself(0);
@@ -965,6 +993,74 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
                     "Contact symmetry with Lagrange multiplier method"
                     " only with contact constraints in xyz direction.\n"
                     "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
+              }
+            }
+          }
+
+          /* note that we do not have to worry about double entries
+           * as the AddNode function can deal with this case!
+           * the only problem would have occurred for the initial active nodes,
+           * as their status could have been overwritten, but is prevented
+           * by the "foundinitialactive" block above! */
+          interface->AddNode(cnode);
+        }
+        else if (contactconstitutivelaw_id != 0)
+        {
+          Teuchos::RCP<CONTACT::RoughNode> cnode =
+              Teuchos::rcp(new CONTACT::RoughNode(node->Id(), node->X(), node->Owner(),
+                  Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive,
+                  hurstexponentfunction, initialtopologystddeviationfunction, resolution,
+                  randomtopologyflag, randomseedflag, randomgeneratorseed));
+          //-------------------
+          // get nurbs weight!
+          if (nurbs)
+          {
+            PrepareNURBSNode(node, cnode);
+          }
+
+          // get edge and corner information:
+          std::vector<DRT::Condition*> contactCornerConditions(0);
+          Discret().GetCondition("mrtrcorner", contactCornerConditions);
+          for (auto& condition : contactCornerConditions)
+          {
+            if (condition->ContainsNode(node->Id()))
+            {
+              cnode->SetOnCorner() = true;
+            }
+          }
+          std::vector<DRT::Condition*> contactEdgeConditions(0);
+          Discret().GetCondition("mrtredge", contactEdgeConditions);
+          for (auto& condition : contactEdgeConditions)
+          {
+            if (condition->ContainsNode(node->Id()))
+            {
+              cnode->SetOnEdge() = true;
+            }
+          }
+
+          // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
+          std::vector<DRT::Condition*> contactSymConditions(0);
+          Discret().GetCondition("mrtrsym", contactSymConditions);
+
+          for (auto& condition : contactSymConditions)
+          {
+            if (condition->ContainsNode(node->Id()))
+            {
+              const auto* onoff = condition->Get<std::vector<int>>("onoff");
+              for (unsigned k = 0; k < onoff->size(); k++)
+              {
+                if (onoff->at(k) == 1)
+                {
+                  cnode->DbcDofs()[k] = true;
+                  if (stype == INPAR::CONTACT::solution_lagmult &&
+                      constr_direction != INPAR::CONTACT::constr_xyz)
+                  {
+                    dserror(
+                        "Contact symmetry with Lagrange multiplier method"
+                        " only with contact constraints in xyz direction.\n"
+                        "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
+                  }
+                }
               }
             }
           }
