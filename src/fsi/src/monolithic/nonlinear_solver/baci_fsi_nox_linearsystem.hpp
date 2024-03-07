@@ -144,12 +144,10 @@ namespace NOX::FSI
     Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> jacInterfacePtr_;
     Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> precInterfacePtr_;
     OperatorType jacType_;
-    OperatorType precType_;
     mutable Teuchos::RCP<Epetra_Operator> jacPtr_;
     mutable Teuchos::RCP<Epetra_Operator> precPtr_;
     Teuchos::RCP<::NOX::Epetra::Scaling> scaling_;
     mutable Teuchos::RCP<::NOX::Epetra::Vector> tmpVectorPtr_;
-    mutable double conditionNumberEstimate_;
 
     bool outputSolveDetails_;
     bool zeroInitialGuess_;
@@ -162,7 +160,6 @@ namespace NOX::FSI
     Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     Teuchos::Time timer_;
-    mutable double timeApplyJacbianInverse_;
   };
 }  // namespace NOX::FSI
 

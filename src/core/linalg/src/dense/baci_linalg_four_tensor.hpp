@@ -34,7 +34,7 @@ namespace CORE::LINALG
     //! constructor that initializes a 4-tensor object with only zero entries if setZero is true
     explicit FourTensor(const bool setZero = true)
     {
-      if (setZero) fourTensor_ = {{{{0.0}}}};
+      if (setZero) fourTensor_ = {{{{{0.0}}}}};
     };
 
     //! @name Access methods

@@ -334,15 +334,11 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
   // initial scalar residual (L2-norm of f)
   double residual = 0.0;
 
-  int iter = 0;
-
   //**********************************************************************
   // local Newton iteration
   //**********************************************************************
   for (int i = 0; i < BEAMCONTACTMAXITER; ++i)
   {
-    iter++;
-
     // reset shape function variables to zero
     N1_i.Clear();
     N1_i_xi.Clear();

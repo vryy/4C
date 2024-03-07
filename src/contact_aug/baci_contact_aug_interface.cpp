@@ -2166,28 +2166,9 @@ CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::s
 /*----------------------------------------------------------------------------*/
 // explicit template instantiations
 
-template Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const;
-template Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const;
-template Teuchos::RCP<const Epetra_Map> CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<
-    CONTACT::AUG::SideType::slave_master>() const;
-
 template void CONTACT::AUG::AssembleMapIntoMatrix<CONTACT::AUG::Deriv1stMap>(int row, double scal,
     const Deriv1stMap& values, CORE::LINALG::SparseMatrix& mat, double threshold);
 template void CONTACT::AUG::AssembleMapIntoMatrix<CONTACT::AUG::plain_double_map>(int row,
     double scal, const plain_double_map& values, CORE::LINALG::SparseMatrix& mat, double threshold);
-
-template const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(const Node& cnode) const;
-template const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(const Node& cnode) const;
-
-template const CONTACT::AUG::Deriv2ndMap&
-CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
-    const Node& cnode) const;
-template const CONTACT::AUG::Deriv2ndMap&
-CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::slave>(
-    const Node& cnode) const;
 
 BACI_NAMESPACE_CLOSE

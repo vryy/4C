@@ -241,12 +241,10 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
 
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
-  bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
-    bound += mymrtrnode->IsOnBound();
   }
 
   GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);

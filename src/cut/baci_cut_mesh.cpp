@@ -1677,11 +1677,11 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(
 
     double ev = CORE::GEO::ElementVolume(e.Shape(), xyze);
 
-    int numgp = 0;
-    int numic = 0;
-    int numbc = 0;
+    [[maybe_unused]] int numgp = 0;
+    [[maybe_unused]] int numic = 0;
+    [[maybe_unused]] int numbc = 0;
     double cv = 0;
-    double ba = 0;
+    [[maybe_unused]] double ba = 0;
     const plain_volumecell_set& cells = e.VolumeCells();
     if (VCellGP == INPAR::CUT::VCellGaussPts_Tessellation)
     {
@@ -3261,12 +3261,5 @@ void CORE::GEO::CUT::Mesh::TestFacetArea(bool istetmeshintersection)
   }
 }
 
-
-template CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<1>(
-    int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
-template CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<2>(
-    int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
-template CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
-    int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
 
 BACI_NAMESPACE_CLOSE

@@ -4606,11 +4606,9 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
 
       // compute normal part of Lagrange multiplier
       double nz = 0.0;
-      double nzold = 0.0;
       for (int k = 0; k < 3; ++k)
       {
         nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
-        nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
       }
 
       // friction

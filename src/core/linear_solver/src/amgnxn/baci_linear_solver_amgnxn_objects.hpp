@@ -27,7 +27,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   class BlockedVector
   {
    public:
-    BlockedVector(int size) : vectors_(size, Teuchos::null), size_(size) {}
+    BlockedVector(int size) : vectors_(size, Teuchos::null) {}
 
     bool HasOnlyOneBlock() const { return vectors_.size() == 1; }
 
@@ -57,7 +57,6 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
    private:
     std::vector<Teuchos::RCP<Epetra_MultiVector>> vectors_;
-    int size_;
   };
 
   class BlockedMatrix

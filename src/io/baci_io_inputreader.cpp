@@ -279,7 +279,7 @@ namespace INPUT
                 std::ifstream tmpfile(filename_.c_str());
                 tmpfile.seekg(di->second.first);
                 std::string line;
-                for (int ii = 0; getline(tmpfile, line); ++ii)
+                while (getline(tmpfile, line))
                 {
                   // remove comments, trailing and leading whitespaces
                   // compact internal whitespaces

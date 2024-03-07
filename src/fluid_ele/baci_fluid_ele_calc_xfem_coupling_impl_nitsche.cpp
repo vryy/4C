@@ -2087,13 +2087,9 @@ namespace DRT
 
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
-            const double tmp_derxy_m = derxy_m(ivel, ic);
             for (unsigned jvel = 0; jvel < nsd_; ++jvel)
             {
               const unsigned col = mIndex(ic, jvel);
-
-              double tmp = half_normal_viscm_timefacfac_km_(jvel) * tmp_derxy_m;
-              if (ivel == jvel) tmp += normal_deriv_tmp;
 
               for (unsigned ir = 0; ir < nen_; ++ir)
               {

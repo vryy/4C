@@ -1196,7 +1196,6 @@ FLD::WeaklyCompressiblePoiseuilleForceFunction::WeaklyCompressiblePoiseuilleForc
       meanvelocityexit_(U),
       viscosity_(fparams.viscosity_),
       refdensity_(fparams.refdensity_),
-      refpressure_(fparams.refpressure_),
       comprcoeff_(fparams.comprcoeff_)
 {
 }
@@ -1865,9 +1864,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDFunction::EvaluateTimeDeriv
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDForceFunction::WeaklyCompressibleEtienneCFDForceFunction(
     const MAT::PAR::WeaklyCompressibleFluid& fparams)
-    : refdensity_(fparams.refdensity_),
-      refpressure_(fparams.refpressure_),
-      comprcoeff_(fparams.comprcoeff_)
+    : refdensity_(fparams.refdensity_)
 {
 }
 /*----------------------------------------------------------------------*/
@@ -2283,9 +2280,6 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDForceFunction::EvaluateTime
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDViscosityFunction::WeaklyCompressibleEtienneCFDViscosityFunction(
     const MAT::PAR::WeaklyCompressibleFluid& fparams)
-    : refdensity_(fparams.refdensity_),
-      refpressure_(fparams.refpressure_),
-      comprcoeff_(fparams.comprcoeff_)
 {
 }
 /*----------------------------------------------------------------------*/
@@ -6735,10 +6729,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::Eva
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiUP::BeltramiUP(const MAT::PAR::NewtonianFluid& fparams)
-    : density_(fparams.density_), kinviscosity_(fparams.viscosity_ / fparams.density_)
-{
-}
+FLD::BeltramiUP::BeltramiUP(const MAT::PAR::NewtonianFluid& fparams) : density_(fparams.density_) {}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::BeltramiUP::Evaluate(
@@ -6830,10 +6821,7 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiGradU::BeltramiGradU(const MAT::PAR::NewtonianFluid& fparams)
-    : kinviscosity_(fparams.viscosity_ / fparams.density_)
-{
-}
+FLD::BeltramiGradU::BeltramiGradU(const MAT::PAR::NewtonianFluid& fparams) {}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::BeltramiGradU::Evaluate(

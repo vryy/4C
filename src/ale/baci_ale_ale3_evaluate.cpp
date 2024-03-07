@@ -1644,8 +1644,6 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
   CORE::LINALG::Matrix<iel, iel> tempmat(true);
   CORE::LINALG::Matrix<3 * iel, 1> tempmat2(true);
 
-  double vol = 0.;
-
   // gaussian points
   const CORE::FE::GaussRule3D gaussrule = getOptimalGaussrule();
   const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
@@ -1688,7 +1686,6 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 
     // calculate element volume
     const double fac = intpoints.qwgt[iquad] * det;
-    vol += fac;
 
     // compute global derivatives
     deriv_xy.Multiply(xji, deriv);

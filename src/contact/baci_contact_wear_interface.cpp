@@ -1824,7 +1824,6 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
       }
 
       // more information from node
-      double* n = cnode->MoData().n();
       double* txi = cnode->Data().txi();
       double* teta = cnode->Data().teta();
       double* z = cnode->MoData().lm();
@@ -1851,7 +1850,6 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
       bool friclessandfirst = false;
 
       // evaluation of specific components of entries to assemble
-      double znor = 0;
       double ztxi = 0;
       double zteta = 0;
       double jumptxi = 0;
@@ -1868,7 +1866,6 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
 
         for (int i = 0; i < Dim(); i++)
         {
-          znor += n[i] * z[i];
           ztxi += txi[i] * z[i];
           zteta += teta[i] * z[i];
         }
@@ -1877,7 +1874,6 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
       {
         for (int i = 0; i < Dim(); i++)
         {
-          znor += n[i] * z[i];
           ztxi += txi[i] * z[i];
           zteta += teta[i] * z[i];
           jumptxi += txi[i] * jump[i];
@@ -2825,10 +2821,8 @@ void WEAR::WearInterface::AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal)
     std::map<int, double>& dwmap = cnode->Data().GetDerivWlm();
 
     double* jump = cnode->FriData().jump();
-    double* n = cnode->MoData().n();
     double* txi = cnode->Data().txi();
     double* teta = cnode->Data().teta();
-    double* z = cnode->MoData().lm();
 
     // iterator for maps
     std::map<int, double>::iterator colcurr;
@@ -2848,16 +2842,10 @@ void WEAR::WearInterface::AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal)
       dserror("AssemblelinSlip: Dimension not correct");
 
     // evaluation of specific components of entries to assemble
-    double znor = 0;
-    double ztxi = 0;
-    double zteta = 0;
     double jumptxi = 0;
     double jumpteta = 0;
     for (int i = 0; i < Dim(); i++)
     {
-      znor += n[i] * z[i];
-      ztxi += txi[i] * z[i];
-      zteta += teta[i] * z[i];
       jumptxi += txi[i] * jump[i];
       jumpteta += teta[i] * jump[i];
     }
@@ -2917,7 +2905,6 @@ void WEAR::WearInterface::AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal)
     std::map<int, double>& dwmap = cnode->Data().GetDerivWlm();
 
     double* jump = cnode->FriData().jump();
-    double* n = cnode->MoData().n();
     double* txi = cnode->Data().txi();
     double* teta = cnode->Data().teta();
     double* z = cnode->MoData().lm();
@@ -2940,7 +2927,6 @@ void WEAR::WearInterface::AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal)
       dserror("AssemblelinSlip: Dimension not correct");
 
     // evaluation of specific components of entries to assemble
-    double znor = 0;
     double ztxi = 0;
     double zteta = 0;
     double jumptxi = 0;
@@ -2948,7 +2934,6 @@ void WEAR::WearInterface::AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal)
     // double euclidean = 0;
     for (int i = 0; i < Dim(); i++)
     {
-      znor += n[i] * z[i];
       ztxi += txi[i] * z[i];
       zteta += teta[i] * z[i];
       jumptxi += txi[i] * jump[i];

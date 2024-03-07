@@ -202,8 +202,7 @@ namespace CORE::GEO
       class CycleListIterator
       {
        public:
-        CycleListIterator(std::list<Cycle>& cycles, std::list<Cycle>::iterator i)
-            : cycles_(cycles), i_(i)
+        CycleListIterator(std::list<Cycle>& cycles, std::list<Cycle>::iterator i) : i_(i)
         {
           NextActive();
         }
@@ -222,7 +221,6 @@ namespace CORE::GEO
         bool operator!=(const CycleListIterator& other) { return i_ != other.i_; }
 
        private:
-        std::list<Cycle>& cycles_;
         std::list<Cycle>::iterator i_;
       };
 

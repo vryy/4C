@@ -2097,8 +2097,8 @@ void FLD::XFluid::CheckXFluidParams() const
 
   Teuchos::ParameterList& params_xfem = params_->sublist("XFEM");
   if (ghost_penalty_add_inner_faces_ &&
-      !CORE::UTILS::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(params_xfem,
-          "NODAL_DOFSET_STRATEGY") == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition)
+      !(CORE::UTILS::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(params_xfem,
+            "NODAL_DOFSET_STRATEGY") == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition))
     dserror(
         "The option GHOST_PENALTY_ADD_INNER_FACES is only availabe if you use max 1 nodal dofset!");
 

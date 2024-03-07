@@ -647,12 +647,10 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(MORTAR::Element& sele, double&
 
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
-  bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
-    bound += mymrtrnode->IsOnBound();
   }
 
   // decide whether linear LM are used for quadratic FE here
@@ -662,7 +660,6 @@ void CONTACT::Integrator::IntegrateDerivSegment2D(MORTAR::Element& sele, double&
   bool dualquad = false;
   if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
   {
-    bound = false;  // crosspoints and linear LM NOT at the same time!!!!
     linlm = true;
     if (shapefcn_ == INPAR::MORTAR::shape_dual) dualquad = true;
   }
@@ -4267,12 +4264,10 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::Element& sele,
 
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
-  bool bound = false;
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
     if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
-    bound += mymrtrnode->IsOnBound();
   }
 
   // decide whether linear LM are used for quadratic FE here
@@ -4282,7 +4277,6 @@ void CONTACT::Integrator::IntegrateDerivEle2D(MORTAR::Element& sele,
   bool dualquad = false;
   if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == CORE::FE::CellType::line3)
   {
-    bound = false;  // crosspoints and linear LM NOT at the same time!!!!
     linlm = true;
     if (ShapeFcn() == INPAR::MORTAR::shape_dual) dualquad = true;
   }

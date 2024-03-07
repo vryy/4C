@@ -872,7 +872,6 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::SwitchDomains(Teuchos::RCP<E
   double ratio;         // nonmatch is double because later this ratio is needed.
 
   double numInterfaceNodes = 0;
-  int globalInterfaceNodes = 0;
 
   int interfaceproc = 0;  // Does this proc own interface nodes?
 
@@ -1050,7 +1049,6 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::SwitchDomains(Teuchos::RCP<E
       }
 
       comm.Broadcast(&numInterfaceNodes, 1, proc);
-      globalInterfaceNodes += numInterfaceNodes;
     }
   }  // for (int proc=0; proc<numproc; ++proc){
 
@@ -1397,7 +1395,6 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
       // do not insert fluid interface nodes
 
       std::vector<int> insert_ind;
-      int numInsert = 0;
 
       // save deleted edges
       for (int k = 0; k < actNumIndices; ++k)
@@ -1410,7 +1407,6 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
         catch (std::exception& exc)
         {
           insert_ind.push_back(indices_f[k]);
-          numInsert++;
         }
       }
 
@@ -1726,10 +1722,6 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
       insert_ind.insert(
           insert_ind.end(), fluidFieldNodesConnect[gid].begin(), fluidFieldNodesConnect[gid].end());
       numInsert += (int)fluidFieldNodesConnect[gid].size();
-
-      //        std::cout<<"gid: "<<gid<<" rank: "<<myrank<<" numInsert: "<<numInsert<<std::endl;
-      //        for (int m=0; m<numInsert; ++m)
-      //          std::cout<<"rank: "<<myrank<<" ind: "<<insert_ind[m]<<std::endl;
 
       // insertion
 

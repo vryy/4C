@@ -1438,16 +1438,9 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
   //--------------------------------------------------------------------------
   // total dislocation density and twinned volume fraction based on last time steps results
   double total_dislocation_densitiy_last = 0.0;
-  double total_twinned_volume_last = 0.0;
 
   for (int i = 0; i < slip_system_count_; i++)
     total_dislocation_densitiy_last += (*defect_densities_last_)[gp][i];
-
-  if (is_twinning_)
-  {
-    for (int i = slip_system_count_; i < def_system_count_; i++)
-      total_twinned_volume_last += (*defect_densities_last_)[gp][i];
-  }
 
   // current total defect densities
   double total_twinned_volume_curr = 0.0;
