@@ -1,7 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief unit testing functionality for the mirco contact constitutivelaw
+\brief unit testing functionality for the mirco contact constitutivelaw with point-force-based Green
+function
 
 \level 2
 
@@ -16,15 +17,14 @@
 
 #ifdef BACI_WITH_MIRCO
 
-#include <omp.h>
 namespace
 {
   using namespace BACI;
 
-  class MircoConstitutiveLawTest : public ::testing::Test
+  class MircoConstitutiveLawForceTest : public ::testing::Test
   {
    public:
-    MircoConstitutiveLawTest()
+    MircoConstitutiveLawForceTest()
     {
       const int problemid(0);
       GLOBAL::Problem& problem = (*GLOBAL::Problem::Instance());
@@ -45,18 +45,19 @@ namespace
               1, INPAR::CONTACT::ConstitutiveLawType::colaw_mirco, "Mirco Constitutivelaw"));
 
       // add parameters to container
-      container->Add("FirstMatID", 1.0);
-      container->Add("SecondMatID", 1.0);
+      container->Add("FirstMatID", 1);
+      container->Add("SecondMatID", 1);
       container->Add("LateralLength", 1000.0);
-      container->Add("Resolution", 6.0);
+      container->Add("Resolution", 6);
+      container->Add("PressureGreenFunFlag", false);
       container->Add("InitialTopologyStdDeviation", 20.0);
       container->Add("HurstExponent", 0.7);
-      container->Add("RandomTopologyFlag", 1.0);
-      container->Add("RandomSeedFlag", 0.0);
-      container->Add("RandomGeneratorSeed", 95.0);
+      container->Add("RandomTopologyFlag", true);
+      container->Add("RandomSeedFlag", false);
+      container->Add("RandomGeneratorSeed", 95);
       container->Add("Tolerance", 0.01);
-      container->Add("MaxIteration", 100.0);
-      container->Add("WarmStartingFlag", 1.0);
+      container->Add("MaxIteration", 100);
+      container->Add("WarmStartingFlag", true);
       container->Add("Offset", 2.0);
       container->Add("FiniteDifferenceFraction", 0.001);
       container->Add("ActiveGapTolerance", 1e-6);
@@ -70,7 +71,7 @@ namespace
   };
 
   //! test member function Evaluate
-  TEST_F(MircoConstitutiveLawTest, TestEvaluate)
+  TEST_F(MircoConstitutiveLawForceTest, TestEvaluate)
   {
     // gap < 0
     EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0));
@@ -81,7 +82,7 @@ namespace
   }
 
   //! test member function EvaluateDeriv
-  TEST_F(MircoConstitutiveLawTest, TestEvaluateDeriv)
+  TEST_F(MircoConstitutiveLawForceTest, TestEvaluateDeriv)
   {
     EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-12), 1.34284789678326e-04, 1.e-10);
     EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25));

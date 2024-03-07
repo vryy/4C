@@ -43,11 +43,13 @@ namespace CONTACT
       int GetFirstMatID() const { return firstmatid_; };
       int GetSecondMatID() const { return secondmatid_; };
       double GetLateralLength() const { return lateralLength_; };
+      bool GetPressureGreenFunFlag() const { return pressureGreenFunFlag_; };
       double GetTolerance() const { return tolerance_; };
       double GetMaxIteration() const { return maxIteration_; };
       bool GetWarmStartingFlag() const { return warmStartingFlag_; };
       Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> GetTopology() const { return topology_; };
       double GetCompositeYoungs() const { return compositeYoungs_; };
+      double GetCompositePoissonsRatio() const { return compositePoissonsRatio_; };
       double GetGridSize() const { return gridSize_; };
       double GetComplianceCorrection() const { return elasticComplianceCorrection_; };
       double GetFiniteDifferenceFraction() const { return finiteDifferenceFraction_; };
@@ -64,6 +66,7 @@ namespace CONTACT
       int secondmatid_;
       double lateralLength_;
       int resolution_;
+      bool pressureGreenFunFlag_;
       bool randomTopologyFlag_;
       bool randomSeedFlag_;
       int randomGeneratorSeed_;
@@ -72,6 +75,7 @@ namespace CONTACT
       bool warmStartingFlag_;
       Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> topology_;
       double compositeYoungs_;
+      double compositePoissonsRatio_;
       double gridSize_;
       double elasticComplianceCorrection_;
       Teuchos::Ptr<std::vector<double>> meshgrid_;

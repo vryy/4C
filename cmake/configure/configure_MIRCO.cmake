@@ -21,7 +21,7 @@ else() # Fetch MIRCO from GIT repository
   fetchcontent_declare(
     mirco
     GIT_REPOSITORY https://github.com/imcs-compsim/MIRCO.git
-    GIT_TAG a02aa9ae757ca49325d030d9f17dc03ab8bfa5cd
+    GIT_TAG 8a8ae9c703a762459995d56d36292b77ff6c1985
     )
   fetchcontent_makeavailable(mirco)
 endif()

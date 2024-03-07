@@ -13,6 +13,7 @@
 
 #include "baci_config.hpp"
 
+#include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_utils.hpp"
 #include "baci_mat_fluidporo_multiphase.hpp"
@@ -27,6 +28,7 @@
 #include "baci_porofluidmultiphase_ele_porofluid_phasemanager.hpp"
 #include "baci_porofluidmultiphase_ele_porofluid_variablemanager.hpp"
 #include "baci_scatra_ele_calc_poro_reac.hpp"
+#include "baci_utils_function.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -384,17 +386,12 @@ namespace DRT
      public:
       ScaTraEleInternalVariableManagerMultiPoro(int numscal)
           : ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
-            multiconvelint_(0),
-            multiconv_(0),
-            zeroconvelint_(true),
-            zeroconv_(true),
-            temperatureconvelint_(true),
-            temperatureconv_(true),
             pressure_(0),
             saturation_(0),
             density_(0),
             solidpressure_(0.0),
             delta_(numscal, 0.0),
+            relative_mobility_funct_id_(numscal),
             heatcapacity_(0),
             thermaldiffusivity_(0),
             heatcapacityeff_(0.0),
@@ -420,13 +417,18 @@ namespace DRT
               ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
           const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
           const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
-              ehist  //! history vector of transported scalars
+              ehist,  //! history vector of transported scalars
+          const CORE::LINALG::Matrix<NSD, NEN>&
+              eforcevelocity  //! nodal velocity due to external force
       )
       {
-        // call base class (scatra) with dummy variable econvelnp
-        const CORE::LINALG::Matrix<NSD, NEN> econvelnp(true);
-        const CORE::LINALG::Matrix<NSD, NEN> eforcevelocity(true);
-        my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
+        // call base class (scatra) with dummy variable
+        const CORE::LINALG::Matrix<NSD, NEN> dummy_econv(true);
+        my::SetInternalVariables(funct, derxy, ephinp, ephin, dummy_econv, ehist, dummy_econv);
+
+        // velocity due to the external force
+        CORE::LINALG::Matrix<NSD, 1> force_velocity;
+        force_velocity.Multiply(eforcevelocity, funct);
 
         //------------------------get determinant of Jacobian dX / ds
         // transposed jacobian "dX/ds"
@@ -453,8 +455,6 @@ namespace DRT
         const int numvolfrac = phasemanager_->NumVolFrac();
 
         // resize all phase related vectors
-        multiconvelint_.resize(numfluidphases + numvolfrac);
-        multiconv_.resize(numfluidphases + numvolfrac);
         pressure_.resize(numfluidphases);
         saturation_.resize(numfluidphases);
         density_.resize(numfluidphases + numvolfrac);
@@ -465,6 +465,7 @@ namespace DRT
         abspressuregrad_.resize(numfluidphases);
         volfrac_.resize(numvolfrac);
         volfracpressure_.resize(numvolfrac);
+        relative_mobility_funct_id_.resize(my::numscal_);
 
         const std::vector<CORE::LINALG::Matrix<NSD, 1>>& fluidgradphi =
             *(variablemanager_->GradPhinp());
@@ -472,74 +473,85 @@ namespace DRT
         volfrac_ = phasemanager_->VolFrac();
         volfracpressure_ = phasemanager_->VolFracPressure();
 
-        temperatureconv_ = 0.0;
-        temperatureconvelint_ = 0.0;
+        //! convective velocity
+        std::vector<CORE::LINALG::Matrix<NSD, 1>> phase_fluid_velocity(0.0);
+        phase_fluid_velocity.resize(numfluidphases + numvolfrac);
+        //! convective part in convective form: u_x*N,x + u_y*N,y
+        std::vector<CORE::LINALG::Matrix<NEN, 1>> phase_fluid_velocity_conv(0.0);
+        phase_fluid_velocity_conv.resize(numfluidphases + numvolfrac);
 
-        for (int k = 0; k < numfluidphases; ++k)
+        //! temperature convective velocity
+        CORE::LINALG::Matrix<NSD, 1> temperatureconvelint(true);
+        //! temperature convective part in convective form
+        CORE::LINALG::Matrix<NEN, 1> temperatureconv(true);
+
+        for (int i_phase = 0; i_phase < numfluidphases; ++i_phase)
         {
           // current pressure gradient
-          pressuregrad_[k].Clear();
+          pressuregrad_[i_phase].Clear();
 
           // phase density
-          density_[k] = phasemanager_->Density(k);
+          density_[i_phase] = phasemanager_->Density(i_phase);
 
           // compute the pressure gradient from the phi gradients
           for (int idof = 0; idof < numfluidphases; ++idof)
-            pressuregrad_[k].Update(phasemanager_->PressureDeriv(k, idof), fluidgradphi[idof], 1.0);
+            pressuregrad_[i_phase].Update(
+                phasemanager_->PressureDeriv(i_phase, idof), fluidgradphi[idof], 1.0);
 
           // compute the absolute value of the pressure gradient from the phi gradients
-          abspressuregrad_[k] = 0.0;
+          abspressuregrad_[i_phase] = 0.0;
           for (int i = 0; i < NSD; i++)
-            abspressuregrad_[k] += pressuregrad_[k](i) * pressuregrad_[k](i);
-          abspressuregrad_[k] = sqrt(abspressuregrad_[k]);
+            abspressuregrad_[i_phase] += pressuregrad_[i_phase](i) * pressuregrad_[i_phase](i);
+          abspressuregrad_[i_phase] = sqrt(abspressuregrad_[i_phase]);
 
           // diffusion tensor
-          difftensorsfluid_[k].Clear();
-          phasemanager_->PermeabilityTensor(k, difftensorsfluid_[k]);
-          difftensorsfluid_[k].Scale(
-              phasemanager_->RelPermeability(k) /
-              phasemanager_->DynViscosity(k, abspressuregrad_[k], ndsscatra_porofluid_));
+          difftensorsfluid_[i_phase].Clear();
+          phasemanager_->PermeabilityTensor(i_phase, difftensorsfluid_[i_phase]);
+          difftensorsfluid_[i_phase].Scale(phasemanager_->RelPermeability(i_phase) /
+                                           phasemanager_->DynViscosity(i_phase,
+                                               abspressuregrad_[i_phase], ndsscatra_porofluid_));
 
-          // Insert Darcy's law: porosity*S^\pi*(v^\pi - v_s) = - k/\mu * grad p
-          multiconvelint_[k].Multiply(-1.0, difftensorsfluid_[k], pressuregrad_[k]);
-
-          temperatureconvelint_.Update(heatcapacity_[k] * density_[k], multiconvelint_[k], 1.0);
+          // Insert Darcy's law: porosity*S^\pi*(v^\pi - v_s) = - phase/\mu * grad p
+          phase_fluid_velocity[i_phase].Multiply(
+              -1.0, difftensorsfluid_[i_phase], pressuregrad_[i_phase]);
+          temperatureconvelint.Update(
+              heatcapacity_[i_phase] * density_[i_phase], phase_fluid_velocity[i_phase], 1.0);
+          // in convective form: u_x*N,x + u_y*N,y
+          phase_fluid_velocity_conv[i_phase].MultiplyTN(derxy, phase_fluid_velocity[i_phase]);
+          temperatureconv.Update(
+              heatcapacity_[i_phase] * density_[i_phase], phase_fluid_velocity_conv[i_phase], 1.0);
 
           // phase pressure
-          pressure_[k] = phasemanager_->Pressure(k);
+          pressure_[i_phase] = phasemanager_->Pressure(i_phase);
           // phase saturation
-          saturation_[k] = phasemanager_->Saturation(k);
-          // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-          multiconv_[k].MultiplyTN(derxy, multiconvelint_[k]);
-
-          temperatureconv_.Update(heatcapacity_[k] * density_[k], multiconv_[k], 1.0);
+          saturation_[i_phase] = phasemanager_->Saturation(i_phase);
         }
 
-        for (int k = numfluidphases; k < numfluidphases + numvolfrac; ++k)
+        for (int i_volfrac = numfluidphases; i_volfrac < numfluidphases + numvolfrac; ++i_volfrac)
         {
           // current pressure gradient
-          pressuregrad_[k].Update(1.0, fluidgradphi[k + numvolfrac], 0.0);
+          pressuregrad_[i_volfrac].Update(1.0, fluidgradphi[i_volfrac + numvolfrac], 0.0);
 
           // vol frac density
-          density_[k] = phasemanager_->VolFracDensity(k - numfluidphases);
+          density_[i_volfrac] = phasemanager_->VolFracDensity(i_volfrac - numfluidphases);
 
           // diffusion tensor
-          difftensorsfluid_[k].Clear();
+          difftensorsfluid_[i_volfrac].Clear();
           phasemanager_->PermeabilityTensorVolFracPressure(
-              k - numfluidphases, difftensorsfluid_[k]);
-          difftensorsfluid_[k].Scale(
-              1.0 / phasemanager_->DynViscosityVolFracPressure(k - numfluidphases, -1.0,
+              i_volfrac - numfluidphases, difftensorsfluid_[i_volfrac]);
+          difftensorsfluid_[i_volfrac].Scale(
+              1.0 / phasemanager_->DynViscosityVolFracPressure(i_volfrac - numfluidphases, -1.0,
                         ndsscatra_porofluid_));  // -1.0 --> don't need abspressgrad
 
           // Insert Darcy's law: porosity*(v^\pi - v_s) = - k/\mu * grad p
-          multiconvelint_[k].Multiply(-1.0, difftensorsfluid_[k], pressuregrad_[k]);
-
-          temperatureconvelint_.Update(heatcapacity_[k] * density_[k], multiconvelint_[k], 1.0);
-
-          // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-          multiconv_[k].MultiplyTN(derxy, multiconvelint_[k]);
-
-          temperatureconv_.Update(heatcapacity_[k] * density_[k], multiconv_[k], 1.0);
+          phase_fluid_velocity[i_volfrac].Multiply(
+              -1.0, difftensorsfluid_[i_volfrac], pressuregrad_[i_volfrac]);
+          temperatureconvelint.Update(
+              heatcapacity_[i_volfrac] * density_[i_volfrac], phase_fluid_velocity[i_volfrac], 1.0);
+          // in convective form: u_x*N,x + u_y*N,y
+          phase_fluid_velocity_conv[i_volfrac].MultiplyTN(derxy, phase_fluid_velocity[i_volfrac]);
+          temperatureconv.Update(heatcapacity_[i_volfrac] * density_[i_volfrac],
+              phase_fluid_velocity_conv[i_volfrac], 1.0);
         }
 
         // solid pressure
@@ -553,15 +565,29 @@ namespace DRT
           {
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-              my::conv_phi_[k] = multiconvelint_[scalartophasemap_[k].phaseID].Dot(my::gradphi_[k]);
+              my::convelint_[k] = phase_fluid_velocity[scalartophasemap_[k].phaseID];
+              // if the scalar reacts to the external force, add the velocity due to the external
+              // force scaled with the relative mobility and the porosity * saturation
+              if (my::reacts_to_force_[k])
+              {
+                const auto prefactor = EvaluateRelativeMobility(k) * phasemanager_->Porosity() *
+                                       phasemanager_->Saturation(scalartophasemap_[k].phaseID);
+                my::convelint_[k].Update(prefactor, force_velocity, 1.0);
+              }
+              my::conv_[k].MultiplyTN(derxy, my::convelint_[k]);
+              my::conv_phi_[k] = my::convelint_[k].Dot(my::gradphi_[k]);
               break;
 
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
+              my::convelint_[k] = CORE::LINALG::Matrix<NSD, 1>(0.0);
+              my::conv_[k] = CORE::LINALG::Matrix<NEN, 1>(0.0);
               my::conv_phi_[k] = 0;
               break;
 
             case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
-              my::conv_phi_[k] = temperatureconvelint_.Dot(my::gradphi_[k]);
+              my::convelint_[k] = temperatureconvelint;
+              my::conv_[k] = temperatureconv;
+              my::conv_phi_[k] = temperatureconvelint.Dot(my::gradphi_[k]);
               break;
 
             default:
@@ -572,8 +598,6 @@ namespace DRT
           // set flag if we actually have to evaluate the species
           SetEvaluateScalarFlag(k);
         }
-
-        return;
       };
 
       // adapt convective term in case of L2-projection
@@ -582,42 +606,42 @@ namespace DRT
           const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
           const std::vector<CORE::LINALG::Matrix<NSD, NEN>>&
-              econvelnp  //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+              efluxnp  //! nodal flux values at t_(n+1) or t_(n+alpha_F)
       )
       {
-        const int numfluidphases = econvelnp.size();
+        const int numfluidphases = efluxnp.size();
 
-        // resize all phase related vectors
-        multiconvelint_.resize(numfluidphases);
-        multiconv_.resize(numfluidphases);
+        std::vector<CORE::LINALG::Matrix<NSD, 1>> flux(0.0);
+        flux.resize(numfluidphases);
 
-        for (int k = 0; k < numfluidphases; ++k)
+        // in convective form: q_x*N,x + q_y*N,y
+        std::vector<CORE::LINALG::Matrix<NEN, 1>> flux_conv(0.0);
+        flux_conv.resize(numfluidphases);
+
+        for (int i_phase = 0; i_phase < numfluidphases; ++i_phase)
         {
-          // convective velocity
-          multiconvelint_[k].Multiply(1.0, econvelnp[k], funct);
-          // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-          multiconv_[k].MultiplyTN(derxy, multiconvelint_[k]);
+          flux[i_phase].Multiply(1.0, efluxnp[i_phase], funct);
+          flux_conv[i_phase].MultiplyTN(derxy, flux[i_phase]);
         }
 
-        // check if the IDs make sense
-        for (unsigned int k = 0; k < scalartophasemap_.size(); ++k)
+        for (auto& k : scalartophasemap_)
         {
-          if (scalartophasemap_[k].phaseID < 0 or scalartophasemap_[k].phaseID >= numfluidphases)
-            dserror("Invalid phase ID %i", scalartophasemap_[k].phaseID);
+          if (k.phaseID < 0 or k.phaseID >= numfluidphases)
+            dserror("Invalid phase ID %i", k.phaseID);
         }
 
-        // overwrite convective term
+        // set convective term
         for (int k = 0; k < my::numscal_; ++k)
         {
           switch (scalartophasemap_[k].species_type)
           {
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-            case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
-              my::conv_phi_[k] = multiconvelint_[scalartophasemap_[k].phaseID].Dot(my::gradphi_[k]);
+              my::conv_phi_[k] = flux[scalartophasemap_[k].phaseID].Dot(my::gradphi_[k]);
               break;
 
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
+            case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
               my::conv_phi_[k] = 0;
               break;
 
@@ -647,51 +671,6 @@ namespace DRT
       /*========================================================================*/
       //! @name return methods for internal variables
       /*========================================================================*/
-
-      //! return convective velocity
-      const CORE::LINALG::Matrix<NSD, 1>& ConVel(const int k) const override
-      {
-        switch (scalartophasemap_[k].species_type)
-        {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-            return multiconvelint_[scalartophasemap_[k].phaseID];
-
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
-            return zeroconvelint_;
-
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
-            return temperatureconvelint_;
-
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_undefined:
-          default:
-            dserror(
-                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
-        }
-        return zeroconvelint_;
-      };
-
-      //! return convective part in convective form
-      const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const override
-      {
-        switch (scalartophasemap_[k].species_type)
-        {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-            return multiconv_[scalartophasemap_[k].phaseID];
-
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
-            return zeroconv_;
-
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
-            return temperatureconv_;
-
-          default:
-            dserror(
-                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
-            return zeroconv_;
-        }
-      };
 
       //! return pressure associated with scalar k
       double Pressure(const int k) const
@@ -803,6 +782,13 @@ namespace DRT
 
       //! set delta for evaluation of effective diffusivity
       void SetDelta(const double delta, const int k) { delta_[k] = delta; };
+
+      //! set relative mobility function ID
+      void SetRelativeMobilityFunctionId(
+          const int relative_mobility_funct_id, const int current_scalar)
+      {
+        relative_mobility_funct_id_[current_scalar] = relative_mobility_funct_id;
+      };
 
       //! set heat capacity
       void SetHeatCapacity(std::vector<double> cp) { heatcapacity_ = cp; };
@@ -1006,6 +992,32 @@ namespace DRT
 
         return;
       };
+
+      //! evaluate relative mobility
+      auto EvaluateRelativeMobility(const int current_scalar)
+      {
+        std::vector<std::pair<std::string, double>> varfunction_variables;
+        std::vector<std::pair<std::string, double>> varfunction_constants;
+        const auto number_fluidphases = phasemanager_->NumFluidPhases();
+
+        for (int i = 0; i < number_fluidphases; i++)
+        {
+          std::ostringstream temp;
+          temp << i + 1;
+
+          varfunction_variables.emplace_back("S" + temp.str(), phasemanager_->Saturation(i));
+          varfunction_variables.emplace_back("p" + temp.str(), phasemanager_->Pressure(i));
+        }
+        varfunction_variables.emplace_back("porosity", phasemanager_->Porosity());
+
+        const auto relative_mobility =
+            GLOBAL::Problem::Instance()
+                ->FunctionById<CORE::UTILS::FunctionOfAnything>(
+                    relative_mobility_funct_id_[current_scalar] - 1)
+                .Evaluate(varfunction_variables, varfunction_constants, 0);
+
+        return relative_mobility;
+      }
 
       //! get pre-factor needed for OD-fluid-linearization of convective term
       void GetPreFacLinConvODFluid(const int k, const unsigned ui,
@@ -1510,19 +1522,6 @@ namespace DRT
       }
 
      private:
-      //! convective velocity
-      std::vector<CORE::LINALG::Matrix<NSD, 1>> multiconvelint_;
-      //! convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      std::vector<CORE::LINALG::Matrix<NEN, 1>> multiconv_;
-      //! zero convective velocity
-      CORE::LINALG::Matrix<NSD, 1> zeroconvelint_;
-      //! zero convective part in convective form
-      CORE::LINALG::Matrix<NEN, 1> zeroconv_;
-      //! temperature convective velocity
-      CORE::LINALG::Matrix<NSD, 1> temperatureconvelint_;
-      //! temperature convective part in convective form
-      CORE::LINALG::Matrix<NEN, 1> temperatureconv_;
-
       //! phase pressure
       std::vector<double> pressure_;
       //! phase saturation
@@ -1547,6 +1546,10 @@ namespace DRT
 
       //! delta for effective diffusivity
       std::vector<double> delta_;
+
+      //! function IDs of relative mobility functions
+      std::vector<int> relative_mobility_funct_id_;
+
       //! heat capacity
       //! order [ <fluid>  <volfrac>  <solid> ]
       std::vector<double> heatcapacity_;

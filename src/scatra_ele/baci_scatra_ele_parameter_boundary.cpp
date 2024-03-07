@@ -274,7 +274,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetPeltier(Teuchos::ParameterLis
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetPermeabilities(
     Teuchos::ParameterList& parameters)
 {
-  permeabilities_ = parameters.get<std::vector<double>*>("permeabilities");
+  permeabilities_ = parameters.get<const std::vector<double>*>("permeabilities");
   for (auto permeability : *permeabilities_)
     if (permeability < 0.0) dserror("Permeability must be positive");
 }
@@ -320,7 +320,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetCapacitance(Teuchos::Paramete
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetStoichiometries(
     Teuchos::ParameterList& parameters)
 {
-  stoichiometries_ = parameters.get<std::vector<int>*>("stoichiometries");
+  stoichiometries_ = parameters.get<const std::vector<int>*>("stoichiometries");
 
   if (stoichiometries_ == nullptr)
   {
@@ -347,7 +347,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetThermoPerm(Teuchos::Parameter
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetOnOff(Teuchos::ParameterList& parameters)
 {
-  onoff_ = parameters.get<std::vector<int>*>("onoff");
+  onoff_ = parameters.get<const std::vector<int>*>("onoff");
   if (onoff_ == nullptr) dserror("Cannot get vector 'onoff' from parameter list");
   if (onoff_->size() != 2) dserror("Only two dofs are supported");
 }

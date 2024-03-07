@@ -238,6 +238,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeLoop()
   poromulti_->PrepareTimeLoop();
   // initial output for scatra field
   SetPoroSolution();
+  if (scatra_->ScaTraField()->HasExternalForce()) scatra_->ScaTraField()->SetExternalForce();
   scatra_->ScaTraField()->CheckAndWriteOutputAndRestart();
   if (artery_coupl_) scatramsht_->ArtScatraField()->CheckAndWriteOutputAndRestart();
 }
