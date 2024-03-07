@@ -118,9 +118,9 @@ INPUT::ValidContactConstitutiveLaws()
     AddNamedReal(m, "SecondMatID", "Second material ID");
     AddNamedReal(m, "LateralLength", "length of lateral side of the BEM patch");
     AddNamedReal(m, "Resolution", "resolution of the surface");
-    AddNamedReal(m, "InitialTopologyStdDeviation",
-        "Initial Standard deviation for the random-midpoint generator", 20, true);
-    AddNamedReal(m, "HurstExponent", "Hurst exponent of the surface", 0.7, true);
+    AddNamedReal(m, "InitialTopologyStdDeviationFunct",
+        " Function id for Initial Standard deviation for the random-midpoint generator", 100, true);
+    AddNamedReal(m, "HurstExponentFunct", "Function for Hurst exponent of the surface", 100, true);
     AddNamedReal(m, "RandomTopologyFlag", "Use random midpoint generator flag", 1, true);
     AddNamedReal(m, "RandomSeedFlag", "Random seed flag", 0, true);
     AddNamedReal(m, "RandomGeneratorSeed", "Use random seed to reproduce results", 95, true);

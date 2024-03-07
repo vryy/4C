@@ -52,11 +52,15 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 1 VALUES 0 -10
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  0.7
+----------------------------------------------------------------------FUNCT3
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  20
 -------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 -------------------------------------------------------------CONTACT CONSTITUTIVE LAWS
-LAW 1 CoConstLaw_mirco Offset 0.0 FirstMatID 1 SecondMatID 2 LateralLength 1000 Resolution 6 Tolerance 0.01 InitialTopologyStdDeviation 20 HurstExponent 0.7 RandomTopologyFlag 1 RandomSeedFlag 0 RandomGeneratorSeed 71 MaxIteration 100 WarmStartingFlag 1 FiniteDifferenceFraction 0.001
+LAW 1 CoConstLaw_mirco Offset 0.0 FirstMatID 1 SecondMatID 2 LateralLength 1000 Resolution 6 Tolerance 0.01 InitialTopologyStdDeviationFunct 3 HurstExponentFunct 2 RandomTopologyFlag 1 RandomSeedFlag 0 RandomGeneratorSeed 71 MaxIteration 100 WarmStartingFlag 1 FiniteDifferenceFraction 0.001
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // ground

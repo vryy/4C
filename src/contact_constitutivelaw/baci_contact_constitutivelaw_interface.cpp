@@ -14,7 +14,7 @@
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "baci_contact_defines.hpp"
 #include "baci_contact_element.hpp"
-#include "baci_contact_node.hpp"
+#include "baci_contact_rough_node.hpp"
 #include "baci_inpar_contact.hpp"
 #include "baci_inpar_mortar.hpp"
 #include "baci_lib_discret.hpp"
@@ -52,7 +52,7 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    Node* cnode = dynamic_cast<Node*>(node);
+    RoughNode* cnode = dynamic_cast<RoughNode*>(node);
 
     int dim = cnode->NumDof();
     double gap = cnode->Data().Getg();
@@ -61,6 +61,11 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
 
     double lmuzawan = 0.0;
     for (int k = 0; k < dim; ++k) lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
+
+    // Evaluate pressure
+    double pressure = coconstlaw_->Evaluate(kappa * gap, cnode);
+    // Evaluate pressure derivative
+    double pressurederiv = coconstlaw_->EvaluateDeriv(kappa * gap, cnode);
 
 #ifdef CONTACTFDPENALTYKC1
     // set lagrangian multipliers explicitly to constant
@@ -100,8 +105,7 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
       double* normal = cnode->MoData().n();
 
       // compute lagrange multipliers and store into node
-      for (int j = 0; j < dim; ++j)
-        cnode->MoData().lm()[j] = (lmuzawan - coconstlaw_->Evaluate(kappa * gap)) * normal[j];
+      for (int j = 0; j < dim; ++j) cnode->MoData().lm()[j] = (lmuzawan - pressure) * normal[j];
 
       // compute derivatives of lagrange multipliers and store into node
       // contribution of derivative of weighted gap
@@ -116,11 +120,10 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
       for (int j = 0; j < dim; ++j)
       {
         for (gcurr = derivg.begin(); gcurr != derivg.end(); ++gcurr)
-          cnode->AddDerivZValue(j, gcurr->first,
-              -kappa * coconstlaw_->EvaluateDeriv(kappa * gap) * (gcurr->second) * normal[j]);
-        for (ncurr = (derivn[j]).begin(); ncurr != (derivn[j]).end(); ++ncurr)
           cnode->AddDerivZValue(
-              j, ncurr->first, -coconstlaw_->Evaluate(kappa * gap) * ncurr->second);
+              j, gcurr->first, -kappa * pressurederiv * (gcurr->second) * normal[j]);
+        for (ncurr = (derivn[j]).begin(); ncurr != (derivn[j]).end(); ++ncurr)
+          cnode->AddDerivZValue(j, ncurr->first, -pressure * ncurr->second);
         for (ncurr = (derivn[j]).begin(); ncurr != (derivn[j]).end(); ++ncurr)
           cnode->AddDerivZValue(j, ncurr->first, +lmuzawan * ncurr->second);
       }

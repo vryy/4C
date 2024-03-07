@@ -32,8 +32,6 @@ CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams
       secondmatid_(*container->Get<double>("SecondMatID")),
       lateralLength_(*container->Get<double>("LateralLength")),
       resolution_(*container->Get<double>("Resolution")),
-      initialTopologyStdDeviation_(*container->Get<double>("InitialTopologyStdDeviation")),
-      hurstExponent_(*container->Get<double>("HurstExponent")),
       randomTopologyFlag_(*container->Get<double>("RandomTopologyFlag")),
       randomSeedFlag_(*container->Get<double>("RandomSeedFlag")),
       randomGeneratorSeed_(*container->Get<double>("RandomGeneratorSeed")),
@@ -100,24 +98,11 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
   const int iter = int(ceil((lateralLength_ - (gridSize_ / 2)) / gridSize_));
   meshgrid_ = Teuchos::Ptr(new std::vector<double>(iter));
   MIRCO::CreateMeshgrid(*meshgrid_, iter, gridSize_);
-
-  // Setup Topology
-  const int N = pow(2, resolution_);
-  topology_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(N + 1, N + 1));
-
-  Teuchos::RCP<MIRCO::TopologyGeneration> surfacegenerator;
-  // creating the correct surface object
-  MIRCO::CreateSurfaceObject(resolution_, initialTopologyStdDeviation_, hurstExponent_,
-      randomSeedFlag_, topologyFilePath_, randomTopologyFlag_, randomGeneratorSeed_,
-      surfacegenerator);
-  surfacegenerator->GetSurface(*topology_);
-
-  auto max_and_mean = MIRCO::ComputeMaxAndMean(*topology_);
-  maxTopologyHeight_ = max_and_mean.max_;
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(double gap)
+double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(
+    double gap, CONTACT::RoughNode* cnode)
 {
   if (gap + params_->GetOffset() > 0.0)
   {
@@ -132,14 +117,15 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(double gap)
   MIRCO::Evaluate(pressure, -(gap + params_->GetOffset()), params_->GetLateralLength(),
       params_->GetGridSize(), params_->GetTolerance(), params_->GetMaxIteration(),
       params_->GetCompositeYoungs(), params_->GetWarmStartingFlag(),
-      params_->GetComplianceCorrection(), *params_->GetTopology(), params_->GetMaxTopologyHeight(),
+      params_->GetComplianceCorrection(), *cnode->GetTopology(), cnode->GetMaxTopologyHeight(),
       *params_->GetMeshGrid());
 
   return (-1 * pressure);
 }  // end of mirco_coconstlaw evaluate
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(double gap)
+double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(
+    double gap, CONTACT::RoughNode* cnode)
 {
   if (gap + params_->GetOffset() > 0.0)
   {
@@ -156,13 +142,13 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(double gap)
   MIRCO::Evaluate(pressure1, -1.0 * (gap + params_->GetOffset()), params_->GetLateralLength(),
       params_->GetGridSize(), params_->GetTolerance(), params_->GetMaxIteration(),
       params_->GetCompositeYoungs(), params_->GetWarmStartingFlag(),
-      params_->GetComplianceCorrection(), *params_->GetTopology(), params_->GetMaxTopologyHeight(),
+      params_->GetComplianceCorrection(), *cnode->GetTopology(), cnode->GetMaxTopologyHeight(),
       *params_->GetMeshGrid());
   MIRCO::Evaluate(pressure2,
       -(1 - params_->GetFiniteDifferenceFraction()) * (gap + params_->GetOffset()),
       params_->GetLateralLength(), params_->GetGridSize(), params_->GetTolerance(),
       params_->GetMaxIteration(), params_->GetCompositeYoungs(), params_->GetWarmStartingFlag(),
-      params_->GetComplianceCorrection(), *params_->GetTopology(), params_->GetMaxTopologyHeight(),
+      params_->GetComplianceCorrection(), *cnode->GetTopology(), cnode->GetMaxTopologyHeight(),
       *params_->GetMeshGrid());
   return ((pressure1 - pressure2) /
           (-(params_->GetFiniteDifferenceFraction()) * (gap + params_->GetOffset())));

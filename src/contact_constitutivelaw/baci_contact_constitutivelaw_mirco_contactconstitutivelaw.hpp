@@ -43,7 +43,6 @@ namespace CONTACT
       int GetFirstMatID() const { return firstmatid_; };
       int GetSecondMatID() const { return secondmatid_; };
       double GetLateralLength() const { return lateralLength_; };
-      double GetMaxTopologyHeight() { return maxTopologyHeight_; };
       double GetTolerance() const { return tolerance_; };
       double GetMaxIteration() const { return maxIteration_; };
       bool GetWarmStartingFlag() const { return warmStartingFlag_; };
@@ -65,9 +64,6 @@ namespace CONTACT
       int secondmatid_;
       double lateralLength_;
       int resolution_;
-      double maxTopologyHeight_;
-      double initialTopologyStdDeviation_;
-      double hurstExponent_;
       bool randomTopologyFlag_;
       bool randomSeedFlag_;
       int randomGeneratorSeed_;
@@ -116,7 +112,7 @@ namespace CONTACT
        * \param gap contact gap at the mortar node
        * \return The pressure response from MIRCO
        */
-      double Evaluate(double gap) override;
+      double Evaluate(double gap, CONTACT::RoughNode* cnode) override;
 
       /** \brief Evaluate derivative of the constitutive law
        *
@@ -127,7 +123,7 @@ namespace CONTACT
        * \param gap contact gap at the mortar node
        * \return Derivative of the pressure responses from MIRCO
        */
-      double EvaluateDeriv(double gap) override;
+      double EvaluateDeriv(double gap, CONTACT::RoughNode* cnode) override;
       //@}
 
      private:
