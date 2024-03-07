@@ -757,13 +757,13 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           contactconstitutivelaw_id);
       if (coconstlaw->Name() == "CoConstLaw_mirco")
       {
-        resolution = *coconstlaw->Get<double>("Resolution");
-        randomtopologyflag = *coconstlaw->Get<double>("RandomTopologyFlag");
-        randomseedflag = *coconstlaw->Get<double>("RandomSeedFlag");
-        randomgeneratorseed = *coconstlaw->Get<double>("RandomGeneratorSeed");
-        hurstexponentfunction = *coconstlaw->Get<double>("HurstExponentFunct");
+        resolution = *coconstlaw->Get<int>("Resolution");
+        randomtopologyflag = *coconstlaw->Get<bool>("RandomTopologyFlag");
+        randomseedflag = *coconstlaw->Get<bool>("RandomSeedFlag");
+        randomgeneratorseed = *coconstlaw->Get<int>("RandomGeneratorSeed");
+        hurstexponentfunction = *coconstlaw->Get<int>("HurstExponentFunct");
         initialtopologystddeviationfunction =
-            *coconstlaw->Get<double>("InitialTopologyStdDeviationFunct");
+            *coconstlaw->Get<int>("InitialTopologyStdDeviationFunct");
       }
     }
 
