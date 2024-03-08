@@ -10,11 +10,11 @@ INSTALL_DIR="$1"
 # Number of procs for building (default 4)
 NPROCS=${NPROCS=4}
 VERSION="5.4.0"
-CHECKSUM="374dd136696c653e34ef3212dc8ab5b61d9a67a6791d5ec4841efb838e94dbd1"
+CHECKSUM="d9d62d539410d66550d0b795503a556830831f50087723cb191a030525eda770"
 
-wget --no-verbose https://people.engr.tamu.edu/davis/SuiteSparse/SuiteSparse-${VERSION}.tar.gz
+wget --no-verbose https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v${VERSION}.tar.gz
 # Verify checksum
-if [ $CHECKSUM = `sha256sum SuiteSparse-${VERSION}.tar.gz | awk '{print $1}'` ]
+if [ $CHECKSUM = `sha256sum v${VERSION}.tar.gz | awk '{print $1}'` ]
 then
   echo "Checksum matches"
 else
@@ -22,8 +22,8 @@ else
   exit 1
 fi
 
-tar -xzf SuiteSparse-${VERSION}.tar.gz
-cd SuiteSparse/
+tar -xzf v${VERSION}.tar.gz
+cd SuiteSparse-${VERSION}/
 make -j${NPROCS} library BLAS=-lblas
 make install INSTALL=${INSTALL_DIR} BLAS=-lblas
 cd ../
