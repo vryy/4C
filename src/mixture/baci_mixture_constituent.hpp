@@ -310,9 +310,6 @@ namespace MIXTURE
     int NumGP() const { return numgp_; }
 
    private:
-    /// my material parameters
-    const MIXTURE::PAR::MixtureConstituent* params_;
-
     ///! Number of Gauss points
     int numgp_;
 

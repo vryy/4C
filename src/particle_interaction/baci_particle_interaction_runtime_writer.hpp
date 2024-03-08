@@ -100,9 +100,6 @@ namespace PARTICLEINTERACTION
     //! communication
     const Epetra_Comm& comm_;
 
-    //! particle simulation parameter list
-    const Teuchos::ParameterList& params_;
-
     //! setup time of runtime output writer
     double setuptime_;
 

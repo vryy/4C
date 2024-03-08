@@ -24,7 +24,7 @@ BACI_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::InteractionWriter::InteractionWriter(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : comm_(comm), params_(params), setuptime_(0.0), writeresultsthisstep_(true)
+    : comm_(comm), setuptime_(0.0), writeresultsthisstep_(true)
 {
   // empty constructor
 }

@@ -87,14 +87,12 @@ void STR::ModelEvaluator::Setup()
 
   Map::iterator me_iter;
   int dof_offset = 0;
-  unsigned int i = 0;
   for (me_iter = me_map_ptr_->begin(); me_iter != me_map_ptr_->end(); ++me_iter)
   {
     me_iter->second->Init(eval_data_ptr_, gstate_ptr_, gio_ptr_, int_ptr_, timint_ptr_, dof_offset);
     me_iter->second->Setup();
     // setup the block information for saddle point problems
     dof_offset = gstate_ptr_->SetupBlockInformation(*(me_iter->second), me_iter->first);
-    ++i;
   }
   gstate_ptr_->SetupMultiMapExtractor();
   gstate_ptr_->SetupElementTechnologyMapExtractors();

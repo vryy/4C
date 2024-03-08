@@ -453,7 +453,6 @@ void MORTAR::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
     }
 
 
-    int count = 0;
     // print k-DOP to gmsh-file
     for (int i = 0; i < (int)trianglepoints.size(); i++)
     {
@@ -466,7 +465,6 @@ void MORTAR::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
           {
             if (l != m && l != n && m != n)
             {
-              count++;
               // print triangle to gmsh file
               double position0[3], position1[3], position2[3];
 
@@ -483,7 +481,6 @@ void MORTAR::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
         }
       }
     }
-    // std::cout << std::endl << "Number needed triangles to plot current treenode: " << count;
 
     // delete vector coords
     for (int i = 0; i < (int)(coords.size()) - 1; i++) coords[i].clear();

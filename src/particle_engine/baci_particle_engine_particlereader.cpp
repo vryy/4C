@@ -82,7 +82,6 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
     }
 
     std::string line;
-    int filecount = 0;
     bool endofsection = false;
 
     if (!myrank && !reader_.MyOutputFlag())
@@ -100,7 +99,7 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
       {
         int bcount = 0;
 
-        for (; getline(file, line); ++filecount)
+        while (getline(file, line))
         {
           if (line.find("--") == 0)
           {
@@ -183,7 +182,6 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
             if (block != nblock - 1)  // last block takes all the rest
               if (bcount == bsize)    // block is full
               {
-                ++filecount;
                 break;
               }
           }

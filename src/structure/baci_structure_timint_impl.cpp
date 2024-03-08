@@ -1255,12 +1255,7 @@ bool STR::TimIntImpl::Converged()
     // add convergence check for saddlepoint formulations
     // use separate convergence checks for contact constraints and
     // LM increments
-    INPAR::CONTACT::SystemType systype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
-        cmtbridge_->GetStrategy().Params(), "SYSTEM");
-    if ((stype == INPAR::CONTACT::solution_lagmult ||
-            stype == INPAR::CONTACT::solution_augmented) &&
-        (systype != INPAR::CONTACT::system_condensed ||
-            systype != INPAR::CONTACT::system_condensed_lagmult))
+    if ((stype == INPAR::CONTACT::solution_lagmult || stype == INPAR::CONTACT::solution_augmented))
     {
       bool convDispLagrIncr = false;
       bool convDispWIncr = false;

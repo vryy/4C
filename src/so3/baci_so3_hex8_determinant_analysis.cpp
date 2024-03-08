@@ -326,8 +326,6 @@ bool DRT::ELEMENTS::So_Hex8_Determinant_Analysis::recursiveSubdivision(
   subcubes.assign(8, BezierCube());
   getSubCubeBorders(left, right, subcubes);
 
-  int count = 0;
-
   // don't allocate new storage in a recursive call
   static CORE::LINALG::Matrix<27, 1> sub_bcoeffs(false);
   auto it = subcubes.begin();
@@ -342,22 +340,12 @@ bool DRT::ELEMENTS::So_Hex8_Determinant_Analysis::recursiveSubdivision(
      * corresponding sub-cube. */
     if (not hasInvalidEntry(&sub_bcoeffs(8, 0), 19))
     {
-#ifdef DEBUG_SO_HEX8_DET_ANALYSIS
-      std::cout << "recursion #" << rcount << " -- sub-cube #" << count << "(addr = " << &(*it)
-                << ") will be deleted.\n";
-#endif
       it = subcubes.erase(it);
     }
     else
     {
-#ifdef DEBUG_SO_HEX8_DET_ANALYSIS
-      std::cout << "recursion #" << rcount << " -- sub-cube #" << count << "(addr = " << &(*it)
-                << ") is going to be subdivided.\n";
-#endif
       ++it;
     }
-
-    ++count;
   }
 
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
