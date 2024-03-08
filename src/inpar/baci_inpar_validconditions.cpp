@@ -26,6 +26,7 @@
 #include "baci_inpar_immersed.hpp"
 #include "baci_inpar_levelset.hpp"
 #include "baci_inpar_mortar.hpp"
+#include "baci_inpar_mpc_rve.hpp"
 #include "baci_inpar_particle.hpp"
 #include "baci_inpar_poromultiphase_scatra.hpp"
 #include "baci_inpar_s2i.hpp"
@@ -1092,6 +1093,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> INPUT::Valid
   INPAR::ELEMAG::SetValidConditions(condlist);
 
   INPAR::BEAMPOTENTIAL::SetValidConditions(condlist);
+
+  INPAR::RVE_MPC::SetValidConditions(condlist);
 
   INPAR::BEAMINTERACTION::SetValidConditions(condlist);
 

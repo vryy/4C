@@ -44,6 +44,7 @@
 #include "baci_inpar_lubrication.hpp"
 #include "baci_inpar_mor.hpp"
 #include "baci_inpar_mortar.hpp"
+#include "baci_inpar_mpc_rve.hpp"
 #include "baci_inpar_particle.hpp"
 #include "baci_inpar_pasi.hpp"
 #include "baci_inpar_plasticity.hpp"
@@ -345,6 +346,7 @@ Teuchos::RCP<const Teuchos::ParameterList> INPUT::ValidParameters()
   INPAR::BEAMCONTACT::SetValidParameters(list);
   INPAR::BEAMPOTENTIAL::SetValidParameters(list);
   INPAR::BEAMINTERACTION::SetValidParameters(list);
+  INPAR::RVE_MPC::SetValidParameters(list);
   INPAR::BROWNIANDYN::SetValidParameters(list);
 
   INPAR::PLASTICITY::SetValidParameters(list);

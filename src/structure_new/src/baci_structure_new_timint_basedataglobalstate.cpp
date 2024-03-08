@@ -398,6 +398,12 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
       // do nothing
       break;
     }
+    case INPAR::STR::model_constraints:
+    {
+      // do nothing
+      break;
+    }
+
     default:
     {
       // FixMe please
