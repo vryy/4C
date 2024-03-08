@@ -11,7 +11,6 @@
 #ifndef BACI_CONSTRAINT_FRAMEWORK_MODEL_EVALUATOR_HPP
 #define BACI_CONSTRAINT_FRAMEWORK_MODEL_EVALUATOR_HPP
 
-
 #include "baci_config.hpp"
 
 #include "baci_constraint_framework_submodelevaluator_base.hpp"
@@ -20,6 +19,11 @@
 
 BACI_NAMESPACE_OPEN
 
+namespace CONSTRAINTS::SUBMODELEVALUATOR
+{
+  class RveMultiPointConstraintManager;
+
+}
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -38,11 +42,9 @@ namespace STR
     class Constraints : public Generic
     {
      public:
-      using Vector = std::vector<Teuchos::RCP<CONSTRAINTS::SUBMODELEVALUATOR::Constraint>>;
+      using SubmodelevaluatorVector =
+          std::vector<Teuchos::RCP<CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase>>;
 
-      /**
-       * \brief Constructor.
-       */
       Constraints() = default;
 
       /*! \brief Setup of the model evaluator and submodel evaluator
@@ -62,7 +64,7 @@ namespace STR
 
       bool EvaluateForceStiff() override;
 
-      void PreEvaluate() override {}
+      void PreEvaluate() override;
 
       void PostEvaluate() override {}
 
@@ -124,15 +126,35 @@ namespace STR
       void CreateBackupState(const Epetra_Vector& dir) override;
 
       void RecoverFromBackupState() override;
+      //! @}
+
+     private:
+      //!@name routines for submodel management
+      //! @{
+
+      //! Set Submodeltypes depending on input
+      void SetSubModelTypes();
+
+      //! build, init and setup submodel evaluator
+      void CreateSubModelEvaluators();
 
       //! @}
 
      private:
-      //! Vector of submodel evaluators
-      Teuchos::RCP<STR::MODELEVALUATOR::Constraints::Vector> me_vec_ptr_;
+      //!@name data for submodel management
+      //! @{
+      /// active model types for the model evaluator
+      std::set<enum INPAR::CONSTRAINTS::SubModelType> submodeltypes_;
 
-      //! structural stiffness matrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr_;
+      //! vector of submodelevaluators
+      SubmodelevaluatorVector sub_model_vec_ptr_;
+
+      //! constraint stiffness matrix
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> constraint_stiff_ptr_;
+
+      //! constraint force vector
+      Teuchos::RCP<Epetra_Vector> constraint_force_ptr_;
+      //! @}
     };
   }  // namespace MODELEVALUATOR
 }  // namespace STR

@@ -1857,7 +1857,7 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
   reader.ReadSection("--CARDIAC MONODOMAIN CONTROL", *list);
   reader.ReadSection("--MOR", *list);
   reader.ReadSection("--MESH PARTITIONING", *list);
-
+  reader.ReadSection("--MULTI POINT CONSTRAINTS", *list);
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);
   reader.ReadSection("--STRUCT NOX/Direction/Newton", *list);

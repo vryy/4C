@@ -303,6 +303,10 @@ namespace GLOBAL
     {
       return parameters_->sublist("BEAM INTERACTION");
     }
+    const Teuchos::ParameterList& RveMultiPointConstraintParams() const
+    {
+      return getParameterList()->sublist("MULTI POINT CONSTRAINTS");
+    }
     const Teuchos::ParameterList& BrownianDynamicsParams() const
     {
       return parameters_->sublist("BROWNIAN DYNAMICS");
