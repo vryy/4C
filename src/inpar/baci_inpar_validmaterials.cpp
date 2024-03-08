@@ -4122,6 +4122,52 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
   }
 
   /*----------------------------------------------------------------------*/
+  // Map mixture rule for solid mixtures
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Rule_Map",
+        "A mixture rule where the mass fractions are defined elementwise as discrete values",
+        INPAR::MAT::mix_rule_map));
+
+    AddNamedReal(m, "DENS", "");
+    AddNamedInt(m, "NUMCONST", "number of mixture constituents");
+
+    // definition of operation and print string for post processed component "MASSFRACMAPFILE"
+    using mapType = std::unordered_map<int, std::vector<double>>;
+    std::function<const mapType(const std::string&)> operation =
+        [](const std::string& map_file) -> mapType
+    {
+      // map pattern file needs to be placed in same folder as input file
+      std::filesystem::path input_file_path =
+          GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName();
+      const auto map_file_path = input_file_path.replace_filename(map_file);
+
+      std::ifstream file_stream(map_file_path);
+
+      if (file_stream.fail()) dserror("Invalid file %s!", map_file_path.c_str());
+
+      auto map_reduction_operation = [](mapType&& acc, mapType&& next)
+      {
+        for (const auto& [key, value] : next)
+        {
+          acc[key] = value;
+        }
+        return acc;
+      };
+
+      return IO::ReadCsvAsLines<mapType, mapType>(file_stream, map_reduction_operation);
+    };
+    const std::string print_string = std::string(
+        "map of massfraction values retrieved from pattern file with rows in the format \"eleid: "
+        "massfrac_1, massfrac_2, ...\"");
+
+    AddNamedProcessedComponent(m, "MASSFRACMAPFILE",
+        "file path of pattern file defining the massfractions as discrete values", operation,
+        print_string, false);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Base mixture rule for solid mixtures
   {
     auto m = Teuchos::rcp(new MaterialDefinition(

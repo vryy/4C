@@ -20,6 +20,7 @@
 #include "baci_mat_service.hpp"
 #include "baci_mixture_rule_function.hpp"
 #include "baci_mixture_rule_growthremodel.hpp"
+#include "baci_mixture_rule_map.hpp"
 #include "baci_mixture_rule_simple.hpp"
 #include "baci_utils_exceptions.hpp"
 
@@ -72,6 +73,10 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
     case INPAR::MAT::mix_rule_function:
     {
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::FunctionMixtureRule>(curmat);
+    }
+    case INPAR::MAT::mix_rule_map:
+    {
+      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::MapMixtureRule>(curmat);
     }
     case INPAR::MAT::mix_rule_simple:
     {

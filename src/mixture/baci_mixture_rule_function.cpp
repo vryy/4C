@@ -57,7 +57,7 @@ MIXTURE::PAR::FunctionMixtureRule::FunctionMixtureRule(
 
 std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::FunctionMixtureRule::CreateRule()
 {
-  return std::unique_ptr<MIXTURE::FunctionMixtureRule>(new MIXTURE::FunctionMixtureRule(this));
+  return std::make_unique<MIXTURE::FunctionMixtureRule>(this);
 }
 
 MIXTURE::FunctionMixtureRule::FunctionMixtureRule(MIXTURE::PAR::FunctionMixtureRule* params)
