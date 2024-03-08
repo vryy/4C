@@ -125,7 +125,7 @@ If you choose not to set an editor, Git will use your system’s default editor.
 **SuiteSparse**
 
 Baci uses SuiteSparse indirectly via the Trilinos package Amesos/Amesos2 for directly solving linear systems of equations.
-See the `SuiteSparse website <https://people.engr.tamu.edu/davis/SuiteSparse/index.html>`_ for details and downloads.
+See the `SuiteSparse repository <https://github.com/DrTimothyAldenDavis/SuiteSparse>`_ for details and downloads.
 
 After downloading the package, the configure file can be found in ``SuiteSparse-5.4.0/SuiteSparse_config/SuiteSparse_config.mk``.
 As BACI uses BLAS/LAPACK in forms of libblas and liblapack, the respective linker flags need to be changed!

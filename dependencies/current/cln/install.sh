@@ -9,21 +9,23 @@ set -e
 INSTALL_DIR="$1"
 # Number of procs for building (default 4)
 NPROCS=${NPROCS=4}
-VERSION="1.3.4"
-CHECKSUM="2d99d7c433fb60db1e28299298a98354339bdc120d31bb9a862cafc5210ab748"
+VERSION="cln_1-3-4"
+COMMIT="9b86a7fc69feb1b288469982001af565f73057eb"
 
-wget --no-verbose https://ginac.de/CLN/cln-${VERSION}.tar.bz2
-# Verify checksum
-if [ $CHECKSUM = `sha256sum cln-${VERSION}.tar.bz2 | awk '{print $1}'` ]
+git clone git://www.ginac.de/cln.git
+cd cln
+git checkout $VERSION
+
+# Check commit sha1
+if [ $COMMIT = `git rev-parse HEAD` ]
 then
-  echo "Checksum matches"
+  echo "The tag $VERSION matches the commit sha1"
 else
-  echo "Checksum does not match"
+  echo "The tag $VERSION does not match the commit sha1"
   exit 1
 fi
 
-tar -xjf cln-${VERSION}.tar.bz2
-cd cln-${VERSION}
+autoreconf -iv
 ./configure --prefix=${INSTALL_DIR}
 make -j${NPROCS} && make install
 cd ../ && rm -rf cln*

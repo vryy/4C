@@ -10,12 +10,12 @@ INSTALL_DIR="$1"
 # Number of procs for building (default 4)
 NPROCS=${NPROCS=4}
 VERSION="2012.1"
-CHECKSUM="a35ecaa610550b7f05c3ce373d89c30cf74b059a69880f03080c556daebcff88"
+CHECKSUM="cb1296fbb9ec8b7d6e8f4c239ad165590616f242c7c46f790c27d8dcebe96c6a"
 
 # Install qhull 2012.1
-wget --no-verbose http://www.qhull.org/download/qhull-${VERSION}-src.tgz
+wget --no-verbose https://github.com/qhull/qhull/archive/refs/tags/${VERSION}.tar.gz
 # Verify checksum
-if [ $CHECKSUM = `sha256sum qhull-${VERSION}-src.tgz | awk '{print $1}'` ]
+if [ $CHECKSUM = `sha256sum ${VERSION}.tar.gz | awk '{print $1}'` ]
 then
   echo "Checksum matches"
 else
@@ -23,7 +23,7 @@ else
   exit 1
 fi
 
-tar -xzf qhull-${VERSION}-src.tgz
+tar -xzf ${VERSION}.tar.gz
 cd qhull-${VERSION}/build
 cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} ..
 make -j${NPROCS} && make install
