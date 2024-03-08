@@ -14,7 +14,7 @@ is just a "control instance".
 
 #include "baci_global_data.hpp"
 #include "baci_mat_par_bundle.hpp"
-#include "baci_mat_scatra_reaction_mat.hpp"
+#include "baci_mat_scatra_reaction.hpp"
 
 #include <vector>
 

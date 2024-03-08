@@ -22,8 +22,8 @@
 #include "baci_mat_list_chemotaxis.hpp"
 #include "baci_mat_list_reactions.hpp"
 #include "baci_mat_myocard.hpp"
-#include "baci_mat_scatra_chemotaxis_mat.hpp"
-#include "baci_mat_scatra_reaction_mat.hpp"
+#include "baci_mat_scatra_chemotaxis.hpp"
+#include "baci_mat_scatra_reaction.hpp"
 #include "baci_scatra_ele_calc_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 

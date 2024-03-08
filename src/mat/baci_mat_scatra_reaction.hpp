@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_MAT_SCATRA_REACTION_MAT_HPP
-#define BACI_MAT_SCATRA_REACTION_MAT_HPP
+#ifndef BACI_MAT_SCATRA_REACTION_HPP
+#define BACI_MAT_SCATRA_REACTION_HPP
 
 
 

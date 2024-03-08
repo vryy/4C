@@ -12,7 +12,7 @@
 #include "baci_config.hpp"
 
 #include "baci_mat_newman.hpp"
-#include "baci_mat_scatra_multiscale.hpp"
+#include "baci_mat_scatra_micro_macro_coupling.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -21,7 +21,7 @@ namespace MAT
   namespace PAR
   {
     //! material parameters
-    class NewmanMultiScale : public Newman, public ScatraMultiScale
+    class NewmanMultiScale : public Newman, public ScatraMicroMacroCoupling
     {
      public:
       //! constructor
@@ -61,7 +61,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   //! wrapper for Newman multi-scale material
-  class NewmanMultiScale : public Newman, public ScatraMultiScale
+  class NewmanMultiScale : public Newman, public ScatraMicroMacroCoupling
   {
    public:
     //! construct empty Newman multi-scale material
@@ -125,7 +125,7 @@ namespace MAT
 
    private:
     //! return material parameters
-    const MAT::PAR::ScatraMultiScale* Params() const override { return params_; };
+    const MAT::PAR::ScatraMicroMacroCoupling* Params() const override { return params_; };
 
     //! material parameters
     MAT::PAR::NewmanMultiScale* params_;

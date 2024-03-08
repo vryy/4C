@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_HPP
-#define BACI_POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_HPP
+#ifndef BACI_POROFLUIDMULTIPHASE_ELE_EVALUATOR_HPP
+#define BACI_POROFLUIDMULTIPHASE_ELE_EVALUATOR_HPP
 
 #include "baci_config.hpp"
 

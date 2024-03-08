@@ -37,7 +37,7 @@
 #include "baci_mat_electrode.hpp"
 #include "baci_mat_list.hpp"
 #include "baci_mat_par_bundle.hpp"
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_nurbs_discret.hpp"
 #include "baci_nurbs_discret_apply_nurbs_initial_condition.hpp"
 #include "baci_scatra_ele_action.hpp"

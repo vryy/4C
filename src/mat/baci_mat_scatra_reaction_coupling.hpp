@@ -14,7 +14,7 @@
 #include "baci_comm_parobjectfactory.hpp"
 #include "baci_mat_material.hpp"
 #include "baci_mat_par_parameter.hpp"
-#include "baci_mat_scatra_reaction_mat.hpp"
+#include "baci_mat_scatra_reaction.hpp"
 
 BACI_NAMESPACE_OPEN
 

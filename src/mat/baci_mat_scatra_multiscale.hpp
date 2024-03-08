@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief auxiliary material for macro-scale elements in multi-scale simulations of scalar transport
-problems
+\brief material for macro-scale elements in multi-scale simulations of scalar transport problems
 
 \level 2
 
@@ -12,9 +11,8 @@ problems
 
 #include "baci_config.hpp"
 
-#include <Teuchos_RCP.hpp>
-
-#include <vector>
+#include "baci_mat_scatra.hpp"
+#include "baci_mat_scatra_micro_macro_coupling.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -25,143 +23,125 @@ namespace MAT
 
   namespace PAR
   {
-    class Material;
-
     //! material parameters
-    class ScatraMultiScale
+    class ScatraMultiScale : public ScatraMat, public ScatraMicroMacroCoupling
     {
      public:
       //! constructor
       ScatraMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! return name of micro-scale input file
-      std::string MicroInputFileName() const { return microfile_; }
 
-      //! return number of micro-scale discretization
-      int MicroDisNum() const { return microdisnum_; };
+      //! create material
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
-      //! return specific micro-scale surface area A_s
-      double SpecificMicroScaleSurfaceArea() const { return A_s_; }
+      //! return porosity
+      double Porosity() const { return porosity_; };
 
-     protected:
+      //! return tortuosity
+      double Tortuosity() const { return tortuosity_; };
+
+     private:
       //! @name material parameters
       //@{
-      //! name of micro-scale input file
-      const std::string microfile_;
+      //! porosity
+      const double porosity_;
 
-      //! number of micro-scale discretization
-      const int microdisnum_;
-
-      //! specific micro-scale surface area
-      const double A_s_;
+      //! tortuosity
+      const double tortuosity_;
       //@}
     };  // class MAT::PAR::ScatraMultiScale
   }     // namespace PAR
 
+
   /*----------------------------------------------------------------------*/
-  //! material wrapper
-  class ScatraMultiScale
+  class ScatraMultiScaleType : public CORE::COMM::ParObjectType
   {
    public:
-    /**
-     * Virtual destructor.
-     */
-    virtual ~ScatraMultiScale() = default;
+    std::string Name() const override { return "ScatraMultiScaleType"; };
 
-    //! initialize multi-scale scalar transport material
-    //! \param[in] ele_id         macro-scale element ID
-    //! \param[in] gp_id          macro-scale Gauss point ID
-    //! \param[in] is_ale         true, if the underlying macro dis deforms
-    void Initialize(const int ele_id, const int gp_id, bool is_ale);
+    static ScatraMultiScaleType& Instance() { return instance_; };
 
-    /*!
-     * @brief prepare time step on micro scale
-     *
-     * @param[in] gp_id        macro-scale Gauss point ID
-     * @param[in] phinp_macro  macro-scale state variables
-     */
-    void PrepareTimeStep(const int gp_id, const std::vector<double>& phinp_macro) const;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
-    /*!
-     * @brief evaluate multi-scale scalar transport material
-     *
-     * @param[in] gp_id        macro-scale Gauss point ID
-     * @param[in] phinp_macro  macro-scale state variables
-     * @param[out] q_micro        micro-scale flux
-     * @param[out] dq_dphi_micro  derivatives of micro-scale flux w.r.t. macro-scale state variables
-     * @param[in] detF       determinant of deformation gradient of macro dis at current Gauss point
-     * @param[in] solve      flag indicating whether micro-scale problem should be solved
-     */
-    void Evaluate(const int gp_id, const std::vector<double>& phinp_macro, double& q_micro,
-        std::vector<double>& dq_dphi_micro, double detF, const bool solve = true) const;
+   private:
+    static ScatraMultiScaleType instance_;
+  };
 
-    /*!
-     * @brief evaluate mean concentration on micro scale
-     *
-     * @param[in] gp_id macro-scale Gauss point ID
-     * @return mean concentration
-     */
-    double EvaluateMeanConcentration(const int gp_id) const;
 
-    /*!
-     * @brief evaluate mean concentration time derivative on micro scale
-     *
-     * @param[in] gp_id  macro-scale Gauss point ID
-     * @return time derivative od mean concentration
-     */
-    double EvaluateMeanConcentrationTimeDerivative(const int gp_id) const;
-
-    /*!
-     * @brief update multi-scale scalar transport material
-     *
-     * @param[in] gp_id  macro-scale Gauss point ID
-     */
-    void Update(const int gp_id) const;
-
-    /*!
-     * @brief create output on micro scale
-     *
-     * @param[in] gp_id  macro-scale Gauss point ID
-     */
-    void Output(const int gp_id) const;
-
-    /*!
-     * @brief  read restart on micro scale
-     *
-     * @param[in] gp_id  macro-scale Gauss point ID
-     */
-    void ReadRestart(const int gp_id) const;
-
-    //! return name of micro-scale input file
-    std::string MicroInputFileName() const { return Params()->MicroInputFileName(); }
-
-    //! return number of micro-scale discretization
-    int MicroDisNum() const { return Params()->MicroDisNum(); }
-
-    //! return specific micro-scale surface area A_s
-    //!
-    //! \param detF determinant of deformation gradient of macro dis at current Gauss point
-    //! \return  specific area between micro and macro dis
-    double SpecificMicroScaleSurfaceArea(const double detF) const
-    {
-      return Params()->SpecificMicroScaleSurfaceArea() * std::pow(detF, -1.0 / 3.0);
-    }
-
-    //! set time stepping data: time step size @p dt, current time @p time, and number of time step
-    //! @p step on current Gauss point @gp_id
-    void SetTimeStepping(int gp_id, double dt, double time, int step);
-
-   protected:
+  /*----------------------------------------------------------------------*/
+  //! material wrapper
+  class ScatraMultiScale : public ScatraMat, public ScatraMicroMacroCoupling
+  {
+   public:
     //! construct empty material
     ScatraMultiScale();
 
-   private:
-    //! material parameters
-    virtual const MAT::PAR::ScatraMultiScale* Params() const = 0;
+    //! construct material with specific material parameters
+    explicit ScatraMultiScale(MAT::PAR::ScatraMultiScale* params);
 
-    //! map between Gauss point ID and Gauss point submaterial
-    std::map<int, Teuchos::RCP<ScatraMultiScaleGP>> matgp_;
-  };  // material wrapper
+    //! @name packing and unpacking
+    /*!
+      \brief Return unique ParObject id
+
+      Every class implementing ParObject needs a unique id defined at the
+      top of parobject.H (this file) and should return it in this method.
+    */
+    int UniqueParObjectId() const override
+    {
+      return ScatraMultiScaleType::Instance().UniqueParObjectId();
+    };
+
+    /*!
+      \brief Pack this class so it can be communicated
+
+      Resizes the vector data and stores all information of a class in it.
+      The first information to be stored in data has to be the
+      unique ParObject ID delivered by UniqueParObjectId() which will then
+      identify the exact class on the receiving processor.
+
+      \param data (in/out): char vector to store class information
+    */
+    void Pack(CORE::COMM::PackBuffer& data) const override;
+
+    /*!
+      \brief Unpack data from a char vector into this class
+
+      The vector data contains all information to rebuild the
+      exact copy of an instance of a class on a different processor.
+      The first entry in data has to be an integer which is the unique
+      parobject id defined at the top of this file and delivered by
+      UniqueParObjectId().
+
+      \param data (in) : vector storing all data to be unpacked into this instance.
+    */
+    void Unpack(const std::vector<char>& data) override;
+    //@}
+
+    //! return material type
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_scatra_multiscale;
+    };
+
+    //! clone material
+    Teuchos::RCP<Material> Clone() const override
+    {
+      return Teuchos::rcp(new ScatraMultiScale(*this));
+    };
+
+    //! return porosity
+    double Porosity() const { return params_->Porosity(); };
+
+    //! return tortuosity
+    double Tortuosity() const { return params_->Tortuosity(); };
+
+   private:
+    //! return material parameters
+    const MAT::PAR::ScatraMicroMacroCoupling* Params() const override { return params_; };
+
+    //! material parameters
+    MAT::PAR::ScatraMultiScale* params_;
+  };
 }  // namespace MAT
 BACI_NAMESPACE_CLOSE
 

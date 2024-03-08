@@ -8,7 +8,7 @@
 
 
 
-#include "baci_mat_scatra_mat_multiporo.hpp"
+#include "baci_mat_scatra_multiporo.hpp"
 
 #include "baci_comm_utils.hpp"
 #include "baci_global_data.hpp"

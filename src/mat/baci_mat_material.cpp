@@ -94,13 +94,13 @@
 #include "baci_mat_poro_law.hpp"
 #include "baci_mat_robinson.hpp"
 #include "baci_mat_scalardepinterp.hpp"
-#include "baci_mat_scatra_chemotaxis_mat.hpp"
-#include "baci_mat_scatra_mat.hpp"
-#include "baci_mat_scatra_mat_aniso.hpp"
-#include "baci_mat_scatra_mat_multiporo.hpp"
-#include "baci_mat_scatra_mat_multiscale.hpp"
-#include "baci_mat_scatra_mat_poro_ecm.hpp"
-#include "baci_mat_scatra_reaction_mat.hpp"
+#include "baci_mat_scatra.hpp"
+#include "baci_mat_scatra_aniso.hpp"
+#include "baci_mat_scatra_chemotaxis.hpp"
+#include "baci_mat_scatra_multiporo.hpp"
+#include "baci_mat_scatra_multiscale.hpp"
+#include "baci_mat_scatra_poro_ecm.hpp"
+#include "baci_mat_scatra_reaction.hpp"
 #include "baci_mat_scl.hpp"
 #include "baci_mat_soret.hpp"
 #include "baci_mat_spring.hpp"
@@ -370,8 +370,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::m_scatra_multiscale:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::ScatraMatMultiScale(curmat));
-      auto* params = static_cast<MAT::PAR::ScatraMatMultiScale*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::ScatraMultiScale(curmat));
+      auto* params = static_cast<MAT::PAR::ScatraMultiScale*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_scatra_chemotaxis:

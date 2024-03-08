@@ -19,8 +19,8 @@
 #include "baci_mat_electrode.hpp"
 #include "baci_mat_list.hpp"
 #include "baci_mat_newtonianfluid.hpp"
-#include "baci_mat_scatra_mat.hpp"
-#include "baci_mat_scatra_mat_multiscale.hpp"
+#include "baci_mat_scatra.hpp"
+#include "baci_mat_scatra_multiscale.hpp"
 #include "baci_nurbs_discret_nurbs_utils.hpp"
 #include "baci_scatra_ele.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
@@ -1257,7 +1257,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTraMultiScale(
     dserror("Multi-scale scalar transport only implemented for one transported scalar!");
 
   // extract multi-scale scalar transport material
-  const auto* matmultiscale = static_cast<const MAT::ScatraMatMultiScale*>(material.get());
+  const auto* matmultiscale = static_cast<const MAT::ScatraMultiScale*>(material.get());
 
   // set densities equal to porosity
   densn = densnp = densam = matmultiscale->Porosity();
@@ -2039,8 +2039,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
     const double rhsfac)
 {
   // extract multi-scale scalar transport material
-  const MAT::ScatraMatMultiScale* matmultiscale =
-      static_cast<const MAT::ScatraMatMultiScale*>(ele->Material().get());
+  const MAT::ScatraMultiScale* matmultiscale =
+      static_cast<const MAT::ScatraMultiScale*>(ele->Material().get());
 
   // initialize variables for micro-scale coupling flux and derivative of micro-scale coupling flux
   // w.r.t. macro-scale state variable

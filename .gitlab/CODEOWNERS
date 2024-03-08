@@ -203,8 +203,8 @@ mat/baci_mat_cnst_1d_art*           @baci/team_reduced_fluid_models
 mat/baci_mat_fluidporo*             @baci/team_poro
 mat/baci_mat_membrane_elasthyper*   @baci/team_structure @baci/team_material
 mat/baci_mat_poro*                  @baci/team_poro
-mat/baci_mat_scatra_mat_multiporo*  @baci/team_poro @baci/team_scatra
-mat/baci_mat_scatra_mat_poro*       @baci/team_poro @baci/team_scatra
+mat/baci_mat_scatra_multiporo*      @baci/team_poro @baci/team_scatra
+mat/baci_mat_scatra_poro*           @baci/team_poro @baci/team_scatra
 mat/baci_mat_structporo*            @baci/team_poro
 
 matelast/                  @baci/team_material

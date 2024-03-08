@@ -8,7 +8,7 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_mat_scatra_reaction_mat.hpp"
+#include "baci_mat_scatra_reaction.hpp"
 
 #include "baci_comm_utils.hpp"
 #include "baci_global_data.hpp"

@@ -10,7 +10,7 @@
 
 #include "baci_scatra_ele_calc_artery.hpp"
 
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
 #include "baci_utils_singleton_owner.hpp"

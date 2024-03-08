@@ -14,7 +14,7 @@
 #include "baci_global_data.hpp"
 #include "baci_mat_fourieriso.hpp"
 #include "baci_mat_list.hpp"
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_mat_thermostvenantkirchhoff.hpp"
 #include "baci_nurbs_discret_nurbs_utils.hpp"
 #include "baci_scatra_ele_parameter_boundary.hpp"

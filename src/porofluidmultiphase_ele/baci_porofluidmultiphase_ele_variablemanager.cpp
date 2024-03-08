@@ -7,7 +7,7 @@
  *----------------------------------------------------------------------*/
 
 
-#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.hpp"
+#include "baci_porofluidmultiphase_ele_variablemanager.hpp"
 
 #include "baci_lib_discret.hpp"
 #include "baci_lib_utils.hpp"
