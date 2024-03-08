@@ -16,7 +16,7 @@
 #include "baci_lib_element.hpp"
 #include "baci_lib_utils.hpp"
 #include "baci_mat_list.hpp"
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_mat_structporo.hpp"
 #include "baci_scatra_ele.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"

@@ -1,13 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief scatra_mat_aniso.cpp
+ \brief
+This file contains the base material for chemotactic scalars.
 
 \level 3
 
 *----------------------------------------------------------------------*/
 
-
-#include "baci_mat_scatra_mat_aniso.hpp"
+#include "baci_mat_scatra_chemotaxis.hpp"
 
 #include "baci_comm_utils.hpp"
 #include "baci_global_data.hpp"
@@ -20,47 +20,69 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScatraMatAniso::ScatraMatAniso(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata)
+MAT::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata),
+      numscal_(*matdata->Get<int>("NUMSCAL")),
+      pair_(matdata->Get<std::vector<int>>("PAIR")),
+      chemocoeff_(*matdata->Get<double>("CHEMOCOEFF"))
 {
-  Epetra_Map dummy_map(1, 1, 0, *(GLOBAL::Problem::Instance()->GetCommunicators()->LocalComm()));
-  for (int i = first; i <= last; i++)
+  // Some checks for more safety
+  if (numscal_ != (int)pair_->size())
+    dserror("number of materials %d does not fit to size of material vector %d", numscal_,
+        pair_->size());
+
+  // is there exactly one '1' (i.e. attractant) and at least one '-1' (i.e. chemotractant)?
+  int numpos = 0;
+  int numneg = 0;
+  for (int i = 0; i < numscal_; i++)
   {
-    matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
+    if (pair_->at(i) > 1e-10)
+      numpos++;
+    else if (pair_->at(i) < -1e-10)
+      numneg++;
   }
-  matparams_.at(diff1)->PutScalar(*matdata->Get<double>("DIFF1"));
-  matparams_.at(diff2)->PutScalar(*matdata->Get<double>("DIFF2"));
-  matparams_.at(diff3)->PutScalar(*matdata->Get<double>("DIFF3"));
+  if (numpos != 1 or numneg != 1)
+    dserror(
+        "Each PAIR vector must contain exactly one '-1' (i.e. chemotractant) and exactly one '1' "
+        "(i.e. attractant)!");
+
+  return;
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatAniso::CreateMaterial()
+
+Teuchos::RCP<MAT::Material> MAT::PAR::ScatraChemotaxisMat::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::ScatraMatAniso(this));
+  return Teuchos::rcp(new MAT::ScatraChemotaxisMat(this));
 }
 
 
-MAT::ScatraMatAnisoType MAT::ScatraMatAnisoType::instance_;
+MAT::ScatraChemotaxisMatType MAT::ScatraChemotaxisMatType::instance_;
 
-CORE::COMM::ParObject* MAT::ScatraMatAnisoType::Create(const std::vector<char>& data)
+
+CORE::COMM::ParObject* MAT::ScatraChemotaxisMatType::Create(const std::vector<char>& data)
 {
-  MAT::ScatraMatAniso* scatra_mat_aniso = new MAT::ScatraMatAniso();
-  scatra_mat_aniso->Unpack(data);
-  return scatra_mat_aniso;
+  MAT::ScatraChemotaxisMat* scatra_chemotaxis_mat = new MAT::ScatraChemotaxisMat();
+  scatra_chemotaxis_mat->Unpack(data);
+  return scatra_chemotaxis_mat;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMatAniso::ScatraMatAniso() : params_(nullptr) {}
+MAT::ScatraChemotaxisMat::ScatraChemotaxisMat() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMatAniso::ScatraMatAniso(MAT::PAR::ScatraMatAniso* params) : params_(params) {}
+MAT::ScatraChemotaxisMat::ScatraChemotaxisMat(MAT::PAR::ScatraChemotaxisMat* params)
+    : params_(params)
+{
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatAniso::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::ScatraChemotaxisMat::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -78,7 +100,7 @@ void MAT::ScatraMatAniso::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatAniso::Unpack(const std::vector<char>& data)
+void MAT::ScatraChemotaxisMat::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -95,7 +117,7 @@ void MAT::ScatraMatAniso::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ScatraMatAniso*>(mat);
+        params_ = static_cast<MAT::PAR::ScatraChemotaxisMat*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

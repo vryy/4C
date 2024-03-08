@@ -6,13 +6,13 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_SCATRA_MAT_MULTIPORO_HPP
-#define BACI_MAT_SCATRA_MAT_MULTIPORO_HPP
+#ifndef BACI_MAT_SCATRA_MULTIPORO_HPP
+#define BACI_MAT_SCATRA_MULTIPORO_HPP
 
 
 #include "baci_config.hpp"
 
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 
 BACI_NAMESPACE_OPEN
 

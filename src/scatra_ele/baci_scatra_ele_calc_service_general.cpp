@@ -14,7 +14,7 @@
 #include "baci_fluid_rotsym_periodicbc.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_utils.hpp"
-#include "baci_mat_scatra_mat_multiscale.hpp"
+#include "baci_mat_scatra_multiscale.hpp"
 #include "baci_nurbs_discret_nurbs_utils.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_ele_calc.hpp"
@@ -507,7 +507,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         {
           // initialize micro scale in multi-scale simulations
-          Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())
+          Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())
               ->Initialize(ele->Id(), iquad, scatrapara_->IsAle());
         }
       }
@@ -539,7 +539,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           if (action == SCATRA::Action::micro_scale_prepare_time_step)
           {
             // prepare time step on micro scale
-            Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())
+            Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())
                 ->PrepareTimeStep(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)));
           }
           else
@@ -551,7 +551,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
             // solve micro scale
             std::vector<double> dummy(1, 0.);
-            Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())
+            Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())
                 ->Evaluate(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)), dummy[0],
                     dummy, detF);
           }
@@ -571,7 +571,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
           // update multi-scale scalar transport material
-          Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->Update(iquad);
+          Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())->Update(iquad);
       }
 
       break;
@@ -587,7 +587,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
           // create output on micro scale
-          Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->Output(iquad);
+          Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())->Output(iquad);
       }
 
       break;
@@ -603,7 +603,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
           // read restart on micro scale
-          Teuchos::rcp_dynamic_cast<MAT::ScatraMatMultiScale>(ele->Material())->ReadRestart(iquad);
+          Teuchos::rcp_dynamic_cast<MAT::ScatraMultiScale>(ele->Material())->ReadRestart(iquad);
       }
 
       break;
@@ -619,7 +619,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         {
-          Teuchos::rcp_dynamic_cast<MAT::ScatraMatMultiScale>(ele->Material())
+          Teuchos::rcp_dynamic_cast<MAT::ScatraMultiScale>(ele->Material())
               ->SetTimeStepping(iquad, params.get<double>("dt"), params.get<double>("time"),
                   params.get<int>("step"));
         }

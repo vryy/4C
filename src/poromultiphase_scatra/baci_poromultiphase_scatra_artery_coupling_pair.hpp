@@ -17,8 +17,8 @@
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_phasemanager.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.hpp"
+#include "baci_porofluidmultiphase_ele_phasemanager.hpp"
+#include "baci_porofluidmultiphase_ele_variablemanager.hpp"
 
 #include <Epetra_Vector.h>
 #include <Sacado.hpp>

@@ -6,17 +6,17 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_porofluidmultiphase_ele_porofluid_phasemanager.hpp"
+#include "baci_porofluidmultiphase_ele_phasemanager.hpp"
 
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_mat_fluidporo_multiphase.hpp"
 #include "baci_mat_fluidporo_multiphase_reactions.hpp"
 #include "baci_mat_fluidporo_multiphase_singlereaction.hpp"
 #include "baci_mat_fluidporo_singlephase.hpp"
-#include "baci_mat_scatra_mat_multiporo.hpp"
+#include "baci_mat_scatra_multiporo.hpp"
 #include "baci_mat_structporo.hpp"
 #include "baci_porofluidmultiphase_ele_calc_utils.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.hpp"
+#include "baci_porofluidmultiphase_ele_variablemanager.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 

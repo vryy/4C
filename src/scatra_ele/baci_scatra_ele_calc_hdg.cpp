@@ -20,7 +20,7 @@
 #include "baci_lib_elementtype.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_mat_list.hpp"
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_ele_calc.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"

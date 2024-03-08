@@ -7,12 +7,12 @@
 \level 3
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_SCATRA_MAT_PORO_ECM_HPP
-#define BACI_MAT_SCATRA_MAT_PORO_ECM_HPP
+#ifndef BACI_MAT_SCATRA_PORO_ECM_HPP
+#define BACI_MAT_SCATRA_PORO_ECM_HPP
 
 #include "baci_config.hpp"
 
-#include "baci_mat_scatra_reaction_mat.hpp"
+#include "baci_mat_scatra_reaction.hpp"
 
 BACI_NAMESPACE_OPEN
 

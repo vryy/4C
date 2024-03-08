@@ -21,7 +21,7 @@
 #include "baci_lib_utils.hpp"
 #include "baci_mat_list.hpp"
 #include "baci_mat_newtonianfluid.hpp"
-#include "baci_mat_scatra_mat_aniso.hpp"
+#include "baci_mat_scatra_aniso.hpp"
 #include "baci_nurbs_discret_nurbs_utils.hpp"
 #include "baci_scatra_ele.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"

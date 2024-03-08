@@ -12,7 +12,7 @@
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_mat_structporo.hpp"
 #include "baci_mat_structporo_reaction_ecm.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"

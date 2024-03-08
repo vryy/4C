@@ -6,14 +6,14 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROFLUIDMULTIPHASE_ELE_POROFLUID_PHASEMANAGER_HPP
-#define BACI_POROFLUIDMULTIPHASE_ELE_POROFLUID_PHASEMANAGER_HPP
+#ifndef BACI_POROFLUIDMULTIPHASE_ELE_PHASEMANAGER_HPP
+#define BACI_POROFLUIDMULTIPHASE_ELE_PHASEMANAGER_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_inpar_material.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
-#include "baci_mat_scatra_mat_multiporo.hpp"
+#include "baci_mat_scatra_multiporo.hpp"
 #include "baci_porofluidmultiphase_ele_action.hpp"
 #include "baci_utils_exceptions.hpp"
 

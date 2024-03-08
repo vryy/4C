@@ -15,7 +15,7 @@
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_mat_fluidporo_multiphase.hpp"
-#include "baci_mat_scatra_mat_multiporo.hpp"
+#include "baci_mat_scatra_multiporo.hpp"
 #include "baci_poromultiphase_scatra_utils.hpp"
 #include "baci_poromultiphase_utils.hpp"
 #include "baci_scatra_ele.hpp"

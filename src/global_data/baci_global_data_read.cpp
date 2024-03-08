@@ -36,7 +36,7 @@
 #include "baci_mat_micromaterial.hpp"
 #include "baci_mat_newman_multiscale.hpp"
 #include "baci_mat_par_bundle.hpp"
-#include "baci_mat_scatra_mat_multiscale.hpp"
+#include "baci_mat_scatra_multiscale.hpp"
 #include "baci_nurbs_discret.hpp"
 #include "baci_particle_engine_particlereader.hpp"
 #include "baci_rebalance.hpp"
@@ -1482,9 +1482,9 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
         else
         {
           // access multi-scale scalar transport material
-          MAT::ScatraMultiScale* micromat = nullptr;
+          MAT::ScatraMicroMacroCoupling* micromat = nullptr;
           if (id_scatra != -1)
-            micromat = dynamic_cast<MAT::ScatraMatMultiScale*>(mat.get());
+            micromat = dynamic_cast<MAT::ScatraMultiScale*>(mat.get());
           else if (id_elch != -1)
             micromat = dynamic_cast<MAT::NewmanMultiScale*>(mat.get());
           else
