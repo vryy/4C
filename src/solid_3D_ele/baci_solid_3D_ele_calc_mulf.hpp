@@ -12,26 +12,15 @@
 
 #include "baci_discretization_fem_general_cell_type_traits.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_linalg_fixedsizematrix_generators.hpp"
 #include "baci_solid_3D_ele_calc.hpp"
 #include "baci_solid_3D_ele_calc_lib.hpp"
 #include "baci_solid_3D_ele_calc_lib_io.hpp"
+#include "baci_solid_3D_ele_calc_lib_mulf.H"
 
 BACI_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS
 {
-
-  template <CORE::FE::CellType celltype>
-  struct MulfGPHistoryData
-  {
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> inverse_jacobian =
-        CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>();
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> deformation_gradient =
-        CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>();
-    bool is_setup = false;
-  };
-
   template <CORE::FE::CellType celltype>
   struct MulfLinearizationContainer
   {
@@ -39,64 +28,6 @@ namespace DRT::ELEMENTS
         CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
         Bop{};
   };
-
-  namespace DETAILS
-  {
-    template <CORE::FE::CellType celltype>
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>
-    EvaluateMulfDeformationGradientUpdate(
-        const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
-        const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-        const CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, CORE::FE::dim<celltype>>&
-            nodal_displacements,
-        const DRT::ELEMENTS::MulfGPHistoryData<celltype>& mulf_history_data,
-        const INPAR::STR::KinemType& kinematictype = INPAR::STR::KinemType::nonlinearTotLag)
-    {
-      if (kinematictype == INPAR::STR::KinemType::linear)
-      {
-        dserror(
-            "Linear kinematics have not yet been implemented for MULF "
-            "prestressing");
-      }
-
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::num_nodes<celltype>> N_xyz;
-
-      N_xyz.Multiply(mulf_history_data.inverse_jacobian, shape_functions.derivatives_);
-
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> defgrd =
-          CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>();
-
-      defgrd.MultiplyTT(1.0, nodal_displacements, N_xyz, 1.0);
-
-      return defgrd;
-    }
-
-    template <CORE::FE::CellType celltype>
-    DRT::ELEMENTS::SpatialMaterialMapping<celltype> EvaluateMulfSpatialMaterialMapping(
-        const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
-        const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-        const CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, CORE::FE::dim<celltype>>&
-            nodal_displacements,
-        const DRT::ELEMENTS::MulfGPHistoryData<celltype>& mulf_history_data,
-        const INPAR::STR::KinemType& kinematictype = INPAR::STR::KinemType::nonlinearTotLag)
-    {
-      DRT::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping;
-
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> defgrd =
-          EvaluateMulfDeformationGradientUpdate(jacobian_mapping, shape_functions,
-              nodal_displacements, mulf_history_data, kinematictype);
-
-      spatial_material_mapping.deformation_gradient_.Multiply(
-          defgrd, mulf_history_data.deformation_gradient);
-
-      spatial_material_mapping.inverse_deformation_gradient_ =
-          spatial_material_mapping.deformation_gradient_;
-      spatial_material_mapping.inverse_deformation_gradient_.Invert();
-
-      return spatial_material_mapping;
-    }
-  }  // namespace DETAILS
-
 
   /*!
    * @brief A displacement based solid element formulation with MULF prestressing
@@ -112,14 +43,14 @@ namespace DRT::ELEMENTS
     static constexpr bool is_prestress_updatable = true;
 
     using LinearizationContainer = MulfLinearizationContainer<celltype>;
-    using GaussPointHistory = MulfGPHistoryData<celltype>;
+    using GaussPointHistory = MulfHistoryData<celltype>;
 
     template <typename Evaluator>
     static auto Evaluate(const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-        const JacobianMapping<celltype>& jacobian_mapping,
-        MulfGPHistoryData<celltype>& history_data, Evaluator evaluator)
+        const JacobianMapping<celltype>& jacobian_mapping, MulfHistoryData<celltype>& history_data,
+        Evaluator evaluator)
     {
       if (!history_data.is_setup)
       {
@@ -128,7 +59,7 @@ namespace DRT::ELEMENTS
       }
 
       const SpatialMaterialMapping<celltype> spatial_material_mapping =
-          DETAILS::EvaluateMulfSpatialMaterialMapping(
+          EvaluateMulfSpatialMaterialMapping(
               jacobian_mapping, shape_functions, element_nodes.displacements_, history_data);
 
       const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> cauchygreen =
@@ -158,7 +89,7 @@ namespace DRT::ELEMENTS
         const JacobianMapping<celltype>& jacobian_mapping,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
             deformation_gradient,
-        MulfGPHistoryData<celltype>& history_data)
+        MulfHistoryData<celltype>& history_data)
     {
       dserror(
           "The full linearization is not yet implemented for the displacement based formulation "
@@ -174,7 +105,7 @@ namespace DRT::ELEMENTS
 
     static void AddInternalForceVector(const MulfLinearizationContainer<celltype>& linearization,
         const Stress<celltype>& stress, const double integration_factor,
-        MulfGPHistoryData<celltype>& history_data,
+        MulfHistoryData<celltype>& history_data,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1>&
             force_vector)
     {
@@ -184,7 +115,7 @@ namespace DRT::ELEMENTS
 
     static void AddStiffnessMatrix(const MulfLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
-        const double integration_factor, MulfGPHistoryData<celltype>& history_data,
+        const double integration_factor, MulfHistoryData<celltype>& history_data,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>,
             CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>& stiffness_matrix)
     {
@@ -194,7 +125,7 @@ namespace DRT::ELEMENTS
           jacobian_mapping.N_XYZ_, stress, integration_factor, stiffness_matrix);
     }
 
-    static void Pack(const MulfGPHistoryData<celltype>& history_data, CORE::COMM::PackBuffer& data)
+    static void Pack(const MulfHistoryData<celltype>& history_data, CORE::COMM::PackBuffer& data)
     {
       CORE::COMM::ParObject::AddtoPack(data, history_data.inverse_jacobian);
       CORE::COMM::ParObject::AddtoPack(data, history_data.deformation_gradient);
@@ -202,7 +133,7 @@ namespace DRT::ELEMENTS
     }
 
     static void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data,
-        MulfGPHistoryData<celltype>& history_data)
+        MulfHistoryData<celltype>& history_data)
     {
       CORE::COMM::ParObject::ExtractfromPack(position, data, history_data.inverse_jacobian);
       CORE::COMM::ParObject::ExtractfromPack(position, data, history_data.deformation_gradient);
@@ -218,11 +149,11 @@ namespace DRT::ELEMENTS
         const JacobianMapping<celltype>& jacobian_mapping,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
             deformation_gradient,
-        MulfGPHistoryData<celltype>& history_data)
+        MulfHistoryData<celltype>& history_data)
     {
       CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> delta_defgrd =
-          DETAILS::EvaluateMulfDeformationGradientUpdate(
-              jacobian_mapping, shape_functions, element_nodes.displacements_, history_data);
+          EvaluateMulfDeformationGradientUpdate(
+              shape_functions, element_nodes.displacements_, history_data);
 
       // update mulf history data only if prestress is active
       CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> inv_delta_defgrd(

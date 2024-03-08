@@ -19,6 +19,7 @@ formulation
 #include "baci_solid_3D_ele_calc_lib_io.hpp"
 #include "baci_solid_3D_ele_calc_lib_nitsche.hpp"
 #include "baci_solid_3D_ele_calc_mulf.hpp"
+#include "baci_solid_3D_ele_calc_mulf_fbar.hpp"
 #include "baci_solid_3D_ele_formulation.hpp"
 #include "baci_solid_3D_ele_interface_serializable.hpp"
 #include "baci_utils_demangle.hpp"
@@ -325,6 +326,9 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::UpdatePrestress(
   const PreparationData<ElementFormulation> preparation_data =
       Prepare(ele, nodal_coordinates, history_data_);
 
+  DRT::ELEMENTS::UpdatePrestress<ElementFormulation, celltype>(
+      ele, nodal_coordinates, preparation_data, history_data_);
+
   DRT::ELEMENTS::ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -531,5 +535,11 @@ template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5,
     DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::pyramid5>>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::wedge6,
     DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::wedge6>>;
+
+// explicit instaniations for FBAR+MULF
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex8,
+    DRT::ELEMENTS::MulfFBarFormulation<CORE::FE::CellType::hex8>>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5,
+    DRT::ELEMENTS::MulfFBarFormulation<CORE::FE::CellType::pyramid5>>;
 
 BACI_NAMESPACE_CLOSE
