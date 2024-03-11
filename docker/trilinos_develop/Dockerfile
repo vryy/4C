@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
       libglu1-mesa \ 
       python3 \
       sudo \
+      unzip \
       vim \
       wget
 
@@ -74,6 +75,9 @@ RUN /dependencies/current/cln/install.sh ${INSTALL_DIR}
 
 # Install Trilinos
 RUN /dependencies/trilinos_develop/trilinos/install.sh ${INSTALL_DIR} ${TRILINOS_VERSION}
+
+# Install (optional) backtrace library
+RUN /dependencies/current/backtrace/install.sh ${INSTALL_DIR}
 
 # Packages for testing
 # Installation directory for dependencies concerning testing
