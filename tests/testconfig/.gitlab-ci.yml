@@ -46,7 +46,7 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   BACI_DOCKER_BUILD_IMAGES: 'False'
-  BACI_DOCKER_DEPENDENCIES_HASH: 2d4f881d
+  BACI_DOCKER_DEPENDENCIES_HASH: c12e492c
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies
   BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $BACI_DOCKER_DEPENDENCIES_IMAGE:$BACI_DOCKER_DEPENDENCIES_HASH
 
@@ -236,7 +236,7 @@ before_script:
     in $OUT; do echo -n "-extra-arg=$i "; done; echo;}
   - ESCAPED_PROJECT_DIR=$(echo "${CI_PROJECT_DIR}" | sed 's/\//\\\//g')
     # run clang tidy and export report
-  - python ${CI_PROJECT_DIR}/utilities/code_climate/run-clang-tidy.py -j `nproc` -use-color
+  - run-clang-tidy -j `nproc` -config-file ${CI_PROJECT_DIR}/.clang-tidy -use-color
     -p . `get_mpi_extra_args` -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*"
     "${ESCAPED_PROJECT_DIR}\/.*" 2>&1 | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
     # export clang tidy issues
