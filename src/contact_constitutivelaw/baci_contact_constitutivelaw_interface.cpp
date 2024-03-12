@@ -62,11 +62,6 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
     double lmuzawan = 0.0;
     for (int k = 0; k < dim; ++k) lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
 
-    // Evaluate pressure
-    double pressure = coconstlaw_->Evaluate(kappa * gap, cnode);
-    // Evaluate pressure derivative
-    double pressurederiv = coconstlaw_->EvaluateDeriv(kappa * gap, cnode);
-
 #ifdef CONTACTFDPENALTYKC1
     // set lagrangian multipliers explicitly to constant
     // and corresponding derivatives to zero
@@ -100,6 +95,11 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
     // for linearization and r.h.s to match!
     if (cnode->Active() == true)
     {
+      // Evaluate pressure
+      double pressure = coconstlaw_->Evaluate(kappa * gap, cnode);
+      // Evaluate pressure derivative
+      double pressurederiv = coconstlaw_->EvaluateDeriv(kappa * gap, cnode);
+
       localisincontact = true;
 
       double* normal = cnode->MoData().n();

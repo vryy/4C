@@ -21,7 +21,6 @@ CONTACT::RoughNodeType CONTACT::RoughNodeType::instance_;
 
 CORE::COMM::ParObject* CONTACT::RoughNodeType::Create(const std::vector<char>& data)
 {
-  // double x[3];
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
 
