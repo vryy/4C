@@ -12,8 +12,10 @@
 #include "baci_global_data.hpp"
 #include "baci_utils_function.hpp"
 
+#ifdef BACI_WITH_MIRCO
 #include <mirco_topology.h>
 #include <mirco_topologyutilities.h>
+#endif
 
 BACI_NAMESPACE_OPEN
 
@@ -38,6 +40,7 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
     int randomtopologyflag, int randomseedflag, int randomgeneratorseed)
     : CONTACT::Node(id, coords, owner, dofs, isslave, initactive)
 {
+#ifdef BACI_WITH_MIRCO
   if (isslave && hurstexponentfunction != 0)
   {
     hurstExponent_ = GLOBAL::Problem::Instance()
@@ -62,6 +65,7 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
     auto max_and_mean = MIRCO::ComputeMaxAndMean(*topology_);
     maxTopologyHeight_ = max_and_mean.max_;
   }
+#endif
   return;
 }
 
