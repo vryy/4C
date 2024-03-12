@@ -662,6 +662,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflowIntegra
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_flux, condparams);
 
+  condparams.set<bool>("only_positive_fluxes", true);
+
   condparams.set<int>("evaluate_manifold_coupling", 1);
 
   // integrated scalars of this condition

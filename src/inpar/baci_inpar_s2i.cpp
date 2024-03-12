@@ -90,6 +90,11 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   CORE::UTILS::BoolParameter("MESHTYING_CONDITIONS_INDEPENDENT_SETUP", "No",
       "mesh tying for different conditions should be setup independently", &s2icoupling);
+
+  CORE::UTILS::BoolParameter("OUTPUT_INTERFACE_FLUX", "No",
+      "evaluate integral of coupling flux on slave side for each s2i condition and write it to csv "
+      "file",
+      &s2icoupling);
 }
 
 
