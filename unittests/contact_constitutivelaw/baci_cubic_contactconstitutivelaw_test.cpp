@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 
 #include "baci_contact_constitutivelaw_cubic_contactconstitutivelaw.hpp"
+#include "baci_contact_rough_node.hpp"
 
 namespace
 {
@@ -39,6 +40,8 @@ namespace
     }
 
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
+
+    CONTACT::RoughNode* cnode;
   };
 
 
@@ -46,17 +49,17 @@ namespace
   TEST_F(CubicConstitutiveLawTest, TestEvaluate)
   {
     // gap < 0
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0));
+    EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0, cnode));
     // 0< gap < offset
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25));
+    EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25, cnode));
     // offset < gap
-    EXPECT_NEAR(coconstlaw_->Evaluate(-0.75), -0.8984375, 1.e-15);
+    EXPECT_NEAR(coconstlaw_->Evaluate(-0.75, cnode), -0.8984375, 1.e-15);
   }
 
   //! test member function EvaluateDeriv
   TEST_F(CubicConstitutiveLawTest, TestEvaluateDeriv)
   {
-    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-0.75), 4.28125, 1.e-15);
-    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25));
+    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-0.75, cnode), 4.28125, 1.e-15);
+    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25, cnode));
   }
 }  // namespace

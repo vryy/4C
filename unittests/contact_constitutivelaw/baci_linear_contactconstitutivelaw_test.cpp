@@ -11,10 +11,10 @@
 #include <gtest/gtest.h>
 
 #include "baci_contact_constitutivelaw_linear_contactconstitutivelaw.hpp"
+#include "baci_contact_rough_node.hpp"
 
 namespace
 {
-
   using namespace BACI;
 
   class LinearConstitutiveLawTest : public ::testing::Test
@@ -38,23 +38,25 @@ namespace
     }
 
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
+
+    CONTACT::RoughNode* cnode;
   };
 
   //! test member function Evaluate
   TEST_F(LinearConstitutiveLawTest, TestEvaluate)
   {
     // gap < 0
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0));
+    EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0, cnode));
     // 0< gap < offset
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25));
+    EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25, cnode));
     // offset < gap
-    EXPECT_NEAR(coconstlaw_->Evaluate(-0.75), -0.375, 1.e-15);
+    EXPECT_NEAR(coconstlaw_->Evaluate(-0.75, cnode), -0.375, 1.e-15);
   }
 
   //! test member function EvaluateDeriv
   TEST_F(LinearConstitutiveLawTest, TestEvaluateDeriv)
   {
-    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-0.75), 1.5, 1.e-15);
-    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25));
+    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-0.75, cnode), 1.5, 1.e-15);
+    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25, cnode));
   }
 }  // namespace

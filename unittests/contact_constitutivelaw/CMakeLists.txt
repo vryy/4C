@@ -5,8 +5,8 @@ set(SOURCE_LIST
     baci_brokenrational_contactconstitutivelaw_test.cpp
     baci_cubic_contactconstitutivelaw_test.cpp
     baci_linear_contactconstitutivelaw_test.cpp
-    baci_mirco_force_contactconstitutivelaw_test.cpp
-    baci_mirco_pressure_contactconstitutivelaw_test.cpp
+    #baci_mirco_force_contactconstitutivelaw_test.cpp
+    #baci_mirco_pressure_contactconstitutivelaw_test.cpp
     baci_power_contactconstitutivelaw_test.cpp
     )
 

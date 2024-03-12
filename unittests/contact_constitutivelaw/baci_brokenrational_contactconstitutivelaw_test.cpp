@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 
 #include "baci_contact_constitutivelaw_brokenrational_contactconstitutivelaw.hpp"
+#include "baci_contact_rough_node.hpp"
 
 namespace
 {
@@ -39,23 +40,25 @@ namespace
     }
 
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
+
+    CONTACT::RoughNode* cnode;
   };
 
   //! test member function Evaluate
   TEST_F(BrokenrationalConstitutiveLawTest, TestEvaluate)
   {
     // gap < 0
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0));
+    EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0, cnode));
     // 0< gap < offset
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25));
+    EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25, cnode));
     // offset < gap
-    EXPECT_NEAR(coconstlaw_->Evaluate(-2.5), -0.5, 1.e-15);
+    EXPECT_NEAR(coconstlaw_->Evaluate(-2.5, cnode), -0.5, 1.e-15);
   }
 
   //! test member function EvaluateDeriv
   TEST_F(BrokenrationalConstitutiveLawTest, TestEvaluateDeriv)
   {
-    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-2.5), 0.5, 1.e-15);
-    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25));
+    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-2.5, cnode), 0.5, 1.e-15);
+    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25, cnode));
   }
 }  // namespace
