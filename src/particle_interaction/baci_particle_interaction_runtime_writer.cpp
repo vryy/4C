@@ -102,7 +102,7 @@ void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutp
     // data to be written preset in particle interaction evaluation
 
     // write file to filesystem
-    runtime_csvwriter->WriteFile();
+    runtime_csvwriter->WriteCollectedDataToFile();
   }
 }
 

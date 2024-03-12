@@ -54,7 +54,11 @@ namespace IO
     void AppendDataVector(const std::string& dataname, const std::vector<double>& datavalues);
 
     //! write one line to csv file. Data must have been passed via AppendDataVector()
-    void WriteFile();
+    void WriteCollectedDataToFile();
+
+    //! write @p data to file at @p time and @p timestep
+    void WriteDataToFile(double time, unsigned int timestep,
+        const std::map<std::string, std::vector<double>>& data) const;
 
    private:
     std::unique_ptr<RuntimeCsvWriterImpl> implementation_;

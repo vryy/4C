@@ -1324,10 +1324,10 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 
       dsassert(runtime_csvwriter_soc_[cond_id].has_value(),
           "internal error: runtime csv writer not created.");
-      runtime_csvwriter_soc_[cond_id]->AppendDataVector("SOC", {soc});
-      runtime_csvwriter_soc_[cond_id]->AppendDataVector("CRate", {c_rate});
-      runtime_csvwriter_soc_[cond_id]->ResetTimeAndTimeStep(Time(), Step());
-      runtime_csvwriter_soc_[cond_id]->WriteFile();
+      std::map<std::string, std::vector<double>> output_data;
+      output_data["SOC"] = {soc};
+      output_data["CRate"] = {c_rate};
+      runtime_csvwriter_soc_[cond_id]->WriteDataToFile(Time(), Step(), output_data);
     }
 
     if (myrank_ == 0)
@@ -1446,9 +1446,9 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
 
     dsassert(runtime_csvwriter_cell_voltage_.has_value(),
         "internal error: runtime csv writer not created.");
-    runtime_csvwriter_cell_voltage_->AppendDataVector("CellVoltage", {cellvoltage_});
-    runtime_csvwriter_cell_voltage_->ResetTimeAndTimeStep(Time(), Step());
-    runtime_csvwriter_cell_voltage_->WriteFile();
+    std::map<std::string, std::vector<double>> output_data;
+    output_data["CellVoltage"] = {cellvoltage_};
+    runtime_csvwriter_cell_voltage_->WriteDataToFile(Time(), Step(), output_data);
   }
 }
 
