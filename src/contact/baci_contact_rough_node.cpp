@@ -52,7 +52,7 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
                                        .Evaluate(this->X().data(), 1, this->Dim());
 
     const int N = pow(2, resolution);
-    topology_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(N + 1, N + 1));
+    topology_.shape(N + 1, N + 1);
 
     std::string topologyFilePath = "";
     Teuchos::RCP<MIRCO::TopologyGeneration> surfacegenerator;
@@ -60,9 +60,9 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
     MIRCO::CreateSurfaceObject(resolution, initialTopologyStdDeviation_, hurstExponent_,
         randomseedflag, topologyFilePath, randomtopologyflag, randomgeneratorseed,
         surfacegenerator);
-    surfacegenerator->GetSurface(*topology_);
+    surfacegenerator->GetSurface(topology_);
 
-    auto max_and_mean = MIRCO::ComputeMaxAndMean(*topology_);
+    auto max_and_mean = MIRCO::ComputeMaxAndMean(topology_);
     maxTopologyHeight_ = max_and_mean.max_;
   }
 #endif

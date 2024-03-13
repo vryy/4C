@@ -61,13 +61,13 @@ namespace CONTACT
         const int hurstexponentfunction, int initialtopologystddeviationfunction, int resolution,
         int randomtopologyflag, int randomseedflag, int randomgeneratorseed);
 
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> GetTopology() const { return topology_; };
+    CORE::LINALG::SerialDenseMatrix* GetTopology() { return &topology_; };
     double GetMaxTopologyHeight() { return maxTopologyHeight_; };
 
    protected:
     double hurstExponent_ = 0;
     double initialTopologyStdDeviation_ = 0;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> topology_;
+    CORE::LINALG::SerialDenseMatrix topology_;
     double maxTopologyHeight_;
   };
 }  // namespace CONTACT
