@@ -98,11 +98,11 @@ namespace CORE
  *   dsassert(vector.size() == dim, "Vector size does not equal dimension.");
  * @endcode
  */
-#define dsassert(test, msg) \
-  if (!(test))              \
-  {                         \
-    dserror(msg);           \
-  }                         \
+#define dsassert(test, args...) \
+  if (!(test))                  \
+  {                             \
+    dserror(args);              \
+  }                             \
   static_assert(true, "Terminate dsassert with a comma.")
 
 #else
@@ -110,7 +110,7 @@ namespace CORE
 /**
  * This macro would asserts that @p test is true, but only if BACI_DEBUG is set.
  */
-#define dsassert(test, msg) static_assert(true, "Terminate dsassert with a comma.")
+#define dsassert(test, args...) static_assert(true, "Terminate dsassert with a comma.")
 
 #endif
 

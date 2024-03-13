@@ -39,8 +39,12 @@ namespace IO
     virtual void AppendDataVector(
         const std::string& dataname, const std::vector<double>& datavalues) = 0;
 
-    //! write csv file to filesystem
-    virtual void WriteFile() = 0;
+    //! write one line to csv file. Data must have been passed via AppendDataVector()
+    virtual void WriteCollectedDataToFile() = 0;
+
+    //! write @p data to file at @p time and @p timestep
+    virtual void WriteDataToFile(double time, unsigned int timestep,
+        const std::map<std::string, std::vector<double>>& data) const = 0;
   };
 
   //! This class does the writing to the file. It is created on proc 0.
@@ -61,10 +65,13 @@ namespace IO
     void AppendDataVector(
         const std::string& dataname, const std::vector<double>& datavalues) override;
 
-    void WriteFile() override;
+    void WriteCollectedDataToFile() override;
+
+    void WriteDataToFile(double time, unsigned int timestep,
+        const std::map<std::string, std::vector<double>>& data) const override;
 
    private:
-    void WriteFileHeader();
+    void WriteFileHeader() const;
 
     //! key: result name, entry: (data vector, precision)
     std::map<std::string, std::pair<std::vector<double>, int>> data_vectors_;
@@ -72,10 +79,11 @@ namespace IO
     //! full path to output file
     std::string fullpathoutputfile_;
 
-    bool header_line_written_;
-
     //! output name
     std::string outputname_;
+
+    //! number of restart step
+    const int restart_step_;
 
     //! current time
     double time_;
@@ -100,7 +108,12 @@ namespace IO
     {
     }
 
-    void WriteFile() override {}
+    void WriteCollectedDataToFile() override {}
+
+    void WriteDataToFile(double time, unsigned int timestep,
+        const std::map<std::string, std::vector<double>>& data) const override
+    {
+    }
   };
 
   void RuntimeCsvWriter::RegisterDataVector(
@@ -120,7 +133,13 @@ namespace IO
     implementation_->AppendDataVector(dataname, datavalues);
   }
 
-  void RuntimeCsvWriter::WriteFile() { implementation_->WriteFile(); }
+  void RuntimeCsvWriter::WriteCollectedDataToFile() { implementation_->WriteCollectedDataToFile(); }
+
+  void RuntimeCsvWriter::WriteDataToFile(const double time, const unsigned int timestep,
+      const std::map<std::string, std::vector<double>>& data) const
+  {
+    implementation_->WriteDataToFile(time, timestep, data);
+  }
 
   RuntimeCsvWriter::RuntimeCsvWriter(
       int myrank, const IO::OutputControl& output_control, std::string outputname)
@@ -138,7 +157,10 @@ namespace IO
 
   RuntimeCsvWriterProc0::RuntimeCsvWriterProc0(
       const IO::OutputControl& output_control, std::string outputname)
-      : header_line_written_(false), outputname_(std::move(outputname)), time_(0.0), timestep_(-1)
+      : outputname_(std::move(outputname)),
+        restart_step_(output_control.RestartStep()),
+        time_(0.0),
+        timestep_(-1)
   {
     // determine full path to output prefix
     const std::string fullpathoutputprefix = output_control.FileName();
@@ -153,8 +175,7 @@ namespace IO
     }
 
     // in case of restart copy content of restart file to output file prior to restart time step
-    const int restart_step = output_control.RestartStep();
-    if (restart_step)
+    if (restart_step_)
     {
       // determine full path to restart prefix
       const std::string fullpathrestartprefix = output_control.RestartName();
@@ -190,7 +211,7 @@ namespace IO
         const int timestep = std::stoi(word);
 
         // append current line
-        if (timestep <= restart_step) sectionpriorrestart << line << "\n";
+        if (timestep <= restart_step_) sectionpriorrestart << line << "\n";
       }
 
       restartfile.close();
@@ -199,7 +220,6 @@ namespace IO
       std::ofstream outputfile(fullpathoutputfile_, std::ios_base::app);
       outputfile << sectionpriorrestart.str();
       outputfile.close();
-      header_line_written_ = true;
     }
   }
 
@@ -207,25 +227,24 @@ namespace IO
       const std::string& dataname, const unsigned int numcomponents, const int precision)
   {
     data_vectors_[dataname] = {std::vector<double>(numcomponents, 0.0), precision};
+    if (!restart_step_) WriteFileHeader();
   }
 
   void RuntimeCsvWriterProc0::AppendDataVector(
       const std::string& dataname, const std::vector<double>& datavalues)
   {
-    if (not data_vectors_.count(dataname))
-      dserror("data vector '%s' not registered!", dataname.c_str());
+    dsassert(
+        data_vectors_.count(dataname) > 0, "data vector '%s' not registered!", dataname.c_str());
 
-    if ((data_vectors_[dataname].first).size() != datavalues.size())
-      dserror("size of data vector '%s' changed!", dataname.c_str());
+    dsassert((data_vectors_[dataname].first).size() == datavalues.size(),
+        "size of data vector '%s' changed!", dataname.c_str());
 
     data_vectors_[dataname].first = datavalues;
   }
 
-  void RuntimeCsvWriterProc0::WriteFile()
+  void RuntimeCsvWriterProc0::WriteCollectedDataToFile()
   {
     if (data_vectors_.empty()) dserror("no data vectors registered!");
-
-    if (!header_line_written_) WriteFileHeader();
 
     std::ofstream outputfile(fullpathoutputfile_, std::ios_base::app);
     outputfile << timestep_ << "," << time_;
@@ -245,9 +264,37 @@ namespace IO
     outputfile.close();
   }
 
-  void RuntimeCsvWriterProc0::WriteFileHeader()
+  void RuntimeCsvWriterProc0::WriteDataToFile(const double time, const unsigned int timestep,
+      const std::map<std::string, std::vector<double>>& data) const
   {
+    if (data_vectors_.empty()) dserror("no data vectors registered!");
+
     std::ofstream outputfile(fullpathoutputfile_, std::ios_base::app);
+    outputfile << timestep << "," << time;
+
+    for (const auto& [data_name, data_vector] : data)
+    {
+      dsassert(data_vectors_.count(data_name) > 0, "data vector '%s' not registered!",
+          data_name.c_str());
+
+      dsassert((data_vectors_.at(data_name).first).size() == data_vector.size(),
+          "size of data vector '%s' changed!", data_name.c_str());
+
+      const int precision = (data_vectors_.at(data_name).second);
+
+      outputfile << std::setprecision(precision) << std::scientific;
+
+      for (const auto& data_vector_component : data_vector)
+        outputfile << "," << data_vector_component;
+    }
+
+    outputfile << "\n";
+    outputfile.close();
+  }
+
+  void RuntimeCsvWriterProc0::WriteFileHeader() const
+  {
+    std::ofstream outputfile(fullpathoutputfile_, std::ios_base::trunc);
     outputfile << "step,time";
 
     for (const auto& data : data_vectors_)
@@ -263,8 +310,6 @@ namespace IO
 
     outputfile << "\n";
     outputfile.close();
-
-    header_line_written_ = true;
   }
 }  // namespace IO
 

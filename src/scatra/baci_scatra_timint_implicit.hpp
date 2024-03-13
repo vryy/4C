@@ -1722,8 +1722,8 @@ namespace SCATRA
     //! init objects that are specific for output strategy
     virtual void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) = 0;
 
-    //! Pass evaluated data to csv writer
-    virtual void PassToCSVWriter() = 0;
+    //! evluate csv data and return it in a map
+    virtual std::map<std::string, std::vector<double>> PrepareCSVOutput() = 0;
 
     //! fill parameter list and set variables in discretization for evaluation of mean scalars
     void PrepareEvaluate(
@@ -1779,7 +1779,7 @@ namespace SCATRA
 
     void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) override;
 
-    void PassToCSVWriter() override;
+    std::map<std::string, std::vector<double>> PrepareCSVOutput() override;
 
     void PrintToScreen() override;
 
@@ -1807,7 +1807,7 @@ namespace SCATRA
 
     void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) override;
 
-    void PassToCSVWriter() override;
+    std::map<std::string, std::vector<double>> PrepareCSVOutput() override;
 
     void PrintToScreen() override;
 
@@ -1835,7 +1835,7 @@ namespace SCATRA
 
     void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) override;
 
-    void PassToCSVWriter() override;
+    std::map<std::string, std::vector<double>> PrepareCSVOutput() override;
 
     void PrintToScreen() override;
   };

@@ -2470,11 +2470,9 @@ void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
   FinalizeScreenOutput();
 
   // write evaluated data to file
-  PassToCSVWriter();
+  const auto output_data = PrepareCSVOutput();
 
-  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
-  runtime_csvwriter_->ResetTimeAndTimeStep(scatratimint->Time(), scatratimint->Step());
-  runtime_csvwriter_->WriteFile();
+  runtime_csvwriter_->WriteDataToFile(scatratimint->Time(), scatratimint->Step(), output_data);
 }
 
 
@@ -2575,30 +2573,28 @@ void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomain::PassToCSVWriter()
+std::map<std::string, std::vector<double>> SCATRA::OutputScalarsStrategyDomain::PrepareCSVOutput()
 {
   dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+  std::map<std::string, std::vector<double>> output_data;
+  output_data["Integral of entire domain"] = {domainintegral_[dummy_domain_id_]};
 
-  runtime_csvwriter_->AppendDataVector(
-      "Integral of entire domain", {domainintegral_[dummy_domain_id_]});
   for (int k = 0; k < numdofpernode_; ++k)
   {
-    runtime_csvwriter_->AppendDataVector(
-        "Total value of scalar " + std::to_string(k + 1) + " in entire domain",
-        {totalscalars_[dummy_domain_id_][k]});
-    runtime_csvwriter_->AppendDataVector(
-        "Mean value of scalar " + std::to_string(k + 1) + " in entire domain",
-        {meanscalars_[dummy_domain_id_][k]});
+    output_data["Total value of scalar " + std::to_string(k + 1) + " in entire domain"] = {
+        totalscalars_[dummy_domain_id_][k]};
+    output_data["Mean value of scalar " + std::to_string(k + 1) + " in entire domain"] = {
+        meanscalars_[dummy_domain_id_][k]};
   }
   if (output_mean_grad_)
   {
     for (int k = 0; k < numscal_; ++k)
     {
-      runtime_csvwriter_->AppendDataVector(
-          "Mean value of gradient of scalar " + std::to_string(k + 1) + " in entire domain",
-          {meangradients_[dummy_domain_id_][k]});
+      output_data["Mean value of gradient of scalar " + std::to_string(k + 1) +
+                  " in entire domain"] = {meangradients_[dummy_domain_id_][k]};
     }
   }
+  return output_data;
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -2775,9 +2771,11 @@ void SCATRA::OutputScalarsStrategyCondition::PrintToScreen()
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
+std::map<std::string, std::vector<double>>
+SCATRA::OutputScalarsStrategyCondition::PrepareCSVOutput()
 {
-  // register all data vectors
+  std::map<std::string, std::vector<double>> output_data;
+
   for (auto* condition : conditions_)
   {
     // extract condition ID
@@ -2785,34 +2783,30 @@ void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
 
     dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
-    runtime_csvwriter_->AppendDataVector(
-        "Integral of domain " + std::to_string(condid), {domainintegral_[condid]});
+    output_data["Integral of domain " + std::to_string(condid)] = {domainintegral_[condid]};
+
     for (int k = 0; k < numdofpernodepercondition_[condid]; ++k)
     {
-      runtime_csvwriter_->AppendDataVector(
-          "Total value of scalar " + std::to_string(k + 1) + " in domain " + std::to_string(condid),
-          {totalscalars_[condid][k]});
-      runtime_csvwriter_->AppendDataVector(
-          "Mean value of scalar " + std::to_string(k + 1) + " in domain " + std::to_string(condid),
-          {meanscalars_[condid][k]});
+      output_data["Total value of scalar " + std::to_string(k + 1) + " in domain " +
+                  std::to_string(condid)] = {totalscalars_[condid][k]};
+      output_data["Mean value of scalar " + std::to_string(k + 1) + " in domain " +
+                  std::to_string(condid)] = {meanscalars_[condid][k]};
     }
     if (output_mean_grad_)
     {
       for (int k = 0; k < numscalpercondition_[condid]; ++k)
       {
-        runtime_csvwriter_->AppendDataVector("Mean value of gradient of scalar " +
-                                                 std::to_string(k + 1) + " in domain " +
-                                                 std::to_string(condid),
-            {meangradients_[condid][k]});
+        output_data["Mean value of gradient of scalar " + std::to_string(k + 1) + " in domain " +
+                    std::to_string(condid)] = {meangradients_[condid][k]};
       }
     }
     if (output_micro_dis_)
     {
-      runtime_csvwriter_->AppendDataVector(
-          "Mean value of micro scalar in domain " + std::to_string(condid),
-          {micromeanscalars_[condid][0]});
+      output_data["Mean value of micro scalar in domain " + std::to_string(condid)] = {
+          micromeanscalars_[condid][0]};
     }
   }
+  return output_data;
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -2982,10 +2976,18 @@ void SCATRA::OutputScalarsStrategyDomainAndCondition::PrintToScreen()
 
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomainAndCondition::PassToCSVWriter()
+std::map<std::string, std::vector<double>>
+SCATRA::OutputScalarsStrategyDomainAndCondition::PrepareCSVOutput()
 {
-  OutputScalarsStrategyCondition::PassToCSVWriter();
-  OutputScalarsStrategyDomain::PassToCSVWriter();
+  std::map<std::string, std::vector<double>> output_data;
+  auto output_data_condition = OutputScalarsStrategyCondition::PrepareCSVOutput();
+  auto output_data_domain = OutputScalarsStrategyDomain::PrepareCSVOutput();
+
+  // merge both maps
+  output_data.merge(output_data_condition);
+  output_data.merge(output_data_domain);
+
+  return output_data;
 }
 
 /*--------------------------------------------------------------------------------------*
