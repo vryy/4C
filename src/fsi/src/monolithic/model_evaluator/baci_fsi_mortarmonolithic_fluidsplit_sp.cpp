@@ -965,6 +965,152 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystemMatrix(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+void FSI::MortarMonolithicFluidSplitSaddlePoint::ScaleSystem(
+    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+{
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  const bool scaling_infnorm =
+      static_cast<bool>(CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING"));
+
+  if (scaling_infnorm)
+  {
+    // do scaling of structure rows
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
+    srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
+    scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
+    A->InvRowSums(*srowsum_);
+    A->InvColSums(*scolsum_);
+    if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
+        mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(0, 3).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
+        mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
+        mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
+      dserror("structure scaling failed");
+
+    // do scaling of ale rows
+    A = mat.Matrix(2, 2).EpetraMatrix();
+    arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
+    acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
+    A->InvRowSums(*arowsum_);
+    A->InvColSums(*acolsum_);
+    if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
+        mat.Matrix(2, 0).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(2, 3).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
+        mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_) or
+        mat.Matrix(3, 2).EpetraMatrix()->RightScale(*acolsum_))
+      dserror("ale scaling failed");
+
+    // do scaling of structure and ale rhs vectors
+    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
+
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+
+    Extractor().InsertVector(*sx, 0, b);
+    Extractor().InsertVector(*ax, 2, b);
+  }
+}
+
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void FSI::MortarMonolithicFluidSplitSaddlePoint::UnscaleSolution(
+    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+{
+  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  const bool scaling_infnorm =
+      static_cast<bool>(CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING"));
+
+  if (scaling_infnorm)
+  {
+    Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
+
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
+
+    Extractor().InsertVector(*sy, 0, x);
+    Extractor().InsertVector(*ay, 2, x);
+
+    Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
+    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
+
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+
+    Extractor().InsertVector(*sx, 0, b);
+    Extractor().InsertVector(*ax, 2, b);
+
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
+    srowsum_->Reciprocal(*srowsum_);
+    scolsum_->Reciprocal(*scolsum_);
+    if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
+        mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(0, 3).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
+        mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
+        mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
+      dserror("structure scaling failed");
+
+    A = mat.Matrix(2, 2).EpetraMatrix();
+    arowsum_->Reciprocal(*arowsum_);
+    acolsum_->Reciprocal(*acolsum_);
+    if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
+        mat.Matrix(2, 0).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(2, 3).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
+        mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_) or
+        mat.Matrix(3, 2).EpetraMatrix()->RightScale(*acolsum_))
+      dserror("ale scaling failed");
+  }
+
+  Epetra_Vector r(b.Map());
+  mat.Apply(x, r);
+  r.Update(1., b, 1.);
+
+  Teuchos::RCP<Epetra_Vector> sr = Extractor().ExtractVector(r, 0);
+  Teuchos::RCP<Epetra_Vector> fr = Extractor().ExtractVector(r, 1);
+  Teuchos::RCP<Epetra_Vector> ar = Extractor().ExtractVector(r, 2);
+  Teuchos::RCP<Epetra_Vector> lmr = Extractor().ExtractVector(r, 3);
+
+  // increment additional ale residual
+  aleresidual_->Update(-1., *ar, 0.);
+
+  std::ios_base::fmtflags flags = Utils()->out().flags();
+
+  double n, ns, nf, na, nlm;
+  r.Norm2(&n);
+  sr->Norm2(&ns);
+  fr->Norm2(&nf);
+  ar->Norm2(&na);
+  lmr->Norm2(&nlm);
+  Utils()->out() << std::scientific << "\nlinear solver quality:\n"
+                 << "L_2-norms:\n"
+                 << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
+                 << "   |rlm|=" << nlm << "\n";
+  r.NormInf(&n);
+  sr->NormInf(&ns);
+  fr->NormInf(&nf);
+  ar->NormInf(&na);
+  lmr->NormInf(&nlm);
+  Utils()->out() << "L_inf-norms:\n"
+                 << "   |r|=" << n << "   |rs|=" << ns << "   |rf|=" << nf << "   |ra|=" << na
+                 << "   |rlm|=" << nlm << "\n";
+
+  Utils()->out().flags(flags);
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
     Teuchos::RCP<const Epetra_Vector> step_increment)
 {
