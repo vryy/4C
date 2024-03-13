@@ -15,8 +15,8 @@
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 #include "baci_beaminteraction_calc_utils.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_element_faces.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
 #include "baci_geometry_pair_factory.hpp"
 #include "baci_geometry_pair_line_to_surface.hpp"
 #include "baci_geometry_pair_scalar_types.hpp"
@@ -46,8 +46,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type_fad, beam,
   // Beam element.
   const int n_patch_dof = face_element_->GetPatchGID().size();
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-    this->ele1pos_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_fad>::apply(
-        beam::n_dof_ + n_patch_dof, i, beam_centerline_dofvec[i]);
+    this->ele1pos_.element_position_(i) =
+        CORE::FADUTILS::HigherOrderFadValue<scalar_type_fad>::apply(
+            beam::n_dof_ + n_patch_dof, i, beam_centerline_dofvec[i]);
 }
 
 /**
@@ -60,8 +61,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
   if (!meshtying_is_evaluated_)
   {
     CastGeometryPair()->PreEvaluate(this->ele1posref_,
-        this->face_element_->GetFaceReferencePosition(), this->line_to_3D_segments_,
-        this->face_element_->GetReferenceNormals());
+        this->face_element_->GetFaceReferenceElementData(), this->line_to_3D_segments_);
   }
 }
 
@@ -139,14 +139,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
 
   for (const auto& point : points)
   {
-    GEOMETRYPAIR::EvaluatePosition<beam>(
-        point.GetEta(), this->ele1posref_, X_beam, this->Element1());
-    GEOMETRYPAIR::EvaluatePosition<beam>(point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+    GEOMETRYPAIR::EvaluatePosition<beam>(point.GetEta(), this->ele1posref_, X_beam);
+    GEOMETRYPAIR::EvaluatePosition<beam>(point.GetEta(), this->ele1pos_, r_beam);
     u_beam = r_beam;
     u_beam -= X_beam;
 
-    GEOMETRYPAIR::EvaluatePosition<surface>(point.GetXi(), this->face_element_->GetFacePosition(),
-        r_solid, this->face_element_->GetDrtFaceElement());
+    GEOMETRYPAIR::EvaluatePosition<surface>(
+        point.GetXi(), this->face_element_->GetFaceElementData(), r_solid);
     projection_dir = r_solid;
     projection_dir -= r_beam;
 
@@ -229,20 +228,17 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
     case BeamToSolidSurfaceCoupling::displacement_fad:
     {
       // In this case we have to substract the reference position from the DOF vectors.
-      CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> beam_dof = this->ele1pos_;
-      CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type> surface_dof =
-          this->face_element_->GetFacePosition();
+      auto beam_dof = this->ele1pos_;
+      auto surface_dof = this->face_element_->GetFaceElementData();
 
       for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
-        beam_dof(i_dof_beam) -= this->ele1posref_(i_dof_beam);
+        beam_dof.element_position_(i_dof_beam) -= this->ele1posref_.element_position_(i_dof_beam);
       for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
-        surface_dof(i_dof_surface) -=
-            this->face_element_->GetFaceReferencePosition()(i_dof_surface);
+        surface_dof.element_position_(i_dof_surface) -=
+            this->face_element_->GetFaceReferenceElementData().element_position_(i_dof_surface);
 
-      GEOMETRYPAIR::EvaluatePosition<beam>(
-          evaluation_point.GetEta(), beam_dof, r_beam, this->Element1());
-      GEOMETRYPAIR::EvaluatePosition<surface>(evaluation_point.GetXi(), surface_dof, r_surface,
-          this->face_element_->GetDrtFaceElement());
+      GEOMETRYPAIR::EvaluatePosition<beam>(evaluation_point.GetEta(), beam_dof, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<surface>(evaluation_point.GetXi(), surface_dof, r_surface);
 
       r_beam -= r_surface;
       return r_beam;
@@ -250,22 +246,18 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
     case BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     case BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero_fad:
     {
-      GEOMETRYPAIR::EvaluatePosition<beam>(
-          evaluation_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
-      GEOMETRYPAIR::EvaluatePosition<surface>(evaluation_point.GetXi(),
-          this->face_element_->GetFacePosition(), r_surface,
-          this->face_element_->GetDrtFaceElement());
+      GEOMETRYPAIR::EvaluatePosition<beam>(evaluation_point.GetEta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<surface>(
+          evaluation_point.GetXi(), this->face_element_->GetFaceElementData(), r_surface);
 
       r_beam -= r_surface;
       return r_beam;
     }
     case BeamToSolidSurfaceCoupling::consistent_fad:
     {
-      GEOMETRYPAIR::EvaluatePosition<beam>(
-          evaluation_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
-      GEOMETRYPAIR::EvaluateSurfacePosition<surface>(evaluation_point.GetXi(),
-          this->face_element_->GetFacePosition(), r_surface,
-          this->face_element_->GetDrtFaceElement(), this->face_element_->GetCurrentNormals());
+      GEOMETRYPAIR::EvaluatePosition<beam>(evaluation_point.GetEta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluateSurfacePosition<surface>(
+          evaluation_point.GetXi(), this->face_element_->GetFaceElementData(), r_surface);
 
       r_beam -= r_surface;
       return r_beam;

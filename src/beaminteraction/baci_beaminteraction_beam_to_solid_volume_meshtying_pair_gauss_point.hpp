@@ -108,7 +108,7 @@ namespace BEAMINTERACTION
      */
     void EvaluateRotationalCouplingTerms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-        const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
+        const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&

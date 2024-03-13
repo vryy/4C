@@ -16,7 +16,8 @@
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
 #include "baci_beaminteraction_calc_utils.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_volume.hpp"
 
 #include <Epetra_FEVector.h>
@@ -65,10 +66,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we only need first
   // order derivatives.
-  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> q_solid(true);
+  auto q_solid =
+      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_1st>::Initialize(this->Element2());
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
-    q_solid(i_solid) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
-        3 + solid::n_dof_, 3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
+    q_solid.element_position_(i_solid) =
+        CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(3 + solid::n_dof_,
+            3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_.element_position_(i_solid)));
 
   // Initialize local matrices.
   CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double> local_g(true);
@@ -145,7 +148,7 @@ template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
     mortar_rot>::EvaluateRotationalCouplingTerms(  //
     const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-    const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st>& q_solid,
+    const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_1st>& q_solid,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
         triad_interpolation_scheme,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
@@ -213,7 +216,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
@@ -232,7 +235,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
           quaternion_beam_ref, projected_gauss_point.GetEta());
       GetSolidRotationVector<solid>(rot_coupling_type, projected_gauss_point.GetXi(),
-          this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid, this->Element2());
+          this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid);
       CORE::LARGEROTATIONS::angletoquaternion(psi_solid, quaternion_solid);
 
       // Calculate the relative rotation vector.
@@ -248,8 +251,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       CORE::LINALG::Inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      mortar_rot::EvaluateShapeFunction(lambda_shape_functions, projected_gauss_point.GetEta(),
-          std::integral_constant<unsigned int, mortar_rot::element_dim_>{});
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::Evaluate(
+          lambda_shape_functions, projected_gauss_point.GetEta());
       for (unsigned int i_node = 0; i_node < mortar_rot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
@@ -348,10 +351,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we only need first
   // order derivatives.
-  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd> q_solid(true);
+  auto q_solid =
+      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::Initialize(this->Element2());
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
-    q_solid(i_solid) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
-        3 + solid::n_dof_, 3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
+    q_solid.element_position_(i_solid) =
+        CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + solid::n_dof_,
+            3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_.element_position_(i_solid)));
 
   // Get the rotational Lagrange multipliers for this pair.
   std::vector<int> lambda_gid_rot;
@@ -425,7 +430,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
     mortar_rot>::
     EvaluateRotationalCouplingStiffTerms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-        const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
+        const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
         CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double>& lambda_rot,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
@@ -500,7 +505,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
@@ -519,7 +524,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
           quaternion_beam_ref, projected_gauss_point.GetEta());
       GetSolidRotationVector<solid>(rot_coupling_type, projected_gauss_point.GetXi(),
-          this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid, this->Element2());
+          this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_solid_val(i_dim) = psi_solid(i_dim).val();
       CORE::LARGEROTATIONS::angletoquaternion(psi_solid_val, quaternion_solid);
@@ -537,8 +542,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       CORE::LINALG::Inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      mortar_rot::EvaluateShapeFunction(lambda_shape_functions, projected_gauss_point.GetEta(),
-          std::integral_constant<unsigned int, mortar_rot::element_dim_>{});
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::Evaluate(
+          lambda_shape_functions, projected_gauss_point.GetEta());
       for (unsigned int i_node = 0; i_node < mortar_rot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);

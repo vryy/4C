@@ -29,7 +29,7 @@ namespace
   void XtestLineAlongElementSurfaceGeometry(std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
-      std::vector<CORE::LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
+      std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<24, 1, double>>& q_volume_elements)
   {
     // Create the elements.
@@ -53,16 +53,7 @@ namespace
     q_line_elements.back()(9) = 0.7071067811865477;
     q_line_elements.back()(10) = 0.7071067811865475;
     q_line_elements.back()(11) = 0.0;
-    q_rot_line_elements.push_back(CORE::LINALG::Matrix<9, 1, double>());
-    q_rot_line_elements.back()(0) = 1.4821898202742554;
-    q_rot_line_elements.back()(1) = 0.6139431255689366;
-    q_rot_line_elements.back()(2) = 0.6139431255689366;
-    q_rot_line_elements.back()(3) = 1.4821898202742554;
-    q_rot_line_elements.back()(4) = 0.6139431255689366;
-    q_rot_line_elements.back()(5) = 0.6139431255689366;
-    q_rot_line_elements.back()(6) = 0.0;
-    q_rot_line_elements.back()(7) = 0.0;
-    q_rot_line_elements.back()(8) = 0.0;
+    line_ref_lengths.push_back(1.057009395869620727);
 
     // Positional DOFs of the solid(s).
     q_volume_elements.push_back(CORE::LINALG::Matrix<24, 1, double>());
@@ -123,7 +114,7 @@ namespace
   void XtestLineInSmallElementsGeometry(std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
-      std::vector<CORE::LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
+      std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<24, 1, double>>& q_volume_elements)
   {
     // Create the elements.
@@ -147,16 +138,7 @@ namespace
     q_line_elements.back()(9) = -0.50707031399068514;
     q_line_elements.back()(10) = 0.86012099777576989;
     q_line_elements.back()(11) = 0.055421709235663169;
-    q_rot_line_elements.push_back(CORE::LINALG::Matrix<9, 1, double>());
-    q_rot_line_elements.back()(0) = -1.5472887101499999;
-    q_rot_line_elements.back()(1) = -2.7041308685100001;
-    q_rot_line_elements.back()(2) = -0.108137074507;
-    q_rot_line_elements.back()(3) = -1.5472887101499999;
-    q_rot_line_elements.back()(4) = -2.7041308685100001;
-    q_rot_line_elements.back()(5) = -0.108137074507;
-    q_rot_line_elements.back()(6) = -1.5472887101499999;
-    q_rot_line_elements.back()(7) = -2.7041308685100001;
-    q_rot_line_elements.back()(8) = -0.108137074507;
+    line_ref_lengths.push_back(0.009483474694143378611);
 
     // Positional DOFs of the solid(s).
     q_volume_elements.push_back(CORE::LINALG::Matrix<24, 1, double>());
@@ -219,7 +201,7 @@ namespace
       std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
-      std::vector<CORE::LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
+      std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<81, 1, double>>& q_volume_elements)
   {
     // Create the elements.
@@ -242,16 +224,7 @@ namespace
     q_line_elements.back()(9) = 0.13302222155948917;
     q_line_elements.back()(10) = 0.754406506735489;
     q_line_elements.back()(11) = 0.6427876096865395;
-    q_rot_line_elements.push_back(CORE::LINALG::Matrix<9, 1, double>());
-    q_rot_line_elements.back()(0) = -1.9910582384581363;
-    q_rot_line_elements.back()(1) = -1.6706962335427067;
-    q_rot_line_elements.back()(2) = -0.7246859334892601;
-    q_rot_line_elements.back()(3) = -1.9910582384581363;
-    q_rot_line_elements.back()(4) = -1.6706962335427067;
-    q_rot_line_elements.back()(5) = -0.7246859334892601;
-    q_rot_line_elements.back()(6) = 1.228315266067868;
-    q_rot_line_elements.back()(7) = 1.1255435698194929;
-    q_rot_line_elements.back()(8) = 1.0142058073830034;
+    line_ref_lengths.push_back(0.52850469793481058556);
 
     // Positional DOFs of the solid(s).
     q_volume_elements.push_back(CORE::LINALG::Matrix<81, 1, double>());
@@ -346,7 +319,7 @@ namespace
       std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
-      std::vector<CORE::LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
+      std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<30, 1, double>>& q_volume_elements)
   {
     // Create the elements.
@@ -369,16 +342,7 @@ namespace
     q_line_elements.back()(9) = -0.9253422132715935;
     q_line_elements.back()(10) = -0.2495541519597498;
     q_line_elements.back()(11) = -0.28541988994686207;
-    q_rot_line_elements.push_back(CORE::LINALG::Matrix<9, 1, double>());
-    q_rot_line_elements.back()(0) = 0.9576420862321825;
-    q_rot_line_elements.back()(1) = -2.1136886557085592;
-    q_rot_line_elements.back()(2) = -1.6586847488203964;
-    q_rot_line_elements.back()(3) = -0.5899119884260623;
-    q_rot_line_elements.back()(4) = 2.304864621069406;
-    q_rot_line_elements.back()(5) = 1.9641024934984173;
-    q_rot_line_elements.back()(6) = -0.4343496589483586;
-    q_rot_line_elements.back()(7) = -0.03800067116433282;
-    q_rot_line_elements.back()(8) = 2.2410533701016377;
+    line_ref_lengths.push_back(0.57148255427415728391);
 
     // Positional DOFs of the solid(s).
     q_volume_elements.push_back(CORE::LINALG::Matrix<30, 1, double>());
@@ -423,7 +387,7 @@ namespace
       std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
-      std::vector<CORE::LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
+      std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<81, 1, double>>& q_volume_elements,
       Teuchos::RCP<DRT::NURBS::NurbsDiscretization> structdis)
   {
@@ -450,17 +414,7 @@ namespace
     q_line(11) = 0.2672612419124244;
     q_line_elements.push_back(q_line);
 
-    CORE::LINALG::Matrix<9, 1, double> q_line_rot(true);
-    q_line_rot(0) = 1.674352746442651;
-    q_line_rot(1) = 0.1425949677148126;
-    q_line_rot(2) = 1.0831163124736984;
-    q_line_rot(3) = 1.4331999091513161;
-    q_line_rot(4) = -0.6560404572957742;
-    q_line_rot(5) = -0.2491376152457331;
-    q_line_rot(6) = 0.0;
-    q_line_rot(7) = 0.0;
-    q_line_rot(8) = 0.0;
-    q_rot_line_elements.push_back(q_line_rot);
+    line_ref_lengths.push_back(0.61920435714496047108);
 
     // Positional DOFs of the solid(s).
     CORE::LINALG::Matrix<81, 1, double> q_volume(true);
@@ -616,7 +570,8 @@ namespace
   }
 
   /**
-   * \brief This example contains a unit cube with its center at the origin and a pre-curved line.
+   * \brief This example contains a unit cube with its center at the origin and a pre-curved
+   line.
    *
    * For more details on the pre-curved line have a look at the script
    * script/unittest_geometry_pair_line_to_volume.wls
@@ -625,7 +580,7 @@ namespace
       std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<CORE::LINALG::Matrix<12, 1, double>>& q_line_elements,
-      std::vector<CORE::LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
+      std::vector<double>& line_ref_lengths,
       std::vector<CORE::LINALG::Matrix<24, 1, double>>& q_volume_elements)
   {
     // Create the elements.
@@ -653,7 +608,7 @@ namespace
     q_line_elements.back()(11) = 0.0;
 
     // All nodes have 0 rotation (the middle node does not matter in this case)
-    q_rot_line_elements.push_back(CORE::LINALG::Matrix<9, 1, double>(true));
+    line_ref_lengths.push_back(0.58637598747637864616);
 
     // Positional DOFs of the solid(s).
     q_volume_elements.push_back(CORE::LINALG::Matrix<24, 1, double>());

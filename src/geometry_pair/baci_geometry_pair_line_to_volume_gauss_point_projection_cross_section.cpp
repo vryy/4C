@@ -10,9 +10,10 @@ line.
 
 #include "baci_geometry_pair_line_to_volume_gauss_point_projection_cross_section.hpp"
 
+#include "baci_beam3_base.hpp"
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
 #include "baci_lib_element.hpp"
@@ -54,8 +55,8 @@ GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_ty
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::PreEvaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    volume>::PreEvaluate(const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<volume, scalar_type>& element_data_volume,
     std::vector<LineSegment<scalar_type>>& segments,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>*
         line_triad_interpolation) const
@@ -79,7 +80,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
   CORE::LINALG::Matrix<3, 1, scalar_type> eta_cross_section(true);
   CORE::LINALG::Matrix<2, 1, scalar_type> eta_cross_section_2d;
-  CORE::LINALG::Matrix<3, 1, scalar_type> xi_solid;
+  CORE::LINALG::Matrix<3, 1, scalar_type> xi_volume;
   ProjectionResult projection_result;
   segments.clear();
   bool one_projects = false;
@@ -99,10 +100,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
     if (line_triad_interpolation != nullptr)
       line_triad_interpolation->GetInterpolatedTriadAtXi(triad, eta);
     else
-      GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<line>(eta, q_line, triad, this->Element1());
+      GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<line>(eta, element_data_line, triad);
 
     // Get the position on the line.
-    GEOMETRYPAIR::EvaluatePosition<line>(eta, q_line, r_line, this->Element1());
+    GEOMETRYPAIR::EvaluatePosition<line>(eta, element_data_line, r_line);
 
     for (unsigned int index_gp_circ = 0; index_gp_circ < n_integration_points_circ; index_gp_circ++)
     {
@@ -124,11 +125,11 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
         r_surface += r_cross_section;
 
         // Project point to the volume.
-        this->ProjectPointToOther(r_surface, q_volume, xi_solid, projection_result);
+        this->ProjectPointToOther(r_surface, element_data_volume, xi_volume, projection_result);
         if (projection_result == ProjectionResult::projection_found_valid)
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.
-          ProjectionPoint1DTo3D<scalar_type> new_point(eta, xi_solid,
+          ProjectionPoint1DTo3D<scalar_type> new_point(eta, xi_volume,
               gauss_points_axis.qwgt[index_gp_axis] * 2.0 / double(n_integration_points_circ));
           for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
             eta_cross_section_2d(i_dim) = eta_cross_section(i_dim + 1);
@@ -156,8 +157,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    volume>::Evaluate(const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<volume, scalar_type>& element_data_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Only zero one segments are expected.

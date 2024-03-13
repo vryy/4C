@@ -9,6 +9,7 @@
 
 #include "baci_beaminteraction_beam_to_solid_surface_contact_pair.hpp"
 
+#include "baci_beam3_base.hpp"
 #include "baci_beaminteraction_beam_to_solid_surface_contact_params.hpp"
 #include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"
 #include "baci_beaminteraction_beam_to_solid_utils.hpp"
@@ -16,8 +17,9 @@
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 #include "baci_beaminteraction_calc_utils.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_element_faces.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
 #include "baci_geometry_pair_factory.hpp"
 #include "baci_geometry_pair_line_to_surface.hpp"
 #include "baci_geometry_pair_scalar_types.hpp"
@@ -49,8 +51,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
-  this->CastGeometryPair()->Evaluate(this->ele1pos_, this->face_element_->GetFacePosition(),
-      this->line_to_3D_segments_, this->face_element_->GetCurrentNormals());
+  this->CastGeometryPair()->Evaluate(
+      this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
 
   // If there are no intersection segments, no contact terms will be assembled.
   const unsigned int n_segments = this->line_to_3D_segments_.size();
@@ -96,21 +98,19 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       const auto& eta = projected_gauss_point.GetEta();
 
       // Get the Jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          eta, this->ele1posref_, dr_beam_ref, this->Element1());
+      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(eta, this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = CORE::FADUTILS::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
 
       // Get the surface normal vector.
-      GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(xi, this->face_element_->GetFacePosition(),
-          surface_normal, this->face_element_->GetDrtFaceElement(),
-          this->face_element_->GetCurrentNormals());
+      GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(
+          xi, this->face_element_->GetFaceElementData(), surface_normal);
 
       // Evaluate the current position of beam and solid.
-      GEOMETRYPAIR::EvaluatePosition<beam>(eta, this->ele1pos_, r_beam, this->Element1());
-      GEOMETRYPAIR::EvaluatePosition<surface>(xi, this->face_element_->GetFacePosition(), r_surface,
-          this->face_element_->GetDrtFaceElement());
+      GEOMETRYPAIR::EvaluatePosition<beam>(eta, this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<surface>(
+          xi, this->face_element_->GetFaceElementData(), r_surface);
 
       // Evaluate the gap function.
       r_rel = r_beam;
@@ -118,11 +118,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       gap = r_rel.Dot(surface_normal) - beam_cross_section_radius;
 
       // Get the shape function matrices.
-      beam::EvaluateShapeFunction(N_beam, eta,
-          std::integral_constant<unsigned int, beam::element_dim_>{}, this->Element1());
-      surface::EvaluateShapeFunction(N_surface, xi,
-          std::integral_constant<unsigned int, surface::element_dim_>{},
-          this->face_element_->GetDrtFaceElement());
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+          N_beam, eta, this->ele1pos_.shape_function_data_);
+      GEOMETRYPAIR::EvaluateShapeFunction<surface>::Evaluate(
+          N_surface, xi, this->face_element_->GetFaceElementData().shape_function_data_);
 
       // Calculate the variation of the gap function multiplied with the surface normal vector.
       for (unsigned int i_shape = 0; i_shape < N_beam.numCols(); i_shape++)
@@ -192,8 +191,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
-  this->CastGeometryPair()->Evaluate(this->ele1pos_, this->face_element_->GetFacePosition(),
-      this->line_to_3D_segments_, this->face_element_->GetCurrentNormals());
+  this->CastGeometryPair()->Evaluate(
+      this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
 
   // If there are no intersection segments, no contact terms will be assembled.
   const unsigned int n_segments = this->line_to_3D_segments_.size();
@@ -236,21 +235,19 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
       const auto& eta = projected_gauss_point.GetEta();
 
       // Get the Jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          eta, this->ele1posref_, dr_beam_ref, this->Element1());
+      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(eta, this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = CORE::FADUTILS::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
 
       // Get the surface normal vector.
-      GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(xi, this->face_element_->GetFacePosition(),
-          surface_normal, this->face_element_->GetDrtFaceElement(),
-          this->face_element_->GetCurrentNormals());
+      GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(
+          xi, this->face_element_->GetFaceElementData(), surface_normal);
 
       // Evaluate the current position of beam and solid.
-      GEOMETRYPAIR::EvaluatePosition<beam>(eta, this->ele1pos_, r_beam, this->Element1());
-      GEOMETRYPAIR::EvaluatePosition<surface>(xi, this->face_element_->GetFacePosition(), r_surface,
-          this->face_element_->GetDrtFaceElement());
+      GEOMETRYPAIR::EvaluatePosition<beam>(eta, this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<surface>(
+          xi, this->face_element_->GetFaceElementData(), r_surface);
 
       // Evaluate the gap function.
       r_rel = r_beam;

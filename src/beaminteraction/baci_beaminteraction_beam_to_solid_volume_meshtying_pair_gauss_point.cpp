@@ -14,7 +14,7 @@
 #include "baci_beaminteraction_beam_to_solid_utils.hpp"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_volume.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
@@ -49,8 +49,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    CORE::LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -92,16 +92,14 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Get the current positions on beam and solid.
-      GEOMETRYPAIR::EvaluatePosition<beam>(
-          projected_gauss_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
-      GEOMETRYPAIR::EvaluatePosition<solid>(
-          projected_gauss_point.GetXi(), this->ele2pos_, r_solid, this->Element2());
+      GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
 
       // Calculate the force in this Gauss point. The sign of the force calculated here is the one
       // that acts on the beam.
@@ -195,8 +193,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    CORE::LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -213,10 +211,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
       triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
   // Set the FAD variables for the solid DOFs.
-  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd> q_solid(true);
+  auto q_solid =
+      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::Initialize(this->Element2());
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
-    q_solid(i_solid) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
-        3 + solid::n_dof_, 3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
+    q_solid.element_position_(i_solid) =
+        CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + solid::n_dof_,
+            3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_.element_position_(i_solid)));
 
 
   // Initialize local matrices.
@@ -271,7 +271,7 @@ template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
     solid>::EvaluateRotationalCouplingTerms(  //
     const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-    const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
+    const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
         triad_interpolation_scheme,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
@@ -334,7 +334,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
@@ -353,7 +353,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       ref_triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
           quaternion_beam_ref, projected_gauss_point.GetEta());
       GetSolidRotationVector<solid>(rot_coupling_type, projected_gauss_point.GetXi(),
-          this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid, this->Element2());
+          this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_solid_val(i_dim) = psi_solid(i_dim).val();
       CORE::LARGEROTATIONS::angletoquaternion(psi_solid_val, quaternion_solid);

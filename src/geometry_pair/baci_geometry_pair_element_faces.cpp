@@ -10,9 +10,12 @@
 
 #include "baci_geometry_pair_element_faces.hpp"
 
+#include "baci_discretization_fem_general_cell_type.hpp"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_scalar_types.hpp"
 #include "baci_inpar_geometry_pair.hpp"
+#include "baci_utils_fad.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -31,11 +34,14 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::Setup(
   this->GetDrtFaceElement()->LocationVector(*discret, this->patch_dof_gid_, lmrowowner, lmstride);
 
   // Set the reference position from the nodes connected to this face.
-  face_reference_position_.Clear();
+  // At the moment we need to get the structure discretization at this point since the beam
+  // interaction discretization is a copy - without the nurbs information
+  face_reference_position_ =
+      GEOMETRYPAIR::InitializeElementData<surface, double>::Initialize(this->GetDrtFaceElement());
   const DRT::Node* const* nodes = drt_face_element_->Nodes();
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      face_reference_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
+      face_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
 }
 
 /**
@@ -51,6 +57,8 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
   DRT::UTILS::ExtractMyValues(*displacement, patch_displacement, patch_dof_gid_);
 
   // Create the full length FAD types.
+  face_position_ = GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::Initialize(
+      this->GetDrtFaceElement());
   const unsigned int n_patch_dof = patch_dof_gid_.size();
   std::vector<scalar_type> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
@@ -59,7 +67,8 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
         CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(n_patch_dof + n_dof_other_element_,
             n_dof_other_element_ + i_dof, patch_displacement[i_dof]);
     if (i_dof < surface::n_dof_)
-      face_position_(i_dof) = face_reference_position_(i_dof) + patch_displacement_fad[i_dof];
+      face_position_.element_position_(i_dof) =
+          face_reference_position_.element_position_(i_dof) + patch_displacement_fad[i_dof];
   }
 }
 
@@ -71,13 +80,16 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFacePositi
     const CORE::LINALG::Matrix<2, 1, double>& xi, CORE::LINALG::Matrix<3, 1, double>& r,
     bool reference) const
 {
-  CORE::LINALG::Matrix<surface::n_dof_, 1, double> position_double;
   if (reference)
-    position_double = CORE::FADUTILS::CastToDouble(face_reference_position_);
+  {
+    EvaluatePosition<surface>(xi, face_reference_position_, r);
+  }
   else
-    position_double = CORE::FADUTILS::CastToDouble(face_position_);
-
-  EvaluatePosition<surface>(xi, position_double, r, drt_face_element_.get());
+  {
+    CORE::LINALG::Matrix<3, 1, scalar_type> r_ad;
+    EvaluatePosition<surface>(xi, face_position_, r_ad);
+    r = CORE::FADUTILS::CastToDouble(r_ad);
+  }
 }
 
 /**
@@ -96,13 +108,16 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFaceNormal
   else
   {
     // Calculate the normals on the face geometry.
-    CORE::LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
-    if (reference)
-      position_double = CORE::FADUTILS::CastToDouble(face_reference_position_);
-    else
-      position_double = CORE::FADUTILS::CastToDouble(face_position_);
+    auto get_position_double = [&]()
+    {
+      if (reference)
+        return ElementDataToDouble<surface>::ToDouble(face_reference_position_);
+      else
+        return ElementDataToDouble<surface>::ToDouble(face_position_);
+    };
 
-    EvaluateSurfaceNormal<surface>(xi, position_double, n, drt_face_element_.get());
+    const auto position_double = get_position_double();
+    EvaluateFaceNormal<surface>(xi, position_double, n);
   }
 }
 
@@ -234,6 +249,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
   DRT::UTILS::ExtractMyValues(*displacement, patch_displacement, this->patch_dof_gid_);
 
   // Create the full length FAD types.
+  this->face_position_ = GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::Initialize(
+      this->GetDrtFaceElement());
   const unsigned int n_patch_dof = this->patch_dof_gid_.size();
   std::vector<scalar_type> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
@@ -242,8 +259,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
         n_patch_dof + this->n_dof_other_element_, this->n_dof_other_element_ + i_dof,
         patch_displacement[i_dof]);
     if (i_dof < surface::n_dof_)
-      this->face_position_(i_dof) =
-          this->face_reference_position_(i_dof) + patch_displacement_fad[i_dof];
+      this->face_position_.element_position_(i_dof) =
+          this->face_reference_position_.element_position_(i_dof) + patch_displacement_fad[i_dof];
   }
 
   if (evaluate_current_normals_)
@@ -254,14 +271,12 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
         CORE::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
 
     // Loop over the connected faces and evaluate their nodal normals.
-    CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type> q_other_face;
     CORE::LINALG::Matrix<surface::n_nodes_, 1, CORE::LINALG::Matrix<3, 1, scalar_type>> normals;
     CORE::LINALG::Matrix<3, 1, scalar_type> temp_normal;
     for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
     {
       for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, i_node);
-      EvaluateSurfaceNormal<surface>(
-          xi, this->face_position_, normals(i_node), this->drt_face_element_.get());
+      EvaluateFaceNormal<surface>(xi, this->face_position_, normals(i_node));
     }
     for (const auto& value : connected_faces_)
     {
@@ -269,28 +284,32 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
       const Teuchos::RCP<const my_type>& face_element =
           Teuchos::rcp_dynamic_cast<const my_type>(face_elements.at(value.first));
 
-      // Get the vector with the dof values for this element.
+      // Setup an element data container for the other element, but with the FAD type and ordering
+      // for this patch
+      auto q_other_face = InitializeElementData<surface, scalar_type>::Initialize(
+          face_element->GetDrtFaceElement());
       for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
+      {
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         {
           // We need to add the reference position of the other element.
-          q_other_face(i_dim + 3 * i_node) =
-              face_element->GetFaceReferencePosition()(i_dim + 3 * i_node) +
+          q_other_face.element_position_(i_dim + 3 * i_node) =
+              face_element->face_reference_position_.element_position_(i_dim + 3 * i_node) +
               patch_displacement_fad[i_dim + 3 * value.second.my_node_patch_lid_[i_node]];
         }
+      }
 
       // Evaluate the normals at the shared nodes.
       for (const auto& node_map_iterator : value.second.node_lid_map_)
       {
         for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
           xi(i_dim) = nodal_coordinates(i_dim, node_map_iterator.first);
-        EvaluateSurfaceNormal<surface>(
-            xi, q_other_face, temp_normal, face_element->GetDrtFaceElement());
+        EvaluateFaceNormal<surface>(xi, q_other_face, temp_normal);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           normals(node_map_iterator.second)(i_dim) += temp_normal(i_dim);
       }
     }
-    AverageNodalNormals(normals, current_normals_);
+    AverageNodalNormals(normals, this->face_position_.nodal_normals_);
   }
 }
 
@@ -303,7 +322,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
     Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Parameter coordinates corresponding to LIDs of nodes.
-  CORE::LINALG::Matrix<3, 1, double> xi(true);
+  CORE::LINALG::Matrix<2, 1, double> xi(true);
   CORE::LINALG::SerialDenseMatrix nodal_coordinates =
       CORE::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
 
@@ -313,8 +332,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, i_node);
-    EvaluateSurfaceNormal<surface>(
-        xi, this->face_reference_position_, normals(i_node), this->drt_face_element_.get());
+    EvaluateFaceNormal<surface>(xi, this->face_reference_position_, normals(i_node));
   }
   for (const auto& value : connected_faces_)
   {
@@ -327,13 +345,12 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
     {
       for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
         xi(i_dim) = nodal_coordinates(i_dim, node_map_iterator.first);
-      EvaluateSurfaceNormal<surface>(xi, face_element->face_reference_position_, temp_normal,
-          face_element->GetDrtFaceElement());
+      EvaluateFaceNormal<surface>(xi, face_element->face_reference_position_, temp_normal);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         normals(node_map_iterator.second)(i_dim) += temp_normal(i_dim);
     }
   }
-  AverageNodalNormals(normals, this->reference_normals_);
+  AverageNodalNormals(normals, this->face_reference_position_.nodal_normals_);
 }
 
 /**
@@ -346,26 +363,22 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::EvaluateFaceN
 {
   if (averaged_normal)
   {
-    CORE::LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
-    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
-    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double_ptr;
-
     if (reference)
-      normals_double_ptr = VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double);
-    else
-      normals_double_ptr = VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double);
-
-    if (normals_double_ptr != nullptr)
     {
-      // Return the normal calculated with the averaged normal field.
-      EvaluateSurfaceNormal<surface>(
-          xi, position_double, n, this->drt_face_element_.get(), normals_double_ptr);
+      EvaluateSurfaceNormal<surface>(xi, this->face_reference_position_, n);
     }
     else
     {
-      // Averaged normals are desired, but there is no valid pointer to them -> return a zero
-      // vector.
-      n.PutScalar(0.);
+      if (evaluate_current_normals_)
+      {
+        CORE::LINALG::Matrix<3, 1, scalar_type> n_ad;
+        EvaluateSurfaceNormal<surface>(xi, this->face_position_, n_ad);
+        n = CORE::FADUTILS::CastToDouble(n_ad);
+      }
+      else
+      {
+        n.PutScalar(0.0);
+      }
     }
   }
   else
@@ -389,7 +402,9 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::AverageNodalN
   {
     normals(i_node).Scale(1.0 / CORE::FADUTILS::VectorNorm(normals(i_node)));
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+    {
       averaged_normals(i_dim + 3 * i_node) = normals(i_node)(i_dim);
+    }
   }
 }
 
@@ -429,15 +444,17 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
   }
 
   // Set the reference position.
-  volume_reference_position_.Clear();
-  this->face_reference_position_.Clear();
+  volume_reference_position_ =
+      GEOMETRYPAIR::InitializeElementData<volume, double>::Initialize(nullptr);
+  this->face_reference_position_ =
+      GEOMETRYPAIR::InitializeElementData<surface, double>::Initialize(nullptr);
   const DRT::Node* const* nodes = this->drt_face_element_->ParentElement()->Nodes();
   for (unsigned int i_node = 0; i_node < volume::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      volume_reference_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
+      volume_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
   for (unsigned int i_dof_surf = 0; i_dof_surf < surface::n_dof_; i_dof_surf++)
-    this->face_reference_position_(i_dof_surf) =
-        volume_reference_position_(surface_dof_lid_map_(i_dof_surf));
+    this->face_reference_position_.element_position_(i_dof_surf) =
+        volume_reference_position_.element_position_(surface_dof_lid_map_(i_dof_surf));
 
   // Surface node to volume node map.
   CORE::LINALG::Matrix<surface::n_nodes_, 1, int> surface_node_lid_map;
@@ -508,7 +525,8 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
     dserror("Could not map face to volume.");
 
   // Calculate the reference normals.
-  CalculateNormals(volume_reference_position_, this->face_reference_position_, reference_normals_);
+  CalculateNormals(volume_reference_position_, this->face_reference_position_,
+      this->face_reference_position_.nodal_normals_);
 }
 
 
@@ -527,18 +545,21 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
   // Create the full length FAD types.
   std::vector<scalar_type> patch_displacement_fad(volume::n_dof_);
 
-  volume_position_.PutScalar(0.0);
+  volume_position_ = GEOMETRYPAIR::InitializeElementData<volume, scalar_type>::Initialize(nullptr);
   for (unsigned int i_dof = 0; i_dof < volume::n_dof_; i_dof++)
   {
-    volume_position_(i_dof) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
-        volume::n_dof_ + this->n_dof_other_element_, this->n_dof_other_element_ + i_dof,
-        volume_displacement[i_dof] + volume_reference_position_(i_dof));
+    volume_position_.element_position_(i_dof) =
+        CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+            volume::n_dof_ + this->n_dof_other_element_, this->n_dof_other_element_ + i_dof,
+            volume_displacement[i_dof] + volume_reference_position_.element_position_(i_dof));
   }
-  this->face_position_.PutScalar(0.0);
+  this->face_position_ =
+      GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::Initialize(nullptr);
   for (unsigned int i_dof = 0; i_dof < surface::n_dof_; i_dof++)
-    this->face_position_(i_dof) = volume_position_(surface_dof_lid_map_(i_dof));
+    this->face_position_.element_position_(i_dof) =
+        volume_position_.element_position_(surface_dof_lid_map_(i_dof));
 
-  CalculateNormals(volume_position_, this->face_position_, current_normals_);
+  CalculateNormals(volume_position_, this->face_position_, this->face_position_.nodal_normals_);
 }
 
 /**
@@ -547,9 +568,9 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
 template <typename surface, typename scalar_type, typename volume>
 template <typename scalar_type_normal>
 void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
-    volume>::CalculateNormals(const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type_normal>&
+    volume>::CalculateNormals(const GEOMETRYPAIR::ElementData<volume, scalar_type_normal>&
                                   volume_position,
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type_normal>& surface_position,
+    const GEOMETRYPAIR::ElementData<surface, scalar_type_normal>& surface_position,
     CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const
 {
   // Parameter coordinates corresponding to LIDs of nodes.
@@ -590,26 +611,15 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
 {
   if (averaged_normal)
   {
-    CORE::LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
-    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
-    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double_ptr;
-
     if (reference)
-      normals_double_ptr = VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double);
-    else
-      normals_double_ptr = VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double);
-
-    if (normals_double_ptr != nullptr)
     {
-      // Return the normal calculated with the averaged normal field.
-      EvaluateSurfaceNormal<surface>(
-          xi, position_double, n, this->drt_face_element_.get(), normals_double_ptr);
+      EvaluateSurfaceNormal<surface>(xi, this->face_reference_position_, n);
     }
     else
     {
-      // Averaged normals are desired, but there is no valid pointer to them -> return a zero
-      // vector.
-      n.PutScalar(0.);
+      CORE::LINALG::Matrix<3, 1, scalar_type> n_ad;
+      EvaluateSurfaceNormal<surface>(xi, this->face_position_, n_ad);
+      n = CORE::FADUTILS::CastToDouble(n_ad);
     }
   }
   else

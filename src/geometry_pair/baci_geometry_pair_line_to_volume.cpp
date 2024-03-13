@@ -10,7 +10,7 @@
 #include "baci_geometry_pair_line_to_volume.hpp"
 
 #include "baci_geometry_pair_constants.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
 #include "baci_linalg_utils_densematrix_inverse.hpp"
 #include "baci_utils_exceptions.hpp"
@@ -45,7 +45,7 @@ GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GeometryPairL
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointToOther(
     const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
-    const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    const ElementData<volume, scalar_type>& element_data_volume,
     CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
 {
   // Initialize data structures
@@ -73,7 +73,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
     while (counter < CONSTANTS::local_newton_iter_max)
     {
       // Get the point coordinates on the volume.
-      GEOMETRYPAIR::EvaluatePosition<volume>(xi, q_volume, r_volume, Element2());
+      GEOMETRYPAIR::EvaluatePosition<volume>(xi, element_data_volume, r_volume);
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$
       residuum = r_volume;
@@ -94,7 +94,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
       if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
 
       // Get the jacobian.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<volume>(xi, q_volume, J_J_inv, Element2());
+      GEOMETRYPAIR::EvaluatePositionDerivative1<volume>(xi, element_data_volume, J_J_inv);
 
       // Solve the linearized system.
       if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
@@ -118,8 +118,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::IntersectLineWithSurface(
-    const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<volume, scalar_type>& element_data_volume,
     const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
     CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
 {
@@ -162,8 +162,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
     while (counter < CONSTANTS::local_newton_iter_max)
     {
       // Get the point coordinates on the line and volume.
-      EvaluatePosition<line>(eta, q_line, r_line, Element1());
-      EvaluatePosition<volume>(xi, q_volume, r_volume, Element2());
+      EvaluatePosition<line>(eta, element_data_line, r_line);
+      EvaluatePosition<volume>(xi, element_data_volume, r_volume);
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$ and $xi(i) - value = R_{surf}$
       J_J_inv.PutScalar(0.);
@@ -203,8 +203,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
       if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
 
       // Get the positional derivatives.
-      EvaluatePositionDerivative1<line>(eta, q_line, dr_line, Element1());
-      EvaluatePositionDerivative1<volume>(xi, q_volume, dr_volume, Element2());
+      EvaluatePositionDerivative1<line>(eta, element_data_line, dr_line);
+      EvaluatePositionDerivative1<volume>(xi, element_data_volume, dr_volume);
 
       // Fill up the jacobian.
       for (unsigned int i = 0; i < 3; i++)
@@ -239,8 +239,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::IntersectLineWithOther(
-    const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<volume, scalar_type>& element_data_volume,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
     const scalar_type& eta_start, const CORE::LINALG::Matrix<3, 1, scalar_type>& xi_start) const
 {
@@ -283,8 +283,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
     eta = eta_start;
 
     // Intersect the line with the surface.
-    IntersectLineWithSurface(q_line, q_volume, face_fixed_parameters[i], face_fixed_values[i], eta,
-        xi, intersection_found);
+    IntersectLineWithSurface(element_data_line, element_data_volume, face_fixed_parameters[i],
+        face_fixed_values[i], eta, xi, intersection_found);
 
     // If a valid intersection is found, add it to the output vector.
     if (intersection_found == ProjectionResult::projection_found_valid)

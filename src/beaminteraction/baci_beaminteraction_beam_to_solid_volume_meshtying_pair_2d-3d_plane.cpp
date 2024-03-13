@@ -13,7 +13,8 @@ simplifies the triad construction and torsion free beam elements can be used.
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_beaminteraction_geometry_pair_access_traits.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "baci_geometry_pair_line_to_volume_gauss_point_projection_cross_section.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
@@ -33,8 +34,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::PreE
   // Call PreEvaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
   {
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    CORE::LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->PreEvaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -53,8 +54,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    CORE::LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -102,14 +103,13 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
 
     // Get the jacobian in the reference configuration.
     GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-        projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+        projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
     beam_jacobian = 0.5 * dr_beam_ref.Norm2();
 
     // Get the current positions on beam and solid.
-    GEOMETRYPAIR::EvaluatePosition<beam>(
-        projected_gauss_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+    GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
     GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(
-        projected_gauss_point.GetEta(), this->ele1pos_, triad, this->Element1());
+        projected_gauss_point.GetEta(), this->ele1pos_, triad);
     r_cross_section_ref(0) = 0.0;
     r_cross_section_ref(1) = projected_gauss_point.GetEtaCrossSection()(0);
     r_cross_section_ref(2) = projected_gauss_point.GetEtaCrossSection()(1);
@@ -198,15 +198,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::GetT
 {
   if (reference)
   {
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    CORE::LINALG::Matrix<solid::n_dof_, 1, double> dummy;
+    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<solid, double> dummy;
     this->GetCouplingReferencePosition(beam_coupling_ref, dummy);
-    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(xi, beam_coupling_ref, triad, this->Element1());
+    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(xi, beam_coupling_ref, triad);
   }
   else
   {
     GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(
-        xi, CORE::FADUTILS::CastToDouble(this->ele1pos_), triad, this->Element1());
+        xi, GEOMETRYPAIR::ElementDataToDouble<beam>::ToDouble(this->ele1pos_), triad);
   }
 }
 

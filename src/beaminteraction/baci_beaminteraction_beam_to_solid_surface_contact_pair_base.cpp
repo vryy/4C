@@ -16,8 +16,8 @@
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 #include "baci_beaminteraction_calc_utils.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_element_faces.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
 #include "baci_geometry_pair_factory.hpp"
 #include "baci_geometry_pair_line_to_surface.hpp"
 #include "baci_geometry_pair_scalar_types.hpp"
@@ -52,7 +52,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, solid
   // Set the current position of the beam element.
   const int n_patch_dof = face_element_->GetPatchGID().size();
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-    this->ele1pos_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele1pos_.element_position_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + n_patch_dof, i, beam_centerline_dofvec[i]);
 }
 
@@ -63,8 +63,8 @@ template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::PreEvaluate()
 {
   // Call PreEvaluate on the geometry Pair.
-  CastGeometryPair()->PreEvaluate(this->ele1pos_, this->face_element_->GetFacePosition(),
-      this->line_to_3D_segments_, this->face_element_->GetCurrentNormals());
+  CastGeometryPair()->PreEvaluate(
+      this->ele1pos_, this->face_element_->GetFaceElementData(), this->line_to_3D_segments_);
 }
 
 /**

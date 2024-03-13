@@ -14,7 +14,8 @@
 
 #include "baci_beam3_base.hpp"
 #include "baci_beam3_reissner.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "baci_geometry_pair_line_to_volume_segmentation_geometry_functions_test.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
@@ -49,8 +50,7 @@ namespace
      * @param geometry_pairs (out) Vector with the geometry pairs.
      * @param q_line_elements (in) Vector of DOF vectors for the positions and tangents of the line
      * element.
-     * @param q_rot_line_elements (in) Vector with rotation vectors of the line nodes, in following
-     * order: 0, 2, 1
+     * @param line_ref_lengths (in) Reference length of the beam elements.
      * @param q_volume_elements (in) Vector of DOF vectors for the positions of the volume element.
      * @param segments_vector (out) Vector with found segments for each pair.
      */
@@ -59,7 +59,7 @@ namespace
         std::vector<Teuchos::RCP<
             GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>>>& geometry_pairs,
         const std::vector<CORE::LINALG::Matrix<el1::n_dof_, 1, double>>& q_line_elements,
-        const std::vector<CORE::LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
+        const std::vector<double>& line_ref_lengths,
         const std::vector<CORE::LINALG::Matrix<el2::n_dof_, 1, double>>& q_volume_elements,
         std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>>& segments_vector)
     {
@@ -69,28 +69,19 @@ namespace
       if (volume_elements_.size() != q_volume_elements.size())
         dserror("Size for volume elements and volume q does not match!");
 
-      // Set the reference length for the beam.
+      // Get the element data containers
+      std::vector<GEOMETRYPAIR::ElementData<el1, double>> q_line(q_line_elements.size());
       for (unsigned int i_beam = 0; i_beam < line_elements_.size(); i_beam++)
       {
-        // Split up the rotational and positional DOF, needed to calculate the reference length.
-        std::vector<double> xrefe(6);
-        for (unsigned int j = 0; j < 2; j++)
-          for (unsigned int i = 0; i < 3; i++)
-            xrefe[i + 3 * j] = q_line_elements[i_beam](i + j * 6);
-
-        // Get the rotational vector.
-        std::vector<double> rotrefe(9);
-        for (unsigned int i = 0; i < 9; i++) rotrefe[i] = q_rot_line_elements[i_beam](i);
-
-        // Cast beam element.
-        Teuchos::RCP<DRT::ELEMENTS::Beam3r> beam_element =
-            Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Beam3r>(line_elements_[i_beam], true);
-
-        // Set the hermitian interpolation.
-        beam_element->SetCenterlineHermite(true);
-
-        // Calculate the reference length.
-        beam_element->SetUpReferenceGeometry<3, 2, 2>(xrefe, rotrefe);
+        q_line[i_beam].element_position_ = q_line_elements[i_beam];
+        q_line[i_beam].shape_function_data_.ref_length_ = line_ref_lengths[i_beam];
+      }
+      std::vector<GEOMETRYPAIR::ElementData<el2, double>> q_volume(q_volume_elements.size());
+      for (unsigned int i_volume = 0; i_volume < volume_elements_.size(); i_volume++)
+      {
+        q_volume[i_volume] = GEOMETRYPAIR::InitializeElementData<el2, double>::Initialize(
+            volume_elements_[i_volume].get());
+        q_volume[i_volume].element_position_ = q_volume_elements[i_volume];
       }
 
       // Create the geometry pairs.
@@ -113,7 +104,7 @@ namespace
         for (unsigned int i_volume = 0; i_volume < q_volume_elements.size(); i_volume++)
         {
           geometry_pairs[counter]->Evaluate(
-              q_line_elements[i_line], q_volume_elements[i_volume], segments_vector[counter]);
+              q_line[i_line], q_volume[i_volume], segments_vector[counter]);
           counter++;
         }
       }
@@ -137,7 +128,7 @@ namespace
   {
     // Definition of variables for this test case.
     std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
-    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<double> line_ref_lengths;
     std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
@@ -145,14 +136,14 @@ namespace
 
     // Get the geometry.
     XtestLineAlongElementSurfaceGeometry(
-        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+        line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
     CreateEvaluatePairs(
-        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+        geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
     {
@@ -169,7 +160,8 @@ namespace
   }
 
   /**
-   * Test a non straight beam that lies between two volume elements. The elements are relatively
+   * Test a non straight beam that lies between two volume elements. The elements are
+   relatively
    * small. This is to check that the parameter coordinates are converged in the local Newton
    * iterations.
    */
@@ -177,7 +169,7 @@ namespace
   {
     // Definition of variables for this test case.
     std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
-    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<double> line_ref_lengths;
     std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
@@ -185,14 +177,14 @@ namespace
 
     // Get the geometry.
     XtestLineInSmallElementsGeometry(
-        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+        line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
     CreateEvaluatePairs(
-        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+        geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
     {
@@ -218,7 +210,7 @@ namespace
   {
     // Definition of variables for this test case.
     std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
-    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<double> line_ref_lengths;
     std::vector<CORE::LINALG::Matrix<81, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>>>
@@ -226,14 +218,14 @@ namespace
 
     // Get the geometry.
     XtestMultipleIntersectionsHex27Geometry(
-        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+        line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
     CreateEvaluatePairs(
-        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+        geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
     {
@@ -259,7 +251,7 @@ namespace
   {
     // Definition of variables for this test case.
     std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
-    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<double> line_ref_lengths;
     std::vector<CORE::LINALG::Matrix<30, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>>>
@@ -267,14 +259,14 @@ namespace
 
     // Get the geometry.
     XtestMultipleIntersectionsTet10Geometry(
-        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+        line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
     CreateEvaluatePairs(
-        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+        geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
     {
@@ -293,7 +285,6 @@ namespace
     }
   }
 
-
   /**
    * Test a beam that has multiple intersections with a NURBS27 element.
    */
@@ -301,7 +292,7 @@ namespace
   {
     // Definition of variables for this test case.
     std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
-    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<double> line_ref_lengths;
     std::vector<CORE::LINALG::Matrix<81, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>>>
@@ -317,11 +308,11 @@ namespace
 
     // Get the geometry.
     XtestMultipleIntersectionsNurbs27Geometry(line_elements_, volume_elements_, q_line_elements,
-        q_rot_line_elements, q_volume_elements, structdis);
+        line_ref_lengths, q_volume_elements, structdis);
 
     // Create and evaluate the geometry pairs.
     CreateEvaluatePairs(
-        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+        geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
     {
@@ -343,7 +334,7 @@ namespace
   {
     // Definition of variables for this test case.
     std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
-    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<double> line_ref_lengths;
     std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
@@ -351,14 +342,14 @@ namespace
 
     // Get the geometry.
     XtestCreateGeometrySingleHex8WithPreCurvedLine(
-        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+        line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
     CreateEvaluatePairs(
-        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+        geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
     {
@@ -384,7 +375,7 @@ namespace
   {
     // Definition of variables for this test case.
     std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
-    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<double> line_ref_lengths;
     std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
@@ -392,7 +383,7 @@ namespace
 
     // Get the geometry.
     XtestCreateGeometrySingleHex8WithPreCurvedLine(
-        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+        line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // We change the default settings here, to run into the case where the obtained segment has
     // Gauss points that do not project valid
@@ -409,7 +400,7 @@ namespace
 
     // Create and evaluate the geometry pairs.
     CreateEvaluatePairs(
-        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+        geometry_pairs, q_line_elements, line_ref_lengths, q_volume_elements, segments_vector);
 
     // Check results.
     {
@@ -428,7 +419,7 @@ namespace
   {
     // Definition of variables for this test case.
     std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
-    std::vector<CORE::LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<double> line_ref_lengths;
     std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
@@ -436,7 +427,7 @@ namespace
 
     // Get the geometry.
     XtestCreateGeometrySingleHex8WithPreCurvedLine(
-        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
+        line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // We change the default settings here, to run into the case where the obtained segment has
     // Gauss points that do not project valid
@@ -451,7 +442,7 @@ namespace
 
     // Create and evaluate the geometry pairs.
     BACI_EXPECT_THROW_WITH_MESSAGE(CreateEvaluatePairs(geometry_pairs, q_line_elements,
-                                       q_rot_line_elements, q_volume_elements, segments_vector),
+                                       line_ref_lengths, q_volume_elements, segments_vector),
         CORE::Exception, "Error when projecting the Gauss points.");
   }
 }  // namespace

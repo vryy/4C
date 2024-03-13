@@ -44,8 +44,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, 
   if (!this->meshtying_is_evaluated_)
   {
     this->CastGeometryPair()->Evaluate(this->ele1posref_,
-        this->face_element_->GetFaceReferencePosition(), this->line_to_3D_segments_,
-        this->face_element_->GetReferenceNormals());
+        this->face_element_->GetFaceReferenceElementData(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 

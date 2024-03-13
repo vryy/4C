@@ -9,7 +9,7 @@
 
 #include "baci_geometry_pair_line_to_volume_segmentation.hpp"
 
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_projection.hpp"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
@@ -46,13 +46,13 @@ GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line,
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>::Evaluate(
-    const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<volume, scalar_type>& element_data_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Call the PreEvaluate method of the general Gauss point projection class.
   LineTo3DSegmentation<GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>>::Evaluate(
-      this, q_line, q_volume, segments);
+      this, element_data_line, element_data_volume, segments);
 }
 
 
