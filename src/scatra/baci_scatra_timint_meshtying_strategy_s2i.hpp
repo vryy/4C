@@ -17,6 +17,7 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "baci_inpar_s2i.hpp"
 #include "baci_inpar_scatra.hpp"
+#include "baci_io_runtime_csv_writer.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_scatra_timint_meshtying_strategy_base.hpp"
 
@@ -280,6 +281,9 @@ namespace SCATRA
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     void Update() const override;
 
+    //! write integrated interface flux on slave side of s2i kintetics condition to csv file
+    void OutputInterfaceFlux() const;
+
    protected:
     void EquipExtendedSolverWithNullSpaceInfo() const override;
 
@@ -467,6 +471,12 @@ namespace SCATRA
 
     //! all equilibration of global system matrix and RHS is done in here
     Teuchos::RCP<CORE::LINALG::Equilibration> equilibration_;
+
+    //! output csv writer for interface flux for each slave side s2i condition
+    std::optional<IO::RuntimeCsvWriter> runtime_csvwriter_;
+
+    //! write integrated interface flux on slave side of s2i kintetics condition to csv file
+    const bool output_interface_flux_;
 
    private:
     //! copy constructor

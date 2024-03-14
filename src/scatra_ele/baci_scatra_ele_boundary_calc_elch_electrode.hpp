@@ -265,8 +265,8 @@ namespace DRT
 
       double GetValence(const Teuchos::RCP<const MAT::Material>& material, int k) const override;
 
-      void CalcS2ICouplingFlux(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      void CalcS2ICouplingFlux(const DRT::FaceElement* ele, const Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::FaceElement::LocationArray& la,
           CORE::LINALG::SerialDenseVector& scalars) override;
 
       //! evaluate factor F/RT

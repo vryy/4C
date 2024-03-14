@@ -1125,14 +1125,33 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2ICouplingFlux(
-    const DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& scalars)
+    const DRT::FaceElement* ele, const Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    CORE::LINALG::SerialDenseVector& scalars)
 {
   // get condition specific parameters
+  const auto condition_type = my::scatraparamsboundary_->ConditionType();
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const std::vector<int>* onoff = my::scatraparamsboundary_->OnOff();
+  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
+  const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
+  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphac = my::scatraparamsboundary_->AlphaC();
   const double resistance = my::scatraparamsboundary_->Resistance();
+  const double itemaxmimplicitBV = my::scatraparamsboundary_->ItemaximplicitBV();
+  const double convtolimplicitBV = my::scatraparamsboundary_->ConvtolimplicitBV();
+  const std::vector<int>* onoff = my::scatraparamsboundary_->OnOff();
+  const bool only_positive_fluxes =
+      params.isParameter("only_positive_fluxes") and params.get<bool>("only_positive_fluxes");
+
   const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+
+  // access material of parent element
+  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::null;
+  if (ele->ParentElement()->Material()->MaterialType() == INPAR::MAT::MaterialType::m_electrode)
+  {
+    matelectrode =
+        Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+  }
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   this->ExtractNodeValues(discretization, la);
@@ -1152,30 +1171,149 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
 
+    CORE::LINALG::Matrix<nen_, 1> eslavetempnp(true);
+    CORE::LINALG::Matrix<nen_, 1> emastertempnp(true);
+    if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
+    {
+      my::ExtractNodeValues(
+          eslavetempnp, discretization, la, "islavetemp", my::scatraparams_->NdsThermo());
+      my::ExtractNodeValues(
+          emastertempnp, discretization, la, "imastertemp", my::scatraparams_->NdsThermo());
+    }
+
+    const double eslavephiint = my::funct_.Dot(my::ephinp_[0]);
     const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
+    const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
     const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
+    const double eslavetempint = my::funct_.Dot(eslavetempnp);
+    const double emastertempint = my::funct_.Dot(emastertempnp);
+
+    const double etempint = 0.5 * (eslavetempint + emastertempint);
+
+    double frt = 0.0;
+    if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
+    {
+      const double gasconstant =
+          DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+      frt = faraday / (etempint * gasconstant);
+    }
+    else
+      frt = GetFRT();
+
+    const double detF = my::CalculateDetFOfParentElement(ele, intpoints.Point(gpid));
 
     switch (kineticmodel)
     {
+        // Butler-Volmer kinetics
+      case INPAR::S2I::kinetics_butlervolmer:
+      case INPAR::S2I::kinetics_butlervolmerlinearized:
+      case INPAR::S2I::kinetics_butlervolmerpeltier:
+      case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
+      case INPAR::S2I::kinetics_butlervolmerreduced:
+      case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
+      case INPAR::S2I::kinetics_butlervolmerreducedlinearized:
+      case INPAR::S2I::kinetics_butlervolmerresistance:
+      case INPAR::S2I::kinetics_butlervolmerreducedresistance:
+      {
+        if (matelectrode == Teuchos::null)
+          dserror("Invalid electrode material for scatra-scatra interface coupling!");
+
+        // extract saturation value of intercalated lithium concentration from electrode material
+        const double cmax = matelectrode->CMax();
+
+        // equilibrium electric potential difference at electrode surface
+        const double epd =
+            matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt, detF);
+
+        // skip further computation in case equilibrium electric potential difference is outside
+        // physically meaningful range
+        if (std::isinf(epd)) break;
+
+        // Butler-Volmer exchange mass flux density
+        const double j0 = CalculateButlerVolmerExchangeMassFluxDensity(
+            kr, alphaa, alphac, cmax, eslavephiint, emasterphiint, kineticmodel, condition_type);
+
+        switch (kineticmodel)
+        {
+          case INPAR::S2I::kinetics_butlervolmer:
+          case INPAR::S2I::kinetics_butlervolmerlinearized:
+          case INPAR::S2I::kinetics_butlervolmerpeltier:
+          case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
+          case INPAR::S2I::kinetics_butlervolmerreduced:
+          case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
+          case INPAR::S2I::kinetics_butlervolmerreducedlinearized:
+          {
+            // electrode-electrolyte overpotential at integration point
+            const double eta = eslavepotint - emasterpotint - epd;
+
+            // exponential Butler-Volmer terms
+            const double expterm1 = std::exp(alphaa * frt * eta);
+            const double expterm2 = std::exp(-alphac * frt * eta);
+            const double expterm = expterm1 - expterm2;
+
+            // core residual term associated with Butler-Volmer mass flux density
+            const double j = IsButlerVolmerLinearized(kineticmodel) ? j0 * frt * eta : j0 * expterm;
+
+            if (only_positive_fluxes and j < 0.0) break;
+
+            const double jfac = fac * j;
+
+            for (int vi = 0; vi < nen_; ++vi)
+            {
+              const double jfac_funct = jfac * my::funct_(vi);
+
+              scalars[0] += jfac_funct;
+              scalars[1] += numelectrons * jfac_funct;
+            }
+            break;
+          }
+
+          case INPAR::S2I::kinetics_butlervolmerresistance:
+          case INPAR::S2I::kinetics_butlervolmerreducedresistance:
+          {
+            // compute Butler-Volmer mass flux density via Newton-Raphson method
+            const double j =
+                CalculateModifiedButlerVolmerMassFluxDensity(j0, alphaa, alphac, frt, eslavepotint,
+                    emasterpotint, epd, resistance, itemaxmimplicitBV, convtolimplicitBV, faraday);
+
+            if (only_positive_fluxes and j < 0.0) break;
+
+            const double jfac = fac * j;
+
+            for (int vi = 0; vi < nen_; ++vi)
+            {
+              const double jfac_funct = jfac * my::funct_(vi);
+
+              scalars[0] += jfac_funct;
+              scalars[1] += numelectrons * jfac_funct;
+            }
+
+            break;
+          }  // case INPAR::S2I::kinetics_butlervolmerresistance:
+          default:
+          {
+            dserror("something went wrong");
+          }
+        }
+        break;
+      }
       case INPAR::S2I::kinetics_constantinterfaceresistance:
       {
         const double inv_massfluxresistance = 1.0 / (resistance * faraday);
-        const int num_electrons = my::scatraparamsboundary_->NumElectrons();
 
         const double j = (eslavepotint - emasterpotint) * inv_massfluxresistance;
 
         // only add positive fluxes
-        if (j > 0.0)
+        if (only_positive_fluxes and j < 0.0) break;
+
+        const double jfac = fac * j;
+
+        for (int vi = 0; vi < nen_; ++vi)
         {
-          const double jfac = fac * j;
+          const double jfac_funct = jfac * my::funct_(vi);
 
-          for (int vi = 0; vi < nen_; ++vi)
-          {
-            const double jfac_funct = jfac * my::funct_(vi);
-
-            if ((*onoff)[0] == 1) scalars[0] += jfac_funct;
-            if ((*onoff)[1] == 1) scalars[1] += num_electrons * jfac_funct;
-          }
+          if ((*onoff)[0] == 1) scalars[0] += jfac_funct;
+          if ((*onoff)[1] == 1) scalars[1] += numelectrons * jfac_funct;
         }
       }
 
