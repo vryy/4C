@@ -860,12 +860,6 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(const DR
   CentroidTransformation<celltype> centroid_transformation =
       EvaluateCentroidTransformation<celltype>(nodal_coordinates);
 
-  if (!ele.IsParamsInterface())
-  {
-    // Update alpha only in old time integration scheme
-    UpdateAlpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
-  }
-
   EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(nodal_coordinates, params);
 
   ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
@@ -915,12 +909,6 @@ double DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateInternalEnerg
 
   CentroidTransformation<celltype> centroid_transformation =
       EvaluateCentroidTransformation<celltype>(nodal_coordinates);
-
-  if (!ele.IsParamsInterface())
-  {
-    // Update alpha only in old time integration scheme
-    UpdateAlpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
-  }
 
   ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
