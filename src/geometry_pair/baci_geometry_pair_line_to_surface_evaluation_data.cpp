@@ -11,6 +11,7 @@
 
 #include "baci_geometry_pair_element_faces.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
 

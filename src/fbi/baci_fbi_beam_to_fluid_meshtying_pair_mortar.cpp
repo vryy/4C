@@ -13,7 +13,8 @@ functions.
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 #include "baci_fbi_beam_to_fluid_meshtying_output_params.hpp"
 #include "baci_fbi_beam_to_fluid_mortar_manager.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_volume.hpp"
 #include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
@@ -88,7 +89,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
@@ -97,12 +98,11 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
       N_mortar.Clear();
       N_beam.Clear();
       N_fluid.Clear();
-      mortar::EvaluateShapeFunction(
-          N_mortar, projected_gauss_point.GetEta(), std::integral_constant<unsigned int, 1>{});
-      beam::EvaluateShapeFunction(N_beam, projected_gauss_point.GetEta(),
-          std::integral_constant<unsigned int, 1>{}, this->Element1());
-      fluid::EvaluateShapeFunction(N_fluid, projected_gauss_point.GetXi(),
-          std::integral_constant<unsigned int, 3>{}, this->Element2());
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::Evaluate(
+          N_mortar, projected_gauss_point.GetEta());
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+          N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
+      GEOMETRYPAIR::EvaluateShapeFunction<fluid>::Evaluate(N_fluid, projected_gauss_point.GetXi());
 
       // Fill in the local templated mortar matrix D.
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
@@ -162,7 +162,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
-    CORE::LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
+    auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
     CORE::LINALG::Matrix<3, 1, scalar_type> current_beamposition;
     CORE::LINALG::Matrix<3, 1, scalar_type> ref_beamposition;
     CORE::LINALG::Matrix<3, 1, scalar_type> beamdisplacement;
@@ -184,7 +184,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
     mortar_manager->LocationVector(this_rcp, lambda_row);
     DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
-      q_lambda(i_dof) = lambda_pair[i_dof];
+      q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
     // Add the discrete values of the Lagrange multipliers.
     if (visualization_discret != Teuchos::null)
@@ -202,9 +202,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
 
         // Get position and displacement of the mortar node.
         GEOMETRYPAIR::EvaluatePosition<beam>(
-            xi_mortar_node(0), this->ele1pos_, current_beamposition, this->Element1());
+            xi_mortar_node(0), this->ele1pos_, current_beamposition);
         GEOMETRYPAIR::EvaluatePosition<beam>(
-            xi_mortar_node(0), this->ele1posref_, ref_beamposition, this->Element1());
+            xi_mortar_node(0), this->ele1posref_, ref_beamposition);
         beamdisplacement = current_beamposition;
         beamdisplacement -= ref_beamposition;
 
@@ -249,10 +249,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
           // Get the position, displacement and lambda value at the current point.
           xi = segment.GetEtaA() +
                i_curve_segment * (segment.GetEtaB() - segment.GetEtaA()) / (double)mortar_segments;
-          GEOMETRYPAIR::EvaluatePosition<beam>(
-              xi, this->ele1pos_, current_beamposition, this->Element1());
-          GEOMETRYPAIR::EvaluatePosition<beam>(
-              xi, this->ele1posref_, ref_beamposition, this->Element1());
+          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1pos_, current_beamposition);
+          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1posref_, ref_beamposition);
           beamdisplacement = current_beamposition;
           beamdisplacement -= ref_beamposition;
           GEOMETRYPAIR::EvaluatePosition<mortar>(xi, q_lambda, lambda_discret);

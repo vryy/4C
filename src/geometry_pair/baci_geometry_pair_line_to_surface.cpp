@@ -9,10 +9,11 @@
 
 #include "baci_geometry_pair_line_to_surface.hpp"
 
+#include "baci_beam3_base.hpp"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "baci_geometry_pair_constants.hpp"
 #include "baci_geometry_pair_element.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_scalar_types.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
 #include "baci_linalg_utils_densematrix_inverse.hpp"
@@ -49,15 +50,14 @@ GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GeometryPai
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ProjectPointToOther(
     const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    const ElementData<surface, scalar_type>& element_data_surface,
     CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
     const bool min_one_iteration) const
 {
   // Initialize data structures
 
   // Approximated size of surface and beam diameter for valid projection check.
-  const scalar_type surface_size = GetSurfaceSize(q_surface);
+  const scalar_type surface_size = GetSurfaceSize(element_data_surface);
   const double beam_radius = GetLineRadius();
 
   // Vectors in 3D.
@@ -79,7 +79,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
     while (counter < CONSTANTS::local_newton_iter_max)
     {
       // Evaluate the position and its derivative on the surface.
-      EvaluateSurfacePositionAndDerivative(q_surface, xi, r_surface, J_J_inv, nodal_normals);
+      EvaluateSurfacePositionAndDerivative(element_data_surface, xi, r_surface, J_J_inv);
 
       // Evaluate the residuum $r_{solid} - r_{point} = R_{pos}$.
       residuum = r_surface;
@@ -125,11 +125,10 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::IntersectLineWithOther(
-    const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<surface, scalar_type>& element_data_surface,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-    const scalar_type& eta_start, const CORE::LINALG::Matrix<3, 1, scalar_type>& xi_start,
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    const scalar_type& eta_start, const CORE::LINALG::Matrix<3, 1, scalar_type>& xi_start) const
 {
   unsigned int n_faces;
   std::vector<unsigned int> face_fixed_parameters;
@@ -153,8 +152,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
     eta = eta_start;
 
     // Intersect the line with the surface.
-    IntersectLineWithSurfaceEdge(q_line, q_surface, face_fixed_parameters[i], face_fixed_values[i],
-        eta, xi, intersection_found, nodal_normals);
+    IntersectLineWithSurfaceEdge(element_data_line, element_data_surface, face_fixed_parameters[i],
+        face_fixed_values[i], eta, xi, intersection_found);
 
     // If a valid intersection is found, add it to the output vector.
     if (intersection_found == ProjectionResult::projection_found_valid)
@@ -170,11 +169,10 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
-    surface>::EvaluateSurfacePositionAndDerivative(const CORE::LINALG::Matrix<surface::n_dof_, 1,
-                                                       scalar_type>& q_surface,
+    surface>::EvaluateSurfacePositionAndDerivative(const ElementData<surface, scalar_type>&
+                                                       element_data_surface,
     const CORE::LINALG::Matrix<3, 1, scalar_type>& xi, CORE::LINALG::Matrix<3, 1, scalar_type>& r,
-    CORE::LINALG::Matrix<3, 3, scalar_type>& dr,
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    CORE::LINALG::Matrix<3, 3, scalar_type>& dr) const
 {
   // Create a nested FAD type.
   using FAD_outer = Sacado::ELRFad::SLFad<scalar_type, 3>;
@@ -185,7 +183,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   CORE::LINALG::Matrix<3, 1, FAD_outer> r_AD;
 
   // Evaluate the position.
-  EvaluateSurfacePosition<surface>(xi_AD, q_surface, r_AD, Element2(), nodal_normals);
+  EvaluateSurfacePosition<surface>(xi_AD, element_data_surface, r_AD);
 
   // Extract the return values from the AD types.
   for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
@@ -200,12 +198,10 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
-    surface>::IntersectLineWithSurfaceEdge(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>&
-                                               q_line,
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    surface>::IntersectLineWithSurfaceEdge(const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<surface, scalar_type>& element_data_surface,
     const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
     CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
     const bool min_one_iteration) const
 {
   // Check the input parameters.
@@ -221,7 +217,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   }
 
   // Approximated size of surface and beam diameter for valid projection check.
-  const scalar_type surface_size = GetSurfaceSize(q_surface);
+  const scalar_type surface_size = GetSurfaceSize(element_data_surface);
   const double beam_radius = GetLineRadius();
 
   // Initialize data structures.
@@ -251,11 +247,11 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
     while (counter < CONSTANTS::local_newton_iter_max)
     {
       // Evaluate the position and its derivative on the line.
-      EvaluatePosition<line>(eta, q_line, r_line, Element1());
-      EvaluatePositionDerivative1<line>(eta, q_line, dr_line, Element1());
+      EvaluatePosition<line>(eta, element_data_line, r_line);
+      EvaluatePositionDerivative1<line>(eta, element_data_line, dr_line);
 
       // Evaluate the position and its derivative on the surface.
-      EvaluateSurfacePositionAndDerivative(q_surface, xi, r_surface, dr_surface, nodal_normals);
+      EvaluateSurfacePositionAndDerivative(element_data_surface, xi, r_surface, dr_surface);
 
       // Evaluate the residuum $r_{surface} - r_{line} = R_{pos}$ and $xi(i) - value = R_{edge}$
       J_J_inv.PutScalar(0.);
@@ -332,7 +328,7 @@ bool GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ValidP
     CORE::LINALG::Matrix<3, 1, scalar_type>& xi, const scalar_type& surface_size,
     const double beam_radius) const
 {
-  // We only need to theck the normal distance if the coordinates are within the surface.
+  // We only need to check the normal distance if the coordinates are within the surface.
   if (!ValidParameter2D<surface>(xi)) return false;
 
   if ((-surface_size < xi(2) and xi(2) < surface_size) or
@@ -360,7 +356,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetL
  */
 template <typename scalar_type, typename line, typename surface>
 scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetSurfaceSize(
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface) const
+    const ElementData<surface, scalar_type>& element_data_surface) const
 {
   // Get the position of the first 3 nodes of the surface.
   CORE::LINALG::Matrix<2, 1, double> xi_corner_node;
@@ -371,7 +367,7 @@ scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>:
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
       xi_corner_node(i_dim) = nodal_coordinates(i_dim, i_node);
-    EvaluatePosition<surface>(xi_corner_node, q_surface, corner_nodes(i_node), Element2());
+    EvaluatePosition<surface>(xi_corner_node, element_data_surface, corner_nodes(i_node));
   }
 
   // Calculate the maximum distance between the three points.
@@ -426,17 +422,14 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetFac
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::PreEvaluate(
-    const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    std::vector<LineSegment<scalar_type>>& segments,
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<surface, scalar_type>& element_data_surface,
+    std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Call PreEvaluate on the double pair.
   std::vector<LineSegment<double>> segments_double;
-  CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> nodal_normals_double(false);
-  geometry_pair_double_->PreEvaluate(CORE::FADUTILS::CastToDouble(q_line),
-      CORE::FADUTILS::CastToDouble(q_surface), segments_double,
-      VectorPointerToVectorDouble(nodal_normals, nodal_normals_double));
+  geometry_pair_double_->PreEvaluate(ElementDataToDouble<line>::ToDouble(element_data_line),
+      ElementDataToDouble<surface>::ToDouble(element_data_surface), segments_double);
 
   // Convert the created double segments to a segment of scalar type.
   segments.clear();
@@ -453,10 +446,9 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::Evaluate(
-    const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    std::vector<LineSegment<scalar_type>>& segments,
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<surface, scalar_type>& element_data_surface,
+    std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Convert the input segments to a segment of scalar type double.
   std::vector<LineSegment<double>> segments_double;
@@ -468,10 +460,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
   }
 
   // Call Evaluate on the double pair.
-  CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> nodal_normals_double(false);
-  geometry_pair_double_->Evaluate(CORE::FADUTILS::CastToDouble(q_line),
-      CORE::FADUTILS::CastToDouble(q_surface), segments_double,
-      VectorPointerToVectorDouble(nodal_normals, nodal_normals_double));
+  geometry_pair_double_->Evaluate(ElementDataToDouble<line>::ToDouble(element_data_line),
+      ElementDataToDouble<surface>::ToDouble(element_data_surface), segments_double);
 
   // Get the face parameters.
   unsigned int n_faces;
@@ -503,9 +493,9 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
       const int intersection_face = point.get().GetIntersectionFace();
       if (intersection_face >= 0)
       {
-        this->IntersectLineWithSurfaceEdge(q_line, q_surface,
+        this->IntersectLineWithSurfaceEdge(element_data_line, element_data_surface,
             face_fixed_parameters[intersection_face], face_fixed_values[intersection_face],
-            point.get().GetEta(), point.get().GetXi(), projection_result, nodal_normals, true);
+            point.get().GetEta(), point.get().GetXi(), projection_result, true);
       }
     }
 
@@ -526,12 +516,11 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
       projection_point.SetFromOtherPointDouble(projection_point_double);
       projection_point.SetEta(new_segment.GetEtaA() + new_segment.GetSegmentLength() * factor);
 
-      // EvaluatePosition<line>(eta, q_line, r_line, this->Element1());
-      EvaluatePosition<line>(projection_point.GetEta(), q_line, point_in_space, this->Element1());
+      EvaluatePosition<line>(projection_point.GetEta(), element_data_line, point_in_space);
 
       // Calculate the projection.
-      this->ProjectPointToOther(point_in_space, q_surface, projection_point.GetXi(),
-          projection_result, nodal_normals, true);
+      this->ProjectPointToOther(
+          point_in_space, element_data_surface, projection_point.GetXi(), projection_result, true);
     }
   }
 }

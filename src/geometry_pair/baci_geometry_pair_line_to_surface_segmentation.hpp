@@ -55,16 +55,13 @@ namespace GEOMETRYPAIR
      * \brief This method performs the segmentation of the line with the surface (and its normal
      * direction).
      *
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_surface (in) Degrees of freedom for the volume.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_surface (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
-     * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        std::vector<LineSegment<scalar_type>>& segments,
-        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
-            nullptr) const override;
+    void Evaluate(const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<surface, scalar_type>& element_data_surface,
+        std::vector<LineSegment<scalar_type>>& segments) const override;
   };
 }  // namespace GEOMETRYPAIR
 

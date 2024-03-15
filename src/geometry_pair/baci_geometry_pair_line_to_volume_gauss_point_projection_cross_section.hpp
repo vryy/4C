@@ -57,13 +57,13 @@ namespace GEOMETRYPAIR
 
     /**
      * \brief Try to project the points on the surface of the line to the volume.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_volume (in) Degrees of freedom for the volume.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      * @param line_triad_interpolation (in) Triad interpolation along the line.
      */
-    void PreEvaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    void PreEvaluate(const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<volume, scalar_type>& element_data_volume,
         std::vector<LineSegment<scalar_type>>& segments,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>*
             line_triad_interpolation = nullptr) const;
@@ -71,12 +71,12 @@ namespace GEOMETRYPAIR
     /**
      * \brief The only purpose of this method is to check that all points on this line element
      * projected valid (not necessarily in this pair) in PreEvaluate.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_volume (in) Degrees of freedom for the volume.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    void Evaluate(const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<volume, scalar_type>& element_data_volume,
         std::vector<LineSegment<scalar_type>>& segments) const override;
 
    private:

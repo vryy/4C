@@ -11,10 +11,12 @@
 
 #include "baci_beam3_euler_bernoulli.hpp"
 #include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_beaminteraction_geometry_pair_access_traits.hpp"
 #include "baci_fbi_beam_to_fluid_meshtying_pair_gauss_point.hpp"
 #include "baci_fbi_beam_to_fluid_meshtying_params.hpp"
 #include "baci_fluid_ele.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "baci_geometry_pair_line_to_volume_segmentation.hpp"
 #include "baci_global_data.hpp"
@@ -59,6 +61,8 @@ namespace
         const CORE::LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs,
         const CORE::LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff)
     {
+      using scalar_type = GEOMETRYPAIR::line_to_volume_scalar_type<beam_type, fluid_type>;
+
       // Create the mesh tying mortar pair.
       BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam_type, fluid_type> pair =
           BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam_type, fluid_type>();
@@ -94,8 +98,17 @@ namespace
       pair_elements.push_back(&(*fluid_element));
       pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
       pair.Init(intersection_params, pair_elements);
-      pair.ele1posref_ = q_beam;
-      pair.ele2posref_ = q_fluid;
+
+      pair.ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::Initialize(
+          beam_element.get());
+      pair.ele1posref_ =
+          GEOMETRYPAIR::InitializeElementData<beam_type, double>::Initialize(beam_element.get());
+      pair.ele1poscur_ =
+          GEOMETRYPAIR::InitializeElementData<beam_type, double>::Initialize(beam_element.get());
+      pair.ele1vel_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::Initialize(
+          beam_element.get());
+      pair.ele1posref_.element_position_ = q_beam;
+      pair.ele2posref_.element_position_ = q_fluid;
 
       pair.ResetState(beam_dofvec, fluid_dofvec);
 

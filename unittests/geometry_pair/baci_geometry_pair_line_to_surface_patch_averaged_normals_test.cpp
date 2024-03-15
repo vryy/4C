@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 
 #include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_element_faces.hpp"
 #include "baci_geometry_pair_line_to_surface_patch_geometry_test.hpp"
 #include "baci_geometry_pair_line_to_surface_patch_results_test.hpp"
@@ -142,7 +143,8 @@ namespace
     face_element->CalculateAveragedReferenceNormals(face_elements_map);
     {
       for (unsigned int i = 0; i < reference_normals.size(); i++)
-        EXPECT_NEAR((*face_element->GetReferenceNormals())(i), reference_normals[i], eps);
+        EXPECT_NEAR(face_element->GetFaceReferenceElementData().nodal_normals_(i),
+            reference_normals[i], eps);
     }
 
     // Set the state in the face element, here also the FAD variables for each patch are set.
@@ -156,16 +158,19 @@ namespace
       // Check the values of the averaged normals.
       for (unsigned int i_dof = 0; i_dof < 3 * surface::n_nodes_; i_dof++)
       {
-        EXPECT_NEAR(CORE::FADUTILS::CastToDouble((*face_element->GetCurrentNormals())(i_dof)),
+        EXPECT_NEAR(
+            CORE::FADUTILS::CastToDouble(face_element->GetFaceElementData().nodal_normals_(i_dof)),
             current_normals[i_dof], eps);
         for (unsigned int i_der = 0; i_der < face_element->GetPatchGID().size(); i_der++)
         {
-          EXPECT_NEAR(CORE::FADUTILS::CastToDouble(
-                          (*face_element->GetCurrentNormals())(i_dof).dx(dof_offset + i_der)),
+          EXPECT_NEAR(
+              CORE::FADUTILS::CastToDouble(
+                  face_element->GetFaceElementData().nodal_normals_(i_dof).dx(dof_offset + i_der)),
               current_normals_derivative[i_dof][i_der], eps);
           for (unsigned int i_der_2 = 0; i_der_2 < face_element->GetPatchGID().size(); i_der_2++)
           {
-            EXPECT_NEAR(CORE::FADUTILS::CastToDouble((*face_element->GetCurrentNormals())(i_dof)
+            EXPECT_NEAR(CORE::FADUTILS::CastToDouble(face_element->GetFaceElementData()
+                                                         .nodal_normals_(i_dof)
                                                          .dx(dof_offset + i_der)
                                                          .dx(dof_offset + i_der_2)),
                 current_normals_derivative_2[i_dof][i_der][i_der_2], eps);
@@ -179,8 +184,7 @@ namespace
       xi(1) = -0.8;
       xi(2) = 0.69;
       CORE::LINALG::Matrix<3, 1, scalar_type> r;
-      GEOMETRYPAIR::EvaluateSurfacePosition<surface>(xi, face_element->GetFacePosition(), r,
-          face_element->GetDrtFaceElement(), face_element->GetCurrentNormals());
+      GEOMETRYPAIR::EvaluateSurfacePosition<surface>(xi, face_element->GetFaceElementData(), r);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       {
         EXPECT_NEAR(CORE::FADUTILS::CastToDouble(r(i_dim)), position[i_dim], eps);

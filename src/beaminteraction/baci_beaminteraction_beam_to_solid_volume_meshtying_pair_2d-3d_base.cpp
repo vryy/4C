@@ -9,7 +9,7 @@
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_base.hpp"
 
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "baci_geometry_pair_line_to_volume_gauss_point_projection_cross_section.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
@@ -60,14 +60,18 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
     r_cross_section_ref(1) = integration_point.GetEtaCrossSection()(0);
     r_cross_section_ref(2) = integration_point.GetEtaCrossSection()(1);
     r_cross_section_cur.Multiply(triad, r_cross_section_ref);
-    GEOMETRYPAIR::EvaluatePosition<beam>(eta, q, r_beam, this->Element1());
+    GEOMETRYPAIR::EvaluatePosition<beam>(eta, q, r_beam);
     r_beam += r_cross_section_cur;
   };
 
   if (reference)
+  {
     evaluate_position(this->ele1posref_, r_beam);
+  }
   else
-    evaluate_position(CORE::FADUTILS::CastToDouble(this->ele1pos_), r_beam);
+  {
+    evaluate_position(GEOMETRYPAIR::ElementDataToDouble<beam>::ToDouble(this->ele1pos_), r_beam);
+  }
 }
 
 

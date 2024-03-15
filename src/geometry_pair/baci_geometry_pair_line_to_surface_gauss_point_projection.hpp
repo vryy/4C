@@ -60,16 +60,14 @@ namespace GEOMETRYPAIR
      * Eventually needed segmentation at lines poking out of the volume is done in the Evaluate
      * method.
      *
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_surface (in) Degrees of freedom for the volume.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_surface (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void PreEvaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        std::vector<LineSegment<scalar_type>>& segments,
-        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
-            nullptr) const override;
+    void PreEvaluate(const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<surface, scalar_type>& element_data_surface,
+        std::vector<LineSegment<scalar_type>>& segments) const override;
 
     /**
      * \brief Check if a Gauss point projected valid for this pair in PreEvaluate.
@@ -78,16 +76,14 @@ namespace GEOMETRYPAIR
      * other pairs). If not all project, the beam pokes out of the volumes and in this method
      * segmentation is performed.
      *
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_surface (in) Degrees of freedom for the volume.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_surface (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        std::vector<LineSegment<scalar_type>>& segments,
-        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
-            nullptr) const override;
+    void Evaluate(const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<surface, scalar_type>& element_data_surface,
+        std::vector<LineSegment<scalar_type>>& segments) const override;
 
    private:
     /**
