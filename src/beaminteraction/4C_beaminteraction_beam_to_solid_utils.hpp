@@ -84,26 +84,13 @@ namespace BEAMINTERACTION
    * \brief Get the number of Lagrange multiplicator values corresponding to the beam nodes and beam
    * element.
    * @param shape_function (in) Mortar shape function.
+   * @param n_dim (in) Spatial dimension of Lagrange multiplicator field.
    * @param n_lambda_node (out) Number of Lagrange multiplicators per node.
    * @param n_lambda_element_ (out) Number of Lagrange multiplicators per element.
    */
   void MortarShapeFunctionsToNumberOfLagrangeValues(
       const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions shape_function,
-      unsigned int& n_lambda_node, unsigned int& n_lambda_element);
-
-  /**
-   * \brief Get the GIDs of the Lagrange multiplicator unknowns for a beam-to-solid pair.
-   * @param mortar_manager (in) Mortar manager for the beam-to-solid condition
-   * @param contact_pair (in) Beam-to-solid contact pair
-   * @param n_mortar_pos (in) Number of positional mortar DOFs associated with the pair
-   * @param n_mortar_rot (in) Number of rotational mortar DOFs associated with the pair
-   * @param lambda_gid_pos (out) GIDs of positional mortar DOFs associated with the pair
-   * @param lambda_gid_rot (out) GIDs of rotational mortar DOFs associated with the pair
-   */
-  void GetMortarGID(const BeamToSolidMortarManager* mortar_manager,
-      const BEAMINTERACTION::BeamContactPair* contact_pair, const unsigned int n_mortar_pos,
-      const unsigned int n_mortar_rot, std::vector<int>* lambda_gid_pos,
-      std::vector<int>* lambda_gid_rot);
+      const unsigned int n_dim, unsigned int& n_lambda_node, unsigned int& n_lambda_element);
 
   /**
    * \brief Setup the triad interpolation scheme for the current triad and reference triad of the

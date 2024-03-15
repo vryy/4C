@@ -130,7 +130,7 @@ scalar_type BEAMINTERACTION::PenaltyPotential(const scalar_type& gap,
  */
 void BEAMINTERACTION::MortarShapeFunctionsToNumberOfLagrangeValues(
     const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions shape_function,
-    unsigned int& n_lambda_node, unsigned int& n_lambda_element)
+    const unsigned int n_dim, unsigned int& n_lambda_node, unsigned int& n_lambda_element)
 {
   switch (shape_function)
   {
@@ -142,67 +142,24 @@ void BEAMINTERACTION::MortarShapeFunctionsToNumberOfLagrangeValues(
     }
     case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
     {
-      n_lambda_node = 1 * 3;
-      n_lambda_element = 0 * 3;
+      n_lambda_node = 1 * n_dim;
+      n_lambda_element = 0 * n_dim;
       return;
     }
     case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
     {
-      n_lambda_node = 1 * 3;
-      n_lambda_element = 1 * 3;
+      n_lambda_node = 1 * n_dim;
+      n_lambda_element = 1 * n_dim;
       return;
     }
     case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
     {
-      n_lambda_node = 1 * 3;
-      n_lambda_element = 2 * 3;
+      n_lambda_node = 1 * n_dim;
+      n_lambda_element = 2 * n_dim;
       return;
     }
     default:
       FOUR_C_THROW("Mortar shape function not implemented!");
-  }
-}
-
-/**
- *
- */
-void BEAMINTERACTION::GetMortarGID(const BeamToSolidMortarManager* mortar_manager,
-    const BEAMINTERACTION::BeamContactPair* contact_pair, const unsigned int n_mortar_pos,
-    const unsigned int n_mortar_rot, std::vector<int>* lambda_gid_pos,
-    std::vector<int>* lambda_gid_rot)
-{
-  std::vector<int> lambda_total;
-  mortar_manager->LocationVector(contact_pair, lambda_total);
-
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (lambda_total.size() != n_mortar_pos + n_mortar_rot)
-    FOUR_C_THROW("BEAMINTERACTION::GetMortarGID the local and global GID sizes do not match.");
-#endif
-
-  unsigned int n_nodal_dof = 3;
-  if (n_mortar_rot > 0) n_nodal_dof = 6;
-
-  if (lambda_gid_pos != nullptr)
-  {
-    // Get the Lagrange multiplier GIDs for positional coupling.
-    lambda_gid_pos->clear();
-    for (unsigned int i_node = 0; i_node < 2; i_node++)
-      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        lambda_gid_pos->push_back(lambda_total[n_nodal_dof * i_node + i_dim]);
-    for (unsigned int i_dof = 6; i_dof < n_mortar_pos; i_dof++)
-      lambda_gid_pos->push_back(lambda_total[n_nodal_dof * 2 - 6 + i_dof]);
-  }
-
-  if (lambda_gid_rot != nullptr)
-  {
-    // Get the Lagrange multiplier GIDs for rotational coupling.
-    lambda_gid_rot->clear();
-    for (unsigned int i_node = 0; i_node < 2; i_node++)
-      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        lambda_gid_rot->push_back(lambda_total[3 + n_nodal_dof * i_node + i_dim]);
-    const unsigned int offset = n_mortar_pos - 2 * n_nodal_dof;
-    for (unsigned int i_dof = 6; i_dof < n_mortar_rot; i_dof++)
-      lambda_gid_rot->push_back(lambda_total[offset + n_nodal_dof * 2 + i_dof]);
   }
 }
 
@@ -796,8 +753,7 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
     const unsigned int n_mortar_rot)
 {
   // Get the GIDs of the Lagrange multipliers.
-  std::vector<int> lambda_row;
-  GetMortarGID(mortar_manager, pair, mortar::n_dof_, n_mortar_rot, &lambda_row, nullptr);
+  const auto& [lambda_gid_pos, dummy] = mortar_manager->LocationVector(*pair);
 
   // Get the beam centerline GIDs.
   CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
@@ -818,24 +774,27 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; ++i_beam)
     {
       global_G_B.FEAssemble(
-          local_D(i_lambda, i_beam), lambda_row[i_lambda], beam_centerline_gid(i_beam));
+          local_D(i_lambda, i_beam), lambda_gid_pos[i_lambda], beam_centerline_gid(i_beam));
       global_FB_L.FEAssemble(
-          local_D(i_lambda, i_beam), beam_centerline_gid(i_beam), lambda_row[i_lambda]);
+          local_D(i_lambda, i_beam), beam_centerline_gid(i_beam), lambda_gid_pos[i_lambda]);
     }
     for (unsigned int i_other = 0; i_other < other::n_dof_; ++i_other)
     {
-      global_G_S.FEAssemble(-local_M(i_lambda, i_other), lambda_row[i_lambda], other_row[i_other]);
-      global_FS_L.FEAssemble(-local_M(i_lambda, i_other), other_row[i_other], lambda_row[i_lambda]);
+      global_G_S.FEAssemble(
+          -local_M(i_lambda, i_other), lambda_gid_pos[i_lambda], other_row[i_other]);
+      global_FS_L.FEAssemble(
+          -local_M(i_lambda, i_other), other_row[i_other], lambda_gid_pos[i_lambda]);
     }
   }
-  global_kappa.SumIntoGlobalValues(mortar::n_dof_, lambda_row.data(), local_kappa.A());
-  global_constraint.SumIntoGlobalValues(mortar::n_dof_, lambda_row.data(), local_constraint.A());
+  global_kappa.SumIntoGlobalValues(mortar::n_dof_, lambda_gid_pos.data(), local_kappa.A());
+  global_constraint.SumIntoGlobalValues(
+      mortar::n_dof_, lambda_gid_pos.data(), local_constraint.A());
 
   // Set all entries in the local kappa vector to 1 and add them to the active vector.
   CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa_active;
   local_kappa_active.PutScalar(1.0);
   global_lambda_active.SumIntoGlobalValues(
-      mortar::n_dof_, lambda_row.data(), local_kappa_active.A());
+      mortar::n_dof_, lambda_gid_pos.data(), local_kappa_active.A());
 }
 
 

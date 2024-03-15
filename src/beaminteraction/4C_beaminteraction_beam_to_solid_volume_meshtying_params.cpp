@@ -12,6 +12,7 @@
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_geometry_pair.hpp"
+#include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -22,7 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams()
     : BeamToSolidParamsBase(),
       integration_points_circumference_(0),
-      rotation_coupling_(INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none),
+      rotational_coupling_triad_construction_(
+          INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none),
       rotational_coupling_penalty_parameter_(0.0),
       output_params_ptr_(Teuchos::null),
       couple_restart_state_(false)
@@ -51,8 +53,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
         beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFERENCE");
 
     // Type of rotational coupling.
-    rotation_coupling_ = Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling>(
-        beam_to_solid_contact_params_list, "ROTATION_COUPLING");
+    rotational_coupling_triad_construction_ =
+        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling>(
+            beam_to_solid_contact_params_list, "ROTATION_COUPLING");
+    rotational_coupling_ = rotational_coupling_triad_construction_ !=
+                           INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none;
 
     // Mortar contact discretization to be used.
     mortar_shape_function_rotation_ =
@@ -60,7 +65,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
             beam_to_solid_contact_params_list, "ROTATION_COUPLING_MORTAR_SHAPE_FUNCTION");
     if (GetContactDiscretization() ==
             INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar and
-        rotation_coupling_ != INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none and
+        rotational_coupling_ and
         mortar_shape_function_rotation_ ==
             INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none)
       FOUR_C_THROW(
@@ -85,8 +90,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
   }
 
   // Sanity checks.
-  if (rotation_coupling_ != INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none and
-      couple_restart_state_)
+  if (rotational_coupling_ and couple_restart_state_)
     FOUR_C_THROW(
         "Coupling restart state combined with rotational coupling is not yet implemented!");
 

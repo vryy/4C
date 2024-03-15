@@ -128,6 +128,11 @@ namespace BEAMINTERACTION
      */
     virtual inline int GetFADOrder() const { return 0; }
 
+    /**
+     * \brief Returns the order for the FAD type.
+     */
+    [[nodiscard]] bool IsRotationalCoupling() const { return rotational_coupling_; }
+
    protected:
     //! Flag if Init was called.
     bool isinit_;
@@ -149,6 +154,9 @@ namespace BEAMINTERACTION
 
     //! Gauss rule to be used.
     CORE::FE::GaussRule1D gauss_rule_;
+
+    //! Flag for rotational coupling
+    bool rotational_coupling_;
   };
 
 }  // namespace BEAMINTERACTION

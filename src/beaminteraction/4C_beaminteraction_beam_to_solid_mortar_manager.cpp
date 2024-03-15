@@ -22,6 +22,7 @@
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
 
@@ -65,44 +66,46 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   unsigned int n_lambda_node_temp = 0;
   unsigned int n_lambda_element_temp = 0;
+
   MortarShapeFunctionsToNumberOfLagrangeValues(beam_to_solid_params_->GetMortarShapeFunctionType(),
-      n_lambda_node_temp, n_lambda_element_temp);
+      3, n_lambda_node_temp, n_lambda_element_temp);
   n_lambda_node_ = n_lambda_node_temp;
   n_lambda_node_translational_ = n_lambda_node_temp;
   n_lambda_element_ = n_lambda_element_temp;
   n_lambda_element_translational_ = n_lambda_element_temp;
 
-  // Check if the coupling also consists of rotational coupling.
-  auto beam_to_volume_params =
-      Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(
-          beam_to_solid_params_);
-  auto beam_to_surface_params =
-      Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>(
-          beam_to_solid_params_);
-  if (beam_to_volume_params != Teuchos::null)
+  if (beam_to_solid_params_->IsRotationalCoupling())
   {
+    // Get the mortar shape functions for rotational coupling
+    auto mortar_shape_function_rotation = INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none;
+
+    const auto beam_to_volume_params =
+        Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(
+            beam_to_solid_params_);
+    const auto beam_to_surface_params =
+        Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>(
+            beam_to_solid_params_);
+    if (beam_to_volume_params != Teuchos::null)
+    {
+      mortar_shape_function_rotation = beam_to_volume_params->GetMortarShapeFunctionRotationType();
+    }
+    else if (beam_to_surface_params != Teuchos::null)
+    {
+      mortar_shape_function_rotation = beam_to_surface_params->GetMortarShapeFunctionType();
+    }
+    else
+    {
+      FOUR_C_THROW("The params object should be either ob beam-to-solid volume or solid type");
+    }
+
     // Get the number of Lagrange multiplier DOF for rotational coupling on a beam node and on a
     // beam element.
     MortarShapeFunctionsToNumberOfLagrangeValues(
-        beam_to_volume_params->GetMortarShapeFunctionRotationType(), n_lambda_node_temp,
-        n_lambda_element_temp);
+        mortar_shape_function_rotation, 3, n_lambda_node_temp, n_lambda_element_temp);
     n_lambda_node_ += n_lambda_node_temp;
     n_lambda_node_rotational_ = n_lambda_node_temp;
     n_lambda_element_ += n_lambda_element_temp;
     n_lambda_element_rotational_ = n_lambda_element_temp;
-  }
-  else if (beam_to_surface_params != Teuchos::null)
-  {
-    if (beam_to_surface_params->GetIsRotationalCoupling())
-    {
-      MortarShapeFunctionsToNumberOfLagrangeValues(
-          beam_to_surface_params->GetMortarShapeFunctionType(), n_lambda_node_temp,
-          n_lambda_element_temp);
-      n_lambda_node_ += n_lambda_node_temp;
-      n_lambda_node_rotational_ = n_lambda_node_temp;
-      n_lambda_element_ += n_lambda_element_temp;
-      n_lambda_element_rotational_ = n_lambda_element_temp;
-    }
   }
 }
 
@@ -396,21 +399,23 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
-    const BEAMINTERACTION::BeamContactPair* contact_pair, std::vector<int>& lambda_row) const
+std::pair<std::vector<int>, std::vector<int>>
+BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
+    const BEAMINTERACTION::BeamContactPair& contact_pair) const
 {
   CheckSetup();
   CheckLocalMaps();
 
-  // Clear the output vectors.
-  lambda_row.clear();
+  // Create the output vectors
+  std::vector<int> lambda_pos_row;
+  std::vector<int> lambda_rot_row;
 
   // Get the global DOFs ids of the nodal Lagrange multipliers.
   if (n_lambda_node_ > 0)
   {
-    for (int i_node = 0; i_node < contact_pair->Element1()->NumNode(); i_node++)
+    for (int i_node = 0; i_node < contact_pair.Element1()->NumNode(); i_node++)
     {
-      const DRT::Node& node = *(contact_pair->Element1()->Nodes()[i_node]);
+      const DRT::Node& node = *(contact_pair.Element1()->Nodes()[i_node]);
       if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node))
       {
         // Get the global id of the node.
@@ -420,7 +425,15 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
         auto search_key_in_map = node_gid_to_lambda_gid_map_.find(node_id);
         if (search_key_in_map == node_gid_to_lambda_gid_map_.end())
           FOUR_C_THROW("Global node id %d not in map!", node_id);
-        for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
+        const auto node_lambda_gid = search_key_in_map->second;
+        for (unsigned int i_pos = 0; i_pos < n_lambda_node_translational_; i_pos++)
+        {
+          lambda_pos_row.push_back(node_lambda_gid[i_pos]);
+        }
+        for (unsigned int i_rot = 0; i_rot < n_lambda_node_rotational_; i_rot++)
+        {
+          lambda_rot_row.push_back(node_lambda_gid[n_lambda_node_translational_ + i_rot]);
+        }
       }
     }
   }
@@ -428,18 +441,28 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
   // Get the global DOFs ids of the element Lagrange multipliers.
   if (n_lambda_element_ > 0)
   {
-    if (BEAMINTERACTION::UTILS::IsBeamElement(*contact_pair->Element1()))
+    if (BEAMINTERACTION::UTILS::IsBeamElement(*contact_pair.Element1()))
     {
       // Get the global id of the element.
-      int element_id = contact_pair->Element1()->Id();
+      int element_id = contact_pair.Element1()->Id();
 
       // Check if the id is in the map. If it is, add it to the output vector.
       auto search_key_in_map = element_gid_to_lambda_gid_map_.find(element_id);
       if (search_key_in_map == element_gid_to_lambda_gid_map_.end())
         FOUR_C_THROW("Global element id %d not in map!", element_id);
-      for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
+      const auto element_lambda_gid = search_key_in_map->second;
+      for (unsigned int i_pos = 0; i_pos < n_lambda_element_translational_; i_pos++)
+      {
+        lambda_pos_row.push_back(element_lambda_gid[i_pos]);
+      }
+      for (unsigned int i_rot = 0; i_rot < n_lambda_element_rotational_; i_rot++)
+      {
+        lambda_rot_row.push_back(element_lambda_gid[n_lambda_element_translational_ + i_rot]);
+      }
     }
   }
+
+  return {lambda_pos_row, lambda_rot_row};
 }
 
 /**
@@ -526,8 +549,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
 
   if (force != Teuchos::null)
   {
-    // Factor for right hand side (forces). 1 corresponds to the meshtying forces being added to the
-    // right hand side, -1 to the left hand side.
+    // Factor for right hand side (forces). 1 corresponds to the mesh-tying forces being added to
+    // the right hand side, -1 to the left hand side.
     const double rhs_factor = -1.0;
 
     // Get the penalty Lagrange multiplier vector.

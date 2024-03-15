@@ -122,9 +122,6 @@ namespace BEAMINTERACTION
     //! Pointer to the visualization output parameters for beam to solid volume meshtying.
     Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
 
-    //! If rotational coupling should be activated.
-    bool rotational_coupling_;
-
     //! Penalty parameter for rotational coupling.
     double rotational_coupling_penalty_parameter_;
 
