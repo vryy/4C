@@ -375,7 +375,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
 
     // estimate of duration for search (check how long the search took for 1/20 of all elements, the
     // estimated total time of the search is then 20 times this time)
-    if (iart == static_cast<int>(0.05 * artEleGIDs.size()))
+    if (iart == (0.05 * artEleGIDs.size()))
     {
       double mydtsearch = timersearch.wallTime() - dtcpu;
       double maxdtsearch = 0.0;

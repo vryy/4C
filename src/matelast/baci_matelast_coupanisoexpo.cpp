@@ -58,7 +58,7 @@ MAT::ELASTIC::CoupAnisoExpo::CoupAnisoExpo(MAT::ELASTIC::PAR::CoupAnisoExpo* par
     : MAT::ELASTIC::CoupAnisoExpoBase(params),
       params_(params),
       anisotropyExtension_(params_->init_, params->gamma_, params_->adapt_angle_ != 0,
-          params_->StructuralTensorStrategy(), {params->fiber_id_})
+          params_->StructuralTensorStrategy(), params->fiber_id_)
 {
   anisotropyExtension_.RegisterNeededTensors(FiberAnisotropyExtension<1>::FIBER_VECTORS |
                                              FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |

@@ -555,7 +555,6 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       // only stoichiometry of 1
       {
         int check1 = 0;
-        int check2 = 0;
         for (int kk = 0; kk < numscal_; kk++)
         {
           if (abs(stoich[kk]) > 1)
@@ -564,7 +563,6 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
                 "This is not supported by the reaction model based on Bard");
 
           check1 += abs(stoich[kk]);
-          check2 += stoich[kk];
         }
         if (check1 > 2 or check1 == 0)
           dserror(
@@ -1133,7 +1131,6 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       // only stoichiometry of 1
       {
         int check1 = 0;
-        int check2 = 0;
         for (int kk = 0; kk < numscal_; kk++)
         {
           if (abs(stoich[kk]) > 1)
@@ -1142,7 +1139,6 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
                 "This is not supported by the reaction model based on Bard");
 
           check1 += abs(stoich[kk]);
-          check2 += stoich[kk];
         }
         if (check1 > 2 or check1 == 0)
           dserror(

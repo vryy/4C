@@ -35,7 +35,7 @@ BACI_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 DRT::NURBS::NurbsDiscretization::NurbsDiscretization(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm)
-    : DRT::Discretization::Discretization(name, comm), npatches_(0), knots_(Teuchos::null)
+    : DRT::Discretization::Discretization(name, comm), knots_(Teuchos::null)
 {
   return;
 }
@@ -56,7 +56,6 @@ void DRT::NURBS::NurbsDiscretization::SetKnotVector(Teuchos::RCP<DRT::NURBS::Kno
 
   knots_ = knots;
   filled_ = false;
-  return;
 }
 
 /*----------------------------------------------------------------------*

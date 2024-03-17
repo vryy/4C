@@ -1740,19 +1740,10 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
   // check if the node is contained in such space-time surface elements at any time between t^n and
   // t^(n+1)
 
-  int side_count = 0;
-
   // loop sides
   for (std::vector<int>::iterator sides = identified_sides.begin(); sides != identified_sides.end();
        sides++)
   {
-    side_count++;
-
-#ifdef DEBUG_TIMINT
-    IO::cout << "\t CheckChangingSide for node " << n_old->Id() << " w.r.t side " << *sides
-             << IO::endl;
-#endif
-
     const int coup_sid = *sides;  // side id used within the cut
 
     if (condition_manager_->IsMeshCoupling(coup_sid))

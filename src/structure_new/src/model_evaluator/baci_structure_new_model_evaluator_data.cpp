@@ -87,14 +87,12 @@ namespace
   static void UnpackReceivedBlock(const std::vector<char>& receiveddata, T& collected_data)
   {
     std::vector<char>::size_type index = 0;
-    int j = 0;
     while (index < receiveddata.size())
     {
       // the set gets cleared at the beginning of the ExtractfromPack routine!
       T rs;
       CORE::COMM::ParObject::ExtractfromPack(index, receiveddata, rs);
       collected_data.insert(rs.begin(), rs.end());
-      ++j;
     }
     // sanity check
     if (index > receiveddata.size())

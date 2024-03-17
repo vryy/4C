@@ -93,9 +93,6 @@ namespace MIXTURE
         const CORE::LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;
-
-   private:
-    MIXTURE::PAR::MixtureConstituent_ElastHyper* params_;
   };
 
 }  // namespace MIXTURE

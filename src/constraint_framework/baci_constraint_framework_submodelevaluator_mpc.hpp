@@ -63,7 +63,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     std::map<std::string, DRT::Node*> rveRefNodeMap_;
 
     //! RVE reference length vectors
-    std::array<double, 2> r_xmxp_, r_ymyp_, r_zmzp_;
+    std::array<double, 2> r_xmxp_, r_ymyp_;
 
     //! Vector with all Conditions
     std::vector<Teuchos::RCP<DRT::Condition>> pointLinearCoupledEquationConditions_,
@@ -71,9 +71,6 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
     //! Tolerance for the opposing edge node search
     double nodeSearchToler_ = 0.25;  // #ToDo: Add .dat parameter
-
-    //! Global Row id Offset ( = 0 for penalty method)
-    int globalRowOffset_ = 0;
 
     //! Parameter List for the rveType
     Teuchos::ParameterList mpcParameterList_;

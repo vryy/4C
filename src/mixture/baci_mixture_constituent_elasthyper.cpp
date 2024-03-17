@@ -39,9 +39,8 @@ MIXTURE::PAR::MixtureConstituent_ElastHyper::CreateConstituent(int id)
 // Constructor of the constituent holding the material parameters
 MIXTURE::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper(
     MIXTURE::PAR::MixtureConstituent_ElastHyper* params, int id)
-    : MixtureConstituent_ElastHyperBase(params, id), params_(params)
+    : MixtureConstituent_ElastHyperBase(params, id)
 {
-  // do nothing here
 }
 
 // Returns the material type

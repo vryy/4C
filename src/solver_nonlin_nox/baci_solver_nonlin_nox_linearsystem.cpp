@@ -891,7 +891,6 @@ void NOX::NLN::LinearSystem::convertSparseToDenseMatrix(const CORE::LINALG::Spar
     const int full_rlid = full_rangemap.LID(rgid);
     if (full_rlid == -1) dserror("Row/Range: Couldn't find the corresponding LID to GID %d", rgid);
 
-    double csum = 0.0;
     for (int i = 0; i < numentries; ++i)
     {
       const int cgid = sparse.ColMap().GID(indices[i]);
@@ -903,7 +902,6 @@ void NOX::NLN::LinearSystem::convertSparseToDenseMatrix(const CORE::LINALG::Spar
         dserror("Column/Domain: Couldn't find the corresponding LID to GID %d", cgid);
 
       dense(full_rlid, full_clid) = rvals[i];
-      csum += std::abs(rvals[i]);
     }
   }
 }

@@ -88,7 +88,7 @@ namespace INPUT
 
         // read domain info
         std::string line;
-        for (int i = 0; getline(file, line); ++i)
+        while (getline(file, line))
         {
           // remove comments, trailing and leading whitespaces
           // compact internal whitespaces

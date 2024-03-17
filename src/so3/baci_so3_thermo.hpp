@@ -199,7 +199,7 @@ namespace DRT
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
-      virtual void InitJacobianMapping(DRT::Discretization& dis);  // NOLINT(modernize-use-override)
+      void InitJacobianMappingSpecialForNurbs(DRT::Discretization& dis);
 
       //@}
 

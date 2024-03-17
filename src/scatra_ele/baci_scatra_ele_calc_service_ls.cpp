@@ -90,8 +90,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const INPAR::SCATRA::CalcError errortype =
-      CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+  const INPAR::SCATRA::CalcErrorLevelSet errortype =
+      CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcErrorLevelSet>(params, "calcerrorflag");
   switch (errortype)
   {
     case INPAR::SCATRA::calcerror_initial_field:

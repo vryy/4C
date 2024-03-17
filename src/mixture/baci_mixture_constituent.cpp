@@ -37,7 +37,6 @@ MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
 Teuchos::RCP<MAT::Material> MIXTURE::PAR::MixtureConstituent::CreateMaterial()
 {
   dserror("Cannot create mixture constituent from this method. Use CreateConstituent() instead.");
-  return Teuchos::null;
 }
 
 // Create the parameters of the constituents from the material number and the reference mass
@@ -126,11 +125,10 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
       break;
   }
   dserror("The referenced material with id %d is not registered as a Mixture Constituent!", matnum);
-  return nullptr;
 }
 
 MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params, int id)
-    : params_(params), numgp_(0), has_read_element_(false), is_setup_(false), id_(id)
+    : numgp_(0), has_read_element_(false), is_setup_(false), id_(id)
 {
 }
 

@@ -19,7 +19,6 @@
 #include "baci_mat_trait_thermo_solid.hpp"
 #include "baci_nurbs_discret.hpp"
 #include "baci_so3_thermo.hpp"
-#include "baci_so3_thermo_fwd.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -2429,7 +2428,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::GLtoEA(CORE::LINALG::Matrix<nu
  | is called once in Initialize() in so3_thermo_eletypes.cpp            |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discretization& dis)
+void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMappingSpecialForNurbs(
+    DRT::Discretization& dis)
 {
   // get the material coordinates
   CORE::LINALG::Matrix<nen_, nsd_> xrefe;
@@ -2535,3 +2535,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::MapMyGpToSoHex8(int myGp)
 /*----------------------------------------------------------------------*/
 
 BACI_NAMESPACE_CLOSE
+
+// --- explicit instantiations --- //
+#include "baci_so3_thermo_fwd.hpp"

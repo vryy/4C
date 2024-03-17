@@ -32,7 +32,7 @@ namespace DRT
 
   namespace GRIDGENERATOR
   {
-    class RectangularCuboidInputs;
+    struct RectangularCuboidInputs;
   }
 }  // namespace DRT
 

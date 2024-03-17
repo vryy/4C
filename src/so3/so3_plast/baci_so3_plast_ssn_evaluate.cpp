@@ -706,10 +706,8 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
   // (SPATIAL) FUNCTION BUSINESS
   const auto* funct = condition.GetIf<std::vector<int>>("funct");
   CORE::LINALG::Matrix<nsd_, 1> xrefegp(false);
-  bool havefunct = false;
-  if (funct)
-    for (int dim = 0; dim < nsd_; dim++)
-      if ((*funct)[dim] > 0) havefunct = havefunct;
+  const bool havefunct = funct != nullptr && std::any_of(funct->begin(), funct->end(),
+                                                 [](const int i) { return i > 0; });
 
   // update element geometry
   CORE::LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element

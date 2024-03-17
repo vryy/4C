@@ -140,8 +140,7 @@ namespace NOX
         {
          public:
           //! constructor
-          Generic(const STR::EXPLICIT::Generic& expl)
-              : expl_(expl), default_step_(expl.GetDefaultStepLength())
+          Generic(const STR::EXPLICIT::Generic& expl) : default_step_(expl.GetDefaultStepLength())
           {
           }
 
@@ -161,9 +160,6 @@ namespace NOX
               const double& step, const NOX::NLN::Group& curr_grp) override;
 
          private:
-          //! reference to the STR::IMPLICIT::Generic object (read-only)
-          const STR::EXPLICIT::Generic& expl_;
-
           //! default step length
           const double default_step_;
         };  // class Generic

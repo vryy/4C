@@ -146,9 +146,6 @@ namespace DRT
       //! don't want copy constructor
       NurbsDiscretization(const DRT::NURBS::NurbsDiscretization& old) = delete;
 
-      //! Number of patches in this nurbs discretisation
-      int npatches_;
-
       /*!
       \brief The knot vector
 
