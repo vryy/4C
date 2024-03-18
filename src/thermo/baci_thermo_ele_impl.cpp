@@ -1496,26 +1496,27 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
     // update conductivity matrix k_TT (with displacement dependent term)
     if (econd != nullptr)
     {
-      // k^e_TT += ( B_T^T . C_mat . C^{-1} . B_T ) . detJ . w(gp)
-      // 3D:      (8x8)      (8x3)   (3x3)   (3x3)   (3x8)
+      // k^e_TT += ( B_T^T . C^{-1} . C_mat . B_T ) . detJ . w(gp)
+      // 3D:        (8x3)    (3x3)    (3x3)   (3x8)
       // with C_mat = k_0 . I
       // -q = C_mat . C^{-1} . B
       CORE::LINALG::Matrix<nsd_, nen_> aop(false);   // (3x8)
-      aop.MultiplyNN(Cinv, derxy_);                  // (nsd_xnsd_)(nsd_xnen_)
+      aop.MultiplyNN(cmat_, derxy_);                 // (nsd_xnsd_)(nsd_xnen_)
       CORE::LINALG::Matrix<nsd_, nen_> aop1(false);  // (3x8)
-      aop1.MultiplyNN(cmat_, aop);                   // (nsd_xnsd_)(nsd_xnen_)
+      aop1.MultiplyNN(Cinv, aop);                    // (nsd_xnsd_)(nsd_xnen_)
 
-      // k^e_TT += ( B_T^T . C_mat . C^{-1} . B_T ) . detJ . w(gp)
+      // k^e_TT += ( B_T^T . C^{-1} . C_mat . B_T ) . detJ . w(gp)
       econd->MultiplyTN(fac_, derxy_, aop1, 1.0);  //(8x8)=(8x3)(3x8)
 
       // linearization of non-constant conductivity
-      // k^e_TT += ( B_T^T . dC_mat . C^{-1} . B_T . T . N) . detJ . w(gp)
-      CORE::LINALG::Matrix<nsd_, 1> CinvGradT(false);
-      CinvGradT.MultiplyNN(Cinv, gradtemp_);
-      CORE::LINALG::Matrix<nen_, 1> dNCinvGradT(false);
-      dNCinvGradT.MultiplyTN(derxy_, CinvGradT);
-      // only valid for isotropic case
-      econd->MultiplyNT(dercmat_(0, 0) * fac_, dNCinvGradT, funct_, 1.0);
+      // k^e_TT += ( B_T^T . C^{-1} . dC_mat . B_T . T . N) . detJ . w(gp)
+      CORE::LINALG::Matrix<nsd_, 1> dCmatGradT(false);
+      dCmatGradT.MultiplyNN(dercmat_, gradtemp_);
+      CORE::LINALG::Matrix<nsd_, 1> CinvdCmatGradT(false);
+      CinvdCmatGradT.MultiplyNN(Cinv, dCmatGradT);
+      CORE::LINALG::Matrix<nsd_, nen_> CinvdCmatGradTN(false);
+      CinvdCmatGradTN.MultiplyNT(CinvdCmatGradT, funct_);
+      econd->MultiplyTN(fac_, derxy_, CinvdCmatGradTN, 1.0);  //(8x8)=(8x3)(3x8)
 #ifndef TSISLMNOGOUGHJOULE
       // linearization of thermo-mechanical effects
       if (structmat->MaterialType() == INPAR::MAT::m_plelasthyper)
