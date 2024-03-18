@@ -1297,11 +1297,6 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
     file << ""
          << "\n";
   }
-  file << "  intersection.Status();"
-       << "\n";
-  file << ""
-       << "\n";
-
   file << "  intersection.CutTest_Cut( true,INPAR::CUT::VCellGaussPts_DirectDivergence, "
           "INPAR::CUT::BCellGaussPts_Tessellation );"
        << "\n";
@@ -1335,14 +1330,6 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
     file << "    CORE::GEO::CUT::VolumeCell * vc = &**i;"
          << "\n";
     file << "    tessVol.push_back(vc->Volume());"
-         << "\n";
-    file << "  }"
-         << "\n";
-    file << ""
-         << "\n";
-    file << "  intersection.Status();"
-         << "\n";
-    file << ""
          << "\n";
     file << "  for ( std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell> >::const_iterator "
             "i=other_cells.begin();"

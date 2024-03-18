@@ -20,8 +20,6 @@
 
 #include "cut_test_utils.hpp"
 
-
-#define TETMESH_EXTENDED_DEBUG_OUTPUT  // for debuggin the triangulization where it fails
 void test_alex59()
 {
   CORE::GEO::CUT::MeshIntersection intersection;
@@ -285,7 +283,5 @@ void test_alex59()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
-
-  intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }

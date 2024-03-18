@@ -135,10 +135,6 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
     }
   }
 
-#ifdef DEBUGCUTLIBRARY
-  BcellGaussPointGmsh(BcellgausPts_, corners1);
-#endif
-
   return Bcellweights;
 }
 
@@ -372,54 +368,6 @@ void CORE::GEO::CUT::BoundarycellIntegration::momentFittingMatrix(
       k++;
     }
   }
-}
-
-/*--------------------------------------------------------------------------------------------*
-  The geometry of boundarycell and the location of Gaussian points are written in GMSH output
-  file for visualization and for debugging
- *--------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundarycellIntegration::BcellGaussPointGmsh(
-    const std::vector<std::vector<double>> bcGausspts,
-    const std::vector<std::vector<double>> corners)
-{
-  std::string filename = "bcell";
-  std::ofstream file;
-
-  static int bcellno = 0;
-  bcellno++;
-  std::stringstream out;
-  out << "bcell" << bcellno << ".pos";
-  filename = out.str();
-  file.open(filename.c_str());
-
-  int pointno = 1, point_end, lineno = 1;
-  for (unsigned i = 0; i < corners.size(); i++)
-  {
-    file << "Point(" << pointno << ")={" << corners[i][0] << "," << corners[i][1] << ","
-         << corners[i][2] << ","
-         << "1"
-         << "};" << std::endl;
-    pointno++;
-  }
-  point_end = pointno;
-  for (int i = 1; i != point_end; i++)
-  {
-    if (i != point_end - 1)
-      file << "Line(" << lineno << ")={" << i << "," << i + 1 << "};" << std::endl;
-    else
-      file << "Line(" << lineno << ")={" << i << "," << 1 << "};" << std::endl;
-    lineno++;
-  }
-
-  for (unsigned i = 0; i < bcGausspts.size(); i++)
-  {
-    file << "Point(" << pointno << ")={" << bcGausspts[i][0] << "," << bcGausspts[i][1] << ","
-         << bcGausspts[i][2] << ","
-         << "1"
-         << "};" << std::endl;
-    pointno++;
-  }
-  file.close();
 }
 
 BACI_NAMESPACE_CLOSE

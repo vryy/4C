@@ -23,6 +23,21 @@ mesh
 
 BACI_NAMESPACE_OPEN
 
+/*
+Functions to catch implementation erros in debug mode
+*/
+namespace
+{
+  [[maybe_unused]] bool IsUniqueInBoundaryCell(
+      const std::vector<BACI::CORE::GEO::CUT::Point*>& points)
+  {
+    BACI::CORE::GEO::CUT::plain_point_set pointtest;
+    pointtest.insert(points.begin(), points.end());
+    return points.size() == pointtest.size();
+  }
+}  // namespace
+
+
 /*-------------------------------------------------------------------------------------*
  * constructor
  *-------------------------------------------------------------------------------------*/
@@ -465,14 +480,9 @@ CORE::GEO::CUT::Tri3BoundaryCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
   if (points.size() != 3) dserror("expect 3 points");
-#ifdef DEBUGCUTLIBRARY
-  plain_point_set pointtest;
-  pointtest.insert(points.begin(), points.end());
-  if (points.size() != pointtest.size())
-  {
-    dserror("point used more than once in boundary cell");
-  }
-#endif
+
+  dsassert(BACI::IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
+
   CORE::LINALG::SerialDenseMatrix xyz(3, 3);
   for (int i = 0; i < 3; ++i)
   {
@@ -493,14 +503,9 @@ CORE::GEO::CUT::Quad4BoundaryCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
   if (points.size() != 4) dserror("expect 4 points");
-#ifdef DEBUGCUTLIBRARY
-  plain_point_set pointtest;
-  pointtest.insert(points.begin(), points.end());
-  if (points.size() != pointtest.size())
-  {
-    dserror("point used more than once in boundary cell");
-  }
-#endif
+
+  dsassert(BACI::IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
+
   CORE::LINALG::SerialDenseMatrix xyz(3, 4);
   for (int i = 0; i < 4; ++i)
   {
@@ -521,14 +526,8 @@ CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(Vo
     Facet* facet, const std::vector<Point*>& points, const CORE::FE::GaussIntegration& gaussRule,
     const CORE::LINALG::Matrix<3, 1>& normal)
 {
-#ifdef DEBUGCUTLIBRARY
-  plain_point_set pointtest;
-  pointtest.insert(points.begin(), points.end());
-  if (points.size() != pointtest.size())
-  {
-    dserror("point used more than once in boundary cell");
-  }
-#endif
+  dsassert(BACI::IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
+
   CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
@@ -1720,66 +1719,7 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(
       }
     }
 
-#if DEBUGCUTLIBRARY  // to print the number of gauss points in each volumecell
-    std::vector<int> numgpeach(cells.size()), hex(cells.size()), tet(cells.size()),
-        pyramid(cells.size()), wedge(cells.size());
-
-    for (unsigned i = 0; i < cells.size(); i++)
-    {
-      hex[i] = 0;
-      tet[i] = 0;
-      pyramid[i] = 0;
-      wedge[i] = 0;
-    }
-
-    for (plain_volumecell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
-    {
-      VolumeCell* vc = *i;
-      numic += vc->IntegrationCells().size();
-
-      for (unsigned j = 0; j < vc->IntegrationCells().size(); j++)
-      {
-        IntegrationCell* icc = vc->IntegrationCells()[j];
-        if (icc->Shape() == CORE::FE::CellType::hex8) hex[i - cells.begin()]++;
-        if (icc->Shape() == CORE::FE::CellType::tet4) tet[i - cells.begin()]++;
-        if (icc->Shape() == CORE::FE::CellType::pyramid5) pyramid[i - cells.begin()]++;
-        if (icc->Shape() == CORE::FE::CellType::wedge6) wedge[i - cells.begin()]++;
-      }
-
-      numgpeach[i - cells.begin()] = vc->NumGaussPoints(shape);
-    }
-    std::cout << "Number of Gauss points in each volume = \n";
-    for (unsigned i = 0; i < cells.size(); i++)
-    {
-      std::cout << "vc no = " << i << "\t"
-                << "numgp = " << numgpeach[i] << "\n";
-      std::cout << "\tnumber of Hex     = " << hex[i] << "\n";
-      std::cout << "\tnumber of Tet     = " << tet[i] << "\n";
-      std::cout << "\tnumber of Pyramid = " << pyramid[i] << "\n";
-      std::cout << "\tnumber of Wedge   = " << wedge[i] << "\n";
-    }
-#endif
-
     double volume_error = (ev - cv) / ev;
-    // Uncomment for a lot of output.
-    // #ifdef DEBUGCUTLIBRARY
-    //    std::cout << "#vc=" << cells.size()
-    //              << " #ic=" << numic
-    //              << " #bc=" << numbc
-    //              << " #gp=" << numgp
-    //              << " \t-- "
-    //              << ev << "  "
-    //              << cv << "  "
-    //              << ev-cv << "  "
-    //              << volume_error
-    //              << " \t-- "
-    //              << ba
-    //              << "\n";
-    // #endif
-
-
-
-    // if (fatal and fabs(volume_error) > VOLUME_ERROR_TOL)  // Normal test...
     if (fatal and fabs(ev - cv) / (max_norm) > LINSOLVETOL)
     {
       std::stringstream err;
@@ -1792,70 +1732,9 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(
           << "tol=" << LINSOLVETOL * max_norm;
       std::cout << err.str() << std::endl;
 
-#ifdef DEBUGCUTLIBRARY
-      if (VCellGP == INPAR::CUT::VCellGaussPts_Tessellation)
-      {
-        std::cout << "#vc=" << cells.size() << " #ic=" << numic << " #bc=" << numbc
-                  << " #gp=" << numgp << " \t-- " << ev << "  " << cv << "  " << ev - cv << "  "
-                  << volume_error << " \t-- " << ba << "\n";
-      }
-#endif
-
-#ifdef DEBUGCUTLIBRARY
-      std::cout << "\n-------------------------------------------------------\n";
-      std::cout << "eleID " << e.Id() << " ( IsCut = " << (e.IsCut() ? "TRUE" : "FALSE")
-                << " ) -- FAILED Element Volume Test!" << std::endl;
-      std::cout << "ve=" << ev << "  "
-                << "vc=" << cv << "  "
-                << "vd= " << ev - cv << "  "
-                << "err=" << volume_error << "  "
-                << "tol=" << LINSOLVETOL * max_norm << "\n";
-      std::cout << "#vcells = " << e.VolumeCells().size() << "  ";
-
-      unsigned bc_count = 0;
-      unsigned ic_count = 0;
-      for (plain_volumecell_set::const_iterator cit = e.VolumeCells().begin();
-           cit != e.VolumeCells().end(); ++cit)
-      {
-        const VolumeCell& vc = **cit;
-
-        ic_count += vc.IntegrationCells().size();
-        bc_count += vc.BoundaryCells().size();
-      }
-      std::cout << "#icells (total) = " << ic_count << "  #bcells (total) = " << bc_count
-                << std::endl;
-#endif
       // Cut test is written for level-set cases as well.
       DebugDump(&e, __FILE__, __LINE__);
-      //    if(LINSOLVETOL < fabs( volume_error ) )
       dserror(err.str());
-    }
-    else
-    {
-#ifdef DEBUGCUTLIBRARY
-      std::cout << "\n-------------------------------------------------------\n";
-      std::cout << "eleID " << e.Id() << " ( IsCut = " << (e.IsCut() ? "TRUE" : "FALSE")
-                << " ) -- PASSED Element Volume Test!" << std::endl;
-      std::cout << "ve=" << ev << "  "
-                << "vc=" << cv << "  "
-                << "vd= " << ev - cv << "  "
-                << "err=" << volume_error << "  "
-                << "tol=" << LINSOLVETOL * max_norm << "\n";
-      std::cout << "#vcells = " << e.VolumeCells().size() << "  ";
-
-      unsigned bc_count = 0;
-      unsigned ic_count = 0;
-      for (plain_volumecell_set::const_iterator cit = e.VolumeCells().begin();
-           cit != e.VolumeCells().end(); ++cit)
-      {
-        const VolumeCell& vc = **cit;
-
-        ic_count += vc.IntegrationCells().size();
-        bc_count += vc.BoundaryCells().size();
-      }
-      std::cout << "#icells (total) = " << ic_count << "  #bcells (total) = " << bc_count
-                << std::endl;
-#endif
     }
   }
 }
@@ -2007,44 +1886,6 @@ void CORE::GEO::CUT::Mesh::PrintCellStats()
     std::cout << "\n";
   }
 }
-
-
-/*-------------------------------------------------------------------------------------*
- * ?
- *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::Status()
-{
-#ifdef DEBUGCUTLIBRARY
-  std::string name;
-
-  if (cutmesh_)
-  {
-    name = "cutmesh";
-  }
-  else
-  {
-    name = "mesh";
-  }
-
-  std::string linefile = name + "_line.plot";
-  std::ofstream lf(linefile.c_str());
-
-  for (std::list<Teuchos::RCP<Line>>::iterator i = lines_.begin(); i != lines_.end(); ++i)
-  {
-    (*i)->Plot(lf);
-  }
-
-  std::string edgefile = name + "_edge.plot";
-  std::ofstream ef(edgefile.c_str());
-
-  for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = edges_.begin(); i != edges_.end();
-       ++i)
-  {
-    i->second->Plot(ef);
-  }
-#endif
-}
-
 
 /*-------------------------------------------------------------------------------------*
  * print all facets
@@ -2208,14 +2049,6 @@ void CORE::GEO::CUT::Mesh::DumpGmsh(std::string name)
          i++)
       CORE::GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(file, &(*i->second));
     CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
-
-#ifdef DEBUGCUTLIBRARY
-    file << "View \"LevelSetZeroShape\" {\n";
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         i++)
-      CORE::GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file, &(*i->second));
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
-#endif
   }
 }
 
@@ -2356,17 +2189,6 @@ void CORE::GEO::CUT::Mesh::DumpGmshVolumeCells(std::string name, bool include_in
       CORE::GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(file, ele);
     }
     file << "};\n";
-
-#ifdef DEBUGCUTLIBRARY
-    file << "View \"LevelSetZeroShape\" {\n";
-    for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
-         i++)
-    {
-      Element* ele = &*i->second;
-      CORE::GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file, ele);
-    }
-    file << "};\n";
-#endif
   }
 }
 
@@ -3223,22 +3045,6 @@ void CORE::GEO::CUT::Mesh::AssignOtherVolumeCells_CutTest(const Mesh& other)
     dserror(str.str());
   }
 }
-
-
-/*----------------------------------------------------------------------------*
- * Broken test needs fixing before being run properly.
- * The idea is to test if the boundary of the boundary cells (i.e. lines)
- * created include the cut facet given.
- *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::TestVolumeSurface()
-{
-  for (std::list<Teuchos::RCP<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
-  {
-    VolumeCell* vc = &**i;
-    vc->TestSurface();
-  }
-}
-
 
 /*----------------------------------------------------------------------------*
  * Tests if the area of the facet created by boundary cells is equal on both

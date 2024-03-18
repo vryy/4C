@@ -910,22 +910,6 @@ void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool
 
   eleinttype_ = INPAR::CUT::EleIntType_Tessellation;
 
-#ifdef DEBUGCUTLIBRARY
-  {
-    int volume_count = 0;
-    for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); ++i)
-    {
-      VolumeCell* vc = *i;
-
-      std::stringstream str;
-      str << "volume-" << count << "-" << volume_count << ".plot";
-      std::ofstream file(str.str().c_str());
-      vc->Print(file);
-      volume_count += 1;
-    }
-  }
-#endif
-
   if (not tetcellsonly)
   {
     if (mesh.CreateOptions().SimpleShapes())  // try to create only simple-shaped integration cells
@@ -963,11 +947,6 @@ void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool
   std::sort(points.begin(), points.end(), PointPidLess());
 
   // standard subtetrahedralization starts here, there also the boundary cells will be created
-
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-  std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-  std::cout << "Create TetMesh for element: " << this->Id() << std::endl;
-#endif
   TetMesh tetmesh(points, facets_, false);
   tetmesh.CreateElementTets(mesh, this, cells_, cut_faces_, count, tetcellsonly);
 

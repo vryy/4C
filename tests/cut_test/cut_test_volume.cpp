@@ -32,9 +32,6 @@ void test_cut_volumes()
 
   mesh2.CreateSideIds_CutTest();
 
-  mesh1.Status();
-  mesh2.Status();
-
   CORE::GEO::CUT::plain_element_set elements_done;
 
   mesh2.Cut(mesh1, elements_done);
@@ -65,9 +62,6 @@ void test_cut_volumes2()
         create_hex8_mesh(mesh2, i, j, k);
 
         mesh2.CreateSideIds_CutTest();
-
-        mesh1.Status();
-        mesh2.Status();
 
         CORE::GEO::CUT::plain_element_set elements_done;
 
@@ -143,6 +137,5 @@ void test_cut_volumes3()
 
   w.CreatePyramid5Sides(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }

@@ -67,7 +67,6 @@ void test_hex8_quad4_double_cut()
   create_quad4(cut_mesh2, xyze);
 
   // intersection.SelfCutTest_Cut();
-  intersection.Status();
 
   // OutputGenerator generator;
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);

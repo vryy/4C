@@ -61,8 +61,6 @@ class SimpleWrapper
 
   void CutTest_Cut(bool include_inner = true, bool do_Cut_Positions_Dofsets = false);
 
-  void Status();
-
   void AssumeVolumeCells(unsigned num);
 
  private:

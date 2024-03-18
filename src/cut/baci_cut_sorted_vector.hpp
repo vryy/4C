@@ -306,12 +306,6 @@ namespace CORE::GEO
       iterator InsertImpl_(iterator p, const value_type& x)
       {
         iterator i = vec_.insert(p, x);
-#ifdef DEBUGCUTLIBRARY
-        std::set<K, key_compare> testset(less_);
-        testset.insert(begin(), end());
-        if (testset.size() != vec_.size() or not std::equal(begin(), end(), testset.begin()))
-          dserror("set invariance failed");
-#endif
         return i;
       }
 

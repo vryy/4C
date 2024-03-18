@@ -2645,8 +2645,6 @@ void test_bacigenerated_6890()
   }
 
 
-  intersection.Status();
-
   intersection.CutTest_Cut(
       true, INPAR::CUT::VCellGaussPts_DirectDivergence, INPAR::CUT::BCellGaussPts_Tessellation);
   intersection.Cut_Finalize(true, INPAR::CUT::VCellGaussPts_DirectDivergence,

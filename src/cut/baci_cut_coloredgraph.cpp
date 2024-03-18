@@ -862,18 +862,8 @@ void CORE::GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& use
       Graph c1(graph.Split());
       Graph c2(graph.Split());
 
-#ifdef DEBUGCUTLIBRARY
-      c().DumpGraph("cycle.py");
-      connection.DumpGraph("connection.py");
-#endif
-
       // split the cycle into two cycles based on 'split trace'
       c.Split(used, free, connection, split_trace, c1, c2, graph);
-
-#ifdef DEBUGCUTLIBRARY
-      c1.DumpGraph("cycle1.py");
-      c2.DumpGraph("cycle2.py");
-#endif
 
       if (c1 == c2)
       {
@@ -928,25 +918,6 @@ void CORE::GEO::CUT::COLOREDGRAPH::CycleList::PushBack(Graph& g)
 void CORE::GEO::CUT::COLOREDGRAPH::CycleList::Print() const
 {
   for (const Cycle& c : cycles_) c.Print();
-}
-
-void CORE::GEO::CUT::COLOREDGRAPH::Graph::TestSplit()
-{
-  for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
-  {
-    int p = i->first;
-    if (p >= color_split_)
-    {
-      plain_int_set& row = i->second;
-      if (row.size() > 2)
-      {
-#ifdef DEBUGCUTLIBRARY
-        DumpGraph("failedgraph.py");
-#endif
-        dserror("colored graph not properly split");
-      }
-    }
-  }
 }
 
 void CORE::GEO::CUT::COLOREDGRAPH::Graph::DumpGraph(const std::string& name)

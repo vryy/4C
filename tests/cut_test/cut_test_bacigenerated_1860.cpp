@@ -2486,8 +2486,6 @@ void test_bacigenerated_1860()
     intersection.AddElement(1960, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
-  intersection.Status();
-
 
   intersection.CutMesh().CreateSideIds_CutTest();
   intersection.NormalMesh().CreateSideIdsAll_CutTest();

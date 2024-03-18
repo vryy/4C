@@ -62,10 +62,6 @@ CORE::GEO::CUT::TetMesh::TetMesh(
   CallQHull(points_, original_tets, project);
 
   tets_.reserve(original_tets.size());
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-  int counter = 0;
-  int counter_saved = 0;
-#endif
   for (std::vector<std::vector<int>>::iterator i = original_tets.begin(); i != original_tets.end();
        ++i)
   {
@@ -76,40 +72,13 @@ CORE::GEO::CUT::TetMesh::TetMesh(
     {
       tet.push_back(points_[*i]);
     }
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-    std::cout << "counter: " << counter << ", ";
-#endif
     if (IsValidTet(tet))
     {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-      std::cout << " counter_saved: " << counter_saved;
-      std::cout << ", IsValidTet( tet ): "
-                << "TRUE";
-      counter_saved++;
-#endif
-      // tets_.push_back( std::vector<int>() );
-      // std::swap( tets_.back(), t );
       tets_.push_back(t);
     }
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-    else
-    {
-      std::cout << "IsValidTet, threw away tet with nodes: " << t[0] << ", " << t[1] << ", " << t[2]
-                << ", " << t[3] << std::endl;
-      std::cout << "With volume: " << CalcVolumeOfTet(tet) << std::endl;
-    }
-#endif
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-    std::cout << std::endl;
-    counter++;
-#endif
   }
 
   Init();
-
-#ifdef TETMESH_GMSH_DEBUG_OUTPUT
-  GmshWriteCells();
-#endif
 }
 
 /* Loop over the facets of the tetmesh. Can every facet (triangulated at this stage) be associated
@@ -129,28 +98,16 @@ bool CORE::GEO::CUT::TetMesh::FillFacetMesh()
     Facet* f = *i;
     if (not FillFacet(f))  // Possible to FillFacet?
     {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-      std::cout << "Facet unable to be filled! ";
-      std::cout << "f->OnCutSide(): " << f->OnCutSide() << std::endl;
-      f->Print();
-      std::cout << std::endl;
-#endif
       return false;
     }
     if (f->HasHoles())  // Does Facet contain holes?
     {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-      std::cout << "f->HasHoles()";
-#endif
       const plain_facet_set& holes = f->Holes();
       for (plain_facet_set::const_iterator i = holes.begin(); i != holes.end(); ++i)
       {
         Facet* h = *i;
         if (not FillFacet(h))
         {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-          std::cout << "Facet unable to be filled!";
-#endif
           return false;
         }
       }
@@ -178,30 +135,6 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
 {
   FixBrokenTets();
 
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-  int sum = 0;
-  for (unsigned k = 0; k < accept_tets_.size(); k++)
-  {
-    sum += accept_tets_[k];
-  }
-  std::cout << "accept_tets_.sum(): " << sum << std::endl;
-#endif
-
-#ifdef TETMESH_GMSH_DEBUG_OUTPUT
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-  std::cout << "Entered CORE::GEO::CUT::TetMesh::CreateElementTets(...), count: " << count
-            << std::endl;
-#endif
-  if (count == 1)
-  {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-    std::cout << "  OUTPUT ActiveCells and SurfaceCells..." << std::endl;
-#endif
-    GmshWriteActiveCells();
-    GmshWriteSurfaceCells();
-  }
-#endif
-
   // Can the mesh be "filled from the facets"
   if (FillFacetMesh())
   {
@@ -216,20 +149,12 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
       // The border (i.e. surface-tris) between the tets in the cell.
       PlainEntitySet<3>& cell_border = cell_domain.Border();
 
-#ifdef DEBUGCUTLIBRARY
-      std::vector<Side*> facet_sides;
-#endif
-
       const plain_facet_set& facets = vc->Facets();
       for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
       {
         Facet* f = *i;
         FacetMesh& fm = facet_mesh_[f];
         const PlainEntitySet<3>& tris = fm.SurfaceTris();
-
-#ifdef DEBUGCUTLIBRARY
-        facet_sides.push_back(f->ParentSide());
-#endif
 
         // All tris are added to the cell_border, i.e. (border_ in class Domain).
         //  These are later used to create "done_border_" later in SeedDomain.
@@ -264,13 +189,8 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
           // contain any tets.
 
           // Test that the VC is completely on a cut-side. (added by Magnus)
-#ifdef TEST_EMPTY_VC_IS_COMPLETELY_ON_CUTSIDE
-#ifdef DEBUGCUTLIBRARY
           std::cout << "Warning a volume cell has no integration-cells!" << std::endl;
-#endif
-#ifdef DEBUGCUTLIBRARY
-          double num_facet_counter = 0;
-#endif
+
           bool volume_cell_on_facet = true;
           bool does_not_share_same_cutside = true;
           for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
@@ -280,15 +200,6 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
             std::cout << "f->ShareSameCutSide(*facets.begin()): "
                       << f->ShareSameCutSide(*facets.begin()) << std::endl;
 
-#ifdef DEBUGCUTLIBRARY
-            std::cout << "num_facet_counter: " << num_facet_counter << std::endl;
-            std::cout << "f->OnCutSide(): " << f->OnCutSide() << std::endl;
-            std::cout << "f->ParentSide()->Id(): " << f->ParentSide()->Id() << std::endl;
-            std::cout << "f->IsPlanar(mesh,f->CornerPoints()): "
-                      << f->IsPlanar(mesh, f->CornerPoints()) << std::endl;
-            f->PrintPointIds();
-            num_facet_counter++;
-#endif
 
             if (not f->ShareSameCutSide(*facets.begin()))
             {
@@ -313,39 +224,12 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
             dserror("cell_domain.Empty() and facets not planar");
           else if (not does_not_share_same_cutside)
             dserror("cell_domain.Empty() and facets not on same cut-side");
-#endif
 
           continue;
         }
       }
 
       cell_domain.Fill();
-
-      // #ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-      //       std::cout << "cell_domain.Members().size(): " << cell_domain.Members().size();
-      //       std::cout << ", cell_domain.Border().size(): " << cell_domain.Border().size() <<
-      //       std::endl; std::cout << "Tet-IDs: "; for(unsigned j=0;
-      //       j<cell_domain.Members().size(); j++)
-      //       {
-      //         std::cout << cell_domain.Members()[j]->Id() << ", ";
-      //       }
-      //       std::cout << "Border-IDs: ";
-      //       for(unsigned j=0; j<cell_domain.Border().size(); j++)
-      //       {
-      //         std::cout << std::endl << cell_domain.Border()[j]->Id() << ": ";
-      //         for(unsigned l=0; l<3; l++)
-      //         {
-      //           std::cout << cell_domain.Border()[j]->GetHandle()[l] << ", ";
-      //         }
-      //       }
-      //       std::cout << std::endl;
-      // #endif
-
-
-#ifdef TETMESH_GMSH_DEBUG_OUTPUT
-      GmshWriteTriSet("cell_border", cell_border);
-      GmshWriteTetSet("cell_members", cell_members);
-#endif
 
       std::vector<std::vector<Point*>> tets;
       tets.reserve(cell_members.size());
@@ -375,11 +259,6 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
         Facet* f = *i;
         if (f->OnBoundaryCellSide())  // This is entered for both sides of the volume cell.
         {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-          std::cout << "facet on cut side: " << std::endl;
-          f->PrintPointIds();
-#endif
-
           FacetMesh& fm = facet_mesh_[f];
           const PlainEntitySet<3>& tris = fm.SurfaceTris();  // tris from the triangulated surface
           std::vector<Point*>& side_coords =
@@ -493,10 +372,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
       double n = l.Norm2();
       length = std::max(n, length);
     }
-#ifdef DEBUGCUTLIBRARY
-    std::ofstream pointfile("points.plot");
-    pointfile << m(0) << " " << m(1) << " " << m(2) << "\n";
-#endif
+
     for (int i = 0; i < n; ++i)
     {
       Point* p = points[i];
@@ -507,9 +383,6 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
       l.Scale(length / n);
       l.Update(1, m, 1);
       std::copy(l.A(), l.A() + 3, &coordinates[dim * i]);
-#ifdef DEBUGCUTLIBRARY
-      pointfile << l(0) << " " << l(1) << " " << l(2) << "\n";
-#endif
     }
   }
   else
@@ -692,25 +565,12 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
   plain_side_set sides;
   // Find if the points of the tet share a common side.
   FindCommonSides(t, sides);
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-  std::cout << "sides.size(): " << sides.size() << std::endl;
-  for (unsigned k2 = 0; k2 < sides.size(); k2++)
-  {
-    std::cout << "#" << k2 << ": ";
-    std::cout << "IsLevelSetSide: " << sides[k2]->IsLevelSetSide() << std::endl;
-    sides[k2]->Print();
-    std::cout << std::endl;
-  }
-#endif
 
   if (sides.size() == 0)
   {
     plain_facet_set facets;
     // Find if the points of the tet share a common facet.
     FindCommonFacets(t, facets);
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-    std::cout << "facets.size(): " << facets.size() << std::endl;
-#endif
     if (facets.size() == 0)
     {
       return true;
@@ -720,28 +580,6 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
     //  can't share a common facet? A cut-side can be outside of the element, thus a case can occur,
     //  when a tet is not on a cut-side. BUT shares a facet. However this is already tested in
     //  FindCommonSides, as the points know what sides it cuts.
-#ifdef DEBUGCUTLIBRARY
-    std::cout << "t.size(): " << t.size() << std::endl;
-    for (unsigned k = 0; k < t.size(); k++)
-    {
-      std::cout << "t[" << k << "]->Id()" << t[k]->Id() << std::endl;
-      std::cout << "t[k]->CutSides().size(): " << t[k]->CutSides().size() << std::endl;
-      for (unsigned k2 = 0; k2 < t[k]->CutSides().size(); k2++)
-      {
-        std::cout << "#" << k2 << ": ";
-        std::cout << "IsLevelSetSide: " << t[k]->CutSides()[k2]->IsLevelSetSide() << std::endl;
-        t[k]->CutSides()[k2]->Print();
-        std::cout << std::endl;
-      }
-      for (unsigned k2 = 0; k2 < t[k]->Facets().size(); k2++)
-      {
-        std::cout << "#" << k2 << ": ";
-        // std::cout << "IsLevelSetSide: " << t[k]->CutSides()[k2]->IsLevelSetSide() << std::endl;
-        t[k]->Facets()[k2]->PrintPointIds();
-        std::cout << std::endl;
-      }
-    }
-#endif
     dserror(
         "You have encountered a case where the a tet is not on a cut-side BUT is on a facet!!! "
         "CHECK IT!");
@@ -755,7 +593,7 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
       }
     }
     return true;
-  }  // end if(sides.size()==0)
+  }
 
   // Why would we want to accept a tet completely on a LevelSet-side?
   // POSSIBLE ANS: Might be a cut with more than 3nodes (i.e. 4,5,6) nodes NOT in a plane
@@ -777,13 +615,6 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
       // Eventhough all nodes share a level set side.
       if (facets.size() != 1)
       {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-        std::cout << "side.size()==1 and LEVELSetSide with facets.size(): " << facets.size() << "!"
-                  << std::endl;
-        std::cout << "This is most likely a degenerate cut case for the level-set. Something "
-                     "should have been done before this stage...."
-                  << std::endl;
-#endif
         //        std::cout << "facets.size(): " << facets.size();
         //        std::cout << "t.size(): " << t.size() << std::endl;
         //        for(unsigned k=0; k<t.size(); k++)
@@ -812,9 +643,6 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
         Facet* f = *i;
         if (f->IsTriangulated())
         {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-          std::cout << "sides.size()==1 and LEVELSetSide with Triangulated facets!" << std::endl;
-#endif
           return true;
         }
         else
@@ -829,10 +657,6 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
 #ifdef REMOVE_ALL_TETS_ON_CUTSIDE
   if (sides.size() > 0)
   {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-    std::cout << "One TET lies on MORE THAN one cut-side. CUT-SIDES OVERLAPPING! Discard this tet."
-              << std::endl;
-#endif
     return false;
   }
 #else
@@ -840,9 +664,6 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
   FindCommonFacets(t, facets);
   if (facets.size() == 0)
   {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-    std::cout << "sides.size()==" << sides.size() << ", and facets.size()==0" << std::endl;
-#endif
     return true;
   }
   for (plain_facet_set::iterator i = facets.begin(); i != facets.end(); ++i)
@@ -850,60 +671,12 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
     Facet* f = *i;
     if (f->IsTriangulated())  //(i.e. is this facet not a tri?)
     {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-      std::cout << "sides.size()==" << sides.size() << ", and f->IsTriangulated()" << std::endl;
-#endif
       return true;
     }
   }
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-  std::cout << "sides.size()==" << sides.size() << ", and facets.size(): " << facets.size()
-            << std::endl;
-  for (unsigned k2 = 0; k2 < facets.size(); k2++)
-  {
-    std::cout << "#" << k2 << ": ";
-    facets[k2]->PrintPointIds();
-    std::cout << std::endl;
-  }
-#endif
 #endif
   return false;
 }
-
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-double CORE::GEO::CUT::TetMesh::CalcVolumeOfTet(const std::vector<Point*>& t)
-{
-  if (t.size() != 4) dserror("Expected a tet. Size of vector is not 4.");
-  // create planes consisting of 3 nodes each
-  CORE::LINALG::Matrix<3, 1> p0(t[0]->X());
-  CORE::LINALG::Matrix<3, 1> p1(t[1]->X());
-  CORE::LINALG::Matrix<3, 1> p2(t[2]->X());
-  CORE::LINALG::Matrix<3, 1> p3(t[3]->X());
-
-  CORE::LINALG::Matrix<3, 1> v01;
-  CORE::LINALG::Matrix<3, 1> v02;
-  CORE::LINALG::Matrix<3, 1> v03;
-
-  v01.Update(1, p1, -1, p0, 0);
-  v02.Update(1, p2, -1, p0, 0);
-  v03.Update(1, p3, -1, p0, 0);
-
-  // create 4 normal vectors to each tet surface plane
-  CORE::LINALG::Matrix<3, 1> nplane012;
-
-  // cross product
-  nplane012(0) = v01(1) * v02(2) - v01(2) * v02(1);
-  nplane012(1) = v01(2) * v02(0) - v01(0) * v02(2);
-  nplane012(2) = v01(0) * v02(1) - v01(1) * v02(0);
-
-  // compute normal distance of point to plane of the three remaining points
-  double distance = nplane012.Dot(v03);
-
-  double vol_tet = distance / 6.0;
-
-  return vol_tet;
-}
-#endif
 
 /* This function is unused....
  */
@@ -926,9 +699,6 @@ void CORE::GEO::CUT::TetMesh::TestUsedPoints(const std::vector<std::vector<int>>
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::TetMesh::FixBrokenTets()
 {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-  int counter = 0;
-#endif
   for (std::vector<std::vector<int>>::iterator i = tets_.begin(); i != tets_.end(); ++i)
   {
     std::vector<int>& t = *i;
@@ -983,42 +753,22 @@ void CORE::GEO::CUT::TetMesh::FixBrokenTets()
     double min_dist_in_tet = temp.MinValue();
     // We want to test with this one I think... But might lead to problems.
     double tolerance = LINSOLVETOL * max_dist_to_orgin;
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-    double vol_tet = distance / 6.0;
-#endif
 #else
     double vol_tet = distance / 6.0;
-#ifdef DEBUGCUTLIBRARY
-    // This is the smallest distance between the base points in the tet and the height.
-    double min_dist_in_tet = temp.MinValue();
-    // We want to test with this one I think... But might lead to problems.
-    double tolerance = LINSOLVETOL * max_dist_to_orgin;
-#endif
-#endif
-
-#if TETMESH_EXTENDED_DEBUG_OUTPUT
-    std::cout << "=================================" << std::endl;
-    std::cout << "tolerance: " << tolerance << std::endl;
-    std::cout << "min_dist_in_tet: " << min_dist_in_tet << std::endl;
 #endif
 
     // Deactivate all tets that are too small. We might still need the tet to
     // create a cut surface tri. Afterwards we will discard it.
 #ifdef NEW_POSTOL_TET
+
     if (min_dist_in_tet < tolerance)
     {
       accept_tets_[i - tets_.begin()] = false;
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-      std::cout << "Removed tet(" << counter << ") , with volume: " << vol_tet << std::endl;
-#endif
     }
 #else
     if (fabs(vol_tet) < VOLUMETOL)
     {
       accept_tets_[i - tets_.begin()] = false;
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-      std::cout << "Removed tet(" << counter << ") , with volume: " << vol_tet << std::endl;
-#endif
     }
     //     else if ( fabs( distance / norm012 ) < 1e-7 )
     //     {
@@ -1026,32 +776,11 @@ void CORE::GEO::CUT::TetMesh::FixBrokenTets()
     //     }
 #endif
 
-
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-    // Is the TET accepted/rejected in the new framework but rejected/accepted in the old?
-    if ((min_dist_in_tet < tolerance) != (fabs(vol_tet) < VOLUMETOL))
-    {
-      std::cout << "=================================" << std::endl;
-      std::cout << "tolerance: " << tolerance << std::endl;
-      std::cout << "min_dist_in_tet: " << min_dist_in_tet << std::endl;
-      std::cout << "VOLUMETOL: " << VOLUMETOL << std::endl;
-      std::cout << "volume: " << vol_tet << std::endl;
-
-      if (min_dist_in_tet < tolerance)
-        std::cout << " TET is NOT ACCEPTED in new tolerance." << std::endl;
-      else
-        std::cout << " TET is ACCEPTED in new tolerance." << std::endl;
-    }
-#endif
-
     // tet numbering wrong exchange 1 with 3
     if (distance < 0)
     {
       std::swap(t[1], t[3]);
     }
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-    counter++;
-#endif
   }
 }
 
@@ -1141,145 +870,13 @@ void CORE::GEO::CUT::TetMesh::CollectCoordinates(
       side_coords.push_back(p1);
       side_coords.push_back(p2);
       side_coords.push_back(p3);
-
-#ifdef TETMESH_GMSH_DEBUG_OUTPUT
-      surface_tris_.push_back(side);
-#endif
     }
 
-#ifdef DEBUGCUTLIBRARY
     else
     {
       dserror("Side not on cut or marked surface!!! Shouldn't it be?");
     }
-#endif
   }
 }
-
-#ifdef TETMESH_GMSH_DEBUG_OUTPUT
-
-void CORE::GEO::CUT::TetMesh::GmshWriteCells()
-{
-  std::ofstream file("delaunaycells.pos");
-  file << "View \"delaunaycells\" {\n";
-  for (std::vector<std::vector<int>>::iterator i = tets_.begin(); i < tets_.end(); ++i)
-  {
-    std::vector<int>& t = *i;
-    GmshWriteTet(file, i - tets_.begin(), t);
-  }
-  file << "};\n";
-}
-
-void CORE::GEO::CUT::TetMesh::GmshWriteActiveCells()
-{
-  std::ofstream file("activecells.pos");
-  file << "View \"activecells\" {\n";
-  for (std::vector<std::vector<int>>::iterator i = tets_.begin(); i < tets_.end(); ++i)
-  {
-    unsigned pos = i - tets_.begin();
-    if (accept_tets_[pos])
-    {
-      std::vector<int>& t = *i;
-      GmshWriteTet(file, i - tets_.begin(), t);
-    }
-  }
-  file << "};\n";
-}
-
-void CORE::GEO::CUT::TetMesh::GmshWriteSurfaceCells()
-{
-  std::ofstream file("surfacecells.pos");
-  file << "View \"surfacecells\" {\n";
-  for (std::map<Handle<3>, Entity<3>>::iterator i = tet_surfaces_.begin(); i != tet_surfaces_.end();
-       ++i)
-  {
-    Entity<3>& tri = i->second;
-    std::vector<int> t(tri(), tri() + 3);
-    GmshWriteTri(file, tri.Id(), t);
-  }
-  file << "};\n";
-}
-
-void CORE::GEO::CUT::TetMesh::GmshWriteSurfaceTris()
-{
-  std::ofstream file("surfacetris.pos");
-  file << "View \"surfacetris\" {\n";
-  for (std::vector<std::vector<int>>::iterator i = surface_tris_.begin(); i < surface_tris_.end();
-       ++i)
-  {
-    std::vector<int>& t = *i;
-    GmshWriteTri(file, i - surface_tris_.begin(), t);
-  }
-  file << "};\n";
-}
-
-void CORE::GEO::CUT::TetMesh::GmshWriteTriSet(
-    const std::string& name, const PlainEntitySet<3>& tris)
-{
-  std::string filename = name + ".pos";
-  std::ofstream file(filename.c_str());
-  file << "View \"" << name << "\" {\n";
-  for (PlainEntitySet<3>::const_iterator i = tris.begin(); i != tris.end(); ++i)
-  {
-    Entity<3>& tri = **i;
-    std::vector<int> t(tri(), tri() + 3);
-    GmshWriteTri(file, tri.Id(), t);
-  }
-  file << "};\n";
-}
-
-void CORE::GEO::CUT::TetMesh::GmshWriteTetSet(
-    const std::string& name, const PlainEntitySet<4>& tets)
-{
-  std::string filename = name + ".pos";
-  std::ofstream file(filename.c_str());
-  file << "View \"" << name << "\" {\n";
-  for (PlainEntitySet<4>::const_iterator i = tets.begin(); i != tets.end(); ++i)
-  {
-    Entity<4>& tet = **i;
-    std::vector<int> t(tet(), tet() + 4);
-    GmshWriteTet(file, tet.Id(), t);
-  }
-  file << "};\n";
-}
-
-void CORE::GEO::CUT::TetMesh::GmshWriteTri(std::ostream& file, int eid, const std::vector<int>& t)
-{
-  GmshWriteConnect(file, "ST", t);
-  GmshWritePosition(file, eid, t);
-}
-
-void CORE::GEO::CUT::TetMesh::GmshWriteTet(std::ostream& file, int eid, const std::vector<int>& t)
-{
-  GmshWriteConnect(file, "SS", t);
-  GmshWritePosition(file, eid, t);
-}
-
-void CORE::GEO::CUT::TetMesh::GmshWriteConnect(
-    std::ostream& file, std::string name, const std::vector<int>& t)
-{
-  file << name << "(";
-  for (std::vector<int>::const_iterator j = t.begin(); j != t.end(); ++j)
-  {
-    Point* p = points_[*j];
-    if (j != t.begin()) file << ",";
-    file << p->X()[0] << "," << p->X()[1] << "," << p->X()[2];
-  }
-  file << "){";
-}
-
-void CORE::GEO::CUT::TetMesh::GmshWritePosition(
-    std::ostream& file, int eid, const std::vector<int>& t)
-{
-  for (std::vector<int>::const_iterator j = t.begin(); j != t.end(); ++j)
-  {
-    Point* p = points_[*j];
-    if (j != t.begin()) file << ",";
-    file << p->Position();
-  }
-  file << "};  // " << eid << "\n";
-}
-
-#endif
 
 BACI_NAMESPACE_CLOSE

@@ -219,13 +219,6 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           else
             dotProduct = dotProduct23;
 
-#ifdef DEBUGCUTLIBRARY
-          std::cout << "dotProduct01: " << dotProduct01 << ", dotProduct23 " << dotProduct23
-                    << std::endl;
-          if (dotProduct01 * dotProduct23 < 0.0)
-            std::cout << "WARNING: dotProduct not unique!!!" << std::endl;
-#endif
-
           if (dotProduct > 0.0)
             connect01and23 = true;
           else
@@ -235,12 +228,6 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           if (lsv(0) <= 0 and lsv(1) >= 0 and lsv(2) <= 0 and lsv(3) >= 0)
           {
 #ifdef USE_PHIDERIV_FOR_CUT_DETERMINATION
-#ifdef DEBUGCUTLIBRARY
-            if (negativemiddle != connect01and23)
-              std::cout << "Changed from previous configuration of midpoint evaluation!"
-                        << std::endl;
-#endif
-
             negativemiddle = connect01and23;
 #endif
 
@@ -259,12 +246,6 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           else if (lsv(0) >= 0 and lsv(1) <= 0 and lsv(2) >= 0 and lsv(3) <= 0)
           {
 #ifdef USE_PHIDERIV_FOR_CUT_DETERMINATION
-#ifdef DEBUGCUTLIBRARY
-            if (negativemiddle == connect01and23)
-              std::cout << "Changed from previous configuration of midpoint evaluation!"
-                        << std::endl;
-#endif
-
             negativemiddle = !connect01and23;
 #endif
             if (negativemiddle)

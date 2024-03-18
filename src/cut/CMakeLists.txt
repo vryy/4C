@@ -11,10 +11,3 @@ set(_dependencies
     )
 
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
-
-option(
-  DEBUGCUTLIBRARY "Turn on special output inside the cut library to be able to track errors" OFF
-  )
-if(DEBUGCUTLIBRARY)
-  target_compile_definitions(${AUTO_DEFINED_MODULE_NAME} PUBLIC DEBUGCUTLIBRARY)
-endif()

@@ -18,12 +18,7 @@
 
 #include <queue>
 
-#ifdef DEBUGCUTLIBRARY
-#define TETMESH_GMSH_DEBUG_OUTPUT
-#endif
-
-// FLAGS FOR EXTENDED OUTPUT
-// #define TETMESH_EXTENDED_DEBUG_OUTPUT
+// FLAGS FOR EXTENDED OUTPUTs
 // #define QHULL_EXTENDED_DEBUG_OUTPUT
 
 // FLAGS FOR NEW IMPLEMENTATION TESTING
@@ -34,9 +29,6 @@
 #define DIFF_QHULL_CALL
 #define NEW_SEED_DOMAIN
 #define NEW_POSTOL_TET
-
-// Extra safety test: (leads to error if REMOVE_ALL_TETS_ON_CUTSIDE is defined in cut_test
-// hex8_quad4_alex38) #define TEST_EMPTY_VC_IS_COMPLETELY_ON_CUTSIDE
 
 BACI_NAMESPACE_OPEN
 
@@ -463,9 +455,7 @@ namespace CORE::GEO
         {
           Domain<3> domain;
           PlainEntitySet<2>& lines = domain.Border();
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-          facet->PrintPointIds();
-#endif
+
           if (FindTrace(tm, facet, lines))
           {
             if (lines.size() < 3)
@@ -490,12 +480,6 @@ namespace CORE::GEO
 
                 if (tri != nullptr)
                 {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-                  std::cout << "ADDED tri!" << std::endl;
-                  std::cout << "tri->GetHandle()[0]: " << tri->GetHandle()[0]
-                            << ", tri->GetHandle()[1]: " << tri->GetHandle()[1]
-                            << ", tri->GetHandle()[2]: " << tri->GetHandle()[2] << std::endl;
-#endif
                   match = true;
                   domain.Add(tri);
                   break;
@@ -541,9 +525,6 @@ namespace CORE::GEO
             }
             else
             {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-              std::cout << "DID NOT FIND HANDLE FROM tet_lines_ map!!!!" << std::endl;
-#endif
               return false;
             }
           }
@@ -660,30 +641,6 @@ namespace CORE::GEO
       void CollectCoordinates(
           const std::vector<std::vector<int>>& sides, std::vector<Point*>& side_coords);
 
-#ifdef TETMESH_GMSH_DEBUG_OUTPUT
-
-      void GmshWriteCells();
-
-      void GmshWriteActiveCells();
-
-      void GmshWriteSurfaceCells();
-
-      void GmshWriteSurfaceTris();
-
-      void GmshWriteTriSet(const std::string& name, const PlainEntitySet<3>& tris);
-
-      void GmshWriteTetSet(const std::string& name, const PlainEntitySet<4>& tets);
-
-      void GmshWriteTri(std::ostream& file, int eid, const std::vector<int>& t);
-
-      void GmshWriteTet(std::ostream& file, int eid, const std::vector<int>& t);
-
-      void GmshWriteConnect(std::ostream& file, std::string name, const std::vector<int>& t);
-
-      void GmshWritePosition(std::ostream& file, int eid, const std::vector<int>& t);
-
-#endif
-
       /// Initialize valid tets and create children for the tet-cells (i.e. surfaces) and
       /// tet-surfaces (i.e. lines)
       ///   and the connectivity of these.
@@ -694,10 +651,6 @@ namespace CORE::GEO
 
       /// Somehow checks if tet is valid. Uses intersection for FindCommonSides(t,sides).
       bool IsValidTet(const std::vector<Point*>& t);
-
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-      double CalcVolumeOfTet(const std::vector<Point*>& t);
-#endif
 
       void TestUsedPoints(const std::vector<std::vector<int>>& tets);
 
@@ -791,9 +744,7 @@ namespace CORE::GEO
         {
           FacetMesh& fm = facet_mesh_[f];
           const PlainEntitySet<3>& tris = fm.SurfaceTris();
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-          int tri_counter = 0;
-#endif
+
           for (PlainEntitySet<3>::const_iterator i = tris.begin(); i != tris.end(); ++i)
           {
             Entity<3>* t = *i;
@@ -803,18 +754,6 @@ namespace CORE::GEO
             int possible_tets = tets.size();
             for (unsigned j = 0; j < tets.size(); j++)
             {
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-              std::cout << "tri_counter: " << tri_counter << std::endl;
-              std::cout << "tets[" << j << "]->Id(): " << tets[j]->Id() << std::endl;
-              std::cout << "tets[" << j << "](0):" << tets[j]->GetHandle()[0];
-              std::cout << ", tets[" << j << "](1):" << tets[j]->GetHandle()[1];
-              std::cout << ", tets[" << j << "](2):" << tets[j]->GetHandle()[2];
-              std::cout << ", tets[" << j << "](3):" << tets[j]->GetHandle()[3];
-              std::cout << std::endl;
-
-              std::cout << "accept_tets_[tets[j]->Id()]: " << accept_tets_[tets[j]->Id()]
-                        << std::endl;
-#endif
               if (not accept_tets_[tets[j]->Id()])
                 possible_tets--;
               else
@@ -852,22 +791,7 @@ namespace CORE::GEO
               if (not cell_domain.Contains(tets[0])) cell_domain.Add(tets[0]);
             }
 #endif
-
-#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-            tri_counter++;
-#endif
           }
-#ifdef DEBUGCUTLIBRARY
-          if (tris.size() == 0)
-          {
-            std::cout << "WARNING: No tris found for this facet!" << std::endl;
-          }
-//          else if(not atleast_one_tet_in_VC)
-//          {
-//            std::cout << "WARNING: No tets were accepted from this facet!!! Possibly, Volume Cell
-//            too small?" << std::endl;
-//          }
-#endif
         }
       }
 
@@ -885,10 +809,6 @@ namespace CORE::GEO
       // std::map<Handle<1>, Entity<1> > tet_points_;
 
       std::map<Facet*, FacetMesh> facet_mesh_;
-
-#ifdef TETMESH_GMSH_DEBUG_OUTPUT
-      std::vector<std::vector<int>> surface_tris_;
-#endif
     };
   }  // namespace CUT
 }  // namespace CORE::GEO

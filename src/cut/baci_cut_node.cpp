@@ -16,6 +16,25 @@
 
 BACI_NAMESPACE_OPEN
 
+/*
+Functions to catch implementation erros in debug mode
+*/
+namespace
+{
+  [[maybe_unused]] bool IsCutPositionUnchanged(
+      BACI::CORE::GEO::CUT::Point::PointPosition cutposition,
+      BACI::CORE::GEO::CUT::Point::PointPosition pos)
+  {
+    if ((cutposition == BACI::CORE::GEO::CUT::Point::inside and
+            pos == BACI::CORE::GEO::CUT::Point::outside) or
+        (cutposition == BACI::CORE::GEO::CUT::Point::outside and
+            pos == BACI::CORE::GEO::CUT::Point::inside))
+      return false;
+    else
+      return true;
+  }
+}  // namespace
+
 
 /*------------------------------------------------------------------------------*
   | Operator () compare operator for plain_volumecell_sets
@@ -705,17 +724,9 @@ void CORE::GEO::CUT::Node::SelfCutPosition(Point::PointPosition pos)
 {
   if (selfcutposition_ != pos)
   {
-    // #ifdef DEBUGCUTLIBRARY
-    if ((selfcutposition_ == Point::inside and pos == Point::outside) or
-        (selfcutposition_ == Point::outside and pos == Point::inside))
-    {
-      std::cout << "selfcutnode with changing position inside->outside or vice versa " << nid_
-                << std::endl;
-      dserror(
-          "Are you sure that you want to change the selfcut-node-position from inside to outside "
-          "or vice versa?");
-    }
-    // #endif
+    dsassert(IsCutPositionUnchanged(selfcutposition_, pos),
+        "Are you sure that you want to change the selfcut-node-position from inside to outside "
+        "or vice versa?");
 
     // do not overwrite oncutsurface nodes
     if (selfcutposition_ == Point::oncutsurface) return;

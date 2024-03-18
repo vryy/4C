@@ -555,8 +555,6 @@ void CORE::GEO::CutWizard::Run_Cut(
     bool include_inner  //!< perform cut in the interior of the cutting mesh
 )
 {
-  intersection_->Status();
-
   // just for time measurement
   comm_.Barrier();
 
@@ -640,8 +638,6 @@ void CORE::GEO::CutWizard::Run_Cut(
     if (myrank_ == 0 and screenoutput_)
       IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
   }
-
-  intersection_->Status(VCellgausstype_);
 }
 
 

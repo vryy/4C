@@ -94,8 +94,6 @@ namespace CORE::GEO
 
         void TestClosed();
 
-        void TestSplit();
-
         void TestFacets();
 
         void Print() const;
