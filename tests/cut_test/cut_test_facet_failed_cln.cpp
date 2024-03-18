@@ -3263,7 +3263,5 @@ void test_bacigenerated_1901()
 
 
 
-  intersection.Status();
-
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }

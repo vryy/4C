@@ -609,26 +609,6 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     dserror("negative volume predicted by the DirectDivergence integration rule;");
   }
 
-#ifdef DEBUGCUTLIBRARY  // check the volume with the moment fitting and check the values
-#ifdef LOCAL
-#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
-  std::cout << "Check volumecell with moment-fitting." << std::endl;
-#endif
-  VolumeIntegration vi(volcell_, elem1_, volcell_->Position(), 1);
-  CORE::LINALG::SerialDenseVector volMom = vi.compute_rhs_moment();
-  volMom(0) = volcell_->Volume();
-
-  if (fabs(volGlobal - volMom(0)) > 1e-6)
-  {
-    std::cout << "comparison of volume prediction\n";
-    std::cout << std::setprecision(15) << volGlobal << "\t" << volMom(0) << "\n";
-    // dserror("volume prediction is wrong");
-    dserror("DirectDiv and Momfitting are not producing same volumes!");
-    // std::cout << "DirectDiv and Momfitting are not producing same volumes!" << std::endl;
-  }
-#endif
-#endif
-
   volcell_->SetVolume(volGlobal);
   if (std::isnan(volGlobal))
   {

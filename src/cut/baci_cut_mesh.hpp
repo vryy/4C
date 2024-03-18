@@ -355,9 +355,6 @@ namespace CORE::GEO
       /// ???
       void PrintCellStats();
 
-      /// ???
-      void Status();
-
       /// print all facets
       void PrintFacets();
 

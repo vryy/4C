@@ -143,8 +143,6 @@ void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
     MPI_Comm_rank(MPI_COMM_WORLD, &mypid);
   }
 
-  Status();
-
   // build the static search tree for the collision detection in the self cut
   if (mypid == 0)
   {
@@ -259,8 +257,6 @@ void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
 
   // DumpGmshVolumeCells("CUT_vc", true);
   // DumpGmshIntegrationCells("CUT_intcells");
-
-  Status(VCellgausstype);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -362,40 +358,6 @@ void CORE::GEO::CUT::MeshIntersection::Cut_Positions_Dofsets(bool include_inner,
 CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::GetCutSide(int sid, int mi) const
 {
   return cut_mesh_[mi]->GetSide(sid);
-}
-
-
-/*--------------------------------------------------------------------------------------*
- * status
- *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
-{
-  // call status of parent intersection
-  my::Status(gausstype);
-
-#ifdef BACI_DEBUG
-  for (std::vector<Teuchos::RCP<MeshHandle>>::iterator i = cut_mesh_.begin(); i != cut_mesh_.end();
-       ++i)
-  {
-    MeshHandle& cut_mesh_handle = **i;
-    Mesh& cut_mesh = cut_mesh_handle.LinearMesh();
-    cut_mesh.Status();
-  }
-
-#ifdef DEBUGCUTLIBRARY
-  int count = 0;
-  for (std::vector<Teuchos::RCP<MeshHandle>>::iterator i = cut_mesh_.begin(); i != cut_mesh_.end();
-       ++i)
-  {
-    MeshHandle& cut_mesh_handle = **i;
-    Mesh& cut_mesh = cut_mesh_handle.LinearMesh();
-    std::stringstream str;
-    str << "cut_mesh" << count << ".pos";
-    cut_mesh.DumpGmsh(str.str().c_str());
-    count++;
-  }
-#endif
-#endif
 }
 
 BACI_NAMESPACE_CLOSE

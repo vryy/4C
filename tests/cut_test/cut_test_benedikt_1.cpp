@@ -184,7 +184,5 @@ void test_benedikt1()
   int eid = 192551;
 
   intersection.AddElement(eid, nids, hex8_xyze, CORE::FE::CellType::hex8);
-
-  intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }

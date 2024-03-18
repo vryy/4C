@@ -808,6 +808,7 @@ void CORE::GEO::CUT::VolumeCell::DumpGmsh(std::ofstream& file)
 #else
     const std::vector<std::vector<double>> corners = ref->CornerPointsGlobal(ParentElement());
 #endif
+
     for (unsigned i = 0; i < corners.size(); i++)
     {
       const std::vector<double> coords1 = corners[i];
@@ -1576,13 +1577,6 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
   Teuchos::RCP<CORE::FE::GaussPoints> gp =
       dd.VCIntegrationRule(RefEqnPlane_);  // compute main gauss points
   gp_ = GenerateInternalGaussRule(gp);  // compute internal gauss points for every main gauss point
-
-#ifdef DEBUGCUTLIBRARY  // write volumecell, main and internal Gauss points
-  {
-    CORE::FE::GaussIntegration gpi(gp_);
-    dd.DivengenceCellsGMSH(gpi, gp);
-  }
-#endif
 
   // compute volume of this cell
   // also check whether generated gauss rule predicts volume accurately

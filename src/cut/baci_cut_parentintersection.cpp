@@ -520,10 +520,6 @@ void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
 
   Mesh& m = NormalMesh();
 
-#ifdef DEBUGCUTLIBRARY
-  include_inner = true;  // Needed for debugging the volume
-#endif
-
   if (VCellgausstype == INPAR::CUT::VCellGaussPts_Tessellation)
   {
     TEUCHOS_FUNC_TIME_MONITOR("XFEM::FluidWizard::Cut::Tessellation");
@@ -531,55 +527,26 @@ void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
         0, tetcellsonly);  // boundary cells will be created within TetMesh.CreateElementTets
     // m.RemoveEmptyVolumeCells();
 
-    //    // Test and Debug:
+    // Test:
     m.TestElementVolume(true, VCellgausstype);
     if (myrank_ == 0 and screenoutput) IO::cout << "\n\t *     TestElementVolume ...";
     m.TestFacetArea();
     if (myrank_ == 0 and screenoutput) IO::cout << "\n\t *     TestFacetArea ...";
-
-#ifdef DEBUGCUTLIBRARY
-    // m.TestVolumeSurface(); //Broken test, needs to be fixed for proper usage.
-    m.TestFacetArea();
-    m.TestElementVolume(true, VCellgausstype);
-    DebugCut(m);
-#endif
   }
   else if (VCellgausstype == INPAR::CUT::VCellGaussPts_MomentFitting)
   {
     TEUCHOS_FUNC_TIME_MONITOR("XFEM::FluidWizard::Cut::MomentFitting");
     m.MomentFitGaussWeights(include_inner, BCellgausstype);
-#ifdef DEBUGCUTLIBRARY
     m.TestFacetArea();
-#endif
   }
   else if (VCellgausstype == INPAR::CUT::VCellGaussPts_DirectDivergence)
   {
     TEUCHOS_FUNC_TIME_MONITOR("XFEM::FluidWizard::Cut::DirectDivergence");
 
-#ifndef LOCAL
-#if EXTENDED_CUT_DEBUG_OUTPUT
-    if (myrank_ == 0)
-      std::cout << "\t DirectDivergence Cut with Global configuration!" << std::endl;
-#endif
-#endif
     m.DirectDivergenceGaussRule(include_inner, BCellgausstype);
-
-    //    m.TestElementVolume( true, VCellgausstype );
-    //    m.TestFacetArea();
-
-#ifdef DEBUGCUTLIBRARY
-    m.TestElementVolume(true, VCellgausstype);
-    m.TestFacetArea();
-#endif
   }
   else
     dserror("Undefined option of volumecell gauss points generation");
-
-#ifdef DEBUGCUTLIBRARY
-  std::stringstream str;
-  str << "fullfinalcutoutput." << myrank_ << ".pos";
-  NormalMesh().DumpGmsh(str.str());
-#endif
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -932,105 +899,6 @@ void CORE::GEO::CUT::ParentIntersection::DumpGmshIntegrationCells(std::string na
 void CORE::GEO::CUT::ParentIntersection::DumpGmshVolumeCells(std::string name)
 {
   NormalMesh().DumpGmshVolumeCells(name);
-}
-
-
-/*--------------------------------------------------------------------------------------*
- * status
- *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
-{
-#ifdef BACI_DEBUG
-  NormalMesh().Status();
-
-#ifdef DEBUGCUTLIBRARY
-  NormalMesh().DumpGmsh("mesh.pos");
-
-  if (gausstype == INPAR::CUT::VCellGaussPts_Tessellation)
-  {
-    DumpGmshIntegrationCells("integrationcells.pos");
-    DumpGmshVolumeCells("volumecells.pos");
-  }
-  else
-    DumpGmshVolumeCells("volumecells.pos");
-#endif
-#endif
-}
-
-/*
- * If the cut is done by Tesselation then the volume of the volumecells,
- *   can be compared to DirectDivergence.
- */
-void CORE::GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
-{
-  // TEST IF VOLUMES PREDICTED OF CELLS ARE SAME:
-  // ###########################################################
-  std::vector<double> tessVol, dirDivVol;
-  double diff_tol = 10000 * BASICTOL;  // 1e-20; //How sharp to test for.
-
-  const std::list<Teuchos::RCP<VolumeCell>>& other_cells = m.VolumeCells();
-
-  for (std::list<Teuchos::RCP<VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    CORE::GEO::CUT::VolumeCell* vc = &**i;
-    tessVol.push_back(vc->Volume());
-
-    // TEST THAT TESSELATION DOES NOT HAVE EMPTY VolumeCells.
-    //++++++++++++++++++++
-    //     const CORE::GEO::CUT::plain_integrationcell_set & integrationcells =
-    //     vc->IntegrationCells();
-
-    //     if(integrationcells.size()==0)
-    //     {
-    //       dserror("VolumeCell contains 0 integration cells.");
-    //     }
-    //++++++++++++++++++++
-  }
-  //------------------------------------------------------
-
-  // Cut with DirectDivergence as well
-  for (std::list<Teuchos::RCP<VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    CORE::GEO::CUT::VolumeCell* vc = &**i;
-    vc->DirectDivergenceGaussRule(vc->ParentElement(), m, true);
-    dirDivVol.push_back(vc->Volume());
-  }
-
-  // Test Direct Divergence against Tesselation
-  //------------------------------------------------------
-  bool error = false;
-  double sumtessvol = 1.0;
-  for (unsigned i = 0; i < tessVol.size(); i++) sumtessvol += tessVol[i];
-
-  // Estimate the total volume of a element...
-  sumtessvol = sumtessvol / (tessVol.size() / 2.0);
-
-  std::cout << "Tolerance: " << diff_tol * sumtessvol << std::endl;
-  std::cout << "the volumes predicted by\n Tessellation \t DirectDivergence\n";
-  for (unsigned i = 0; i < tessVol.size(); i++)
-  {
-    std::cout << std::setprecision(17) << std::scientific << tessVol[i] << "\t"
-              << dirDivVol[i];  //<<"\n";
-    if (fabs(tessVol[i] - dirDivVol[i]) >
-        diff_tol * (sumtessvol))  // (1e-8) diff_tol*(sumtessvol)) // Is the relative difference
-                                  // greater than the Tolerance?
-    {
-      std::cout << "\t difference: " << fabs(tessVol[i] - dirDivVol[i]);  // << "\n";
-      error = true;
-    }
-    else if (std::isnan(tessVol[i]) or std::isnan(dirDivVol[i]))
-      error = true;
-    std::cout << "\n";
-  }
-  if (error)
-  {
-    dserror("Volume predicted by one of the methods is wrong.");
-    // std::cout << "Volume predicted by one of the methods is wrong." << std::endl;
-  }
-  //------------------------------------------------------
-  // ###########################################################
 }
 
 BACI_NAMESPACE_CLOSE

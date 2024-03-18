@@ -109,14 +109,6 @@ namespace CORE::GEO
       /// get the cut mesh based on mesh id
       Mesh& CutMesh(int i = 0) { return cut_mesh_[i]->LinearMesh(); }
 
-      /*========================================================================*/
-      //! @name statistics, output
-      /*========================================================================*/
-
-      /// status
-      void Status(
-          INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation) override;
-
      private:
       /*========================================================================*/
       //! @name private class variables

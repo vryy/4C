@@ -38,8 +38,6 @@ namespace CORE::GEO
       void Cut(Mesh& parent_mesh, Element* element, const plain_volumecell_set& parent_cells,
           int count, bool tetcellsonly = false);
 
-      void Status();
-
       Mesh& NormalMesh() { return mesh_; }
 
      private:

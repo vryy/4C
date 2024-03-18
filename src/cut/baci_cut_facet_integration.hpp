@@ -136,12 +136,6 @@ namespace CORE::GEO
       void TemporaryQuad4(
           const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells);
 
-      /*!
-      \brief Check whether the facet area calculated by splitting and triangulation are the same
-       */
-      void DebugAreaCheck(
-          std::list<Teuchos::RCP<BoundaryCell>> &divCells, std::string alreadyDone, Mesh &mesh);
-
       //! considered facet
       Facet *face1_;
 

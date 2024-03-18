@@ -204,8 +204,6 @@ CORE::GEO::CUT::TetMeshIntersection::TetMeshIntersection(Options& options, Eleme
       }
     }
   }
-
-  Status();
 }
 
 void CORE::GEO::CUT::TetMeshIntersection::FindEdgeCuts()
@@ -274,21 +272,6 @@ void CORE::GEO::CUT::TetMeshIntersection::FindEdgeCuts()
 void CORE::GEO::CUT::TetMeshIntersection::Cut(Mesh& parent_mesh, Element* element,
     const plain_volumecell_set& parent_cells, int count, bool tetcellsonly)
 {
-  mesh_.Status();
-
-#ifdef DEBUGCUTLIBRARY
-  {
-    std::stringstream str;
-    str << "tetmesh" << count << ".pos";
-    mesh_.DumpGmsh(str.str().c_str());
-  }
-  {
-    std::stringstream str;
-    str << "tetcutmesh" << count << ".pos";
-    cut_mesh_.DumpGmsh(str.str().c_str());
-  }
-#endif
-
   FindEdgeCuts();
 
   plain_element_set elements_done;
@@ -306,8 +289,6 @@ void CORE::GEO::CUT::TetMeshIntersection::Cut(Mesh& parent_mesh, Element* elemen
   cut_mesh_.RectifyCutNumerics();
   mesh_.RectifyCutNumerics();
 
-  mesh_.Status();
-
   mesh_.MakeCutLines();
   mesh_.MakeFacets();
   mesh_.MakeVolumeCells();
@@ -316,24 +297,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Cut(Mesh& parent_mesh, Element* elemen
 
   MapVolumeCells(parent_mesh, element, parent_cells, cellmap);
 
-#ifdef DEBUGCUTLIBRARY
-  mesh_.DumpGmsh("mesh.pos");
-#endif
-
-#ifdef DEBUGCUTLIBRARY
-  mesh_.DumpGmsh("mesh.pos");
-#endif
-
   mesh_.CreateIntegrationCells(count, tetcellsonly);
-  // mesh_.RemoveEmptyVolumeCells();
-
-#ifdef DEBUGCUTLIBRARY
-  // mesh_.TestVolumeSurface(); //Broken test, needs to be fixed for proper usage.
-  mesh_.TestFacetArea(true);
-#endif
-#ifdef DEBUGCUTLIBRARY
-  mesh_.TestElementVolume(true);
-#endif
 
   Fill(parent_mesh, element, parent_cells, cellmap);
 }
@@ -927,21 +891,6 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
             facetsonsurface.find(child_facet->ParentSide());
         if (j == facetsonsurface.end())
         {
-#ifdef DEBUGCUTLIBRARY
-          {
-            std::ofstream f("parentvolume.plot");
-            parent_cell->Print(f);
-          }
-          {
-            std::ofstream f("childvolume.plot");
-            vc->Print(f);
-          }
-
-          element->GnuplotDump();
-          element->DumpFacets();
-
-#endif
-
           // Parent side not included in facetsonsurface. This might be a
           // numerical problem. This might be a real bug.
 
@@ -951,9 +900,6 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
           // Try to recover.
           if (not child_facet->HasHoles() and not child_facet->IsTriangulated())
           {
-#ifdef DEBUGCUTLIBRARY
-            std::ofstream file("parentfacets.plot");
-#endif
             for (std::map<Side*, std::vector<Side*>>::iterator i = side_parent_to_child_.begin();
                  i != side_parent_to_child_.end(); ++i)
             {
@@ -966,10 +912,6 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
                 for (std::vector<Facet*>::const_iterator i = fs.begin(); i != fs.end(); ++i)
                 {
                   Facet* f = *i;
-
-#ifdef DEBUGCUTLIBRARY
-                  f->Print(file);
-#endif
 
                   if (parent_cell->Facets().count(f) > 0)
                   {
@@ -1184,14 +1126,6 @@ void CORE::GEO::CUT::TetMeshIntersection::RegisterNewPoints(
   }
 }
 
-void CORE::GEO::CUT::TetMeshIntersection::Status()
-{
-#ifdef DEBUGCUTLIBRARY
-  mesh_.DumpGmsh("tetmesh.pos");
-  cut_mesh_.DumpGmsh("tetcutmesh.pos");
-#endif
-}
-
 void CORE::GEO::CUT::TetMeshIntersection::FindVolumeCell(Point* p, plain_volumecell_set& childset)
 {
   const plain_facet_set& facets = p->Facets();
@@ -1201,18 +1135,6 @@ void CORE::GEO::CUT::TetMeshIntersection::FindVolumeCell(Point* p, plain_volumec
     const plain_volumecell_set& facet_cells = f->Cells();
     std::copy(facet_cells.begin(), facet_cells.end(), std::inserter(childset, childset.begin()));
   }
-
-#ifdef DEBUGCUTLIBRARY
-  if (facets.size() > 0)
-  {
-    for (plain_volumecell_set::const_iterator i = childset.begin(); i != childset.end(); ++i)
-    {
-      VolumeCell* vc = *i;
-      if (vc->Contains(p)) return;
-    }
-    dserror("point not contained in volume cell");
-  }
-#endif
 }
 
 void CORE::GEO::CUT::TetMeshIntersection::SwapPoints(

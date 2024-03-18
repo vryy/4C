@@ -54,20 +54,6 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
   // here we create the facets...
   Cycle cycle;
   FillGraph(element, side, cycle, strategy);
-#ifdef DEBUGCUTLIBRARY
-  {
-    std::ofstream f("all_points0.plot");
-    GetGraph().PlotAllPoints(f);
-  }
-  {
-    std::ofstream f("graph0.txt");
-    GetGraph().Print(f);
-  }
-  {
-    std::ofstream f("cycle0.txt");
-    f << cycle;
-  }
-#endif
 
   // if any edge in graph has single point
   if (GetGraph().HasSinglePoints(location))
@@ -77,9 +63,6 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
     if (side->IsLevelSetSide() or GetGraph().SimplifyConnections(element, side) or
         (GetGraph().HasTouchingEdge(element, side)))
     {
-#if DEBUG_POINTGRAPH
-      std::cout << "WARNING: Deleting single point in the pointgraph" << std::endl;
-#endif
       GetGraph().FixSinglePoints(cycle);  // delete single point edges
     }
     else
@@ -88,23 +71,7 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
       GetGraph().Print(f);
       dserror("Pointgraph has single point.This shouldn't happen or we should understand why!");
     }
-    //    GetGraph().TestClosed();
   }
-
-#ifdef DEBUGCUTLIBRARY
-  {
-    std::ofstream f("all_points.plot");
-    GetGraph().PlotAllPoints(f);
-  }
-  {
-    std::ofstream f("graph.txt");
-    GetGraph().Print(f);
-  }
-  {
-    std::ofstream f("cycle.txt");
-    f << cycle;
-  }
-#endif
 
   // Simplified graph strategy for three points as ther is anyway just one way of creating the
   // facets! ager 09/19: this is a very good idea to do that but changed results of the testcase
@@ -278,23 +245,6 @@ void CORE::GEO::CUT::IMPL::PointGraph::AddCutLinesToGraph(
 #if DEBUG_POINTGRAPH
     l->BeginPoint()->Print();
     l->EndPoint()->Print();
-#endif
-
-
-#ifdef DEBUGCUTLIBRARY
-    if (element_cut)
-    {
-      Point *p1 = l->BeginPoint();
-      Point *p2 = l->EndPoint();
-      if (not p1->IsCut(element) or not p2->IsCut(element))
-      {
-        std::stringstream str;
-        str << "line between " << (*p1) << " and " << (*p2)
-            << " is cut by element, but point cuts are: " << p1->IsCut(element) << " and "
-            << p2->IsCut(element);
-        dserror(str.str());
-      }
-    }
 #endif
   }
 }
