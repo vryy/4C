@@ -21,6 +21,7 @@
 #include "4C_particle_interaction_utils.hpp"
 #include "4C_particle_rigidbody_affiliation_pairs.hpp"
 #include "4C_particle_rigidbody_datastate.hpp"
+#include "4C_particle_rigidbody_initial_field.hpp"
 #include "4C_particle_rigidbody_runtime_vtp_writer.hpp"
 #include "4C_particle_rigidbody_utils.hpp"
 
@@ -1929,6 +1930,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidBodyVelocitiesAfterPhaseChange
     // update velocity
     PARTICLEINTERACTION::UTILS::VecAddCross(vel_k, angvel_k, prev_r_kk);
   }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialConditions()
+{
+  PARTICLERIGIDBODY::SetInitialFields(params_, ownedrigidbodies_, *rigidbodydatastate_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

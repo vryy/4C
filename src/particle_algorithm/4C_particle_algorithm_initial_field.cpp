@@ -39,7 +39,9 @@ void PARTICLEALGORITHM::InitialFieldHandler::Init()
   std::map<std::string, PARTICLEENGINE::StateEnum> initialfieldtostateenum = {
       std::make_pair("INITIAL_TEMP_FIELD", PARTICLEENGINE::Temperature),
       std::make_pair("INITIAL_VELOCITY_FIELD", PARTICLEENGINE::Velocity),
-      std::make_pair("INITIAL_ACCELERATION_FIELD", PARTICLEENGINE::Acceleration)};
+      std::make_pair("INITIAL_ANGULAR_VELOCITY_FIELD", PARTICLEENGINE::AngularVelocity),
+      std::make_pair("INITIAL_ACCELERATION_FIELD", PARTICLEENGINE::Acceleration),
+      std::make_pair("INITIAL_ANGULAR_ACCELERATION_FIELD", PARTICLEENGINE::AngularAcceleration)};
 
   // iterate over particle states
   for (auto& stateIt : initialfieldtostateenum)
@@ -87,6 +89,8 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
 
       // no owned particles of current particle type
       if (particlestored <= 0) continue;
+
+      if (not container->HaveStoredState(particleState)) continue;
 
       // get id of function
       const int functid = initialFieldIt.second;

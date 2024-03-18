@@ -286,6 +286,13 @@ namespace PARTICLERIGIDBODY
 
     const std::vector<int>& GetOwnedRigidBodies() const override { return ownedrigidbodies_; }
 
+    /*!
+     * \brief set initial states of rigid particles
+     *
+     * Evaluate initial conditions of rigid particles.
+     */
+    void SetInitialConditions();
+
    private:
     /*!
      * \brief init rigid body unique global identifier handler
