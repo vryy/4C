@@ -8,7 +8,10 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
+#include "baci_lib_discret.hpp"
 #include "baci_lib_elements_paramsinterface.hpp"
+#include "baci_linalg_serialdensematrix.hpp"
+#include "baci_linalg_serialdensevector.hpp"
 #include "baci_solid_3D_ele.hpp"
 #include "baci_solid_3D_ele_calc_interface.hpp"
 #include "baci_solid_3D_ele_calc_lib.hpp"
@@ -20,6 +23,40 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
+
+namespace
+{
+  std::vector<double> GetAccelerationVector(
+      const DRT::Discretization& discretization, const std::vector<int>& lm)
+  {
+    const Epetra_Vector& acceleration = *discretization.GetState("acceleration");
+    std::vector<double> my_acceleration(lm.size());
+    DRT::UTILS::ExtractMyValues(acceleration, my_acceleration, lm);
+
+    return my_acceleration;
+  }
+
+  void EvaluateInertiaForce(const CORE::LINALG::SerialDenseMatrix& mass_matrix,
+      const CORE::LINALG::SerialDenseVector& acceleration,
+      CORE::LINALG::SerialDenseVector& inertia_force)
+  {
+    inertia_force.putScalar();
+    inertia_force.multiply(Teuchos::ETransp::NO_TRANS, Teuchos::ETransp::NO_TRANS, 1.0, mass_matrix,
+        acceleration, 0.0);
+  }
+
+  void EvaluateInertiaForce(const DRT::Discretization& discretization, const std::vector<int>& lm,
+      const CORE::LINALG::SerialDenseMatrix& mass_matrix,
+      CORE::LINALG::SerialDenseVector& inertia_force)
+  {
+    std::vector<double> my_acceleration = GetAccelerationVector(discretization, lm);
+
+    CORE::LINALG::SerialDenseVector acceleration_vector(
+        Teuchos::DataAccess::View, my_acceleration.data(), static_cast<int>(lm.size()));
+
+    EvaluateInertiaForce(mass_matrix, acceleration_vector, inertia_force);
+  }
+}  // namespace
 
 int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -81,6 +118,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           },
           solid_calc_variant_);
 
+      EvaluateInertiaForce(discretization, lm, elemat2, elevec2);
       return 0;
     }
     case struct_calc_nlnstifflmass:
@@ -94,6 +132,24 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           solid_calc_variant_);
 
       LumpMatrix(elemat2);
+
+      EvaluateInertiaForce(discretization, lm, elemat2, elevec2);
+      return 0;
+    }
+    case struct_calc_internalinertiaforce:
+    {
+      const int num_dof_per_ele = static_cast<int>(lm.size());
+      CORE::LINALG::SerialDenseMatrix mass_matrix(num_dof_per_ele, num_dof_per_ele);
+
+      std::visit(
+          [&](auto& interface)
+          {
+            interface->EvaluateNonlinearForceStiffnessMass(*this, *SolidMaterial(), discretization,
+                lm, params, &elevec1, nullptr, &mass_matrix);
+          },
+          solid_calc_variant_);
+
+      EvaluateInertiaForce(discretization, lm, mass_matrix, elevec2);
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_update_istep:
