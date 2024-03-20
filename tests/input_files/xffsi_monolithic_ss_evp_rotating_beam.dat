@@ -139,7 +139,7 @@ COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1/0.4)*(1/0.4)*(0.8-2*y)
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1/0.4)*(1/0.4)*(0.8-2*y)
 ----------------------------------------------------------------------FUNCT4
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
-VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 5 TIMES 0 2.5 3.5 10.5 10000000 DESCRIPTION 1/2(sin(pi/2.0*t/2.5-pi/2)+1) 1 cos((t/3.5-1)*pi/2) -1
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 5 TIMES 0 2.5 3.5 10.5 10000000 DESCRIPTION 1/2 1 cos((t/3.5-1)*pi/2) -1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // xFluid__upper_surface
