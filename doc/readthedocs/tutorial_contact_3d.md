@@ -1,13 +1,13 @@
 # 3D Contact Tutorial
 
 This tutorial gives a short introduction to the setup of a simple 3D contact problem.
-The goal of this tutorial is to give an overview of the general workflow in BACI and to show how to create a
+The goal of this tutorial is to give an overview of the general workflow in |FOURC| and to show how to create a
 working `.dat` input file.
 It is neither intended to be an introduction to the theory of contact mechanics, nor demonstrate all possible optional
 settings for a given (contact) problem.
-It is assumed that BACI has been built on your machine according to the instructions and has passed the tests without
+It is assumed that |FOURC| has been built on your machine according to the instructions and has passed the tests without
 error messages.
-For further information on how to build BACI and to test the build, please refer to
+For further information on how to build |FOURC| and to test the build, please refer to
 the [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md).
 
 ## Overview
@@ -18,7 +18,7 @@ the [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md).
     1. [Define Boundary Conditions](#define-boundary-conditions)
     1. [Specify Simulation Settings](#specify-simulation-settings)
 1. [Create .dat input file](#create-input-file)
-1. [Run Simulation in BACI, Post-processing and visualization in Paraview](#run-simulation)
+1. [Run Simulation in |FOURC|, Post-processing and visualization in Paraview](#run-simulation)
 
 ## Problem description
 
@@ -43,7 +43,7 @@ cube.
 
 ## Create files
 
-To create a `.dat` input file for BACI we need three files:
+To create a `.dat` input file for |FOURC| we need three files:
 
 - `.exo`/`.e` file containing the geometry and mesh
 - `.bc` file containing information on the boundary conditions
@@ -51,7 +51,7 @@ To create a `.dat` input file for BACI we need three files:
 
 ### Define Geometry
 
-Information on the geometry and mesh are passed on to BACI as part of a binary EXODUS file (`.e`).
+Information on the geometry and mesh are passed on to |FOURC| as part of a binary EXODUS file (`.e`).
 This file can be generated using the pre-processing software Cubit.
 Before we can export an `.exo` file from Cubit (File -> Export -> Files of type: `.e`), we need to specify the geometry
 and meshing parameters in Cubit.
@@ -137,8 +137,7 @@ The master and slave surfaces for the definition of the contact mortar problem c
 
 ### Specify Simulation Settings
 
-The prototype of the `.head` file contains an extensive list of possible parameter settings for running a simulation in
-BACI.
+The prototype of the `.head` file contains an extensive list of possible parameter settings for running a simulation in |FOURC|.
 It also gives information on the numerous abbreviations used in the input files.
 Hint: Use the search function of your editor to navigate the 13000 lines of text.
 
@@ -163,8 +162,8 @@ DBC.
 
 ## Create input file
 
-The final `.dat` input file for BACI can be created with the `pre_exodus` executable as described in
-the [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md).
+The final `.dat` input file for |FOURC| can be created with the `pre_exodus` executable 
+as described in the [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md).
 To manually create the `.dat` file the full command states:
 
 ```bash
@@ -180,7 +179,7 @@ plus a list of all nodes and structure elements.
 
 ## Run Simulation
 
-Again, following the instructions from the [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md), the BACI
+Again, following the instructions from the [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md), the |FOURC|
 executable can be invoked with the `tutorial_contact_3d.dat` input file.
 Since we chose the binary output option in our `.head` file (section `IO`),
 we also have to run a post processing tool before visualizing the results in Paraview.

@@ -29,7 +29,7 @@ As the name says, the definition can be a function :math:`f`
 #. only of time, :math:`f(t)`
 #. of a solution dependent variable, :math:`f(s)`.
 
-BACI has its own function parser, which recognises variables, algebraic terms, brackets and a number of functions, namely the following: :math:`\mathrm{acos}, \mathrm{asin}, \mathrm{atan}`, :math:`\cos, \sin, \tan`, :math:`\cosh, \sinh, \tanh`, :math:`\exp, \log, \log10`, :math:`\mathrm{sqrt}`, :math:`\mathrm{heaviside}`, :math:`\mathrm{fabs}, \mathrm{atan2}`. Additionally, the constant :math:`pi` is known. 
+|FOURC| has its own function parser, which recognises variables, algebraic terms, brackets and a number of functions, namely the following: :math:`\mathrm{acos}, \mathrm{asin}, \mathrm{atan}`, :math:`\cos, \sin, \tan`, :math:`\cosh, \sinh, \tanh`, :math:`\exp, \log, \log10`, :math:`\mathrm{sqrt}`, :math:`\mathrm{heaviside}`, :math:`\mathrm{fabs}, \mathrm{atan2}`. Additionally, the constant :math:`pi` is known.
 
 If the function cannot easily be given as a symbolic expression, the function may depend on additional user defined variables, which are given in the following way:
 

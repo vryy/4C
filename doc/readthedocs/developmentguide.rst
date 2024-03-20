@@ -7,8 +7,8 @@ Developer guide
 .. toctree::
     :maxdepth: 2
 
-    bacisetup
-    bacitesting
+    4Csetup
+    4Ctesting
     codingguidelines
     developer_addedinformation
     development_parts

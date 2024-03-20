@@ -17,7 +17,7 @@ For further details and references we refer the reader to [Wall99]_
 .. note::
 
     In case you want or need to see a sample solution for this tutorial
-    you will find corresponding files in the BACI subfolder `<baci-source>/tests/framework-tests/*`!
+    you will find corresponding files in the |FOURC| subfolder `<4C-sourcedir>/tests/framework-tests/*`!
     However, it is highly recommended to look at these files only in case
     you encounter severe problems while stepping through the tutorial.
 
@@ -30,8 +30,8 @@ Python), therefore we provide a *Journal*-file containing the necessary
 geometry commands as well as mesh and definitions for elements and
 boundary conditions, respectively.
 
-You can find this journal file within you BACI distribution. It is
-located in `<baci-source>/tests/framework-test/tutorial_fsi.jou`.
+You can find this journal file within you |FOURC| distribution. It is
+located in `<4C-sourcedir>/tests/framework-test/tutorial_fsi.jou`.
 
 Within Cubit, open the Journal-Editor (*Tools*\ :math:`\to`\ *Journal
 Editor*), paste the text from the journal file and press *play*. For
@@ -41,11 +41,11 @@ mesh to an exodus-file (filename: dc2d.exo) via
 *File*\ :math:`\to`\ *Export...*. During export, set the dimension
 explicitly to 2d.
 
-Working with *pre_exodus* and BACI
+Working with *pre_exodus* and |FOURC|
 -------------------------------------
 
-*pre_exodus* is a C++ code embedded into the BACI environment. It is
-meant to transfer a given mesh into a BACI-readable input file.
+*pre_exodus* is a C++ code embedded into the |FOURC| environment. It is
+meant to transfer a given mesh into a |FOURC|-readable input file.
 
 Preliminaries
 ~~~~~~~~~~~~~
@@ -56,10 +56,10 @@ If not already done, compile *pre_exodus* via
 
    make pre_exodus
 
-after configuring BACI in the usual way.
+after configuring |FOURC| in the usual way.
 
-General Procedure of Creating a Valid BACI Input File
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+General Procedure of Creating a Valid |FOURC| Input File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 With a given mesh including some nodal clouds to apply conditions to you
 need another text-file (*bc-file*) where you specify, what you would
@@ -68,8 +68,8 @@ declaration (fluid, structure, parameters, etc.) and the particular
 boundary condition such as Dirichlet or Neumann. Finally, a *header-file* 
 consists of general parameters such as solvers, algorithmic
 parameters, etc. Those three files are merged by *pre_exodus* into an
-input file for BACI. This file is then *automatically* validated using
-all available BACI validation and is therefore likely to run.
+input file for |FOURC|. This file is then *automatically* validated using
+all available |FOURC| validation and is therefore likely to run.
 
 Sure, you usually do not have already a proper *header-file* and
 matching *bc-file*. By typing
@@ -85,10 +85,10 @@ Similarly, ’default.bc’ consists of all your mesh entities and a list of
 all currently valid conditions. See next section for details how to work
 with it and how to get valid input files.
 
-.. _`tut_fsi_preexo_2d:baci`:
+.. _`tut_fsi_preexo_2d:4C`:
 
-Running a Simulation with BACI
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Running a Simulation with |FOURC|
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To start the solver use the call
 
@@ -96,17 +96,17 @@ To start the solver use the call
 
    ``./baci-release [inputdirectory]/your_example.dat [outputdirectory]/outputprefix``
 
-(in the BACI-directory; of course, you may choose a different directory as well, if you take care for the path names).
+(in the |FOURC|-directory; of course, you may choose a different directory as well, if you take care for the path names).
 The results are then written to the result directory with the prefix you chose.
 
 The FSI problem with a partitioned solver
 -----------------------------------------
 
-Here, we create the BACI input file for the FSI problem, that is solved
+Here, we create the |FOURC| input file for the FSI problem, that is solved
 using a partitioned scheme, which means that the fluid and the solid problem are solved sequentially.
 For a monolithic scheme, see :ref:`the section below<tut_fsi_preexo_2d:monolithic>`.
 
-After running the baci executable without boundary condition and header information,
+After running the |FOURC| executable without boundary condition and header information,
 we have created the ’default.head’ and ’default.bc’ file` that we are now supposed to edit.
 
 *header-file*
@@ -357,11 +357,11 @@ further prescibe Dirichlet boundary conditions on the ALE field:
                description="NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0"
 
 As any of these conditions matches an already defined NodeSet it will
-also match the corresponding ’E-id’ in the later BACI input file.
+also match the corresponding ’E-id’ in the later |FOURC| input file.
 Finally save the file under a different name, e.g. ’dc2d_fsi.bc’.
 
-Creating BACI Input File and Running the Simulation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating |FOURC| Input File and Running the Simulation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run in a shell
 
@@ -370,16 +370,16 @@ Run in a shell
     ./pre_exodus --exo=dc2d.e --head=dc2d_fsi.head
    --bc=dc2d_fsi.bc --dat=dc2d_fsi.dat
 
-where the filenames might have to be replaced accordingly. This will
-result in the specified dat-file which is already validated to be
-accepted by BACI. However, if the file is meaningful cannot be assured.
+where the filenames might have to be replaced accordingly.
+This will result in the specified dat-file which is already validated to be accepted by |FOURC|.
+However, if the file is meaningful cannot be assured.
 Hint: When you have an already existing input file, you can always
 validate it by simply executing ``./pre_exodus --dat=inputfile.dat``,
-before(!) you start a parallel BACI computation on a cluster, for
+before(!) you start a parallel |FOURC| computation on a cluster, for
 example.
 
 Run the simulation by providing the created dat-file and an output file
-to BACI and postprocess the results.
+to |FOURC| and postprocess the results.
 
 .. _`tut_fsi_preexo_2d:postprocess`:
 
@@ -390,7 +390,7 @@ You can postprocess your results with any vizualization software you
 like. In this tutorial, we choose *Paraview*.
 
 Before you can open the results, you have to generate a filter again.
-Call *make post_drt_ensight* in the BACI-directory. Filter your results
+Call *make post_drt_ensight* in the |FOURC|-directory. Filter your results
 in the output directory with the call
 
 .. container:: center
@@ -481,7 +481,7 @@ fluid split
    in order to remove the Dirichlet boundary conditions from the fluid
    (=slave) interface degrees of freedom.
 
-Create the input file as desribed above. Start BACI as usual.
+Create the input file as desribed above. Start |FOURC| as usual.
 
 structure split
 ~~~~~~~~~~~~~~~
@@ -501,4 +501,4 @@ structure split
    in order to remove the Dirichlet boundary conditions from the
    structure (=slave) interface degrees of freedom.
 
-Create the input file as desribed above. Start BACI as usual.
+Create the input file as desribed above. Start |FOURC| as usual.

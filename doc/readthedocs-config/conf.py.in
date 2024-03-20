@@ -20,8 +20,8 @@ import plot
 
 # -- Project information -----------------------------------------------------
 
-project = "BACI"
-copyright = "2023, The BACI developers"
+project = "4C"
+copyright = "2024, The 4C developers"
 author = "The BACI developers"
 
 # -- General configuration ---------------------------------------------------
@@ -62,6 +62,8 @@ rst_prolog = """
 .. |newline| replace:: <br />
 
 .. |SOURCEDIR| replace:: @PROJECT_SOURCE_DIR@
+
+.. |FOURC| replace:: BACI
 
 .. role:: red
 .. role:: green

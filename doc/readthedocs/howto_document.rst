@@ -59,7 +59,7 @@ I also like `this doc <https://books.dehlia.in/writing-with-ratatouille/toc/>`_.
    #. Also, before and after the inserted list, blank lines are needed.
 
 - **Links to other headers** (internal links) can easily be included in restructuredText by ``:ref:`Descriptive link name <sectionname>```,
-  e.g., :ref:`The BACI Workflow <baciworkflow>`.
+  e.g., :ref:`The |FOURC| Workflow <4Cworkflow>`.
   The link target can be a section name, but also an explicit link target. 
   The latter is preferred, since there may be duplicate section names in the documentation. 
   A link target must be entered by ``.. _targetname:``, i.e., first two dots, then a blank followed by an underline,
@@ -154,7 +154,7 @@ I also like `this doc <https://books.dehlia.in/writing-with-ratatouille/toc/>`_.
   Within the text, you may use the sphinx ``:download:`` role, as shown :download:`here <files/testfile.pdf>`.
   This link has been created by ``:download:`here <files/testfile.pdf>```.
 
-- **Need more html style?** If you need some special html coding, you may but this into ``<baci-source>/doc/readthedocs/_static/html_extensions.css``.
+- **Need more html style?** If you need some special html coding, you may but this into ``<4C-sourcedir>/doc/readthedocs/_static/html_extensions.css``.
   For example, in the :ref:`coverage report <coveragereport>`, we needed green color, which comes in handy by adding
 
   ::
@@ -165,5 +165,5 @@ I also like `this doc <https://books.dehlia.in/writing-with-ratatouille/toc/>`_.
 
   to the css file.
   For using such a class in your text, you need to define a restructuredText role that uses this class,
-  which you'll find in the definition of the string variable ``rst_prolog`` in ``<baci-source>/doc/readthedocs-config/conf.py.in``.
+  which you'll find in the definition of the string variable ``rst_prolog`` in ``<4C-sourcedir>/doc/readthedocs-config/conf.py.in``.
   Finally, you may use the newly defined role as ``:green:`this green phrase```, which gives you :green:`this green phrase`.

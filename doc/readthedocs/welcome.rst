@@ -1,14 +1,15 @@
-.. _WelcomeToBACI:
+.. _WelcomeTo4C:
 
-===============
-Welcome to BACI
-===============
+===================
+Welcome to |FOURC|
+===================
 
 History
 -------
 
-BACI (the Bavarian Advanced Computation Initiative) is a C++ research code that has its roots in the by now abandoned C
-code ``ccarat``. ``ccarat`` was started by Michael Gee in 2000 and has
+|FOURC| is a C++ research code that has its roots in the by now abandoned C
+code ``ccarat`` and its successor, written in modern C++, BACI (the Bavarian Advanced Computation Initiative).
+``ccarat`` was started by Michael Gee in 2000 and has
 since grown in several directions. The aim back then was to provide a
 framework for parallel multifield finite element simulation, including 
 moderate parallelization, not massive parallel execution with hundreds of processes. 
@@ -17,12 +18,11 @@ but still a lot of data redundancies.
 The original ``ccarat`` is a large C project that uses
 external linear solver packages (both parallel and serial).
 
-In 2006 it was felt that ``ccarat`` needs a major face lift. And again
-it is due to Michael Gee to introduce the trilinos libraries into
-``ccarat`` and redesign the whole package on top of that. This is how
-BACI emerged in spring 2007. The ``ccarat`` code was replaced step by step (even if
-some of these steps were XXL sized) until close to no original code
-remained.
+In 2006 it was felt that ``ccarat`` needs a major face lift.
+And again it is due to Michael Gee to introduce the trilinos libraries into ``ccarat`` and redesign the whole package on top of that.
+This is how the predecessor of |FOURC|, BACI, emerged in spring 2007.
+The ``ccarat`` code was replaced step by step (even if some of these steps were XXL sized) until close to no original code remained.
+Eventually, after lots and lots of other improvements and extensions, the code was renamed as |FOURC| in spring 2024, and is to become open source soon.
 
 
 .. _items-to-be-added:
@@ -52,9 +52,6 @@ The following list only contains a few parts and sections, which should be fille
   - The whole :ref:`Elements<elements>` section is lacking useful information.
     At this point, we only have the materials that may be used with each element type listed.
     Any ideas on useful information is highly appreciated.
-
-  - The complete :ref:`Boundary condition<boundaryconditions>` section is limited to basic types of conditions.
-    Writing information on more sophisticated ones is necessary.
 
   - There is some general information on solid material models in the :ref:`Materials<materials>` section.
     Information on other material models is needed.

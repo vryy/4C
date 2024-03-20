@@ -63,7 +63,7 @@ Direct solver
 
 In principle, the direct solver identifies :math:`x` by calculating the inverse of :math:`\mathbf{A}`: :math:`x = \mathbf{A}^{-1} b`.
 
-In BACI, we have three different direct solvers included:
+In |FOURC|, we have three different direct solvers included:
 
    * UMFPACK, using a multifront approach, thus a sequential solver (can only use a single core)
    * SuperLU, an MPI based solver, which may run on many cores and compute nodes.
