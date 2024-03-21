@@ -6,10 +6,6 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP
-#define INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP
-
-
 #include "baci_inpar_poromultiphase_scatra.hpp"
 
 #include "baci_inpar_poroelast.hpp"
@@ -199,8 +195,5 @@ void INPAR::POROMULTIPHASESCATRA::SetValidConditions(
   }
   return;
 }
-
-
-#endif  // INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP
 
 BACI_NAMESPACE_CLOSE

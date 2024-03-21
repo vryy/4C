@@ -28,10 +28,9 @@ Functions to catch implementation erros in debug mode
 */
 namespace
 {
-  [[maybe_unused]] bool IsUniqueInBoundaryCell(
-      const std::vector<BACI::CORE::GEO::CUT::Point*>& points)
+  [[maybe_unused]] bool IsUniqueInBoundaryCell(const std::vector<CORE::GEO::CUT::Point*>& points)
   {
-    BACI::CORE::GEO::CUT::plain_point_set pointtest;
+    CORE::GEO::CUT::plain_point_set pointtest;
     pointtest.insert(points.begin(), points.end());
     return points.size() == pointtest.size();
   }
@@ -481,7 +480,7 @@ CORE::GEO::CUT::Tri3BoundaryCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
 {
   if (points.size() != 3) dserror("expect 3 points");
 
-  dsassert(BACI::IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
+  dsassert(IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
 
   CORE::LINALG::SerialDenseMatrix xyz(3, 3);
   for (int i = 0; i < 3; ++i)
@@ -504,7 +503,7 @@ CORE::GEO::CUT::Quad4BoundaryCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
 {
   if (points.size() != 4) dserror("expect 4 points");
 
-  dsassert(BACI::IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
+  dsassert(IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
 
   CORE::LINALG::SerialDenseMatrix xyz(3, 4);
   for (int i = 0; i < 4; ++i)
@@ -526,7 +525,7 @@ CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(Vo
     Facet* facet, const std::vector<Point*>& points, const CORE::FE::GaussIntegration& gaussRule,
     const CORE::LINALG::Matrix<3, 1>& normal)
 {
-  dsassert(BACI::IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
+  dsassert(IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
 
   CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)

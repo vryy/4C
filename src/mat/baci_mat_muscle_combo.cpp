@@ -91,7 +91,7 @@ namespace
 
     const double& Popt_;
     const double& t_tot_;
-    const BACI::CORE::LINALG::Matrix<3, 1>& element_center_reference_coordinates_;
+    const CORE::LINALG::Matrix<3, 1>& element_center_reference_coordinates_;
     const int& eleGID_;
   };
 }  // namespace
