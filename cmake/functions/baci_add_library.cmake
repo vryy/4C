@@ -38,6 +38,10 @@ function(baci_add_library _target)
     message(DEBUG "${_target} is a target with sources")
     add_library(${_target}_objs OBJECT ${_parsed_SOURCES})
     target_link_libraries(${_target}_objs PUBLIC ${_target}_deps)
+
+    # Add all global compile settings as PRIVATE. We only want to use them to compile our own files and not force
+    # them on other users of the library.
+    target_link_libraries(${_target}_objs PRIVATE baci_private_compile_interface)
   endif()
 
   # Check that every header includes baci_config.hpp
@@ -54,9 +58,6 @@ function(baci_add_library _target)
 
   # Add the headers as a file set, which will automatically add the current directory as a search directory
   target_sources(${_target}_deps INTERFACE FILE_SET HEADERS FILES ${_parsed_HEADERS})
-
-  # Add all global compile definitions
-  target_link_libraries(${_target}_deps INTERFACE baci_global_compile_settings)
 
   # Link against all default external libraries
   baci_link_default_external_libraries(${_target}_deps INTERFACE)

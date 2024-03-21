@@ -14,7 +14,6 @@
         "CMAKE_CXX_FLAGS_DEBUG": "-g",
         "CMAKE_C_FLAGS": "-msse3",
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
-        "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=gold",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
         "BACI_TRILINOS_ROOT": "/imcs/public/compsim/lib/2023_3/build/lib/cmake",
         "BACI_QHULL_ROOT": "/imcs/public/compsim/lib/TPL/packages/qhull-2012.1/build",

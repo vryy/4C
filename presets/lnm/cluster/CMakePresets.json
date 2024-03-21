@@ -11,7 +11,6 @@
         "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
         "CMAKE_C_FLAGS": "-march=native",
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
-        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=gold",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
         "BACI_WITH_GOOGLETEST": "OFF",
         "BACI_BUILD_DOXYGEN": "OFF",
