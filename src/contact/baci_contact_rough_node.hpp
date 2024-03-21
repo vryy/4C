@@ -52,19 +52,58 @@ namespace CONTACT
      \param dofs   (in): list of global degrees of freedom
      \param isslave(in): flag indicating whether node is slave or master
      \param initactive (in): flag indicating whether initially set to active
-     \param hurstexponentfunction (in): function id for roughness parameter
+     \param hurstexponentfunction (in): Function for Hurst exponent of the surface
+     \param initialtopologystddeviationfunction (in): function for topology standard deviation
+     \param resolution (in): resolution of the surface
+     \param randomtopologyflag (in): Use random midpoint generator if true
+     \param randomseedflag (in): Use random seed for the random midpoint generator
+     \param randomgeneratorseed (in): Seed for the random midpoint generator
      \\ add remaining params here
 
      */
     RoughNode(int id, const std::vector<double>& coords, const int owner,
         const std::vector<int>& dofs, const bool isslave, const bool initactive,
         const int hurstexponentfunction, int initialtopologystddeviationfunction, int resolution,
-        int randomtopologyflag, int randomseedflag, int randomgeneratorseed);
+        bool randomtopologyflag, bool randomseedflag, int randomgeneratorseed);
+
+    /*!
+     \brief Return unique ParObject id
+
+     every class implementing ParObject needs a unique id defined at the
+     top of lib/parobject.H.
+
+     */
+    int UniqueParObjectId() const override { return RoughNodeType::Instance().UniqueParObjectId(); }
+
+    /*!
+     \brief Pack this class so it can be communicated
+
+     \ref Pack and \ref Unpack are used to communicate this node
+
+    */
+    void Pack(CORE::COMM::PackBuffer& data) const override;
+
+    /*!
+     \brief Unpack data from a char vector into this class
+
+     \ref Pack and \ref Unpack are used to communicate this node
+
+     */
+    void Unpack(const std::vector<char>& data) override;
+
+    // //! @name Access methods
 
     CORE::LINALG::SerialDenseMatrix* GetTopology() { return &topology_; };
     double GetMaxTopologyHeight() { return maxTopologyHeight_; };
 
    protected:
+    int hurstexponentfunction_;
+    int initialtopologystddeviationfunction_;
+    int resolution_;
+    bool randomtopologyflag_;
+    bool randomseedflag_;
+    int randomgeneratorseed_;
+
     double hurstExponent_ = 0;
     double initialTopologyStdDeviation_ = 0;
     CORE::LINALG::SerialDenseMatrix topology_;
