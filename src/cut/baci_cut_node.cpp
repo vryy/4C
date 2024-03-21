@@ -22,13 +22,10 @@ Functions to catch implementation erros in debug mode
 namespace
 {
   [[maybe_unused]] bool IsCutPositionUnchanged(
-      BACI::CORE::GEO::CUT::Point::PointPosition cutposition,
-      BACI::CORE::GEO::CUT::Point::PointPosition pos)
+      CORE::GEO::CUT::Point::PointPosition cutposition, CORE::GEO::CUT::Point::PointPosition pos)
   {
-    if ((cutposition == BACI::CORE::GEO::CUT::Point::inside and
-            pos == BACI::CORE::GEO::CUT::Point::outside) or
-        (cutposition == BACI::CORE::GEO::CUT::Point::outside and
-            pos == BACI::CORE::GEO::CUT::Point::inside))
+    if ((cutposition == CORE::GEO::CUT::Point::inside and pos == CORE::GEO::CUT::Point::outside) or
+        (cutposition == CORE::GEO::CUT::Point::outside and pos == CORE::GEO::CUT::Point::inside))
       return false;
     else
       return true;

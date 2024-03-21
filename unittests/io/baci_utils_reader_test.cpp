@@ -19,7 +19,8 @@
 
 namespace
 {
-  using namespace BACI::DRT::UTILS;
+  using namespace BACI;
+  using namespace DRT::UTILS;
 
   TEST(UtilsReaderTests, SplitStringSeparatorInString)
   {

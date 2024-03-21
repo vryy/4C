@@ -15,14 +15,6 @@
 
 #include "baci_cut_utils.hpp"
 
-// forward declaration for the operator
-namespace BACI::CORE::GEO
-{
-  namespace CUT
-  {
-    class Cycle;
-  }
-}  // namespace BACI::CORE::GEO
 
 BACI_NAMESPACE_OPEN
 
@@ -30,6 +22,7 @@ namespace CORE::GEO
 {
   namespace CUT
   {
+    class Cycle;
     class Point;
     class Edge;
     class Side;
