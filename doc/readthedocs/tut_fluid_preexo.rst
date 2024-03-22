@@ -3,9 +3,9 @@ Fluid Tutorial with *pre_exodus* and Cubit
 
 .. _fluidtutorial:
 
-For this as for all other tutorials you'll need a complete ``BACI`` installation
+For this as for all other tutorials you'll need a complete |FOURC| installation
 as well as access to the pre-processing tool *cubit* and the post-processing tool *paraview*.
-If you did not do so already, install ``BACI`` based on the information given in the :ref:`Setup Guide to BACI <SetupGuidetoBACI>`.
+If you did not do so already, install |FOURC| based on the information given in the :ref:`Setup Guide to |FOURC| <SetupGuideto4C>`.
 
 Introduction
 ------------
@@ -59,11 +59,11 @@ The generated mesh should look like this:
 
    Mesh for a flow past a circular cylinder.
 
-Working with *pre_exodus* and BACI
--------------------------------------
+Working with *pre_exodus* and |FOURC|
+--------------------------------------
 
-*pre_exodus* is a C++ code embedded into the BACI environment. It is
-meant to transfer a given mesh into a BACI-readable input file.
+*pre_exodus* is a C++ code embedded into the |FOURC| environment. It is
+meant to transfer a given mesh into a |FOURC|-readable input file.
 
 Preliminaries
 ~~~~~~~~~~~~~
@@ -75,10 +75,10 @@ folder via
 
      make pre_exodus
 
-after configuring BACI in the usual way.
+after configuring |FOURC| in the usual way.
 
-General Procedure of Creating a Valid BACI Input File
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+General Procedure of Creating a Valid |FOURC| Input File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 With a given mesh including some nodal clouds to apply conditions to you
 need another text-file (*bc-file  *) where you specify, what you would
@@ -86,8 +86,8 @@ like to do with it. It contains for example the specific element
 declaration (fluid, structure, parameters, etc.) and the particular
 boundary condition such as Dirichlet or Neumann. Finally, a *header-file* consists of general parameters such as solvers, algorithmic
 parameters, etc. Those three files are merged by *pre_exodus* into an
-input file for BACI. This file is then *automatically* validated using
-all available BACI validation and is therefore likely to run.
+input file for |FOURC|. This file is then *automatically* validated using
+all available |FOURC| validation and is therefore likely to run.
 
 Sure, you usually do not have already a proper *header-file* and
 matching *bc-file*. By typing
@@ -153,10 +153,10 @@ boundary conditions as shown below.
 
 Save the file under a different name of your choice.
 
-Creating a BACI input file with *pre_exodus*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating a |FOURC| input file with *pre_exodus*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The previously created files have to be merged to a BACI input file in
+The previously created files have to be merged to a |FOURC| input file in
 oder to solve the problem. We will use *pre_exodus* for this purpose.
 Open a terminal and execute the following command in the
 ``build-release`` folder:
@@ -171,8 +171,8 @@ you have named and where you have saved them. *pre_exodus* will
 output a dat-file to the path you specified above.
 
 
-Running a Simulation with BACI
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Running a Simulation with |FOURC|
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To start the solver use the call
 
@@ -182,7 +182,7 @@ To start the solver use the call
 
 in the ``build-release`` folder. You may have to adapt the name of the
 executable in this command. The prefix that you have chosen before will
-be applied to all output files that BACI generates.
+be applied to all output files that |FOURC| generates.
 
 Postprocessing
 --------------
@@ -194,7 +194,7 @@ Filtering result data
 ~~~~~~~~~~~~~~~~~~~~~
 
 -  Before you can admire your results, you have to generate a filter
-   which converts the generic binary BACI output to the desired format.
+   which converts the generic binary |FOURC| output to the desired format.
    Starting from the ``build-release`` directory, execute
    ``make post_drt_ensight``.
 

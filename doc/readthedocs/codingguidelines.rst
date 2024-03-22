@@ -6,7 +6,7 @@ Coding Guidelines
 General Guidelines regarding Coding in C++
 --------------------------------------------
 
-Current C++ standard in BACI is C++17. Hence, use of C++17 features is encouraged.
+Current C++ standard in |FOURC| is C++17. Hence, use of C++17 features is encouraged.
 Avoid define flags as much as possible, because they complicate testing and, thus, lead to untested code.
 Avoid and actively resolve header-in-header inclusion to speed up compilation time. Use forward declarations instead.
 Do not use ``using ... / typedef`` statements at unscoped level.
@@ -36,15 +36,15 @@ Below I'll add the links to the videos:
 
 **Note:** For more information on the individual videos please have a look at the video description.
 
-BACI-specific Design Guidelines
----------------------------------
+|FOURC|-specific Design Guidelines
+------------------------------------
 
-**Preamble:** BACI is a legacy code.
+**Preamble:** |FOURC| is a legacy code.
 Large parts were written pre-C++11 and are not modern C++.
 In addition, code review was not widely practiced back in these days.
 Thus, it is recommended to critically examine the code and techniques while working on the code base and refer to the general guidelines above.
 
-The following guidelines are especially relevant for the current state of BACI:
+The following guidelines are especially relevant for the current state of |FOURC|:
 
 - If necessary, use smart pointers for their memory management capabilities, e.g., ``std::shared_ptr``, ``std::unique_ptr``
   (you may find more information on passing smart pointers `here <https://www.modernescpp.com/index.php/c-core-guidelines-passing-smart-pointer/>`_
@@ -52,10 +52,10 @@ The following guidelines are especially relevant for the current state of BACI:
 - Prefer parameter container classes over ``Teuchos::ParameterList`` for passing parameters among element routines
 - Make new code const-correct and fix old code in that regard when working on it.
 - Implement new features in the new structural time integration. Work towards migrating existing capabilities to the new structural time integration.
-- Test your code! Refer to our documentation about :ref:`Testing<bacitesting>`.
+- Test your code! Refer to our documentation about :ref:`Testing<4Ctesting>`.
 
 
-BACI-specific Naming Conventions
+|FOURC|-specific Naming Conventions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **Namespaces** are spelled in all caps: ``LINALG::``
@@ -73,7 +73,7 @@ Variable names must not be just a single letter, because they are impossible to 
 (Exception: loop indices such as i, j, but remember that even loop indices could/should have descriptive names.)
 
 
-BACI file levels
+|FOURC| file levels
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each file has a header flag \level. This flag should indicate how well tested and applicable for others that implementation is.

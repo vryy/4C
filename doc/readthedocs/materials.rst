@@ -57,7 +57,7 @@ One may use a single (multi-physics) element type for a multi-physics simulation
 However, since each discretization belongs to a single physics representation and can thus only be connected to a single material,
 the other material has to be connected to the same discretization by cloning the discretization to the other physics.
 
-In BACI, we use a material mapping section, which connects two material models to a single representation.
+In |FOURC|, we use a material mapping section, which connects two material models to a single representation.
 One can see it here in for a simple Thermo-Structure-Interaction problem:
 
 ::

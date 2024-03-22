@@ -3,24 +3,24 @@
 Preprocessing
 ---------------
 
-BACI reads the mesh, boundary conditions, materials and simulation parameters from an ASCII file in a proprietary format, which usually has the suffix ``.dat``, but this suffix is not necessary, it can be anything. 
+|FOURC| reads the mesh, boundary conditions, materials and simulation parameters from an ASCII file in a proprietary format, which usually has the suffix ``.dat``, but this suffix is not necessary, it can be anything.
 
 There are not so many means to create a valid input file. At this point, we know of the following
 different ways to create input file. In general, you'll have two options:
 
-#. Either you create the input file in ``BACI``'s native format directly,
+#. Either you create the input file in |FOURC|'s native format directly,
 #. or you create an input file in a general binary format for finite element information, called ``Exodus II``, develeloped at `Sandia national lab 
    <https://www.sandia.gov/files/cubit/15.8/help_manual/WebHelp/finite_element_model/exodus/exodus2_file_specification.htm>`_.
-   This can be converted into ``BACI`` s native format by an internal converter, :ref:`pre_exodus <pre_exodus>`.
+   This can be converted into |FOURC| s native format by an internal converter, :ref:`pre_exodus <pre_exodus>`.
 
-Since the conversion from the Exodus II format is the most versatile way to generate a BACI input file, this method is explained first.
+Since the conversion from the Exodus II format is the most versatile way to generate a |FOURC| input file, this method is explained first.
 
 .. _pre_exodus:
 
-Exodus II to BACI file conversion
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Exodus II to |FOURC| file conversion
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The main procedure to generate a valid BACI input file is from a binary mesh file in Exodus II format, which includes nodes, elements, node sets, element sets, and side sets, as can be created by Cubit.
+The main procedure to generate a valid |FOURC| input file is from a binary mesh file in Exodus II format, which includes nodes, elements, node sets, element sets, and side sets, as can be created by Cubit.
 , together with two additional files:
 
 #. for the global system parameters (solver, material, step information, etc.), called the *headerfile*, and 
@@ -28,15 +28,15 @@ The main procedure to generate a valid BACI input file is from a binary mesh fil
 #. a file for the correlation between element sets and type declatations, as well as boundary conditions definitions.
    This is the so-called the *bcfile*. 
 
-These three files are merged into an input file for BACI by the program ``pre_exodus``. 
-The created baci input file is then *automatically* validated using all available BACI validation and is therefore likely to run.
+These three files are merged into an input file for |FOURC| by the program ``pre_exodus``.
+The created |FOURC| input file is then *automatically* validated using all available |FOURC| validation and is therefore likely to run.
 
-The program is created together with baci executable, if ``make full`` has been invoked, 
+The program is created together with |FOURC| executable, if ``make full`` has been invoked,
 but it can also be compiled solely by ``make pre_exodus``.
 
 ::
 
-   $> pre_exodus --exo=<exodusfile> --bc=<bcfile> --head=<headerfile> --dat=<baciinput> \
+   $> pre_exodus --exo=<exodusfile> --bc=<bcfile> --head=<headerfile> --dat=<4Cinput> \
                [ --gensosh=<thickness> [ --numlayer=<nlayer> ] ]   \
                [ --d2 | --d3  ]           \
                [ --quadtri  ]             \
@@ -55,22 +55,22 @@ See next section for details how to work with it and how to get valid input file
 
 .. note:: 
    When you have an already existing input file, you can always validate it by simply executing ./pre_exodus --dat=inputfile.dat, 
-   before(!) you start a parallel BACI computation on a cluster, for example.
+   before(!) you start a parallel |FOURC| computation on a cluster, for example.
 
 *Optional parameters*
 
 The optional parameter ``--quadtri`` reads the exodus file and converts all quad elements in two triangular elements. It does not write a dat file, but writes a new exodus file instead named ``tri_<problemname>.e``. NOTE: This feature is only for 2D elements, it does **not** modify 3D elements.
 
-The option to generate a 3D mesh from a shell surface, ``pre_exodus --exo=<exodusfile> --gensosh=<thickness> --numlayer=<nlayer>``, does not create a BACI input file either, but it creates an exodus file containing the solid model named ``extr_<exodusfile>``.
+The option to generate a 3D mesh from a shell surface, ``pre_exodus --exo=<exodusfile> --gensosh=<thickness> --numlayer=<nlayer>``, does not create a |FOURC| input file either, but it creates an exodus file containing the solid model named ``extr_<exodusfile>``.
 
 .. warning::
 
    It seems that the gensosh feature does not work properly. Neither Cubit nor Paraview can read a file created this way.
 
-.. _createbaciinput:
+.. _create4Cinput:
 
-Other ways to create a BACI input directly
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Other ways to create a |FOURC| input directly
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _abaqus:
 
@@ -103,8 +103,8 @@ Proving that the information from inp is properly stored, the transformation to 
 
 .. code-block:: python
 
-   baciio = abaqus_meshio.Inp2Baci(model, [params_step_1])
-   baciio.write("prefix")
+   fourc_io = abaqus_meshio.Inp2Baci(model, [params_step_1])
+   fourc_io.write("prefix")
 
 If the inp has many steps defined by STEP/END STEP keywords, the list of parameters for each step has to be provided, e.g. ``[params_step_1, params_step_2, ...]``. Default parameters for a structural analysis can be obtained using
 
@@ -112,7 +112,7 @@ If the inp has many steps defined by STEP/END STEP keywords, the list of paramet
 
    params_step_1 = abaqus_meshio.GenerateDefaultParams()
 
-Alternatively, one may run a python script called ``CAEabq2baci.py`` to convert an ABAQUS input file to a BACI input file (available on request). This script uses ABAQUS/CAE commands, that is, an abaqus license is necessary to run this script.
+Alternatively, one may run a python script called ``CAEabq2baci.py`` to convert an ABAQUS input file to a |FOURC| input file (available on request). This script uses ABAQUS/CAE commands, that is, an abaqus license is necessary to run this script.
 
 
 
@@ -120,12 +120,12 @@ Alternatively, one may run a python script called ``CAEabq2baci.py`` to convert 
 
 **GiD**
 
-A BACI input file can be generated using the GiD problemtype baci.gid.
+A |FOURC| input file can be generated using the GiD problemtype baci.gid.
 
 Generating Exodus II files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Even though the generation of Exodus II files might be out of scope of a BACI manual, 
+Even though the generation of Exodus II files might be out of scope of a |FOURC| manual,
 users are informed on how to generate these files conveniently, so options are given in the following:
 
 .. _cubit:
@@ -138,14 +138,14 @@ tool. (The commercial version of the software was called *Trelis*,
 but has been renamed into CUBIT now as well, so we may stick to the name CUBIT).
 
 CUBIT can create EXODUS-II files which can be converted into a
-valid BACI inpufile using the pre_exodus filter, so the preprocessing is a two step process:
+valid |FOURC| inpufile using the pre_exodus filter, so the preprocessing is a two step process:
 
 #. Cubit
    - create geometry, mesh, and necessary node sets
    - export to exodus file format (\*.e)
 #. :ref:`pre_exodus <pre_exodus>`
    - define appropriate boundary conditions and element types
-   - convert into a baci \*.dat file.
+   - convert into a |FOURC| \*.dat file.
 
 Note that
 
@@ -184,7 +184,7 @@ Note that
 Geometry as well as element and node sets can be created in any finite element preprocessor.
 However, the preprocessor should be capable of exporting a file format, which can be converted
 by the python toolset meshio (see <https://pypi.org/project/meshio/>) into an exodus file, with
-which the input can be converted into a BACI .dat file.
+which the input can be converted into a |FOURC| .dat file.
 
 Also, the exported input file can probably be imported in Cubit, then further edited and
 eventually exported as an exodus (.e) file.
@@ -201,13 +201,13 @@ So the steps are
    use the python module meshio (packed in pip) to convert the mesh to an exodus (.e) file
    (<https://pypi.org/project/meshio/>)
 
-#. Run ``pre_exodus`` from your ``BACI`` build to convert the data (see above).
+#. Run ``pre_exodus`` from your |FOURC| build to convert the data (see above).
 
 
-Modify ``BACI`` input files
+Modify |FOURC| input files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``BACI`` input files are text files so you can modify them using your
+|FOURC| input files are text files so you can modify them using your
 favorite text editor. You can see all possible parameters and keywords in the 
 :ref:`reference part <inputparameterreference>`.
 

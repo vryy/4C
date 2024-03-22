@@ -7,7 +7,7 @@ Introduction
 As example, we consider a 3d driven cavity example as sketched in the 
 :ref:`figure below <tut_fsi_preexo>` with a depth of 0.05. Hint: In case you
 want or need to see a sample solution for this tutorial (the FSI part)
-you will find corresponding files in the BACI subfolder
+you will find corresponding files in the |FOURC| subfolder
 */tests/framework-tests/*! However, it is highly recommended to look
 at these files only in case you encounter severe problems while
 stepping through the tutorial.
@@ -49,13 +49,13 @@ Export now the created geometry and mesh to an exodus-file of your choice,
 let say, ``<yourmesh>.e`` via *File* :math:`\to` *Export...*. 
 During export, set the dimension explicitly to 3d.
 
-.. _workingWithPreExodusAndBaci:
+.. _workingWithPreExodusAnd4C:
 
-Working with *pre_exodus* and BACI
+Working with *pre_exodus* and |FOURC|
 -------------------------------------
 
-*pre_exodus* is a C++ code embedded into the BACI environment. It is
-meant to transfer a given mesh into a BACI-readable input file. 
+*pre_exodus* is a C++ code embedded into the |FOURC| environment. It is
+meant to transfer a given mesh into a |FOURC|-readable input file.
 Information about this tool can be found in the :ref:`Analysis Guide <pre_exodus>`. 
 
 Besides a given mesh as the one we just created using CUBIT (see above), we need two more files: 
@@ -69,7 +69,7 @@ After creating the header and bc file, we may start the solver use the call
 
 ``./baci-release <inputdirectory>/your_example.dat <outputdirectory>/outputprefix``
 
-(in the BACI-directory). The results are then written to the result directory with the prefix you chose. 
+(in the |FOURC|-directory). The results are then written to the result directory with the prefix you chose.
 Note that a number of files are created with this prefix depending on the output you requested.
 
 The Structure Part
@@ -126,14 +126,14 @@ As mentioned above we create our *bc-file* from the ’default.bc’.
 This consists of a introduction part where some global mesh statistics
 are given, a couple of example entries for definitions, a list of all
 defined mesh entities in your mesh-file, and finally a list of all valid
-BACI conditions to choose from.
+|FOURC| conditions to choose from.
 
 For our structure problem we will only define the corresponding mesh
 entities. They are easily identified by the names you have given in
 Cubit, e.g. “flexible bottom”, or “inflow”. You may notice that we do
 not assign any ’E’-entity-numbering. They are automatically determined
 in the order they appear in the *bc-file*. Therefore, if you want to
-change the numbering in the BACI input file, e.g. for correct hierarchy,
+change the numbering in the |FOURC| input file, e.g. for correct hierarchy,
 you have to change the order in the *bc-file*.
 
 Therefore we assign:
@@ -196,17 +196,17 @@ with the values defined before.
 
 Safe the file under a different name, e.g. ’dc_struct.bc’.
 
-Creating BACI Input File and Running the Simulation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating |FOURC| Input File and Running the Simulation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In a terminal, run the following command: 
 ``./pre_exodus --exo=dc.e --head=dc_struct.head --bc=dc_struct.bc --dat=dc_struct.dat``
 where the filenames might have to be replaced accordingly. This will
 result in the specified dat-file which is already validated to be
-accepted by BACI. However, if the file is meaningful cannot be assured.
+accepted by |FOURC|. However, if the file is meaningful cannot be assured.
 
-Run the simulation by providing this dat-file and an output file to BACI
-and postprocess the results (refer to :ref:`Working with PreExodus and BACI<workingWithPreExodusAndBaci>` for the simulation, 
+Run the simulation by providing this dat-file and an output file to |FOURC|
+and postprocess the results (refer to :ref:`Working with PreExodus and |FOURC|<workingWithPreExodusAnd4C>` for the simulation,
 and to :ref:`Post Processing<fsi3dtutorialpostprocessing>` for the post processing).
 
 The Fluid Part
@@ -411,16 +411,16 @@ described.
 Safe the file under a different name, e.g. ``dc_fluid.bc``.
 
 
-Creating BACI Input File and Running the Simulation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating |FOURC| Input File and Running the Simulation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Again, we create the baci input file by the command line tool 
+Again, we create the |FOURC| input file by the command line tool
 ``./pre_exodus --exo=dc.e --head=dc_fluid.head --bc=dc_fluid.bc --dat=dc_fluid.dat``
 where the filenames might have to be replaced accordingly. 
-This will result in the specified dat-file which is already validated to be accepted by BACI. 
+This will result in the specified dat-file which is already validated to be accepted by |FOURC|.
 However, if the file is meaningful cannot be assured.
 
-Run the simulation by providing this dat-file and an output file to BACI
+Run the simulation by providing this dat-file and an output file to |FOURC|
 and postprocess the results (refer to :ref:`FSI 3D Tutorial Postprocessing <fsi3dtutorialpostprocessing>`).
 
 The FSI Part
@@ -805,22 +805,20 @@ the following condition definitions to your new ’bc-file’:
          description="NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0 "
 
 As any of these conditions matches an already defined NodeSet it will
-also match the corresponding ’E-id’ in the later BACI input file.
+also match the corresponding ’E-id’ in the later |FOURC| input file.
 Finally save the file under a different name, e.g. ’dc_fsi.bc’.
 
-.. _creating-baci-input-file-and-running-the-simulation-2:
-
-Creating BACI Input File and Running the Simulation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating |FOURC| Input File and Running the Simulation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For a third time, run the command
 ``./pre_exodus --exo=dc.e --head=dc_fsi.head --bc=dc_fsi.bc --dat=dc_fsi.dat``
 where the filenames might have to be replaced accordingly. This will
 result in the specified dat-file which is already validated to be
-accepted by BACI. 
+accepted by |FOURC|.
 
 Run the simulation by providing the created dat-file and an output file
-to BACI and postprocess the results.
+to |FOURC| and postprocess the results.
 
 
 .. _fsi3dtutorialpostprocessing:
@@ -832,7 +830,7 @@ You can postprocess your results with any vizualization software you
 like. In this tutorial, we choose *Paraview*.
 
 Before you can open the results, you have to generate a filter again.
-Call *make post_drt_ensight* in the BACI-directory. Filter your results
+Call *make post_drt_ensight* in the |FOURC|-directory. Filter your results
 in the output directory with the call
 
 .. container:: center

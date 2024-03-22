@@ -160,7 +160,10 @@ boundary conditions.
    DPOINT|DLINE|DSURF|DVOL    numtotal   //  numtotal is the number of subsequent lines
    E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none 
 
-See the respective reference sections for :ref:`mechanical <designpointdirichconditions>`, :ref:`ALE <designpointaledirichconditions>`, :ref:`TRANSPORT <designpointtransportdirichconditions>`, :ref:`THERMO <designpointthermodirichconditions>`, :ref:`PORO <designpointporodirichconditions>`, :ref:`NURBS LS <designpointnurbslsdirichconditions>`.
+See the respective reference sections for
+:ref:`mechanical <designpointdirichconditions>`, :ref:`ALE <designpointaledirichconditions>`,
+:ref:`TRANSPORT <designpointtransportdirichconditions>`, :ref:`THERMO <designpointthermodirichconditions>`,
+:ref:`PORO <designpointporodirichconditions>`, :ref:`NURBS LS <designpointnurbslsdirichconditions>`.
 
 Neumann Boundary Conditions
 ---------------------------
@@ -189,7 +192,9 @@ pressure or surface heat flux, accordingly.
    DPOINT|DLINE|DSURF|DVOL     numtotal
    //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid 
 
-See the respective reference sections for :ref:`mechanical <designpointneumannconditions>`, :ref:`MOMENT EB <designpointmomentebconditions>`, :ref:`TRANSPORT <designpointtransportneumannconditions>`, :ref:`THERMO <designpointthermoneumannconditions>`, :ref:`PORO <designpointporoneumannconditions>`.
+See the respective reference sections for :ref:`mechanical <designpointneumannconditions>`,
+:ref:`MOMENT EB <designpointmomentebconditions>`, :ref:`TRANSPORT <designpointtransportneumannconditions>`,
+:ref:`THERMO <designpointthermoneumannconditions>`, :ref:`PORO <designpointporoneumannconditions>`.
 
 .. _springdashpotconditions:
 
@@ -248,7 +253,7 @@ Constraint conditions
 ----------------------
 
 Often, it is useful to prescribe not an absolute value of a nodal displacement or force, 
-but rather a displacement relative to other displacements, which is commonly called *constraint condition*. BACI has a number of options to define such constraints.
+but rather a displacement relative to other displacements, which is commonly called *constraint condition*. |FOURC| has a number of options to define such constraints.
 
 Several nodes coupled for specific degrees of freedom
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -266,7 +271,7 @@ While it would always be possible to introduce this coupling as a Dirichlet cond
 Constraint into the final system of equations, we have decided to implement this at a more fundamental level by changing the assigment of DoFs according to the existing coupling
 conditions. 
 Thus, if a point coupling condition is introduced for a set of nodes, the DoFs to be coupled are identified and the same(!) DoFs are then assigned to all participating nodes,
-while the remaining uncoupled DoFs are created and assigned independently for each node. This required some changes in the way nodal DoFs are assigned and handled in BACI.
+while the remaining uncoupled DoFs are created and assigned independently for each node. This required some changes in the way nodal DoFs are assigned and handled in |FOURC|.
 However, after the initial DoF handling, the nice thing about this approach is that nothing needs to be done anymore at the system matrix level because the coupling is inherently included
 in the DoF-maps. If you think of a web-like frame structure with many joints and hinges, this also means that the global system size is drastically reduced as compared to a Dirichlet type
 handling of such constraints.
@@ -317,7 +322,8 @@ Surface coupled to a node in a given direction
    E <surfset> - <conditionID> <amplitude> <curveID> <inittime> <penalty> <masternodeID> <n_x> <n_y> <n_z> [disp|x] [abs|rel]
 
 
-The whole surface is displaced the same amount as a single master node (which is not defined by a DPOINT, but by its ID). The penalty version uses a different algorithm, where one has to provide a penalty parameter. See also :ref:`designsurfacenormaldirmultipntconstraint3d` and :ref:`designsurfacenormaldirmultipntconstraint3dpen`.
+The whole surface is displaced the same amount as a single master node (which is not defined by a DPOINT, but by its ID). The penalty version uses a different algorithm, where one has to provide a penalty parameter.
+See also :ref:`designsurfacenormaldirmultipntconstraint3d` and :ref:`designsurfacenormaldirmultipntconstraint3dpen`.
 
 Node displacement relative to a given surface or line
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -358,16 +364,20 @@ Periodic boundary conditions
    E <lineset> - 1 Master PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
 
 
-Periodic boundaries are defined as conditions, where nodes on one surface (normal to any of the cartesian coordinate directions, i.e., xy, yz, or xz), are bound to the respective nodes on the opposite side, see the reference :ref:`designsurfperiodicboundaryconditions`, :ref:`designlineperiodicboundaryconditions`. They can be defined at one or several sides of the structure. Nodes at either side must be at equal plane coordinates (within the tolerance given by `ABSTREETOL`), and the normal distance must be equal for each nodal pair.
+Periodic boundaries are defined as conditions, where nodes on one surface (normal to any of the cartesian coordinate directions, i.e., xy, yz, or xz),
+are bound to the respective nodes on the opposite side, see the reference :ref:`designsurfperiodicboundaryconditions`, :ref:`designlineperiodicboundaryconditions`.
+They can be defined at one or several sides of the structure.
+Nodes at either side must be at equal plane coordinates (within the tolerance given by `ABSTREETOL`), and the normal distance must be equal for each nodal pair.
 
-The definition of `ANGLE` is used for rotational symmetry. For this case, the master must always be in the defined `PLANE`, and the slave is rotated by the given angle, while the same plane must be given.
+The definition of `ANGLE` is used for rotational symmetry.
+For this case, the master must always be in the defined `PLANE`, and the slave is rotated by the given angle, while the same plane must be given.
 
 
 
 Contact conditions
 ------------------
 
-Contact conditions, which in BACI are set up by the keyword ``MORTAR``
+Contact conditions, which in |FOURC| are set up by the keyword ``MORTAR``
 are defined along lines (2D) or surfaces (3D). At least one contact pair
 is necessary:
 

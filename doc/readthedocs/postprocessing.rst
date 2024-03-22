@@ -4,7 +4,7 @@
 Postprocessing
 ----------------
 
-BACI supports traditional text file output and more recent binary
+|FOURC| supports traditional text file output and more recent binary
 output. The later needs to be postprocessed by some conversion filter before it can
 be viewed.
 
@@ -12,11 +12,19 @@ be viewed.
 Conversion to readable formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to make the simulation results accessible, they need to be converted using the ``post_processor`` script located in your BACI build directory. To have the executable ``post_processor`` ready, one must compile BACI using ``make post`` in addition to ``make`` or ``make full`` command. As per default, running this script on the result (.control) file of your simulation, converts the results to the Ensight format. Alternatively, one can use additional option ``--filter=ensight``.
+In order to make the simulation results accessible, they need to be converted using the ``post_processor`` script located in your |FOURC| build directory.
+To have the executable ``post_processor`` ready, one must compile |FOURC| using ``make post`` in addition to ``make`` or ``make full`` command.
+As per default, running this script on the result (.control) file of your simulation, converts the results to the Ensight format.
+Alternatively, one can use additional option ``--filter=ensight``.
 
-The ``post_processor`` script has a lot of options to specify the post processing details. A complete list of these options is printed to the screen when executing ``./post_processor --help`` . Most of these options are self-explanatory. Other ouput format filters are available via the ``--filter`` option. Here the vtu filter is of particular interest when you want to convert the results to VTK file format.
+The ``post_processor`` script has a lot of options to specify the post processing details.
+A complete list of these options is printed to the screen when executing ``./post_processor --help`` .
+Most of these options are self-explanatory. Other ouput format filters are available via the ``--filter`` option.
+Here the vtu filter is of particular interest when you want to convert the results to VTK file format.
 
-Note: When using the BACI post processing script ``post_processor``, be aware that derived quantities like e.g. stresses and strains are not automatically extracted from the simulation results! Presumed you set the proper flags in the \*.dat file (i.e. the quantities were actually calculated), you still have to set the ``--stress`` etc. options of the post processing script to extract these quantities from the simulation results.
+Note: When using the |FOURC| post processing script ``post_processor``, be aware that derived quantities like e.g. stresses and strains are not automatically extracted from the simulation results!
+Presumed you set the proper flags in the \*.dat file (i.e. the quantities were actually calculated),
+you still have to set the ``--stress`` etc. options of the post processing script to extract these quantities from the simulation results.
 
 Available post-processing options (output from ``post_processor --help``) are given in the following table:
 
@@ -70,7 +78,7 @@ For the respective filters, there are wrappers available:
 
 
 Process output steps from ``start`` to ``end`` every ``step``. Works on
-real time steps, steps not written by BACI are counted, too. Both
+real time steps, steps not written by |FOURC| are counted, too. Both
 ``start`` and ``end`` can be empty, in which case the filter will
 process from the first and to the last step, respectively.
 
@@ -115,10 +123,10 @@ ParaView
 
 Paraview <https://www.paraview.org> can read various post processing data formats. 
 The most interesting ones are the *ensight* format and the *vtk/vtu* format. 
-Since BACI is writing its data in a proprietary hdf5 format, 
+Since |FOURC| is writing its data in a proprietary hdf5 format,
 we have to convert the data first, for which scripts are readily available.
 
-By applying the filter ``post_drt_ensight`` to your binary BACI result
+By applying the filter ``post_drt_ensight`` to your binary |FOURC| result
 data, a *.case* file is created. This result format can then be
 loaded into *paraview* for visualization. Start paraview with the
 command ``paraview`` A number of ParaView tutorials are available in the internet:
@@ -133,7 +141,7 @@ command ``paraview`` A number of ParaView tutorials are available in the interne
    --------
 
    By applying the filter ``post_drt_ensight`` (see next section) to your
-   binary BACI result data, a *\*.case* file is created. This result
+   binary |FOURC| result data, a *\*.case* file is created. This result
    format can then be loaded into *Ensight* for visualization. 
 
    Start Ensight with the command ``/lnm/programs/CEI/bin/ensight8``
@@ -145,7 +153,7 @@ Animations
 
 The ultimate goal of scientific research is a beautiful movie!
 
-There are several way to create animations using BACI output files.
+There are several way to create animations using |FOURC| output files.
 Movies should be playable accross platforms (at least Linux and
 Windows?) and embeddable inside MS Powerpoint presentations without
 the need of having different movie versions in different formats. My

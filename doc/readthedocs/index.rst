@@ -1,16 +1,16 @@
-.. BACI-documentation documentation master file, created by
+.. 4C-documentation documentation master file, created by
    sphinx-quickstart on Wed Nov 23 14:27:39 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
 
-====================================================
-BACI - the Bavarian Advanced Computation Initiative
-====================================================
+========
+|FOURC|
+========
 
 .. note::
 
-    This is a draft of the baci documentation, and the content is rather incomplete. 
+    This is a draft of the |FOURC| documentation, and the content is rather incomplete.
     The faster additional content is added,
     the sooner the documentation will be useful for users to understand the various types of simulations and their application.
     Some documentation parts are highly relevant for many users; those need an update with highest priority.
@@ -19,9 +19,9 @@ BACI - the Bavarian Advanced Computation Initiative
 Content
 =======
 
-The following Guide to **BACI** deals with
+The following Guide to |FOURC| deals with
 
-:ref:`Part I - Welcome <WelcomeToBACI>`
+:ref:`Part I - Welcome <WelcomeTo4C>`
    This section outlines the history of the code.
    Also you'll find a list of documentation sections that needs some update.
 

@@ -1,33 +1,33 @@
-.. _SetupGuidetoBACI:
+.. _SetupGuideto4C:
 
-Setup Guide to BACI
-===================
+Setup Guide to |FOURC|
+========================
 
-Here you'll find some useful notes on setting up and running BACI, 
+Here you'll find some useful notes on setting up and running |FOURC|,
 the multi purpose multi physics multi-modelling code developed at
 
 - Chair of Computational Mechanics,
 - IMCS of the Hochschule der Bunderwehr München, and
 - Institute of Material Systems Modelling of the Helmholtz Zentrum Hereon.
 
-BACI is developed and used on Linux. Other Unixes work as well.
+|FOURC| is developed and used on Linux. Other Unixes work as well.
 Windows versions might be created using cygwin or mingw, but this will require some small modifications and is not covered here.
 People around have already ported the code to Windows, but this needs quite a number of changes,
 so it is not advised to try on your own, and the topic will not be covered here.
-Additionally, BACI can be compiled under Windows using the WSL (Windows Subsystem for Linux),
+Additionally, |FOURC| can be compiled under Windows using the WSL (Windows Subsystem for Linux),
 which provides a complete Linux Environment within the Windows operating system.
 
-You'll find more information about the ``BACI`` installation in the
+You'll find more information about the |FOURC| installation in the
 `README.md <https://gitlab.lrz.de/baci/baci/blob/master/README.md>`_ and the
 `CONTRIBUTING.md <https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md>`_
-files located in the BACI root directory.
+files located in the |FOURC| root directory.
 
 Besides the basic setup of the software, the following topics are of particular interest for **all** developers:
 
-- Read the :ref:`BACI development guidelines <coding-guidelines>`.
+- Read the :ref:`|FOURC| development guidelines <coding-guidelines>`.
 - Documentation using Doxygen is mandatory. See our :ref:`Doxygen guidelines <doxygen>`.
 - Speed up recompilation of the code after switching branches using :ref:`ccache <ccache>`.
-- :ref:`Testing <bacitesting>`
+- :ref:`Testing <4Ctesting>`
 - :ref:`Coverage report <coveragereport>`
 - :ref:`Code Debugging and Profiling Tools <debugging_profiling>`
 
@@ -36,9 +36,9 @@ Besides the basic setup of the software, the following topics are of particular 
 External dependencies
 ---------------------
 
-Baci heavily relies on the numerical library Trilinos developed mainly at Sandia National Lab,
+|FOURC| heavily relies on the numerical library Trilinos developed mainly at Sandia National Lab,
 but it also relies on some other external libraries, also called third party libraries (TPLs).
-So we have to install TPLs first. Here's an list of the baci-related tools and a few notes on how to install them:
+So we have to install TPLs first. Here's an list of the |FOURC|-related tools and a few notes on how to install them:
 
 General software development:
 
@@ -76,7 +76,7 @@ Post processing:
 Build information
 ~~~~~~~~~~~~~~~~~
 
-For many third party libraries, you'll find an installation file for the recommended version in the ``<baci_source>/dependencies/current`` directory.
+For many third party libraries, you'll find an installation file for the recommended version in the ``<4C_source>/dependencies/current`` directory.
 
 .. _git:
 
@@ -124,29 +124,29 @@ If you choose not to set an editor, Git will use your system’s default editor.
 
 **SuiteSparse**
 
-Baci uses SuiteSparse indirectly via the Trilinos package Amesos/Amesos2 for directly solving linear systems of equations.
+|FOURC| uses SuiteSparse indirectly via the Trilinos package Amesos/Amesos2 for directly solving linear systems of equations.
 See the `SuiteSparse repository <https://github.com/DrTimothyAldenDavis/SuiteSparse>`_ for details and downloads.
 
 After downloading the package, the configure file can be found in ``SuiteSparse-5.4.0/SuiteSparse_config/SuiteSparse_config.mk``.
-As BACI uses BLAS/LAPACK in forms of libblas and liblapack, the respective linker flags need to be changed!
+As |FOURC| uses BLAS/LAPACK in forms of libblas and liblapack, the respective linker flags need to be changed!
 
 Instead of downloading manually, the complete download and installation is provided by an :download:`installation script example <suitesparse/install.sh>`
-(taken from ``<baci_sourcce>/dependencies/current/suitesparse``)
+(taken from ``<4C_sourcce>/dependencies/current/suitesparse``)
 
 
 .. _superludist:
 
 **SuperLUDist**
 
-Baci uses SuperLUDist indirectly via the Trilinos package Amesos/Amesos2 for directly solving linear systems of equations in distributed memory fashion.
+|FOURC| uses SuperLUDist indirectly via the Trilinos package Amesos/Amesos2 for directly solving linear systems of equations in distributed memory fashion.
 See the `superLU repository <https://github.com/xiaoyeli/superlu_dist>`_ for details and downloads.
 
 Instead of downloading manually, the complete download and installation is provided by an :download:`installation script example <superlu_dist/install.sh>`
-(taken from ``<baci_sourcce>/dependencies/current/superlu_dist``)
+(taken from ``<4C_sourcce>/dependencies/current/superlu_dist``)
 
 **ArborX**
 
-ArborX can be used as optional dependency inside BACI for utilizing it's tree-based search algorithms.
+ArborX can be used as optional dependency inside |FOURC| for utilizing it's tree-based search algorithms.
 See the `ArborX repository <https://github.com/arborx/ArborX>`_ for details and downloads.
 
 .. _trilinos:
@@ -155,10 +155,10 @@ See the `ArborX repository <https://github.com/arborx/ArborX>`_ for details and 
 
 This essential TPL can be downloaded from the `trilinos Github repository <https://github.com/trilinos/Trilinos>`__.
 The currently used (and tested) version is tagged with *trilinos-release-15-0-0*.
-Additionally, Baci is tested weekly against the Trilinos develop branch. Though, this may not always work.
+Additionally, |FOURC| is tested weekly against the Trilinos develop branch. Though, this may not always work.
 
 Instead of downloading manually, the complete download and installation is provided by an :download:`installation script example <trilinos/install.sh>`
-(taken from ``<baci_sourcce>/dependencies/current/trilinos``)
+(taken from ``<4C_sourcce>/dependencies/current/trilinos``)
 
 
 Set-up your Gitlab account
@@ -168,7 +168,7 @@ The tool `GitLab <https://gitlab.lrz.de/>`_ is a web-based service to manage Git
 In addition to hosting the actual repositories, GitLab provides wikis, issue tracking,
 and an easy and transparent way for code review via `merge requests <https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md#merging-changes-into-master>`_.
 The GitLab instance we are using is hosted by the Leibniz-Rechenzentrum (`LRZ <https://www.lrz.de/>`_).
-Before you start working in the BACI GitLab repository, set up your account according to the instructions below.
+Before you start working in the |FOURC| GitLab repository, set up your account according to the instructions below.
 
 User Profile
 ~~~~~~~~~~~~
@@ -299,19 +299,19 @@ and your email address to your institute email address with the following comman
 Set `git-hooks` directory
 """""""""""""""""""""""""
 
-A common set of `git-hooks` to be used by all Baci developers is checked in into the repository.
+A common set of `git-hooks` to be used by all |FOURC| developers is checked in into the repository.
 
 To set the path to our common set of `git-hooks`, run
 
 ::
 
-    cd <baciSrcDir>
+    cd <4c-sourceDir>
     git config core.hooksPath ./utilities/code_checks/
 
 .. Note::
 
-    It is important to execute this command *inside* the Baci source code folder,
-    i.e. inside the Baci Git repository. This command misses the `--global` option, so its scope is limited to the Baci repository.
+    It is important to execute this command *inside* the |FOURC| source code folder,
+    i.e. inside the |FOURC| Git repository. This command misses the `--global` option, so its scope is limited to the |FOURC| repository.
 
 
 Check Settings
@@ -321,16 +321,16 @@ To confirm the correct setup of Git, you may check your configuration settings w
 
     git config --list
 
-.. _baciinstallation:
+.. _4Cinstallation:
 
-Download and install BACI
---------------------------
+Download and install |FOURC|
+------------------------------
 
 Here comes the main part.
-After you have installed all the TPLs, you should download and install BACI itself.
+After you have installed all the TPLs, you should download and install |FOURC| itself.
 
-Clone the BACI repository
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Clone the |FOURC| repository
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -339,7 +339,7 @@ Clone the BACI repository
     git clone git@gitlab.lrz.de:baci/baci.git <sourceDir>
     cd <sourceDir>
 
-where `<someBaseDir>` is some directory on your machine and `<sourceDir>` will contain the BACI source code.
+where `<someBaseDir>` is some directory on your machine and `<sourceDir>` will contain the |FOURC| source code.
 You can choose names and locations of these directories freely.
 
 Your directory tree should look like the following::
@@ -350,7 +350,7 @@ Your directory tree should look like the following::
 Configure
 ~~~~~~~~~
 
-First, you should create the python virtual environment for BACI development.
+First, you should create the python virtual environment for |FOURC| development.
 You'll need that for testing and active development, you need to create a python virtual environment once.
 In the source directory, execute::
 
@@ -358,12 +358,12 @@ In the source directory, execute::
 
 .. note::
 
-    You don't need to execute this command every time you generate a new BACI executable.
+    You don't need to execute this command every time you generate a new |FOURC| executable.
     However, when changes in the virtual python environment have been made, you **must** generate a new environment locally as well.
 
-BACI enforces an out-of-source build, i.e. your build directory may not be located inside the source code directory.
+|FOURC| enforces an out-of-source build, i.e. your build directory may not be located inside the source code directory.
 
-BACI uses ``cmake`` with appropriate presets (**this is why cmake version 3.25 is needed!**) for the build process.
+|FOURC| uses ``cmake`` with appropriate presets (**this is why cmake version 3.25 is needed!**) for the build process.
 The command to run is
 
 ::
@@ -375,10 +375,10 @@ Use
 
 ..
 
-    cmake <baci_home> --list-presets
+    cmake <4C_home> --list-presets
 
 to get a list of all available presets.
-In general, it is highly recommended to create your own preset, which is stored in ``<baci_home>/CMakeUserPresets.txt``.
+In general, it is highly recommended to create your own preset, which is stored in ``<4C_home>/CMakeUserPresets.txt``.
 In a preset within this file, you should also define the build directory.
 
 More information about the cmake presets can be found :ref:`here <cmakepresets>`.
@@ -404,13 +404,13 @@ where `<numProcs>` is the number of processors you want to use.
 
 .. note::
 
-    After the first build, it is rarely necessary to reconfigure baci &mdash; only the build-command is required.
+    After the first build, it is rarely necessary to reconfigure |FOURC| &mdash; only the build-command is required.
     `cmake` is invoked *automatically* during the build process if something changed within `CMakeLists.txt`.
     Make sure to have Ninja installed on your system.
 
 To verify that the build was successful, it is highly recommended to run the test suite,
 at least the small version of it.
-You will find the information about it in the :ref:`testing <bacitesting>` section below.
+You will find the information about it in the :ref:`testing <4Ctesting>` section below.
 
 .. _set-up-your-ide:
 
@@ -439,18 +439,18 @@ Eclipse is a GUI-based IDE that provides many convenient features like code inde
     These instructions might be outdated.
 
 Let's assume that you already have cloned the repository and created a build directory as outlined above.
-To include the Baci source code into Eclipse and enable Eclipse to build baci, follow these steps:
+To include the |FOURC| source code into Eclipse and enable Eclipse to build |FOURC|, follow these steps:
 
 - Open Eclipse Photon.
 - :menuselection:`File --> New --> C/C++ Project`.
 - Select "C++ Managed Build", then click "Next"
-- Type a project name, uncheck "Use default location" and choose the source code folder with your local Baci git repository instead.
+- Type a project name, uncheck "Use default location" and choose the source code folder with your local |FOURC| git repository instead.
 - Select the 'Project type' as :menuselection:`Makefile project --> Empty Project`.
 - Select the 'Toolchains' as 'Linux GCC'.
 - Click Finish.
-- Change to console and configure Baci using "do-configure".
+- Change to console and configure |FOURC| using ``cmake``.
 - Now go back into Eclipse.
-- Right-Click on the Baci project in the :menuselection:`Project Explorer --> Choose Properties`.
+- Right-Click on the |FOURC| project in the :menuselection:`Project Explorer --> Choose Properties`.
 - On "C/C++ General" in ”Paths and Symbols”, in the ”Includes” as well as in the ”Symbols” part click ”Add”, write some dummy name in the new window and click ”Add to all configurations” and ”Add to all languages”.
 - On "C/C++ Build", select the tab "Builder Settings" and
 
@@ -461,8 +461,8 @@ To include the Baci source code into Eclipse and enable Eclipse to build baci, f
 - On :command:`C/C++ Build`, select the tab ”Behaviour” and remove ”all” from ”Build (Incremental build)” and press ”OK/Apply and Close”.
 - Setup code style (see below) for correct behavior of tabs and white spaces.
 - Close Eclipse.
-- Change to console and reconfigure Baci (the ”DEFINES” are now loaded into Baci) be sure to use ``--ide=eclipse``.
-- Build Baci using ``make`` or ``make full`` for a complete build.
+- Change to console and reconfigure |FOURC| (the ”DEFINES” are now loaded into |FOURC|) be sure to use ``--ide=eclipse``.
+- Build |FOURC| using ``make`` or ``make full`` for a complete build.
 - Restart eclipse.
 
 To enable the code indexer, right-click on the project and select :menuselection:`Index --> Rebuild`.
@@ -471,18 +471,18 @@ To enable the code indexer, right-click on the project and select :menuselection
 
 *Source code*
 
-Baci uses a mandatory code style defined as a `.clang-format style file <https://gitlab.lrz.de/baci/baci/blob/master/.clang-format>`_.
+|FOURC| uses a mandatory code style defined as a `.clang-format style file <https://gitlab.lrz.de/baci/baci/blob/master/.clang-format>`_.
 Adherence to this code style will be checked on each commit as well as on each merge request.
 To a priori conform to the codes style and avoid issues in your daily workflow,
 you can configure Eclipse to apply the code style to your source code at every file save.
 To do so, follow these steps:
 
 #. Select "Eclipse Marketplace" from the "Help" menu and install the plugin CppStyle (Note that this requires Eclipse Photon or later)
-#. Right-Click on the Baci project in the :menuselection:`Project Explorer --> Choose Properties`.
+#. Right-Click on the |FOURC| project in the :menuselection:`Project Explorer --> Choose Properties`.
 #. On "CppStyle",
 
    - select "Enable project specific settings"
-   - click on "Configure Workspace Settings" and set the "Clang-format path" to <BACI-repo-dir>/utilities/baci-python-venv/bin/clang-format.
+   - click on "Configure Workspace Settings" and set the "Clang-format path" to <4C-sourcedir>/utilities/baci-python-venv/bin/clang-format.
    - select "Run clang-format on file save"
 
 #. Click "Apply and Close"
@@ -520,7 +520,7 @@ Eclipse provides automated features to help you with these rules. To configure t
 
 *Automation and utilities for Doxygen documentation*
 
-Baci mandates documentation via Doxygen. Further information and an introduction is summarized in Baci's `Doxygen guidelines <https://gitlab.lrz.de/baci/baci/-/wikis/doxygen>`_.
+|FOURC| mandates documentation via Doxygen. Further information and an introduction is summarized in |FOURC|'s `Doxygen guidelines <https://gitlab.lrz.de/baci/baci/-/wikis/doxygen>`_.
 Eclipse can assist in writing Doxygen documentation by auto-generating lists of input and return parameters when writing a function's documentation.
 
 To enable this utility in Eclipse, perform these steps:
@@ -564,7 +564,7 @@ CLion
 Let's assume that you already have cloned the repository and created a build directory as outlined above.
 Now open CLion:
 
-#. New project → choose the source code folder with your local Baci git repository
+#. New project → choose the source code folder with your local |FOURC| git repository
 #. Answer the prompt "Would you like to create a project from existing sources instead?" with "Yes".
 #. :menuselection:`File --> Settings --> Build, Execution, Deployment`
 
@@ -579,7 +579,7 @@ Now open CLion:
 
 **Automation of code formatting**
 
-Baci uses a mandatory code style defined as a .clang-format style file.
+|FOURC| uses a mandatory code style defined as a .clang-format style file.
 Adherence to this code style will be checked on each commit as well as on each merge request.
 To a priori conform to the codes style and avoid issues in your daily workflow, you can configure CLion to apply the code style to your source code at every file save.
 To do so, follow these steps:
@@ -600,8 +600,8 @@ but also you can select a block of code and have it reformatted with |ctrl| + |s
 - Give a Name and a Description as you wish
 - In the Tool Settings:
 
-   - Programs: here you need to enter the path to our BACI custom clang-format i.e.
-     ``<BACI-repo-dir>/utilities/baci-python-venv/bin/clang-format``
+   - Programs: here you need to enter the path to our |FOURC| custom clang-format i.e.
+     ``<4C-sourcedir>/utilities/baci-python-venv/bin/clang-format``
    - Arguments: here you enter this: ``-i --style=file $FileName$``
    - Working Directory: Enter the macro variable ``$FileDir$``
 
@@ -628,7 +628,7 @@ Make sure you have enabled a debug profile in your cmake settings.
             - Select baci-debug from the dropdown menu for Target
             - Enter ``<PathToMpirun>/mpirun`` to Executable (find with ``which mpirun`` in console)
             - Add the arguments for mpirun:
-              ``-np <NumberOfProcesses> <PathToBaci-debug>/baci-debug <PathToTest/TestName.dat> <OutputPreFix>``
+              ``-np <NumberOfProcesses> <PathTo4C-debug>/baci-debug <PathToTest/TestName.dat> <OutputPreFix>``
 
     - Add any other parameters you need for the program to run (for example, the input file name and the output basename) to the arguments.
     - Enter the path you want to run the program in (maybe the one where your input file is located) to Working directory
@@ -645,17 +645,17 @@ Visual Studio Code
 ~~~~~~~~~~~~~~~~~~~
 
 `Visual Studio Code <https://code.visualstudio.com/>`_ is a code editor optimized for building and debugging modern web and cloud applications.
-It can also be used for developing BACI.
+It can also be used for developing |FOURC|.
 Visual Studio Code can connect to a remote computer so you can work on your home computer via SSH, see `here <https://code.visualstudio.com/docs/remote/remote-overview>`_.
 
 **Setting up VS Code**
 
 Let's assume that you already have cloned the repository, created a build directory and created your own CMakeUserPreset.json as outlined above.
-To include the Baci source code into VS Code and enable VS Code to build baci, follow these steps:
+To include the |FOURC| source code into VS Code and enable VS Code to build |FOURC|, follow these steps:
 
 #. Install C/C++ extension for VS Code
 #. Install cmake extension for VS Code
-#. Open folder with source code of BACI
+#. Open folder with source code of |FOURC|
 #. Select cmake preset of your choice
 
 **Setting up VS Code for Remote Development**
@@ -672,7 +672,7 @@ Steps to do on your local machine:
 #. Add your remote workstation over the ssh connection via the Remote Explorer (one icon on the left side)
 #. connect to your remote workstation
 #. Install C/C++ extension via GUI (will install it on your local and remote computer)
-#. Open baci-source directory and start coding
+#. Open |FOURC| source directory and start coding
 
 **Clangd Language Server (Clang-tidy)**
 
@@ -702,12 +702,12 @@ For a full list of features see here: <https://clangd.llvm.org/features.html>
 
 **Debugging with VS Code**
 
-If you want to use VS Code for debugging, you need to add debugging configurations in .vscode/launch.jsonand a debug version of baci.
+If you want to use VS Code for debugging, you need to add debugging configurations in .vscode/launch.jsonand a debug version of |FOURC|.
 In the following, the following folder structure is assumed:
 
-- `/home/user/work/baci/baci`: Path to the source files
-- `/home/user/work/baci/build_debug`: Path to the debug build version
-- `/home/user/work/baci/run`: Path to the run directory
+- `<4C-sourcedir>`: Path to the source files
+- `<4C-debug-execdir>`: Path to the debug build version
+- `<4C-problemdir>`: Path to the run directory
 
 In the following, different configuration examples are given.
 They have to be placed in .vscode/launch.json in the configurations-list.
@@ -720,9 +720,9 @@ They have to be placed in .vscode/launch.json in the configurations-list.
         "name": "Debug input file",
         "type": "cppdbg",
         "request": "launch",
-        "program": "/home/user/work/baci/build_debug/baci-debug",
-        "args": ["/path/to/inputfile.dat", "/home/user/work/baci/run/xxx"],
-        "cwd": "/home/user/work/baci/run",
+        "program": "<4C-debug-execdir>/baci-debug",
+        "args": ["/path/to/inputfile.dat", "<4C-problemdir>/xxx"],
+        "cwd": "<4C-problemdir>",
         "setupCommands": [
             { "text": "handle SIGPIPE nostop noprint pass", "description": "ignore SIGPIPE", "ignoreFailures": true }
         ]
@@ -737,14 +737,14 @@ They have to be placed in .vscode/launch.json in the configurations-list.
         "name": "Debug input file from restart",
         "type": "cppdbg",
         "request": "launch",
-        "program": "/home/user/work/baci/build_debug/baci-debug",
+        "program": "<4C-debug-execdir>/build_debug/baci-debug",
         "args": [
             "/path/to/inputfile.dat",
-            "/home/user/work/baci/run/xxxx"
+            "<4C-problemdir>/xxxx"
             "restart=1",
-            "restartfrom=/home/user/work/baci/run/xxx"
+            "restartfrom=<4C-problemdir>/xxx"
         ],
-        "cwd": "/home/user/work/baci/run",
+        "cwd": "<4C-problemdir>",
         "setupCommands": [
             { "text": "handle SIGPIPE nostop noprint pass", "description": "ignore SIGPIPE", "ignoreFailures": true }
         ]
@@ -758,11 +758,11 @@ They have to be placed in .vscode/launch.json in the configurations-list.
         "name": "Unit test",
         "type": "cppdbg",
         "request": "launch",
-        "program": "/home/user/work/baci/build_debug/Unittests/unittests",
+        "program": "<4C-debug-execdir>/Unittests/unittests",
         "args": [
             "MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite"
         ],
-        "cwd": "/home/user/work/baci/run",
+        "cwd": "<4C-problemdir>",
     }
 
 *Debugging a MPI application*
@@ -781,11 +781,11 @@ This mode is the "normal" mode. On a breakpoint, all processes make a pause.
         "args": [
             "-np",
             "3", // specify number of mpi ranks here
-            "/home/user/work/baci/build_debug/baci-debug",
+            "<4C-debug-execdir>/baci-debug",
             "/path/to/inputfile.dat",
-            "/home/user/work/baci/run/xxx",
+            "<4C-problemdir>/xxx",
         ],
-        "cwd": "/home/user/work/baci/run",
+        "cwd": "<4C-problemdir>",
         "setupCommands": [
             {
                 "description": "On a fork, keep gdb attached to both processes.",
@@ -803,7 +803,7 @@ Tracking down race conditions
 
 With this method, you have control to each processor during the execution.
 However, you have to attach each processor manually.
-Start baci with the following command in an extra terminal:
+Start |FOURC| with the following command in an extra terminal:
 
 ::
 
@@ -822,7 +822,7 @@ Now you can attach gdb to each process with the following configuration:
         "name": "Attach gdb",
         "type": "cppdbg",
         "request": "attach",
-        "program": "/home/user/work/baci/build_debug/baci-debug",
+        "program": "<4C-debug-execdir>/baci-debug",
         "processId": "${command:pickProcess}",
         "MIMode": "gdb"
     }
@@ -830,12 +830,12 @@ Now you can attach gdb to each process with the following configuration:
 Start it two times and choose in the prompt the respective process id.
 Wait until both instances are connected and then start the computation by pressing any key in the baci-debug terminal.
 
-.. _buildbaciwithcustomtargets:
+.. _build4Cwithcustomtargets:
 
-Build BACI with custom targets
-------------------------------
+Build |FOURC| with custom targets
+-----------------------------------
 
-Build Baci using the following command (refer to README):
+Build |FOURC| using the following command (refer to README):
 
 ::
 
@@ -846,17 +846,17 @@ where ``<numProcs>`` denotes the number of processors and ``<customTarget>`` the
 Custom target specifiers
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Baci offers a variety of additional target specifiers <customTarget> (defined in ``CMakeLists.txt``) that can be used within the build command.
+|FOURC| offers a variety of additional target specifiers <customTarget> (defined in ``CMakeLists.txt``) that can be used within the build command.
 Here's a list of all valid custom target specifiers with a brief explanation:
 
 Executables:
 
-- ``baci:`` generate the main Baci executable only
+- ``baci:`` generate the main |FOURC| executable only
 - ``framework:`` generate pre- and post-processing executables pre_exodus and post_*
 - ``post:`` build the post-filters only
 - ``post_ensight:`` build the post_ensight filter only
 - ``post_vtk:`` build the post_vtk filter only
-- ``full:`` generate all executable targets of Baci
+- ``full:`` generate all executable targets of |FOURC|
 
 Documentation:
 
@@ -867,7 +867,7 @@ Refer to ``CMakeLists.txt`` for a definition of all other target specifiers.
 
 .. note::
 
-    When omitting the custom target specifier in the build command, the default specifier baci is used.
+    When omitting the custom target specifier in the build command, the default specifier |FOURC| is used.
 
 .. |ctrl| image:: figures/WikiMooc_Key_CTRL.png
           :height: 20

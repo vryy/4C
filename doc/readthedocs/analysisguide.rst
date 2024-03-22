@@ -19,5 +19,3 @@ Analysis Guide
    introduction_solvers
    fsi
    free_surface_flow
-
-.. cppforbacists

@@ -34,10 +34,10 @@ if(BACI_BUILD_READTHEDOCS)
   add_custom_target(
     readthedocs ALL
     COMMAND create_rtd
-    COMMAND ${baciname} -h > ${READTHEDOCS_OUT_DIR}/reference_docs/baci-help.txt
+    COMMAND ${baciname} -h > ${READTHEDOCS_OUT_DIR}/reference_docs/4C-help.txt
     COMMAND
       cmake ${PROJECT_SOURCE_DIR} --list-presets >
-      ${READTHEDOCS_OUT_DIR}/reference_docs/baci-cmake-presets.txt
+      ${READTHEDOCS_OUT_DIR}/reference_docs/4C-cmake-presets.txt
     COMMAND
       ${SPHINX_EXECUTABLE} -q -b html # -W turns warnings into errors!
       -i "${CMAKE_CURRENT_SOURCE_DIR}" -i "${READTHEDOCS_OUT_DIR}/reference_docs" -i

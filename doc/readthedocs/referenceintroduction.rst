@@ -4,7 +4,7 @@ General
 Sections
 --------
 
-The total input of ``BACI`` is read from formated input files that
+The total input of |FOURC| is read from formatted input files that
 contain all data to define a problem. The file is divided in single
 blocks by horizontal lines which end with a key word specifying the
 following content. There must not be spaces in front of a keyword. An

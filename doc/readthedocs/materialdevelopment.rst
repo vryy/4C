@@ -24,7 +24,7 @@ A description and default values (for optional parameters) can (and should!) be 
 Definition of the material model as an enumeration item
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The main purpose of the file ``src/inpar/inpar_material.H`` is to provide the Enum list ``MaterialType`` of all material laws existing in BACI within the namespace ``INPAT::MAT``.
+The main purpose of the file ``src/inpar/inpar_material.H`` is to provide the Enum list ``MaterialType`` of all material laws existing in |FOURC| within the namespace ``INPAT::MAT``.
 Thus, for each new material model, one has to add a new item in the enum list.
 The name of the enum item starts with ``m_``, followed by the material name in lowercase.
 It may be useful to add the physics in front, e.g. ``m_fluid_...`` or ``m_poro_...`` (this is not always the case, particularly not for solid mechanics).

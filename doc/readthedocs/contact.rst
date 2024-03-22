@@ -8,7 +8,7 @@ Contact and Mesh tying
 Contact
 --------
 
-Contact conditions, which in BACI are set up by the keyword ``MORTAR`` are defined along lines (2D) 
+Contact conditions, which in |FOURC| are set up by the keyword ``MORTAR`` are defined along lines (2D)
 or surfaces (3D). Two types of contact can be defined: Master/Slave contact and Selfcontact. In any case, at least one contact pair is necessary:
 
 - 2D:
@@ -103,7 +103,7 @@ in the Slave definition as shown above.
 For option two, one can simply define a line dirichlet condition, 
 where all dirichlet boundary conditions are removed.
 
-For the third option one can tell BACI that a line belongs to the symmetry plane / dirichlet boundary condition *and* the contact surface.
+For the third option one can tell |FOURC| that a line belongs to the symmetry plane / dirichlet boundary condition *and* the contact surface.
 This is done using the so-called mortar symmetry conditions (Note that the word *symmetry* does not mean that it must be a symmetry condition, it can be any any dirichlet boundary condition, even with non-zero displacement value)::
 
    --------------------------DESIGN LINE MORTAR SYMMETRY CONDITIONS 3D

@@ -1,17 +1,17 @@
-.. _bacitesting:
+.. _4Ctesting:
 
 Testing
 =======
 
-Clean code goes hand in hand with code testing, that is why in Baci we set great value upon the latter.
-This page is concerned with everything related to testing in Baci.
+Clean code goes hand in hand with code testing, that is why in |FOURC| we set great value upon the latter.
+This page is concerned with everything related to testing in |FOURC|.
 
 .. _firstprinciples:
 
 F.I.R.S.T. principles for writing clean tests
 ---------------------------------------------
 
-The F.I.R.S.T. principles serve as a general guideline for writing framework tests or unit tests in Baci.
+The F.I.R.S.T. principles serve as a general guideline for writing framework tests or unit tests in |FOURC|.
 Being an acronym F.I.R.S.T. stands for the following principles:
 
 Fast
@@ -28,7 +28,7 @@ to keep overall testing time and resources in a reasonable scale.
 Independent/Isolated
 ~~~~~~~~~~~~~~~~~~~~~~
 
-In Baci there are some framework tests concerning mesh generation, pre-processing, or post-processing that may depend on a specific order of execution,
+In |FOURC| there are some framework tests concerning mesh generation, pre-processing, or post-processing that may depend on a specific order of execution,
 so whenever possible:
 
 - tests should not depend on each other
@@ -41,7 +41,7 @@ Repeatable
 - tests produce the same result each time
 - tests should be repeatable in any configuration/environment
 
-Baci is developed by contributors distributed among several institutes working on different configurations
+|FOURC| is developed by contributors distributed among several institutes working on different configurations
 (including cluster configurations)
 
 Self-Validating
@@ -75,15 +75,15 @@ Thorough
 Overview on testing mechanisms
 ------------------------------
 
-Baci uses the ``ctest`` environment for testing (refer to `ctest <https://cmake.org/cmake/help/latest/manual/ctest.1.html>`_)
+|FOURC| uses the ``ctest`` environment for testing (refer to `ctest <https://cmake.org/cmake/help/latest/manual/ctest.1.html>`_)
 and relies on a variety of test mechanism to guarantee and maintain its intended behaviour.
 Tests fall into these categories:
 
 - Regression tests: test dat-file based simulations only (no pre-/post-processing)
 - Unit tests: isolate and exercise specific units of source code independently from other parts
-- Framework tests: tests the complete Baci workflow (mesh generation, pre-processing, simulation, post-processing)
+- Framework tests: tests the complete |FOURC| workflow (mesh generation, pre-processing, simulation, post-processing)
 
-Baci tests can be triggered through various mechanisms:
+|FOURC| tests can be triggered through various mechanisms:
 
 - On Gitlab, we use GitLab's CI pipelines. We run those pipelines every night, on every merge request, and on every change in master. In addition, they can be triggered manually.
 - Locally, one can trigger ctest to run all or some tests.
@@ -106,10 +106,10 @@ Details on the pipeline configuration can be found in our
 `README on test configurations <https://gitlab.lrz.de/baci/baci/blob/master/tests/testconfig/README.md>`_.
 In GitLab CI Pipeline Settings you find information on how to start tailored pipelines.
 
-Guidelines for BACI input files
+Guidelines for |FOURC| input files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``*.dat``-file of a CI test (residing in ``<baci_home>/tests/input_files``) should include:
+The ``*.dat``-file of a CI test (residing in ``<4C_sourcedir>/tests/input_files``) should include:
 
 - A short but informative summary of what is tested, maybe also which results are compared,
   in the header
@@ -127,7 +127,7 @@ It calls the Open Source Python package xmlformatter 0.2.4 with the following sp
 - ``<element></element>`` is collapsed to ``<element/>``
 - formatting rules as described in the documentation of the xmlformatter here
 
-To format an ``*.xml``-file run ``./utilities/bacixmlformat <path/to/file>`` from BACI's top-level directory.
+To format an ``*.xml``-file run ``./utilities/bacixmlformat <path/to/file>`` from |FOURC|'s top-level directory.
 
 
 How to deal with failing tests
@@ -188,23 +188,23 @@ Good practices
 Also refer to the :ref:`F.I.R.S.T. principles for writing clean tests <firstprinciples>`.
 
 
-Executing Baci unit tests
+Executing |FOURC| unit tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Configure and build Baci as described in `README <https://gitlab.lrz.de/baci/baci/blob/master/README.md>`_.
-In the Baci build directory ``<builddir>`` a subfolder ``unittests`` with executable unittests inside is generated.
+Configure and build |FOURC| as described in `README <https://gitlab.lrz.de/baci/baci/blob/master/README.md>`_.
+In the |FOURC| build directory ``<builddir>`` a subfolder ``unittests`` with executable unittests inside is generated.
 
     Note: in order to execute the following commands, change to build directory <builddir>
 
-The Baci unit tests are included in ctest as part of the minimal tests and also in the full test suite:
+The |FOURC| unit tests are included in ctest as part of the minimal tests and also in the full test suite:
 
 ::
 
     ctest -L minimal
     ctest -R unittests
 
-How to add unit tests to Baci
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How to add unit tests to |FOURC|
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The framework ``CxxTest`` includes a test discovery mechanism (refer to `user guide <https://cxxtest.com/guide.pdf>`_)
 that makes it very easy to add unit tests.
@@ -215,7 +215,7 @@ that makes it very easy to add unit tests.
 
 **File structure**
 
-In Baci the directory ``<Unittests>`` contains all files related to unit testing.
+In |FOURC| the directory ``<Unittests>`` contains all files related to unit testing.
 
 .. note::
 

@@ -19,7 +19,7 @@ Setting up ccache
 ~~~~~~~~~~~~~~~~~~~
 
 Setting up ``ccache`` depends on your operating system and local environment.
-If ``ccache`` is installed and you are using CMake 3.4 or later, ``ccache`` will be set up automatically durinig the BACI configure process
+If ``ccache`` is installed and you are using CMake 3.4 or later, ``ccache`` will be set up automatically durinig the |FOURC| configure process
 (this can be deactivated with the ``--no-ccache`` configure option).
 If your CMake version is outdated, the general procedure is described `here <https://ccache.samba.org/manual/latest.html>`__.
 However, it is recommended to talk to your co-workers first to get help.
