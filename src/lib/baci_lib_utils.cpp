@@ -1125,54 +1125,6 @@ template Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatc
     Teuchos::RCP<DRT::Discretization>, Teuchos::RCP<const Epetra_Vector>, const std::string,
     const int, Teuchos::ParameterList&);
 
-/// get a random number
-double DRT::UTILS::Random::Uni() { return uni_dist_(rand_engine_); }
-
-/// get a vector of random numbers of size count
-void DRT::UTILS::Random::Uni(std::vector<double>& randvec, int count)
-{
-  // resize vector
-  randvec.resize(count);
-
-  for (int i = 0; i < count; ++i)
-  {
-    randvec[i] = uni_dist_(rand_engine_);
-  }
-}
-
-/// get a random number
-double DRT::UTILS::Random::Normal() { return norm_dist_(rand_engine_); }
-
-/// get a vector of random numbers of size count
-void DRT::UTILS::Random::Normal(std::vector<double>& randvec, int count)
-{
-  // resize vector
-  randvec.resize(count);
-
-  for (int i = 0; i < count; ++i)
-  {
-    randvec[i] = norm_dist_(rand_engine_);
-  }
-}
-
-/// set the random seed
-void DRT::UTILS::Random::SetRandSeed(const unsigned int seed) { rand_engine_.seed(seed); }
-
-/// set the range for the uniform rng
-void DRT::UTILS::Random::SetRandRange(const double lower, const double upper)
-{
-  std::uniform_real_distribution<double>::param_type parm(lower, upper);
-  uni_dist_.param(parm);
-}
-
-/// set the mean and variance for the normal rng
-void DRT::UTILS::Random::SetMeanVariance(const double mean, const double var)
-{
-  std::normal_distribution<double>::param_type parm(mean, var);
-  norm_dist_.param(parm);
-}
-
-
 DRT::UTILS::RestartManager::RestartManager()
     : startwalltime_(GLOBAL::Problem::Walltime()),
       restartevrytime_(-1.0),
