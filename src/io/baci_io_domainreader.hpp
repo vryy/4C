@@ -11,8 +11,8 @@
 
 
 
-#ifndef BACI_LIB_DOMAINREADER_HPP
-#define BACI_LIB_DOMAINREADER_HPP
+#ifndef BACI_IO_DOMAINREADER_HPP
+#define BACI_IO_DOMAINREADER_HPP
 
 #include "baci_config.hpp"
 
@@ -29,16 +29,16 @@ BACI_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
+}  // namespace DRT
+
+namespace IO
+{
+  class LineDefinition;
 
   namespace GRIDGENERATOR
   {
     struct RectangularCuboidInputs;
   }
-}  // namespace DRT
-
-namespace INPUT
-{
-  class LineDefinition;
 
   /*----------------------------------------------------------------------*/
   /*!
@@ -59,7 +59,7 @@ namespace INPUT
       \param reader (i) the dat file reader
       \param sectionname (i) the section that contains the element lines
      */
-    DomainReader(Teuchos::RCP<DRT::Discretization> dis, const DatFileReader& reader,
+    DomainReader(Teuchos::RCP<DRT::Discretization> dis, const INPUT::DatFileReader& reader,
         std::string sectionname);
 
     //! Destructor
@@ -86,7 +86,7 @@ namespace INPUT
     /*! \brief read input parameters from input file
        \return class holding all input parameters for rectangular cuboid domain
      */
-    DRT::GRIDGENERATOR::RectangularCuboidInputs ReadRectangularCuboidInputData() const;
+    IO::GRIDGENERATOR::RectangularCuboidInputs ReadRectangularCuboidInputData() const;
 
     /// finalize reading. FillComplete(false,false,false), that is, do not
     /// initialize elements. This is done later after reading boundary conditions.
@@ -96,7 +96,7 @@ namespace INPUT
     std::string name_;
 
     /// the main dat file reader
-    const DatFileReader& reader_;
+    const INPUT::DatFileReader& reader_;
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;
@@ -108,7 +108,7 @@ namespace INPUT
     Teuchos::RCP<DRT::Discretization> dis_;
   };
 
-}  // namespace INPUT
+}  // namespace IO
 BACI_NAMESPACE_CLOSE
 
 #endif

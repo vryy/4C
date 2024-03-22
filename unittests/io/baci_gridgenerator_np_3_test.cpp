@@ -9,9 +9,9 @@
 #include <gtest/gtest.h>
 
 #include "baci_global_data.hpp"
+#include "baci_io_gridgenerator.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_gridgenerator.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_par_material.hpp"
 
@@ -56,7 +56,7 @@ namespace
     void TearDown() override { IO::cout.close(); }
 
    public:
-    DRT::GRIDGENERATOR::RectangularCuboidInputs inputData_{};
+    IO::GRIDGENERATOR::RectangularCuboidInputs inputData_{};
     Teuchos::RCP<DRT::Discretization> testdis_;
     Teuchos::RCP<Epetra_Comm> comm_;
   };
@@ -67,7 +67,7 @@ namespace
     inputData_.distype_ = "HEX27";
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
 
-    DRT::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
+    IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
 
     testdis_->FillComplete(false, false, false);
 
@@ -116,7 +116,7 @@ namespace
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
     inputData_.autopartition_ = true;
 
-    DRT::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
+    IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
 
     testdis_->FillComplete(false, false, false);
 

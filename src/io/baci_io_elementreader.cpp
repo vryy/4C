@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_elementreader.hpp"
+#include "baci_io_elementreader.hpp"
 
 #include "baci_comm_utils_factory.hpp"
 #include "baci_global_data.hpp"
@@ -21,7 +21,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-INPUT::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
+IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, std::string sectionname)
     : name_(dis->Name()),
       reader_(reader),
@@ -34,7 +34,7 @@ INPUT::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-INPUT::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
+IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, std::string sectionname, std::string elementtype)
     : name_(dis->Name()),
       reader_(reader),
@@ -48,7 +48,7 @@ INPUT::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-INPUT::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
+IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, std::string sectionname,
     const std::set<std::string>& elementtypes)
     : name_(dis->Name()),
@@ -64,7 +64,7 @@ INPUT::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::ElementReader::ReadAndDistribute()
+void IO::ElementReader::ReadAndDistribute()
 {
   const int myrank = comm_->MyPID();
   const int numproc = comm_->NumProc();
@@ -120,7 +120,7 @@ void INPUT::ElementReader::ReadAndDistribute()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<int, std::vector<int>> INPUT::ElementReader::GetElementSizeAndIDs() const
+std::pair<int, std::vector<int>> IO::ElementReader::GetElementSizeAndIDs() const
 {
   // vector of all global element ids
   std::vector<int> eids;
@@ -173,7 +173,7 @@ std::pair<int, std::vector<int>> INPUT::ElementReader::GetElementSizeAndIDs() co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::ElementReader::GetAndDistributeElements(const int nblock, const int bsize)
+void IO::ElementReader::GetAndDistributeElements(const int nblock, const int bsize)
 {
   std::ifstream file;
   std::string inputfile_name = reader_.MyInputfileName();

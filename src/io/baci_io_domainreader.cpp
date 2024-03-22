@@ -9,14 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_domainreader.hpp"
+#include "baci_io_domainreader.hpp"
 
 #include "baci_comm_parobject.hpp"
+#include "baci_io_gridgenerator.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_io_utils_reader.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_elementdefinition.hpp"
-#include "baci_lib_gridgenerator.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_rebalance_utils.hpp"
 
@@ -26,11 +26,11 @@
 
 BACI_NAMESPACE_OPEN
 
-namespace INPUT
+namespace IO
 {
   /// forward declarations
   void BroadcastInputDataToAllProcs(
-      Teuchos::RCP<Epetra_Comm> comm, DRT::GRIDGENERATOR::RectangularCuboidInputs& inputData);
+      Teuchos::RCP<Epetra_Comm> comm, IO::GRIDGENERATOR::RectangularCuboidInputs& inputData);
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -56,10 +56,11 @@ namespace INPUT
       IO::cout << "Entering domain generation mode for " << name_
                << " discretization ...\nCreate and partition elements      in...." << IO::endl;
 
-    DRT::GRIDGENERATOR::RectangularCuboidInputs inputData = ReadRectangularCuboidInputData();
+    GRIDGENERATOR::RectangularCuboidInputs inputData =
+        DomainReader::ReadRectangularCuboidInputData();
     inputData.node_gid_of_first_new_node_ = nodeGIdOfFirstNewNode;
 
-    DRT::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
+    IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
         *dis_, inputData, static_cast<bool>(reader_.MyOutputFlag()));
 
     if (!myrank && reader_.MyOutputFlag() == 0)
@@ -72,9 +73,9 @@ namespace INPUT
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  DRT::GRIDGENERATOR::RectangularCuboidInputs DomainReader::ReadRectangularCuboidInputData() const
+  GRIDGENERATOR::RectangularCuboidInputs DomainReader::ReadRectangularCuboidInputData() const
   {
-    DRT::GRIDGENERATOR::RectangularCuboidInputs inputData;
+    IO::GRIDGENERATOR::RectangularCuboidInputs inputData;
     // all reading is done on proc 0
     if (comm_->MyPID() == 0)
     {
@@ -152,7 +153,7 @@ namespace INPUT
     // broadcast if necessary
     if (comm_->NumProc() > 1)
     {
-      BroadcastInputDataToAllProcs(comm_, inputData);
+      IO::BroadcastInputDataToAllProcs(comm_, inputData);
     }
 
     return inputData;
@@ -161,7 +162,7 @@ namespace INPUT
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void BroadcastInputDataToAllProcs(
-      Teuchos::RCP<Epetra_Comm> comm, DRT::GRIDGENERATOR::RectangularCuboidInputs& inputData)
+      Teuchos::RCP<Epetra_Comm> comm, IO::GRIDGENERATOR::RectangularCuboidInputs& inputData)
   {
     const int myrank = comm->MyPID();
 
@@ -231,6 +232,6 @@ namespace INPUT
     CORE::REBALANCE::UTILS::PrintParallelDistribution(*dis_);
   }
 
-}  // namespace INPUT
+}  // namespace IO
 
 BACI_NAMESPACE_CLOSE

@@ -8,16 +8,16 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_meshreader.hpp"
+#include "baci_io_meshreader.hpp"
 
 #include "baci_global_data.hpp"
 #include "baci_inpar_rebalance.hpp"
+#include "baci_io_domainreader.hpp"
+#include "baci_io_elementreader.hpp"
 #include "baci_io_inputreader.hpp"
+#include "baci_io_nodereader.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_domainreader.hpp"
-#include "baci_lib_elementreader.hpp"
-#include "baci_lib_nodereader.hpp"
 #include "baci_rebalance.hpp"
 #include "baci_rebalance_utils.hpp"
 
@@ -31,7 +31,7 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-INPUT::MeshReader::MeshReader(INPUT::DatFileReader& reader, std::string node_section_name)
+IO::MeshReader::MeshReader(INPUT::DatFileReader& reader, std::string node_section_name)
     : comm_(reader.Comm()), reader_(reader), node_section_name_(std::move(node_section_name))
 {
 }
@@ -39,7 +39,7 @@ INPUT::MeshReader::MeshReader(INPUT::DatFileReader& reader, std::string node_sec
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
+void IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, const std::string& sectionname,
     const std::set<std::string>& elementtypes, const INPAR::GeometryType geometrysource,
     const std::string* geofilepath)
@@ -49,14 +49,14 @@ void INPUT::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
     case INPAR::geometry_full:
     {
       std::string fullsectionname("--" + sectionname + " ELEMENTS");
-      ElementReader er = INPUT::ElementReader(dis, reader, fullsectionname, elementtypes);
+      ElementReader er = ElementReader(dis, reader, fullsectionname, elementtypes);
       element_readers_.emplace_back(er);
       break;
     }
     case INPAR::geometry_box:
     {
       std::string fullsectionname("--" + sectionname + " DOMAIN");
-      DomainReader dr = INPUT::DomainReader(dis, reader, fullsectionname);
+      DomainReader dr = DomainReader(dis, reader, fullsectionname);
       domain_readers_.emplace_back(dr);
       break;
     }
@@ -74,7 +74,7 @@ void INPUT::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
+void IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, const std::string& sectionname,
     const INPAR::GeometryType geometrysource, const std::string* geofilepath)
 {
@@ -84,7 +84,7 @@ void INPUT::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::MeshReader::ReadAndPartition()
+void IO::MeshReader::ReadAndPartition()
 {
   // We need to track the max global node ID to offset node numbering and for sanity checks
   int max_node_id = 0;
@@ -108,9 +108,9 @@ void INPUT::MeshReader::ReadAndPartition()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
+void IO::MeshReader::ReadMeshFromDatFile(int& max_node_id)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("INPUT::MeshReader::ReadMeshFromDatFile");
+  TEUCHOS_FUNC_TIME_MONITOR("IO::MeshReader::ReadMeshFromDatFile");
 
   // read element information
   for (auto& element_reader : element_readers_) element_reader.ReadAndDistribute();
@@ -121,9 +121,9 @@ void INPUT::MeshReader::ReadMeshFromDatFile(int& max_node_id)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::MeshReader::Rebalance()
+void IO::MeshReader::Rebalance()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("INPUT::MeshReader::Rebalance");
+  TEUCHOS_FUNC_TIME_MONITOR("IO::MeshReader::Rebalance");
 
   // do the real partitioning and distribute maps
   for (size_t i = 0; i < element_readers_.size(); i++)
@@ -228,7 +228,7 @@ void INPUT::MeshReader::Rebalance()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::MeshReader::CreateInlineMesh(int& max_node_id)
+void IO::MeshReader::CreateInlineMesh(int& max_node_id)
 {
   for (const auto& domain_reader : domain_readers_)
   {
