@@ -570,23 +570,6 @@ namespace DRT
           INPAR::STR::StrainType iostrain,     ///< strain output option
           INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
-      //! Calculate nonlinear stiffness and mass matrix (GEMM)
-      virtual void soh8_nlnstiffmass_gemm(std::vector<int>& lm,  ///< location matrix
-          std::vector<double>& dispo,                            ///< old displacements
-          std::vector<double>& disp,                             ///< current displacements
-          std::vector<double>& residual,                         ///< current residual displ
-          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
-              stiffmatrix,                                             ///< element stiffness matrix
-          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
-          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force,  ///< element internal force vector
-          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>*
-              eleplstrain,                     ///< plastic strains at GP
-          Teuchos::ParameterList& params,      ///< algorithmic parameters e.g. time
-          INPAR::STR::StressType iostress,     ///< stress output option
-          INPAR::STR::StrainType iostrain,     ///< strain output option
-          INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
       void soh8_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* emass);

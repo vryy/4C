@@ -1301,16 +1301,9 @@ void STR::TimInt::UpdateStepContactVUM()
         beta = genAlpha->TimIntParamBeta();
         gamma = genAlpha->TimIntParamGamma();
       }
-      else if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-               INPAR::STR::dyna_gemm)
-      {
-        alpham = sdynparams.sublist("GEMM").get<double>("ALPHA_M");
-        beta = sdynparams.sublist("GEMM").get<double>("BETA");
-        gamma = sdynparams.sublist("GEMM").get<double>("GAMMA");
-      }
       else
       {
-        FOUR_C_THROW("***** WARNING: VelUpdate ONLY for Gen-alpha and GEMM -> skipping ****");
+        FOUR_C_THROW("***** WARNING: VelUpdate ONLY for Gen-alpha -> skipping ****");
         return;
       }
 

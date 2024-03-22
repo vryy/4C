@@ -46,9 +46,6 @@ MAXITER                         50000
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         1.0
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
-ALPHA_M                         0.5
-ALPHA_F                         0.5
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -------------------------------------------------------------CONTACT DYNAMIC

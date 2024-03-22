@@ -162,7 +162,6 @@ INT_STRATEGY                   Standard
 //     Statics
 //     GenAlpha
 //     OneStepTheta
-//     GEMM
 //     ExplicitEuler
 //     CentrDiff
 //     AdamsBashforth2

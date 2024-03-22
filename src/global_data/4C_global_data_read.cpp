@@ -1734,7 +1734,6 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
   reader.ReadSection("--STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadSection("--STRUCTURAL DYNAMIC/GENALPHA", *list);
   reader.ReadSection("--STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
-  reader.ReadSection("--STRUCTURAL DYNAMIC/GEMM", *list);
   reader.ReadSection("--STRUCTURAL DYNAMIC/TIMEADAPTIVITY/JOINT EXPLICIT", *list);
   reader.ReadSection("--MORTAR COUPLING", *list);
   reader.ReadSection("--MORTAR COUPLING/PARALLEL REDISTRIBUTION", *list);

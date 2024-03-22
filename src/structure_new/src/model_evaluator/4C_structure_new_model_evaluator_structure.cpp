@@ -1993,9 +1993,6 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
     case DRT::ELEMENTS::struct_calc_nlnstifflmass:
       action = "calc_struct_nlnstifflmass";
       break;
-    case DRT::ELEMENTS::struct_calc_nlnstiff_gemm:
-      action = "calc_struct_nlnstiff_gemm";
-      break;
     case DRT::ELEMENTS::struct_calc_stress:
       action = "calc_struct_stress";
       break;

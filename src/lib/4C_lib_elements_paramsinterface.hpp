@@ -108,8 +108,6 @@ namespace DRT
         return struct_calc_nlnstiffmass;
       else if (action == "calc_struct_nlnstifflmass")
         return struct_calc_nlnstifflmass;
-      else if (action == "calc_struct_nlnstiff_gemm")
-        return struct_calc_nlnstiff_gemm;
       else if (action == "calc_struct_stress")
         return struct_calc_stress;
       else if (action == "calc_struct_eleload")
@@ -181,8 +179,6 @@ namespace DRT
           return "struct_calc_nlnstiffmass";
         case struct_calc_nlnstifflmass:
           return "struct_calc_nlnstifflmass";
-        case struct_calc_nlnstiff_gemm:
-          return "struct_calc_nlnstiff_gemm";
         case struct_calc_predict:
           return "struct_calc_predict";
         case struct_calc_recover:

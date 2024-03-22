@@ -241,27 +241,6 @@ namespace MAT
         CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
-    /*!
-     * \brief Evaluate for GEMM
-     *
-     * \param stress(in,out) : 2nd Piola-Kirchhoff stresses
-     * \param cmat(in,out) : Constitutive matrix
-     * \param glstrain_m(in) : Green-Lagrange strain at t_{n+1/2}
-     * \param glstrain_new(in) : Green-Lagrange strain at t_{n+1}
-     * \param glstrain_old(in) : Green-Lagrange strain at t_{n}
-     * \param rcg_new(in) : Right Cauchy-Green tensor at t_{n+1}
-     * \param rcg_old(in) : Right Cauchy-Green tensor at t_{n}
-     * \param gp(in) : Gauss point
-     * \param eleGID(in) : Element GID
-     */
-    void EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
-        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
-        const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
-        int gp, int eleGID) override;
-
     void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
         const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
         double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,

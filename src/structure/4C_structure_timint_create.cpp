@@ -17,7 +17,6 @@
 #include "4C_structure_timint_ab2.hpp"
 #include "4C_structure_timint_centrdiff.hpp"
 #include "4C_structure_timint_expleuler.hpp"
-#include "4C_structure_timint_gemm.hpp"
 #include "4C_structure_timint_genalpha.hpp"
 #include "4C_structure_timint_ost.hpp"
 #include "4C_structure_timint_prestress.hpp"
@@ -99,14 +98,6 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
     case INPAR::STR::dyna_onesteptheta:
     {
       sti = Teuchos::rcp(new STR::TimIntOneStepTheta(
-          timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
-      break;
-    }
-
-    // Generalised energy-momentum method (GEMM)
-    case INPAR::STR::dyna_gemm:
-    {
-      sti = Teuchos::rcp(new STR::TimIntGEMM(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
       break;
     }

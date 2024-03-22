@@ -203,7 +203,6 @@ namespace INPAR
       dyna_genalpha_liegroup,  ///< generalised-alpha time integrator for Lie groups (e.g. SO3 group
                                ///< of rotation matrices) (implicit)
       dyna_onesteptheta,       ///< one-step-theta time integrator (implicit)
-      dyna_gemm,               ///< generalised energy-momementum method (implicit)
       dyna_expleuler,          ///< forward Euler (explicit)
       dyna_centrdiff,          ///< central differences (explicit)
       dyna_ab2,                ///< Adams-Bashforth 2nd order (explicit)
@@ -229,9 +228,6 @@ namespace INPAR
           break;
         case dyna_onesteptheta:
           return "OneStepTheta";
-          break;
-        case dyna_gemm:
-          return "GEMM";
           break;
         case dyna_expleuler:
           return "ExplEuler";
