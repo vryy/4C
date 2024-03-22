@@ -2195,6 +2195,14 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
       break;
       case INPAR::STR::strain_ea:
       {
+        if (eastype_ != soh8_easnone)
+        {
+          dserror(
+              "EA strains are computed with the 'normal' deformation gradient from GL strains, and "
+              "not with the deformation gradient that is consistent with EAS!\n"
+              "Use the new solid elements instead!");
+        }
+
         if (elestrain == nullptr) dserror("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> gl;
@@ -2384,6 +2392,14 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
       }
       case INPAR::STR::strain_ea:
       {
+        if (eastype_ != soh8_easnone)
+        {
+          dserror(
+              "EA strains are computed with the 'normal' deformation gradient from GL strains, and "
+              "not with the deformation gradient that is consistent with EAS!\n"
+              "Use the new solid elements instead!");
+        }
+
         if (eleplstrain == nullptr) dserror("plastic strain data not available");
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
             params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
@@ -2434,6 +2450,14 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
       break;
       case INPAR::STR::stress_cauchy:
       {
+        if (eastype_ != soh8_easnone)
+        {
+          dserror(
+              "Cauchy stresses are computed with the 'normal' deformation gradient from 2PK "
+              "stresses and not with the deformation gradient that is consistent with EAS!\n"
+              "Use the new solid elements instead!");
+        }
+
         if (elestress == nullptr) dserror("stress data not available");
         CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchystress(false);
         PK2toCauchy(&stress, &defgrd, &cauchystress);
