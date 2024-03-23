@@ -11,9 +11,9 @@
 
 #include "baci_xfem_utils.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret_faces.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_mat_list.hpp"
@@ -34,7 +34,7 @@ void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
     std::vector<int> lm;
     dis->Dof(node, lm);
     std::vector<double> mydisp;
-    DRT::UTILS::ExtractMyValues(*dispcol, mydisp, lm);
+    CORE::FE::ExtractMyValues(*dispcol, mydisp, lm);
     if (mydisp.size() < 3) dserror("we need at least 3 dofs here");
 
     CORE::LINALG::Matrix<3, 1> currpos;
@@ -158,7 +158,7 @@ void XFEM::UTILS::ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base
   }
 
   std::vector<double> local_vector(nsd * numnode);
-  DRT::UTILS::ExtractMyValues(*global_col_vector, local_vector, la[nds_vector].lm_);
+  CORE::FE::ExtractMyValues(*global_col_vector, local_vector, la[nds_vector].lm_);
 
   if (local_vector.size() != nsd * numnode)
     dserror("wrong size of (potentially resized) local matrix!");
@@ -177,7 +177,7 @@ void XFEM::UTILS::ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& e
   if (lm.size() != 1) dserror("assume a unique level-set dof in cutterdis-Dofset");
 
   std::vector<double> local_vector(nsd);
-  DRT::UTILS::ExtractMyValues(*global_col_vector, local_vector, lm);
+  CORE::FE::ExtractMyValues(*global_col_vector, local_vector, lm);
 
   if (local_vector.size() != nsd) dserror("wrong size of (potentially resized) local matrix!");
 

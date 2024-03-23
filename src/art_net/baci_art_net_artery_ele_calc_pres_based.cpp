@@ -10,12 +10,11 @@
 
 #include "baci_art_net_artery_ele_calc_pres_based.hpp"
 
-#include "baci_art_net_art_junction.hpp"
 #include "baci_art_net_art_terminal_bc.hpp"
 #include "baci_art_net_artery_ele_calc.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_cnst_1d_art.hpp"
 #include "baci_utils_function.hpp"
 #include "baci_utils_singleton_owner.hpp"
@@ -143,7 +142,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
 
   // extract local values of pressure field from global state vector
   CORE::LINALG::Matrix<my::iel_, 1> mypress(true);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   // calculate the element length
   const double L = CalculateEleLength(ele, discretization, la);
@@ -219,7 +218,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateFlow(Artery* ele,
 
   // extract local values of pressure field from global state vector
   CORE::LINALG::Matrix<my::iel_, 1> mypress(true);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   // calculate the element length
   const double L = CalculateEleLength(ele, discretization, la);
@@ -257,7 +256,7 @@ double DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::CalculateEleLength(
         discretization.GetState(1, "curr_seg_lengths");
     std::vector<double> seglengths(la[1].lm_.size());
 
-    DRT::UTILS::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
+    CORE::FE::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
 
     length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
   }

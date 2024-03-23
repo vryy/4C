@@ -10,10 +10,10 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_dem_adhesion.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_io_visualization_manager.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_particle_wall_dem.hpp"
 #include "baci_particle_engine_container.hpp"
 #include "baci_particle_engine_interface.hpp"
@@ -393,7 +393,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
-      DRT::UTILS::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
+      CORE::FE::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
 
       // determine velocity of wall contact point j
       for (int node = 0; node < numnodes; ++node)

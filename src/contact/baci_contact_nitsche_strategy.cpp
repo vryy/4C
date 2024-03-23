@@ -13,6 +13,7 @@
 #include "baci_contact_interface.hpp"
 #include "baci_contact_nitsche_utils.hpp"
 #include "baci_contact_paramsinterface.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -168,7 +169,7 @@ void CONTACT::NitscheStrategy::SetParentState(
         ele->ParentElement()->LocationVector(*dis, lm, lmowner, lmstride);
 
         std::vector<double> myval;
-        DRT::UTILS::ExtractMyValues(*global, myval, lm);
+        CORE::FE::ExtractMyValues(*global, myval, lm);
 
         switch (statename)
         {

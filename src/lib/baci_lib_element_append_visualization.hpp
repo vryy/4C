@@ -14,9 +14,9 @@
 
 #include "baci_config.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_lib_element_vtk_cell_type_register.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_nurbs_discret_nurbs_utils.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -290,7 +290,7 @@ namespace DRT::ELEMENTS
       std::vector<double> eledisp;
       std::vector<int> lm, lmowner, lmstride;
       ele.LocationVector(discret, lm, lmowner, lmstride);
-      DRT::UTILS::ExtractMyValues(*result_data_dofbased, eledisp, lm);
+      CORE::FE::ExtractMyValues(*result_data_dofbased, eledisp, lm);
       dof_result.SetView(eledisp.data());
 
       // Loop over the nodes of the nurbs element.

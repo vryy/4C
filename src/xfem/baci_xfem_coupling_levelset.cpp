@@ -12,8 +12,7 @@ bridge between the xfluid class and the cut-library
 #include "baci_xfem_coupling_levelset.hpp"
 
 #include "baci_cut_cutwizard.hpp"
-#include "baci_cut_node.hpp"
-#include "baci_cut_point.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_inpar_fluid.hpp"
 #include "baci_inpar_xfem.hpp"
@@ -28,9 +27,6 @@ bridge between the xfluid class and the cut-library
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_utils_function.hpp"
 #include "baci_xfem_interface_utils.hpp"
-#include "baci_xfem_utils.hpp"
-
-#include <Teuchos_TimeMonitor.hpp>
 
 BACI_NAMESPACE_OPEN
 
@@ -562,7 +558,7 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
       if (static_cast<int>(lm_target.size()) != 1) dserror("we expect a unique dof per node here!");
 
       std::vector<double> val_source;
-      DRT::UTILS::ExtractMyValues(*source_vec_dofbased, val_source, lm_source);
+      CORE::FE::ExtractMyValues(*source_vec_dofbased, val_source, lm_source);
 
       // set to a dofrowmap based vector!
       const int lid_target = target_vec_dofbased->Map().LID(lm_target[0]);
@@ -589,7 +585,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::GetLevelSetFieldAsNodeRowVec
     bg_dis_->Dof(bg_nds_phi_, node, lm_source);
 
     std::vector<double> val_source;
-    DRT::UTILS::ExtractMyValues(*phinp_, val_source, lm_source);
+    CORE::FE::ExtractMyValues(*phinp_, val_source, lm_source);
 
     if (val_source.size() != 1) dserror("we expect only one dof");
 

@@ -10,9 +10,9 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph_virtual_wall_particle.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_particle_engine_container.hpp"
 #include "baci_particle_engine_interface.hpp"
 #include "baci_particle_interaction_sph_kernel.hpp"
@@ -199,7 +199,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     {
       // get nodal accelerations
       std::vector<double> nodal_acc(numnodes * 3);
-      DRT::UTILS::ExtractMyValues(*walldatastate->GetAccCol(), nodal_acc, lmele);
+      CORE::FE::ExtractMyValues(*walldatastate->GetAccCol(), nodal_acc, lmele);
 
       // determine acceleration of wall contact point j
       for (int node = 0; node < numnodes; ++node)

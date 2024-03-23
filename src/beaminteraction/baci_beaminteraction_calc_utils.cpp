@@ -195,7 +195,7 @@ namespace BEAMINTERACTION
       std::vector<int> lm, lmowner, lmstride;
 
       ele->LocationVector(discret, lm, lmowner, lmstride);
-      DRT::UTILS::ExtractMyValues(*ia_discolnp, eledisp, lm);
+      CORE::FE::ExtractMyValues(*ia_discolnp, eledisp, lm);
     }
 
     /*-----------------------------------------------------------------------------*

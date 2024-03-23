@@ -11,10 +11,10 @@
 
 #include "baci_binstrategy.hpp"
 #include "baci_contact_interpolator.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
@@ -2003,7 +2003,7 @@ void MORTAR::Interface::SetState(const enum StateType& statetype, const Epetra_V
 
         for (int j = 0; j < numdof; ++j) lm[j] = node->Dofs()[j];
 
-        DRT::UTILS::ExtractMyValues(*global, mydisp, lm);
+        CORE::FE::ExtractMyValues(*global, mydisp, lm);
 
         // add mydisp[2]=0 for 2D problems
         if (mydisp.size() < 3) mydisp.resize(3);
@@ -2034,7 +2034,7 @@ void MORTAR::Interface::SetState(const enum StateType& statetype, const Epetra_V
 
         for (int j = 0; j < numdof; ++j) lm[j] = node->Dofs()[j];
 
-        DRT::UTILS::ExtractMyValues(*global, mydisp, lm);
+        CORE::FE::ExtractMyValues(*global, mydisp, lm);
 
         // add mydisp[2]=0 for 2D problems
         if (mydisp.size() < 3) mydisp.resize(3);
@@ -2065,7 +2065,7 @@ void MORTAR::Interface::SetState(const enum StateType& statetype, const Epetra_V
 
         for (int j = 0; j < numdof; ++j) lm[j] = node->Dofs()[j];
 
-        DRT::UTILS::ExtractMyValues(*global, myolddisp, lm);
+        CORE::FE::ExtractMyValues(*global, myolddisp, lm);
 
         // add mydisp[2]=0 for 2D problems
         if (myolddisp.size() < 3) myolddisp.resize(3);

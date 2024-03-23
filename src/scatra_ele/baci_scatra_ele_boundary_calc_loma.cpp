@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_boundary_calc_loma.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_rotsym_periodicbc.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_arrhenius_pv.hpp"
 #include "baci_mat_arrhenius_temp.hpp"
 #include "baci_mat_ferech_pv.hpp"
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
   std::vector<double> myconvel(lmvel.size());
 
   // extract local values of the global vectors
-  DRT::UTILS::ExtractMyValues(*convel, myconvel, lmvel);
+  CORE::FE::ExtractMyValues(*convel, myconvel, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   my::rotsymmpbc_->RotateMyValuesIfNecessary(myconvel);
@@ -155,7 +155,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
   Teuchos::RCP<Epetra_MultiVector>* f = params.getPtr<Teuchos::RCP<Epetra_MultiVector>>(name);
   // check: field has been set and is not of type Teuchos::null
   if (f != nullptr)
-    DRT::UTILS::ExtractMyNodeBasedValues(peleptr, eflux, *f, 3);
+    CORE::FE::ExtractMyNodeBasedValues(peleptr, eflux, *f, 3);
   else
     dserror("MultiVector %s has not been found!", name.c_str());
 

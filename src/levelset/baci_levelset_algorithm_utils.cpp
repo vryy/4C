@@ -10,6 +10,7 @@
  *------------------------------------------------------------------------------------------------*/
 
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io_control.hpp"
 #include "baci_io_pstream.hpp"
@@ -377,7 +378,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
               std::vector<double> myconvel(lmvel.size());
 
               // extract local values from global vector
-              DRT::UTILS::ExtractMyValues(*convel, myconvel, lmvel);
+              CORE::FE::ExtractMyValues(*convel, myconvel, lmvel);
 
               // determine number of velocity related dofs per node
               const int numveldofpernode = lmvel.size() / nen;

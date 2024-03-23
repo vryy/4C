@@ -15,13 +15,12 @@
 
 #include "baci_red_airways_airway_impl.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_air_0d_O2_saturation.hpp"
 #include "baci_mat_hemoglobin_0d_O2_saturation.hpp"
-#include "baci_mat_list.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_red_airways_elem_params.hpp"
@@ -621,15 +620,15 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
+  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  DRT::UTILS::ExtractMyValues(*pn, mypn, lm);
+  CORE::FE::ExtractMyValues(*pn, mypn, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnm, mypnm, lm);
+  CORE::FE::ExtractMyValues(*pnm, mypnm, lm);
 
   // create objects for element arrays
   CORE::LINALG::SerialDenseVector epnp(elemVecdim);
@@ -981,7 +980,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  DRT::UTILS::ExtractMyValues(*pn, mypn, lm);
+  CORE::FE::ExtractMyValues(*pn, mypn, lm);
 
   // create objects for element arrays
   CORE::LINALG::SerialDenseVector epn(numnode);
@@ -1402,15 +1401,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
+  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  DRT::UTILS::ExtractMyValues(*pn, mypn, lm);
+  CORE::FE::ExtractMyValues(*pn, mypn, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnm, mypnm, lm);
+  CORE::FE::ExtractMyValues(*pnm, mypnm, lm);
 
   // create objects for element arrays
   CORE::LINALG::SerialDenseVector epnp(elemVecdim);
@@ -1570,7 +1569,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
+  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // create objects for element arrays
   CORE::LINALG::SerialDenseVector epnp(numnode);
@@ -2012,7 +2011,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> myscatran(lm.size());
-  DRT::UTILS::ExtractMyValues(*evaluation_data.scatran, myscatran, lm);
+  CORE::FE::ExtractMyValues(*evaluation_data.scatran, myscatran, lm);
 
   //--------------------------------------------------------------------
   // get element length
@@ -2138,15 +2137,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateScatra(RedAirway* ele,
 
     // extract local values from the global vectors
     std::vector<double> mydscatranp(lm.size());
-    DRT::UTILS::ExtractMyValues(*dscatranp, mydscatranp, lm);
+    CORE::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
 
     // extract local values from the global vectors
     std::vector<double> myscatranp(lm.size());
-    DRT::UTILS::ExtractMyValues(*scatranp, myscatranp, lm);
+    CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
     // extract local values from the global vectors
     std::vector<double> myavgscatranp(lm.size());
-    DRT::UTILS::ExtractMyValues(*avgscatranp, myavgscatranp, lm);
+    CORE::FE::ExtractMyValues(*avgscatranp, myavgscatranp, lm);
 
     // get flowrate
 
@@ -2202,15 +2201,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> mydscatranp(lm.size());
-  DRT::UTILS::ExtractMyValues(*dscatranp, mydscatranp, lm);
+  CORE::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  DRT::UTILS::ExtractMyValues(*scatranp, myscatranp, lm);
+  CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myvolmix(lm.size());
-  DRT::UTILS::ExtractMyValues(*volumeMix, myvolmix, lm);
+  CORE::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
 
   // ---------------------------------------------------------------------
   // element scatra must be updated only at the capillary nodes.
@@ -2242,7 +2241,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
   // -------------------------------------------------------------------
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  DRT::UTILS::ExtractMyValues(*evaluation_data.scatranp, myscatranp, lm);
+  CORE::FE::ExtractMyValues(*evaluation_data.scatranp, myscatranp, lm);
 
   // -------------------------------------------------------------------
   // find out if the material type is Air or Blood
@@ -2424,7 +2423,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalNodalEssentialValues(RedAirway* ele
   // ---------------------------------------------------------------------
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  DRT::UTILS::ExtractMyValues(*scatranp, myscatranp, lm);
+  CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
   double qin = (*evaluation_data.qin_np)[ele->LID()];
   double eVolnp = (*evaluation_data.elemVolumenp)[ele->LID()];

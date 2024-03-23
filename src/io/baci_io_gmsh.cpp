@@ -11,10 +11,10 @@
 
 #include "baci_io_gmsh.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"  // CORE::LINALG::Export
@@ -62,7 +62,7 @@ void IO::GMSH::ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret
 
     // extract local values from the global vector
     CORE::LINALG::SerialDenseVector myscalarfield(lm.size());
-    DRT::UTILS::ExtractMyValues(*scalarfield, myscalarfield, lm);
+    CORE::FE::ExtractMyValues(*scalarfield, myscalarfield, lm);
 
     // write scalar field to Gmsh stream
     ScalarFieldToStream(myscalarfield, distype, s);
@@ -110,7 +110,7 @@ void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
 
     // extract local values from the global vector
     CORE::LINALG::SerialDenseVector myscalarfield(la[nds].lm_.size());
-    DRT::UTILS::ExtractMyValues(*scalarfield, myscalarfield, la[nds].lm_);
+    CORE::FE::ExtractMyValues(*scalarfield, myscalarfield, la[nds].lm_);
 
     //    // Extract velocity from local velnp_
     //    CORE::LINALG::SerialDenseMatrix myvectorfield(nsd,numnode);
@@ -132,7 +132,7 @@ void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
     //
     //    // extract local values from the global vector
     //    CORE::LINALG::SerialDenseVector myscalarfield(lm.size());
-    //    DRT::UTILS::ExtractMyValues(*scalarfield, myscalarfield, lm);
+    //    CORE::FE::ExtractMyValues(*scalarfield, myscalarfield, lm);
 
     // write scalar field to Gmsh stream
     ScalarFieldToStream(myscalarfield, distype, s);
@@ -224,7 +224,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
 
     // extract local values from the global vector
     CORE::LINALG::SerialDenseVector extractmyvectorfield(la[nds].lm_.size());
-    DRT::UTILS::ExtractMyValues(*vectorfield, extractmyvectorfield, la[nds].lm_);
+    CORE::FE::ExtractMyValues(*vectorfield, extractmyvectorfield, la[nds].lm_);
 
     // Extract velocity from local velnp_
     CORE::LINALG::SerialDenseMatrix myvectorfield(nsd, numnode);
@@ -300,7 +300,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
     // CORE::LINALG::SerialDenseVector extractmyvectorfield(la[nds].lm_.size());
     CORE::LINALG::SerialDenseMatrix myvectorfield(nsd, numnode);
     std::vector<double> local_vector;
-    DRT::UTILS::ExtractMyValues(*vectorfield, local_vector, la[nds].lm_);
+    CORE::FE::ExtractMyValues(*vectorfield, local_vector, la[nds].lm_);
 
     for (int inode = 0; inode < numnode; ++inode)
     {
@@ -359,7 +359,7 @@ void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discreti
 
     // extract local values from the global vector
     CORE::LINALG::SerialDenseVector extractmyvectorfield(lm.size());
-    DRT::UTILS::ExtractMyValues(*vectorfield, extractmyvectorfield, lm);
+    CORE::FE::ExtractMyValues(*vectorfield, extractmyvectorfield, lm);
 
     // Extract velocity from local velnp_
     CORE::LINALG::SerialDenseMatrix myvectorfield(nsd, numnode);
@@ -410,7 +410,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
 
     // extract local values from the global vector
     CORE::LINALG::SerialDenseVector extractmyvectorfield(la[nds].lm_.size());
-    DRT::UTILS::ExtractMyValues(*vectorfield, extractmyvectorfield, la[nds].lm_);
+    CORE::FE::ExtractMyValues(*vectorfield, extractmyvectorfield, la[nds].lm_);
 
     if (field == "pressure")
     {
@@ -504,7 +504,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
 
     // extract local values from the global vector
     CORE::LINALG::SerialDenseMatrix myvectorfield(nsd, numnode);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele, myvectorfield, vectorfield, nsd);
+    CORE::FE::ExtractMyNodeBasedValues(ele, myvectorfield, vectorfield, nsd);
 
     // write vector field to Gmsh stream
     VectorFieldToStream(myvectorfield, distype, s);
@@ -553,7 +553,7 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
 
     // extract local values from the global vector
     CORE::LINALG::SerialDenseVector myscalarfield(numnode);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele, myscalarfield, scalarfield, 1);
+    CORE::FE::ExtractMyNodeBasedValues(ele, myscalarfield, scalarfield, 1);
 
     // write vector field to Gmsh stream
     ScalarFieldToStream(myscalarfield, distype, s);

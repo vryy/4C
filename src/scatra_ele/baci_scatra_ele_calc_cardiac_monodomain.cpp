@@ -10,6 +10,7 @@
 
 #include "baci_scatra_ele_calc_cardiac_monodomain.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_cardiac_monodomain.hpp"
 #include "baci_lib_discret.hpp"
@@ -316,7 +317,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ExtractEle
   // extract additional local values from global vector
   Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
   if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
 }
 
 

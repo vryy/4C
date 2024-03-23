@@ -10,11 +10,11 @@
 
 #include "baci_scatra_ele_calc_poro.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_rotsym_periodicbc.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_list.hpp"
 #include "baci_mat_scatra.hpp"
 #include "baci_mat_structporo.hpp"
@@ -156,7 +156,7 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
       // -> extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       ExtractElementAndNodeValuesPoro(ele, params, discretization, la);
 
@@ -234,7 +234,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
       lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_];
 
     // extract local values of pressure field from global state vector
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*convel, my::eprenp_, lmpre);
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*convel, my::eprenp_, lmpre);
   }
 
   // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than
@@ -251,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
     if (disp != Teuchos::null)
     {
       std::vector<double> mydisp(la[ndsdisp].lm_.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[ndsdisp].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[ndsdisp].lm_);
 
       for (unsigned inode = 0; inode < nen_; ++inode)  // number of nodes
         eporosity_(inode, 0) = mydisp[nsd_ + (inode * (nsd_ + 1))];

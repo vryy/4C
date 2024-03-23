@@ -13,6 +13,7 @@ vectors and matrices.
 
 #include "baci_lib_locsys.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_largerotations.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io_pstream.hpp"
@@ -219,7 +220,7 @@ void DRT::UTILS::LocsysManager::Update(
                   std::vector<double> currDisp;
                   currDisp.resize(lm.size());
 
-                  DRT::UTILS::ExtractMyValues(*dispnp, currDisp, lm);
+                  CORE::FE::ExtractMyValues(*dispnp, currDisp, lm);
 
                   // Calculate current position for node
                   std::vector<double> currPos(Dim());

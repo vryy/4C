@@ -11,12 +11,12 @@ functions.
 
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fbi_beam_to_fluid_meshtying_output_params.hpp"
 #include "baci_fbi_beam_to_fluid_mortar_manager.hpp"
 #include "baci_geometry_pair_element.hpp"
 #include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_volume.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_densematrix_inverse.hpp"
@@ -182,7 +182,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
     std::vector<int> lambda_row;
     std::vector<double> lambda_pair;
     mortar_manager->LocationVector(this_rcp, lambda_row);
-    DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
+    CORE::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 

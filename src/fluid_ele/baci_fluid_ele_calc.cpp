@@ -359,12 +359,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
     // extract gradient projection for consistent residual
     const Teuchos::RCP<Epetra_MultiVector> velafgrad =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("velafgrad");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele, evelafgrad_, velafgrad, nsd_ * nsd_);
+    CORE::FE::ExtractMyNodeBasedValues(ele, evelafgrad_, velafgrad, nsd_ * nsd_);
     if (fldparatimint_->IsNewOSTImplementation())
     {
       const Teuchos::RCP<Epetra_MultiVector> velngrad =
           params.get<Teuchos::RCP<Epetra_MultiVector>>("velngrad");
-      DRT::UTILS::ExtractMyNodeBasedValues(ele, evelngrad_, velngrad, nsd_ * nsd_);
+      CORE::FE::ExtractMyNodeBasedValues(ele, evelngrad_, velngrad, nsd_ * nsd_);
     }
   }
 
@@ -7340,7 +7340,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ExtractValuesFromGlobalVecto
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+  CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   if (matrixtofill != nullptr) rotsymmpbc.RotateMyValuesIfNecessary(mymatrix);
@@ -7445,7 +7445,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   {
     const Teuchos::RCP<Epetra_MultiVector> velafgrad =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("velafgrad");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele, evelafgrad_, velafgrad, nsd_ * nsd_);
+    CORE::FE::ExtractMyNodeBasedValues(ele, evelafgrad_, velafgrad, nsd_ * nsd_);
   }
 
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -9055,7 +9055,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   ele->LocationVector(discretization, la, false);
   // extract local values of the global vectors
   std::vector<double> myvalues(la[0].lm_.size());
-  DRT::UTILS::ExtractMyValues(*state, myvalues, la[0].lm_);
+  CORE::FE::ExtractMyValues(*state, myvalues, la[0].lm_);
 
   // split velocity and pressure
   for (int inode = 0; inode < nen_; ++inode)  // number of nodes
@@ -9495,7 +9495,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
 
     // extract local values of the global vectors
     myvalues.resize(la[0].lm_.size());
-    DRT::UTILS::ExtractMyValues(*state, myvalues, la[0].lm_);
+    CORE::FE::ExtractMyValues(*state, myvalues, la[0].lm_);
 
     // split velocity and pressure
     for (int inode = 0; inode < nen_; ++inode)
@@ -9875,7 +9875,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 
   // extract local values from the global vectors
   std::vector<double> mysol(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, mysol, lm);
+  CORE::FE::ExtractMyValues(*velnp, mysol, lm);
   // get view of solution and subgrid-viscosity vector
   CORE::LINALG::Matrix<4 * nen_, 1> sol(mysol.data(), true);
 

@@ -9,8 +9,8 @@
 /*--------------------------------------------------------------------------*/
 #include "baci_scatra_ele_calc_elch_NP.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_list.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
@@ -950,7 +950,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CorrectionForFluxAcrossDC(
     // get dirichlet toggle from the discretization
     Teuchos::RCP<const Epetra_Vector> dctoggle = discretization.GetState("dctoggle");
     std::vector<double> mydctoggle(lm.size());
-    DRT::UTILS::ExtractMyValues(*dctoggle, mydctoggle, lm);
+    CORE::FE::ExtractMyValues(*dctoggle, mydctoggle, lm);
 
     double val = 0.;
     for (unsigned vi = 0; vi < nen_; ++vi)

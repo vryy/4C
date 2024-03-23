@@ -8,6 +8,7 @@
 */
 /*---------------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_mat_material.hpp"
@@ -42,7 +43,7 @@ void DRT::ELEMENTS::Wall1_Scatra::PreEvaluate(Teuchos::ParameterList& params,
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> myphi =
           Teuchos::rcp(new std::vector<double>(la[1].lm_.size()));
-      DRT::UTILS::ExtractMyValues(*phinp, *myphi, la[1].lm_);
+      CORE::FE::ExtractMyValues(*phinp, *myphi, la[1].lm_);
 
       double meanphi = 0.0;
       for (int i = 0; i < numnode; ++i)

@@ -16,6 +16,7 @@ evaluated with FAD.
 #include "baci_beaminteraction_beam_to_solid_utils.hpp"
 #include "baci_beaminteraction_calc_utils.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_geometry_pair_element.hpp"
 #include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_element_faces.hpp"
@@ -64,7 +65,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   std::vector<int> lambda_gid_pos;
   GetMortarGID(mortar_manager, this, mortar::n_dof_, this->n_mortar_rot_, &lambda_gid_pos, nullptr);
   std::vector<double> local_lambda_pos;
-  DRT::UTILS::ExtractMyValues(global_lambda, local_lambda_pos, lambda_gid_pos);
+  CORE::FE::ExtractMyValues(global_lambda, local_lambda_pos, lambda_gid_pos);
   auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
   q_lambda.element_position_ =
       CORE::LINALG::Matrix<mortar::n_dof_, 1, double>(local_lambda_pos.data());
@@ -499,7 +500,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   std::vector<int> lambda_gid_rot;
   GetMortarGID(mortar_manager, this, mortar::n_dof_, mortar::n_dof_, nullptr, &lambda_gid_rot);
   std::vector<double> lambda_rot_double;
-  DRT::UTILS::ExtractMyValues(global_lambda, lambda_rot_double, lambda_gid_rot);
+  CORE::FE::ExtractMyValues(global_lambda, lambda_rot_double, lambda_gid_rot);
   CORE::LINALG::Matrix<mortar::n_dof_, 1, double> lambda_rot;
   for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
     lambda_rot(i_dof) = lambda_rot_double[i_dof];

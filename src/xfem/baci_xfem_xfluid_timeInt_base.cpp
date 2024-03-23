@@ -492,9 +492,9 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(const DRT::Element* ele,  /// po
     std::vector<double> mydispnp(la[0].lm_.size());
 
     if (state == "dispnp")
-      DRT::UTILS::ExtractMyValues(*dispnp_, mydispnp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*dispnp_, mydispnp, la[0].lm_);
     else if (state == "dispn")
-      DRT::UTILS::ExtractMyValues(*dispn_, mydispnp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*dispn_, mydispnp, la[0].lm_);
     else
       dserror("XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords: Undefined state!");
 
@@ -613,7 +613,7 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
 
       // extract local values of the global vectors
       std::vector<double> mydispnp(la[0].lm_.size());
-      DRT::UTILS::ExtractMyValues(*dispnp_, mydispnp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*dispnp_, mydispnp, la[0].lm_);
 
       for (int inode = 0; inode < nen; ++inode)  // number of nodes
       {
@@ -1154,7 +1154,7 @@ void XFEM::XFLUID_STD::getGPValuesT(DRT::Element* ele,  ///< pointer to element
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  DRT::UTILS::ExtractMyValues(*vel_vec, mymatrix, lm);
+  CORE::FE::ExtractMyValues(*vel_vec, mymatrix, lm);
 
   for (int inode = 0; inode < numnode; ++inode)  // number of nodes
   {
@@ -1671,7 +1671,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
 
     // extract local values of the global vectors
     std::vector<double> mymatrix(lm.size());
-    DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+    CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
     // add the displacement of the interface
     for (int idim = 0; idim < 3; ++idim)  // number of dimensions
@@ -2281,7 +2281,7 @@ void XFEM::XFLUID_STD::addeidisp(
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+  CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
   for (int inode = 0; inode < nen; ++inode)  // number of nodes
   {
@@ -3075,7 +3075,7 @@ void XFEM::XFLUID_STD::ProjectOnPoint(
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+  CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
   // add the displacement of the interface
   for (int idim = 0; idim < 3; ++idim)  // number of dimensions

@@ -15,15 +15,13 @@
 
 #include "baci_red_airways_acinus_impl.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_gder2.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_air_0d_O2_saturation.hpp"
-#include "baci_mat_list.hpp"
 #include "baci_mat_maxwell_0d_acinus.hpp"
-#include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_red_airways_elem_params.hpp"
 #include "baci_red_airways_evaluation_data.hpp"
@@ -159,19 +157,19 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
+  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  DRT::UTILS::ExtractMyValues(*pn, mypn, lm);
+  CORE::FE::ExtractMyValues(*pn, mypn, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnm, mypnm, lm);
+  CORE::FE::ExtractMyValues(*pnm, mypnm, lm);
 
   // Extract local values from the global vectors
   std::vector<double> myial(lm.size());
-  DRT::UTILS::ExtractMyValues(*ial, myial, lm);
+  CORE::FE::ExtractMyValues(*ial, myial, lm);
 
   // Create objects for element arrays
   CORE::LINALG::SerialDenseVector epnp(elemVecdim);
@@ -360,7 +358,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
+  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // Create objects for element arrays
   CORE::LINALG::SerialDenseVector epnp(numnode);
@@ -774,15 +772,15 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
+  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  DRT::UTILS::ExtractMyValues(*pn, mypn, lm);
+  CORE::FE::ExtractMyValues(*pn, mypn, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnm, mypnm, lm);
+  CORE::FE::ExtractMyValues(*pnm, mypnm, lm);
 
   // Create objects for element arrays
   CORE::LINALG::SerialDenseVector epnp(elemVecdim);
@@ -893,7 +891,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
+  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // create objects for element arrays
   CORE::LINALG::SerialDenseVector epnp(numnode);
@@ -1062,7 +1060,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
 
   // extract local values from the global vectors
   std::vector<double> myvolmix(lm.size());
-  DRT::UTILS::ExtractMyValues(*volumeMix, myvolmix, lm);
+  CORE::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
   // get area
   double area = myvolmix[1];
 
@@ -1241,7 +1239,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
 
   // extract local values from the global vectors
   std::vector<double> myvolmix(lm.size());
-  DRT::UTILS::ExtractMyValues(*volumeMix, myvolmix, lm);
+  CORE::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
   // get area
   double area = myvolmix[1];
 
@@ -1251,7 +1249,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
 
   // extract local values from the global vectors
   std::vector<double> myscatran(lm.size());
-  DRT::UTILS::ExtractMyValues(*scatran, myscatran, lm);
+  CORE::FE::ExtractMyValues(*scatran, myscatran, lm);
 
   // evaluate velocity at nodes (1) and (2)
   double vel1 = q_in / area;
@@ -1305,7 +1303,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateScatra(RedAcinus* ele,
 
   // extract local values from the global vectors
   std::vector<double> mydscatra(lm.size());
-  DRT::UTILS::ExtractMyValues(*dscatranp, mydscatra, lm);
+  CORE::FE::ExtractMyValues(*dscatranp, mydscatra, lm);
 
   //--------------------------------------------------------------------
   // if vel>=0 then node(2) is analytically evaluated;
@@ -1338,15 +1336,15 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  DRT::UTILS::ExtractMyValues(*scatranp, myscatranp, lm);
+  CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> mydscatranp(lm.size());
-  DRT::UTILS::ExtractMyValues(*dscatranp, mydscatranp, lm);
+  CORE::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myvolmix(lm.size());
-  DRT::UTILS::ExtractMyValues(*volumeMix, myvolmix, lm);
+  CORE::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
 
   // get flowrate
   double qin = (*evaluation_data.qin_np)[ele->LID()];
@@ -1390,7 +1388,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
   // -------------------------------------------------------------------
   // extract local values from the global vectors
   std::vector<double> myscatran(lm.size());
-  DRT::UTILS::ExtractMyValues(*scatran, myscatran, lm);
+  CORE::FE::ExtractMyValues(*scatran, myscatran, lm);
 
   // -------------------------------------------------------------------
   // find out if the material type is Air or Blood
@@ -1486,7 +1484,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(RedAcinus* ele
   // Extract scatra values
   // Extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  DRT::UTILS::ExtractMyValues(*scatranp, myscatranp, lm);
+  CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
   // Find the volume of an acinus
   // Get the current acinar volume

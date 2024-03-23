@@ -9,6 +9,7 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_contact_analytical.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.hpp"
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.hpp"
@@ -17,7 +18,6 @@
 #include "baci_fluid_ele_parameter_timint.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_elements.hpp"
 #include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
@@ -107,9 +107,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
@@ -118,7 +118,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+        CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr, &elevec1,
@@ -137,9 +137,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
 
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+        CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
@@ -176,13 +176,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       if (acc == Teuchos::null) dserror("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myvel(lm.size());
-      DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
+      CORE::FE::ExtractMyValues(*vel, myvel, lm);
       std::vector<double> myacc(lm.size());
-      DRT::UTILS::ExtractMyValues(*acc, myacc, lm);
+      CORE::FE::ExtractMyValues(*acc, myacc, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
 
       // This matrix is used in the evaluation functions to store the mass matrix. If the action
       // type is ELEMENTS::struct_calc_internalinertiaforce we do not want to actually populate the
@@ -197,7 +197,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+        CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
       if (act == ELEMENTS::struct_calc_internalinertiaforce)
@@ -249,14 +249,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+        CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
       // reference and current geometry (nodal positions)
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xref;  // reference coord. of element
@@ -404,7 +404,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
       // reference and current geometry (nodal positions)
@@ -436,11 +436,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       if (dispo == Teuchos::null || disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors '(old) displacement' and/or residual");
       std::vector<double> mydispo(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispo, mydispo, lm);
+      CORE::FE::ExtractMyValues(*dispo, mydispo, lm);
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
       if (kintype_ == INPAR::STR::KinemType::nonlinearTotLag)
@@ -471,7 +471,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
             "and/or \"residual displacement\"");
 
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
 
       soh8_recover(lm, myres);
       /* ToDo Probably we have to recover the history information of some special
@@ -519,9 +519,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
       if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> stress;
       CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> strain;
       CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> plstrain;
@@ -531,7 +531,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+        CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
@@ -662,7 +662,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       Update_element(mydisp, params, Material());
     }
     break;
@@ -727,7 +727,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // update element geometry
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
@@ -980,7 +980,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // nodal displacement vector
       CORE::LINALG::Matrix<NUMDOF_SOH8, 1> nodaldisp;
@@ -1139,10 +1139,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 #endif
 
       std::vector<double> mydispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
 
       std::vector<double> myvelnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+      CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
       // update element geometry
       CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // reference coord. of element
@@ -1277,7 +1277,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       switch (pstype_)
       {
@@ -1350,16 +1350,16 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         if (gpstrainmap == Teuchos::null)
           dserror("no gp strain map available for writing gpstrains");
         std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+        CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
-        DRT::UTILS::ExtractMyValues(*res, myres, lm);
+        CORE::FE::ExtractMyValues(*res, myres, lm);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
         if (structale_)
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+          CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
         CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> stress;
@@ -1450,7 +1450,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
       // extract the part for this element
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
 
       soh8_create_eas_backup_state(myres);
 

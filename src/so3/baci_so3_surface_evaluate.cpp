@@ -7,6 +7,7 @@
 \level 1
 *----------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
@@ -16,7 +17,6 @@
 #include "baci_inpar_fsi.hpp"
 #include "baci_inpar_structure.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
@@ -151,7 +151,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       SpatialConfiguration(xc, mydisp);
     }
     break;
@@ -178,7 +178,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
               "Cannot get state vector 'displacement new'\n"
               "Did you forget to set the 'LOADLIN yes' in '--STRUCTURAL DYNAMIC' input section???");
         std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+        CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         SpatialConfiguration(xc, mydisp);
       }
     }
@@ -697,7 +697,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacementtotal");
         if (disp == Teuchos::null) dserror("Cannot get state vector 'displacementtotal'");
         std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+        CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numnode = NumNode();
         const int numdf = 3;
         CORE::LINALG::SerialDenseMatrix xc(numnode, numdf);
@@ -715,7 +715,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
         Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
         std::vector<double> edispincr(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispincr, edispincr, lm);
+        CORE::FE::ExtractMyValues(*dispincr, edispincr, lm);
         elevector2[0] = 0;
 
         for (int gp = 0; gp < intpoints.nquad; gp++)
@@ -760,14 +760,14 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> dispn = discretization.GetState("displacementnp");
         if (dispn == Teuchos::null) dserror("Cannot get state vector 'displacementnp");
         std::vector<double> edispn(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispn, edispn, lm);
+        CORE::FE::ExtractMyValues(*dispn, edispn, lm);
         CORE::LINALG::SerialDenseMatrix xcn(numnode, numdf);
         SpatialConfiguration(xcn, edispn);
 
         Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
         if (dispn == Teuchos::null) dserror("Cannot get state vector 'displacementincr");
         std::vector<double> edispincr(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispincr, edispincr, lm);
+        CORE::FE::ExtractMyValues(*dispincr, edispincr, lm);
 
         // integration of the displacements over the surface
         // allocate vector for shape functions and matrix for derivatives
@@ -853,14 +853,14 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> dispn = discretization.GetState("displacementnp");
       if (dispn == Teuchos::null) dserror("Cannot get state vector 'displacementnp");
       std::vector<double> edispn(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispn, edispn, lm);
+      CORE::FE::ExtractMyValues(*dispn, edispn, lm);
       CORE::LINALG::SerialDenseMatrix xcn(numnode, numdf);
       SpatialConfiguration(xcn, edispn);
 
       Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
       if (dispn == Teuchos::null) dserror("Cannot get state vector 'displacementincr");
       std::vector<double> edispincr(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispincr, edispincr, lm);
+      CORE::FE::ExtractMyValues(*dispincr, edispincr, lm);
 
       // integration of the displacements over the surface
       // allocate vector for shape functions and matrix for derivatives
@@ -934,7 +934,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+        CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numdim = 3;
         CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
         SpatialConfiguration(xscurr, mydisp);
@@ -950,7 +950,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
       CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
       SpatialConfiguration(xscurr, mydisp);
@@ -1096,7 +1096,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+        CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numdim = 3;
         CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
         SpatialConfiguration(xscurr, mydisp);
@@ -1161,7 +1161,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
       CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
       SpatialConfiguration(xscurr, mydisp);
@@ -1186,7 +1186,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
       CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
       SpatialConfiguration(xscurr, mydisp);
@@ -1246,7 +1246,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       BuildNormalsAtNodes(elevector1, mydisp, false);
     }
     break;
@@ -1255,7 +1255,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       const int numnode = NumNode();
       const int numdim = 3;
@@ -1361,8 +1361,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 #endif
       std::vector<double> parenteledisp(lm.size());
       std::vector<double> bdryeledisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, bdryeledisp, lm);
-      DRT::UTILS::ExtractMyValues(*dispnp, parenteledisp, parent_la[0].lm_);
+      CORE::FE::ExtractMyValues(*dispnp, bdryeledisp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, parenteledisp, parent_la[0].lm_);
 
       // geometry (surface ele)
       CORE::LINALG::Matrix<3, 4> xrefe;  // material coord. of element
@@ -1681,9 +1681,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       std::vector<double> myvelo(lm.size());
       std::vector<double> myoffprestr(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydisp, lm);
-      DRT::UTILS::ExtractMyValues(*velonp, myvelo, lm);
-      DRT::UTILS::ExtractMyValues(*offset_prestress, myoffprestr, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*velonp, myvelo, lm);
+      CORE::FE::ExtractMyValues(*offset_prestress, myoffprestr, lm);
 
       // set material configuration
       MaterialConfiguration(x);
@@ -2447,7 +2447,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
   std::vector<double> mydisp(lmpar.size());
-  DRT::UTILS::ExtractMyValues(*disp, mydisp, lmpar);
+  CORE::FE::ExtractMyValues(*disp, mydisp, lmpar);
 
   // update element geometry
   CORE::LINALG::SerialDenseMatrix xrefe(numdim, nenparent);  // material coord. of element
@@ -2472,7 +2472,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
   if (velnp == Teuchos::null) dserror("Cannot get state vector 'fluidvel'");
   // extract local values of the global vectors
   std::vector<double> myvelpres(la[1].lm_.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelpres, la[1].lm_);
+  CORE::FE::ExtractMyValues(*velnp, myvelpres, la[1].lm_);
 
   CORE::LINALG::SerialDenseVector mypres(numnode);
   for (int inode = 0; inode < numnode; ++inode)  // number of nodes

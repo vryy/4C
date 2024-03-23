@@ -7,6 +7,7 @@
 
 #include "baci_shell7p_ele_calc.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
@@ -99,9 +100,9 @@ double DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateInternalEnergy(DRT::Elem
   if (disp == Teuchos::null || res == Teuchos::null)
     dserror("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*disp, displacement, dof_index_array);
+  CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*res, residual, dof_index_array);
+  CORE::FE::ExtractMyValues(*res, residual, dof_index_array);
 
   // init scale factor for scaled director approach (SDC)
   const double condfac = shell_data_.sdc;
@@ -203,9 +204,9 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateStressesStrains(DRT::Eleme
   if (disp == Teuchos::null || res == Teuchos::null)
     dserror("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*disp, displacement, dof_index_array);
+  CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*res, residual, dof_index_array);
+  CORE::FE::ExtractMyValues(*res, residual, dof_index_array);
 
   // init gauss point in thickness direction that will be modified via SDC
   double zeta = 0.0;
@@ -306,9 +307,9 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::EvaluateNonlinearForceStiffnessMass
   if (disp == Teuchos::null || res == Teuchos::null)
     dserror("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*disp, displacement, dof_index_array);
+  CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*res, residual, dof_index_array);
+  CORE::FE::ExtractMyValues(*res, residual, dof_index_array);
 
   // init gauss point in thickness direction that will be modified via SDC
   double zeta = 0.0;
@@ -489,7 +490,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::Update(DRT::Element& ele,
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' ");
   std::vector<double> displacement(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*disp, displacement, dof_index_array);
+  CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
 
   // calculate and update inelastic deformation gradient if needed
   if (solid_material.UsesExtendedUpdate())

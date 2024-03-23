@@ -14,6 +14,7 @@
 #include "baci_comm_exporter.hpp"
 #include "baci_cut_boundingbox.hpp"
 #include "baci_cut_position.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_searchtree.hpp"
 #include "baci_discretization_geometry_searchtree_service.hpp"
 #include "baci_io.hpp"
@@ -21,7 +22,6 @@
 #include "baci_io_gmsh.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret_xfem.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_xfem_discretization_utils.hpp"
@@ -82,7 +82,7 @@ void XFEM::MeshProjector::SetSourcePositionVector(Teuchos::RCP<const Epetra_Vect
     {
       // get the current displacement
       sourcedis_->Dof(node, 0, src_dofs);
-      DRT::UTILS::ExtractMyValues(*sourcedisp, mydisp, src_dofs);
+      CORE::FE::ExtractMyValues(*sourcedisp, mydisp, src_dofs);
     }
 
     for (int d = 0; d < 3; ++d) src_nodepositions_n_[node->Id()](d) = node->X()[d] + mydisp.at(d);
@@ -229,7 +229,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
     {
       // get the current displacement
       targetdis_->Dof(node, 0, tar_dofs);
-      DRT::UTILS::ExtractMyValues(*targetdisp, mydisp, tar_dofs);
+      CORE::FE::ExtractMyValues(*targetdisp, mydisp, tar_dofs);
     }
 
     CORE::LINALG::Matrix<3, 1> pos;
@@ -373,7 +373,7 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
       {
         if (source_statevecs_[iv] == Teuchos::null) continue;
 
-        DRT::UTILS::ExtractMyValues(*source_statevecs_[iv], myval, src_dofs);
+        CORE::FE::ExtractMyValues(*source_statevecs_[iv], myval, src_dofs);
         for (unsigned isd = 0; isd < numdofpernode; ++isd)
         {
           interpolatedvec(isd + offset) += myval[isd] * shp(in);
@@ -624,7 +624,7 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
       {
         // get the current displacement
         targetdis_->Dof(actnode, 0, tar_dofs);
-        DRT::UTILS::ExtractMyValues(*targetdisp, mydisp, tar_dofs);
+        CORE::FE::ExtractMyValues(*targetdisp, mydisp, tar_dofs);
         for (unsigned isd = 0; isd < 3; ++isd)
         {
           pos(isd, 0) += mydisp[isd];

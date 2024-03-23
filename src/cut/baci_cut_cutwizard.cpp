@@ -14,6 +14,7 @@ surface meshes
 #include "baci_cut_parallel.hpp"
 #include "baci_cut_sidehandle.hpp"
 #include "baci_cut_volumecell.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io_control.hpp"
 #include "baci_io_pstream.hpp"
@@ -393,7 +394,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(
       {
         if (lm.size() == 3)  // case for BELE3 boundary elements
         {
-          DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm);
+          CORE::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm);
         }
         else if (lm.size() == 4)  // case for BELE3_4 boundary elements
         {
@@ -403,7 +404,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(
           lm_red.clear();
           for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
 
-          DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
+          CORE::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
         }
         else
           dserror("wrong number of dofs for node %i", lm.size());
@@ -465,7 +466,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
     {
       myphinp.clear();
 
-      DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, back_mesh_->BackLevelSetCol());
+      CORE::FE::ExtractMyNodeBasedValues(element, myphinp, back_mesh_->BackLevelSetCol());
       AddElement(element, xyze, myphinp.data(), lsv_only_plus_domain_);
     }
     else
@@ -507,7 +508,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
 
       if (lm.size() == 3)  // case used actually?
       {
-        DRT::UTILS::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm);
+        CORE::FE::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm);
       }
       else if (lm.size() == 4)  // case xFluid ... just take the first three
       {
@@ -516,7 +517,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
         lm_red.clear();
         for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
 
-        DRT::UTILS::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm_red);
+        CORE::FE::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm_red);
       }
       else
         dserror("wrong number of dofs for node %i", lm.size());
@@ -876,7 +877,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretiza
       {
         if (lm.size() == 3)  // case for BELE3 boundary elements
         {
-          DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm);
+          CORE::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm);
         }
         else if (lm.size() == 4)  // case for BELE3_4 boundary elements
         {
@@ -886,7 +887,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretiza
           lm_red.clear();
           for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
 
-          DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
+          CORE::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
         }
         else
           dserror("wrong number of dofs for node %i", lm.size());

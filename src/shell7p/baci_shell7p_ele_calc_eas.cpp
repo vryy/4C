@@ -7,6 +7,7 @@
 
 #include "baci_shell7p_ele_calc_eas.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
@@ -202,9 +203,9 @@ double DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateInternalEnergy(DRT::E
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
   std::vector<double> displacement(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*disp, displacement, dof_index_array);
+  CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*res, residual, dof_index_array);
+  CORE::FE::ExtractMyValues(*res, residual, dof_index_array);
 
   // init scale factor for scaled director approach (SDC)
   const double condfac = shell_data_.sdc;
@@ -336,9 +337,9 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::CalculateStressesStrains(DRT::El
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
   std::vector<double> displacement(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*disp, displacement, dof_index_array);
+  CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*res, residual, dof_index_array);
+  CORE::FE::ExtractMyValues(*res, residual, dof_index_array);
 
   // init gauss point in thickness direction that will be modified via SDC
   double zeta = 0.0;
@@ -466,9 +467,9 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::EvaluateNonlinearForceStiffnessM
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
   std::vector<double> displacement(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*disp, displacement, dof_index_array);
+  CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*res, residual, dof_index_array);
+  CORE::FE::ExtractMyValues(*res, residual, dof_index_array);
 
   // init gauss point in thickness direction that will be modified via SDC
   double zeta = 0.0;
@@ -706,7 +707,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(DRT::Element& ele,
   Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
   if (res == Teuchos::null) dserror("Cannot get residual displacement state vector");
   std::vector<double> residual(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*res, residual, dof_index_array);
+  CORE::FE::ExtractMyValues(*res, residual, dof_index_array);
 
   // get access to the interface parameters
   double step_length = interface_ptr.GetStepLength();
@@ -762,7 +763,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Update(DRT::Element& ele,
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' ");
   std::vector<double> displacement(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*disp, displacement, dof_index_array);
+  CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
 
   // No need to update alpha here. Update is called to copy states from t_{n+1} to
   // t_{n} after the time step and output Hence, there are no more Newton iterations that would

@@ -8,6 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_utils.hpp"
 #include "baci_mat_so3_material.hpp"
 #include "baci_so3_element_service.hpp"
@@ -56,7 +57,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
       // extract local values of the global vectors
       auto myconc = std::vector<double>(la[1].lm_.size(), 0.0);
 
-      DRT::UTILS::ExtractMyValues(*concnp, myconc, la[1].lm_);
+      CORE::FE::ExtractMyValues(*concnp, myconc, la[1].lm_);
 
       // element vector for k-th scalar
       std::vector<CORE::LINALG::Matrix<numnod_, 1>> econc(numscal);
@@ -134,7 +135,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
         // extract local values of the global vectors
         auto mytemp = std::vector<double>(la[2].lm_.size(), 0.0);
 
-        DRT::UTILS::ExtractMyValues(*tempnp, mytemp, la[2].lm_);
+        CORE::FE::ExtractMyValues(*tempnp, mytemp, la[2].lm_);
 
         // element vector for k-th scalar
         CORE::LINALG::Matrix<numnod_, 1> etemp;
@@ -211,7 +212,7 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList
 
       // get my displacement vector
       std::vector<double> mydisp((la[0].lm_).size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // calculate the stiffness matrix
       nln_kdS_ssi(la, mydisp, elemat1_epetra, params);

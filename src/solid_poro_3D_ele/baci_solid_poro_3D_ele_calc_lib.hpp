@@ -11,9 +11,9 @@
 
 #include "baci_config.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_element_integration_select.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_fluidporo_multiphase.hpp"
 #include "baci_mat_structporo.hpp"
 #include "baci_solid_3D_ele_calc_lib.hpp"
@@ -54,7 +54,7 @@ namespace DRT::ELEMENTS
 
     // extract local values of the global vectors
     std::vector<double> mymatrix(lm.size());
-    DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+    CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
     if (numdofpernode == DETAIL::num_dim<celltype> + 1)
     {

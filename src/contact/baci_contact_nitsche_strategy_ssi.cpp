@@ -10,6 +10,7 @@
 #include "baci_contact_nitsche_strategy_ssi.hpp"
 
 #include "baci_contact_interface.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_mortar_element.hpp"
@@ -135,7 +136,7 @@ void CONTACT::NitscheStrategySsi::SetParentState(
             mortar_parent_ele->LocationVector(*scatra_dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
-          DRT::UTILS::ExtractMyValues(*scatra_dofcolmap, myval, lm);
+          CORE::FE::ExtractMyValues(*scatra_dofcolmap, myval, lm);
 
           mortar_ele->MoData().ParentScalar() = myval;
           mortar_ele->MoData().ParentScalarDof() = lm;

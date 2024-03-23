@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_cut_position.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_ele_calc_xfem_coupling_impl.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_xfem_interface_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -56,7 +56,7 @@ namespace DRT
           dserror("Cannot get state vector %s", disp_statename_.c_str());
 
         // extract local values of the global vector
-        DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+        CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -96,7 +96,7 @@ namespace DRT
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+        CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -129,7 +129,7 @@ namespace DRT
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+        CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -244,7 +244,7 @@ namespace DRT
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+        CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -276,7 +276,7 @@ namespace DRT
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+        CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {

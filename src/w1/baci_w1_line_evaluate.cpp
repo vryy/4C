@@ -8,12 +8,12 @@
 */
 /*---------------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_elements_paramsinterface.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
@@ -124,7 +124,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
     if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
     std::vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+    CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
     for (int i = 0; i < numnod; ++i)
     {
@@ -142,7 +142,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
     if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
     std::vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+    CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
     for (int i = 0; i < numnod; ++i)
     {
@@ -532,7 +532,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+        CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numnod = NumNode();
         CORE::LINALG::SerialDenseMatrix xsrefe(
             numnod, Wall1::numdim_);  // material coord. of element
@@ -560,7 +560,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disptotal = discretization.GetState("displacementtotal");
         if (disptotal == Teuchos::null) dserror("Cannot get state vector 'displacementtotal'");
         std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disptotal, mydisp, lm);
+        CORE::FE::ExtractMyValues(*disptotal, mydisp, lm);
         const int numnod = NumNode();
         CORE::LINALG::SerialDenseMatrix xsrefe(
             Wall1::numdim_, numnod);  // material coord. of element
@@ -589,7 +589,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
         Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
         std::vector<double> edispincr(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispincr, edispincr, lm);
+        CORE::FE::ExtractMyValues(*dispincr, edispincr, lm);
 
         elevector2[0] = 0;
 
@@ -631,7 +631,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         dserror("Cannot get state vector 'displacement'");
       }
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnod = NumNode();
       CORE::LINALG::SerialDenseMatrix xsrefe(numnod, Wall1::numdim_);  // material coord. of element
       CORE::LINALG::SerialDenseMatrix xscurr(numnod, Wall1::numdim_);  // material coord. of element
@@ -719,7 +719,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lmpar.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lmpar);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lmpar);
 
       // update element geometry
       CORE::LINALG::SerialDenseMatrix xrefe(numdim, nenparent);  // material coord. of element
@@ -743,7 +743,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       if (velnp == Teuchos::null) dserror("Cannot get state vector 'fluidvel'");
       // extract local values of the global vectors
       std::vector<double> myvelpres(la[1].lm_.size());
-      DRT::UTILS::ExtractMyValues(*velnp, myvelpres, la[1].lm_);
+      CORE::FE::ExtractMyValues(*velnp, myvelpres, la[1].lm_);
 
       CORE::LINALG::SerialDenseVector mypres(numnode);
       for (int inode = 0; inode < numnode; ++inode)  // number of nodes

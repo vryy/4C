@@ -10,6 +10,7 @@ solid formulation
 
 #include "baci_discretization_fem_general_cell_type.hpp"
 #include "baci_discretization_fem_general_cell_type_traits.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_mat_so3_material.hpp"
 #include "baci_solid_3D_ele_calc_displacement_based.hpp"
@@ -117,7 +118,7 @@ namespace
 
     // extract my values
     auto my_quantities = std::vector<double>(la[field_index].lm_.size(), 0.0);
-    DRT::UTILS::ExtractMyValues(*quantitites_np, my_quantities, la[field_index].lm_);
+    CORE::FE::ExtractMyValues(*quantitites_np, my_quantities, la[field_index].lm_);
 
     // get nodal quantities for the scalars
     auto nodal_quantities = GetElementQuantities<is_scalar, celltype>(num_scalars, my_quantities);

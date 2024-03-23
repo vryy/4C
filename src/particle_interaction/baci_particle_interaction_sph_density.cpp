@@ -10,9 +10,9 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph_density.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_particle_engine_container.hpp"
 #include "baci_particle_engine_interface.hpp"
 #include "baci_particle_interaction_material_handler.hpp"
@@ -633,7 +633,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
-      DRT::UTILS::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
+      CORE::FE::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
 
       // determine velocity of wall contact point j
       for (int node = 0; node < numnodes; ++node)

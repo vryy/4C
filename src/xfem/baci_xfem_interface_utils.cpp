@@ -12,6 +12,7 @@
 
 #include "baci_cut_boundarycell.hpp"
 #include "baci_cut_volumecell.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
@@ -1051,7 +1052,7 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele,
   DRT::Element::LocationArray las(1);
   sele->LocationVector(discret, las, false);
   Teuchos::RCP<const Epetra_Vector> matrix_state = discret.GetState(state);
-  DRT::UTILS::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
+  CORE::FE::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
 
   // 4 // evaluate slave velocity at guasspoint
   if (sele->Shape() == CORE::FE::CellType::quad4)
