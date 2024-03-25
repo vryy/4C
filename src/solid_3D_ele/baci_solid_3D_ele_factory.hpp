@@ -16,6 +16,7 @@
 #include "baci_solid_3D_ele_calc_eas.hpp"
 #include "baci_solid_3D_ele_calc_fbar.hpp"
 #include "baci_solid_3D_ele_calc_mulf.hpp"
+#include "baci_solid_3D_ele_calc_mulf_fbar.hpp"
 #include "baci_solid_3D_ele_factory_lib.hpp"
 #include "baci_solid_3D_ele_properties.hpp"
 
@@ -49,9 +50,12 @@ namespace DRT::ELEMENTS
         SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21>>;
     using MulfEvaluators =
         CORE::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes>;
+    using FBarMulfEvaluators = CORE::FE::apply_celltype_sequence<MulfFBarSolidIntegrator,
+        CORE::FE::celltype_sequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
 
-    using SolidEvaluators = CORE::FE::Join<DisplacementBasedEvaluators,
-        DisplacementBasedLinearKinematicsEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators>;
+    using SolidEvaluators =
+        CORE::FE::Join<DisplacementBasedEvaluators, DisplacementBasedLinearKinematicsEvaluators,
+            FbarEvaluators, EASEvaluators, MulfEvaluators, FBarMulfEvaluators>;
   }  // namespace DETAILS
 
   using SolidCalcVariant = CreateVariantType<DETAILS::SolidEvaluators>;

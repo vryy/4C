@@ -447,6 +447,29 @@ namespace DRT::ELEMENTS
   template <typename SolidFormulation, CORE::FE::CellType celltype>
   static inline void UpdatePrestress(const DRT::Element& ele,
       const ElementNodes<celltype>& element_nodes,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data)
+  {
+    if constexpr (is_prestress_updatable<SolidFormulation>)
+    {
+      if constexpr (has_global_history<SolidFormulation>)
+      {
+        std::apply([](auto&&... args)
+            { SolidFormulation::UpdatePrestress(std::forward<decltype(args)>(args)...); },
+            std::tuple_cat(std::forward_as_tuple(ele, element_nodes),
+                DETAILS::GetAdditionalPreparationTuple<SolidFormulation>(preparation_data),
+                DETAILS::GetAdditionalGlobalHistoryTuple<SolidFormulation>(history_data)));
+      }
+    }
+    else
+    {
+      dserror("The solid formulation does not support to update the prestress!");
+    }
+  }
+
+  template <typename SolidFormulation, CORE::FE::CellType celltype>
+  static inline void UpdatePrestress(const DRT::Element& ele,
+      const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const JacobianMapping<celltype>& jacobian_mapping,

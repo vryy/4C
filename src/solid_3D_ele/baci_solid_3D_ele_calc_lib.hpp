@@ -467,11 +467,11 @@ namespace DRT::ELEMENTS
   template <CORE::FE::CellType celltype>
   struct SpatialMaterialMapping
   {
-    double determinant_deformation_gradient_;
+    double determinant_deformation_gradient_{};
     CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>
-        deformation_gradient_;
+        deformation_gradient_{};
     CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>
-        inverse_deformation_gradient_;
+        inverse_deformation_gradient_{};
   };
 
   /*!
