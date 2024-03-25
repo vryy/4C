@@ -24,30 +24,40 @@ BACI_NAMESPACE_OPEN
 void CORE::GEO::UpdateMaterialConfigWithDispVector(
     Teuchos::RCP<const DRT::Discretization> dis, Teuchos::RCP<const Epetra_Vector> disp)
 {
-  // Create Vector which holds all col-displacments of processor
-  auto coldisp = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap()));
-
   // Export row-displacments to col-displacements
+  auto coldisp = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap()));
   CORE::LINALG::Export(*disp, *coldisp);
 
-  // loop over all nodes
   for (const auto& mynode : dis->MyColNodeRange())
   {
-    std::vector<int> globaldofs = dis->Dof(0, mynode);
-    // Since ChangePos requires vector of length 3, we use hardcoded length here
-    // init with zero just to be sure
-    std::vector<double> nvector(3, 0.0);
+    const unsigned int ndim = mynode->Dim();
 
-    for (unsigned int i = 0; i < globaldofs.size(); ++i)
+#ifdef DEBUG
+    dsassert(ndim * dis->NodeRowMap()->NumGlobalElements() == disp->Map().NumGlobalElements(),
+        "Number of space dimensions does not fit to displacement vector.");
+
+    for (int disp_lid = 0; disp_lid < disp->Map().NumMyElements(); ++disp_lid)
     {
-      const int lid = coldisp->Map().LID(globaldofs[i]);
-
-      if (lid < 0)
-        dserror(
-            "Proc %d: Cannot find gid=%d in Epetra_Vector", coldisp->Comm().MyPID(), globaldofs[i]);
-      nvector[i] += (*coldisp)[lid];
+      const int disp_gid = disp->Map().GID(disp_lid);
+      dsassert(dis->DofRowMap()->LID(disp_gid) >= 0, "Displacement dofs not part of DofRowMap()");
     }
-    // changepos takes vector with length = 3
+#endif
+
+    const auto globaldofs = dis->Dof(0, mynode);
+
+    std::vector<double> nvector(ndim, 0.0);
+
+    for (unsigned int i = 0; i < ndim; ++i)
+    {
+      const int gid = globaldofs[0] + static_cast<int>(i);
+      const int lid = coldisp->Map().LID(gid);
+
+      dsassert(lid >= 0, "Proc %d: Cannot find gid=%d in Epetra_Vector", coldisp->Comm().MyPID(),
+          globaldofs[i]);
+
+      nvector[i] = (*coldisp)[lid];
+    }
+
     mynode->ChangePos(nvector);
   }
 }
