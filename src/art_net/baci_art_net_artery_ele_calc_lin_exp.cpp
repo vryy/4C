@@ -14,9 +14,9 @@
 #include "baci_art_net_art_junction.hpp"
 #include "baci_art_net_art_terminal_bc.hpp"
 #include "baci_art_net_artery_ele_calc.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_cnst_1d_art.hpp"
 #include "baci_utils_function.hpp"
 #include "baci_utils_function_of_time.hpp"
@@ -108,7 +108,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
 
   // extract local values from the global vectors
   std::vector<double> myqanp(la[0].lm_.size());
-  DRT::UTILS::ExtractMyValues(*qanp, myqanp, la[0].lm_);
+  CORE::FE::ExtractMyValues(*qanp, myqanp, la[0].lm_);
 
   // create objects for element arrays
   CORE::LINALG::Matrix<numnode, 1> eareanp;
@@ -242,8 +242,8 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
   std::vector<double> myqanp(lm.size());
   std::vector<double> myqan(lm.size());
   std::vector<double> myescatran(lm.size());
-  DRT::UTILS::ExtractMyValues(*scatran, myescatran, lm);
-  //  DRT::UTILS::ExtractMyValues(*qan ,myqan ,lm);
+  CORE::FE::ExtractMyValues(*scatran, myescatran, lm);
+  //  CORE::FE::ExtractMyValues(*qan ,myqan ,lm);
 
   // create objects for element arrays
   CORE::LINALG::Matrix<numnode, 1> eareanp;
@@ -987,7 +987,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
-  DRT::UTILS::ExtractMyValues(*qanp, myqanp, lm);
+  CORE::FE::ExtractMyValues(*qanp, myqanp, lm);
 
   // create objects for element arrays
   CORE::LINALG::Matrix<numnode, 1> earean;
@@ -1225,7 +1225,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
-  DRT::UTILS::ExtractMyValues(*qanp, myqanp, lm);
+  CORE::FE::ExtractMyValues(*qanp, myqanp, lm);
 
   // create objects for element arrays
   CORE::LINALG::Matrix<numnode, 1> eareanp;
@@ -1605,7 +1605,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcPostprocessingValues(Arter
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
-  DRT::UTILS::ExtractMyValues(*qanp, myqanp, lm);
+  CORE::FE::ExtractMyValues(*qanp, myqanp, lm);
 
   // create objects for element arrays
   CORE::LINALG::Matrix<numnode, 1> eareanp;
@@ -1684,7 +1684,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcScatraFromScatraFW(Artery*
 
   // extract local values from the global vectors
   std::vector<double> myscatra_fb(lm.size());
-  DRT::UTILS::ExtractMyValues(*scatra_fb, myscatra_fb, lm);
+  CORE::FE::ExtractMyValues(*scatra_fb, myscatra_fb, lm);
 
   // get all values at the last computed time step
   double val = 0.0;
@@ -1775,7 +1775,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
-  DRT::UTILS::ExtractMyValues(*qanp, myqanp, lm);
+  CORE::FE::ExtractMyValues(*qanp, myqanp, lm);
 
   // create objects for element arrays
   CORE::LINALG::Matrix<numnode, 1> earean;
@@ -1873,8 +1873,8 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveScatraAnalytically(Artery
 
   // extract local values from the global vectors
   std::vector<double> myescatran(lm.size());
-  DRT::UTILS::ExtractMyValues(*scatran, myescatran, lm);
-  //  DRT::UTILS::ExtractMyValues(*qan ,myqan ,lm);
+  CORE::FE::ExtractMyValues(*scatran, myescatran, lm);
+  //  CORE::FE::ExtractMyValues(*qan ,myqan ,lm);
 
   // create objects for element arrays
   CORE::LINALG::Matrix<2 * numnode, 1> escatran;

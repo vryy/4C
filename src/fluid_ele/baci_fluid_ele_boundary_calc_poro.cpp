@@ -12,6 +12,7 @@
 #include "baci_fluid_ele_boundary_calc_poro.hpp"
 
 #include "baci_coupling_volmortar_shape.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_fluid_ele.hpp"
 #include "baci_fluid_ele_action.hpp"
@@ -413,8 +414,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   if (displacements_np != Teuchos::null)
   {
     my_displacements_np.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*displacements_np, my_displacements_np, lm);
-    DRT::UTILS::ExtractMyValues(*displacements_np, my_parentdisp_np, plm);
+    CORE::FE::ExtractMyValues(*displacements_np, my_displacements_np, lm);
+    CORE::FE::ExtractMyValues(*displacements_np, my_parentdisp_np, plm);
   }
   dsassert(my_displacements_np.size() != 0, "no displacement values for boundary element");
   dsassert(my_parentdisp_np.size() != 0, "no displacement values for parent element");
@@ -422,8 +423,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   if (displacements_n != Teuchos::null)
   {
     my_displacements_n.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*displacements_n, my_displacements_n, lm);
-    DRT::UTILS::ExtractMyValues(*displacements_n, my_parentdisp_n, plm);
+    CORE::FE::ExtractMyValues(*displacements_n, my_displacements_n, lm);
+    CORE::FE::ExtractMyValues(*displacements_n, my_parentdisp_n, plm);
   }
   dsassert(
       my_displacements_n.size() != 0, "no displacement values for boundary element at time step n");
@@ -458,15 +459,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
   // extract local values from the global vectors
   std::vector<double> my_fluidvelocity_np(lm.size());
-  DRT::UTILS::ExtractMyValues(*fluidvelocity_np, my_fluidvelocity_np, lm);
+  CORE::FE::ExtractMyValues(*fluidvelocity_np, my_fluidvelocity_np, lm);
   std::vector<double> my_fluidvelocity_n(lm.size());  // at previous time step n
-  DRT::UTILS::ExtractMyValues(*fluidvelocity_n, my_fluidvelocity_n, lm);
+  CORE::FE::ExtractMyValues(*fluidvelocity_n, my_fluidvelocity_n, lm);
   std::vector<double> my_gridvelocity(lm.size());
-  DRT::UTILS::ExtractMyValues(*gridvelocity, my_gridvelocity, lm);
+  CORE::FE::ExtractMyValues(*gridvelocity, my_gridvelocity, lm);
   std::vector<double> my_parentfluidvelocity_np(plm.size());
-  DRT::UTILS::ExtractMyValues(*fluidvelocity_np, my_parentfluidvelocity_np, plm);
+  CORE::FE::ExtractMyValues(*fluidvelocity_np, my_parentfluidvelocity_np, plm);
   std::vector<double> my_parentfluidvelocity_n(plm.size());  // at previous time step n
-  DRT::UTILS::ExtractMyValues(*fluidvelocity_n, my_parentfluidvelocity_n, plm);
+  CORE::FE::ExtractMyValues(*fluidvelocity_n, my_parentfluidvelocity_n, plm);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -1831,8 +1832,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   if (dispnp != Teuchos::null)
   {
     mydispnp.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
-    DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
+    CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+    CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
   }
   dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
   dsassert(parentdispnp.size() != 0, "no displacement values for parent element");
@@ -1867,9 +1868,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   if (gridvel == Teuchos::null) dserror("Cannot get state vector 'gridv'");
 
   std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
   std::vector<double> mygridvel(lm.size());
-  DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
+  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
   CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -2068,7 +2069,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
   if (dispnp != Teuchos::null)
   {
     mydispnp.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+    CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
   }
   dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -2086,7 +2087,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
   else
   {
     mycondVector.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*condVector, mycondVector, lm);
+    CORE::FE::ExtractMyValues(*condVector, mycondVector, lm);
   }
   dsassert(mycondVector.size() != 0, "no condition IDs values for boundary element");
 
@@ -2151,9 +2152,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     if (gridvel == Teuchos::null) dserror("Cannot get state vector 'gridv'");
 
     std::vector<double> myvelnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+    CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
     std::vector<double> mygridvel(lm.size());
-    DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
+    CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
     // allocate velocity vectors
     CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -2302,7 +2303,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -2535,8 +2536,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   if (dispnp != Teuchos::null)
   {
     mydispnp.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
-    DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
+    CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+    CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
   }
   dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
   dsassert(parentdispnp.size() != 0, "no displacement values for parent element");
@@ -2571,11 +2572,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   if (gridvel == Teuchos::null) dserror("Cannot get state vector 'gridv'");
 
   std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
   std::vector<double> mygridvel(lm.size());
-  DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
+  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
   std::vector<double> myscaaf(lm.size());
-  DRT::UTILS::ExtractMyValues(*scaaf, myscaaf, lm);
+  CORE::FE::ExtractMyValues(*scaaf, myscaaf, lm);
 
   // allocate velocity vectors
   CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -2888,7 +2889,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -2908,7 +2909,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
   if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   // allocate velocity vectors
   CORE::LINALG::Matrix<Base::bdrynen_, 1> epressnp(true);
@@ -3203,7 +3204,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -3224,10 +3225,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
+  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
   CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -3265,7 +3266,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   pele->DRT::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
-  DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
+  CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
   CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
@@ -3284,7 +3285,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   }
 
   std::vector<double> pvelnp(plm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, pvelnp, plm);
+  CORE::FE::ExtractMyValues(*velnp, pvelnp, plm);
 
   // allocate vectors
   CORE::LINALG::Matrix<nenparent, 1> pepressnp(true);
@@ -3577,7 +3578,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -3598,10 +3599,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
+  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
   CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -3622,7 +3623,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   if (glambda == Teuchos::null) dserror("Cannot get state vector 'lambda'");
 
   std::vector<double> mylambda(lm.size());
-  DRT::UTILS::ExtractMyValues(*glambda, mylambda, lm);
+  CORE::FE::ExtractMyValues(*glambda, mylambda, lm);
 
   CORE::LINALG::Matrix<nsd_, Base::bdrynen_> elambda(true);
 
@@ -3658,7 +3659,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   pele->DRT::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
-  DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
+  CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
   CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
@@ -3677,7 +3678,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   }
 
   std::vector<double> pvelnp(plm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, pvelnp, plm);
+  CORE::FE::ExtractMyValues(*velnp, pvelnp, plm);
 
   // allocate vectors
   CORE::LINALG::Matrix<nenparent, 1> pepressnp(true);
@@ -4184,7 +4185,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -4205,10 +4206,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
+  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
   CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -4247,7 +4248,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   pele->DRT::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
-  DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
+  CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
   CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
@@ -4266,7 +4267,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   }
 
   std::vector<double> pvelnp(plm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, pvelnp, plm);
+  CORE::FE::ExtractMyValues(*velnp, pvelnp, plm);
 
   // allocate vectors
   CORE::LINALG::Matrix<nenparent, 1> pepressnp(true);
@@ -4551,7 +4552,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -4572,10 +4573,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  DRT::UTILS::ExtractMyValues(*gridvel, mygridvel, lm);
+  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
   CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -4608,7 +4609,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   static const int nenparent = CORE::FE::num_nodes<pdistype>;
 
   std::vector<double> parentdispnp;
-  DRT::UTILS::ExtractMyValues(*dispnp, parentdispnp, plm);
+  CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
   CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
@@ -4627,7 +4628,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   }
 
   std::vector<double> pvelnp(plm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, pvelnp, plm);
+  CORE::FE::ExtractMyValues(*velnp, pvelnp, plm);
 
   // allocate vectors
   CORE::LINALG::Matrix<nenparent, 1> pepressnp(true);

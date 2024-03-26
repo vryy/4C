@@ -9,9 +9,9 @@ concentrations and with advanced reaction terms
 
 #include "baci_scatra_ele_boundary_calc_refconc_reac.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
@@ -159,7 +159,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
     CORE::LINALG::Matrix<pnsd, pnen> pedispnp(true);
 
     // extract local values of convective velocity field from global state vector
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<pnsd, pnen>>(*dispnp, pedispnp, plmdisp);
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<pnsd, pnen>>(*dispnp, pedispnp, plmdisp);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
     // my::rotsymmpbc_->template RotateMyValuesIfNecessary<pnsd,pnen>(pedispnp);

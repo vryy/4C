@@ -9,8 +9,8 @@
 
 #include "baci_porofluidmultiphase_ele_variablemanager.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_fluidporo_singlephase.hpp"
 #include "baci_porofluidmultiphase_ele_calc_utils.hpp"
 #include "baci_porofluidmultiphase_ele_parameter.hpp"
@@ -150,7 +150,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd, nen>::ExtractEleme
   const std::vector<int>& lm = la[dofsetnum].lm_;
 
   // extract element vector from global vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*phinp, ephinp_, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*phinp, ephinp_, lm);
 
   // set flag
   this->isextracted_ = true;
@@ -232,8 +232,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd, nen>::ExtractEl
   const std::vector<int>& lm = la[dofsetnum].lm_;
 
   // extract values from global vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*hist, ehist_, lm);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*phidtnp, ephidtnp_, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*hist, ehist_, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*phidtnp, ephidtnp_, lm);
 
   // call wrapped class
   this->varmanager_->ExtractElementAndNodeValues(ele, discretization, la, xyze, dofsetnum);
@@ -299,7 +299,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::ExtractEl
   if (vel == Teuchos::null) dserror("Cannot get state vector velocity");
 
   // extract local values of velocity field from global state vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd, nen>>(*vel, econvelnp_, lmvel);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd, nen>>(*vel, econvelnp_, lmvel);
 
   // safety check
   Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp_, "dispnp");
@@ -315,7 +315,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::ExtractEl
       lmdisp[inode * nsd + idim] = la[ndsdisp_].lm_[inode * numdispdofpernode + idim];
 
   // extract local values of displacement field from global state vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd, nen>>(*dispnp, edispnp_, lmdisp);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd, nen>>(*dispnp, edispnp_, lmdisp);
 
   // add nodal displacements to point coordinates
   xyze += edispnp_;
@@ -377,7 +377,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd, nen>::ExtractEl
   escalarnp_.clear();
   escalarnp_.resize(numscalardofpernode, CORE::LINALG::Matrix<nen, 1>(true));
   // extract local values of displacement field from global state vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(
       *scalarnp, escalarnp_, la[ndsscalar_].lm_);
 
   return;
@@ -436,7 +436,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<ns
 
   // extract values from global vector
   std::vector<CORE::LINALG::Matrix<nen, 1>> ephin(this->NumDofPerNode());
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*phin, ephin, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*phin, ephin, lm);
 
   const int numfluidphases = (int)(this->NumDofPerNode() - 2 * numvolfrac_);
 

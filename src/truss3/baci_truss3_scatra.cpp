@@ -9,6 +9,7 @@
 
 #include "baci_truss3_scatra.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_mat_lin_elast_1D.hpp"
@@ -349,7 +350,7 @@ void DRT::ELEMENTS::Truss3Scatra::ExtractElementalVariables(LocationArray& la,
     phi_ele.clear();
     auto phi = discretization.GetState(2, "MicroCon");
     if (phi == Teuchos::null) dserror("Cannot get state vector 'MicroCon'");
-    DRT::UTILS::ExtractMyValues(*phi, phi_ele, la[2].lm_);
+    CORE::FE::ExtractMyValues(*phi, phi_ele, la[2].lm_);
   }
   // get nodal phi from micro state
   else if (discretization.HasState(1, "scalarfield"))
@@ -358,7 +359,7 @@ void DRT::ELEMENTS::Truss3Scatra::ExtractElementalVariables(LocationArray& la,
     phi_ele.clear();
     auto phi = discretization.GetState(1, "scalarfield");
     if (phi == Teuchos::null) dserror("Cannot get state vectors 'scalar'");
-    DRT::UTILS::ExtractMyValues(*phi, phi_ele, la[1].lm_);
+    CORE::FE::ExtractMyValues(*phi, phi_ele, la[1].lm_);
   }
   else
     dserror("Cannot find state vector");

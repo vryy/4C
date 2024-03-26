@@ -10,8 +10,8 @@ transport within electrochemical substances
 /*--------------------------------------------------------------------------*/
 #include "baci_scatra_ele_sti_elch.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -83,7 +83,7 @@ void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::ExtractElementAndNodeValues(
   // extract local nodal values of concentration and electric potential from global state vector
   const std::vector<int>& lm = la[2].lm_;
   std::vector<double> myelchnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*elchnp, myelchnp, lm);
+  CORE::FE::ExtractMyValues(*elchnp, myelchnp, lm);
   for (int inode = 0; inode < nen_; ++inode)
   {
     econcnp_(inode) = myelchnp[inode * 2];

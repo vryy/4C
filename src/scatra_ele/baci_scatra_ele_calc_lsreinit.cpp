@@ -10,11 +10,11 @@
 
 #include "baci_scatra_ele_calc_lsreinit.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_geometry_integrationcell_coordtrafo.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_scatra_ele_parameter_lsreinit.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
@@ -94,7 +94,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(DRT::Elemen
 
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   EvalReinitialization(*phinp, lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
 
@@ -167,12 +167,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
             "l2-projected gradient is missing. -- hiermeier 12/2016");
         const Teuchos::RCP<Epetra_MultiVector>& gradphi =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("gradphi");
-        DRT::UTILS::ExtractMyNodeBasedValues(ele, my::econvelnp_, gradphi, nsd_);
+        CORE::FE::ExtractMyNodeBasedValues(ele, my::econvelnp_, gradphi, nsd_);
         Teuchos::RCP<const Epetra_Vector> l2_proj_sys_diag =
             discretization.GetState("l2_proj_system_mat_diag");
         if (l2_proj_sys_diag.is_null())
           dserror("Could not find the l2 projection system diagonal!");
-        DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
+        CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
             *l2_proj_sys_diag, el2sysmat_diag_inv, lm);
         el2sysmat_diag_inv.Reciprocal(el2sysmat_diag_inv);
       }
@@ -360,16 +360,16 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
       if (hist == Teuchos::null || phin == Teuchos::null || phizero == Teuchos::null)
         dserror("Cannot get state vector 'hist' and/or 'phin' and/or 'phizero'");
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
 
       if (lsreinitparams_->UseProjectedVel())
       {
         // get velocity at nodes (pre-computed via L2 projection)
         const Teuchos::RCP<Epetra_MultiVector> velocity =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("reinitialization velocity field");
-        DRT::UTILS::ExtractMyNodeBasedValues(ele, my::econvelnp_, velocity, nsd_);
+        CORE::FE::ExtractMyNodeBasedValues(ele, my::econvelnp_, velocity, nsd_);
       }
 
       // calculate element coefficient matrix and rhs
@@ -401,7 +401,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       {
         const Teuchos::RCP<Epetra_MultiVector> gradphi =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("gradphi");
-        DRT::UTILS::ExtractMyNodeBasedValues(ele, my::econvelnp_, gradphi, nsd_);
+        CORE::FE::ExtractMyNodeBasedValues(ele, my::econvelnp_, gradphi, nsd_);
       }
 
       // calculate element coefficient matrix and rhs

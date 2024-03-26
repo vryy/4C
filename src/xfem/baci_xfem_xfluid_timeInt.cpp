@@ -16,16 +16,15 @@
 #include "baci_comm_exporter.hpp"
 #include "baci_cut_boundingbox.hpp"
 #include "baci_cut_cutwizard.hpp"
-#include "baci_cut_element.hpp"
 #include "baci_cut_elementhandle.hpp"
 #include "baci_cut_point.hpp"
 #include "baci_cut_position.hpp"
 #include "baci_cut_sidehandle.hpp"
 #include "baci_cut_volumecell.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_ele.hpp"
 #include "baci_fluid_ele_factory.hpp"
 #include "baci_fluid_ele_interface.hpp"
-#include "baci_global_data.hpp"
 #include "baci_inpar_xfem.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
@@ -34,11 +33,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element_integration_select.hpp"
 #include "baci_lib_xfem_dofset.hpp"
-#include "baci_linalg_serialdensevector.hpp"
-#include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_xfem_condition_manager.hpp"
-
-#include <Teuchos_TimeMonitor.hpp>
 
 #include <iostream>
 
@@ -1896,8 +1891,8 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
 
     cutter_dis->Dof(&node, lm);
 
-    DRT::UTILS::ExtractMyValues(*idisp_old, mydisp_old, lm);
-    DRT::UTILS::ExtractMyValues(*idisp_new, mydisp_new, lm);
+    CORE::FE::ExtractMyValues(*idisp_old, mydisp_old, lm);
+    CORE::FE::ExtractMyValues(*idisp_new, mydisp_new, lm);
 
     // add displacements
     x_old(0) += mydisp_old.at(0);

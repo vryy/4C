@@ -9,6 +9,7 @@ adapts assembly automatically according to the thereby changed number of nodal d
 */
 /*---------------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
@@ -581,7 +582,7 @@ void DRT::ELEMENTS::Truss3::ExtractElementalVariables(LocationArray& la,
 
   auto disp = discretization.GetState("displacement");
   if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-  DRT::UTILS::ExtractMyValues(*disp, disp_ele, la[0].lm_);
+  CORE::FE::ExtractMyValues(*disp, disp_ele, la[0].lm_);
 
   if (ele_state.find("disp") == ele_state.end())
     ele_state.emplace(std::make_pair("disp", disp_ele));

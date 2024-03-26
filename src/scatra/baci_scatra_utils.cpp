@@ -9,12 +9,12 @@
 
 #include "baci_scatra_utils.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_inpar_s2i.hpp"
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -391,7 +391,7 @@ CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementG
 
       // extract the phi-values of adjacent element with local ids from global vector *phinp
       // get pointer to vector holding G-function values at the fluid nodes
-      DRT::UTILS::ExtractMyValues(*phinp_node, ephinp, nodeDOFID_adj);
+      CORE::FE::ExtractMyValues(*phinp_node, ephinp, nodeDOFID_adj);
       CORE::LINALG::Matrix<numnode, 1> ephi_adj(ephinp);
 
       //-------------------------------------

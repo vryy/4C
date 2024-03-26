@@ -12,6 +12,7 @@
 
 #include "baci_binstrategy.hpp"
 #include "baci_comm_utils_factory.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_searchtree_service.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_particle.hpp"
@@ -408,7 +409,7 @@ void PARTICLEWALL::WallHandlerBase::DetermineColWallEleNodalPos(
         dserror("dof gid=%d not in dof column map!", lm_wall[i]);
 #endif
 
-    DRT::UTILS::ExtractMyValues(*walldatastate_->GetDispCol(), nodal_disp, lm_wall);
+    CORE::FE::ExtractMyValues(*walldatastate_->GetDispCol(), nodal_disp, lm_wall);
   }
 
   // iterate over nodes of current column wall element

@@ -13,7 +13,6 @@
 #include "baci_contact_element.hpp"
 #include "baci_contact_nitsche_strategy_fpi.hpp"
 #include "baci_contact_nitsche_strategy_fsi.hpp"
-#include "baci_contact_node.hpp"
 #include "baci_cut_boundingbox.hpp"
 #include "baci_cut_cutwizard.hpp"
 #include "baci_cut_element.hpp"
@@ -23,8 +22,8 @@
 #include "baci_cut_position.hpp"
 #include "baci_cut_sidehandle.hpp"
 #include "baci_cut_volumecell.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_ele.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mortar_element.hpp"
 #include "baci_so3_hex8.hpp"
@@ -306,7 +305,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
     DRT::Element::LocationArray laf(1);
     fluidele->LocationVector(*fluiddis_, fluid_nds, laf, false);
     Teuchos::RCP<const Epetra_Vector> matrix_state = fluiddis_->GetState("velaf");
-    DRT::UTILS::ExtractMyValues(*matrix_state, velpres, laf[0].lm_);
+    CORE::FE::ExtractMyValues(*matrix_state, velpres, laf[0].lm_);
 
     std::vector<int> lmdisp;
     lmdisp.resize(fluid_nds.size() * 3);
@@ -316,7 +315,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
       for (std::size_t n = 0; n < fluid_nds.size(); ++n)
         for (int dof = 0; dof < 3; ++dof) lmdisp[n * 3 + dof] = laf[0].lm_[n * 4 + dof];
       Teuchos::RCP<const Epetra_Vector> matrix_state_disp = fluiddis_->GetState("dispnp");
-      DRT::UTILS::ExtractMyValues(*matrix_state_disp, disp, lmdisp);
+      CORE::FE::ExtractMyValues(*matrix_state_disp, disp, lmdisp);
     }
   }
   {
@@ -324,7 +323,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
     sele->LocationVector(*mc_[mcidx_]->GetCutterDis(), las, false);
     Teuchos::RCP<const Epetra_Vector> matrix_state =
         mc_[mcidx_]->GetCutterDis()->GetState("ivelnp");
-    DRT::UTILS::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
+    CORE::FE::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
   }
   static std::vector<double> ipfvel;
   if (isporo_)
@@ -333,7 +332,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
     sele->LocationVector(*mcfpi_ps_pf_->GetCutterDis(), las, false);
     Teuchos::RCP<const Epetra_Vector> matrix_state =
         mcfpi_ps_pf_->GetCutterDis()->GetState("ivelnp");
-    DRT::UTILS::ExtractMyValues(*matrix_state, ipfvel, las[0].lm_);
+    CORE::FE::ExtractMyValues(*matrix_state, ipfvel, las[0].lm_);
   }
 
   // 2 // get element xyze

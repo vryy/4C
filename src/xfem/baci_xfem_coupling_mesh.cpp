@@ -11,6 +11,7 @@ between the xfluid class and the cut-library
 
 #include "baci_xfem_coupling_mesh.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_ele.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_ele_boundary_parent_calc.hpp"
@@ -23,7 +24,6 @@ between the xfluid class and the cut-library
 #include "baci_lib_utils_createdis.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
-#include "baci_linalg_utils_densematrix_inverse.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_mat_elasthyper.hpp"
@@ -2389,7 +2389,7 @@ void XFEM::MeshCouplingFSI::EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele)
   Teuchos::RCP<const Epetra_Vector> dispnp = coupl_dis_->GetState("dispnp");
   if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
-  DRT::UTILS::ExtractMyValues(*dispnp, eledisp, la[0].lm_);
+  CORE::FE::ExtractMyValues(*dispnp, eledisp, la[0].lm_);
   (*ele_to_max_eigenvalue_)[ele->Id()] = solidfaceele->EstimateNitscheTraceMaxEigenvalueCombined(
       eledisp);  // this is (E/h) ...basically :-)
   return;

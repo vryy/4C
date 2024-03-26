@@ -709,7 +709,7 @@ void FLD::XFluid::ExtractNodeVectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis,
     std::vector<int> lm;
     dis->InitialDof(node, lm);  // initial dofs!
     std::vector<double> mydisp;
-    DRT::UTILS::ExtractMyValues(*dispnp_col, mydisp, lm);
+    CORE::FE::ExtractMyValues(*dispnp_col, mydisp, lm);
     if (mydisp.size() < 3) dserror("we need at least 3 dofs here");
 
     CORE::LINALG::Matrix<3, 1> currpos;

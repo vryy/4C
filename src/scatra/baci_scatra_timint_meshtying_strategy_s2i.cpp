@@ -13,6 +13,7 @@
 #include "baci_coupling_adapter_converter.hpp"
 #include "baci_coupling_adapter_mortar.hpp"
 #include "baci_coupling_volmortar_shape.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_fluid_utils.hpp"
 #include "baci_global_data.hpp"
@@ -4248,7 +4249,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
     dserror("Cannot extract state vector \"" + statename + "\" from interface discretization!");
 
   // extract nodal state variables associated with slave element
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_slave_, 1>>(
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_slave_, 1>>(
       *state, estate_slave, la_slave[nds].lm_);
 }
 
@@ -4268,9 +4269,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
     dserror("Cannot extract state vector \"" + statename + "\" from interface discretization!");
 
   // extract nodal state variables associated with slave and master elements
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_slave_, 1>>(
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_slave_, 1>>(
       *state, estate_slave, la_slave[nds].lm_);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_master_, 1>>(
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_master_, 1>>(
       *state, estate_master, la_master[nds].lm_);
 }
 

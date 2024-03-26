@@ -14,13 +14,13 @@
 #include "baci_cut_integrationcell.hpp"
 #include "baci_cut_levelsetintersection.hpp"
 #include "baci_cut_volumecell.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_element_coordtrafo.hpp"
 #include "baci_discretization_geometry_element_volume.hpp"
 #include "baci_discretization_geometry_integrationcell.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
 
@@ -342,7 +342,7 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
   lmowner.clear();
   lmstride.clear();
   ele->LocationVector(scatradis, lm, lmowner, lmstride);
-  DRT::UTILS::ExtractMyValues(phicol, phi_nodes, lm);
+  CORE::FE::ExtractMyValues(phicol, phi_nodes, lm);
 
   // define nodal ID's
   node_ids.resize(numnode, 0.0);

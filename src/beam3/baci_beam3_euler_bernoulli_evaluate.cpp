@@ -10,12 +10,12 @@
 
 #include "baci_beam3_euler_bernoulli.hpp"
 #include "baci_beam3_spatial_discretization_utils.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_largerotations.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_browniandyn.hpp"
 #include "baci_inpar_structure.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
 #include "baci_utils_exceptions.hpp"
@@ -115,13 +115,13 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (res == Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
 
       // Only in the dynamic case the velocities are needed.
       // get element velocities only if example is static in nature
@@ -135,7 +135,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       {
         vel = discretization.GetState("velocity");
         if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-        DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
+        CORE::FE::ExtractMyValues(*vel, myvel, lm);
       }
 
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
@@ -165,13 +165,13 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
       if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
-      DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
+      CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
       if (act == ELEMENTS::struct_calc_brownianforce)
         CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, nullptr, &elevec1);
@@ -244,7 +244,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+  CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
 #ifndef INEXTENSIBLE
   const int dofpn = 3 * NODALDOFS;
@@ -263,7 +263,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
     if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
     std::vector<double> myvel(lm.size());
-    DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
+    CORE::FE::ExtractMyValues(*vel, myvel, lm);
   }
   // find out whether we will use a time curve
   double time = -1.0;

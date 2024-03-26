@@ -11,6 +11,7 @@
 
 #include "baci_fluid_ele_calc_xwall.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_gder2.hpp"
 #include "baci_fluid_ele.hpp"
 #include "baci_fluid_ele_action.hpp"
@@ -293,7 +294,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
         params.get<Teuchos::RCP<Epetra_Vector>>("xwalltoggle");
 
     std::vector<double> mylocal(ele->NumNode());
-    DRT::UTILS::ExtractMyNodeBasedValues(ele, mylocal, *xwalltoggle);
+    CORE::FE::ExtractMyNodeBasedValues(ele, mylocal, *xwalltoggle);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -322,7 +323,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
         params.get<Teuchos::RCP<Epetra_Vector>>("walldist");
     //      std::cout << *walldist << std::endl;
     std::vector<double> mylocal(ele->NumNode());
-    DRT::UTILS::ExtractMyNodeBasedValues(ele, mylocal, *walldist);
+    CORE::FE::ExtractMyNodeBasedValues(ele, mylocal, *walldist);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -335,7 +336,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
     const Teuchos::RCP<Epetra_Vector> tauw = params.get<Teuchos::RCP<Epetra_Vector>>("tauw");
 
     std::vector<double> mylocal(ele->NumNode());
-    DRT::UTILS::ExtractMyNodeBasedValues(ele, mylocal, *tauw);
+    CORE::FE::ExtractMyNodeBasedValues(ele, mylocal, *tauw);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -348,7 +349,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
     const Teuchos::RCP<Epetra_Vector> inctauw = params.get<Teuchos::RCP<Epetra_Vector>>("inctauw");
 
     std::vector<double> mylocal(ele->NumNode());
-    DRT::UTILS::ExtractMyNodeBasedValues(ele, mylocal, *inctauw);
+    CORE::FE::ExtractMyNodeBasedValues(ele, mylocal, *inctauw);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -385,7 +386,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
           params.get<Teuchos::RCP<Epetra_Vector>>("incwalldist");
 
       std::vector<double> mylocal(ele->NumNode());
-      DRT::UTILS::ExtractMyNodeBasedValues(ele, mylocal, *incwdist);
+      CORE::FE::ExtractMyNodeBasedValues(ele, mylocal, *incwdist);
 
       for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
       {

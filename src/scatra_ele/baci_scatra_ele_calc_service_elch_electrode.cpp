@@ -8,8 +8,8 @@ within electrodes
 
 */
 /*--------------------------------------------------------------------------*/
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_material.hpp"
 #include "baci_scatra_ele_calc_elch_electrode.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
@@ -154,9 +154,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
   if (phidtnp == Teuchos::null) dserror("Cannot get state vector \"phidtnp\"!");
 
   // extract local nodal values from global state vectors
-  DRT::UTILS::ExtractMyValues(*phinp, my::ephinp_, la[0].lm_);
+  CORE::FE::ExtractMyValues(*phinp, my::ephinp_, la[0].lm_);
   static std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(2);
-  DRT::UTILS::ExtractMyValues(*phidtnp, ephidtnp, la[0].lm_);
+  CORE::FE::ExtractMyValues(*phidtnp, ephidtnp, la[0].lm_);
 
   // initialize variables for integrals of concentration, its time derivative, and domain
   double intconcentration(0.);
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
     // extract velocities
     const Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "velocity field");
     if (vel == Teuchos::null) dserror("Cannot get state vector \"velocity field\"!");
-    DRT::UTILS::ExtractMyValues(*vel, my::evelnp_, la[ndsvel].lm_);
+    CORE::FE::ExtractMyValues(*vel, my::evelnp_, la[ndsvel].lm_);
 
     // initialize additional variables for integrals related to velocity divergence
     double intdivv(0.);

@@ -260,7 +260,7 @@ namespace SCATRA
               // scalar field in physical space
               if (discret_->Comm().MyPID() == 0)
               {
-                DRT::UTILS::Random* random = GLOBAL::Problem::Instance()->Random();
+                CORE::UTILS::Random* random = GLOBAL::Problem::Instance()->Random();
                 // set range [0;1] (default: [-1;1])
                 //              random->SetRandRange(0.0,1.0);
                 //              random_theta = random->Uni();

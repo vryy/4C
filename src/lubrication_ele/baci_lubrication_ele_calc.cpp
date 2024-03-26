@@ -11,13 +11,13 @@
 
 #include "baci_lubrication_ele_calc.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_lubrication.hpp"
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lubrication_ele_action.hpp"
 #include "baci_lubrication_ele_calc_utils.hpp"
 #include "baci_lubrication_ele_parameter.hpp"
@@ -215,7 +215,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
   // extract local vel from global state vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*vel, eAvTangVel_, lmvel);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*vel, eAvTangVel_, lmvel);
 
   if (lubricationpara_->ModifiedReynolds())
   {
@@ -233,7 +233,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
         lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
     // extract local vel from global state vector
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*velrel, eRelTangVel_, lmvel);
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*velrel, eRelTangVel_, lmvel);
   }
 
   // 2. In case of ale, extract the displacements of the element nodes and update the nodal
@@ -257,7 +257,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
         lmdisp[inode * nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     xyze_ += edispnp_;
@@ -281,8 +281,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
       lmheight[inode * nsd_ + idim] = la[ndsheight].lm_[inode * numheightdofpernode + idim];
 
   // extract local height from global state vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(
-      *height, eheinp_, la[ndsheight].lm_);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*height, eheinp_, la[ndsheight].lm_);
 
   // 3.1. Extract the film height time derivative at the element node
   if (lubricationpara_->AddSqz())
@@ -304,7 +303,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
             la[ndsheightdot].lm_[inode * numheightdotdofpernode + idim];
 
     // extract local height from global state vector
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(
         *heightdot, eheidotnp_, la[ndsheightdot].lm_);
   }
   // 4. Extract the pressure field at the element nodes
@@ -317,7 +316,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
   const std::vector<int>& lm = la[0].lm_;
 
   // extract the local values at the element nodes
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
   return;
 }
@@ -1256,7 +1255,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateAction(DRT::Ele
       // need current solution
       Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
       if (prenp == Teuchos::null) dserror("Cannot get state vector 'prenp'");
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       CalErrorComparedToAnalytSolution(ele, params, elevec1_epetra);
 
@@ -1272,7 +1271,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateAction(DRT::Ele
       // -> extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
       if (prenp == Teuchos::null) dserror("Cannot get state vector 'prenp'");
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       // calculate pressures and domain integral
       CalculatePressures(ele, elevec1_epetra, inverting);

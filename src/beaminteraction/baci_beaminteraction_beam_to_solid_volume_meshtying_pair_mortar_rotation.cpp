@@ -16,6 +16,7 @@
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
 #include "baci_beaminteraction_calc_utils.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_geometry_pair_element.hpp"
 #include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_volume.hpp"
@@ -362,7 +363,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   std::vector<int> lambda_gid_rot;
   GetMortarGID(mortar_manager, this, mortar::n_dof_, mortar_rot::n_dof_, nullptr, &lambda_gid_rot);
   std::vector<double> lambda_rot_double;
-  DRT::UTILS::ExtractMyValues(global_lambda, lambda_rot_double, lambda_gid_rot);
+  CORE::FE::ExtractMyValues(global_lambda, lambda_rot_double, lambda_gid_rot);
   CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double> lambda_rot;
   for (unsigned int i_dof = 0; i_dof < mortar_rot::n_dof_; i_dof++)
     lambda_rot(i_dof) = lambda_rot_double[i_dof];

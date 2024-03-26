@@ -11,8 +11,8 @@
 
 #include "baci_elemag_diff_ele_calc.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
-#include "baci_discretization_geometry_position_array.hpp"
 #include "baci_elemag_ele_action.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
@@ -358,7 +358,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ReadGlobalVectors(
   {
     elemagele->elenodeTrace2d_.size(lm.size());
     Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("trace");
-    DRT::UTILS::ExtractMyValues(*matrix_state, elemagele->elenodeTrace2d_, lm);
+    CORE::FE::ExtractMyValues(*matrix_state, elemagele->elenodeTrace2d_, lm);
   }
 
   return;
@@ -428,7 +428,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ElementInitFromRestart(
 
   Teuchos::RCP<const Epetra_Vector> intVar = discretization.GetState(1, "intVar");
   std::vector<int> localDofs1 = discretization.Dof(1, ele);
-  DRT::UTILS::ExtractMyValues(*intVar, interiorVar, localDofs1);
+  CORE::FE::ExtractMyValues(*intVar, interiorVar, localDofs1);
   // now write this in corresponding eleinteriorElectric_ and eleinteriorMagnetic_
   for (unsigned int i = 0; i < size; ++i)
   {
@@ -439,7 +439,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ElementInitFromRestart(
   std::vector<double> interiorVarnm(size * 2);
 
   Teuchos::RCP<const Epetra_Vector> intVarnm = discretization.GetState(1, "intVarnm");
-  DRT::UTILS::ExtractMyValues(*intVarnm, interiorVarnm, localDofs1);
+  CORE::FE::ExtractMyValues(*intVarnm, interiorVarnm, localDofs1);
   for (unsigned int i = 0; i < size; ++i)
   {
     elemagele->eleinteriorElectricnm1_(i) = interiorVarnm[size + i];

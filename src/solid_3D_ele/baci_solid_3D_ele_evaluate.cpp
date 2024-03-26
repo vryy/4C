@@ -8,6 +8,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_elements_paramsinterface.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
@@ -31,7 +32,7 @@ namespace
   {
     const Epetra_Vector& acceleration = *discretization.GetState("acceleration");
     std::vector<double> my_acceleration(lm.size());
-    DRT::UTILS::ExtractMyValues(acceleration, my_acceleration, lm);
+    CORE::FE::ExtractMyValues(acceleration, my_acceleration, lm);
 
     return my_acceleration;
   }

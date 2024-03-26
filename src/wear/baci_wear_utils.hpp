@@ -19,9 +19,9 @@
  *----------------------------------------------------------------------*/
 #include "baci_config.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_wear_defines.hpp"
@@ -63,11 +63,11 @@ namespace WEAR
 
       // spatial displacements
       std::vector<double> mydisp_source(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp_source, mydisp_source, lm);
+      CORE::FE::ExtractMyValues(*disp_source, mydisp_source, lm);
 
       // material displacements
       std::vector<double> mydisp_target(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp_target, mydisp_target, lm);
+      CORE::FE::ExtractMyValues(*disp_target, mydisp_target, lm);
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)

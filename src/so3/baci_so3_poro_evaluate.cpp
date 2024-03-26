@@ -8,9 +8,9 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
@@ -45,7 +45,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterLi
 
         // extract local values of the global vectors
         std::vector<double> myscalar(la[2].lm_.size());
-        DRT::UTILS::ExtractMyValues(*scalarnp, myscalar, la[2].lm_);
+        CORE::FE::ExtractMyValues(*scalarnp, myscalar, la[2].lm_);
 
         if (so3_ele::NumMaterial() < 2)
           dserror("no second material defined for Wall poro element!");
@@ -78,7 +78,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterLi
       xrefe.resize(3);
       DRT::Node** nodes = Nodes();
       // get displacements of this element
-      //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      //  CORE::FE::ExtractMyValues(*disp,mydisp,lm);
       for (int i = 0; i < numnod_; ++i)
       {
         const auto& x = nodes[i]->X();
@@ -259,7 +259,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
             std::vector<double> myephi(la[1].Size());
             Teuchos::RCP<const Epetra_Vector> matrix_state =
                 discretization.GetState(1, "porofluid");
-            DRT::UTILS::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+            CORE::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
             // calculate tangent stiffness matrix
             NonlinearStiffnessPoroelastPressureBased(lm, mydisp, myephi, matptr, &elevec1, params);
@@ -335,7 +335,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
             std::vector<double> myephi(la[1].Size());
             Teuchos::RCP<const Epetra_Vector> matrix_state =
                 discretization.GetState(1, "porofluid");
-            DRT::UTILS::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+            CORE::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
             // calculate tangent stiffness matrix
             NonlinearStiffnessPoroelastPressureBased(lm, mydisp, myephi, matptr, &elevec1, params);
@@ -401,7 +401,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].Size());
           Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
-          DRT::UTILS::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+          CORE::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
           CORE::LINALG::Matrix<numdim_, numnod_> mydisp(true);
           ExtractValuesFromGlobalVector(
@@ -455,7 +455,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].Size());
           Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
-          DRT::UTILS::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+          CORE::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
           // calculate tangent stiffness matrix
           NonlinearStiffnessPoroelastPressureBased(lm, mydisp, myephi, nullptr, &elevec1, params);
@@ -1336,7 +1336,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ExtractValuesFromGlobalVector(
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
+  CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
   if (numdofpernode == numdim_ + 1)
   {

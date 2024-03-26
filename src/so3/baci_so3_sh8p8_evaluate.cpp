@@ -10,9 +10,9 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_io_gmsh.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
@@ -149,7 +149,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mystat(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mystat, lm);
+      CORE::FE::ExtractMyValues(*disp, mystat, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydisp;
       CORE::LINALG::Matrix<NUMPRES_, 1> mypres;
       ExtractDispAndPres(mystat, mydisp, mypres);
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (res == Teuchos::null) dserror("Didn't get \"residual displacement\"");
       std::vector<double> mystati(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, mystati, lm);
+      CORE::FE::ExtractMyValues(*res, mystati, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydispi;
       CORE::LINALG::Matrix<NUMPRES_, 1> mypresi;
       ExtractDispAndPres(mystati, mydispi, mypresi);
@@ -197,7 +197,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mystat(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mystat, lm);
+      CORE::FE::ExtractMyValues(*disp, mystat, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydisp;
       CORE::LINALG::Matrix<NUMPRES_, 1> mypres;
       ExtractDispAndPres(mystat, mydisp, mypres);
@@ -205,7 +205,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (res == Teuchos::null) dserror("Didn't get \"residual displacement\"");
       std::vector<double> mystati(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, mystati, lm);
+      CORE::FE::ExtractMyValues(*res, mystati, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydispi;
       CORE::LINALG::Matrix<NUMPRES_, 1> mypresi;
       ExtractDispAndPres(mystati, mydispi, mypresi);
@@ -237,7 +237,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mystat(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mystat, lm);
+      CORE::FE::ExtractMyValues(*disp, mystat, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydisp;
       CORE::LINALG::Matrix<NUMPRES_, 1> mypres;
       ExtractDispAndPres(mystat, mydisp, mypres);
@@ -245,7 +245,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (res == Teuchos::null) dserror("Didn't get \"residual displacement\"");
       std::vector<double> mystati(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, mystati, lm);
+      CORE::FE::ExtractMyValues(*res, mystati, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydispi;
       CORE::LINALG::Matrix<NUMPRES_, 1> mypresi;
       ExtractDispAndPres(mystati, mydispi, mypresi);
@@ -295,7 +295,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mystat(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mystat, lm);
+      CORE::FE::ExtractMyValues(*disp, mystat, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydisp;
       CORE::LINALG::Matrix<NUMPRES_, 1> mypres;
       ExtractDispAndPres(mystat, mydisp, mypres);
@@ -303,7 +303,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (res == Teuchos::null) dserror("Didn't get \"residual displacement\"");
       std::vector<double> mystati(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, mystati, lm);
+      CORE::FE::ExtractMyValues(*res, mystati, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydispi;
       CORE::LINALG::Matrix<NUMPRES_, 1> mypresi;
       ExtractDispAndPres(mystati, mydispi, mypresi);

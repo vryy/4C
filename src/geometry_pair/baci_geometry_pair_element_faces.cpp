@@ -11,6 +11,7 @@
 #include "baci_geometry_pair_element_faces.hpp"
 
 #include "baci_discretization_fem_general_cell_type.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_scalar_types.hpp"
@@ -54,7 +55,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
 {
   // Get all displacements for the current face / patch.
   std::vector<double> patch_displacement;
-  DRT::UTILS::ExtractMyValues(*displacement, patch_displacement, patch_dof_gid_);
+  CORE::FE::ExtractMyValues(*displacement, patch_displacement, patch_dof_gid_);
 
   // Create the full length FAD types.
   face_position_ = GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::Initialize(
@@ -246,7 +247,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
 {
   // Get all displacements for the current face / patch.
   std::vector<double> patch_displacement;
-  DRT::UTILS::ExtractMyValues(*displacement, patch_displacement, this->patch_dof_gid_);
+  CORE::FE::ExtractMyValues(*displacement, patch_displacement, this->patch_dof_gid_);
 
   // Create the full length FAD types.
   this->face_position_ = GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::Initialize(
@@ -540,7 +541,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
 {
   // Get all displacements for the current face / volume.
   std::vector<double> volume_displacement;
-  DRT::UTILS::ExtractMyValues(*displacement, volume_displacement, this->patch_dof_gid_);
+  CORE::FE::ExtractMyValues(*displacement, volume_displacement, this->patch_dof_gid_);
 
   // Create the full length FAD types.
   std::vector<scalar_type> patch_displacement_fad(volume::n_dof_);

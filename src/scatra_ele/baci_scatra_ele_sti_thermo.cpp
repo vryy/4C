@@ -10,8 +10,8 @@ transport
 /*--------------------------------------------------------------------------*/
 #include "baci_scatra_ele_sti_thermo.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_soret.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -32,7 +32,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ExtractElementAndNodeValues(
   if (tempnp == Teuchos::null) dserror("Cannot extract thermo state vector from discretization!");
 
   // extract local nodal temperature values from global state vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*tempnp, etempnp_, la[2].lm_);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*tempnp, etempnp_, la[2].lm_);
 }
 
 

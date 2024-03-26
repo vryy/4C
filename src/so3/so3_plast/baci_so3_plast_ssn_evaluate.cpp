@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------*
  | headers                                                  seitz 07/13 |
  *----------------------------------------------------------------------*/
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.hpp"
 #include "baci_global_data.hpp"
 #include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
@@ -91,7 +92,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       if ((disp == Teuchos::null))
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(la[0].lm_.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       CORE::LINALG::Matrix<numdofperelement_, numdofperelement_> myemat(true);
 
@@ -112,7 +113,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
           if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
-          DRT::UTILS::ExtractMyValues(*vel, myvel, la[0].lm_);
+          CORE::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
         }
         if (discretization.HasState(1, "temperature"))
         {
@@ -126,7 +127,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             dserror("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
-          DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+          CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
         }
       }
 
@@ -153,7 +154,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(la[0].lm_.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
       // Evaluate() is called the first time in StructureBaseAlgorithm: at this
@@ -172,7 +173,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
           if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
-          DRT::UTILS::ExtractMyValues(*vel, myvel, la[0].lm_);
+          CORE::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
         }
 
         if (discretization.HasState(1, "temperature"))
@@ -187,7 +188,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             dserror("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
-          DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+          CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
         }
       }
 
@@ -207,7 +208,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(la[0].lm_.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
       // stiffness
       CORE::LINALG::Matrix<numdofperelement_, numdofperelement_> elemat1(
           elemat1_epetra.values(), true);
@@ -234,7 +235,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
           if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
-          DRT::UTILS::ExtractMyValues(*vel, myvel, la[0].lm_);
+          CORE::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
         }
         if (discretization.HasState(1, "temperature"))
         {
@@ -248,7 +249,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             dserror("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
-          DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+          CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
         }
       }
 
@@ -302,7 +303,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
 
       std::vector<double> mydisp((la[0].lm_).size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
       // Evaluate() is called the first time in StructureBaseAlgorithm: at this
@@ -322,7 +323,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
           if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
-          DRT::UTILS::ExtractMyValues(*vel, myvel, la[0].lm_);
+          CORE::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
         }
         if (discretization.HasState(1, "temperature"))
         {
@@ -336,7 +337,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             dserror("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
-          DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+          CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
         }
       }
 
@@ -404,7 +405,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
       std::vector<double> mydisp(la[0].lm_.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       std::vector<double> mytempnp(0);
       if (discretization.HasState(1, "temperature"))
@@ -419,7 +420,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
           dserror("Location vector length for temperature does not match!");
         // extract the current temperatures
         mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
-        DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
       }
 
       double intenergy = CalcIntEnergy(mydisp, mytempnp, params);
@@ -441,7 +442,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (res == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> myres((la[0].lm_).size());
-      DRT::UTILS::ExtractMyValues(*res, myres, la[0].lm_);
+      CORE::FE::ExtractMyValues(*res, myres, la[0].lm_);
       CORE::LINALG::Matrix<nen_ * nsd_, 1> res_d(myres.data(), true);
 
       std::vector<double> mytempres(0);
@@ -461,7 +462,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             dserror("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempres.resize(((la[0].lm_).size()) / nsd_, 0.0);
-          DRT::UTILS::ExtractMyValues(*tempres, mytempres, la[1].lm_);
+          CORE::FE::ExtractMyValues(*tempres, mytempres, la[1].lm_);
           res_t = CORE::LINALG::Matrix<nen_, 1>(mytempres.data(), true);
           res_t_ptr = &res_t;
         }

@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/12 |
  *----------------------------------------------------------------------*/
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_global_data.hpp"
 #include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
@@ -53,7 +54,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> nodaltempnp =
           Teuchos::rcp(new std::vector<double>(la[1].lm_.size()));
-      DRT::UTILS::ExtractMyValues(*tempnp, *nodaltempnp, la[1].lm_);
+      CORE::FE::ExtractMyValues(*tempnp, *nodaltempnp, la[1].lm_);
 
       // now set the current temperature vector in the parameter list
       params.set<Teuchos::RCP<std::vector<double>>>("nodal_tempnp", nodaltempnp);
@@ -207,7 +208,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       CORE::LINALG::Matrix<numdofperelement_, numdofperelement_> myemat(true);
 
@@ -231,7 +232,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         if (la[1].Size() != nen_ * numdofpernode_thr)
           dserror("Location vector length for temperature does not match!");
         // extract the current temperatures
-        DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
         if (so3_ele::KinematicType() == INPAR::STR::KinemType::nonlinearTotLag)
@@ -300,7 +301,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
       // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
@@ -322,7 +323,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         if (la[1].Size() != nen_ * numdofpernode_thr)
           dserror("Location vector length for temperature does not match!");
         // extract the current temperatures
-        DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
         if (so3_ele::KinematicType() == INPAR::STR::KinemType::nonlinearTotLag)
@@ -397,7 +398,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
       // Evaluate() is called the first time in StructureBaseAlgorithm: at this
@@ -420,7 +421,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         if (la[1].Size() != nen_ * numdofpernode_thr)
           dserror("Location vector length for temperature does not match!");
         // extract the current temperatures
-        DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
         if (so3_ele::KinematicType() == INPAR::STR::KinemType::nonlinearTotLag)
@@ -487,7 +488,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
 
       std::vector<double> mydisp((la[0].lm_).size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       Teuchos::RCP<std::vector<char>> couplstressdata;
       INPAR::STR::StressType iocouplstress;
@@ -528,7 +529,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           dserror("Location vector length for temperature does not match!");
 
         // extract the current temperatures
-        DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
         if (so3_ele::KinematicType() == INPAR::STR::KinemType::nonlinearTotLag)
@@ -650,7 +651,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           if (la[1].Size() != nen_ * numdofpernode_thr)
             dserror("Location vector length for temperature does not match!");
           // extract the current temperatures
-          DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+          CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
         }
 
         // vector of the current element temperatures
@@ -713,7 +714,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp((la[0].lm_).size());
       // build the location vector only for the structure field
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
       // Evaluate() is called the first time in StructureBaseAlgorithm: at this
@@ -736,7 +737,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         if (la[1].Size() != nen_ * numdofpernode_thr)
           dserror("Location vector length for temperature does not match!");
         // extract the current temperatures
-        DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
       }
       // default: geometrically non-linear analysis with Total Lagrangean approach
       if (so3_ele::KinematicType() == INPAR::STR::KinemType::nonlinearTotLag)

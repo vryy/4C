@@ -637,7 +637,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
 
     // get the current displacement
     structdis_->Dof(node, 0, dofstoextract);
-    DRT::UTILS::ExtractMyValues(*displacements, mydisp, dofstoextract);
+    CORE::FE::ExtractMyValues(*displacements, mydisp, dofstoextract);
 
     currpos(0) = node->X()[0] + mydisp.at(0);
     currpos(1) = node->X()[1] + mydisp.at(1);

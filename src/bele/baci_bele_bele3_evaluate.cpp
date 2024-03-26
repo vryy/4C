@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_bele_bele3.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
@@ -92,7 +92,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+        CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numdim = 3;
         CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
         SpatialConfiguration(xscurr, mydisp);
@@ -108,7 +108,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
       CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
       SpatialConfiguration(xscurr, mydisp);

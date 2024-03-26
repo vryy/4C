@@ -10,10 +10,10 @@
 
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_ale2.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_mat_elasthyper.hpp"
 #include "baci_mat_stvenantkirchhoff.hpp"
@@ -69,7 +69,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       static_ke_nonlinear(lm, my_dispnp, &elemat1, &elevec1, params, true, false);
 
@@ -79,7 +79,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       static_ke_nonlinear(lm, my_dispnp, &elemat1, &elevec1, params, spatialconfiguration, true);
 
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, spatialconfiguration);
 
       break;
@@ -98,7 +98,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, true);
 
       break;
@@ -108,7 +108,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> dispnp =
           discretization.GetState("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       static_ke_spring(&elemat1, elevec1, my_dispnp, spatialconfiguration);
 
@@ -119,7 +119,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> dispnp =
           discretization.GetState("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       static_ke_spring(&elemat1, elevec1, my_dispnp, true);
 
@@ -152,7 +152,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       compute_det_jac(elevec1, lm, my_dispnp);
 

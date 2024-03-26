@@ -7,9 +7,9 @@
 
 */
 /*--------------------------------------------------------------------------*/
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_arrhenius_temp.hpp"
 #include "baci_mat_list.hpp"
 #include "baci_mat_material.hpp"
@@ -45,7 +45,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
       // extract additional local values from global vector
       Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
       if (phiam == Teuchos::null) dserror("Cannot get state vector 'phiam'");
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
     }
   }
 
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(DRT:
     // extract local values from global vector
     Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
     if (phiam == Teuchos::null) dserror("Cannot get state vector 'phiam'");
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
   }
 
   // get thermodynamic pressure

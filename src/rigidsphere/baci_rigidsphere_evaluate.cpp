@@ -9,13 +9,13 @@
 /*----------------------------------------------------------------------------*/
 
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_discretization_geometric_search_bounding_volume.hpp"
 #include "baci_discretization_geometric_search_params.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_browniandyn.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_mat_stvenantkirchhoff.hpp"
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       Teuchos::RCP<const Epetra_Vector> vel;
       std::vector<double> myvel(lm.size());
@@ -96,13 +96,13 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
       if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
-      DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
+      CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
       if (act == ELEMENTS::struct_calc_brownianforce)
         CalcBrownianForcesAndStiff(params, myvel, mydisp, nullptr, &elevec1);
@@ -340,7 +340,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVol
   std::vector<int> lm, lmowner, lmstride;
   this->LocationVector(discret, lm, lmowner, lmstride);
   std::vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(result_data_dofbased, mydisp, lm);
+  CORE::FE::ExtractMyValues(result_data_dofbased, mydisp, lm);
 
   // Add reference position.
   if (mydisp.size() != 3)

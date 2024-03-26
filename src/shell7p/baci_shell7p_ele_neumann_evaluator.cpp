@@ -7,6 +7,7 @@
 
 #include "baci_shell7p_ele_neumann_evaluator.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
@@ -185,7 +186,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
         loadlin = false;
         const Epetra_Vector& disp = *discretization.GetState("displacement");
         std::vector<double> displacements(dof_index_array.size());
-        DRT::UTILS::ExtractMyValues(disp, displacements, dof_index_array);
+        CORE::FE::ExtractMyValues(disp, displacements, dof_index_array);
 
         SpatialConfiguration<distype>(x_curr, x_refe, displacements, 0);
 
@@ -196,7 +197,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
       {
         const Epetra_Vector& disp = *discretization.GetState("displacement new");
         std::vector<double> displacements(dof_index_array.size());
-        DRT::UTILS::ExtractMyValues(disp, displacements, dof_index_array);
+        CORE::FE::ExtractMyValues(disp, displacements, dof_index_array);
 
         SpatialConfiguration<distype>(x_curr, x_refe, displacements, 0);
 

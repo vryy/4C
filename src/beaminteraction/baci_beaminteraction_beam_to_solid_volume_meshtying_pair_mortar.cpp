@@ -15,12 +15,11 @@ functions for the traction.
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_geometry_pair_element.hpp"
 #include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_volume.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
-#include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_densematrix_inverse.hpp"
 
 #include <unordered_set>
@@ -127,7 +126,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     std::vector<int> lambda_row;
     GetMortarGID(mortar_manager.get(), this, mortar::n_dof_, n_mortar_rot_, &lambda_row, nullptr);
     std::vector<double> lambda_pair;
-    DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
+    CORE::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
       element_data_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 

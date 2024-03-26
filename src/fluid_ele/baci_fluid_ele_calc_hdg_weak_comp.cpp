@@ -9,6 +9,7 @@
 
 #include "baci_fluid_ele_calc_hdg_weak_comp.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_ele_calc.hpp"
 #include "baci_fluid_ele_parameter_std.hpp"
@@ -148,18 +149,18 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadGlobalVectors(
 
   // read the trace values
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(0, "velaf");
-  DRT::UTILS::ExtractMyValues(*matrix_state, traceVal_, lm);
+  CORE::FE::ExtractMyValues(*matrix_state, traceVal_, lm);
 
   // get local dofs
   std::vector<int> localDofs = discretization.Dof(1, &ele);
 
   // read the interior values
   matrix_state = discretization.GetState(1, "intvelaf");
-  DRT::UTILS::ExtractMyValues(*matrix_state, interiorVal_, localDofs);
+  CORE::FE::ExtractMyValues(*matrix_state, interiorVal_, localDofs);
 
   // read the interior time derivatives
   matrix_state = discretization.GetState(1, "intaccam");
-  DRT::UTILS::ExtractMyValues(*matrix_state, interiorAcc_, localDofs);
+  CORE::FE::ExtractMyValues(*matrix_state, interiorAcc_, localDofs);
 
   // read ale vectors
   ReadAleVectors(ele, discretization);
@@ -196,11 +197,11 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadAleVectors(
 
       // read the ale displacement
       matrix_state = discretization.GetState(2, "dispnp");
-      DRT::UTILS::ExtractMyValues(*matrix_state, aleDis_, aleDofs);
+      CORE::FE::ExtractMyValues(*matrix_state, aleDis_, aleDofs);
 
       // read the ale velocity
       matrix_state = discretization.GetState(2, "gridv");
-      DRT::UTILS::ExtractMyValues(*matrix_state, aleVel_, aleDofs);
+      CORE::FE::ExtractMyValues(*matrix_state, aleVel_, aleDofs);
     }
   }
 }
@@ -292,7 +293,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
   std::vector<double> localtraceinc_vec;
   localtraceinc_vec.resize(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(0, "globaltraceinc");
-  DRT::UTILS::ExtractMyValues(*matrix_state, localtraceinc_vec, lm);
+  CORE::FE::ExtractMyValues(*matrix_state, localtraceinc_vec, lm);
 
   // convert local trace increments to CORE::LINALG::SerialDenseVector
   CORE::LINALG::SerialDenseVector localtraceinc(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);

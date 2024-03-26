@@ -4,11 +4,11 @@
 \level 3
 *----------------------------------------------------------------------*/
 #include "baci_contact_analytical.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
@@ -84,7 +84,7 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       nlnstiffmass(lm, mydisp, &elemat1, nullptr, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
@@ -99,7 +99,7 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
@@ -113,7 +113,7 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
@@ -133,7 +133,7 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
       if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
       if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D> stress(true);  // set to zero
       CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D> strain(true);
       auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(

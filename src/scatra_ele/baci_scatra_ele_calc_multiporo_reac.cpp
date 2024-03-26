@@ -10,8 +10,8 @@
 
 #include "baci_scatra_ele_calc_multiporo_reac.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_fluidporo_multiphase.hpp"
 #include "baci_mat_list.hpp"
 #include "baci_mat_list_reactions.hpp"
@@ -385,7 +385,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
         lmdisp[inode * nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, my::edispnp_, lmdisp);
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, my::edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     my::UpdateNodeCoordinates();
@@ -407,15 +407,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
 
   // values of scatra field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   if (my::scatraparatimint_->IsGenAlpha() and not my::scatraparatimint_->IsIncremental())
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
     if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
 
   if (my::scatrapara_->HasExternalForce())
@@ -433,7 +433,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
             la[ndsvel].lm_[inode * number_dof_per_node + idim];
     }
 
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<my::nsd_, my::nen_>>(
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<my::nsd_, my::nen_>>(
         *force_velocity, my::eforcevelocity_, location_vector);
   }
 
@@ -503,7 +503,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractNodalFlux(DRT::E
     if (convel == Teuchos::null) dserror("Cannot get state vector %s", statename.str().c_str());
 
     // extract local values of convective velocity field from global state vector
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(
         *convel, efluxnp_[curphase], la[ndsvel].lm_);
   }
 

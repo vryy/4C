@@ -20,6 +20,7 @@
 #include "baci_lib_resulttest.hpp"
 #include "baci_lib_utils.hpp"
 #include "baci_utils_function_manager.hpp"
+#include "baci_utils_random.hpp"
 #include "baci_utils_std_cxx20_ranges.hpp"
 
 #include <Epetra_Comm.h>
@@ -576,7 +577,7 @@ namespace GLOBAL
     //@}
 
     /// Return the class that handles random numbers globally
-    DRT::UTILS::Random* Random() { return &random_; }
+    CORE::UTILS::Random* Random() { return &random_; }
 
     /// Return the class that handles restart initiating -> to be extended
     DRT::UTILS::RestartManager* RestartManager() { return &restartmanager_; }
@@ -638,7 +639,7 @@ namespace GLOBAL
     //@}
 
     /// handles all sorts of random numbers
-    DRT::UTILS::Random random_;
+    CORE::UTILS::Random random_;
 
     /// handles restart
     DRT::UTILS::RestartManager restartmanager_;

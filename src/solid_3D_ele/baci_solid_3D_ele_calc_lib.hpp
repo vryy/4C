@@ -11,6 +11,7 @@
 #include "baci_config.hpp"
 
 #include "baci_discretization_fem_general_cell_type_traits.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.hpp"
 #include "baci_discretization_fem_general_utils_gausspoints.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
@@ -19,7 +20,6 @@
 #include "baci_inpar_structure.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix_generators.hpp"
 #include "baci_mat_so3_material.hpp"
 #include "baci_nurbs_discret_nurbs_utils.hpp"
@@ -160,7 +160,7 @@ namespace DRT::ELEMENTS
     const Epetra_Vector& displacements = *discretization.GetState("displacement");
 
     std::vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
+    CORE::FE::ExtractMyValues(displacements, mydisp, lm);
 
     DRT::ELEMENTS::ElementNodes<celltype> element_nodes =
         EvaluateElementNodes<celltype>(ele, mydisp);

@@ -9,12 +9,11 @@
 
 #include "baci_cardiovascular0d.hpp"
 
-#include "baci_discretization_fem_general_utils_boundary_integration.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
@@ -341,7 +340,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
       Teuchos::RCP<const Epetra_Vector> curdispl = actdisc_->GetState("displacement");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*curdispl, mydisp, lm);
+      CORE::FE::ExtractMyValues(*curdispl, mydisp, lm);
 
       for (int j = 0; j < numnode; ++j)
       {

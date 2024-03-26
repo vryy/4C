@@ -16,10 +16,10 @@
 #include "baci_contact_tsi_interface.hpp"
 #include "baci_coupling_adapter.hpp"
 #include "baci_coupling_adapter_converter.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_inpar_contact.hpp"
 #include "baci_inpar_thermo.hpp"
 #include "baci_io.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_matrixtransform.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_sparsematrix.hpp"
@@ -70,7 +70,7 @@ void CONTACT::LagrangeStrategyTsi::SetState(
           std::vector<double> mytemp(1);
           std::vector<int> lm(1, node->Dofs()[0]);
 
-          DRT::UTILS::ExtractMyValues(*global, mytemp, lm);
+          CORE::FE::ExtractMyValues(*global, mytemp, lm);
           if (node->HasTSIData())  // in case the interface has not been initialized yet
             node->TSIData().Temp() = mytemp[0];
         }
@@ -92,7 +92,7 @@ void CONTACT::LagrangeStrategyTsi::SetState(
           CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscr.lColNode(i));
           std::vector<int> lm(1, node->Dofs()[0]);
           std::vector<double> myThermoLM(1, 0.);
-          DRT::UTILS::ExtractMyValues(*global, myThermoLM, lm);
+          CORE::FE::ExtractMyValues(*global, myThermoLM, lm);
           node->TSIData().ThermoLM() = myThermoLM[0];
         }
       }

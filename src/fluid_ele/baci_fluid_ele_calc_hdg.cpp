@@ -11,6 +11,7 @@
 
 #include "baci_fluid_ele_calc_hdg.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_ele_calc.hpp"
 #include "baci_fluid_ele_parameter_std.hpp"
@@ -113,7 +114,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   {
     Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "forcing");
     std::vector<int> localDofs = discretization.Dof(1, ele);
-    DRT::UTILS::ExtractMyValues(*matrix_state, interiorebofoaf_, localDofs);
+    CORE::FE::ExtractMyValues(*matrix_state, interiorebofoaf_, localDofs);
   }
 
   // interior correction term for the weakly compressible benchmark if applicable
@@ -186,15 +187,15 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::ReadGlobalVectors(const DRT::Eleme
   interiorAcc_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
   dsassert(lm.size() == traceVal_.size(), "Internal error");
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("velaf");
-  DRT::UTILS::ExtractMyValues(*matrix_state, traceVal_, lm);
+  CORE::FE::ExtractMyValues(*matrix_state, traceVal_, lm);
 
   // read the interior values from solution vector
   matrix_state = discretization.GetState(1, "intvelaf");
   std::vector<int> localDofs = discretization.Dof(1, &ele);
-  DRT::UTILS::ExtractMyValues(*matrix_state, interiorVal_, localDofs);
+  CORE::FE::ExtractMyValues(*matrix_state, interiorVal_, localDofs);
 
   matrix_state = discretization.GetState(1, "intaccam");
-  DRT::UTILS::ExtractMyValues(*matrix_state, interiorAcc_, localDofs);
+  CORE::FE::ExtractMyValues(*matrix_state, interiorAcc_, localDofs);
 }
 
 

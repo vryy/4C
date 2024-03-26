@@ -25,6 +25,7 @@ For a detailed description see:
 #include "baci_mat_constraintmixture.hpp"
 
 #include "baci_comm_utils.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"  // for debug plotting with gmsh
 #include "baci_discretization_fem_general_utils_integration.hpp"  // for debug plotting with gmsh
 #include "baci_global_data.hpp"
@@ -32,7 +33,6 @@ For a detailed description see:
 #include "baci_io_control.hpp"       // for debug plotting with gmsh
 #include "baci_io_gmsh.hpp"          // for debug plotting with gmsh
 #include "baci_io_linedefinition.hpp"
-#include "baci_lib_utils.hpp"  // for debug plotting with gmsh
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_mat_constraintmixture_history.hpp"
 #include "baci_mat_par_bundle.hpp"
@@ -3130,7 +3130,7 @@ void MAT::ConstraintMixtureOutputToGmsh(
     actele->LocationVector(*dis, lm, lmowner, lmstride);
     Teuchos::RCP<const Epetra_Vector> disp = dis->GetState("displacement");
     std::vector<double> mydisp(lm.size(), 0);
-    DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+    CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
     Teuchos::RCP<MAT::Material> mat = actele->Material();
     MAT::ConstraintMixture* grow = static_cast<MAT::ConstraintMixture*>(mat.get());
