@@ -37,13 +37,6 @@ namespace DRT
 {
   namespace UTILS
   {
-    enum class L2ProjectionSystemType
-    {
-      l2_proj_system_std,
-      l2_proj_system_lumped,
-      l2_proj_system_dual
-    };
-
     /*!
       \brief compute L2 projection of a dof based field onto a node based field in a least
       squares sense.
@@ -60,39 +53,20 @@ namespace DRT
         const std::string& statename,           ///< name of state which will be set
         const int& numvec,                      ///< number of entries per node to project
         Teuchos::ParameterList& params,         ///< parameter list that contains the element action
-        const int& solvernumber,  ///< solver number for solving the resulting global system
-        const enum L2ProjectionSystemType& l2_proj_type =
-            L2ProjectionSystemType::l2_proj_system_std);
+        const Teuchos::ParameterList&
+            solverparams);  ///< solver parameters for solving the resulting global system;
 
-    Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(Discretization& dis,
-        const Epetra_Map& noderowmap, const Epetra_Map& elecolmap, const std::string& statename,
-        const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
-        const enum L2ProjectionSystemType& l2_proj_type, const Epetra_Map* fullnoderowmap = nullptr,
-        const std::map<int, int>* slavetomastercolnodesmap = nullptr,
-        Epetra_Vector* const sys_mat_diagonal_ptr = nullptr);
-
-    Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(Discretization& dis,
-        const Epetra_Map& noderowmap, const unsigned& numcolele, const std::string& statename,
-        const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
-        const enum L2ProjectionSystemType& l2_proj_type, const Epetra_Map* fullnoderowmap = nullptr,
-        const std::map<int, int>* slavetomastercolnodesmap = nullptr,
-        Epetra_Vector* const sys_mat_diagonal_ptr = nullptr);
-
-    Teuchos::RCP<Epetra_MultiVector> SolveDiagonalNodalL2Projection(
-        CORE::LINALG::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const int& numvec,
-        const Epetra_Map& noderowmap, const Epetra_Map* fullnoderowmap = nullptr,
-        const std::map<int, int>* slavetomastercolnodesmap = nullptr,
-        Epetra_Vector* const sys_mat_diagonal_ptr = nullptr);
-
-    Teuchos::RCP<Epetra_MultiVector> SolveNodalL2Projection(CORE::LINALG::SparseMatrix& massmatrix,
-        Epetra_MultiVector& rhs, const Epetra_Comm& comm, const int& numvec,
-        const int& solvernumber, const Epetra_Map& noderowmap,
+    Teuchos::RCP<Epetra_MultiVector> EvaluateAndSolveNodalL2Projection(Discretization& dis,
+        const Epetra_Map& noderowmap, const std::string& statename, const int& numvec,
+        Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
         const Epetra_Map* fullnoderowmap = nullptr,
         const std::map<int, int>* slavetomastercolnodesmap = nullptr);
 
-    Teuchos::RCP<Epetra_MultiVector> PostSolveNodalL2Projection(
-        const Teuchos::RCP<Epetra_MultiVector>& nodevec, const Epetra_Map& noderowmap,
-        const Epetra_Map* fullnoderowmap, const std::map<int, int>* slavetomastercolnodesmap);
+    Teuchos::RCP<Epetra_MultiVector> SolveNodalL2Projection(CORE::LINALG::SparseMatrix& massmatrix,
+        Epetra_MultiVector& rhs, const Epetra_Comm& comm, const int& numvec,
+        const Teuchos::ParameterList& solverparams, const Epetra_Map& noderowmap,
+        const Epetra_Map* fullnoderowmap = nullptr,
+        const std::map<int, int>* slavetomastercolnodesmap = nullptr);
 
     /*!
       \brief reconstruct nodal values via superconvergent patch recovery

@@ -1130,6 +1130,8 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
       const int solvernumber =
           GLOBAL::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
       if (solvernumber < 1) dserror("you have to specify a VELGRAD_PROJ_SOLVER");
+      const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(solvernumber);
+
       params.set<int>("action", FLD::velgradient_projection);
 
       // set given state for element evaluation
@@ -1138,7 +1140,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 
       // project velocity gradient of fluid to nodal level via L2 projection
       projected_velgrad =
-          DRT::UTILS::ComputeNodalL2Projection(discret, "vel", numvec, params, solvernumber);
+          DRT::UTILS::ComputeNodalL2Projection(discret, "vel", numvec, params, solverparams);
     }
     break;
     default:

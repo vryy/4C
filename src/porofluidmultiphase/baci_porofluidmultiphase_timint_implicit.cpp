@@ -1346,9 +1346,12 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
   switch (fluxrecon_)
   {
     case INPAR::POROFLUIDMULTIPHASE::gradreco_l2:
+    {
+      const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(fluxreconsolvernum_);
       flux_ = DRT::UTILS::ComputeNodalL2Projection(
-          discret_, "phinp_fluid", numvec, eleparams, fluxreconsolvernum_);
+          discret_, "phinp_fluid", numvec, eleparams, solverparams);
       break;
+    }
     default:
       dserror("unknown method for recovery of fluxes!");
       break;
