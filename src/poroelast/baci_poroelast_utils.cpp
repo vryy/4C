@@ -9,6 +9,7 @@
 
 #include "baci_poroelast_utils.hpp"
 
+#include "baci_discretization_fem_general_element_center.hpp"
 #include "baci_fluid_ele_poro.hpp"
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_discret_faces.hpp"
@@ -387,12 +388,12 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
   DRT::Element* ele2 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(ele1);
+    std::vector<double> centercoords1 = CORE::FE::ElementCenterRefeCoords(*ele1);
 
     for (int id_2 : ids_2)
     {
       DRT::Element* actele2 = dis2->gElement(id_2);
-      std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(actele2);
+      std::vector<double> centercoords2 = CORE::FE::ElementCenterRefeCoords(*actele2);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
 
@@ -437,12 +438,12 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
   DRT::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(ele2);
+    std::vector<double> centercoords2 = CORE::FE::ElementCenterRefeCoords(*ele2);
 
     for (int id_1 : ids_1)
     {
       DRT::Element* actele1 = dis1->gElement(id_1);
-      std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(actele1);
+      std::vector<double> centercoords1 = CORE::FE::ElementCenterRefeCoords(*actele1);
 
       CORE::LINALG::Matrix<3, 1> diffcoords(true);
 

@@ -55,12 +55,6 @@ namespace DRT
         Teuchos::ParameterList& params  ///< parameter list that contains the element action
     );
 
-
-    /*!
-      \brief Return Element center coordinates
-    */
-    std::vector<double> ElementCenterRefeCoords(const DRT::Element* const ele);
-
     /*!
     \brief handles restart after a certain walltime interval, step interval or on a user signal
 
