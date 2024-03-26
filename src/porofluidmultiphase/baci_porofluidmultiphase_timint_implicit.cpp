@@ -10,6 +10,7 @@
 
 #include "baci_porofluidmultiphase_timint_implicit.hpp"
 
+#include "baci_discretization_fem_general_l2_projection.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_validparameters.hpp"
 #include "baci_io.hpp"
@@ -1348,7 +1349,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
     case INPAR::POROFLUIDMULTIPHASE::gradreco_l2:
     {
       const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(fluxreconsolvernum_);
-      flux_ = DRT::UTILS::ComputeNodalL2Projection(
+      flux_ = CORE::FE::ComputeNodalL2Projection(
           discret_, "phinp_fluid", numvec, eleparams, solverparams);
       break;
     }

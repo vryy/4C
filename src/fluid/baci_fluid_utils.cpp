@@ -11,6 +11,7 @@
 
 #include "baci_fluid_utils.hpp"
 
+#include "baci_discretization_fem_general_l2_projection.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_implicit_integration.hpp"
 #include "baci_global_data.hpp"
@@ -1140,7 +1141,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 
       // project velocity gradient of fluid to nodal level via L2 projection
       projected_velgrad =
-          DRT::UTILS::ComputeNodalL2Projection(discret, "vel", numvec, params, solverparams);
+          CORE::FE::ComputeNodalL2Projection(discret, "vel", numvec, params, solverparams);
     }
     break;
     default:
