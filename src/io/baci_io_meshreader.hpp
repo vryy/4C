@@ -8,22 +8,22 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_MESHREADER_HPP
-#define BACI_LIB_MESHREADER_HPP
+#ifndef BACI_IO_MESHREADER_HPP
+#define BACI_IO_MESHREADER_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_inpar.hpp"
+#include "baci_io_domainreader.hpp"
+#include "baci_io_elementreader.hpp"
 #include "baci_io_inputreader.hpp"
-#include "baci_lib_domainreader.hpp"
-#include "baci_lib_elementreader.hpp"
-#include "baci_lib_nodereader.hpp"
+#include "baci_io_nodereader.hpp"
 
 #include <Epetra_CrsGraph.h>
 
 BACI_NAMESPACE_OPEN
 
-namespace INPUT
+namespace IO
 {
   /*!
     \brief helper class to read a mesh
@@ -147,7 +147,7 @@ namespace INPUT
     /// The name of the section under which we will read the nodes.
     std::string node_section_name_;
   };
-}  // namespace INPUT
+}  // namespace IO
 
 BACI_NAMESPACE_CLOSE
 

@@ -3,9 +3,6 @@ set(TESTNAME unittests_lib)
 set(SOURCE_LIST
     # cmake-format: sortable
     baci_demangle_test.cpp
-    baci_discretization_nodal_coordinates_test.cpp
-    baci_domainreader_test.cpp
-    baci_gridgenerator_test.cpp
     baci_inputreader_test.cpp
     baci_linedefinition_test.cpp
     baci_utils_reference_configuration_test.cpp
@@ -17,9 +14,7 @@ set(TESTNAME unittests_lib_np_3)
 
 set(SOURCE_LIST
     # cmake-format: sortable
-    baci_discretization_nodal_coordinates_np_3_test.cpp
     baci_gid_vector_test.cpp
-    baci_gridgenerator_np_3_test.cpp
     )
 
 baci_add_google_test_executable(

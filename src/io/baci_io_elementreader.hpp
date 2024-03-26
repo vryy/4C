@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_ELEMENTREADER_HPP
-#define BACI_LIB_ELEMENTREADER_HPP
+#ifndef BACI_IO_ELEMENTREADER_HPP
+#define BACI_IO_ELEMENTREADER_HPP
 
 #include "baci_config.hpp"
 
@@ -25,10 +25,8 @@ namespace DRT
   class Discretization;
 }
 
-namespace INPUT
+namespace IO
 {
-  class DatFileReader;
-
   /*----------------------------------------------------------------------*/
   /*!
     \brief helper class to read the elements of a discretization
@@ -73,7 +71,7 @@ namespace INPUT
     \param comm (i) our communicator
     \param sectionname (i) the section that contains the element lines
     */
-    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const DatFileReader& reader,
+    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const INPUT::DatFileReader& reader,
         std::string sectionname);
 
     /*!
@@ -86,7 +84,7 @@ namespace INPUT
     \param sectionname (i) the section that contains the element lines
     \param elementtype (i) element type name to read in this discretization
     */
-    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const DatFileReader& reader,
+    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const INPUT::DatFileReader& reader,
         std::string sectionname, std::string elementtype);
 
     /*!
@@ -99,7 +97,7 @@ namespace INPUT
     \param sectionname (i) the section that contains the element lines
     \param elementtypes (i) element type names to read in this discretization
     */
-    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const DatFileReader& reader,
+    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const INPUT::DatFileReader& reader,
         std::string sectionname, const std::set<std::string>& elementtypes);
 
     //! Destructor
@@ -157,7 +155,7 @@ namespace INPUT
     std::string name_;
 
     /// the main dat file reader
-    const DatFileReader& reader_;
+    const INPUT::DatFileReader& reader_;
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;
@@ -192,7 +190,7 @@ namespace INPUT
     /// element type names to read
     std::set<std::string> elementtypes_;
   };
-}  // namespace INPUT
+}  // namespace IO
 
 BACI_NAMESPACE_CLOSE
 

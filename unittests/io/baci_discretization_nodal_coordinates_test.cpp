@@ -11,9 +11,9 @@
 #include <gtest/gtest.h>
 
 #include "baci_global_data.hpp"
+#include "baci_io_gridgenerator.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_gridgenerator.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_par_material.hpp"
 
@@ -58,7 +58,7 @@ namespace
       inputData_.distype_ = "HEX8";
       inputData_.elearguments_ = "MAT 1 KINEM nonlinear EAS none";
 
-      DRT::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
+      IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
           *test_discretization_, inputData_, true);
 
       test_discretization_->FillComplete(false, false, false);
@@ -67,7 +67,7 @@ namespace
     void TearDown() override { IO::cout.close(); }
 
    protected:
-    DRT::GRIDGENERATOR::RectangularCuboidInputs inputData_{};
+    IO::GRIDGENERATOR::RectangularCuboidInputs inputData_{};
     Teuchos::RCP<DRT::Discretization> test_discretization_;
     Teuchos::RCP<Epetra_SerialComm> comm_;
   };

@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
+#include "baci_io_domainreader.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_domainreader.hpp"
 
 #include <Epetra_SerialComm.h>
 
@@ -39,7 +39,7 @@ namespace
 
   TEST_F(DomainReaderTest, TestMyDis0)
   {
-    INPUT::DomainReader dr(testdis_, testreader_, "unittestsection");
+    IO::DomainReader dr(testdis_, testreader_, "unittestsection");
     EXPECT_EQ(testdis_, dr.MyDis());
   }
 
