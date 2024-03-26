@@ -14,7 +14,6 @@
         "CMAKE_CXX_FLAGS_DEBUG": "-g",
         "CMAKE_C_FLAGS": "-msse3",
         "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
-        "CMAKE_EXE_LINKER_FLAGS": "-lopen-pal -fuse-ld=gold",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
         "BACI_TRILINOS_ROOT": "/lnm/lib/packages/trilinos/15-0-0/release",
         "BACI_QHULL_ROOT": "/lnm/lib/packages/qhull/2012-1",
@@ -78,7 +77,6 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "COVERAGE",
         "CMAKE_CXX_FLAGS_COVERAGE": "-O0 -g -fprofile-arcs -ftest-coverage",
-        "CMAKE_EXE_LINKER_FLAGS_COVERAGE": "-lopen-pal -fuse-ld=lld",
         "BACI_WITH_ARBORX": "OFF",
         "BACI_WITH_MIRCO": "ON"
       }
