@@ -448,7 +448,7 @@ buildtest_coverage:
     # increase the global test timeout
     GLOBAL_TEST_TIMEOUT_SCALE: '50'
     # increase the unit test timeout
-    UNITTEST_TIMEOUT: '50'
+    UNITTEST_TIMEOUT: '100'
     # enable coverage option of ctest
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_coverage
     CMAKE_COMMAND: cmake
