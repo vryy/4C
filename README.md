@@ -303,11 +303,27 @@ our workflow, submitting merge-requests, etc.
 Whenever you mention BACI in some sort of scientific document/publication/presentation, please cite BACI as follows:
 
 ```
-BACI: A Comprehensive Multi-Physics Simulation Framework, https://baci.pages.gitlab.lrz.de/website
+4C: A Comprehensive Multi-Physics Simulation Framework, https://www.4c-multiphysics.org
 ```
+
+You could use the following BibTeX entry:
+
+```bibtex
+@misc{4C,
+  author       = {{4C}},
+  title        = {{4C}: A {C}omprehensive {M}ulti-{P}hysics {S}imulation {F}ramework},
+  howpublished = {\url{https://www.4c-multiphysics.org}},
+  year         = {YEAR},
+  note         = {Accessed: DATE}
+}
+```
+
+_Note:_ You might need to adapt the BibTeX entry depending on the citation style.
 
 Remember: It is good scientific practice to include the date, when you've visisted that website, into the citation. It's
 up to you (and your advisor) to include the date, depending on the type of publication.
+
+_Note:_ Already use the new name 4C for citing BACI.
 
 [↑ Contents](#contents)
 
