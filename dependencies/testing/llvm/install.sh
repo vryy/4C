@@ -1,12 +1,11 @@
 #!/bin/bash
-# Install clang-tidy
+# Install relevant parts of the LLVM project (clang compiler and supporting tools)
 # Call with
 # ./install.sh /path/to/install/dir
 
 # Exit the script at the first failure
 set -e
 
-# TODO: specify install dir
 INSTALL_DIR="$1"
 # Number of procs for building (default 4)
 NPROCS=${NPROCS=4}
@@ -26,6 +25,11 @@ fi
 tar -xzf llvmorg-${VERSION}.tar.gz
 cd llvm-project-llvmorg-${VERSION}
 mkdir build && cd build
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" ../llvm
-make -j${NPROCS} install clang-tidy
+cmake -G "Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+    -DLLVM_ENABLE_RUNTIMES="compiler-rt;openmp" \
+    ../llvm
+make -j${NPROCS} install
 cd ../../ && rm -rf llvm*
