@@ -74,6 +74,7 @@ DLINE                           2
 E 1 - 1 Master PLANE xz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 E 2 - 1 Slave PLANE xz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 -----------------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       2
 BEGIN                           NURBSPATCH
 ID                              1
 NUMKNOTS                        15

@@ -1622,6 +1622,7 @@ NODE   284   DVOL    1
 NODE   300   DVOL    1
 NODE   316   DVOL    1
 -----------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       3
 BEGIN NURBSPATCH
 ID        1
 NUMKNOTS  15

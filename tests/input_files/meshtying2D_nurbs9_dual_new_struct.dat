@@ -90,6 +90,7 @@ DLINE                           2
 E 2 - 1 Slave Active
 E 5 - 1 Master Inactive
 -----------------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       2
 BEGIN                           NURBSPATCH
 ID                              1
 NUMKNOTS                        15
