@@ -77,6 +77,20 @@ if(BACI_WITH_ADDRESS_SANITIZER)
   endif()
 endif()
 
+baci_process_global_option(BACI_ENABLE_COVERAGE "Set up a build to gather coverage information" OFF)
+if(BACI_ENABLE_COVERAGE)
+  baci_add_settings_if_compiles(
+    BACI_COMPILER_SUPPORT_COVERAGE COMPILE_OPTIONS "-fprofile-arcs" "-ftest-coverage"
+    )
+
+  if(NOT BACI_COMPILER_SUPPORT_COVERAGE)
+    message(
+      FATAL_ERROR
+        "Option BACI_ENABLE_COVERAGE is ON but the compiler does not support this feature."
+      )
+  endif()
+endif()
+
 baci_process_global_option(BACI_DSERROR_DUMP "dserror creates a core file" OFF)
 baci_process_global_option(BACI_TRAP_FE "Crash BACI if a nan or inf occurs" ON)
 
@@ -85,6 +99,57 @@ baci_process_global_option(
   "Turn on assertions and debug sections in code. Automatically turned on for DEBUG as CMAKE_BUILD_TYPE."
   OFF
   )
-if(${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
+
+##
+# Optimization flags
+# These flags are reasonable defaults. Users may amend them by setting BACI_CXX_FLAGS and/or BACI_CXX_FLAGS_<CONFIG>.
+# The default way to add more flags via CMAKE_CXX_FLAGS(_<CONFIG>) is also supported but note that these flags are
+# added in front of all other flags and cannot override the defaults set below.
+#
+# For build types DEBUG, RELEASE, and RELWITHDEBINFO, Cmake populates the flags with default optimization levels.
+# For our own code, we explicitly set the flags again, to be very clear in what we use for compilation. Projects included
+# via fetch_content() will just use the defaults plus whatever is added to CMAKE_CXX_FLAGS(_<CONFIG>).
+#
+# Side note: we use the same flag for a few legacy C sources, which we compile as C++ anyway.
+##
+
+if(${BACI_BUILD_TYPE_UPPER} MATCHES DEBUG)
   set(BACI_DEBUG "ON")
+  target_compile_options(baci_private_compile_interface INTERFACE "-Og")
+  target_link_options(baci_private_compile_interface INTERFACE "-Og")
+
+  target_compile_options(baci_private_compile_interface INTERFACE "-g")
 endif()
+
+if(${BACI_BUILD_TYPE_UPPER} MATCHES RELEASE)
+  target_compile_options(baci_private_compile_interface INTERFACE "-O3")
+  target_link_options(baci_private_compile_interface INTERFACE "-O3")
+
+  enable_compiler_flag_if_supported("-funroll-loops")
+endif()
+
+if(${BACI_BUILD_TYPE_UPPER} MATCHES RELWITHDEBINFO)
+  target_compile_options(baci_private_compile_interface INTERFACE "-O2")
+  target_link_options(baci_private_compile_interface INTERFACE "-O2")
+
+  target_compile_options(baci_private_compile_interface INTERFACE "-g")
+  enable_compiler_flag_if_supported("-funroll-loops")
+endif()
+
+##
+# Add potential user flags at the very end
+##
+
+# Compiler
+separate_arguments(_split UNIX_COMMAND ${BACI_CXX_FLAGS})
+target_compile_options(baci_private_compile_interface INTERFACE ${_split})
+separate_arguments(_split UNIX_COMMAND ${BACI_CXX_FLAGS_${BACI_BUILD_TYPE_UPPER}})
+target_compile_options(baci_private_compile_interface INTERFACE ${_split})
+
+# Linker
+separate_arguments(_split UNIX_COMMAND ${BACI_CXX_LINKER_FLAGS})
+target_link_options(baci_private_compile_interface INTERFACE ${_split})
+separate_arguments(_split UNIX_COMMAND ${BACI_CXX_LINKER_FLAGS_${BACI_BUILD_TYPE_UPPER}})
+target_link_options(baci_private_compile_interface INTERFACE ${_split})
+
+### Do not add any more flags here! User flags have already been added.

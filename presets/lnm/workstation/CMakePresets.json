@@ -9,12 +9,7 @@
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "/usr/bin/mpic++",
         "CMAKE_C_COMPILER": "/usr/bin/mpicc",
-        "CMAKE_CXX_FLAGS": "-msse3",
-        "CMAKE_CXX_FLAGS_RELEASE": "-O2 -funroll-loops",
-        "CMAKE_CXX_FLAGS_DEBUG": "-g",
-        "CMAKE_C_FLAGS": "-msse3",
-        "CMAKE_C_FLAGS_RELEASE": "-O2 -funroll-loops",
-        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "-O2",
+        "BACI_CXX_FLAGS": "-msse3",
         "BACI_TRILINOS_ROOT": "/lnm/lib/packages/trilinos/15-0-0/release",
         "BACI_QHULL_ROOT": "/lnm/lib/packages/qhull/2012-1",
         "BACI_CLN_ROOT": "/lnm/lib/packages/cln/1-3-4",
@@ -40,7 +35,7 @@
       ],
       "cacheVariables": {
         "BACI_TRILINOS_ROOT": "/lnm/lib/packages/trilinos/15-0-0/relwithdebinfo",
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        "CMAKE_BUILD_TYPE": "RELWITHDEBINFO"
       }
     },
     {
@@ -55,28 +50,14 @@
       }
     },
     {
-      "name": "lnm_workstation_optimized_debug",
-      "displayName": "Optimized debug build for an LNM workstation",
-      "inherits": [
-        ".lnm_workstation_base"
-      ],
-      "cacheVariables": {
-        "BACI_TRILINOS_ROOT": "/lnm/lib/packages/trilinos/15-0-0/relwithdebinfo",
-        "CMAKE_BUILD_TYPE": "DEBUG",
-        "CMAKE_CXX_FLAGS_DEBUG": "-O2 -funroll-loops",
-        "CMAKE_C_FLAGS_DEBUG": "-O2 -funroll-loops",
-        "CMAKE_EXE_LINKER_FLAGS_DEBUG": "-O2"
-      }
-    },
-    {
       "name": "lnm_workstation_coverage",
       "displayName": "Coverage report for an LNM workstation",
       "inherits": [
         ".lnm_workstation_base"
       ],
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "COVERAGE",
-        "CMAKE_CXX_FLAGS_COVERAGE": "-O0 -g -fprofile-arcs -ftest-coverage",
+        "CMAKE_BUILD_TYPE": "DEBUG",
+        "BACI_ENABLE_COVERAGE": "ON",
         "BACI_WITH_ARBORX": "OFF",
         "BACI_WITH_MIRCO": "ON"
       }
