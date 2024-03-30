@@ -99,13 +99,7 @@ void ADAPTER::FluidAleXFEM::NonlinearSolve(
   AleField()->Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
   FluidField()->ApplyMeshDisplacement(fluiddisp);
-
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-  // no computation of fluid velocities in case only structure and ALE are to compute
-  if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
-  {
-    FluidField()->Solve();
-  }
+  FluidField()->Solve();
 }
 
 
