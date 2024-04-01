@@ -8,6 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_element_center.hpp"
 #include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_utils.hpp"
 #include "baci_mat_so3_material.hpp"
@@ -169,7 +170,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
   // TODO: (thon) actually we do not want this here, since it has nothing to do with scatra specific
   // stuff. But for now we let it be...
-  const CORE::LINALG::Matrix<3, 1> center(DRT::UTILS::ElementCenterRefeCoords(this).data());
+  const CORE::LINALG::Matrix<3, 1> center(CORE::FE::ElementCenterRefeCoords(*this).data());
   params.set("elecenter_coords_ref", center);
 }
 

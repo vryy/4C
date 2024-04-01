@@ -10,6 +10,7 @@
 
 #include "baci_porofluidmultiphase_timint_implicit.hpp"
 
+#include "baci_discretization_fem_general_l2_projection.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_validparameters.hpp"
 #include "baci_io.hpp"
@@ -1346,9 +1347,12 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
   switch (fluxrecon_)
   {
     case INPAR::POROFLUIDMULTIPHASE::gradreco_l2:
-      flux_ = DRT::UTILS::ComputeNodalL2Projection(
-          discret_, "phinp_fluid", numvec, eleparams, fluxreconsolvernum_);
+    {
+      const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(fluxreconsolvernum_);
+      flux_ = CORE::FE::ComputeNodalL2Projection(
+          discret_, "phinp_fluid", numvec, eleparams, solverparams);
       break;
+    }
     default:
       dserror("unknown method for recovery of fluxes!");
       break;

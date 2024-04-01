@@ -13,6 +13,7 @@ bridge between the xfluid class and the cut-library
 
 #include "baci_cut_cutwizard.hpp"
 #include "baci_discretization_fem_general_extract_values.hpp"
+#include "baci_discretization_fem_general_l2_projection.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_inpar_fluid.hpp"
 #include "baci_inpar_xfem.hpp"
@@ -488,8 +489,9 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
           ->SetInitialState(0, "pres", modphinp);
 
       // Lives on NodeRow-map!!!
+      const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(l2_proj_num);
       Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode =
-          DRT::UTILS::ComputeNodalL2Projection(cutter_dis_, "pres", 3, eleparams, l2_proj_num);
+          CORE::FE::ComputeNodalL2Projection(cutter_dis_, "pres", 3, eleparams, solverparams);
       if (gradphinp_smoothed_rownode == Teuchos::null)
         dserror("A smoothed grad phi is required, but an empty one is provided!");
 
