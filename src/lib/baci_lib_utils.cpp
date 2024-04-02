@@ -66,19 +66,16 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   // handle pbcs if existing
   // build inverse map from slave to master nodes
   std::map<int, int> slavetomastercolnodesmap;
-  Teuchos::RCP<std::map<int, std::vector<int>>> allcoupledcolnodes =
-      dis->GetAllPBCCoupledColNodes();
+  std::map<int, std::vector<int>>* allcoupledcolnodes = dis->GetAllPBCCoupledColNodes();
 
-  for (std::map<int, std::vector<int>>::const_iterator masterslavepair =
-           allcoupledcolnodes->begin();
-       masterslavepair != allcoupledcolnodes->end(); ++masterslavepair)
+  if (allcoupledcolnodes)
   {
-    // loop slave nodes associated with master
-    for (std::vector<int>::const_iterator iter = masterslavepair->second.begin();
-         iter != masterslavepair->second.end(); ++iter)
+    for (const auto& [master_gid, slave_gids] : *allcoupledcolnodes)
     {
-      const int slavegid = *iter;
-      slavetomastercolnodesmap[slavegid] = masterslavepair->first;
+      for (const auto slave_gid : slave_gids)
+      {
+        slavetomastercolnodesmap[slave_gid] = master_gid;
+      }
     }
   }
 

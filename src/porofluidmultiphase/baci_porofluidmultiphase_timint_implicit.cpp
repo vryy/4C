@@ -1349,7 +1349,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
     case INPAR::POROFLUIDMULTIPHASE::gradreco_l2:
     {
       const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(fluxreconsolvernum_);
-      flux_ = CORE::FE::ComputeNodalL2Projection(
+      flux_ = CORE::FE::compute_nodal_l2_projection(
           discret_, "phinp_fluid", numvec, eleparams, solverparams);
       break;
     }

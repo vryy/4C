@@ -81,10 +81,7 @@ namespace DRT
     virtual void SetCoupledNodes(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
 
     /// Get coupled nodes map (corresponding col format)
-    virtual Teuchos::RCP<std::map<int, std::vector<int>>> GetCoupledNodes()
-    {
-      return perbndcouples_;
-    };
+    std::map<int, std::vector<int>>* GetCoupledNodes() { return perbndcouples_.get(); }
 
     /// Get connectivity map between slave node and its master node
     virtual Teuchos::RCP<std::map<int, int>> GetSlaveToMasterNodeConnectivity()

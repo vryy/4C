@@ -710,7 +710,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
     {
       have_pbc = true;
       // fill content of pbcmap int std::map<int, std::set<int> > in preparation for GatherAll
-      Teuchos::RCP<std::map<int, std::vector<int>>> tmp = pbcdofset->GetCoupledNodes();
+      std::map<int, std::vector<int>>* tmp = pbcdofset->GetCoupledNodes();
       for (std::map<int, std::vector<int>>::const_iterator it = tmp->begin(); it != tmp->end();
            ++it)
         pbcmap[it->first].insert(it->second.begin(), it->second.end());

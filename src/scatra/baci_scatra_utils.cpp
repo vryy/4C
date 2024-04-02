@@ -236,32 +236,34 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     bool pbcnode = false;
     std::set<int> coupnodegid;
     // loop all nodes with periodic boundary conditions (master nodes)
-    Teuchos::RCP<std::map<int, std::vector<int>>> pbccolmap = discret->GetAllPBCCoupledColNodes();
-    for (std::map<int, std::vector<int>>::const_iterator pbciter = (*pbccolmap).begin();
-         pbciter != (*pbccolmap).end(); ++pbciter)
-    {
-      if (pbciter->first == nodegid)  // node is a pbc master node
-      {
-        pbcnode = true;
-        // coupled node is the slave node; there can be more than one per master node
-        for (int i : pbciter->second) coupnodegid.insert(i);
-      }
-      else
-      {
-        // loop all slave nodes
-        for (size_t islave = 0; islave < pbciter->second.size(); islave++)
-        {
-          if (pbciter->second[islave] == nodegid)  // node is a pbc slave node
-          {
-            pbcnode = true;
-            // coupled node is the master node
-            coupnodegid.insert(pbciter->first);
+    std::map<int, std::vector<int>>* pbccolmap = discret->GetAllPBCCoupledColNodes();
 
-            // there can be multiple slaves -> add all other slaves
-            for (size_t i = 0; i < pbciter->second.size(); ++i)
+    if (pbcnode)
+    {
+      for (const auto& [master_gid, slave_gids] : *pbccolmap)
+      {
+        if (master_gid == nodegid)  // node is a pbc master node
+        {
+          pbcnode = true;
+          // coupled node is the slave node; there can be more than one per master node
+          for (int i : slave_gids) coupnodegid.insert(i);
+        }
+        else
+        {
+          // loop all slave nodes
+          for (size_t islave = 0; islave < slave_gids.size(); islave++)
+          {
+            if (slave_gids[islave] == nodegid)  // node is a pbc slave node
             {
-              if (pbciter->second[islave] != pbciter->second[i])
-                coupnodegid.insert(pbciter->second[i]);
+              pbcnode = true;
+              // coupled node is the master node
+              coupnodegid.insert(master_gid);
+
+              // there can be multiple slaves -> add all other slaves
+              for (size_t i = 0; i < slave_gids.size(); ++i)
+              {
+                if (slave_gids[islave] != slave_gids[i]) coupnodegid.insert(slave_gids[i]);
+              }
             }
           }
         }

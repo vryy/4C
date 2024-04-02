@@ -319,7 +319,7 @@ namespace DRT
     /*!
     \brief Get master to slave coupling in case of periodic boundary conditions
     */
-    virtual Teuchos::RCP<std::map<int, std::vector<int>>> GetAllPBCCoupledColNodes();
+    std::map<int, std::vector<int>>* GetAllPBCCoupledColNodes();
 
     /*!
     \brief Get slave to master connectivity in case of periodic boundary conditions
