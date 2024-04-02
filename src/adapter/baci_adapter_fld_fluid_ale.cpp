@@ -250,15 +250,11 @@ double ADAPTER::FluidAle::ReadRestart(int step)
 void ADAPTER::FluidAle::NonlinearSolve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   if (idisp != Teuchos::null)
   {
     // if we have values at the interface we need to apply them
     AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
-    if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
-    {
-      FluidField()->ApplyInterfaceVelocities(ivel);
-    }
+    FluidField()->ApplyInterfaceVelocities(ivel);
   }
 
   // Update the ale update part
@@ -285,12 +281,7 @@ void ADAPTER::FluidAle::NonlinearSolve(
   AleField()->Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
   FluidField()->ApplyMeshDisplacement(fluiddisp);
-
-  // no computation of fluid velocities in case only structure and ALE are to compute
-  if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
-  {
-    FluidField()->Solve();
-  }
+  FluidField()->Solve();
 }
 
 
@@ -299,14 +290,10 @@ void ADAPTER::FluidAle::NonlinearSolve(
 void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp,
     Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<FSI::InterfaceCorrector> icorrector)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   if (idisp != Teuchos::null)
   {
     AleField()->ApplyInterfaceDisplacements(AleField()->Interface()->ExtractFSICondVector(idisp));
-    if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
-    {
-      FluidField()->ApplyInterfaceVelocities(ivel);
-    }
+    FluidField()->ApplyInterfaceVelocities(ivel);
   }
 
   // Update the ale update part
@@ -335,12 +322,7 @@ void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp
 
   icorrector->CorrectInterfaceDisplacements(fluiddisp, FluidField()->Interface());
   FluidField()->ApplyMeshDisplacement(fluiddisp);
-
-  // no computation of fluid velocities in case only structure and ALE are to compute
-  if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
-  {
-    FluidField()->Solve();
-  }
+  FluidField()->Solve();
 }
 
 
@@ -349,15 +331,11 @@ void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp
 void ADAPTER::FluidAle::ApplyInterfaceValues(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   if (idisp != Teuchos::null)
   {
     // if we have values at the interface we need to apply them
     AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
-    if (CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO") != fsi_pseudo_structureale)
-    {
-      FluidField()->ApplyInterfaceVelocities(ivel);
-    }
+    FluidField()->ApplyInterfaceVelocities(ivel);
   }
 
   if (FluidField()->Interface()->FSCondRelevant())
