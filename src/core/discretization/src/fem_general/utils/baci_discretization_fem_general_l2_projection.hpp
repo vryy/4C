@@ -44,7 +44,7 @@ namespace CORE::FE
     \author Georg Hammerl
     \date 06/14
    */
-  Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
+  Teuchos::RCP<Epetra_MultiVector> compute_nodal_l2_projection(
       Teuchos::RCP<DRT::Discretization> dis,  ///< underlying discretization
       const std::string& statename,           ///< name of state which will be set
       const int& numvec,                      ///< number of entries per node to project
@@ -52,17 +52,15 @@ namespace CORE::FE
       const Teuchos::ParameterList&
           solverparams);  ///< solver parameters for solving the resulting global system;
 
-  Teuchos::RCP<Epetra_MultiVector> EvaluateAndSolveNodalL2Projection(DRT::Discretization& dis,
+  Teuchos::RCP<Epetra_MultiVector> evaluate_and_solve_nodal_l2_projection(DRT::Discretization& dis,
       const Epetra_Map& noderowmap, const std::string& statename, const int& numvec,
       Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
-      const Epetra_Map* fullnoderowmap = nullptr,
-      const std::map<int, int>* slavetomastercolnodesmap = nullptr);
+      const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap);
 
-  Teuchos::RCP<Epetra_MultiVector> SolveNodalL2Projection(CORE::LINALG::SparseMatrix& massmatrix,
+  Teuchos::RCP<Epetra_MultiVector> solve_nodal_l2_projection(CORE::LINALG::SparseMatrix& massmatrix,
       Epetra_MultiVector& rhs, const Epetra_Comm& comm, const int& numvec,
       const Teuchos::ParameterList& solverparams, const Epetra_Map& noderowmap,
-      const Epetra_Map* fullnoderowmap = nullptr,
-      const std::map<int, int>* slavetomastercolnodesmap = nullptr);
+      const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap);
 
 }  // namespace CORE::FE
 

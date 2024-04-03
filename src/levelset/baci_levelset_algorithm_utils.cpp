@@ -626,8 +626,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     // proc.
     //------------------------------------------------------------------------------------------------
     std::set<int>::const_iterator eleit;
-    Teuchos::RCP<std::map<int, std::vector<int>>> col_pbcmapmastertoslave =
-        discret_->GetAllPBCCoupledColNodes();
+    std::map<int, std::vector<int>>* col_pbcmapmastertoslave = discret_->GetAllPBCCoupledColNodes();
     for (eleit = allcollectedelements->begin(); eleit != allcollectedelements->end(); ++eleit)
     {
       const int elelid = discret_->ElementColMap()->LID(*eleit);
@@ -652,25 +651,25 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
           std::vector<int> pbcnodes;
           for (size_t numcond = 0; numcond < mypbc.size(); ++numcond)
           {
-            std::map<int, std::vector<int>>::iterator mapit;
-            for (mapit = col_pbcmapmastertoslave->begin(); mapit != col_pbcmapmastertoslave->end();
-                 ++mapit)
+            if (col_pbcmapmastertoslave)
             {
-              if (mapit->first == nodeid)
+              for (const auto& [master_gid, slave_gids] : *col_pbcmapmastertoslave)
               {
-                pbcnodes.push_back(mapit->first);
-                for (size_t i = 0; i < mapit->second.size(); ++i)
-                  pbcnodes.push_back(mapit->second[i]);
-                break;
-              }
-              for (size_t isec = 0; isec < mapit->second.size(); ++isec)
-              {
-                if (mapit->second[isec] == nodeid)
+                if (master_gid == nodeid)
                 {
-                  pbcnodes.push_back(mapit->first);
-                  for (size_t i = 0; i < mapit->second.size(); ++i)
-                    pbcnodes.push_back(mapit->second[i]);
+                  pbcnodes.push_back(master_gid);
+                  for (size_t i = 0; i < slave_gids.size(); ++i) pbcnodes.push_back(slave_gids[i]);
                   break;
+                }
+                for (size_t isec = 0; isec < slave_gids.size(); ++isec)
+                {
+                  if (slave_gids[isec] == nodeid)
+                  {
+                    pbcnodes.push_back(master_gid);
+                    for (size_t i = 0; i < slave_gids.size(); ++i)
+                      pbcnodes.push_back(slave_gids[i]);
+                    break;
+                  }
                 }
               }
             }
@@ -680,6 +679,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
         }
       }  // loop over elements' nodes
     }    // loop over elements
+
 
     // with all nodes collected it is time to communicate them to all other procs
     // which then eliminate all but their row nodes

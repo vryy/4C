@@ -491,7 +491,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       // Lives on NodeRow-map!!!
       const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(l2_proj_num);
       Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode =
-          CORE::FE::ComputeNodalL2Projection(cutter_dis_, "pres", 3, eleparams, solverparams);
+          CORE::FE::compute_nodal_l2_projection(cutter_dis_, "pres", 3, eleparams, solverparams);
       if (gradphinp_smoothed_rownode == Teuchos::null)
         dserror("A smoothed grad phi is required, but an empty one is provided!");
 

@@ -389,8 +389,6 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
   // ---------------------------------------------------------------
   // send add values from masters and slaves
   {
-    std::map<int, std::vector<int>>::iterator masternode;
-
     double val;
     // if(velocity_)
     std::vector<double> vel_val(3);
@@ -425,127 +423,79 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
     double expression_val;
     double alpha2_val;
 
-    Teuchos::RCP<std::map<int, std::vector<int>>> pbcmapmastertoslave =
-        discret_->GetAllPBCCoupledColNodes();
+    std::map<int, std::vector<int>>* pbcmapmastertoslave = discret_->GetAllPBCCoupledColNodes();
     // loop all master nodes on this proc
-    for (masternode = pbcmapmastertoslave->begin(); masternode != pbcmapmastertoslave->end();
-         ++masternode)
+    if (pbcmapmastertoslave)
     {
-      // loop only owned nodes
-      if ((discret_->gNode(masternode->first))->Owner() != discret_->Comm().MyPID()) continue;
-
-      // add all slave values to master value
-      std::vector<int>::iterator slavenode;
-
-      int lid = noderowmap->LID(masternode->first);
-      if (lid < 0) dserror("nodelid < 0 ?");
-
-      val = (*patchvol)[lid];
-
-      if (density_) dens_val = (*filtered_dens_)[lid];
-      if (densstrainrate_) dens_strainrate_val = (*filtered_dens_strainrate_)[lid];
-      if (expression_) expression_val = (*filtered_expression_)[lid];
-      if (alpha2_) alpha2_val = (*filtered_alpha2_)[lid];
-
-      for (int idim = 0; idim < numdim; ++idim)
+      for (const auto& [master_gid, slave_gids] : *pbcmapmastertoslave)
       {
-        if (velocity_) vel_val[idim] = ((*((*filtered_vel_)(idim)))[lid]);
+        // loop only owned nodes
+        if ((discret_->gNode(master_gid))->Owner() != discret_->Comm().MyPID()) continue;
 
-        if (densvelocity_) dens_vel_val[idim] = ((*((*filtered_dens_vel_)(idim)))[lid]);
+        int lid = noderowmap->LID(master_gid);
+        if (lid < 0) dserror("nodelid < 0 ?");
 
-        for (int jdim = 0; jdim < numdim; ++jdim)
-        {
-          const int ij = numdim * idim + jdim;
-          if (reynoldsstress_)
-            reystress_val[idim][jdim] = (*((*filtered_reynoldsstress_)(ij)))[lid];
-          if (modeled_subgrid_stress_)
-            modeled_subgrid_stress_val[idim][jdim] =
-                (*((*filtered_modeled_subgrid_stress_)(ij)))[lid];
-          if (strainrate_) strainrate_val[idim][jdim] = (*((*filtered_strainrate_)(ij)))[lid];
-          if (alphaij_) alphaij_val[idim][jdim] = (*((*filtered_alphaij_)(ij)))[lid];
-        }
-      }
+        val = (*patchvol)[lid];
 
-      // loop all this masters slaves
-      for (slavenode = (masternode->second).begin(); slavenode != (masternode->second).end();
-           ++slavenode)
-      {
-        lid = noderowmap->LID(*slavenode);
-        val += (*patchvol)[lid];
-
-        if (density_) dens_val += (*filtered_dens_)[lid];
-        if (densstrainrate_) dens_strainrate_val += (*filtered_dens_strainrate_)[lid];
-        if (expression_) expression_val += (*filtered_expression_)[lid];
-        if (alpha2_) alpha2_val += (*filtered_alpha2_)[lid];
+        if (density_) dens_val = (*filtered_dens_)[lid];
+        if (densstrainrate_) dens_strainrate_val = (*filtered_dens_strainrate_)[lid];
+        if (expression_) expression_val = (*filtered_expression_)[lid];
+        if (alpha2_) alpha2_val = (*filtered_alpha2_)[lid];
 
         for (int idim = 0; idim < numdim; ++idim)
         {
-          if (velocity_) vel_val[idim] += ((*((*filtered_vel_)(idim)))[lid]);
+          if (velocity_) vel_val[idim] = ((*((*filtered_vel_)(idim)))[lid]);
 
-          if (densvelocity_) dens_vel_val[idim] += ((*((*filtered_dens_vel_)(idim)))[lid]);
+          if (densvelocity_) dens_vel_val[idim] = ((*((*filtered_dens_vel_)(idim)))[lid]);
 
           for (int jdim = 0; jdim < numdim; ++jdim)
           {
             const int ij = numdim * idim + jdim;
             if (reynoldsstress_)
-              reystress_val[idim][jdim] += (*((*filtered_reynoldsstress_)(ij)))[lid];
+              reystress_val[idim][jdim] = (*((*filtered_reynoldsstress_)(ij)))[lid];
             if (modeled_subgrid_stress_)
-              modeled_subgrid_stress_val[idim][jdim] +=
+              modeled_subgrid_stress_val[idim][jdim] =
                   (*((*filtered_modeled_subgrid_stress_)(ij)))[lid];
-            if (strainrate_) strainrate_val[idim][jdim] += (*((*filtered_strainrate_)(ij)))[lid];
-            if (alphaij_) alphaij_val[idim][jdim] += (*((*filtered_alphaij_)(ij)))[lid];
-          }  // end loop jdim
-        }    // end loop idim
-      }      // end loop slaves
+            if (strainrate_) strainrate_val[idim][jdim] = (*((*filtered_strainrate_)(ij)))[lid];
+            if (alphaij_) alphaij_val[idim][jdim] = (*((*filtered_alphaij_)(ij)))[lid];
+          }
+        }
 
-      // replace value by sum
-      lid = noderowmap->LID(masternode->first);
-      int error = patchvol->ReplaceMyValues(1, &val, &lid);
-      if (error != 0) dserror("dof not on proc");
-
-      {
-        int err = 0;
-        if (density_) err += filtered_dens_->ReplaceMyValues(1, &dens_val, &lid);
-        if (densstrainrate_)
-          err += filtered_dens_strainrate_->ReplaceMyValues(1, &dens_strainrate_val, &lid);
-        if (expression_) err += filtered_expression_->ReplaceMyValues(1, &expression_val, &lid);
-        if (alpha2_) err += filtered_alpha2_->ReplaceMyValues(1, &alpha2_val, &lid);
-        if (err != 0) dserror("dof not on proc");
-      }
-
-      for (int idim = 0; idim < numdim; ++idim)
-      {
-        int err = 0;
-        if (velocity_) err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &(vel_val[idim]), &lid);
-
-        if (densvelocity_)
-          err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
-
-        for (int jdim = 0; jdim < numdim; ++jdim)
+        // loop all this masters slaves
+        for (auto slave_gid : slave_gids)
         {
-          const int ij = numdim * idim + jdim;
-          if (reynoldsstress_)
-            err += ((*filtered_reynoldsstress_)(ij))
-                       ->ReplaceMyValues(1, &(reystress_val[idim][jdim]), &lid);
-          if (modeled_subgrid_stress_)
-            err += ((*filtered_modeled_subgrid_stress_)(ij))
-                       ->ReplaceMyValues(1, &(modeled_subgrid_stress_val[idim][jdim]), &lid);
-          if (strainrate_)
-            err += ((*filtered_strainrate_)(ij))
-                       ->ReplaceMyValues(1, &(strainrate_val[idim][jdim]), &lid);
-          if (alphaij_)
-            err += ((*filtered_alphaij_)(ij))->ReplaceMyValues(1, &(alphaij_val[idim][jdim]), &lid);
-        }  // end loop jdim
-        if (err != 0) dserror("dof not on proc");
-      }  // end loop idim
+          lid = noderowmap->LID(slave_gid);
+          val += (*patchvol)[lid];
 
-      // loop all this masters slaves
-      for (slavenode = (masternode->second).begin(); slavenode != (masternode->second).end();
-           ++slavenode)
-      {
-        int err = 0;
-        lid = noderowmap->LID(*slavenode);
-        err += patchvol->ReplaceMyValues(1, &val, &lid);
+          if (density_) dens_val += (*filtered_dens_)[lid];
+          if (densstrainrate_) dens_strainrate_val += (*filtered_dens_strainrate_)[lid];
+          if (expression_) expression_val += (*filtered_expression_)[lid];
+          if (alpha2_) alpha2_val += (*filtered_alpha2_)[lid];
+
+          for (int idim = 0; idim < numdim; ++idim)
+          {
+            if (velocity_) vel_val[idim] += ((*((*filtered_vel_)(idim)))[lid]);
+
+            if (densvelocity_) dens_vel_val[idim] += ((*((*filtered_dens_vel_)(idim)))[lid]);
+
+            for (int jdim = 0; jdim < numdim; ++jdim)
+            {
+              const int ij = numdim * idim + jdim;
+              if (reynoldsstress_)
+                reystress_val[idim][jdim] += (*((*filtered_reynoldsstress_)(ij)))[lid];
+              if (modeled_subgrid_stress_)
+                modeled_subgrid_stress_val[idim][jdim] +=
+                    (*((*filtered_modeled_subgrid_stress_)(ij)))[lid];
+              if (strainrate_) strainrate_val[idim][jdim] += (*((*filtered_strainrate_)(ij)))[lid];
+              if (alphaij_) alphaij_val[idim][jdim] += (*((*filtered_alphaij_)(ij)))[lid];
+            }  // end loop jdim
+          }    // end loop idim
+        }      // end loop slaves
+
+        // replace value by sum
+        lid = noderowmap->LID(master_gid);
+        int error = patchvol->ReplaceMyValues(1, &val, &lid);
+        if (error != 0) dserror("dof not on proc");
 
         {
           int err = 0;
@@ -559,6 +509,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
 
         for (int idim = 0; idim < numdim; ++idim)
         {
+          int err = 0;
           if (velocity_)
             err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &(vel_val[idim]), &lid);
 
@@ -581,10 +532,55 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
               err +=
                   ((*filtered_alphaij_)(ij))->ReplaceMyValues(1, &(alphaij_val[idim][jdim]), &lid);
           }  // end loop jdim
-        }    // end loop idim
-        if (err != 0) dserror("dof not on proc");
-      }  // end loop slaves
-    }    // end loop masters
+          if (err != 0) dserror("dof not on proc");
+        }  // end loop idim
+
+        // loop all this masters slaves
+        for (auto slave_gid : slave_gids)
+        {
+          int err = 0;
+          lid = noderowmap->LID(slave_gid);
+          err += patchvol->ReplaceMyValues(1, &val, &lid);
+
+          {
+            int err = 0;
+            if (density_) err += filtered_dens_->ReplaceMyValues(1, &dens_val, &lid);
+            if (densstrainrate_)
+              err += filtered_dens_strainrate_->ReplaceMyValues(1, &dens_strainrate_val, &lid);
+            if (expression_) err += filtered_expression_->ReplaceMyValues(1, &expression_val, &lid);
+            if (alpha2_) err += filtered_alpha2_->ReplaceMyValues(1, &alpha2_val, &lid);
+            if (err != 0) dserror("dof not on proc");
+          }
+
+          for (int idim = 0; idim < numdim; ++idim)
+          {
+            if (velocity_)
+              err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &(vel_val[idim]), &lid);
+
+            if (densvelocity_)
+              err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
+
+            for (int jdim = 0; jdim < numdim; ++jdim)
+            {
+              const int ij = numdim * idim + jdim;
+              if (reynoldsstress_)
+                err += ((*filtered_reynoldsstress_)(ij))
+                           ->ReplaceMyValues(1, &(reystress_val[idim][jdim]), &lid);
+              if (modeled_subgrid_stress_)
+                err += ((*filtered_modeled_subgrid_stress_)(ij))
+                           ->ReplaceMyValues(1, &(modeled_subgrid_stress_val[idim][jdim]), &lid);
+              if (strainrate_)
+                err += ((*filtered_strainrate_)(ij))
+                           ->ReplaceMyValues(1, &(strainrate_val[idim][jdim]), &lid);
+              if (alphaij_)
+                err += ((*filtered_alphaij_)(ij))
+                           ->ReplaceMyValues(1, &(alphaij_val[idim][jdim]), &lid);
+            }  // end loop jdim
+          }    // end loop idim
+          if (err != 0) dserror("dof not on proc");
+        }  // end loop slaves
+      }    // end loop masters
+    }
   }
 
   // ---------------------------------------------------------------
@@ -1115,7 +1111,6 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
   // ---------------------------------------------------------------
   // send add values from masters and slaves
   {
-    std::map<int, std::vector<int>>::iterator masternode;
     double val = 0.0;
     std::vector<double> vel_val(3);
     std::vector<double> dens_vel_val(3);
@@ -1135,131 +1130,92 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
     double phiexpression_val = 0.0;
 
     // loop all master nodes on this proc
-    Teuchos::RCP<std::map<int, std::vector<int>>> pbcmapmastertoslave =
+    std::map<int, std::vector<int>>* pbcmapmastertoslave =
         scatradiscret_->GetAllPBCCoupledColNodes();
     // loop all master nodes on this proc
-    for (masternode = pbcmapmastertoslave->begin(); masternode != pbcmapmastertoslave->end();
-         ++masternode)
+    if (pbcmapmastertoslave)
     {
-      // loop only owned nodes
-      if ((scatradiscret_->gNode(masternode->first))->Owner() != scatradiscret_->Comm().MyPID())
-        continue;
-
-      // add all slave values to master value
-      std::vector<int>::iterator slavenode;
-
-      int lid = noderowmap->LID(masternode->first);
-      if (lid < 0) dserror("nodelid < 0 ?");
-
-      val = (*patchvol)[lid];
-
-      dens_val = (*filtered_dens_)[lid];
-      dens_temp_val = (*filtered_dens_temp_)[lid];
-      temp_val = (*filtered_temp_)[lid];
-      if (phi2_) phi2_val = (*filtered_phi2_)[lid];
-      if (phiexpression_) phiexpression_val = (*filtered_phiexpression_)[lid];
-
-      for (int idim = 0; idim < numdim; ++idim)
+      for (const auto& [master_gid, slave_gids] : *pbcmapmastertoslave)
       {
-        vel_val[idim] = ((*((*filtered_vel_)(idim)))[lid]);
-        dens_vel_val[idim] = ((*((*filtered_dens_vel_)(idim)))[lid]);
-        dens_vel_temp_val[idim] = ((*((*filtered_dens_vel_temp_)(idim)))[lid]);
-        dens_strain_temp_val[idim] = ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lid]);
-        if (phi_) phi_val[idim] = ((*((*filtered_phi_)(idim)))[lid]);
-        if (alphaijsc_)
-        {
-          for (int jdim = 0; jdim < numdim; ++jdim)
-          {
-            const int ij = numdim * idim + jdim;
-            alphaijsc_val[idim][jdim] = (*((*filtered_alphaijsc_)(ij)))[lid];
-          }
-        }
-      }
+        // loop only owned nodes
+        if ((scatradiscret_->gNode(master_gid))->Owner() != scatradiscret_->Comm().MyPID())
+          continue;
 
-      // loop all this masters slaves
-      for (slavenode = (masternode->second).begin(); slavenode != (masternode->second).end();
-           ++slavenode)
-      {
-        lid = noderowmap->LID(*slavenode);
-        val += (*patchvol)[lid];
+        int lid = noderowmap->LID(master_gid);
+        if (lid < 0) dserror("nodelid < 0 ?");
 
-        dens_val += (*filtered_dens_)[lid];
-        dens_temp_val += (*filtered_dens_temp_)[lid];
-        temp_val += (*filtered_temp_)[lid];
-        if (phi2_) phi2_val += (*filtered_phi2_)[lid];
-        if (phiexpression_) phiexpression_val += (*filtered_phiexpression_)[lid];
+        val = (*patchvol)[lid];
+
+        dens_val = (*filtered_dens_)[lid];
+        dens_temp_val = (*filtered_dens_temp_)[lid];
+        temp_val = (*filtered_temp_)[lid];
+        if (phi2_) phi2_val = (*filtered_phi2_)[lid];
+        if (phiexpression_) phiexpression_val = (*filtered_phiexpression_)[lid];
 
         for (int idim = 0; idim < numdim; ++idim)
         {
-          vel_val[idim] += ((*((*filtered_vel_)(idim)))[lid]);
-          dens_vel_val[idim] += ((*((*filtered_dens_vel_)(idim)))[lid]);
-          dens_vel_temp_val[idim] += ((*((*filtered_dens_vel_temp_)(idim)))[lid]);
-          dens_strain_temp_val[idim] += ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lid]);
-          if (phi_) phi_val[idim] += ((*((*filtered_phi_)(idim)))[lid]);
+          vel_val[idim] = ((*((*filtered_vel_)(idim)))[lid]);
+          dens_vel_val[idim] = ((*((*filtered_dens_vel_)(idim)))[lid]);
+          dens_vel_temp_val[idim] = ((*((*filtered_dens_vel_temp_)(idim)))[lid]);
+          dens_strain_temp_val[idim] = ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lid]);
+          if (phi_) phi_val[idim] = ((*((*filtered_phi_)(idim)))[lid]);
           if (alphaijsc_)
           {
             for (int jdim = 0; jdim < numdim; ++jdim)
             {
               const int ij = numdim * idim + jdim;
-              alphaijsc_val[idim][jdim] += (*((*filtered_alphaijsc_)(ij)))[lid];
+              alphaijsc_val[idim][jdim] = (*((*filtered_alphaijsc_)(ij)))[lid];
             }
           }
         }
-      }  // end loop slaves
 
-      // replace value by sum
-      lid = noderowmap->LID(masternode->first);
-      int error = patchvol->ReplaceMyValues(1, &val, &lid);
-      if (error != 0) dserror("dof not on proc");
-
-      int e = 0;
-      e += filtered_dens_->ReplaceMyValues(1, &dens_val, &lid);
-      e += filtered_dens_temp_->ReplaceMyValues(1, &dens_temp_val, &lid);
-      e += filtered_temp_->ReplaceMyValues(1, &temp_val, &lid);
-      if (phi2_) e += filtered_phi2_->ReplaceMyValues(1, &phi2_val, &lid);
-      if (phiexpression_)
-        e += filtered_phiexpression_->ReplaceMyValues(1, &phiexpression_val, &lid);
-      if (e != 0) dserror("dof not on proc");
-
-      for (int idim = 0; idim < numdim; ++idim)
-      {
-        int err = 0;
-        err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &(vel_val[idim]), &lid);
-        err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
-        err += ((*filtered_dens_vel_temp_)(idim))
-                   ->ReplaceMyValues(1, &(dens_vel_temp_val[idim]), &lid);
-        err += ((*filtered_dens_rateofstrain_temp_)(idim))
-                   ->ReplaceMyValues(1, &(dens_strain_temp_val[idim]), &lid);
-        if (phi_) err += ((*filtered_phi_)(idim))->ReplaceMyValues(1, &(phi_val[idim]), &lid);
-        if (alphaijsc_)
+        // loop all this masters slaves
+        for (auto slave_gid : slave_gids)
         {
-          for (int jdim = 0; jdim < numdim; ++jdim)
+          lid = noderowmap->LID(slave_gid);
+          val += (*patchvol)[lid];
+
+          dens_val += (*filtered_dens_)[lid];
+          dens_temp_val += (*filtered_dens_temp_)[lid];
+          temp_val += (*filtered_temp_)[lid];
+          if (phi2_) phi2_val += (*filtered_phi2_)[lid];
+          if (phiexpression_) phiexpression_val += (*filtered_phiexpression_)[lid];
+
+          for (int idim = 0; idim < numdim; ++idim)
           {
-            const int ij = numdim * idim + jdim;
-            err += ((*filtered_alphaijsc_)(ij))
-                       ->ReplaceMyValues(1, &(alphaijsc_val[idim][jdim]), &lid);
-          }  // end loop jdim
-        }
-        if (err != 0) dserror("dof not on proc");
-      }
+            vel_val[idim] += ((*((*filtered_vel_)(idim)))[lid]);
+            dens_vel_val[idim] += ((*((*filtered_dens_vel_)(idim)))[lid]);
+            dens_vel_temp_val[idim] += ((*((*filtered_dens_vel_temp_)(idim)))[lid]);
+            dens_strain_temp_val[idim] += ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lid]);
+            if (phi_) phi_val[idim] += ((*((*filtered_phi_)(idim)))[lid]);
+            if (alphaijsc_)
+            {
+              for (int jdim = 0; jdim < numdim; ++jdim)
+              {
+                const int ij = numdim * idim + jdim;
+                alphaijsc_val[idim][jdim] += (*((*filtered_alphaijsc_)(ij)))[lid];
+              }
+            }
+          }
+        }  // end loop slaves
 
-      // loop all this masters slaves
-      for (slavenode = (masternode->second).begin(); slavenode != (masternode->second).end();
-           ++slavenode)
-      {
-        int err = 0;
-        lid = noderowmap->LID(*slavenode);
-        err += patchvol->ReplaceMyValues(1, &val, &lid);
+        // replace value by sum
+        lid = noderowmap->LID(master_gid);
+        int error = patchvol->ReplaceMyValues(1, &val, &lid);
+        if (error != 0) dserror("dof not on proc");
 
-        err += filtered_dens_->ReplaceMyValues(1, &dens_val, &lid);
-        err += filtered_dens_temp_->ReplaceMyValues(1, &dens_temp_val, &lid);
-        err += filtered_temp_->ReplaceMyValues(1, &temp_val, &lid);
-        if (phi2_) err += filtered_phi2_->ReplaceMyValues(1, &phi2_val, &lid);
+        int e = 0;
+        e += filtered_dens_->ReplaceMyValues(1, &dens_val, &lid);
+        e += filtered_dens_temp_->ReplaceMyValues(1, &dens_temp_val, &lid);
+        e += filtered_temp_->ReplaceMyValues(1, &temp_val, &lid);
+        if (phi2_) e += filtered_phi2_->ReplaceMyValues(1, &phi2_val, &lid);
         if (phiexpression_)
-          err += filtered_phiexpression_->ReplaceMyValues(1, &phiexpression_val, &lid);
+          e += filtered_phiexpression_->ReplaceMyValues(1, &phiexpression_val, &lid);
+        if (e != 0) dserror("dof not on proc");
 
         for (int idim = 0; idim < numdim; ++idim)
         {
+          int err = 0;
           err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &(vel_val[idim]), &lid);
           err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
           err += ((*filtered_dens_vel_temp_)(idim))
@@ -1276,11 +1232,47 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
                          ->ReplaceMyValues(1, &(alphaijsc_val[idim][jdim]), &lid);
             }  // end loop jdim
           }
+          if (err != 0) dserror("dof not on proc");
         }
 
-        if (err != 0) dserror("dof not on proc");
-      }  // end loop slaves
-    }    // end loop masters
+        // loop all this masters slaves
+        for (auto slave_gid : slave_gids)
+        {
+          int err = 0;
+          lid = noderowmap->LID(slave_gid);
+          err += patchvol->ReplaceMyValues(1, &val, &lid);
+
+          err += filtered_dens_->ReplaceMyValues(1, &dens_val, &lid);
+          err += filtered_dens_temp_->ReplaceMyValues(1, &dens_temp_val, &lid);
+          err += filtered_temp_->ReplaceMyValues(1, &temp_val, &lid);
+          if (phi2_) err += filtered_phi2_->ReplaceMyValues(1, &phi2_val, &lid);
+          if (phiexpression_)
+            err += filtered_phiexpression_->ReplaceMyValues(1, &phiexpression_val, &lid);
+
+          for (int idim = 0; idim < numdim; ++idim)
+          {
+            err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &(vel_val[idim]), &lid);
+            err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
+            err += ((*filtered_dens_vel_temp_)(idim))
+                       ->ReplaceMyValues(1, &(dens_vel_temp_val[idim]), &lid);
+            err += ((*filtered_dens_rateofstrain_temp_)(idim))
+                       ->ReplaceMyValues(1, &(dens_strain_temp_val[idim]), &lid);
+            if (phi_) err += ((*filtered_phi_)(idim))->ReplaceMyValues(1, &(phi_val[idim]), &lid);
+            if (alphaijsc_)
+            {
+              for (int jdim = 0; jdim < numdim; ++jdim)
+              {
+                const int ij = numdim * idim + jdim;
+                err += ((*filtered_alphaijsc_)(ij))
+                           ->ReplaceMyValues(1, &(alphaijsc_val[idim][jdim]), &lid);
+              }  // end loop jdim
+            }
+          }
+
+          if (err != 0) dserror("dof not on proc");
+        }  // end loop slaves
+      }    // end loop masters
+    }
   }
 
   // ---------------------------------------------------------------

@@ -23,10 +23,10 @@ BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::FE::EvaluateAndSolveNodalL2Projection(
+Teuchos::RCP<Epetra_MultiVector> CORE::FE::evaluate_and_solve_nodal_l2_projection(
     DRT::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
     const int& numvec, Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
-    const Epetra_Map* fullnoderowmap, const std::map<int, int>* slavetomastercolnodesmap)
+    const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap)
 {
   // create empty matrix
   auto massmatrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(noderowmap, 108, false, true));
@@ -66,26 +66,28 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::EvaluateAndSolveNodalL2Projection(
         params, dis, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
     if (err) dserror("Element %d returned err=%d", actele->Id(), err);
 
-    if (slavetomastercolnodesmap)
+
+    // get element location vector for nodes
+    lm.resize(numnode);
+    lmowner.resize(numnode);
+
+    DRT::Node** nodes = actele->Nodes();
+    for (int n = 0; n < numnode; ++n)
     {
-      // get element location vector for nodes
-      lm.resize(numnode);
-      lmowner.resize(numnode);
-
-      DRT::Node** nodes = actele->Nodes();
-      for (int n = 0; n < numnode; ++n)
+      const int nodeid = nodes[n]->Id();
+      if (!slavetomastercolnodesmap.empty())
       {
-        const int nodeid = nodes[n]->Id();
-
-        auto slavemasterpair = slavetomastercolnodesmap->find(nodeid);
-        if (slavemasterpair != slavetomastercolnodesmap->end())
+        auto slavemasterpair = slavetomastercolnodesmap.find(nodeid);
+        if (slavemasterpair != slavetomastercolnodesmap.end())
           lm[n] = slavemasterpair->second;
         else
           lm[n] = nodeid;
-
-        // owner of pbc master and slave nodes are identical
-        lmowner[n] = nodes[n]->Owner();
       }
+      else
+        lm[n] = nodeid;
+
+      // owner of pbc master and slave nodes are identical
+      lmowner[n] = nodes[n]->Owner();
     }
 
     // mass matrix assembling into node map
@@ -104,13 +106,13 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::EvaluateAndSolveNodalL2Projection(
   // finalize the matrix
   massmatrix->Complete();
 
-  return SolveNodalL2Projection(*massmatrix, *rhs, dis.Comm(), numvec, solverparams, noderowmap,
+  return solve_nodal_l2_projection(*massmatrix, *rhs, dis.Comm(), numvec, solverparams, noderowmap,
       fullnoderowmap, slavetomastercolnodesmap);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeNodalL2Projection(
+Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_nodal_l2_projection(
     Teuchos::RCP<DRT::Discretization> dis, const std::string& statename, const int& numvec,
     Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams)
 {
@@ -128,8 +130,11 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeNodalL2Projection(
   // handle pbcs if existing
   // build inverse map from slave to master nodes
   std::map<int, int> slavetomastercolnodesmap;
+
+  std::map<int, std::vector<int>>* allcoupledcolnodes = dis->GetAllPBCCoupledColNodes();
+  if (allcoupledcolnodes)
   {
-    for (auto [master_gid, slave_gids] : *dis->GetAllPBCCoupledColNodes())
+    for (auto [master_gid, slave_gids] : *allcoupledcolnodes)
     {
       for (const auto slave_gid : slave_gids)
       {
@@ -139,7 +144,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeNodalL2Projection(
   }
 
   // get reduced node row map of fluid field --> will be used for setting up linear system
-  const Epetra_Map* fullnoderowmap = dis->NodeRowMap();
+  const auto* fullnoderowmap = dis->NodeRowMap();
   // remove pbc slave nodes from full noderowmap
   std::vector<int> reducednoderowmap;
   // a little more memory than necessary is possibly reserved here
@@ -148,20 +153,21 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeNodalL2Projection(
   {
     const int nodeid = fullnoderowmap->GID(i);
     // do not add slave pbc nodes here
-    if (slavetomastercolnodesmap.count(nodeid) == 0) reducednoderowmap.push_back(nodeid);
+    if (slavetomastercolnodesmap.empty() or slavetomastercolnodesmap.count(nodeid) == 0)
+    {
+      reducednoderowmap.push_back(nodeid);
+    }
   }
 
   // build node row map which does not include slave pbc nodes
-  Epetra_Map noderowmap(
-      -1, (int)reducednoderowmap.size(), reducednoderowmap.data(), 0, fullnoderowmap->Comm());
+  Epetra_Map noderowmap(-1, static_cast<int>(reducednoderowmap.size()), reducednoderowmap.data(), 0,
+      fullnoderowmap->Comm());
 
-  auto nodevec = EvaluateAndSolveNodalL2Projection(*dis, noderowmap, statename, numvec, params,
-      solverparams, fullnoderowmap, &slavetomastercolnodesmap);
-
-  if (slavetomastercolnodesmap.empty()) return nodevec;
+  auto nodevec = evaluate_and_solve_nodal_l2_projection(*dis, noderowmap, statename, numvec, params,
+      solverparams, *fullnoderowmap, slavetomastercolnodesmap);
 
   // if no pbc are involved leave here
-  if (fullnoderowmap == nullptr or noderowmap.PointSameAs(*fullnoderowmap)) return nodevec;
+  if (slavetomastercolnodesmap.empty() or noderowmap.PointSameAs(*fullnoderowmap)) return nodevec;
 
   // solution vector based on full row map in which the solution of the master node is inserted into
   // slave nodes
@@ -191,10 +197,10 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeNodalL2Projection(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::FE::SolveNodalL2Projection(
+Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
     CORE::LINALG::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const Epetra_Comm& comm,
     const int& numvec, const Teuchos::ParameterList& solverparams, const Epetra_Map& noderowmap,
-    const Epetra_Map* fullnoderowmap, const std::map<int, int>* slavetomastercolnodesmap)
+    const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap)
 {
   // get solver parameter list of linear solver
   const auto solvertype =

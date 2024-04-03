@@ -1141,7 +1141,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 
       // project velocity gradient of fluid to nodal level via L2 projection
       projected_velgrad =
-          CORE::FE::ComputeNodalL2Projection(discret, "vel", numvec, params, solverparams);
+          CORE::FE::compute_nodal_l2_projection(discret, "vel", numvec, params, solverparams);
     }
     break;
     default:
