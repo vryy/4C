@@ -402,28 +402,6 @@ danger-review:
     BUNDLE_GEMFILE=./utilities/danger/Gemfile bundle exec danger --fail-on-errors=true --verbose --danger_id="${danger_id}" --dangerfile="./utilities/danger/Dangerfile";
 
 
-# IMCS--------------------------------------------------------------------------
-
-imcs-buildtest_daily_ubuntu20:
-  extends: .buildtest_daily
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
-    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
-    CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
-  tags:
-  - imcs-nightly-full-ubuntu20
-  needs: []
-
-imcs-buildtest_daily_debug_ubuntu20:
-  extends: .buildtest_daily_debug
-  variables:
-    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_optimized_debug
-    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
-    CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
-  tags:
-  - imcs-nightly-debug-ubuntu20
-  needs: []
-
 # Docker---------------------------------------------------------------------------
 
 codeclimate:
