@@ -10,7 +10,6 @@
 #include "baci_contact_defines.hpp"
 #include "baci_contact_element.hpp"
 #include "baci_global_data.hpp"
-// #include "baci_utils_exceptions.hpp"
 #include "baci_utils_function.hpp"
 
 #ifdef BACI_WITH_MIRCO

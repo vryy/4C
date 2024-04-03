@@ -41,7 +41,7 @@ namespace
 
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
 
-    CONTACT::RoughNode* cnode;
+    Teuchos::RCP<CONTACT::RoughNode> cnode;
   };
 
 
@@ -49,17 +49,17 @@ namespace
   TEST_F(CubicConstitutiveLawTest, TestEvaluate)
   {
     // gap < 0
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0, cnode));
+    EXPECT_ANY_THROW(coconstlaw_->Evaluate(1.0, cnode.get()));
     // 0< gap < offset
-    EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25, cnode));
+    EXPECT_ANY_THROW(coconstlaw_->Evaluate(-0.25, cnode.get()));
     // offset < gap
-    EXPECT_NEAR(coconstlaw_->Evaluate(-0.75, cnode), -0.8984375, 1.e-15);
+    EXPECT_NEAR(coconstlaw_->Evaluate(-0.75, cnode.get()), -0.8984375, 1.e-15);
   }
 
   //! test member function EvaluateDeriv
   TEST_F(CubicConstitutiveLawTest, TestEvaluateDeriv)
   {
-    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-0.75, cnode), 4.28125, 1.e-15);
-    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25, cnode));
+    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-0.75, cnode.get()), 4.28125, 1.e-15);
+    EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25, cnode.get()));
   }
 }  // namespace
