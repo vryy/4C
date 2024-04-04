@@ -3128,19 +3128,18 @@ void STR::TimIntImpl::CmtLinearSolve()
     if (contactsolver_->Params().isSublist("Belos Parameters"))
     {
       Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Belos Parameters");
-      Teuchos::ParameterList& linSystemProps = mueluParams.sublist("Linear System properties");
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", masterDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", slaveDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", innerDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", activeDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", masterDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", slaveDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", innerDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", activeDofMap);
       Teuchos::RCP<CONTACT::AbstractStrategy> costrat =
           Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strat);
       if (costrat != Teuchos::null)
-        linSystemProps.set<std::string>("GLOBAL::ProblemType", "contact");
+        mueluParams.set<std::string>("GLOBAL::ProblemType", "contact");
       else
-        linSystemProps.set<std::string>("GLOBAL::ProblemType", "meshtying");
-      linSystemProps.set<int>("time step", step_);
-      linSystemProps.set<int>("iter", iter_);
+        mueluParams.set<std::string>("GLOBAL::ProblemType", "meshtying");
+      mueluParams.set<int>("time step", step_);
+      mueluParams.set<int>("iter", iter_);
     }
   }  // end: feed solver with contact/meshtying information
 
@@ -4541,19 +4540,18 @@ int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
       // Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Belos Parameters");
       Teuchos::ParameterList& mueluParams =
           cardvasc0dman_->GetSolver()->Params().sublist("Belos Parameters");
-      Teuchos::ParameterList& linSystemProps = mueluParams.sublist("Linear System properties");
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", masterDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", slaveDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", innerDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", activeDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", masterDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", slaveDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", innerDofMap);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", activeDofMap);
       Teuchos::RCP<CONTACT::AbstractStrategy> costrat =
           Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strat);
       if (costrat != Teuchos::null)
-        linSystemProps.set<std::string>("GLOBAL::ProblemType", "contact");
+        mueluParams.set<std::string>("GLOBAL::ProblemType", "contact");
       else
-        linSystemProps.set<std::string>("GLOBAL::ProblemType", "meshtying");
-      linSystemProps.set<int>("time step", step_);
-      linSystemProps.set<int>("iter", iter_);
+        mueluParams.set<std::string>("GLOBAL::ProblemType", "meshtying");
+      mueluParams.set<int>("time step", step_);
+      mueluParams.set<int>("iter", iter_);
     }
 
   }  // end: feed solver with contact/meshtying information

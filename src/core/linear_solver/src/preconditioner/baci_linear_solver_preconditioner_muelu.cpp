@@ -453,13 +453,15 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
   // Some preparations common for re-creating and re-using the preconditioner
   ///////////////////////////////////////////////////////////////////////
 
+  Teuchos::ParameterList contactList = muelulist_.sublist("MueLu (Contact) Parameters");
+
   // prepare nullspace vector for MueLu (block A11 only)
-  if (!muelulist_.isParameter("PDE equations"))
+  if (!contactList.isParameter("PDE equations"))
     dserror("Multigrid parameter 'PDE equations' missing in solver parameter list.");
-  if (!muelulist_.isParameter("null space: dimension"))
+  if (!contactList.isParameter("null space: dimension"))
     dserror("Multigrid parameter 'null space: dimension' missing  in solver parameter list.");
-  const int numdf = muelulist_.get<int>("PDE equations", -1);
-  const int dimns = muelulist_.get<int>("null space: dimension", -1);
+  const int numdf = contactList.get<int>("PDE equations", -1);
+  const int dimns = contactList.get<int>("null space: dimension", -1);
   if (numdf == -1) dserror("Multigrid parameter 'PDE equations' wrong. It has to be > 0.");
   if (dimns == -1) dserror("Multigrid parameter 'null space: dimension' wrong. It has to be > 0.");
 
@@ -473,20 +475,13 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
   //
   // Note: Baci provides Epetra_Map objects. We will transform them to Xpetra::Map later.
   //
-  Teuchos::RCP<Epetra_Map> epMasterDofMap = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> epSlaveDofMap = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> epInnerDofMap = Teuchos::null;
-  Teuchos::RCP<Xpetra::Map<LO, GO, NO>> xSingleNodeAggMap = Teuchos::null;
-  Teuchos::RCP<Xpetra::Map<LO, GO, NO>> xNearZeroDiagMap = Teuchos::null;
-  if (muelulist_.isSublist("Linear System properties"))
-  {
-    const Teuchos::ParameterList& linSystemProps = muelulist_.sublist("Linear System properties");
-    epMasterDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact masterDofMap");
-    epSlaveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap");
-    epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
-    epInnerDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact innerDofMap");
-  }
+  Teuchos::RCP<Epetra_Map> epSlaveDofMap =
+      muelulist_.sublist("Belos Parameters").get<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap");
+
+  if (epSlaveDofMap.is_null())
+    dserror(
+        "CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner: "
+        "Interface contact map is not available!");
 
   ///////////////////////////////////////////////////////////////////////
   // Transform from epetra to xpetra
@@ -639,11 +634,11 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
     // free old matrix first
     P_ = Teuchos::null;
 
-    if (!muelulist_.isParameter("MUELU_XML_FILE"))
+    if (!contactList.isParameter("MUELU_XML_FILE"))
       dserror(
           "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
           "Please set it as entry 'MUELU_XML_FILE'.");
-    std::string xml_file = muelulist_.get<std::string>("MUELU_XML_FILE");
+    std::string xml_file = contactList.get<std::string>("MUELU_XML_FILE");
 
     MueLu::ParameterList mueluParams;
     Teuchos::updateParametersFromXmlFileAndBroadcast(
@@ -655,7 +650,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
     {
       // Extract pre-computed nullspace for block (0,0) from Baci's ML parameter list
       nullspace11 = CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
-          stridedRangeMapPrimal, muelulist_);
+          stridedRangeMapPrimal, contactList);
 
       // Compute default nullspace for block (1,1)
       {

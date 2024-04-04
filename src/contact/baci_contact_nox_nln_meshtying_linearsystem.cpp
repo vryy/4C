@@ -121,23 +121,22 @@ CORE::LINALG::SolverParams NOX::NLN::MESHTYING::LinearSystem::SetSolverOptions(
       // (3) activeDofMap
       std::vector<Teuchos::RCP<Epetra_Map>> prec_maps(4, Teuchos::null);
       iConstrPrec_.begin()->second->FillMapsForPreconditioner(prec_maps);
-      Teuchos::ParameterList& linSystemProps = mueluParams.sublist("Linear System properties");
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", prec_maps[0]);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", prec_maps[1]);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", prec_maps[2]);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", prec_maps[3]);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", prec_maps[0]);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", prec_maps[1]);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", prec_maps[2]);
+      mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", prec_maps[3]);
       // contact or contact/meshtying
       if (iConstrPrec_.begin()->first == NOX::NLN::sol_contact)
-        linSystemProps.set<std::string>("GLOBAL::ProblemType", "contact");
+        mueluParams.set<std::string>("GLOBAL::ProblemType", "contact");
       // only meshtying
       else if (iConstrPrec_.begin()->first == NOX::NLN::sol_meshtying)
-        linSystemProps.set<std::string>("GLOBAL::ProblemType", "meshtying");
+        mueluParams.set<std::string>("GLOBAL::ProblemType", "meshtying");
       else
         dserror("Currently we support only a pure meshtying OR a pure contact problem!");
 
-      linSystemProps.set<int>("time step", step);
+      mueluParams.set<int>("time step", step);
       // increase counter by one (historical reasons)
-      linSystemProps.set<int>("iter", nlnIter + 1);
+      mueluParams.set<int>("iter", nlnIter + 1);
     }
   }  // end: feed solver with contact/meshtying information
 
