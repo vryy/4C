@@ -162,8 +162,7 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseSta
 
   if (linSysParams.isParameter("contact activeDofMap"))
   {
-    Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
-    epActiveDofMap = linSysParams.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
+    auto ep_active_dof_map = linSysParams.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
 
     // Do we have history information available?
     if (activeDofMap_.is_null())
@@ -179,7 +178,7 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseSta
        * by comparing the current map of active DOFs with the stored map of active DOFs
        * from the previous application of the preconditioner.
        */
-      if (not epActiveDofMap->PointSameAs(*activeDofMap_))
+      if (not ep_active_dof_map->PointSameAs(*activeDofMap_))
       {
         // Map of active nodes has changed -> force preconditioner to be rebuilt
         bAllowReuse = false;
@@ -187,7 +186,7 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseSta
     }
 
     // Store current map of active slave DOFs for comparison in next preconditioner application
-    activeDofMap_ = epActiveDofMap;
+    activeDofMap_ = ep_active_dof_map;
   }
 
   return bAllowReuse;
