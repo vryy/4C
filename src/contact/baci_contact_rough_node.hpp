@@ -22,7 +22,7 @@ namespace CONTACT
 
     static RoughNodeType& Instance() { return instance_; };
 
-    virtual CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static RoughNodeType instance_;
