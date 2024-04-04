@@ -87,7 +87,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::setup
       visualization_data.register_point_data<double>("displacement", 3);
       visualization_data.register_point_data<double>("force_beam", 3);
       visualization_data.register_point_data<double>("force_solid", 3);
-      if (write_unique_ids) visualization_data.register_point_data<double>("uid_0_node_id", 1);
+      if (write_unique_ids) visualization_data.register_point_data<int>("uid_0_node_id", 1);
     }
 
     if (output_params_ptr_->get_mortar_lambda_discret_output_flag())
@@ -99,8 +99,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::setup
       visualization_data.register_point_data<double>("lambda", 3);
       if (write_unique_ids)
       {
-        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
-        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<int>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<int>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -114,10 +114,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::setup
       visualization_data.register_point_data<double>("lambda", 3);
       if (write_unique_ids)
       {
-        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
-        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
-        visualization_data.register_cell_data<double>("uid_0_pair_beam_id", 1);
-        visualization_data.register_cell_data<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<int>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<int>("uid_1_pair_solid_id", 1);
+        visualization_data.register_cell_data<int>("uid_0_pair_beam_id", 1);
+        visualization_data.register_cell_data<int>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -131,8 +131,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::setup
       visualization_data.register_point_data<double>("force", 3);
       if (write_unique_ids)
       {
-        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
-        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<int>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<int>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -144,8 +144,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::setup
       visualization_data.register_point_data<double>("displacement", 3);
       if (write_unique_ids)
       {
-        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
-        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<int>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<int>("uid_1_pair_solid_id", 1);
       }
     }
   }

@@ -191,23 +191,23 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
   // rigid body global id
   {
     // prepare rigid body global id data
-    std::vector<double> globaliddata;
+    std::vector<int> globaliddata;
     globaliddata.reserve(ownedrigidbodies.size());
 
     // copy rigid body global id data
     for (int rigidbody_k : ownedrigidbodies) globaliddata.push_back(rigidbody_k);
 
     // append rigid body global id data to vtp writer
-    visualization_data.set_point_data_vector<double>("globalid", globaliddata, 1);
+    visualization_data.set_point_data_vector<int>("globalid", globaliddata, 1);
   }
 
   // rigid body owner
   {
     // set rigid body owner data
-    std::vector<double> ownerdata(ownedrigidbodies.size(), comm_.MyPID());
+    std::vector<int> ownerdata(ownedrigidbodies.size(), comm_.MyPID());
 
     // append owner of rigid bodies to vtp writer
-    visualization_data.set_point_data_vector<double>("owner", ownerdata, 1);
+    visualization_data.set_point_data_vector<int>("owner", ownerdata, 1);
   }
 }
 

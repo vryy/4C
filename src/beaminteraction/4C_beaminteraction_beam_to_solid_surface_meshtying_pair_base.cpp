@@ -128,12 +128,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surf
       visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btssc-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
-  std::vector<double>* pair_beam_id = nullptr;
-  std::vector<double>* pair_solid_id = nullptr;
+  std::vector<int>* pair_beam_id = nullptr;
+  std::vector<int>* pair_solid_id = nullptr;
   if (write_unique_ids)
   {
-    pair_beam_id = &(visualization_data.get_point_data<double>("uid_0_pair_beam_id"));
-    pair_solid_id = &(visualization_data.get_point_data<double>("uid_1_pair_solid_id"));
+    pair_beam_id = &(visualization_data.get_point_data<int>("uid_0_pair_beam_id"));
+    pair_solid_id = &(visualization_data.get_point_data<int>("uid_1_pair_solid_id"));
   }
 
   for (const auto& point : points)

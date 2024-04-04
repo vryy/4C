@@ -306,7 +306,7 @@ namespace Core::IO
         "Expected %i result values, but got %i.", result_num_components_per_node * pointcounter,
         point_result_data.size());
 
-    visualization_manager_->get_visualization_data().set_point_data_vector<double>(
+    visualization_manager_->get_visualization_data().set_point_data_vector(
         resultname, point_result_data, result_num_components_per_node);
   }
 
@@ -421,7 +421,7 @@ namespace Core::IO
     }
 
     // Setup the vector with the GIDs of the nodes.
-    std::vector<double> gid_of_nodes;
+    std::vector<int> gid_of_nodes;
     gid_of_nodes.reserve(num_nodes);
 
     // Loop over each element and add the node GIDs.
@@ -437,7 +437,7 @@ namespace Core::IO
         gid_of_nodes.push_back(nodes[numbering[inode]]->id());
     }
 
-    visualization_manager_->get_visualization_data().set_point_data_vector<double>(
+    visualization_manager_->get_visualization_data().set_point_data_vector<int>(
         resultname, gid_of_nodes, 1);
   }
 
