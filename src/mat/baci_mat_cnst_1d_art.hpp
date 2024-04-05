@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_CNST_1D_ART_HPP
-#define BACI_MAT_CNST_1D_ART_HPP
+#ifndef FOUR_C_MAT_CNST_1D_ART_HPP
+#define FOUR_C_MAT_CNST_1D_ART_HPP
 
 
 

@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_RED_AIRWAYS_IMPLICITINTEGRATION_HPP
-#define BACI_RED_AIRWAYS_IMPLICITINTEGRATION_HPP
+#ifndef FOUR_C_RED_AIRWAYS_IMPLICITINTEGRATION_HPP
+#define FOUR_C_RED_AIRWAYS_IMPLICITINTEGRATION_HPP
 
 #include "baci_config.hpp"
 

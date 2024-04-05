@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_ART_NET_ARTERY_ELE_CALC_PRES_BASED_HPP
-#define BACI_ART_NET_ARTERY_ELE_CALC_PRES_BASED_HPP
+#ifndef FOUR_C_ART_NET_ARTERY_ELE_CALC_PRES_BASED_HPP
+#define FOUR_C_ART_NET_ARTERY_ELE_CALC_PRES_BASED_HPP
 
 #include "baci_config.hpp"
 

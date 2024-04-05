@@ -3,8 +3,8 @@
 \brief Solid Tet10 Element
 \level 1
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_TET10_HPP
-#define BACI_SO3_TET10_HPP
+#ifndef FOUR_C_SO3_TET10_HPP
+#define FOUR_C_SO3_TET10_HPP
 
 
 #include "baci_config.hpp"

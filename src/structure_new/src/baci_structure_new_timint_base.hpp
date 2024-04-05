@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_TIMINT_BASE_HPP
-#define BACI_STRUCTURE_NEW_TIMINT_BASE_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_TIMINT_BASE_HPP
+#define FOUR_C_STRUCTURE_NEW_TIMINT_BASE_HPP
 
 #include "baci_config.hpp"
 

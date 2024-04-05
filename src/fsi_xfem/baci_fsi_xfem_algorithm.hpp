@@ -9,8 +9,8 @@
 */
 
 
-#ifndef BACI_FSI_XFEM_ALGORITHM_HPP
-#define BACI_FSI_XFEM_ALGORITHM_HPP
+#ifndef FOUR_C_FSI_XFEM_ALGORITHM_HPP
+#define FOUR_C_FSI_XFEM_ALGORITHM_HPP
 
 
 #include "baci_config.hpp"

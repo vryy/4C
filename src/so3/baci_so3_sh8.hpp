@@ -6,8 +6,8 @@
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SO3_SH8_HPP
-#define BACI_SO3_SH8_HPP
+#ifndef FOUR_C_SO3_SH8_HPP
+#define FOUR_C_SO3_SH8_HPP
 
 #include "baci_config.hpp"
 

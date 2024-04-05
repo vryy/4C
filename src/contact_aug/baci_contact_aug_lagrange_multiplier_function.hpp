@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_HPP
-#define BACI_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_HPP
+#ifndef FOUR_C_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_HPP
+#define FOUR_C_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_HPP
 
 #include "baci_config.hpp"
 

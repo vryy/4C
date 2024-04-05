@@ -7,8 +7,8 @@ strain computations
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_COUPTRANSVERSELYISOTROPIC_HPP
-#define BACI_MATELAST_COUPTRANSVERSELYISOTROPIC_HPP
+#ifndef FOUR_C_MATELAST_COUPTRANSVERSELYISOTROPIC_HPP
+#define FOUR_C_MATELAST_COUPTRANSVERSELYISOTROPIC_HPP
 
 #include "baci_config.hpp"
 

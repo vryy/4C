@@ -12,8 +12,8 @@ loop for the evaluation.
 */
 
 
-#ifndef BACI_SHELL7P_ELE_HPP
-#define BACI_SHELL7P_ELE_HPP
+#ifndef FOUR_C_SHELL7P_ELE_HPP
+#define FOUR_C_SHELL7P_ELE_HPP
 
 #include "baci_config.hpp"
 

@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_ADAPTER_SCATRA_FLUID_COUPLING_ALGORITHM_HPP
-#define BACI_ADAPTER_SCATRA_FLUID_COUPLING_ALGORITHM_HPP
+#ifndef FOUR_C_ADAPTER_SCATRA_FLUID_COUPLING_ALGORITHM_HPP
+#define FOUR_C_ADAPTER_SCATRA_FLUID_COUPLING_ALGORITHM_HPP
 
 #include "baci_config.hpp"
 

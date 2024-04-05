@@ -16,8 +16,8 @@ documentation.
 \level 2
 
  */
-#ifndef BACI_IO_GMSH_HPP
-#define BACI_IO_GMSH_HPP
+#ifndef FOUR_C_IO_GMSH_HPP
+#define FOUR_C_IO_GMSH_HPP
 
 #include "baci_config.hpp"
 

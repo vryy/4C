@@ -8,8 +8,8 @@
  */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_ALE_WRAPPER_HPP
-#define BACI_ADAPTER_ALE_WRAPPER_HPP
+#ifndef FOUR_C_ADAPTER_ALE_WRAPPER_HPP
+#define FOUR_C_ADAPTER_ALE_WRAPPER_HPP
 
 #include "baci_config.hpp"
 

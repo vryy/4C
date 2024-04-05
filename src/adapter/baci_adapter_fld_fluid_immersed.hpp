@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_ADAPTER_FLD_FLUID_IMMERSED_HPP
-#define BACI_ADAPTER_FLD_FLUID_IMMERSED_HPP
+#ifndef FOUR_C_ADAPTER_FLD_FLUID_IMMERSED_HPP
+#define FOUR_C_ADAPTER_FLD_FLUID_IMMERSED_HPP
 
 #include "baci_config.hpp"
 

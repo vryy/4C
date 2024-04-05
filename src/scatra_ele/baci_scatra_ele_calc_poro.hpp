@@ -9,8 +9,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_SCATRA_ELE_CALC_PORO_HPP
-#define BACI_SCATRA_ELE_CALC_PORO_HPP
+#ifndef FOUR_C_SCATRA_ELE_CALC_PORO_HPP
+#define FOUR_C_SCATRA_ELE_CALC_PORO_HPP
 
 #include "baci_config.hpp"
 

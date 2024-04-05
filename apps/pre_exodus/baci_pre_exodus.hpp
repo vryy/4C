@@ -14,8 +14,8 @@ or the well-known .dat file is created.
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_PRE_EXODUS_HPP
-#define BACI_PRE_EXODUS_HPP
+#ifndef FOUR_C_PRE_EXODUS_HPP
+#define FOUR_C_PRE_EXODUS_HPP
 
 #include "baci_config.hpp"
 

@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_CLNWRAPPER_HPP
-#define BACI_UTILS_CLNWRAPPER_HPP
+#ifndef FOUR_C_UTILS_CLNWRAPPER_HPP
+#define FOUR_C_UTILS_CLNWRAPPER_HPP
 #include "baci_config.hpp"
 
 #include "baci_utils_exceptions.hpp"

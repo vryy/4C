@@ -9,8 +9,8 @@
 Here is everything related with reading a bc file
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_PRE_EXODUS_READBC_HPP
-#define BACI_PRE_EXODUS_READBC_HPP
+#ifndef FOUR_C_PRE_EXODUS_READBC_HPP
+#define FOUR_C_PRE_EXODUS_READBC_HPP
 
 #include "baci_config.hpp"
 

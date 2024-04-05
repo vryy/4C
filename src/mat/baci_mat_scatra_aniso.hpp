@@ -5,8 +5,8 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_SCATRA_ANISO_HPP
-#define BACI_MAT_SCATRA_ANISO_HPP
+#ifndef FOUR_C_MAT_SCATRA_ANISO_HPP
+#define FOUR_C_MAT_SCATRA_ANISO_HPP
 
 
 

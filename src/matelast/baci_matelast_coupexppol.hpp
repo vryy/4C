@@ -7,8 +7,8 @@ Weickenmeier_2014
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_COUPEXPPOL_HPP
-#define BACI_MATELAST_COUPEXPPOL_HPP
+#ifndef FOUR_C_MATELAST_COUPEXPPOL_HPP
+#define FOUR_C_MATELAST_COUPEXPPOL_HPP
 
 #include "baci_config.hpp"
 

@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_MAT_PARTICLE_WALL_DEM_HPP
-#define BACI_MAT_PARTICLE_WALL_DEM_HPP
+#ifndef FOUR_C_MAT_PARTICLE_WALL_DEM_HPP
+#define FOUR_C_MAT_PARTICLE_WALL_DEM_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2019 |

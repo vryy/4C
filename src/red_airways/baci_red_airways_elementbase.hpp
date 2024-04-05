@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_RED_AIRWAYS_ELEMENTBASE_HPP
-#define BACI_RED_AIRWAYS_ELEMENTBASE_HPP
+#ifndef FOUR_C_RED_AIRWAYS_ELEMENTBASE_HPP
+#define FOUR_C_RED_AIRWAYS_ELEMENTBASE_HPP
 
 #include "baci_config.hpp"
 

@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_INPAR_IO_HPP
-#define BACI_INPAR_IO_HPP
+#ifndef FOUR_C_INPAR_IO_HPP
+#define FOUR_C_INPAR_IO_HPP
 
 #include "baci_config.hpp"
 

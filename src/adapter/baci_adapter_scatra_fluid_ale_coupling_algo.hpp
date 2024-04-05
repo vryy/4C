@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_HPP
-#define BACI_ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_HPP
+#ifndef FOUR_C_ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_HPP
+#define FOUR_C_ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_HPP
 
 #include "baci_config.hpp"
 

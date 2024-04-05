@@ -8,8 +8,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_EHL_MONOLITHIC_HPP
-#define BACI_EHL_MONOLITHIC_HPP
+#ifndef FOUR_C_EHL_MONOLITHIC_HPP
+#define FOUR_C_EHL_MONOLITHIC_HPP
 
 
 /*----------------------------------------------------------------------*

@@ -11,8 +11,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_COUPLING_PORO_MORTAR_HPP
-#define BACI_ADAPTER_COUPLING_PORO_MORTAR_HPP
+#ifndef FOUR_C_ADAPTER_COUPLING_PORO_MORTAR_HPP
+#define FOUR_C_ADAPTER_COUPLING_PORO_MORTAR_HPP
 
 /*---------------------------------------------------------------------*
  | headers                                                  ager 10/15 |

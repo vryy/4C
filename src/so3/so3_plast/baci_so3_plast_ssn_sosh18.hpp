@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              seitz 11/14 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_PLAST_SSN_SOSH18_HPP
-#define BACI_SO3_PLAST_SSN_SOSH18_HPP
+#ifndef FOUR_C_SO3_PLAST_SSN_SOSH18_HPP
+#define FOUR_C_SO3_PLAST_SSN_SOSH18_HPP
 
 #include "baci_config.hpp"
 

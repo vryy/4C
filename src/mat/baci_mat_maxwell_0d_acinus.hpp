@@ -12,8 +12,8 @@ spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MAXWELL_0D_ACINUS_HPP
-#define BACI_MAT_MAXWELL_0D_ACINUS_HPP
+#ifndef FOUR_C_MAT_MAXWELL_0D_ACINUS_HPP
+#define FOUR_C_MAT_MAXWELL_0D_ACINUS_HPP
 
 
 #include "baci_config.hpp"

@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_ELCH_DYN_HPP
-#define BACI_ELCH_DYN_HPP
+#ifndef FOUR_C_ELCH_DYN_HPP
+#define FOUR_C_ELCH_DYN_HPP
 
 #include "baci_config.hpp"
 

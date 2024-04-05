@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_STR_TIMELOOP_HPP
-#define BACI_ADAPTER_STR_TIMELOOP_HPP
+#ifndef FOUR_C_ADAPTER_STR_TIMELOOP_HPP
+#define FOUR_C_ADAPTER_STR_TIMELOOP_HPP
 
 #include "baci_config.hpp"
 

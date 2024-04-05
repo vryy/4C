@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_NODE_HPP
-#define BACI_LIB_NODE_HPP
+#ifndef FOUR_C_LIB_NODE_HPP
+#define FOUR_C_LIB_NODE_HPP
 
 
 #include "baci_config.hpp"

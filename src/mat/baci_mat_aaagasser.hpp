@@ -17,8 +17,8 @@ CABLUM 1.98e-3
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_AAAGASSER_HPP
-#define BACI_MAT_AAAGASSER_HPP
+#ifndef FOUR_C_MAT_AAAGASSER_HPP
+#define FOUR_C_MAT_AAAGASSER_HPP
 
 #include "baci_config.hpp"
 

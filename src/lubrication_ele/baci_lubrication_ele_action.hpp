@@ -12,8 +12,8 @@ comparison instead of a cumbersome std::string compare.
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_LUBRICATION_ELE_ACTION_HPP
-#define BACI_LUBRICATION_ELE_ACTION_HPP
+#ifndef FOUR_C_LUBRICATION_ELE_ACTION_HPP
+#define FOUR_C_LUBRICATION_ELE_ACTION_HPP
 
 #include "baci_config.hpp"
 

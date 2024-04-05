@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_UTILS_PARALLEL_HPP
-#define BACI_LIB_UTILS_PARALLEL_HPP
+#ifndef FOUR_C_LIB_UTILS_PARALLEL_HPP
+#define FOUR_C_LIB_UTILS_PARALLEL_HPP
 
 #include "baci_config.hpp"
 

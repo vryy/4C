@@ -9,8 +9,8 @@ relate the contact gap to the contact pressure based on micro interactions
 */
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifndef BACI_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_HPP
-#define BACI_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_HPP
+#ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_HPP
+#define FOUR_C_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_HPP
 
 
 /*----------------------------------------------------------------------*/

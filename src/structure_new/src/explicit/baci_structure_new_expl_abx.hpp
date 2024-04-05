@@ -23,8 +23,8 @@ the first p-1 steps. For a restart analysis, those values are restored from the 
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_EXPL_ABX_HPP
-#define BACI_STRUCTURE_NEW_EXPL_ABX_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_EXPL_ABX_HPP
+#define FOUR_C_STRUCTURE_NEW_EXPL_ABX_HPP
 
 #include "baci_config.hpp"
 

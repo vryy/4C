@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_AUG_PROJECTOR_HPP
-#define BACI_CONTACT_AUG_PROJECTOR_HPP
+#ifndef FOUR_C_CONTACT_AUG_PROJECTOR_HPP
+#define FOUR_C_CONTACT_AUG_PROJECTOR_HPP
 
 #include "baci_config.hpp"
 

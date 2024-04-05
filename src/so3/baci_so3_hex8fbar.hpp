@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SO3_HEX8FBAR_HPP
-#define BACI_SO3_HEX8FBAR_HPP
+#ifndef FOUR_C_SO3_HEX8FBAR_HPP
+#define FOUR_C_SO3_HEX8FBAR_HPP
 
 #include "baci_config.hpp"
 

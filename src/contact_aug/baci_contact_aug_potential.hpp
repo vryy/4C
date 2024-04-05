@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_AUG_POTENTIAL_HPP
-#define BACI_CONTACT_AUG_POTENTIAL_HPP
+#ifndef FOUR_C_CONTACT_AUG_POTENTIAL_HPP
+#define FOUR_C_CONTACT_AUG_POTENTIAL_HPP
 
 #include "baci_config.hpp"
 

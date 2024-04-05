@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_MORTAR_COUPLING3D_CLASSES_HPP
-#define BACI_MORTAR_COUPLING3D_CLASSES_HPP
+#ifndef FOUR_C_MORTAR_COUPLING3D_CLASSES_HPP
+#define FOUR_C_MORTAR_COUPLING3D_CLASSES_HPP
 
 #include "baci_config.hpp"
 

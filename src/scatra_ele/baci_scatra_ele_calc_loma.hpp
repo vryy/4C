@@ -21,8 +21,8 @@ list, where a dserror() should be provided.
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_CALC_LOMA_HPP
-#define BACI_SCATRA_ELE_CALC_LOMA_HPP
+#ifndef FOUR_C_SCATRA_ELE_CALC_LOMA_HPP
+#define FOUR_C_SCATRA_ELE_CALC_LOMA_HPP
 
 #include "baci_config.hpp"
 

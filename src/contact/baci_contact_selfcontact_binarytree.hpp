@@ -6,8 +6,8 @@
 
 */
 /*-----------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_SELFCONTACT_BINARYTREE_HPP
-#define BACI_CONTACT_SELFCONTACT_BINARYTREE_HPP
+#ifndef FOUR_C_CONTACT_SELFCONTACT_BINARYTREE_HPP
+#define FOUR_C_CONTACT_SELFCONTACT_BINARYTREE_HPP
 
 #include "baci_config.hpp"
 

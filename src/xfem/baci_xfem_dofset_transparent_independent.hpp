@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_XFEM_DOFSET_TRANSPARENT_INDEPENDENT_HPP
-#define BACI_XFEM_DOFSET_TRANSPARENT_INDEPENDENT_HPP
+#ifndef FOUR_C_XFEM_DOFSET_TRANSPARENT_INDEPENDENT_HPP
+#define FOUR_C_XFEM_DOFSET_TRANSPARENT_INDEPENDENT_HPP
 
 #include "baci_config.hpp"
 

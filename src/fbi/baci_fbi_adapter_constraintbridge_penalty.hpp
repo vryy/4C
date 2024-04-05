@@ -8,8 +8,8 @@ approach for Fluid-beam interaction.
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_HPP
-#define BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_HPP
+#ifndef FOUR_C_FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_HPP
+#define FOUR_C_FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_HPP
 
 #include "baci_config.hpp"
 

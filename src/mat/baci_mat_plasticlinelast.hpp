@@ -24,8 +24,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 04/11 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_PLASTICLINELAST_HPP
-#define BACI_MAT_PLASTICLINELAST_HPP
+#ifndef FOUR_C_MAT_PLASTICLINELAST_HPP
+#define FOUR_C_MAT_PLASTICLINELAST_HPP
 
 
 /*----------------------------------------------------------------------*

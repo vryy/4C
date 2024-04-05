@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_STR_STRUCTURE_NEW_HPP
-#define BACI_ADAPTER_STR_STRUCTURE_NEW_HPP
+#ifndef FOUR_C_ADAPTER_STR_STRUCTURE_NEW_HPP
+#define FOUR_C_ADAPTER_STR_STRUCTURE_NEW_HPP
 
 #include "baci_config.hpp"
 

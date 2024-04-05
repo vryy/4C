@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_XFEM_COUPLING_MESH_COUPLED_LEVELSET_HPP
-#define BACI_XFEM_COUPLING_MESH_COUPLED_LEVELSET_HPP
+#ifndef FOUR_C_XFEM_COUPLING_MESH_COUPLED_LEVELSET_HPP
+#define FOUR_C_XFEM_COUPLING_MESH_COUPLED_LEVELSET_HPP
 
 #include "baci_config.hpp"
 

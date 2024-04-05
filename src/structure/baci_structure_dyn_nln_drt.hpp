@@ -7,8 +7,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_DYN_NLN_DRT_HPP
-#define BACI_STRUCTURE_DYN_NLN_DRT_HPP
+#ifndef FOUR_C_STRUCTURE_DYN_NLN_DRT_HPP
+#define FOUR_C_STRUCTURE_DYN_NLN_DRT_HPP
 
 #include "baci_config.hpp"
 

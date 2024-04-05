@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#ifndef BACI_ALE_RESULTTEST_HPP
-#define BACI_ALE_RESULTTEST_HPP
+#ifndef FOUR_C_ALE_RESULTTEST_HPP
+#define FOUR_C_ALE_RESULTTEST_HPP
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */

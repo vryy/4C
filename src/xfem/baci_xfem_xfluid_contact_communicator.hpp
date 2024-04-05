@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_XFEM_XFLUID_CONTACT_COMMUNICATOR_HPP
-#define BACI_XFEM_XFLUID_CONTACT_COMMUNICATOR_HPP
+#ifndef FOUR_C_XFEM_XFLUID_CONTACT_COMMUNICATOR_HPP
+#define FOUR_C_XFEM_XFLUID_CONTACT_COMMUNICATOR_HPP
 
 
 #include "baci_config.hpp"

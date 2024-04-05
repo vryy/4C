@@ -5,8 +5,8 @@
 \level 2
 *--------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_VISCOPLASTIC_NO_YIELD_SURFACE_HPP
-#define BACI_MAT_VISCOPLASTIC_NO_YIELD_SURFACE_HPP
+#ifndef FOUR_C_MAT_VISCOPLASTIC_NO_YIELD_SURFACE_HPP
+#define FOUR_C_MAT_VISCOPLASTIC_NO_YIELD_SURFACE_HPP
 
 #include "baci_config.hpp"
 

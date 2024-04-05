@@ -32,8 +32,8 @@ given on input.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TURBULENCE_STATISTICS_PH_HPP
-#define BACI_FLUID_TURBULENCE_STATISTICS_PH_HPP
+#ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_PH_HPP
+#define FOUR_C_FLUID_TURBULENCE_STATISTICS_PH_HPP
 
 #include "baci_config.hpp"
 

@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_NURBS27_HPP
-#define BACI_SO3_NURBS27_HPP
+#ifndef FOUR_C_SO3_NURBS27_HPP
+#define FOUR_C_SO3_NURBS27_HPP
 
 
 #include "baci_config.hpp"

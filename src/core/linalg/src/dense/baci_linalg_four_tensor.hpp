@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_FOUR_TENSOR_HPP
-#define BACI_LINALG_FOUR_TENSOR_HPP
+#ifndef FOUR_C_LINALG_FOUR_TENSOR_HPP
+#define FOUR_C_LINALG_FOUR_TENSOR_HPP
 
 #include "baci_config.hpp"
 

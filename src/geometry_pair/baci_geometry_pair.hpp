@@ -9,8 +9,8 @@ problems.
 // End doxygen header.
 
 
-#ifndef BACI_GEOMETRY_PAIR_HPP
-#define BACI_GEOMETRY_PAIR_HPP
+#ifndef FOUR_C_GEOMETRY_PAIR_HPP
+#define FOUR_C_GEOMETRY_PAIR_HPP
 
 
 #include "baci_config.hpp"

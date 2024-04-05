@@ -10,8 +10,8 @@ problem
 /*-----------------------------------------------------------*/
 
 // #ifdef D_COUPLED_ARTNET
-#ifndef BACI_FLUID_COUPLING_RED_MODELS_HPP
-#define BACI_FLUID_COUPLING_RED_MODELS_HPP
+#ifndef FOUR_C_FLUID_COUPLING_RED_MODELS_HPP
+#define FOUR_C_FLUID_COUPLING_RED_MODELS_HPP
 
 
 #include "baci_config.hpp"

@@ -7,8 +7,8 @@
 \level 2
 
 *---------------------------------------------------------------------------*/
-#ifndef BACI_BINSTRATEGY_MESHFREE_BIN_HPP
-#define BACI_BINSTRATEGY_MESHFREE_BIN_HPP
+#ifndef FOUR_C_BINSTRATEGY_MESHFREE_BIN_HPP
+#define FOUR_C_BINSTRATEGY_MESHFREE_BIN_HPP
 
 #include "baci_config.hpp"
 

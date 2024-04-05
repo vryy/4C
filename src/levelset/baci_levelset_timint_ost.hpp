@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_LEVELSET_TIMINT_OST_HPP
-#define BACI_LEVELSET_TIMINT_OST_HPP
+#ifndef FOUR_C_LEVELSET_TIMINT_OST_HPP
+#define FOUR_C_LEVELSET_TIMINT_OST_HPP
 
 #include "baci_config.hpp"
 

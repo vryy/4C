@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_CALC_ELCH_DIFFCOND_STI_THERMO_HPP
-#define BACI_SCATRA_ELE_CALC_ELCH_DIFFCOND_STI_THERMO_HPP
+#ifndef FOUR_C_SCATRA_ELE_CALC_ELCH_DIFFCOND_STI_THERMO_HPP
+#define FOUR_C_SCATRA_ELE_CALC_ELCH_DIFFCOND_STI_THERMO_HPP
 
 #include "baci_config.hpp"
 

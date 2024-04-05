@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LOMA_ALGORITHM_HPP
-#define BACI_LOMA_ALGORITHM_HPP
+#ifndef FOUR_C_LOMA_ALGORITHM_HPP
+#define FOUR_C_LOMA_ALGORITHM_HPP
 
 #include "baci_config.hpp"
 

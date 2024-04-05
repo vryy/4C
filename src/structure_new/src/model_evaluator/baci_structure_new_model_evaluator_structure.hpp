@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_HPP
-#define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_HPP
+#define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_HPP
 
 #include "baci_config.hpp"
 

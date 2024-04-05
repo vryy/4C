@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_INPAR_BEAMPOTENTIAL_HPP
-#define BACI_INPAR_BEAMPOTENTIAL_HPP
+#ifndef FOUR_C_INPAR_BEAMPOTENTIAL_HPP
+#define FOUR_C_INPAR_BEAMPOTENTIAL_HPP
 
 #include "baci_config.hpp"
 

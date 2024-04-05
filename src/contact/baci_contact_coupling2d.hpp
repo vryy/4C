@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_COUPLING2D_HPP
-#define BACI_CONTACT_COUPLING2D_HPP
+#ifndef FOUR_C_CONTACT_COUPLING2D_HPP
+#define FOUR_C_CONTACT_COUPLING2D_HPP
 
 #include "baci_config.hpp"
 

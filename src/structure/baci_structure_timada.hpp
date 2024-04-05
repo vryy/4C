@@ -7,8 +7,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef BACI_STRUCTURE_TIMADA_HPP
-#define BACI_STRUCTURE_TIMADA_HPP
+#ifndef FOUR_C_STRUCTURE_TIMADA_HPP
+#define FOUR_C_STRUCTURE_TIMADA_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */

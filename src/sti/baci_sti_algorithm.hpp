@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_STI_ALGORITHM_HPP
-#define BACI_STI_ALGORITHM_HPP
+#ifndef FOUR_C_STI_ALGORITHM_HPP
+#define FOUR_C_STI_ALGORITHM_HPP
 
 #include "baci_config.hpp"
 

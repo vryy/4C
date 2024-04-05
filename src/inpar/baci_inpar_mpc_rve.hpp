@@ -5,8 +5,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_MPC_RVE_HPP
-#define BACI_INPAR_MPC_RVE_HPP
+#ifndef FOUR_C_INPAR_MPC_RVE_HPP
+#define FOUR_C_INPAR_MPC_RVE_HPP
 
 #include "baci_config.hpp"
 

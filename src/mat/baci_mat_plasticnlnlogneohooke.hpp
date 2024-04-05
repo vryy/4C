@@ -23,8 +23,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                                          |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_PLASTICNLNLOGNEOHOOKE_HPP
-#define BACI_MAT_PLASTICNLNLOGNEOHOOKE_HPP
+#ifndef FOUR_C_MAT_PLASTICNLNLOGNEOHOOKE_HPP
+#define FOUR_C_MAT_PLASTICNLNLOGNEOHOOKE_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                              |

@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef BACI_GEOMETRY_PAIR_LINE_TO_SURFACE_HPP
-#define BACI_GEOMETRY_PAIR_LINE_TO_SURFACE_HPP
+#ifndef FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_HPP
+#define FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_HPP
 
 
 #include "baci_config.hpp"

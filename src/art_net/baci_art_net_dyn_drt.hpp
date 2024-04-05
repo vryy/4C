@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 /************/
-#ifndef BACI_ART_NET_DYN_DRT_HPP
-#define BACI_ART_NET_DYN_DRT_HPP
+#ifndef FOUR_C_ART_NET_DYN_DRT_HPP
+#define FOUR_C_ART_NET_DYN_DRT_HPP
 
 
 #include "baci_config.hpp"

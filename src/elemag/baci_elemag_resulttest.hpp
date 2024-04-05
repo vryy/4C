@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ELEMAG_RESULTTEST_HPP
-#define BACI_ELEMAG_RESULTTEST_HPP
+#ifndef FOUR_C_ELEMAG_RESULTTEST_HPP
+#define FOUR_C_ELEMAG_RESULTTEST_HPP
 
 #include "baci_config.hpp"
 

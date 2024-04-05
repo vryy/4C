@@ -10,8 +10,8 @@ gradient.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_HPP
-#define BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_HPP
+#ifndef FOUR_C_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_HPP
+#define FOUR_C_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_HPP
 #include "baci_config.hpp"
 
 #include "baci_linalg_fixedsizematrix.hpp"

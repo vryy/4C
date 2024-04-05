@@ -15,8 +15,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DOFSET_PBC_HPP
-#define BACI_LIB_DOFSET_PBC_HPP
+#ifndef FOUR_C_LIB_DOFSET_PBC_HPP
+#define FOUR_C_LIB_DOFSET_PBC_HPP
 
 #include "baci_config.hpp"
 

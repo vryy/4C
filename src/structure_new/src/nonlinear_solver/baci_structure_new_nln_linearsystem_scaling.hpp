@@ -8,8 +8,8 @@
 
 */
 /*-----------------------------------------------------------*/
-#ifndef BACI_STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_HPP
-#define BACI_STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_HPP
+#define FOUR_C_STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_HPP
 
 #include "baci_config.hpp"
 

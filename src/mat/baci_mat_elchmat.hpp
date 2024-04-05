@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_ELCHMAT_HPP
-#define BACI_MAT_ELCHMAT_HPP
+#ifndef FOUR_C_MAT_ELCHMAT_HPP
+#define FOUR_C_MAT_ELCHMAT_HPP
 
 #include "baci_config.hpp"
 

@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_STRUCTURE_NEW_PREDICT_TANGDIS_HPP
-#define BACI_STRUCTURE_NEW_PREDICT_TANGDIS_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_PREDICT_TANGDIS_HPP
+#define FOUR_C_STRUCTURE_NEW_PREDICT_TANGDIS_HPP
 
 #include "baci_config.hpp"
 

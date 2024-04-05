@@ -10,8 +10,8 @@ generation
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_FLUID_DISCRET_EXTRACTOR_HPP
-#define BACI_FLUID_DISCRET_EXTRACTOR_HPP
+#ifndef FOUR_C_FLUID_DISCRET_EXTRACTOR_HPP
+#define FOUR_C_FLUID_DISCRET_EXTRACTOR_HPP
 
 #include "baci_config.hpp"
 

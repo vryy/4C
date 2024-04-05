@@ -11,8 +11,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_STRUCTURE_NEW_TIMINT_NOXINTERFACE_HPP
-#define BACI_STRUCTURE_NEW_TIMINT_NOXINTERFACE_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_TIMINT_NOXINTERFACE_HPP
+#define FOUR_C_STRUCTURE_NEW_TIMINT_NOXINTERFACE_HPP
 
 #include "baci_config.hpp"
 

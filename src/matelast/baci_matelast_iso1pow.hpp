@@ -7,8 +7,8 @@ material in terms of the first Cauchy-Green invariant
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_ISO1POW_HPP
-#define BACI_MATELAST_ISO1POW_HPP
+#ifndef FOUR_C_MATELAST_ISO1POW_HPP
+#define FOUR_C_MATELAST_ISO1POW_HPP
 
 #include "baci_config.hpp"
 

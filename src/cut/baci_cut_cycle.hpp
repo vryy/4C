@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_CYCLE_HPP
-#define BACI_CUT_CYCLE_HPP
+#ifndef FOUR_C_CUT_CYCLE_HPP
+#define FOUR_C_CUT_CYCLE_HPP
 
 #include "baci_config.hpp"
 

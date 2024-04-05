@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SSTI_RESULTTEST_HPP
-#define BACI_SSTI_RESULTTEST_HPP
+#ifndef FOUR_C_SSTI_RESULTTEST_HPP
+#define FOUR_C_SSTI_RESULTTEST_HPP
 
 #include "baci_config.hpp"
 

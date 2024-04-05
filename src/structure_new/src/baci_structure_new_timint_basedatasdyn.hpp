@@ -11,8 +11,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_STRUCTURE_NEW_TIMINT_BASEDATASDYN_HPP
-#define BACI_STRUCTURE_NEW_TIMINT_BASEDATASDYN_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATASDYN_HPP
+#define FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATASDYN_HPP
 
 #include "baci_config.hpp"
 

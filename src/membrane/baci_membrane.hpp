@@ -11,8 +11,8 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_MEMBRANE_HPP
-#define BACI_MEMBRANE_HPP
+#ifndef FOUR_C_MEMBRANE_HPP
+#define FOUR_C_MEMBRANE_HPP
 
 #include "baci_config.hpp"
 

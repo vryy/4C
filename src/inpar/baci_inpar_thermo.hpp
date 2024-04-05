@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              dano 06/09 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_THERMO_HPP
-#define BACI_INPAR_THERMO_HPP
+#ifndef FOUR_C_INPAR_THERMO_HPP
+#define FOUR_C_INPAR_THERMO_HPP
 
 
 /*----------------------------------------------------------------------*

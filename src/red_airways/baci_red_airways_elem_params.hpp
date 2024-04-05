@@ -5,8 +5,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_RED_AIRWAYS_ELEM_PARAMS_HPP
-#define BACI_RED_AIRWAYS_ELEM_PARAMS_HPP
+#ifndef FOUR_C_RED_AIRWAYS_ELEM_PARAMS_HPP
+#define FOUR_C_RED_AIRWAYS_ELEM_PARAMS_HPP
 
 #include "baci_config.hpp"
 

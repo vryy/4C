@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_MICROMATERIALGP_STATIC_HPP
-#define BACI_MAT_MICROMATERIALGP_STATIC_HPP
+#ifndef FOUR_C_MAT_MICROMATERIALGP_STATIC_HPP
+#define FOUR_C_MAT_MICROMATERIALGP_STATIC_HPP
 
 
 

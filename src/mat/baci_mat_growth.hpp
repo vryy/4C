@@ -6,8 +6,8 @@ growth laws.
 \level 2
 
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_GROWTH_HPP
-#define BACI_MAT_GROWTH_HPP
+#ifndef FOUR_C_MAT_GROWTH_HPP
+#define FOUR_C_MAT_GROWTH_HPP
 
 
 #include "baci_config.hpp"

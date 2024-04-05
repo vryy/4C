@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_ALGORITHM_SIM_HPP
-#define BACI_PARTICLE_ALGORITHM_SIM_HPP
+#ifndef FOUR_C_PARTICLE_ALGORITHM_SIM_HPP
+#define FOUR_C_PARTICLE_ALGORITHM_SIM_HPP
 
 #include "baci_config.hpp"
 

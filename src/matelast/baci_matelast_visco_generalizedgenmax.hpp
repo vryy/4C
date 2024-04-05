@@ -5,8 +5,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MATELAST_VISCO_GENERALIZEDGENMAX_HPP
-#define BACI_MATELAST_VISCO_GENERALIZEDGENMAX_HPP
+#ifndef FOUR_C_MATELAST_VISCO_GENERALIZEDGENMAX_HPP
+#define FOUR_C_MATELAST_VISCO_GENERALIZEDGENMAX_HPP
 
 #include "baci_config.hpp"
 

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_VOLPENALTY_HPP
-#define BACI_MATELAST_VOLPENALTY_HPP
+#ifndef FOUR_C_MATELAST_VOLPENALTY_HPP
+#define FOUR_C_MATELAST_VOLPENALTY_HPP
 
 #include "baci_config.hpp"
 

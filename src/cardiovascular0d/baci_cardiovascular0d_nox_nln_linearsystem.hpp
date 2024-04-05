@@ -12,8 +12,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_HPP
-#define BACI_CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_HPP
+#ifndef FOUR_C_CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_HPP
+#define FOUR_C_CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_HPP
 
 #include "baci_config.hpp"
 

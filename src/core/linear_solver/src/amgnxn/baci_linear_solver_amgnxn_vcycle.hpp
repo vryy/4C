@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_AMGNXN_VCYCLE_HPP
-#define BACI_LINEAR_SOLVER_AMGNXN_VCYCLE_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_AMGNXN_VCYCLE_HPP
+#define FOUR_C_LINEAR_SOLVER_AMGNXN_VCYCLE_HPP
 
 // Trilinos includes
 #include "baci_config.hpp"

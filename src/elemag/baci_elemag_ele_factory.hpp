@@ -8,8 +8,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_ELEMAG_ELE_FACTORY_HPP
-#define BACI_ELEMAG_ELE_FACTORY_HPP
+#ifndef FOUR_C_ELEMAG_ELE_FACTORY_HPP
+#define FOUR_C_ELEMAG_ELE_FACTORY_HPP
 
 #include "baci_config.hpp"
 

@@ -5,8 +5,8 @@
 
 \level 2
 *----------------------------------------------------------------------*/
-#ifndef BACI_FIBER_NODE_HPP
-#define BACI_FIBER_NODE_HPP
+#ifndef FOUR_C_FIBER_NODE_HPP
+#define FOUR_C_FIBER_NODE_HPP
 
 #include "baci_config.hpp"
 

@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_GLOBAL_DATA_READ_HPP
-#define BACI_GLOBAL_DATA_READ_HPP
+#ifndef FOUR_C_GLOBAL_DATA_READ_HPP
+#define FOUR_C_GLOBAL_DATA_READ_HPP
 
 #include "baci_config.hpp"
 

@@ -4,8 +4,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_PLASTICITY_HPP
-#define BACI_INPAR_PLASTICITY_HPP
+#ifndef FOUR_C_INPAR_PLASTICITY_HPP
+#define FOUR_C_INPAR_PLASTICITY_HPP
 
 #include "baci_config.hpp"
 

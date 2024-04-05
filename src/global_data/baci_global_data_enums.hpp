@@ -5,8 +5,8 @@
 */
 /*--------------------------------------------------------------------*/
 
-#ifndef BACI_GLOBAL_DATA_ENUMS_HPP
-#define BACI_GLOBAL_DATA_ENUMS_HPP
+#ifndef FOUR_C_GLOBAL_DATA_ENUMS_HPP
+#define FOUR_C_GLOBAL_DATA_ENUMS_HPP
 
 #include "baci_config.hpp"
 

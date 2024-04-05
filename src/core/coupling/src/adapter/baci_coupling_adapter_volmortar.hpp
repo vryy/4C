@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_COUPLING_ADAPTER_VOLMORTAR_HPP
-#define BACI_COUPLING_ADAPTER_VOLMORTAR_HPP
+#ifndef FOUR_C_COUPLING_ADAPTER_VOLMORTAR_HPP
+#define FOUR_C_COUPLING_ADAPTER_VOLMORTAR_HPP
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 10/13 |

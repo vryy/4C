@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_INPAR_GEOMETRIC_SEARCH_HPP
-#define BACI_INPAR_GEOMETRIC_SEARCH_HPP
+#ifndef FOUR_C_INPAR_GEOMETRIC_SEARCH_HPP
+#define FOUR_C_INPAR_GEOMETRIC_SEARCH_HPP
 
 #include "baci_config.hpp"
 

@@ -7,8 +7,8 @@
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_BOUNDARY_CALC_STI_ELECTRODE_HPP
-#define BACI_SCATRA_ELE_BOUNDARY_CALC_STI_ELECTRODE_HPP
+#ifndef FOUR_C_SCATRA_ELE_BOUNDARY_CALC_STI_ELECTRODE_HPP
+#define FOUR_C_SCATRA_ELE_BOUNDARY_CALC_STI_ELECTRODE_HPP
 
 #include "baci_config.hpp"
 

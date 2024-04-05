@@ -14,8 +14,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                     brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MEMBRANE_ACTIVE_STRAIN_HPP
-#define BACI_MAT_MEMBRANE_ACTIVE_STRAIN_HPP
+#ifndef FOUR_C_MAT_MEMBRANE_ACTIVE_STRAIN_HPP
+#define FOUR_C_MAT_MEMBRANE_ACTIVE_STRAIN_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                         brandstaeter 05/2018 |

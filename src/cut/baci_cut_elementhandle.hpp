@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_ELEMENTHANDLE_HPP
-#define BACI_CUT_ELEMENTHANDLE_HPP
+#ifndef FOUR_C_CUT_ELEMENTHANDLE_HPP
+#define FOUR_C_CUT_ELEMENTHANDLE_HPP
 
 
 #include "baci_config.hpp"

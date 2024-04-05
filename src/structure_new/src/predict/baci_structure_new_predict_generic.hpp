@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_PREDICT_GENERIC_HPP
-#define BACI_STRUCTURE_NEW_PREDICT_GENERIC_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_PREDICT_GENERIC_HPP
+#define FOUR_C_STRUCTURE_NEW_PREDICT_GENERIC_HPP
 
 #include "baci_config.hpp"
 

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_EXTRACT_VALUES_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_EXTRACT_VALUES_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_EXTRACT_VALUES_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_EXTRACT_VALUES_HPP
 
 #include "baci_config.hpp"
 

@@ -13,8 +13,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_NURBS_DISCRET_CONTROL_POINT_HPP
-#define BACI_NURBS_DISCRET_CONTROL_POINT_HPP
+#ifndef FOUR_C_NURBS_DISCRET_CONTROL_POINT_HPP
+#define FOUR_C_NURBS_DISCRET_CONTROL_POINT_HPP
 
 #include "baci_config.hpp"
 

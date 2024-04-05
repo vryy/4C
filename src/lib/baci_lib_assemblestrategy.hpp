@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_LIB_ASSEMBLESTRATEGY_HPP
-#define BACI_LIB_ASSEMBLESTRATEGY_HPP
+#ifndef FOUR_C_LIB_ASSEMBLESTRATEGY_HPP
+#define FOUR_C_LIB_ASSEMBLESTRATEGY_HPP
 
 #include "baci_config.hpp"
 

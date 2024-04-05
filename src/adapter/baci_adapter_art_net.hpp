@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_ART_NET_HPP
-#define BACI_ADAPTER_ART_NET_HPP
+#ifndef FOUR_C_ADAPTER_ART_NET_HPP
+#define FOUR_C_ADAPTER_ART_NET_HPP
 
 #include "baci_config.hpp"
 

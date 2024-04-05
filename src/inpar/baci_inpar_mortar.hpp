@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_MORTAR_HPP
-#define BACI_INPAR_MORTAR_HPP
+#ifndef FOUR_C_INPAR_MORTAR_HPP
+#define FOUR_C_INPAR_MORTAR_HPP
 
 #include "baci_config.hpp"
 

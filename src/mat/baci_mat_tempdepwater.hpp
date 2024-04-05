@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_TEMPDEPWATER_HPP
-#define BACI_MAT_TEMPDEPWATER_HPP
+#ifndef FOUR_C_MAT_TEMPDEPWATER_HPP
+#define FOUR_C_MAT_TEMPDEPWATER_HPP
 
 
 

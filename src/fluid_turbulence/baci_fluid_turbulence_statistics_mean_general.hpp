@@ -10,8 +10,8 @@ means are computed as time averages
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_HPP
-#define BACI_FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_HPP
+#ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_HPP
+#define FOUR_C_FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_HPP
 
 #include "baci_config.hpp"
 

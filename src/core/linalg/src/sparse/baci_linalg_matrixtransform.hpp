@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LINALG_MATRIXTRANSFORM_HPP
-#define BACI_LINALG_MATRIXTRANSFORM_HPP
+#ifndef FOUR_C_LINALG_MATRIXTRANSFORM_HPP
+#define FOUR_C_LINALG_MATRIXTRANSFORM_HPP
 
 #include "baci_config.hpp"
 

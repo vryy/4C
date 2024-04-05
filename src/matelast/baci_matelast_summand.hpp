@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_SUMMAND_HPP
-#define BACI_MATELAST_SUMMAND_HPP
+#ifndef FOUR_C_MATELAST_SUMMAND_HPP
+#define FOUR_C_MATELAST_SUMMAND_HPP
 
 #include "baci_config.hpp"
 

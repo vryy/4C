@@ -8,8 +8,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_FSI_HPP
-#define BACI_INPAR_FSI_HPP
+#ifndef FOUR_C_INPAR_FSI_HPP
+#define FOUR_C_INPAR_FSI_HPP
 
 #include "baci_config.hpp"
 

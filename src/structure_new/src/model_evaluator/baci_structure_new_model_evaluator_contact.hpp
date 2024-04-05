@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_CONTACT_HPP
-#define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_CONTACT_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_CONTACT_HPP
+#define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_CONTACT_HPP
 
 #include "baci_config.hpp"
 

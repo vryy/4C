@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_ELEMENT_INTEGRATION_SELECT_HPP
-#define BACI_LIB_ELEMENT_INTEGRATION_SELECT_HPP
+#ifndef FOUR_C_LIB_ELEMENT_INTEGRATION_SELECT_HPP
+#define FOUR_C_LIB_ELEMENT_INTEGRATION_SELECT_HPP
 
 
 #include "baci_config.hpp"

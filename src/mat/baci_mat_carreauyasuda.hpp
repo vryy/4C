@@ -7,8 +7,8 @@ Former file of Ursula Mayer
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_CARREAUYASUDA_HPP
-#define BACI_MAT_CARREAUYASUDA_HPP
+#ifndef FOUR_C_MAT_CARREAUYASUDA_HPP
+#define FOUR_C_MAT_CARREAUYASUDA_HPP
 
 
 

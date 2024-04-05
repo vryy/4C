@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_VISCO_GENMAX_HPP
-#define BACI_MATELAST_VISCO_GENMAX_HPP
+#ifndef FOUR_C_MATELAST_VISCO_GENMAX_HPP
+#define FOUR_C_MATELAST_VISCO_GENMAX_HPP
 
 #include "baci_config.hpp"
 

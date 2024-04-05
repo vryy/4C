@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_OVERLAPPREC_FSIAMG_HPP
-#define BACI_FSI_OVERLAPPREC_FSIAMG_HPP
+#ifndef FOUR_C_FSI_OVERLAPPREC_FSIAMG_HPP
+#define FOUR_C_FSI_OVERLAPPREC_FSIAMG_HPP
 
 #include "baci_config.hpp"
 

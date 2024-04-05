@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_BEAMINTERACTION_PERIODIC_BOUNDINGBOX_HPP
-#define BACI_BEAMINTERACTION_PERIODIC_BOUNDINGBOX_HPP
+#ifndef FOUR_C_BEAMINTERACTION_PERIODIC_BOUNDINGBOX_HPP
+#define FOUR_C_BEAMINTERACTION_PERIODIC_BOUNDINGBOX_HPP
 
 #include "baci_config.hpp"
 

@@ -10,8 +10,8 @@ with condensed fluid interface velocities
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_MONOLITHICFLUIDSPLIT_HPP
-#define BACI_FSI_MONOLITHICFLUIDSPLIT_HPP
+#ifndef FOUR_C_FSI_MONOLITHICFLUIDSPLIT_HPP
+#define FOUR_C_FSI_MONOLITHICFLUIDSPLIT_HPP
 
 #include "baci_config.hpp"
 

@@ -7,8 +7,8 @@
  */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_ALE_HPP
-#define BACI_ALE_HPP
+#ifndef FOUR_C_ALE_HPP
+#define FOUR_C_ALE_HPP
 
 #include "baci_config.hpp"
 

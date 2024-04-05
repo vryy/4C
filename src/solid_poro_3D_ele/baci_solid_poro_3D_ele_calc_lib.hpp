@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_PORO_3D_ELE_CALC_LIB_HPP
-#define BACI_SOLID_PORO_3D_ELE_CALC_LIB_HPP
+#ifndef FOUR_C_SOLID_PORO_3D_ELE_CALC_LIB_HPP
+#define FOUR_C_SOLID_PORO_3D_ELE_CALC_LIB_HPP
 
 
 #include "baci_config.hpp"

@@ -8,8 +8,8 @@ interface
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_POROELAST_MONOLITHICSTRUCTURESPLIT_HPP
-#define BACI_POROELAST_MONOLITHICSTRUCTURESPLIT_HPP
+#ifndef FOUR_C_POROELAST_MONOLITHICSTRUCTURESPLIT_HPP
+#define FOUR_C_POROELAST_MONOLITHICSTRUCTURESPLIT_HPP
 
 #include "baci_config.hpp"
 

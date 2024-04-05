@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_IO_MATERIALDEFINITION_HPP
-#define BACI_IO_MATERIALDEFINITION_HPP
+#ifndef FOUR_C_IO_MATERIALDEFINITION_HPP
+#define FOUR_C_IO_MATERIALDEFINITION_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */

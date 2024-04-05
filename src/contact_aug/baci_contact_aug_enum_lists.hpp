@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_AUG_ENUM_LISTS_HPP
-#define BACI_CONTACT_AUG_ENUM_LISTS_HPP
+#ifndef FOUR_C_CONTACT_AUG_ENUM_LISTS_HPP
+#define FOUR_C_CONTACT_AUG_ENUM_LISTS_HPP
 
 #include "baci_config.hpp"
 

@@ -8,8 +8,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_NITSCHE_INTEGRATOR_FSI_HPP
-#define BACI_CONTACT_NITSCHE_INTEGRATOR_FSI_HPP
+#ifndef FOUR_C_CONTACT_NITSCHE_INTEGRATOR_FSI_HPP
+#define FOUR_C_CONTACT_NITSCHE_INTEGRATOR_FSI_HPP
 
 #include "baci_config.hpp"
 

@@ -8,8 +8,8 @@ c++20 ranges::views
     */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_STD_CXX20_RANGES_HPP
-#define BACI_UTILS_STD_CXX20_RANGES_HPP
+#ifndef FOUR_C_UTILS_STD_CXX20_RANGES_HPP
+#define FOUR_C_UTILS_STD_CXX20_RANGES_HPP
 
 #include "baci_config.hpp"
 

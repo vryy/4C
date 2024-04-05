@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_PARAMSINTERFACE_HPP
-#define BACI_CONTACT_PARAMSINTERFACE_HPP
+#ifndef FOUR_C_CONTACT_PARAMSINTERFACE_HPP
+#define FOUR_C_CONTACT_PARAMSINTERFACE_HPP
 
 #include "baci_config.hpp"
 

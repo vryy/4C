@@ -12,8 +12,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                                          |
  *----------------------------------------------------------------------*/
-#ifndef BACI_ADAPTER_STR_PASIWRAPPER_HPP
-#define BACI_ADAPTER_STR_PASIWRAPPER_HPP
+#ifndef FOUR_C_ADAPTER_STR_PASIWRAPPER_HPP
+#define FOUR_C_ADAPTER_STR_PASIWRAPPER_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                              |

@@ -8,8 +8,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_SSI_MONOLITHIC_HPP
-#define BACI_SSI_MONOLITHIC_HPP
+#ifndef FOUR_C_SSI_MONOLITHIC_HPP
+#define FOUR_C_SSI_MONOLITHIC_HPP
 
 #include "baci_config.hpp"
 

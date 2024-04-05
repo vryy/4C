@@ -11,8 +11,8 @@
 
 
 
-#ifndef BACI_IO_DOMAINREADER_HPP
-#define BACI_IO_DOMAINREADER_HPP
+#ifndef FOUR_C_IO_DOMAINREADER_HPP
+#define FOUR_C_IO_DOMAINREADER_HPP
 
 #include "baci_config.hpp"
 

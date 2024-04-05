@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_IMPL_HPP
-#define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_IMPL_HPP
+#ifndef FOUR_C_MIXTURE_CONSTITUENT_REMODELFIBER_IMPL_HPP
+#define FOUR_C_MIXTURE_CONSTITUENT_REMODELFIBER_IMPL_HPP
 
 #include "baci_config.hpp"
 

@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 09/09 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_THERMO_ELE_BOUNDARY_IMPL_HPP
-#define BACI_THERMO_ELE_BOUNDARY_IMPL_HPP
+#ifndef FOUR_C_THERMO_ELE_BOUNDARY_IMPL_HPP
+#define FOUR_C_THERMO_ELE_BOUNDARY_IMPL_HPP
 
 
 /*----------------------------------------------------------------------*

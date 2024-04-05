@@ -6,8 +6,8 @@
 \level 2
  *-----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_FLUIDPORO_HPP
-#define BACI_MAT_FLUIDPORO_HPP
+#ifndef FOUR_C_MAT_FLUIDPORO_HPP
+#define FOUR_C_MAT_FLUIDPORO_HPP
 
 #include "baci_config.hpp"
 

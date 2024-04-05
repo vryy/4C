@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_FLUIDPORO_SINGLEPHASEDOF_HPP
-#define BACI_MAT_FLUIDPORO_SINGLEPHASEDOF_HPP
+#ifndef FOUR_C_MAT_FLUIDPORO_SINGLEPHASEDOF_HPP
+#define FOUR_C_MAT_FLUIDPORO_SINGLEPHASEDOF_HPP
 
 
 #include "baci_config.hpp"

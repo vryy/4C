@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_BEAMINTERACTION_POTENTIAL_PARAMS_HPP
-#define BACI_BEAMINTERACTION_POTENTIAL_PARAMS_HPP
+#ifndef FOUR_C_BEAMINTERACTION_POTENTIAL_PARAMS_HPP
+#define FOUR_C_BEAMINTERACTION_POTENTIAL_PARAMS_HPP
 
 #include "baci_config.hpp"
 

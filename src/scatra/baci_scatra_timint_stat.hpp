@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_TIMINT_STAT_HPP
-#define BACI_SCATRA_TIMINT_STAT_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_STAT_HPP
+#define FOUR_C_SCATRA_TIMINT_STAT_HPP
 
 #include "baci_config.hpp"
 

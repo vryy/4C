@@ -8,8 +8,8 @@ transport within electrochemical substances
 \level 2
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_STI_ELCH_HPP
-#define BACI_SCATRA_ELE_STI_ELCH_HPP
+#ifndef FOUR_C_SCATRA_ELE_STI_ELCH_HPP
+#define FOUR_C_SCATRA_ELE_STI_ELCH_HPP
 
 #include "baci_config.hpp"
 

@@ -13,8 +13,8 @@ the input line should read
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_AAA_MIXEDEFFECTS_HPP
-#define BACI_MAT_AAA_MIXEDEFFECTS_HPP
+#ifndef FOUR_C_MAT_AAA_MIXEDEFFECTS_HPP
+#define FOUR_C_MAT_AAA_MIXEDEFFECTS_HPP
 
 #include "baci_config.hpp"
 

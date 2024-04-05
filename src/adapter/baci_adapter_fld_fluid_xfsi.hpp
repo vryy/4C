@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_ADAPTER_FLD_FLUID_XFSI_HPP
-#define BACI_ADAPTER_FLD_FLUID_XFSI_HPP
+#ifndef FOUR_C_ADAPTER_FLD_FLUID_XFSI_HPP
+#define FOUR_C_ADAPTER_FLD_FLUID_XFSI_HPP
 
 #include "baci_config.hpp"
 

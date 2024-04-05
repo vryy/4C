@@ -11,8 +11,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_PAIREDOBJ_INSERT_POLICY_HPP
-#define BACI_UTILS_PAIREDOBJ_INSERT_POLICY_HPP
+#ifndef FOUR_C_UTILS_PAIREDOBJ_INSERT_POLICY_HPP
+#define FOUR_C_UTILS_PAIREDOBJ_INSERT_POLICY_HPP
 
 // #define DEBUG_INSERT_POLICY
 

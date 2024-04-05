@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_BEAM3_SPATIAL_DISCRETIZATION_UTILS_HPP
-#define BACI_BEAM3_SPATIAL_DISCRETIZATION_UTILS_HPP
+#ifndef FOUR_C_BEAM3_SPATIAL_DISCRETIZATION_UTILS_HPP
+#define FOUR_C_BEAM3_SPATIAL_DISCRETIZATION_UTILS_HPP
 
 #include "baci_config.hpp"
 

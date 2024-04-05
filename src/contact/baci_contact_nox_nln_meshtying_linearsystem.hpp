@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_NOX_NLN_MESHTYING_LINEARSYSTEM_HPP
-#define BACI_CONTACT_NOX_NLN_MESHTYING_LINEARSYSTEM_HPP
+#ifndef FOUR_C_CONTACT_NOX_NLN_MESHTYING_LINEARSYSTEM_HPP
+#define FOUR_C_CONTACT_NOX_NLN_MESHTYING_LINEARSYSTEM_HPP
 
 #include "baci_config.hpp"
 

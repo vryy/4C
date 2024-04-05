@@ -6,8 +6,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_UTILS_DENSEMATRIX_INVERSE_HPP
-#define BACI_LINALG_UTILS_DENSEMATRIX_INVERSE_HPP
+#ifndef FOUR_C_LINALG_UTILS_DENSEMATRIX_INVERSE_HPP
+#define FOUR_C_LINALG_UTILS_DENSEMATRIX_INVERSE_HPP
 
 #include "baci_config.hpp"
 

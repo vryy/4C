@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_VOLPOW_HPP
-#define BACI_MATELAST_VOLPOW_HPP
+#ifndef FOUR_C_MATELAST_VOLPOW_HPP
+#define FOUR_C_MATELAST_VOLPOW_HPP
 
 #include "baci_config.hpp"
 

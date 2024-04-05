@@ -7,8 +7,8 @@ concentrations and with advanced reaction terms
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_BOUNDARY_CALC_REFCONC_REAC_HPP
-#define BACI_SCATRA_ELE_BOUNDARY_CALC_REFCONC_REAC_HPP
+#ifndef FOUR_C_SCATRA_ELE_BOUNDARY_CALC_REFCONC_REAC_HPP
+#define FOUR_C_SCATRA_ELE_BOUNDARY_CALC_REFCONC_REAC_HPP
 
 #include "baci_config.hpp"
 

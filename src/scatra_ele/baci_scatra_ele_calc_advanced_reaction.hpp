@@ -7,8 +7,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_SCATRA_ELE_CALC_ADVANCED_REACTION_HPP
-#define BACI_SCATRA_ELE_CALC_ADVANCED_REACTION_HPP
+#ifndef FOUR_C_SCATRA_ELE_CALC_ADVANCED_REACTION_HPP
+#define FOUR_C_SCATRA_ELE_CALC_ADVANCED_REACTION_HPP
 
 #include "baci_config.hpp"
 

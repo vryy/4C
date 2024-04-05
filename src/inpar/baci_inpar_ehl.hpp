@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_INPAR_EHL_HPP
-#define BACI_INPAR_EHL_HPP
+#ifndef FOUR_C_INPAR_EHL_HPP
+#define FOUR_C_INPAR_EHL_HPP
 
 
 #include "baci_config.hpp"

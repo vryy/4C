@@ -6,8 +6,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_SO3_SH8P8_HPP
-#define BACI_SO3_SH8P8_HPP
+#ifndef FOUR_C_SO3_SH8P8_HPP
+#define FOUR_C_SO3_SH8P8_HPP
 
 /*----------------------------------------------------------------------*/
 #include "baci_config.hpp"

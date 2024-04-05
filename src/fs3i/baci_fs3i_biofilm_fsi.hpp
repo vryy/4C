@@ -13,8 +13,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_FS3I_BIOFILM_FSI_HPP
-#define BACI_FS3I_BIOFILM_FSI_HPP
+#ifndef FOUR_C_FS3I_BIOFILM_FSI_HPP
+#define FOUR_C_FS3I_BIOFILM_FSI_HPP
 
 
 #include "baci_config.hpp"

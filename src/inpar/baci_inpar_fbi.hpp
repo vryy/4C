@@ -9,8 +9,8 @@
 
 */
 /*-----------------------------------------------------------*/
-#ifndef BACI_INPAR_FBI_HPP
-#define BACI_INPAR_FBI_HPP
+#ifndef FOUR_C_INPAR_FBI_HPP
+#define FOUR_C_INPAR_FBI_HPP
 
 #include "baci_config.hpp"
 

@@ -15,8 +15,8 @@ parameters required for Lubrication element evaluation.
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_LUBRICATION_ELE_PARAMETER_HPP
-#define BACI_LUBRICATION_ELE_PARAMETER_HPP
+#ifndef FOUR_C_LUBRICATION_ELE_PARAMETER_HPP
+#define FOUR_C_LUBRICATION_ELE_PARAMETER_HPP
 
 #include "baci_config.hpp"
 

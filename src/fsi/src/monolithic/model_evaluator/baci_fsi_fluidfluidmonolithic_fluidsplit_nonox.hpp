@@ -8,8 +8,8 @@ using XFEM
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_HPP
-#define BACI_FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_HPP
+#ifndef FOUR_C_FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_HPP
+#define FOUR_C_FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_HPP
 
 #include "baci_config.hpp"
 

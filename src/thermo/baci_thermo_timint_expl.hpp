@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_THERMO_TIMINT_EXPL_HPP
-#define BACI_THERMO_TIMINT_EXPL_HPP
+#ifndef FOUR_C_THERMO_TIMINT_EXPL_HPP
+#define FOUR_C_THERMO_TIMINT_EXPL_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */

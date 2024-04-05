@@ -9,8 +9,8 @@
 Here everything related with solid-shell body extrusion
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_PRE_EXODUS_SOSHEXTRUSION_HPP
-#define BACI_PRE_EXODUS_SOSHEXTRUSION_HPP
+#ifndef FOUR_C_PRE_EXODUS_SOSHEXTRUSION_HPP
+#define FOUR_C_PRE_EXODUS_SOSHEXTRUSION_HPP
 
 #include "baci_config.hpp"
 

@@ -9,8 +9,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_COUPLING_NONLIN_MORTAR_HPP
-#define BACI_ADAPTER_COUPLING_NONLIN_MORTAR_HPP
+#ifndef FOUR_C_ADAPTER_COUPLING_NONLIN_MORTAR_HPP
+#define FOUR_C_ADAPTER_COUPLING_NONLIN_MORTAR_HPP
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 10/14 |

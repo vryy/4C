@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DISCRET_XFEM_HPP
-#define BACI_LIB_DISCRET_XFEM_HPP
+#ifndef FOUR_C_LIB_DISCRET_XFEM_HPP
+#define FOUR_C_LIB_DISCRET_XFEM_HPP
 
 #include "baci_config.hpp"
 

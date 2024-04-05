@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CARDIOVASCULAR0D_4ELEMENTWINDKESSEL_HPP
-#define BACI_CARDIOVASCULAR0D_4ELEMENTWINDKESSEL_HPP
+#ifndef FOUR_C_CARDIOVASCULAR0D_4ELEMENTWINDKESSEL_HPP
+#define FOUR_C_CARDIOVASCULAR0D_4ELEMENTWINDKESSEL_HPP
 
 #include "baci_config.hpp"
 

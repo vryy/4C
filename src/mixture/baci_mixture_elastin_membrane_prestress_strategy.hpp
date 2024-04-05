@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_HPP
-#define BACI_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_HPP
+#ifndef FOUR_C_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_HPP
+#define FOUR_C_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_HPP
 
 #include "baci_config.hpp"
 

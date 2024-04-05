@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_FLUIDPORO_MULTIPHASE_REACTIONS_HPP
-#define BACI_MAT_FLUIDPORO_MULTIPHASE_REACTIONS_HPP
+#ifndef FOUR_C_MAT_FLUIDPORO_MULTIPHASE_REACTIONS_HPP
+#define FOUR_C_MAT_FLUIDPORO_MULTIPHASE_REACTIONS_HPP
 
 
 

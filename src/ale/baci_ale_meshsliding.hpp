@@ -7,8 +7,8 @@
 \level 3
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_ALE_MESHSLIDING_HPP
-#define BACI_ALE_MESHSLIDING_HPP
+#ifndef FOUR_C_ALE_MESHSLIDING_HPP
+#define FOUR_C_ALE_MESHSLIDING_HPP
 
 #include "baci_config.hpp"
 

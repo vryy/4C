@@ -6,8 +6,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_DOWNWINDMATRIX_HPP
-#define BACI_LINALG_DOWNWINDMATRIX_HPP
+#ifndef FOUR_C_LINALG_DOWNWINDMATRIX_HPP
+#define FOUR_C_LINALG_DOWNWINDMATRIX_HPP
 
 // Trilinos includes
 #include "baci_config.hpp"

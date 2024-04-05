@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FPSI_MONOLITHIC_HPP
-#define BACI_FPSI_MONOLITHIC_HPP
+#ifndef FOUR_C_FPSI_MONOLITHIC_HPP
+#define FOUR_C_FPSI_MONOLITHIC_HPP
 
 // FPSI includes
 #include "baci_config.hpp"

@@ -10,8 +10,8 @@ interface
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_XFLUID_HPP
-#define BACI_FLUID_XFLUID_HPP
+#ifndef FOUR_C_FLUID_XFLUID_HPP
+#define FOUR_C_FLUID_XFLUID_HPP
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12

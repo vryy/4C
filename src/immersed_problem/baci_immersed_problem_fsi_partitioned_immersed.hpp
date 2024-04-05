@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_IMMERSED_PROBLEM_FSI_PARTITIONED_IMMERSED_HPP
-#define BACI_IMMERSED_PROBLEM_FSI_PARTITIONED_IMMERSED_HPP
+#ifndef FOUR_C_IMMERSED_PROBLEM_FSI_PARTITIONED_IMMERSED_HPP
+#define FOUR_C_IMMERSED_PROBLEM_FSI_PARTITIONED_IMMERSED_HPP
 
 #include "baci_config.hpp"
 

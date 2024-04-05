@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CONSTRAINT_MULTIPOINTCONSTRAINT2_HPP
-#define BACI_CONSTRAINT_MULTIPOINTCONSTRAINT2_HPP
+#ifndef FOUR_C_CONSTRAINT_MULTIPOINTCONSTRAINT2_HPP
+#define FOUR_C_CONSTRAINT_MULTIPOINTCONSTRAINT2_HPP
 
 #include "baci_config.hpp"
 

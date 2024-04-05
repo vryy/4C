@@ -11,8 +11,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_RED_AIRWAYS_DYN_DRT_HPP
-#define BACI_RED_AIRWAYS_DYN_DRT_HPP
+#ifndef FOUR_C_RED_AIRWAYS_DYN_DRT_HPP
+#define FOUR_C_RED_AIRWAYS_DYN_DRT_HPP
 
 #include "baci_config.hpp"
 

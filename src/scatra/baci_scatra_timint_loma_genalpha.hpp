@@ -9,8 +9,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_TIMINT_LOMA_GENALPHA_HPP
-#define BACI_SCATRA_TIMINT_LOMA_GENALPHA_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_LOMA_GENALPHA_HPP
+#define FOUR_C_SCATRA_TIMINT_LOMA_GENALPHA_HPP
 
 #include "baci_config.hpp"
 

@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_LEAST_SQUARES_HPP
-#define BACI_CUT_LEAST_SQUARES_HPP
+#ifndef FOUR_C_CUT_LEAST_SQUARES_HPP
+#define FOUR_C_CUT_LEAST_SQUARES_HPP
 
 #include "baci_config.hpp"
 

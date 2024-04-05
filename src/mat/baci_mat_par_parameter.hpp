@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifndef BACI_MAT_PAR_PARAMETER_HPP
-#define BACI_MAT_PAR_PARAMETER_HPP
+#ifndef FOUR_C_MAT_PAR_PARAMETER_HPP
+#define FOUR_C_MAT_PAR_PARAMETER_HPP
 
 
 /*----------------------------------------------------------------------*/

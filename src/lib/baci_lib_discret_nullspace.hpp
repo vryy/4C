@@ -3,8 +3,8 @@
 \level 0
 */
 
-#ifndef BACI_LIB_DISCRET_NULLSPACE_HPP
-#define BACI_LIB_DISCRET_NULLSPACE_HPP
+#ifndef FOUR_C_LIB_DISCRET_NULLSPACE_HPP
+#define FOUR_C_LIB_DISCRET_NULLSPACE_HPP
 
 #include "baci_config.hpp"
 

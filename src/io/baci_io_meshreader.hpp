@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_IO_MESHREADER_HPP
-#define BACI_IO_MESHREADER_HPP
+#ifndef FOUR_C_IO_MESHREADER_HPP
+#define FOUR_C_IO_MESHREADER_HPP
 
 #include "baci_config.hpp"
 

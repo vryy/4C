@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_RIGIDSPHERE_HPP
-#define BACI_RIGIDSPHERE_HPP
+#ifndef FOUR_C_RIGIDSPHERE_HPP
+#define FOUR_C_RIGIDSPHERE_HPP
 
 
 #include "baci_config.hpp"

@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_BEAMINTERACTION_CROSSLINKER_HANDLER_HPP
-#define BACI_BEAMINTERACTION_CROSSLINKER_HANDLER_HPP
+#ifndef FOUR_C_BEAMINTERACTION_CROSSLINKER_HANDLER_HPP
+#define FOUR_C_BEAMINTERACTION_CROSSLINKER_HANDLER_HPP
 
 #include "baci_config.hpp"
 

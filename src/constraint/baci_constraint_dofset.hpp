@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_CONSTRAINT_DOFSET_HPP
-#define BACI_CONSTRAINT_DOFSET_HPP
+#ifndef FOUR_C_CONSTRAINT_DOFSET_HPP
+#define FOUR_C_CONSTRAINT_DOFSET_HPP
 
 #include "baci_config.hpp"
 

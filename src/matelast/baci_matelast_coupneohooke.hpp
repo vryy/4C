@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_COUPNEOHOOKE_HPP
-#define BACI_MATELAST_COUPNEOHOOKE_HPP
+#ifndef FOUR_C_MATELAST_COUPNEOHOOKE_HPP
+#define FOUR_C_MATELAST_COUPNEOHOOKE_HPP
 
 #include "baci_config.hpp"
 

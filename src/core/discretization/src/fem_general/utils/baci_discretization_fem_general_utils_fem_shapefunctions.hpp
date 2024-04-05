@@ -9,8 +9,8 @@ the Baci guide in the Convention chapter.
 \level 0
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_HPP
 
 #include "baci_config.hpp"
 

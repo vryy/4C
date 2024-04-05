@@ -13,8 +13,8 @@ attached parenchyma balloon
 /* macros */
 
 
-#ifndef BACI_ADAPTER_STR_LUNG_HPP
-#define BACI_ADAPTER_STR_LUNG_HPP
+#ifndef FOUR_C_ADAPTER_STR_LUNG_HPP
+#define FOUR_C_ADAPTER_STR_LUNG_HPP
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "baci_config.hpp"

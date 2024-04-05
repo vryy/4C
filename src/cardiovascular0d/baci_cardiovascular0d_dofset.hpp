@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_CARDIOVASCULAR0D_DOFSET_HPP
-#define BACI_CARDIOVASCULAR0D_DOFSET_HPP
+#ifndef FOUR_C_CARDIOVASCULAR0D_DOFSET_HPP
+#define FOUR_C_CARDIOVASCULAR0D_DOFSET_HPP
 
 #include "baci_config.hpp"
 

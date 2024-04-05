@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_ISOOGDEN_HPP
-#define BACI_MATELAST_ISOOGDEN_HPP
+#ifndef FOUR_C_MATELAST_ISOOGDEN_HPP
+#define FOUR_C_MATELAST_ISOOGDEN_HPP
 
 #include "baci_config.hpp"
 

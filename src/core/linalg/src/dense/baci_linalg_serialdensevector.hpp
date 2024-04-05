@@ -6,8 +6,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_SERIALDENSEVECTOR_HPP
-#define BACI_LINALG_SERIALDENSEVECTOR_HPP
+#ifndef FOUR_C_LINALG_SERIALDENSEVECTOR_HPP
+#define FOUR_C_LINALG_SERIALDENSEVECTOR_HPP
 
 
 #include "baci_config.hpp"

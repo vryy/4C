@@ -3,8 +3,8 @@
 \level 0
 */
 
-#ifndef BACI_UTILS_FUNCTION_OF_SCALAR_HPP
-#define BACI_UTILS_FUNCTION_OF_SCALAR_HPP
+#ifndef FOUR_C_UTILS_FUNCTION_OF_SCALAR_HPP
+#define FOUR_C_UTILS_FUNCTION_OF_SCALAR_HPP
 
 #include "baci_config.hpp"
 

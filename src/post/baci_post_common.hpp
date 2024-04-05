@@ -17,8 +17,8 @@ specific output operations can be done by the elements themselves.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_POST_COMMON_HPP
-#define BACI_POST_COMMON_HPP
+#ifndef FOUR_C_POST_COMMON_HPP
+#define FOUR_C_POST_COMMON_HPP
 
 
 

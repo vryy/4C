@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_MESHTYING_PENALTY_STRATEGY_HPP
-#define BACI_CONTACT_MESHTYING_PENALTY_STRATEGY_HPP
+#ifndef FOUR_C_CONTACT_MESHTYING_PENALTY_STRATEGY_HPP
+#define FOUR_C_CONTACT_MESHTYING_PENALTY_STRATEGY_HPP
 
 #include "baci_config.hpp"
 

@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_ISOCYL_HPP
-#define BACI_MIXTURE_PRESTRESS_STRATEGY_ISOCYL_HPP
+#ifndef FOUR_C_MIXTURE_PRESTRESS_STRATEGY_ISOCYL_HPP
+#define FOUR_C_MIXTURE_PRESTRESS_STRATEGY_ISOCYL_HPP
 
 #include "baci_config.hpp"
 

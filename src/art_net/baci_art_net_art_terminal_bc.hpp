@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_ART_NET_ART_TERMINAL_BC_HPP
-#define BACI_ART_NET_ART_TERMINAL_BC_HPP
+#ifndef FOUR_C_ART_NET_ART_TERMINAL_BC_HPP
+#define FOUR_C_ART_NET_ART_TERMINAL_BC_HPP
 
 #include "baci_config.hpp"
 

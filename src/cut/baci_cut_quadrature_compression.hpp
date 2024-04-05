@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_CUT_QUADRATURE_COMPRESSION_HPP
-#define BACI_CUT_QUADRATURE_COMPRESSION_HPP
+#ifndef FOUR_C_CUT_QUADRATURE_COMPRESSION_HPP
+#define FOUR_C_CUT_QUADRATURE_COMPRESSION_HPP
 
 #include "baci_config.hpp"
 

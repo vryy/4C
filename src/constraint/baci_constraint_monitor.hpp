@@ -4,8 +4,8 @@
 \level 2
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CONSTRAINT_MONITOR_HPP
-#define BACI_CONSTRAINT_MONITOR_HPP
+#ifndef FOUR_C_CONSTRAINT_MONITOR_HPP
+#define FOUR_C_CONSTRAINT_MONITOR_HPP
 
 #include "baci_config.hpp"
 

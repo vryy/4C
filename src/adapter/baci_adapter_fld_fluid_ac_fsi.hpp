@@ -8,8 +8,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_ADAPTER_FLD_FLUID_AC_FSI_HPP
-#define BACI_ADAPTER_FLD_FLUID_AC_FSI_HPP
+#ifndef FOUR_C_ADAPTER_FLD_FLUID_AC_FSI_HPP
+#define FOUR_C_ADAPTER_FLD_FLUID_AC_FSI_HPP
 
 #include "baci_config.hpp"
 

@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 01/14 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_COUPLING_VOLMORTAR_SHAPE_HPP
-#define BACI_COUPLING_VOLMORTAR_SHAPE_HPP
+#ifndef FOUR_C_COUPLING_VOLMORTAR_SHAPE_HPP
+#define FOUR_C_COUPLING_VOLMORTAR_SHAPE_HPP
 
 /*----------------------------------------------------------------------*
  | Header                                                   farah 01/14 |

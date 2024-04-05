@@ -7,8 +7,8 @@ Cauchy-Green invariant
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_COUP2POW_HPP
-#define BACI_MATELAST_COUP2POW_HPP
+#ifndef FOUR_C_MATELAST_COUP2POW_HPP
+#define FOUR_C_MATELAST_COUP2POW_HPP
 
 #include "baci_config.hpp"
 

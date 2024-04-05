@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                                gjb 01/08 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_THERMO_ELE_IMPL_HPP
-#define BACI_THERMO_ELE_IMPL_HPP
+#ifndef FOUR_C_THERMO_ELE_IMPL_HPP
+#define FOUR_C_THERMO_ELE_IMPL_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                    gjb 01/08 |

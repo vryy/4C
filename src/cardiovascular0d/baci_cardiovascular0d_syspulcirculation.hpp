@@ -39,8 +39,8 @@ Res =                                                                           
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CARDIOVASCULAR0D_SYSPULCIRCULATION_HPP
-#define BACI_CARDIOVASCULAR0D_SYSPULCIRCULATION_HPP
+#ifndef FOUR_C_CARDIOVASCULAR0D_SYSPULCIRCULATION_HPP
+#define FOUR_C_CARDIOVASCULAR0D_SYSPULCIRCULATION_HPP
 
 #include "baci_config.hpp"
 

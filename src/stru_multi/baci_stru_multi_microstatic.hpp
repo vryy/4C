@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_STRU_MULTI_MICROSTATIC_HPP
-#define BACI_STRU_MULTI_MICROSTATIC_HPP
+#ifndef FOUR_C_STRU_MULTI_MICROSTATIC_HPP
+#define FOUR_C_STRU_MULTI_MICROSTATIC_HPP
 
 
 

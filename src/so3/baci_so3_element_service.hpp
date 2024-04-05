@@ -5,8 +5,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SO3_ELEMENT_SERVICE_HPP
-#define BACI_SO3_ELEMENT_SERVICE_HPP
+#ifndef FOUR_C_SO3_ELEMENT_SERVICE_HPP
+#define FOUR_C_SO3_ELEMENT_SERVICE_HPP
 
 #include "baci_config.hpp"
 

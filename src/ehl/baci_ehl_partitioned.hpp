@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_EHL_PARTITIONED_HPP
-#define BACI_EHL_PARTITIONED_HPP
+#ifndef FOUR_C_EHL_PARTITIONED_HPP
+#define FOUR_C_EHL_PARTITIONED_HPP
 
 
 #include "baci_config.hpp"

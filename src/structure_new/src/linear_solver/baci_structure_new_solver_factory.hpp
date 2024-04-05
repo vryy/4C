@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_STRUCTURE_NEW_SOLVER_FACTORY_HPP
-#define BACI_STRUCTURE_NEW_SOLVER_FACTORY_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_SOLVER_FACTORY_HPP
+#define FOUR_C_STRUCTURE_NEW_SOLVER_FACTORY_HPP
 
 #include "baci_config.hpp"
 

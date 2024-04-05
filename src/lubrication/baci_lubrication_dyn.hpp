@@ -9,8 +9,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_LUBRICATION_DYN_HPP
-#define BACI_LUBRICATION_DYN_HPP
+#ifndef FOUR_C_LUBRICATION_DYN_HPP
+#define FOUR_C_LUBRICATION_DYN_HPP
 
 #include "baci_config.hpp"
 

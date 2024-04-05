@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_FLUID_TIMINT_BDF2_HPP
-#define BACI_FLUID_TIMINT_BDF2_HPP
+#ifndef FOUR_C_FLUID_TIMINT_BDF2_HPP
+#define FOUR_C_FLUID_TIMINT_BDF2_HPP
 
 
 #include "baci_config.hpp"

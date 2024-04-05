@@ -10,8 +10,8 @@
 #include "baci_mat_trait_solid.hpp"
 #include "baci_mat_trait_thermo.hpp"
 
-#ifndef BACI_MAT_TRAIT_THERMO_SOLID_HPP
-#define BACI_MAT_TRAIT_THERMO_SOLID_HPP
+#ifndef FOUR_C_MAT_TRAIT_THERMO_SOLID_HPP
+#define FOUR_C_MAT_TRAIT_THERMO_SOLID_HPP
 
 BACI_NAMESPACE_OPEN
 namespace MAT

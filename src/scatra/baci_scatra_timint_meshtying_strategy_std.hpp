@@ -8,8 +8,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_HPP
-#define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_HPP
+#define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_HPP
 
 #include "baci_config.hpp"
 

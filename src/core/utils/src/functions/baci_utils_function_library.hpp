@@ -10,8 +10,8 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_UTILS_FUNCTION_LIBRARY_HPP
-#define BACI_UTILS_FUNCTION_LIBRARY_HPP
+#ifndef FOUR_C_UTILS_FUNCTION_LIBRARY_HPP
+#define FOUR_C_UTILS_FUNCTION_LIBRARY_HPP
 
 #include "baci_config.hpp"
 

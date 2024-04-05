@@ -7,8 +7,8 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_ELCH_HPP
-#define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_ELCH_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_ELCH_HPP
+#define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_ELCH_HPP
 
 #include "baci_config.hpp"
 

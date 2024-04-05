@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_HPP
-#define BACI_STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_HPP
+#define FOUR_C_STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_HPP
 
 #include "baci_config.hpp"
 

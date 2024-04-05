@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_SOLVER_NONLIN_NOX_LINEARSYSTEM_HPP
-#define BACI_SOLVER_NONLIN_NOX_LINEARSYSTEM_HPP
+#ifndef FOUR_C_SOLVER_NONLIN_NOX_LINEARSYSTEM_HPP
+#define FOUR_C_SOLVER_NONLIN_NOX_LINEARSYSTEM_HPP
 
 #include "baci_config.hpp"
 

@@ -6,8 +6,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_FIXEDSIZEMATRIX_GENERATORS_HPP
-#define BACI_LINALG_FIXEDSIZEMATRIX_GENERATORS_HPP
+#ifndef FOUR_C_LINALG_FIXEDSIZEMATRIX_GENERATORS_HPP
+#define FOUR_C_LINALG_FIXEDSIZEMATRIX_GENERATORS_HPP
 
 
 #include "baci_config.hpp"

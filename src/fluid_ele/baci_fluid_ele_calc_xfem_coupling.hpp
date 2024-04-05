@@ -11,8 +11,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_ELE_CALC_XFEM_COUPLING_HPP
-#define BACI_FLUID_ELE_CALC_XFEM_COUPLING_HPP
+#ifndef FOUR_C_FLUID_ELE_CALC_XFEM_COUPLING_HPP
+#define FOUR_C_FLUID_ELE_CALC_XFEM_COUPLING_HPP
 
 /*
  * When we enforce coupling conditions or dirichlet conditions on embedded interfaces in the XFEM

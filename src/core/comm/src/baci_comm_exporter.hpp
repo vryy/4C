@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_COMM_EXPORTER_HPP
-#define BACI_COMM_EXPORTER_HPP
+#ifndef FOUR_C_COMM_EXPORTER_HPP
+#define FOUR_C_COMM_EXPORTER_HPP
 
 #include "baci_config.hpp"
 

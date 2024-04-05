@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_HPP
-#define BACI_STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_HPP
+#define FOUR_C_STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_HPP
 
 #include "baci_config.hpp"
 

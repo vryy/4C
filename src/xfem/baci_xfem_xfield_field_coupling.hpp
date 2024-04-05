@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_XFEM_XFIELD_FIELD_COUPLING_HPP
-#define BACI_XFEM_XFIELD_FIELD_COUPLING_HPP
+#ifndef FOUR_C_XFEM_XFIELD_FIELD_COUPLING_HPP
+#define FOUR_C_XFEM_XFIELD_FIELD_COUPLING_HPP
 
 
 #include "baci_config.hpp"

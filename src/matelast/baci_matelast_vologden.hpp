@@ -8,8 +8,8 @@ Mechanics, 2000"
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_VOLOGDEN_HPP
-#define BACI_MATELAST_VOLOGDEN_HPP
+#ifndef FOUR_C_MATELAST_VOLOGDEN_HPP
+#define FOUR_C_MATELAST_VOLOGDEN_HPP
 
 #include "baci_config.hpp"
 

@@ -6,8 +6,8 @@
 \level 2
  *-----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_STRUCTPORO_HPP
-#define BACI_MAT_STRUCTPORO_HPP
+#ifndef FOUR_C_MAT_STRUCTPORO_HPP
+#define FOUR_C_MAT_STRUCTPORO_HPP
 
 #include "baci_config.hpp"
 

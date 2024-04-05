@@ -8,8 +8,8 @@ distributions
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_MORTAR_MATRIX_TRANSFORM_HPP
-#define BACI_MORTAR_MATRIX_TRANSFORM_HPP
+#ifndef FOUR_C_MORTAR_MATRIX_TRANSFORM_HPP
+#define FOUR_C_MORTAR_MATRIX_TRANSFORM_HPP
 
 #include "baci_config.hpp"
 

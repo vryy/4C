@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_POROELAST_MONOLITHICFLUIDSPLIT_HPP
-#define BACI_POROELAST_MONOLITHICFLUIDSPLIT_HPP
+#ifndef FOUR_C_POROELAST_MONOLITHICFLUIDSPLIT_HPP
+#define FOUR_C_POROELAST_MONOLITHICFLUIDSPLIT_HPP
 
 
 #include "baci_config.hpp"

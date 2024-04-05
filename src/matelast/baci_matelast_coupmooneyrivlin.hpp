@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_COUPMOONEYRIVLIN_HPP
-#define BACI_MATELAST_COUPMOONEYRIVLIN_HPP
+#ifndef FOUR_C_MATELAST_COUPMOONEYRIVLIN_HPP
+#define FOUR_C_MATELAST_COUPMOONEYRIVLIN_HPP
 
 #include "baci_config.hpp"
 

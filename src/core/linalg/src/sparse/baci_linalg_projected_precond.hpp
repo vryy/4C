@@ -11,8 +11,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LINALG_PROJECTED_PRECOND_HPP
-#define BACI_LINALG_PROJECTED_PRECOND_HPP
+#ifndef FOUR_C_LINALG_PROJECTED_PRECOND_HPP
+#define FOUR_C_LINALG_PROJECTED_PRECOND_HPP
 
 
 #include "baci_config.hpp"

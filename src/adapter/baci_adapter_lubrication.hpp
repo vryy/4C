@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_ADAPTER_LUBRICATION_HPP
-#define BACI_ADAPTER_LUBRICATION_HPP
+#ifndef FOUR_C_ADAPTER_LUBRICATION_HPP
+#define FOUR_C_ADAPTER_LUBRICATION_HPP
 
 #include "baci_config.hpp"
 

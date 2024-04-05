@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LINALG_GAUSS_HPP
-#define BACI_LINALG_GAUSS_HPP
+#ifndef FOUR_C_LINALG_GAUSS_HPP
+#define FOUR_C_LINALG_GAUSS_HPP
 
 #include "baci_config.hpp"
 

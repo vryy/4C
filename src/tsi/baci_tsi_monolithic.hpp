@@ -12,8 +12,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 11/10 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_TSI_MONOLITHIC_HPP
-#define BACI_TSI_MONOLITHIC_HPP
+#ifndef FOUR_C_TSI_MONOLITHIC_HPP
+#define FOUR_C_TSI_MONOLITHIC_HPP
 
 
 /*----------------------------------------------------------------------*

@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              seitz 07/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_PLAST_SSN_HPP
-#define BACI_SO3_PLAST_SSN_HPP
+#ifndef FOUR_C_SO3_PLAST_SSN_HPP
+#define FOUR_C_SO3_PLAST_SSN_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                  seitz 07/13 |

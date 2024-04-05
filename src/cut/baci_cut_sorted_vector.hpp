@@ -30,8 +30,8 @@
 
  */
 
-#ifndef BACI_CUT_SORTED_VECTOR_HPP
-#define BACI_CUT_SORTED_VECTOR_HPP
+#ifndef FOUR_C_CUT_SORTED_VECTOR_HPP
+#define FOUR_C_CUT_SORTED_VECTOR_HPP
 
 #include "baci_config.hpp"
 

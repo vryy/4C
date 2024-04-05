@@ -13,8 +13,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 11/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_WEAR_ALGORITHM_HPP
-#define BACI_WEAR_ALGORITHM_HPP
+#ifndef FOUR_C_WEAR_ALGORITHM_HPP
+#define FOUR_C_WEAR_ALGORITHM_HPP
 
 
 /*----------------------------------------------------------------------*

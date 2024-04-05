@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HDG_HPP
-#define BACI_SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HDG_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HDG_HPP
+#define FOUR_C_SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HDG_HPP
 
 #include "baci_config.hpp"
 

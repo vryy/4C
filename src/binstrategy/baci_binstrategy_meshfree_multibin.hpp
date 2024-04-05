@@ -8,8 +8,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_BINSTRATEGY_MESHFREE_MULTIBIN_HPP
-#define BACI_BINSTRATEGY_MESHFREE_MULTIBIN_HPP
+#ifndef FOUR_C_BINSTRATEGY_MESHFREE_MULTIBIN_HPP
+#define FOUR_C_BINSTRATEGY_MESHFREE_MULTIBIN_HPP
 
 #include "baci_config.hpp"
 

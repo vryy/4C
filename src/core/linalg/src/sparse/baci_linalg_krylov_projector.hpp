@@ -11,8 +11,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_LINALG_KRYLOV_PROJECTOR_HPP
-#define BACI_LINALG_KRYLOV_PROJECTOR_HPP
+#ifndef FOUR_C_LINALG_KRYLOV_PROJECTOR_HPP
+#define FOUR_C_LINALG_KRYLOV_PROJECTOR_HPP
 
 #include "baci_config.hpp"
 

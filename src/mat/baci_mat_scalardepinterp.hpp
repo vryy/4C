@@ -14,8 +14,8 @@ parameters or totally different strain energy function).
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_SCALARDEPINTERP_HPP
-#define BACI_MAT_SCALARDEPINTERP_HPP
+#ifndef FOUR_C_MAT_SCALARDEPINTERP_HPP
+#define FOUR_C_MAT_SCALARDEPINTERP_HPP
 
 
 

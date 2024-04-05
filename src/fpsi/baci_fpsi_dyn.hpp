@@ -4,8 +4,8 @@
 \level 2
 ----------------------------------------------------------------------------------------*/
 
-#ifndef BACI_FPSI_DYN_HPP
-#define BACI_FPSI_DYN_HPP
+#ifndef FOUR_C_FPSI_DYN_HPP
+#define FOUR_C_FPSI_DYN_HPP
 
 #include "baci_config.hpp"
 

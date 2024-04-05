@@ -6,8 +6,8 @@
 \level 0
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_METHOD_LINALG_HPP
-#define BACI_LINEAR_SOLVER_METHOD_LINALG_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_METHOD_LINALG_HPP
+#define FOUR_C_LINEAR_SOLVER_METHOD_LINALG_HPP
 
 #include "baci_config.hpp"
 

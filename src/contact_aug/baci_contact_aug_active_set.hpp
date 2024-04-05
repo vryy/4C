@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_AUG_ACTIVE_SET_HPP
-#define BACI_CONTACT_AUG_ACTIVE_SET_HPP
+#ifndef FOUR_C_CONTACT_AUG_ACTIVE_SET_HPP
+#define FOUR_C_CONTACT_AUG_ACTIVE_SET_HPP
 
 #include "baci_config.hpp"
 

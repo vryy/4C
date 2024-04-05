@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_DEM_HPP
-#define BACI_PARTICLE_INTERACTION_DEM_HPP
+#ifndef FOUR_C_PARTICLE_INTERACTION_DEM_HPP
+#define FOUR_C_PARTICLE_INTERACTION_DEM_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

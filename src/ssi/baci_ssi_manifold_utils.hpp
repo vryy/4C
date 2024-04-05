@@ -8,8 +8,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_SSI_MANIFOLD_UTILS_HPP
-#define BACI_SSI_MANIFOLD_UTILS_HPP
+#ifndef FOUR_C_SSI_MANIFOLD_UTILS_HPP
+#define FOUR_C_SSI_MANIFOLD_UTILS_HPP
 
 #include "baci_config.hpp"
 

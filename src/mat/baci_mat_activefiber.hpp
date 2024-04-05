@@ -25,8 +25,8 @@ SIGMAX 3.9E-03 EPSNULL 2.8E-04
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_ACTIVEFIBER_HPP
-#define BACI_MAT_ACTIVEFIBER_HPP
+#ifndef FOUR_C_MAT_ACTIVEFIBER_HPP
+#define FOUR_C_MAT_ACTIVEFIBER_HPP
 
 
 #include "baci_config.hpp"

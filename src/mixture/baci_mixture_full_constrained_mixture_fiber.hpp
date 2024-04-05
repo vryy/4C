@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_HPP
-#define BACI_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_HPP
+#ifndef FOUR_C_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_HPP
+#define FOUR_C_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_HPP
 
 #include "baci_config.hpp"
 

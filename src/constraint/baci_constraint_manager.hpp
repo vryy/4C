@@ -9,8 +9,8 @@ Kloeppel
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CONSTRAINT_MANAGER_HPP
-#define BACI_CONSTRAINT_MANAGER_HPP
+#ifndef FOUR_C_CONSTRAINT_MANAGER_HPP
+#define FOUR_C_CONSTRAINT_MANAGER_HPP
 
 #include "baci_config.hpp"
 

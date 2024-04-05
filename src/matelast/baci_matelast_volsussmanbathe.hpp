@@ -8,8 +8,8 @@ Mechanics, 2000"
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_VOLSUSSMANBATHE_HPP
-#define BACI_MATELAST_VOLSUSSMANBATHE_HPP
+#ifndef FOUR_C_MATELAST_VOLSUSSMANBATHE_HPP
+#define FOUR_C_MATELAST_VOLSUSSMANBATHE_HPP
 
 #include "baci_config.hpp"
 

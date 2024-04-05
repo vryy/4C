@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_BEAMCONTACT_BEAM3CONTACTNEW_HPP
-#define BACI_BEAMCONTACT_BEAM3CONTACTNEW_HPP
+#ifndef FOUR_C_BEAMCONTACT_BEAM3CONTACTNEW_HPP
+#define FOUR_C_BEAMCONTACT_BEAM3CONTACTNEW_HPP
 
 #include "baci_config.hpp"
 

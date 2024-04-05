@@ -37,8 +37,8 @@ output.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TURBULENCE_STATISTICS_BFS_HPP
-#define BACI_FLUID_TURBULENCE_STATISTICS_BFS_HPP
+#ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_BFS_HPP
+#define FOUR_C_FLUID_TURBULENCE_STATISTICS_BFS_HPP
 
 #include "baci_config.hpp"
 

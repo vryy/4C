@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROMULTIPHASE_MONOLITHIC_TWOWAY_HPP
-#define BACI_POROMULTIPHASE_MONOLITHIC_TWOWAY_HPP
+#ifndef FOUR_C_POROMULTIPHASE_MONOLITHIC_TWOWAY_HPP
+#define FOUR_C_POROMULTIPHASE_MONOLITHIC_TWOWAY_HPP
 
 #include "baci_config.hpp"
 

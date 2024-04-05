@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LINALG_UTILS_DENSEMATRIX_EIGEN_HPP
-#define BACI_LINALG_UTILS_DENSEMATRIX_EIGEN_HPP
+#ifndef FOUR_C_LINALG_UTILS_DENSEMATRIX_EIGEN_HPP
+#define FOUR_C_LINALG_UTILS_DENSEMATRIX_EIGEN_HPP
 
 #include "baci_config.hpp"
 

@@ -4,8 +4,8 @@
 \level 1
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_MORTAR_INTEGRATOR_HPP
-#define BACI_MORTAR_INTEGRATOR_HPP
+#ifndef FOUR_C_MORTAR_INTEGRATOR_HPP
+#define FOUR_C_MORTAR_INTEGRATOR_HPP
 
 #include "baci_config.hpp"
 

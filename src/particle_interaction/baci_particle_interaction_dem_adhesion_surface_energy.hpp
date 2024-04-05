@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_DEM_ADHESION_SURFACE_ENERGY_HPP
-#define BACI_PARTICLE_INTERACTION_DEM_ADHESION_SURFACE_ENERGY_HPP
+#ifndef FOUR_C_PARTICLE_INTERACTION_DEM_ADHESION_SURFACE_ENERGY_HPP
+#define FOUR_C_PARTICLE_INTERACTION_DEM_ADHESION_SURFACE_ENERGY_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

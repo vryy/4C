@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_SOLIDMATERIAL_HPP
-#define BACI_MIXTURE_CONSTITUENT_SOLIDMATERIAL_HPP
+#ifndef FOUR_C_MIXTURE_CONSTITUENT_SOLIDMATERIAL_HPP
+#define FOUR_C_MIXTURE_CONSTITUENT_SOLIDMATERIAL_HPP
 
 #include "baci_config.hpp"
 

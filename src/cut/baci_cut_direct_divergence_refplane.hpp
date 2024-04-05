@@ -7,8 +7,8 @@ coordinate system
 \level 2
 
  *------------------------------------------------------------------------------------------------*/
-#ifndef BACI_CUT_DIRECT_DIVERGENCE_REFPLANE_HPP
-#define BACI_CUT_DIRECT_DIVERGENCE_REFPLANE_HPP
+#ifndef FOUR_C_CUT_DIRECT_DIVERGENCE_REFPLANE_HPP
+#define FOUR_C_CUT_DIRECT_DIVERGENCE_REFPLANE_HPP
 
 #include "baci_config.hpp"
 

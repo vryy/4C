@@ -13,8 +13,8 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 */
 /*-----------------------------------------------------------*/
-#ifndef BACI_MAT_ELASTHYPER_HPP
-#define BACI_MAT_ELASTHYPER_HPP
+#ifndef FOUR_C_MAT_ELASTHYPER_HPP
+#define FOUR_C_MAT_ELASTHYPER_HPP
 
 
 

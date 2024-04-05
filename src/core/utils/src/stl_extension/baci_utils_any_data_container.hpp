@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_ANY_DATA_CONTAINER_HPP
-#define BACI_UTILS_ANY_DATA_CONTAINER_HPP
+#ifndef FOUR_C_UTILS_ANY_DATA_CONTAINER_HPP
+#define FOUR_C_UTILS_ANY_DATA_CONTAINER_HPP
 
 #include "baci_config.hpp"
 

@@ -15,8 +15,8 @@ rY_13 0.7
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_PLASTICELASTHYPER_HPP
-#define BACI_MAT_PLASTICELASTHYPER_HPP
+#ifndef FOUR_C_MAT_PLASTICELASTHYPER_HPP
+#define FOUR_C_MAT_PLASTICELASTHYPER_HPP
 
 
 

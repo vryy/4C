@@ -6,8 +6,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_MAT_LUBRICATION_LAW_HPP
-#define BACI_MAT_LUBRICATION_LAW_HPP
+#ifndef FOUR_C_MAT_LUBRICATION_LAW_HPP
+#define FOUR_C_MAT_LUBRICATION_LAW_HPP
 
 
 #include "baci_config.hpp"

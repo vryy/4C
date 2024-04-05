@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_SPH_RIGID_PARTICLE_CONTACT_HPP
-#define BACI_PARTICLE_INTERACTION_SPH_RIGID_PARTICLE_CONTACT_HPP
+#ifndef FOUR_C_PARTICLE_INTERACTION_SPH_RIGID_PARTICLE_CONTACT_HPP
+#define FOUR_C_PARTICLE_INTERACTION_SPH_RIGID_PARTICLE_CONTACT_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_ANISO_STRUCTURALTENSOR_STRATEGY_HPP
-#define BACI_MATELAST_ANISO_STRUCTURALTENSOR_STRATEGY_HPP
+#ifndef FOUR_C_MATELAST_ANISO_STRUCTURALTENSOR_STRATEGY_HPP
+#define FOUR_C_MATELAST_ANISO_STRUCTURALTENSOR_STRATEGY_HPP
 
 #define numbgp 50
 #define twice 100

@@ -6,8 +6,8 @@
  \level 2
 
  *-----------------------------------------------------------------------*/
-#ifndef BACI_POROELAST_BASE_HPP
-#define BACI_POROELAST_BASE_HPP
+#ifndef FOUR_C_POROELAST_BASE_HPP
+#define FOUR_C_POROELAST_BASE_HPP
 
 
 #include "baci_config.hpp"

@@ -22,8 +22,8 @@ For a detailed description see:
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_CONSTRAINTMIXTURE_HPP
-#define BACI_MAT_CONSTRAINTMIXTURE_HPP
+#ifndef FOUR_C_MAT_CONSTRAINTMIXTURE_HPP
+#define FOUR_C_MAT_CONSTRAINTMIXTURE_HPP
 
 
 #include "baci_config.hpp"

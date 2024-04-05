@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_MAT_CROSSLINKERMAT_HPP
-#define BACI_MAT_CROSSLINKERMAT_HPP
+#ifndef FOUR_C_MAT_CROSSLINKERMAT_HPP
+#define FOUR_C_MAT_CROSSLINKERMAT_HPP
 
 #include "baci_config.hpp"
 

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_ISOMUSCLE_BLEMKER_HPP
-#define BACI_MATELAST_ISOMUSCLE_BLEMKER_HPP
+#ifndef FOUR_C_MATELAST_ISOMUSCLE_BLEMKER_HPP
+#define FOUR_C_MATELAST_ISOMUSCLE_BLEMKER_HPP
 
 #include "baci_config.hpp"
 

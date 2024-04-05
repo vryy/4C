@@ -10,8 +10,8 @@ thereby builds the bridge between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_XFEM_COUPLING_BASE_HPP
-#define BACI_XFEM_COUPLING_BASE_HPP
+#ifndef FOUR_C_XFEM_COUPLING_BASE_HPP
+#define FOUR_C_XFEM_COUPLING_BASE_HPP
 
 
 #include "baci_config.hpp"

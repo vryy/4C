@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_NLN_SOLVER_FULLNEWTON_HPP
-#define BACI_STRUCTURE_NEW_NLN_SOLVER_FULLNEWTON_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_NLN_SOLVER_FULLNEWTON_HPP
+#define FOUR_C_STRUCTURE_NEW_NLN_SOLVER_FULLNEWTON_HPP
 
 #include "baci_config.hpp"
 

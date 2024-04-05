@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_COUPLING_ADAPTER_HPP
-#define BACI_COUPLING_ADAPTER_HPP
+#ifndef FOUR_C_COUPLING_ADAPTER_HPP
+#define FOUR_C_COUPLING_ADAPTER_HPP
 
 /*----------------------------------------------------------------------------*/
 /* headers */

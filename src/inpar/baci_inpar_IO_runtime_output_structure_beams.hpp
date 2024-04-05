@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef BACI_INPAR_IO_RUNTIME_OUTPUT_STRUCTURE_BEAMS_HPP
-#define BACI_INPAR_IO_RUNTIME_OUTPUT_STRUCTURE_BEAMS_HPP
+#ifndef FOUR_C_INPAR_IO_RUNTIME_OUTPUT_STRUCTURE_BEAMS_HPP
+#define FOUR_C_INPAR_IO_RUNTIME_OUTPUT_STRUCTURE_BEAMS_HPP
 
 
 /*----------------------------------------------------------------------*/

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_MEMBRANE_MATERIAL_INTERFACES_HPP
-#define BACI_MAT_MEMBRANE_MATERIAL_INTERFACES_HPP
+#ifndef FOUR_C_MAT_MEMBRANE_MATERIAL_INTERFACES_HPP
+#define FOUR_C_MAT_MEMBRANE_MATERIAL_INTERFACES_HPP
 
 #include "baci_config.hpp"
 

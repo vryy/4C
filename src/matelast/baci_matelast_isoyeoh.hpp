@@ -7,8 +7,8 @@ Definition of classes for the isochoric contribution of a Yeoh-type material
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_ISOYEOH_HPP
-#define BACI_MATELAST_ISOYEOH_HPP
+#ifndef FOUR_C_MATELAST_ISOYEOH_HPP
+#define FOUR_C_MATELAST_ISOYEOH_HPP
 
 #include "baci_config.hpp"
 

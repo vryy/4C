@@ -9,8 +9,8 @@
 */
 /*------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_COMBINTERSECTION_HPP
-#define BACI_CUT_COMBINTERSECTION_HPP
+#ifndef FOUR_C_CUT_COMBINTERSECTION_HPP
+#define FOUR_C_CUT_COMBINTERSECTION_HPP
 
 #include "baci_config.hpp"
 

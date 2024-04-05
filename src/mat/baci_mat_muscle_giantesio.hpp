@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_MUSCLE_GIANTESIO_HPP
-#define BACI_MAT_MUSCLE_GIANTESIO_HPP
+#ifndef FOUR_C_MAT_MUSCLE_GIANTESIO_HPP
+#define FOUR_C_MAT_MUSCLE_GIANTESIO_HPP
 
 #include "baci_config.hpp"
 

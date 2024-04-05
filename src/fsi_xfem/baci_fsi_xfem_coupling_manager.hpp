@@ -13,8 +13,8 @@ managers
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
-#ifndef BACI_FSI_XFEM_COUPLING_MANAGER_HPP
-#define BACI_FSI_XFEM_COUPLING_MANAGER_HPP
+#ifndef FOUR_C_FSI_XFEM_COUPLING_MANAGER_HPP
+#define FOUR_C_FSI_XFEM_COUPLING_MANAGER_HPP
 
 BACI_NAMESPACE_OPEN
 

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TIMINT_RED_STAT_HPP
-#define BACI_FLUID_TIMINT_RED_STAT_HPP
+#ifndef FOUR_C_FLUID_TIMINT_RED_STAT_HPP
+#define FOUR_C_FLUID_TIMINT_RED_STAT_HPP
 
 
 #include "baci_config.hpp"

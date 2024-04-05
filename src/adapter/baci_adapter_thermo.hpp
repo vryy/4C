@@ -12,8 +12,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_ADAPTER_THERMO_HPP
-#define BACI_ADAPTER_THERMO_HPP
+#ifndef FOUR_C_ADAPTER_THERMO_HPP
+#define FOUR_C_ADAPTER_THERMO_HPP
 
 
 /*----------------------------------------------------------------------*

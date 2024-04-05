@@ -9,8 +9,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_HPP
-#define BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_HPP
+#ifndef FOUR_C_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_HPP
+#define FOUR_C_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_HPP
 
 #include "baci_config.hpp"
 

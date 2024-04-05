@@ -7,8 +7,8 @@ material
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_ISOANISOEXPO_HPP
-#define BACI_MATELAST_ISOANISOEXPO_HPP
+#ifndef FOUR_C_MATELAST_ISOANISOEXPO_HPP
+#define FOUR_C_MATELAST_ISOANISOEXPO_HPP
 
 #include "baci_config.hpp"
 

@@ -13,8 +13,8 @@ to)
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_HPP
-#define BACI_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_HPP
+#ifndef FOUR_C_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_HPP
+#define FOUR_C_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_HPP
 
 #include "baci_config.hpp"
 

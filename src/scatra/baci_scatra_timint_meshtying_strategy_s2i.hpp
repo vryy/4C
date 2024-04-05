@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_HPP
-#define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_HPP
+#define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_HPP
 
 #include "baci_config.hpp"
 

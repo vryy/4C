@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_POST_WRITER_BASE_HPP
-#define BACI_POST_WRITER_BASE_HPP
+#ifndef FOUR_C_POST_WRITER_BASE_HPP
+#define FOUR_C_POST_WRITER_BASE_HPP
 
 #include "baci_config.hpp"
 

@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              cbert 08/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MYOCARD_TENTUSSCHER_HPP
-#define BACI_MAT_MYOCARD_TENTUSSCHER_HPP
+#ifndef FOUR_C_MAT_MYOCARD_TENTUSSCHER_HPP
+#define FOUR_C_MAT_MYOCARD_TENTUSSCHER_HPP
 
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |

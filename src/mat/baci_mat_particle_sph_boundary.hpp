@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_MAT_PARTICLE_SPH_BOUNDARY_HPP
-#define BACI_MAT_PARTICLE_SPH_BOUNDARY_HPP
+#ifndef FOUR_C_MAT_PARTICLE_SPH_BOUNDARY_HPP
+#define FOUR_C_MAT_PARTICLE_SPH_BOUNDARY_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |

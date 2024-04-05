@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_NITSCHE_INTEGRATOR_PORO_HPP
-#define BACI_CONTACT_NITSCHE_INTEGRATOR_PORO_HPP
+#ifndef FOUR_C_CONTACT_NITSCHE_INTEGRATOR_PORO_HPP
+#define FOUR_C_CONTACT_NITSCHE_INTEGRATOR_PORO_HPP
 
 #include "baci_config.hpp"
 

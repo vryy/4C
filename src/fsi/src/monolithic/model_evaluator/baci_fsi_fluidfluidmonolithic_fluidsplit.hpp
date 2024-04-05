@@ -8,8 +8,8 @@
 */
 /*------------------------------------------------------*/
 
-#ifndef BACI_FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_HPP
-#define BACI_FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_HPP
+#ifndef FOUR_C_FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_HPP
+#define FOUR_C_FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_HPP
 
 #include "baci_config.hpp"
 

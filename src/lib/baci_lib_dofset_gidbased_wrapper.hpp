@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_LIB_DOFSET_GIDBASED_WRAPPER_HPP
-#define BACI_LIB_DOFSET_GIDBASED_WRAPPER_HPP
+#ifndef FOUR_C_LIB_DOFSET_GIDBASED_WRAPPER_HPP
+#define FOUR_C_LIB_DOFSET_GIDBASED_WRAPPER_HPP
 
 #include "baci_config.hpp"
 

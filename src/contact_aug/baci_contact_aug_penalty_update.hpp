@@ -8,8 +8,8 @@ parameter cn
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_AUG_PENALTY_UPDATE_HPP
-#define BACI_CONTACT_AUG_PENALTY_UPDATE_HPP
+#ifndef FOUR_C_CONTACT_AUG_PENALTY_UPDATE_HPP
+#define FOUR_C_CONTACT_AUG_PENALTY_UPDATE_HPP
 
 #include "baci_config.hpp"
 

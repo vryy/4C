@@ -7,8 +7,8 @@ fluid-beam interaction).
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_FBI_CONSTRAINTENFORCER_PENALTY_HPP
-#define BACI_FBI_CONSTRAINTENFORCER_PENALTY_HPP
+#ifndef FOUR_C_FBI_CONSTRAINTENFORCER_PENALTY_HPP
+#define FOUR_C_FBI_CONSTRAINTENFORCER_PENALTY_HPP
 
 #include "baci_config.hpp"
 

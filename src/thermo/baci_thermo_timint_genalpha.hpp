@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 05/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_THERMO_TIMINT_GENALPHA_HPP
-#define BACI_THERMO_TIMINT_GENALPHA_HPP
+#ifndef FOUR_C_THERMO_TIMINT_GENALPHA_HPP
+#define FOUR_C_THERMO_TIMINT_GENALPHA_HPP
 
 
 /*----------------------------------------------------------------------*

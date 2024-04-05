@@ -6,8 +6,8 @@
 \level 0
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_HPP
 
 #include "baci_config.hpp"
 

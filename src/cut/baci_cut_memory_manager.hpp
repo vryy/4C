@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_MEMORY_MANAGER_HPP
-#define BACI_CUT_MEMORY_MANAGER_HPP
+#ifndef FOUR_C_CUT_MEMORY_MANAGER_HPP
+#define FOUR_C_CUT_MEMORY_MANAGER_HPP
 
 #include "baci_config.hpp"
 

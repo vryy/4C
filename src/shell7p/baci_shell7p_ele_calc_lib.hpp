@@ -5,8 +5,8 @@
 \level 3
 */
 
-#ifndef BACI_SHELL7P_ELE_CALC_LIB_HPP
-#define BACI_SHELL7P_ELE_CALC_LIB_HPP
+#ifndef FOUR_C_SHELL7P_ELE_CALC_LIB_HPP
+#define FOUR_C_SHELL7P_ELE_CALC_LIB_HPP
 
 #include "baci_config.hpp"
 

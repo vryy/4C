@@ -10,8 +10,8 @@ of the usual Lagrangian polynomials for standard transport elements
 
 
 */
-#ifndef BACI_SCATRA_ELE_HDG_HPP
-#define BACI_SCATRA_ELE_HDG_HPP
+#ifndef FOUR_C_SCATRA_ELE_HDG_HPP
+#define FOUR_C_SCATRA_ELE_HDG_HPP
 
 #include "baci_config.hpp"
 

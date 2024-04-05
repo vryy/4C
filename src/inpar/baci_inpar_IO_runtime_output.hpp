@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef BACI_INPAR_IO_RUNTIME_OUTPUT_HPP
-#define BACI_INPAR_IO_RUNTIME_OUTPUT_HPP
+#ifndef FOUR_C_INPAR_IO_RUNTIME_OUTPUT_HPP
+#define FOUR_C_INPAR_IO_RUNTIME_OUTPUT_HPP
 
 
 /*----------------------------------------------------------------------*/

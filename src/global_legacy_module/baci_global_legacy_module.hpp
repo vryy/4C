@@ -6,8 +6,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_GLOBAL_LEGACY_MODULE_HPP
-#define BACI_GLOBAL_LEGACY_MODULE_HPP
+#ifndef FOUR_C_GLOBAL_LEGACY_MODULE_HPP
+#define FOUR_C_GLOBAL_LEGACY_MODULE_HPP
 
 #include "baci_config.hpp"
 

@@ -11,8 +11,8 @@
     *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_POROMULTIPHASE_SCATRA_FUNCTION_HPP
-#define BACI_POROMULTIPHASE_SCATRA_FUNCTION_HPP
+#ifndef FOUR_C_POROMULTIPHASE_SCATRA_FUNCTION_HPP
+#define FOUR_C_POROMULTIPHASE_SCATRA_FUNCTION_HPP
 
 
 #include "baci_config.hpp"

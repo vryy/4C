@@ -17,8 +17,8 @@ the function value as well)
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_HPP
-#define BACI_NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_HPP
+#ifndef FOUR_C_NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_HPP
+#define FOUR_C_NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_HPP
 
 #include "baci_config.hpp"
 

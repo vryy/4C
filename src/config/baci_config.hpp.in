@@ -5,8 +5,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_CONFIG_HPP
-#define BACI_CONFIG_HPP
+#ifndef FOUR_C_CONFIG_HPP
+#define FOUR_C_CONFIG_HPP
 
 // General definitions that are used throughout the project.
 #define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@

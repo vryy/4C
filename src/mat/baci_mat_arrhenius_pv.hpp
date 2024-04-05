@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_ARRHENIUS_PV_HPP
-#define BACI_MAT_ARRHENIUS_PV_HPP
+#ifndef FOUR_C_MAT_ARRHENIUS_PV_HPP
+#define FOUR_C_MAT_ARRHENIUS_PV_HPP
 
 
 

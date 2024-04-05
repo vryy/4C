@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_RULE_FUNCTION_HPP
-#define BACI_MIXTURE_RULE_FUNCTION_HPP
+#ifndef FOUR_C_MIXTURE_RULE_FUNCTION_HPP
+#define FOUR_C_MIXTURE_RULE_FUNCTION_HPP
 
 #include "baci_config.hpp"
 

@@ -5,8 +5,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_HPP
-#define BACI_MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_HPP
+#ifndef FOUR_C_MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_HPP
+#define FOUR_C_MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_HPP
 
 #include "baci_config.hpp"
 

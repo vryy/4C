@@ -7,8 +7,8 @@ term
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_COUPSIMOPISTER_HPP
-#define BACI_MATELAST_COUPSIMOPISTER_HPP
+#ifndef FOUR_C_MATELAST_COUPSIMOPISTER_HPP
+#define FOUR_C_MATELAST_COUPSIMOPISTER_HPP
 
 #include "baci_config.hpp"
 

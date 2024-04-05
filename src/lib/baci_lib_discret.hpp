@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DISCRET_HPP
-#define BACI_LIB_DISCRET_HPP
+#ifndef FOUR_C_LIB_DISCRET_HPP
+#define FOUR_C_LIB_DISCRET_HPP
 
 #include "baci_config.hpp"
 

@@ -4,8 +4,8 @@
 \level 2
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_DEBUGWRITER_HPP
-#define BACI_FSI_DEBUGWRITER_HPP
+#ifndef FOUR_C_FSI_DEBUGWRITER_HPP
+#define FOUR_C_FSI_DEBUGWRITER_HPP
 
 #include "baci_config.hpp"
 

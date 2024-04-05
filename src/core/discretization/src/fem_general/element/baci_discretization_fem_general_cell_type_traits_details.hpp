@@ -8,8 +8,8 @@ In this file, the helper for defining type trait functionality is defined
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_DETAILS_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_DETAILS_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_DETAILS_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_DETAILS_HPP
 
 #include "baci_config.hpp"
 

@@ -12,8 +12,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_SOLVER_NONLIN_NOX_ENUM_LISTS_HPP
-#define BACI_SOLVER_NONLIN_NOX_ENUM_LISTS_HPP
+#ifndef FOUR_C_SOLVER_NONLIN_NOX_ENUM_LISTS_HPP
+#define FOUR_C_SOLVER_NONLIN_NOX_ENUM_LISTS_HPP
 
 #include "baci_config.hpp"
 

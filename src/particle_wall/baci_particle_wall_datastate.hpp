@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_WALL_DATASTATE_HPP
-#define BACI_PARTICLE_WALL_DATASTATE_HPP
+#ifndef FOUR_C_PARTICLE_WALL_DATASTATE_HPP
+#define FOUR_C_PARTICLE_WALL_DATASTATE_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

@@ -6,8 +6,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_MORTAR_DOFSET_HPP
-#define BACI_MORTAR_DOFSET_HPP
+#ifndef FOUR_C_MORTAR_DOFSET_HPP
+#define FOUR_C_MORTAR_DOFSET_HPP
 
 #include "baci_config.hpp"
 

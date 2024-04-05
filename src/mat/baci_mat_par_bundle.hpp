@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifndef BACI_MAT_PAR_BUNDLE_HPP
-#define BACI_MAT_PAR_BUNDLE_HPP
+#ifndef FOUR_C_MAT_PAR_BUNDLE_HPP
+#define FOUR_C_MAT_PAR_BUNDLE_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */

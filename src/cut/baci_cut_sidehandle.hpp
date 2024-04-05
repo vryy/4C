@@ -9,8 +9,8 @@ subsides
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_SIDEHANDLE_HPP
-#define BACI_CUT_SIDEHANDLE_HPP
+#ifndef FOUR_C_CUT_SIDEHANDLE_HPP
+#define FOUR_C_CUT_SIDEHANDLE_HPP
 
 #include "baci_config.hpp"
 

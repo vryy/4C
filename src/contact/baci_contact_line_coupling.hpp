@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_LINE_COUPLING_HPP
-#define BACI_CONTACT_LINE_COUPLING_HPP
+#ifndef FOUR_C_CONTACT_LINE_COUPLING_HPP
+#define FOUR_C_CONTACT_LINE_COUPLING_HPP
 
 
 #include "baci_config.hpp"
