@@ -429,7 +429,7 @@ namespace INPUT
   /// read a knotvector section (for isogeometric analysis)
   //----------------------------------------------------------------------
   void DatFileReader::ReadKnots(
-      const int dim, const std::string& name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots)
+      const std::string& name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots)
   {
     // io to shell
     const int myrank = comm_->MyPID();
@@ -484,9 +484,12 @@ namespace INPUT
     // number of patches to be determined
     int npatches = 0;
 
+    // dimension of nurbs patches
+    int nurbs_dim = 0;
+
     //--------------------------------------------------------------------
     //--------------------------------------------------------------------
-    //             first, determine number of patches
+    //      first, determine number of patches and dimension of nurbs
     //--------------------------------------------------------------------
     //--------------------------------------------------------------------
     {
@@ -550,9 +553,22 @@ namespace INPUT
         // this discretisation
         if (knotvectorsection)
         {
-          // check for a new patch
           std::string::size_type loc;
 
+          // check for the number of dimensions
+          loc = tmp.rfind("NURBS_DIMENSION");
+          if (loc != std::string::npos)
+          {
+            // set number of nurbs dimension
+            std::string str_nurbs_dim;
+            file >> str_nurbs_dim;
+            char* endptr = nullptr;
+            nurbs_dim = static_cast<int>(strtol(str_nurbs_dim.c_str(), &endptr, 10));
+
+            continue;
+          }
+
+          // check for a new patch
           loc = tmp.rfind("ID");
           if (loc != std::string::npos)
           {
@@ -582,7 +598,7 @@ namespace INPUT
     //--------------------------------------------------------------------
 
     // allocate knotvector for this dis
-    disknots = Teuchos::rcp(new DRT::NURBS::Knotvector(dim, npatches));
+    disknots = Teuchos::rcp(new DRT::NURBS::Knotvector(nurbs_dim, npatches));
 
     // make sure that we have some Knotvector object to fill
     if (disknots == Teuchos::null)
@@ -598,7 +614,7 @@ namespace INPUT
     {
       // this is a pointer to the knots of one patch in one direction
       // we will read them and put them
-      std::vector<Teuchos::RCP<std::vector<double>>> patch_knots(dim);
+      std::vector<Teuchos::RCP<std::vector<double>>> patch_knots(nurbs_dim);
 
       // open input file --- this is done on all procs
       std::ifstream file;
@@ -619,15 +635,15 @@ namespace INPUT
       // index for u/v/w
       int actdim = -1;
       // ints for the number of knots
-      std::vector<int> n_x_m_x_l(dim);
+      std::vector<int> n_x_m_x_l(nurbs_dim);
       // ints for patches degrees
-      std::vector<int> degree(dim);
+      std::vector<int> degree(nurbs_dim);
       // a vector of strings holding the knotvectortypes read
-      std::vector<std::string> knotvectortype(dim);
+      std::vector<std::string> knotvectortype(nurbs_dim);
 
       // count for sanity check
       int count_read = 0;
-      std::vector<int> count_vals(dim);
+      std::vector<int> count_vals(nurbs_dim);
 
       // loop lines in file
       for (; file;)
@@ -690,14 +706,14 @@ namespace INPUT
             actdim = -1;
 
             // create vectors for knots in this patch
-            for (int rr = 0; rr < dim; ++rr)
+            for (int rr = 0; rr < nurbs_dim; ++rr)
             {
               patch_knots[rr] = Teuchos::rcp(new std::vector<double>);
               (*(patch_knots[rr])).clear();
             }
 
             // reset counter for knot values
-            for (int rr = 0; rr < dim; rr++)
+            for (int rr = 0; rr < nurbs_dim; rr++)
             {
               count_vals[rr] = 0;
             }
@@ -730,9 +746,11 @@ namespace INPUT
             // increase dimesion for knotvector (i.e. next time
             // we'll fill the following knot vector)
             actdim++;
-            if (actdim > dim)
+            if (actdim > nurbs_dim)
             {
-              dserror("too many knotvectors (we only need dim)\n");
+              dserror(
+                  "too many knotvectors, we only need one for each dimension (nurbs_dim = %d)\n",
+                  nurbs_dim);
             }
 
             char* endptr = nullptr;
@@ -771,7 +789,7 @@ namespace INPUT
           loc = tmp.rfind("END");
           if (loc != std::string::npos)
           {
-            for (int rr = 0; rr < dim; ++rr)
+            for (int rr = 0; rr < nurbs_dim; ++rr)
             {
               disknots->SetKnots(
                   rr, npatch, degree[rr], n_x_m_x_l[rr], knotvectortype[rr], patch_knots[rr]);
@@ -780,12 +798,12 @@ namespace INPUT
             // stop reading of knot values if we are here
             read = false;
 
-            for (int rr = 0; rr < dim; rr++)
+            for (int rr = 0; rr < nurbs_dim; rr++)
             {
               if (n_x_m_x_l[rr] != count_vals[rr])
               {
-                dserror("not enough knots read in dim %d (%d!=NUMKNOTS=%d)\n", rr, count_vals[rr],
-                    n_x_m_x_l[rr]);
+                dserror("not enough knots read in dim %d (%d!=NUMKNOTS=%d), nurbs_dim=%d\n", rr,
+                    count_vals[rr], n_x_m_x_l[rr], nurbs_dim);
               }
             }
 

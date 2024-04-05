@@ -2270,9 +2270,6 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
   // in the nurbs case
   CORE::FE::ShapeFunctionType distype = problem.SpatialApproximationType();
 
-  // get problem dimension
-  int dim = problem.NDim();
-
   // Iterate through all discretizations and sort the appropriate condition
   // into the correct discretization it applies to
 
@@ -2291,7 +2288,7 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
       Teuchos::RCP<DRT::NURBS::Knotvector> disknots = Teuchos::null;
 
       // read the knotvector data from the input
-      reader.ReadKnots(dim, dis->Name(), disknots);
+      reader.ReadKnots(dis->Name(), disknots);
 
       if (disknots == Teuchos::null)
       {

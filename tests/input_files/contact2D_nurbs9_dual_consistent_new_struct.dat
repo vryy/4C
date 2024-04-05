@@ -127,6 +127,7 @@ NODE      56 DLINE   8
 NODE      60 DLINE   8
 NODE      64 DLINE   8
 -----------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       2
 BEGIN NURBSPATCH
 ID        1
 NUMKNOTS  8

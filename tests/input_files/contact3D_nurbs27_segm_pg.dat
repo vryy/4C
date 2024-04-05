@@ -1101,6 +1101,7 @@ NODE    73   DVOL    1
 NODE    82   DVOL    1
 NODE    91   DVOL    1
 -----------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       3
 BEGIN NURBSPATCH
 ID        1
 NUMKNOTS  7

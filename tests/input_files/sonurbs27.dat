@@ -21031,6 +21031,7 @@ NODE 4776 DVOL 5
 NODE 4836 DVOL 5
 NODE 4896 DVOL 5
 -----------------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       3
 BEGIN                           NURBSPATCH
 ID                              1
 NUMKNOTS                        10

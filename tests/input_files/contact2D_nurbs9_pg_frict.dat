@@ -79,6 +79,7 @@ DLINE                           2
 E 5 - 1 Slave Inactive FrCoeffOrBound 0.4
 E 14 - 1 Master Inactive FrCoeffOrBound 0.4
 -----------------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       2
 BEGIN NURBSPATCH
 ID        1
 NUMKNOTS  8

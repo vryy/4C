@@ -196,6 +196,7 @@ NODE 52 DVOLUME 1
 NODE 53 DVOLUME 1
 NODE 54 DVOLUME 1
 -----------------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       3
 BEGIN                                 NURBSPATCH
 ID                                    1
 NUMKNOTS                              6
