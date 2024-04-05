@@ -121,7 +121,7 @@ INPUT::ValidContactConstitutiveLaws()
     AddNamedBool(m, "PressureGreenFunFlag",
         "Use pressure-based Green function instead of a point-force-based", true, true);
     AddNamedInt(m, "InitialTopologyStdDeviationFunct",
-        " Function id for Initial Standard deviation for the random-midpoint generator", 100, true);
+        "Function id for Initial Standard deviation for the random-midpoint generator", 100, true);
     AddNamedInt(m, "HurstExponentFunct", "Function for Hurst exponent of the surface", 100, true);
     AddNamedBool(m, "RandomTopologyFlag", "Use random midpoint generator flag", true, true);
     AddNamedBool(m, "RandomSeedFlag", "Random seed flag", false, true);
