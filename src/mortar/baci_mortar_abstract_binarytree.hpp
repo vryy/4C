@@ -95,4 +95,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_ABSTRACT_BINARYTREE_H
+#endif

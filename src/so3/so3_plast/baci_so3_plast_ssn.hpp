@@ -1180,4 +1180,4 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_SSN_PLAST_H
+#endif

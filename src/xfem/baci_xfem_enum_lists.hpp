@@ -88,4 +88,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_ENUM_LISTS_H
+#endif

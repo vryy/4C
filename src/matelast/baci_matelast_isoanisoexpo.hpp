@@ -177,4 +177,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_ISOANISOEXPO_H
+#endif

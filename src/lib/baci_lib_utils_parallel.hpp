@@ -166,4 +166,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_UTILS_PARALLEL_H
+#endif

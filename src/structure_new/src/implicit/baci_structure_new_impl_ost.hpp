@@ -250,4 +250,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_IMPL_OST_H
+#endif

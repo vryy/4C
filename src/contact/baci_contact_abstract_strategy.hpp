@@ -2312,4 +2312,4 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::AbstractStrategy& stra
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_ABSTRACT_STRATEGY_H
+#endif

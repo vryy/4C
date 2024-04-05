@@ -230,4 +230,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_MUSCLE_COMBO_H
+#endif

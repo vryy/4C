@@ -140,4 +140,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_EDGESTAB_H
+#endif

@@ -166,4 +166,4 @@ namespace CONSTRAINTS
 }  // namespace CONSTRAINTS
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONSTRAINT_SOLVER_H
+#endif

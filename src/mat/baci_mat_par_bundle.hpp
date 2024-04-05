@@ -131,4 +131,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_PAR_BUNDLE_H
+#endif

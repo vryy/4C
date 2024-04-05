@@ -107,4 +107,4 @@ namespace CONTACT
 }  // namespace CONTACT
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_EHL_INTEGRATOR_H
+#endif

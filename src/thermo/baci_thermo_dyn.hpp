@@ -17,4 +17,4 @@ void thr_dyn_drt();
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_DYN_H
+#endif

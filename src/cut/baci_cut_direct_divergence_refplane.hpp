@@ -109,4 +109,4 @@ namespace CORE::GEO
 }  // namespace CORE::GEO
 BACI_NAMESPACE_CLOSE
 
-#endif  // CUT_DIRECT_DIVERGENCE_REFPLANE_H
+#endif

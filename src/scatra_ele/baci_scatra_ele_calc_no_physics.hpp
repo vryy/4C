@@ -63,4 +63,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_ELE_CALC_NO_PHYSICS_H
+#endif

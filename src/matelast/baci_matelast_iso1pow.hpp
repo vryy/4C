@@ -128,4 +128,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_ISO1POW_H
+#endif

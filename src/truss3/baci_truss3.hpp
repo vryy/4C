@@ -336,4 +336,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // TRUSS3_H
+#endif

@@ -130,4 +130,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_VISCO_ISORATEDEP_H
+#endif

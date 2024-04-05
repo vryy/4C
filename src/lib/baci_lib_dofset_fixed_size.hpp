@@ -122,4 +122,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DOFSET_FIXED_SIZE_H
+#endif

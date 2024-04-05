@@ -299,4 +299,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_ACTIVEFIBER_H
+#endif

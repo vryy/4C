@@ -471,4 +471,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_PROJECTOR_H
+#endif

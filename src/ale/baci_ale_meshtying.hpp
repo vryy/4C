@@ -218,4 +218,4 @@ namespace ALE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ALE_MESHTYING_H
+#endif

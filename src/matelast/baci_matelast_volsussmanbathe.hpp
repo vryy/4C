@@ -140,4 +140,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_VOLSUSSMANBATHE_H
+#endif

@@ -67,4 +67,4 @@ namespace EHL
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // EHL_PARTITIONED_H
+#endif

@@ -48,4 +48,4 @@ void set_trace_back_mode(int tracebackmode);
   }
 
 
-#endif  // BACI_UTILS_EPETRA_EXCEPTIONS_H
+#endif

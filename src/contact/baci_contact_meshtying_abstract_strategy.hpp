@@ -799,4 +799,4 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& st
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_MESHTYING_ABSTRACT_STRATEGY_H
+#endif

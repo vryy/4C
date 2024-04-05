@@ -1295,4 +1295,4 @@ namespace SCATRA
 }  // namespace SCATRA
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
+#endif

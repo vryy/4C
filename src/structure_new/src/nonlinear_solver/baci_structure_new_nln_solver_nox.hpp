@@ -144,4 +144,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_NLN_SOLVER_NOX_H
+#endif

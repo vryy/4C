@@ -515,4 +515,4 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_ELE_IMPL_H
+#endif

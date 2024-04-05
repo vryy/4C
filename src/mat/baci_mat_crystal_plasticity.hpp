@@ -644,4 +644,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_CRYSTAL_PLASTICITY_H
+#endif

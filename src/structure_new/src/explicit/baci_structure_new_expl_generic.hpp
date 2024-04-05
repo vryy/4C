@@ -170,4 +170,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_STRUCTURE_NEW_EXPL_GENERIC_H
+#endif

@@ -76,4 +76,4 @@ namespace POROELAST
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROELAST_PARTITIONED_H
+#endif

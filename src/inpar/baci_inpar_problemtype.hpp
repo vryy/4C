@@ -41,4 +41,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_PROBLEMTYPE_H
+#endif

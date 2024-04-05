@@ -292,4 +292,4 @@ namespace SSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_PARTITIONED_2WC_H
+#endif

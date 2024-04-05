@@ -794,7 +794,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     }
     std::cout << std::endl;
 
-#endif  // FADCHECKS
+#endif
 
 #endif  // AUTOMATICDIFF
   }

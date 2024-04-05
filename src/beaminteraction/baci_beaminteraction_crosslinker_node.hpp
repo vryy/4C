@@ -300,4 +300,4 @@ std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& 
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_BEAMINTERACTION_CROSSLINKER_NODE_H
+#endif

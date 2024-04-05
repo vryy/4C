@@ -93,4 +93,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationXWall& dis);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DISCRET_XWALL_H
+#endif

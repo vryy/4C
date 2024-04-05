@@ -259,4 +259,4 @@ namespace IO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_IO_EVERY_ITERATION_WRITER_H
+#endif

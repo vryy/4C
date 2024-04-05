@@ -21,4 +21,4 @@ void wear_dyn_drt(int restart);
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // WEAR_DYN_H
+#endif

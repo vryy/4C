@@ -672,4 +672,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_STR_STRUCTURE_NEW_H
+#endif

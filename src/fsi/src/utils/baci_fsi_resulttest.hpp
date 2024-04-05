@@ -95,4 +95,4 @@ namespace FSI
 }  // namespace FSI
 BACI_NAMESPACE_CLOSE
 
-#endif  // FSI_RESULTTEST_H
+#endif

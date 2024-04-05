@@ -142,4 +142,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_COUPSIMOPISTER_H
+#endif

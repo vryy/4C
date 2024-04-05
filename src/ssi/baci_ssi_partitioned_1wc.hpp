@@ -130,4 +130,4 @@ namespace SSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_PARTITIONED_1WC_H
+#endif

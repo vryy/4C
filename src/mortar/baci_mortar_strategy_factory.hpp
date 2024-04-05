@@ -185,4 +185,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_STRATEGY_FACTORY_H
+#endif

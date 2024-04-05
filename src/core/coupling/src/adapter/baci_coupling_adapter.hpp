@@ -572,4 +572,4 @@ namespace CORE::ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // COUPLING_ADAPTER_H
+#endif

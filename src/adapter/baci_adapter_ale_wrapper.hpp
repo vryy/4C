@@ -295,4 +295,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_ALE_WRAPPER_H
+#endif

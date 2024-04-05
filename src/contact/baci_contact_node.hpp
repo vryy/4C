@@ -1335,4 +1335,4 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::Node& cnode);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_CONTACT_NODE_H
+#endif

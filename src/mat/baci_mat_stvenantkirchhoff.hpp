@@ -156,4 +156,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_STVENANTKIRCHHOFF_H
+#endif

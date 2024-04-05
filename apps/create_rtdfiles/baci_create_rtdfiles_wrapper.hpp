@@ -76,4 +76,4 @@ namespace RTD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CREATE_RTDFILES_WRAPPER_H
+#endif

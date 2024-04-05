@@ -80,4 +80,4 @@ namespace SCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_TIMINT_STAT_HDG_H
+#endif

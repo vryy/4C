@@ -161,4 +161,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_COUPLING2D_H
+#endif

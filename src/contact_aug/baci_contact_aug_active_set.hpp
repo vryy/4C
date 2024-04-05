@@ -120,4 +120,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_AUG_ACTIVE_SET_H
+#endif

@@ -133,4 +133,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_VISCO_FRACT_H
+#endif

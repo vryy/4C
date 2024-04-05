@@ -228,4 +228,4 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostApplyJacobianInverse(
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_H
+#endif

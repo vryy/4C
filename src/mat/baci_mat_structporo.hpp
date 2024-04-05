@@ -386,4 +386,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_STRUCTPORO_H
+#endif

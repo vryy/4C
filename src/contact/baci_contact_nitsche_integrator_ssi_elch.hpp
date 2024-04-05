@@ -300,4 +300,4 @@ namespace CONTACT
 }  // namespace CONTACT
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_H
+#endif

@@ -370,4 +370,4 @@ class PeriodicBoundaryConditions
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_PERIODICBC_H
+#endif

@@ -173,4 +173,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_UTILS_H
+#endif

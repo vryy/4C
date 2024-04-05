@@ -220,4 +220,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_LINE_H
+#endif

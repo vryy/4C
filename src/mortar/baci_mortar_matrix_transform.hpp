@@ -107,4 +107,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_MATRIX_TRANSFORM_H
+#endif

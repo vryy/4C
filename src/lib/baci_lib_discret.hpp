@@ -2259,4 +2259,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::Discretization& dis);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DISCRET_H
+#endif

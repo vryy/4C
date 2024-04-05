@@ -3983,7 +3983,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinOrthogonalit
 /*----------------------------------------------------------------------*
  |  End: FAD-Check for Linearizations of CPP
  *----------------------------------------------------------------------*/
-#endif  // #ifdef FADCHECKS
+#endif
 
 // Possible template cases: this is necessary for the compiler
 template class CONTACT::Beam3contactnew<2, 1>;

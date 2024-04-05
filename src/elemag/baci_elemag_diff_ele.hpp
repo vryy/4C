@@ -494,4 +494,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELEMAG_DIFF_ELE_H
+#endif

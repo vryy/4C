@@ -339,4 +339,4 @@ namespace SCATRA
 }  // namespace SCATRA
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
+#endif

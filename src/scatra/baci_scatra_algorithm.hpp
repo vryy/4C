@@ -123,4 +123,4 @@ namespace SCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_ALGORITHM_H
+#endif

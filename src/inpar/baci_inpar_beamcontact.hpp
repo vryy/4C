@@ -102,4 +102,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_BEAMCONTACT_H
+#endif

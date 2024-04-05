@@ -129,4 +129,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_PARAMSINTERFACE_H
+#endif

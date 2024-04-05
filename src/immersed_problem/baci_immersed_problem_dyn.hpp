@@ -20,4 +20,4 @@ void immersed_problem_drt();
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // IMMERSED_PROBLEM_DYN_H
+#endif

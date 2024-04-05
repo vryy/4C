@@ -260,4 +260,4 @@ namespace NTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_INTERPOLATOR_H
+#endif

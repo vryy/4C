@@ -109,4 +109,4 @@ namespace WEAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // WEAR_ALGORITHM_H
+#endif

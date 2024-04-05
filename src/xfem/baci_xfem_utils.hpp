@@ -77,4 +77,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_UTILS_H
+#endif

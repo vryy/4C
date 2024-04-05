@@ -200,4 +200,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_XFIELD_STATE_UTILS_H
+#endif

@@ -407,4 +407,4 @@ namespace SSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_COUPLING_H
+#endif

@@ -143,4 +143,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_MANAGER_BASE_H
+#endif

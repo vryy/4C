@@ -910,4 +910,4 @@ BACI_NAMESPACE_CLOSE
 /* definitions of above declared template functions */
 #include "baci_so3_sh8p8_eas.hpp"
 
-#endif  // SO3_SH8P8_H
+#endif

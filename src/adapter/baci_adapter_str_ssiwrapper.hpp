@@ -69,4 +69,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_STR_SSIWRAPPER_H
+#endif

@@ -283,4 +283,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DOFSET_GIDBASED_WRAPPER_H
+#endif

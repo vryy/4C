@@ -318,4 +318,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_HEX8P1J1_H
+#endif

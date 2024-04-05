@@ -1018,4 +1018,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // W1_H
+#endif

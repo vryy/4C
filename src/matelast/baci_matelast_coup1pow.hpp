@@ -133,4 +133,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_COUP1POW_H
+#endif

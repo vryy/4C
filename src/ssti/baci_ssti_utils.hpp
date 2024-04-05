@@ -276,4 +276,4 @@ namespace SSTI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSTI_UTILS_H
+#endif

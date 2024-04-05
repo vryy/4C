@@ -84,4 +84,4 @@ namespace SCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LEVELSET_TIMINT_STAT_H
+#endif

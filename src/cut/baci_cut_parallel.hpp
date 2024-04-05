@@ -194,4 +194,4 @@ namespace CORE::GEO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CUT_PARALLEL_H
+#endif

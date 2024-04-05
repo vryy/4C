@@ -135,7 +135,7 @@ void STR::MODELEVALUATOR::Contact::CheckPseudo2D() const
     std::cout << "STR::MODELEVALUATOR::Contact::CheckPseudo2D -- "
               << "WARNING: \nThe flag CONTACTPSEUDO2D is switched off. If this "
               << "is a 2D problem modeled pseudo-3D, switch it on!" << std::endl;
-#endif  // #ifdef CONTACTPSEUDO2D
+#endif
   }
 }
 

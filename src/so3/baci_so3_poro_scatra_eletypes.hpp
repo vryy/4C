@@ -164,4 +164,4 @@ namespace DRT
 }  // namespace DRT
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_PORO_SCATRA_ELETYPES_H
+#endif

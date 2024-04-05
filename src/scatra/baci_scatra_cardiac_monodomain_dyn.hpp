@@ -25,4 +25,4 @@ void printheartlogo();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_CARDIAC_MONODOMAIN_DYN_H
+#endif

@@ -176,4 +176,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_PORO_ELETYPES_H
+#endif

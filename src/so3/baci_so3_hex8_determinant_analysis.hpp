@@ -333,4 +333,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_HEX8_DETERMINANT_ANALYSIS_H
+#endif

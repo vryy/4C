@@ -140,4 +140,4 @@ namespace FPSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FPSI_UTILS_H
+#endif

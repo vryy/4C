@@ -346,4 +346,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // TORSION3_H
+#endif

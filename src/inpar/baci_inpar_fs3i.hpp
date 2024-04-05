@@ -54,4 +54,4 @@ namespace INPAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_FS3I_H
+#endif

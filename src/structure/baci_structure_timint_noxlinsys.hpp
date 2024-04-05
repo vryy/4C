@@ -189,4 +189,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_TIMINT_NOXLINSYS_H
+#endif

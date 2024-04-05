@@ -188,4 +188,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_LIN_ELAST_1D_H
+#endif

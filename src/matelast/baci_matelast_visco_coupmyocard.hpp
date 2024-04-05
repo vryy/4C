@@ -138,4 +138,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_VISCO_COUPMYOCARD_H
+#endif

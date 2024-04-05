@@ -468,4 +468,4 @@ namespace WEAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_WEAR_INTERFACE_H
+#endif

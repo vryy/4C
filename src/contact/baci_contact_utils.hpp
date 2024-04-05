@@ -159,4 +159,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_UTILS_H
+#endif

@@ -174,4 +174,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_COUPNEOHOOKE_H
+#endif

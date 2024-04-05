@@ -1534,7 +1534,7 @@ void MORTAR::Interface::CreateSearchTree()
     std::cout << "GMSH output of all mortar tree nodes in 3D needs a lot of memory!\n";
     std::cout << "*****************************************************************\n";
   }
-#endif  // MORTARGMSHCTN
+#endif
   // binary tree search
   if (SearchAlg() == INPAR::MORTAR::search_binarytree)
   {

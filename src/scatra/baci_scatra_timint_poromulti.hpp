@@ -184,4 +184,4 @@ namespace SCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_TIMINT_POROMULTI_H
+#endif

@@ -141,4 +141,4 @@ namespace FSI
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // FSI_XFEM_ALGORITHM_H
+#endif

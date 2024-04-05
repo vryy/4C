@@ -91,4 +91,4 @@ namespace FBI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FBI_CALC_UTILS_H
+#endif

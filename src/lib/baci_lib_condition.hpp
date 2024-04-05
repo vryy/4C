@@ -520,4 +520,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::Condition& cond);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_CONDITION_H
+#endif

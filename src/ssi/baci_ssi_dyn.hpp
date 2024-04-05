@@ -19,4 +19,4 @@ void ssi_drt();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_DYN_H
+#endif

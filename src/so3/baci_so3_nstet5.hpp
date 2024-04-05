@@ -538,4 +538,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_NSTET5_H
+#endif

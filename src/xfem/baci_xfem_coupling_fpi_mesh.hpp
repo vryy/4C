@@ -273,4 +273,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_COUPLING_FPI_MESH_H
+#endif

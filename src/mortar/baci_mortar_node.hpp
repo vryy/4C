@@ -712,4 +712,4 @@ std::ostream& operator<<(std::ostream& os, const MORTAR::Node& mrtrnode);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_MORTAR_NODE_H
+#endif

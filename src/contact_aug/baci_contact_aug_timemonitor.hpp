@@ -156,4 +156,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_AUG_TIMEMONITOR_H
+#endif

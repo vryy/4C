@@ -381,4 +381,4 @@ namespace POROELAST
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROELAST_BASE_H
+#endif

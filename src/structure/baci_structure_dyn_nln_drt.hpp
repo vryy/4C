@@ -21,4 +21,4 @@ void caldyn_drt();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_DYN_NLN_DRT_H
+#endif

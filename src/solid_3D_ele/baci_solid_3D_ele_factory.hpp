@@ -72,4 +72,4 @@ namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLID_ELE_FACTORY_H
+#endif

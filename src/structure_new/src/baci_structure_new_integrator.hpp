@@ -482,4 +482,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_INTEGRATOR_H
+#endif

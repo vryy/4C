@@ -61,4 +61,4 @@ class Cardiovascular0DResultTest : public DRT::ResultTest
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CARDIOVASCULAR0D_RESULTTEST_H
+#endif

@@ -90,4 +90,4 @@ namespace MIXTURE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MIXTURE_RULE_SIMPLE_H
+#endif

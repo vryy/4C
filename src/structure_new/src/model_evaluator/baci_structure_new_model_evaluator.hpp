@@ -534,4 +534,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_MODEL_EVALUATOR_H
+#endif

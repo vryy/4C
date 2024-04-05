@@ -510,4 +510,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // NURBS_DISCRET_KNOTVECTOR_H
+#endif

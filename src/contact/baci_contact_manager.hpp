@@ -173,4 +173,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_MANAGER_H
+#endif

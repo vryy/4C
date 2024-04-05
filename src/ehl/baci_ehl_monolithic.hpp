@@ -381,4 +381,4 @@ namespace EHL
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // EHL_MONOLITHIC_H
+#endif

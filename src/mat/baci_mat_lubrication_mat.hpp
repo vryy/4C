@@ -147,4 +147,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_LUBRICATION_MAT_H
+#endif

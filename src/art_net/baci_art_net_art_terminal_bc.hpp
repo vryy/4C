@@ -59,4 +59,4 @@ namespace ART
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ART_NET_ART_TERMINAL_BC_H
+#endif

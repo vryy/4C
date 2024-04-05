@@ -798,7 +798,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
       fclose(fp);
     }
   }
-#endif  // ifdef MORTARGMSHTN
+#endif
 
 
   //**********************************************************************

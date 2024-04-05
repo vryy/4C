@@ -109,4 +109,4 @@ std::ostream& operator<<(std::ostream& os, const MAT::PAR::Material& cond);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_PAR_MATERIAL_H
+#endif

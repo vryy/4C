@@ -334,4 +334,4 @@ namespace MAT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_VISCOPLASTIC_NO_YIELD_SURFACE_H
+#endif

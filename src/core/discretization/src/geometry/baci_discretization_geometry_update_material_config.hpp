@@ -31,4 +31,4 @@ namespace CORE::GEO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_UTILS_MATERIALS_H
+#endif

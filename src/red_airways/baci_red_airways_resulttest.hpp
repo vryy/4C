@@ -78,4 +78,4 @@ namespace AIRWAY
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // RED_AIRWAYS_RESULTTEST_H
+#endif

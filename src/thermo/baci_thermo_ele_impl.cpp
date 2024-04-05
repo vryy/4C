@@ -616,7 +616,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 
 #ifdef THRASOUTPUT
   std::cout << "etemp_ end of Evaluate thermo_ele_impl\n" << etempn_ << std::endl;
-#endif  // THRASOUTPUT
+#endif
 
   return 0;
 }

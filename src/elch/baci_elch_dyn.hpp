@@ -24,4 +24,4 @@ void printlogo();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELCH_DYN_H
+#endif

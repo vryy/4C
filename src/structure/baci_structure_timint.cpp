@@ -530,7 +530,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 #else
     std::cout << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
               << "is a 2D problem modeled pseudo-3D, switch it on!" << std::endl;
-#endif  // #ifdef CONTACTPSEUDO2D
+#endif
   }
 
   // initialization of meshtying

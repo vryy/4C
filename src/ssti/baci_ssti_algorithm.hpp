@@ -180,4 +180,4 @@ namespace SSTI
 }  // namespace SSTI
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSTI_ALGORITHM_H
+#endif

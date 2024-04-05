@@ -390,7 +390,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
   interface_[0]->FDCheckGapDeriv();
   std::cout << "-- CONTACTFDGAP -----------------------------" << std::endl;
 
-#endif  // #ifdef CONTACTFDGAP
+#endif
 
   return;
 }

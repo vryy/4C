@@ -276,4 +276,4 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::Element& ele);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_ELEMENT_H
+#endif

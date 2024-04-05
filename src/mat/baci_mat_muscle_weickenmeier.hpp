@@ -231,4 +231,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_MUSCLE_WEICKENMEIER_H
+#endif

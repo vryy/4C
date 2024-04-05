@@ -504,4 +504,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_LINE_COUPLING_H
+#endif

@@ -69,4 +69,4 @@ namespace INPAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_VOLMORTAR_H
+#endif

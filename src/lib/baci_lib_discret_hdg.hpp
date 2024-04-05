@@ -177,4 +177,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DISCRET_HDG_H
+#endif

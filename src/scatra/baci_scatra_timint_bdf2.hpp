@@ -136,4 +136,4 @@ namespace SCATRA
 }  // namespace SCATRA
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_SCATRA_TIMINT_BDF2_H
+#endif

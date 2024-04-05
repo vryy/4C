@@ -165,4 +165,4 @@ namespace EHL
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // EHL_BASE_H
+#endif

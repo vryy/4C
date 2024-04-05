@@ -42,4 +42,4 @@ namespace ARTERY
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ART_NET_ARTERY_ELE_ACTION_H
+#endif

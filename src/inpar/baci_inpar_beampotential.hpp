@@ -83,4 +83,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_BEAMPOTENTIAL_H
+#endif

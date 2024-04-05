@@ -1123,7 +1123,7 @@ void CONTACT::Interface::CreateSearchTree()
     std::cout << "GMSH output of all contact tree nodes in 3D needs a lot of memory!\n";
     std::cout << "******************************************************************\n";
   }
-#endif  // #ifdef MORTARGMSHCTN
+#endif
 
   // binary tree search
   if (SearchAlg() == INPAR::MORTAR::search_binarytree)

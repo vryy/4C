@@ -196,4 +196,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_INTERFACE_UTILS_H
+#endif

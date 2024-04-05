@@ -370,4 +370,4 @@ namespace ELEMAG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELEMAG_TIMEINT_H
+#endif

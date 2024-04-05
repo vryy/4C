@@ -433,4 +433,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::DofSet& dofset);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DOFSET_H
+#endif

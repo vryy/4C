@@ -95,4 +95,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_PARAMSINTERFACE_H
+#endif

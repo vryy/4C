@@ -650,4 +650,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_COUPLING_LEVELSET_H
+#endif

@@ -941,4 +941,4 @@ namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLID_ELE_CALC_LIB_H
+#endif

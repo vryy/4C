@@ -32,4 +32,4 @@ namespace INPUT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_BOOLIFYPARAMETERS_H
+#endif

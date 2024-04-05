@@ -128,4 +128,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ART_NET_ARTERY_ELE_CALC_PRES_BASED_H
+#endif

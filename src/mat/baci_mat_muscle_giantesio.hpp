@@ -333,4 +333,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_MUSCLE_GIANTESIO_H
+#endif

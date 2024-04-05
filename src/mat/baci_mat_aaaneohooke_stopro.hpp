@@ -202,4 +202,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_AAANEOHOOKE_STOPRO_H
+#endif

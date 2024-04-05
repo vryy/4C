@@ -57,4 +57,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_ACTIVESUMMAND_H
+#endif

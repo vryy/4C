@@ -170,7 +170,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
     {
       interface_[i]->FDCheckJumpDerivLTL();
     }
-#endif  // #ifdef CONTACTFDJUMPLTL
+#endif
   }
 
   // check if contact contributions are present,

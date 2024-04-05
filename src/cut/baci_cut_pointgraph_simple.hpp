@@ -191,4 +191,4 @@ namespace CORE::GEO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CUT_POINTGRAPH_SIMPLE_H
+#endif

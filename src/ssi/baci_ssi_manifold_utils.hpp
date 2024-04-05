@@ -466,4 +466,4 @@ namespace SSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_MANIFOLD_UTILS_H
+#endif

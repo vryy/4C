@@ -322,4 +322,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_AUG_PLOT_H
+#endif

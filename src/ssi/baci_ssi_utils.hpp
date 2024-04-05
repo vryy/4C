@@ -525,4 +525,4 @@ namespace SSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_UTILS_H
+#endif

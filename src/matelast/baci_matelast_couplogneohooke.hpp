@@ -208,4 +208,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_COUPLOGNEOHOOKE_H
+#endif

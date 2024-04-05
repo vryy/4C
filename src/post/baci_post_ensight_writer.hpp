@@ -441,4 +441,4 @@ class EnsightWriter : public PostWriterBase
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POST_ENSIGHT_WRITER_H
+#endif

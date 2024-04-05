@@ -412,4 +412,4 @@ namespace FPSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FPSI_MONOLITHIC_H
+#endif

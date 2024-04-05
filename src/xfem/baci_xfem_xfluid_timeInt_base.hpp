@@ -951,4 +951,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_XFLUID_TIMEINT_BASE_H
+#endif

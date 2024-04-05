@@ -313,4 +313,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_ANISOTROPY_EXTENSION_H
+#endif

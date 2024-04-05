@@ -157,4 +157,4 @@ namespace TSI
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // TSI_PARTITIONED_H
+#endif

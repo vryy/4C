@@ -240,4 +240,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_NITSCHE_UTILS_H
+#endif

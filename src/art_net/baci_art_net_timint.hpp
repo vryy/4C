@@ -229,4 +229,4 @@ namespace ART
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ART_NET_TIMINT_H
+#endif

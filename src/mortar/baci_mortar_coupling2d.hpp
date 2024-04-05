@@ -330,4 +330,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_COUPLING2D_H
+#endif

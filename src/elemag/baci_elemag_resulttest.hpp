@@ -59,4 +59,4 @@ namespace ELEMAG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELEMAG_RESULTTEST_H
+#endif

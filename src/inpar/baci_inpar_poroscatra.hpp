@@ -46,4 +46,4 @@ namespace INPAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_POROSCATRA_H
+#endif

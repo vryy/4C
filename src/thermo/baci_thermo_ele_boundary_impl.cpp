@@ -293,7 +293,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
       std::cout << "time curve                  = " << curvenum << std::endl;
       std::cout << "total time                  = " << time << std::endl;
     }
-#endif  // THRASOUTPUT
+#endif
 
     // get kinematic type from parent element
     INPAR::STR::KinemType kintype = parentele->kintype_;

@@ -32,4 +32,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_SOLVER_NONLIN_H
+#endif

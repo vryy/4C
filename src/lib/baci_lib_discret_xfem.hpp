@@ -279,4 +279,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DISCRET_XFEM_H
+#endif

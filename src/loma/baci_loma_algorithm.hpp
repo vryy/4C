@@ -196,4 +196,4 @@ namespace LOMA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LOMA_ALGORITHM_H
+#endif

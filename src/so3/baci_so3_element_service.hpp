@@ -60,4 +60,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_ELEMENT_SERVICE_H
+#endif

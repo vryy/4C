@@ -1809,4 +1809,4 @@ std::ostream& operator<<(std::ostream& os, const MORTAR::Interface& interface);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_INTERFACE_H
+#endif

@@ -456,4 +456,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_TET10_H
+#endif

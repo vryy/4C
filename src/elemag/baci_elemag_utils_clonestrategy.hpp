@@ -84,4 +84,4 @@ namespace ELEMAG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELEMAG_UTILS_CLONESTRATEGY_H
+#endif

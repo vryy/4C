@@ -110,4 +110,4 @@ namespace MAT
 }  // namespace MAT
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_H
+#endif

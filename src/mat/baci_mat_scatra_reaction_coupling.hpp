@@ -679,4 +679,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_SCATRA_REACTION_COUPLING_H
+#endif

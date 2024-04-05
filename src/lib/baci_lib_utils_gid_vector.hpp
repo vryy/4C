@@ -192,4 +192,4 @@ std::vector<T> DRT::UTILS::BroadcastVector(const std::vector<T>& vec_in, const E
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_UTILS_GID_VECTOR_H
+#endif

@@ -97,4 +97,4 @@ std::ostream& operator<<(std::ostream& os, const UTILS::Cardiovascular0DDofSet& 
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CARDIOVASCULAR0D_DOFSET_H
+#endif

@@ -2311,4 +2311,4 @@ namespace CORE::LINALG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_LINALG_ANA_H
+#endif

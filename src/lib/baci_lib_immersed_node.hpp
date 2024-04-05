@@ -169,4 +169,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::ImmersedNode& immersednode
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_LIB_IMMERSED_NODE_H
+#endif

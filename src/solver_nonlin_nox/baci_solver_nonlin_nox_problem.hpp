@@ -118,4 +118,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_PROBLEM_H
+#endif

@@ -65,4 +65,4 @@ namespace STR::UTILS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLID_ELE_UTILS_H
+#endif

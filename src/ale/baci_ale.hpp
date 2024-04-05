@@ -588,4 +588,4 @@ namespace ALE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ALE_H
+#endif

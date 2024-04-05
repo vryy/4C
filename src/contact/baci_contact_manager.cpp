@@ -1452,7 +1452,7 @@ void CONTACT::Manager::PostprocessQuantities(IO::DiscretizationWriter& output)
   std::cout << "OUTPUT OF MASTER NODE IN CONTACT" << std::endl;
   for (const auto& globalNodeId : gnid) std::cout << globalNodeId << std::endl;
 
-#endif  // MASTERNODESINCONTACT: to output the global ID's of the master nodes in contact
+#endif
 
   //  // when we do a boundary modification we shift slave entries to the M matrix with
   //  // negative sign. Therefore, we have to extract the right force entries from the

@@ -18,4 +18,4 @@ void ssti_drt();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSTI_DYN_H
+#endif

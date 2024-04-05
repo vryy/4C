@@ -42,4 +42,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_AUG_ENUM_LISTS_H
+#endif

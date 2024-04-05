@@ -84,4 +84,4 @@ std::ostream& operator<<(std::ostream& os, const CONSTRAINTS::ConstraintDofSet& 
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONSTRAINT_DOFSET_H
+#endif

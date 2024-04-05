@@ -361,4 +361,4 @@ namespace SCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LEVELSET_ALGORITHM_H
+#endif

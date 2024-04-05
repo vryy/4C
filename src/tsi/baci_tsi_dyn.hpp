@@ -18,4 +18,4 @@ void tsi_dyn_drt();
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // TSI_DYN_H
+#endif

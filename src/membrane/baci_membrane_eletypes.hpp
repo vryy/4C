@@ -161,4 +161,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MEMBRANE_ELETYPES_H
+#endif

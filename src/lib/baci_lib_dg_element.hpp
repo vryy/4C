@@ -30,4 +30,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_LIB_DG_ELEMENT_H
+#endif

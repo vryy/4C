@@ -331,4 +331,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_IMPL_GENERIC_H
+#endif

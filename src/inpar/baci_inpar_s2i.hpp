@@ -107,4 +107,4 @@ namespace INPAR::S2I
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_INPAR_S2I_H
+#endif

@@ -191,4 +191,4 @@ namespace SSI
 }  // namespace SSI
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_MONOLITHIC_DBC_HANDLER_H
+#endif

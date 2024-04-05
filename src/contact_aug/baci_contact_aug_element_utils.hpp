@@ -278,4 +278,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_AUG_ELEMENT_UTILS_H
+#endif

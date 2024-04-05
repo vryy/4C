@@ -430,4 +430,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_WEG6_H
+#endif

@@ -32,4 +32,4 @@ void dyn_fluid_drt(const int restart);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_DYN_NLN_DRT_H
+#endif

@@ -901,4 +901,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_INTEGRATOR_H
+#endif

@@ -138,4 +138,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_PRESTRESS_H
+#endif

@@ -184,6 +184,6 @@ void NOX::NLN::Problem::CheckFinalStatus(const ::NOX::StatusTest::StatusType& fi
   return;
 }
 
-#endif  // SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP
+#endif
 
 BACI_NAMESPACE_CLOSE

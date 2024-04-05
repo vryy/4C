@@ -56,4 +56,4 @@ namespace CORE::GEO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CUT_FACETGRAPH_SIMPLE_H
+#endif

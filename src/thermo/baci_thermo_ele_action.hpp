@@ -138,4 +138,4 @@ namespace THR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_ELE_ACTION_H
+#endif

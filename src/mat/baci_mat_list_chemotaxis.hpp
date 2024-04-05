@@ -159,4 +159,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_LIST_CHEMOTAXIS_H
+#endif

@@ -176,4 +176,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // W1_SCATRA_H
+#endif

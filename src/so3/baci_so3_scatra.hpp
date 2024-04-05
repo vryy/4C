@@ -374,4 +374,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_SCATRA_H
+#endif

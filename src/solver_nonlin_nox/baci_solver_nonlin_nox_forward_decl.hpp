@@ -72,4 +72,4 @@ namespace Teuchos
   class ParameterList;
 }  // namespace Teuchos
 
-#endif  // BACI_SOLVER_NONLIN_NOX_FORWARD_DECL_H
+#endif

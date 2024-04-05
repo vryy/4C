@@ -2715,7 +2715,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
             if (abs(valtxi) > 1.0e-12) linslipDISglobal.Assemble(valtxi, row[0], col);
             if (abs(valteta) > 1.0e-12) linslipDISglobal.Assemble(valteta, row[1], col);
           }
-#endif     // end if no consistentslip
+#endif
         }  // end wearimplicit
       }    // if (frcoeff==0.0)
     }      // loop over all slip nodes of the interface

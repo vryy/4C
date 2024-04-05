@@ -67,4 +67,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_NLN_SOLVER_PTC_H
+#endif

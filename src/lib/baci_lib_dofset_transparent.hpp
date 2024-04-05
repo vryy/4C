@@ -99,4 +99,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DOFSET_TRANSPARENT_H
+#endif

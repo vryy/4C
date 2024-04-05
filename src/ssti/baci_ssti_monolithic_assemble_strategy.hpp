@@ -384,4 +384,4 @@ namespace SSTI
 }  // namespace SSTI
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_H
+#endif

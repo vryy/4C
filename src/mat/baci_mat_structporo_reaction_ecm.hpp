@@ -174,4 +174,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_STRUCTPORO_REACTION_ECM_H
+#endif

@@ -748,4 +748,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_AUG_INTERFACE_H
+#endif

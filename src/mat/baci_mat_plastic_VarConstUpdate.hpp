@@ -396,4 +396,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_PLASTIC_VARCONSTUPDATE_H
+#endif

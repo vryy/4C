@@ -98,4 +98,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_PREDICT_TANGDIS_H
+#endif

@@ -348,4 +348,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationFaces& dis);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DISCRET_FACES_H
+#endif

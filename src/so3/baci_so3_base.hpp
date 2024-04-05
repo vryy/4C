@@ -338,4 +338,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_BASE_H
+#endif

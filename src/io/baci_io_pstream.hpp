@@ -295,4 +295,4 @@ namespace IO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // IO_PSTREAM_H
+#endif

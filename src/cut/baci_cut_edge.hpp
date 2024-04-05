@@ -440,4 +440,4 @@ namespace CORE::GEO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CUT_EDGE_H
+#endif

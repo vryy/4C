@@ -42,4 +42,4 @@ namespace SCATRA::SCATRAUTILS
 }  // namespace SCATRA::SCATRAUTILS
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_UTILS_H
+#endif

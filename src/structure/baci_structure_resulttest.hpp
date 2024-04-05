@@ -87,4 +87,4 @@ class StruResultTest : public DRT::ResultTest
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_RESULTTEST_H
+#endif

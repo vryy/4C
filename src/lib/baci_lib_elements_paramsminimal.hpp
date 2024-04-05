@@ -83,4 +83,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_ELEMENTS_PARAMSMINIMAL_H
+#endif

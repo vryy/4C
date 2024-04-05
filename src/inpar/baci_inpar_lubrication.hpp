@@ -96,4 +96,4 @@ namespace INPAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_LUBRICATION_H
+#endif

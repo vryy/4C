@@ -110,4 +110,4 @@ namespace INPAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_EHL_H
+#endif

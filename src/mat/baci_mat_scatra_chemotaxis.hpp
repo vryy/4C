@@ -144,4 +144,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_SCATRA_CHEMOTAXIS_MAT_H
+#endif

@@ -214,4 +214,4 @@ namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_SHELL7P_ELE_SCATRA_H
+#endif

@@ -181,4 +181,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_AAA_MIXEDEFFECTS_H
+#endif

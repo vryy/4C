@@ -51,4 +51,4 @@ namespace INPAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_SSTI_H
+#endif

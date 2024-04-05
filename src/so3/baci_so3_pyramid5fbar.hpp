@@ -238,4 +238,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_PYRAMID5FBAR_H
+#endif

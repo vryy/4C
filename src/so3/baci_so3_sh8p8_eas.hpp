@@ -284,4 +284,4 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_SH8P8_EAS_H
+#endif

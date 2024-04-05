@@ -170,4 +170,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLID_ELE_CALC_EAS_H
+#endif

@@ -297,4 +297,4 @@ class Beam3ContactOctTree
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BEAMCONTACT_BEAM3CONTACT_OCTTREE_H
+#endif

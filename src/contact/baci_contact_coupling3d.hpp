@@ -478,4 +478,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_COUPLING3D_H
+#endif

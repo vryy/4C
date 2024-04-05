@@ -325,4 +325,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::MESHFREE::MeshfreeMultiBin
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BINSTRATEGY_MESHFREE_MULTIBIN_H
+#endif

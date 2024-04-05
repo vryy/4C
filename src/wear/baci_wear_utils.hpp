@@ -185,4 +185,4 @@ namespace WEAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // WEAR_UTILS_H
+#endif

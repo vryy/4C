@@ -964,4 +964,4 @@ namespace CORE::COMM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_PAROBJECT_H
+#endif

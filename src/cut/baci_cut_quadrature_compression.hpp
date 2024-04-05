@@ -103,4 +103,4 @@ namespace CORE::GEO
 }  // namespace CORE::GEO
 BACI_NAMESPACE_CLOSE
 
-#endif  // CUT_QUADRATURE_COMPRESSION_H
+#endif

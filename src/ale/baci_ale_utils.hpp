@@ -77,4 +77,4 @@ namespace ALE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ALE_UTILS_H
+#endif

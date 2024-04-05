@@ -287,4 +287,4 @@ namespace ART
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ART_NET_EXPLICITINTEGRATION_H
+#endif

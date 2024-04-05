@@ -207,4 +207,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_GLOBALDATA_H
+#endif

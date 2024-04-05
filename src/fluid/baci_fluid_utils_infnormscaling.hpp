@@ -70,4 +70,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_UTILS_INFNORMSCALING_H
+#endif

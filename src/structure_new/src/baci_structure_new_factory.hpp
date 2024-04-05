@@ -84,4 +84,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_FACTORY_H
+#endif

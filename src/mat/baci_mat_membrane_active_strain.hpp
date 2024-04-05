@@ -256,4 +256,4 @@ namespace MAT
 // namespace MAT
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_MEMBRANE_ACTIVE_STRAIN_H
+#endif

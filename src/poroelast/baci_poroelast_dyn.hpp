@@ -21,4 +21,4 @@ void poroelast_drt();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROELAST_DYN_H
+#endif

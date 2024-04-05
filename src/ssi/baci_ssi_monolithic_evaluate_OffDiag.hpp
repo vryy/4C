@@ -164,4 +164,4 @@ namespace SSI
 }  // namespace SSI
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_MONOLITHIC_EVALUATE_OFFDIAG_H
+#endif

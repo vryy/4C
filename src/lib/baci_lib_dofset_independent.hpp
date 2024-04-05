@@ -80,4 +80,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DOFSET_INDEPENDENT_H
+#endif

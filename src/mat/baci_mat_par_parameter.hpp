@@ -140,4 +140,4 @@ namespace MAT::PAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_PAR_PARAMETER_H
+#endif

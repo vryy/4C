@@ -327,4 +327,4 @@ namespace MIXTURE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MIXTURE_CONSTITUENT_H
+#endif

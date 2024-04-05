@@ -110,4 +110,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_ISOOGDEN_H
+#endif

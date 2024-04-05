@@ -363,4 +363,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_NURBS27_H
+#endif

@@ -611,4 +611,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_COUPLING_BASE_H
+#endif

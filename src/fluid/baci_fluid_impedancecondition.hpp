@@ -230,4 +230,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_IMPEDANCECONDITION_H
+#endif

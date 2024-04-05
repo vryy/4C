@@ -42,4 +42,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_UTILS_PARALLEL_H
+#endif

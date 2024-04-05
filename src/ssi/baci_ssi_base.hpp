@@ -422,4 +422,4 @@ namespace SSI
 }  // namespace SSI
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_BASE_H
+#endif

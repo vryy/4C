@@ -168,4 +168,4 @@ namespace SCATRA
 }  // namespace SCATRA
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_ELE_ACTION_H
+#endif

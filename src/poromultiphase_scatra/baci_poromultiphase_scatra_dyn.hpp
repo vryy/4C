@@ -21,4 +21,4 @@ void poromultiphasescatra_dyn(int restart /* do we have to perform a restart?  *
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROMULTIPHASE_SCATRA_DYN_H
+#endif

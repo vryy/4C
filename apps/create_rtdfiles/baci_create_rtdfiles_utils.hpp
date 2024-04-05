@@ -256,4 +256,4 @@ std::ostream& operator<<(std::ostream& os, const RTD::Table& table);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CREATE_RTDFILES_UTILS_H
+#endif

@@ -406,4 +406,4 @@ namespace THR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_TIMINT_IMPL_H
+#endif

@@ -240,4 +240,4 @@ namespace SSI
 }  // namespace SSI
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_MONOLITHIC_MESHTYING_STRATEGY_H
+#endif

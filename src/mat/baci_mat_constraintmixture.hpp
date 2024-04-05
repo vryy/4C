@@ -504,4 +504,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_CONSTRAINTMIXTURE_H
+#endif

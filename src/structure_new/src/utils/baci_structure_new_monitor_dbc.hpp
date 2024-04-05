@@ -154,4 +154,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_MONITOR_DBC_H
+#endif

@@ -374,4 +374,4 @@ feel free to write your own tailored Setup() method.
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // COUPLING_ADAPTER_MORTAR_H
+#endif

@@ -195,4 +195,4 @@ namespace MAT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_MEMBRANE_ELASTHYPER_H
+#endif

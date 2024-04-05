@@ -72,4 +72,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_DOFSET_H
+#endif

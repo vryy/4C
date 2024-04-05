@@ -154,4 +154,4 @@ namespace ART
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ART_NET_IMPL_STATIONARY_H
+#endif

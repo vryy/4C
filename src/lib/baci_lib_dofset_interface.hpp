@@ -192,4 +192,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DOFSET_INTERFACE_H
+#endif

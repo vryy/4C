@@ -165,4 +165,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FIBER_NODE_H
+#endif

@@ -79,4 +79,4 @@ namespace DRT::UTILS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_UTILS_READER_H
+#endif

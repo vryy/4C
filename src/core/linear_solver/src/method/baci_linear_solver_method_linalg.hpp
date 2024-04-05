@@ -315,4 +315,4 @@ namespace CORE::LINALG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_LINALG_SOLVER_H
+#endif

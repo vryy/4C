@@ -312,4 +312,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_BASE_BINARYTREE_H
+#endif

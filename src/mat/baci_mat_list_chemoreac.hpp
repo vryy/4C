@@ -143,4 +143,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_LIST_CHEMOREAC_H
+#endif

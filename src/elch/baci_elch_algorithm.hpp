@@ -54,4 +54,4 @@ namespace ELCH
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELCH_ALGORITHM_H
+#endif

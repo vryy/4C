@@ -280,4 +280,4 @@ namespace MAT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_THERMOSTVENANTKIRCHHOFF_H
+#endif

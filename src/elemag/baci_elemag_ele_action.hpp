@@ -62,4 +62,4 @@ namespace ELEMAG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELEMAG_ELE_ACTION_H
+#endif

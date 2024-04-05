@@ -514,4 +514,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_GROWTH_H
+#endif

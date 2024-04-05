@@ -233,4 +233,4 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPostComputeFandJacobian(Epe
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_H
+#endif

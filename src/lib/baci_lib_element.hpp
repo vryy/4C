@@ -1503,4 +1503,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_ELEMENT_H
+#endif

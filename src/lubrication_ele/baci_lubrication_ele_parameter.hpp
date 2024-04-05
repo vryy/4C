@@ -79,4 +79,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LUBRICATION_ELE_PARAMETER_H
+#endif

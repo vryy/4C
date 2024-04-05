@@ -43,4 +43,4 @@ default: 1.0e-9  --> segments (in parameter space) cannot be smaller than this *
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H
+#endif

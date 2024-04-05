@@ -583,7 +583,7 @@ class PoroMultiElastScatraArteryScatraMonWriter : public ScatraMonWriter
 };  // end of class PoroMultiElastScatraArteryScatraMonWriter
 
 
-#endif  // POST_MONITOR_H
+#endif
 /*! @} (documentation module close)*/
 
 BACI_NAMESPACE_CLOSE

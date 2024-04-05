@@ -251,4 +251,4 @@ namespace STI
 }  // namespace STI
 BACI_NAMESPACE_CLOSE
 
-#endif  // STI_MONOLITHIC_EVALUATE_OFFDIAG_H
+#endif

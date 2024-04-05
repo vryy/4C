@@ -278,4 +278,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_SH18_H
+#endif

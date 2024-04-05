@@ -1691,4 +1691,4 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::Interface& interface);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_INTERFACE_H
+#endif

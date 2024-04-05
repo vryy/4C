@@ -41,4 +41,4 @@ namespace EHL
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // EHL_UTILS_H
+#endif

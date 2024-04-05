@@ -82,4 +82,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_LUBRICATION_H
+#endif

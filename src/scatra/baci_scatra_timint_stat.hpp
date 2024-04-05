@@ -139,4 +139,4 @@ namespace SCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_SCATRA_TIMINT_STAT_H
+#endif

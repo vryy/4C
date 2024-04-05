@@ -330,4 +330,4 @@ namespace THR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_ELE_IMPL_UTILS_H
+#endif

@@ -127,4 +127,4 @@ namespace MIXTURE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MIXTURE_GROWTH_STRATEGY_H
+#endif

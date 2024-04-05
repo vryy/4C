@@ -20,4 +20,4 @@ void dyn_ale_drt();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ALE_DYN_H
+#endif

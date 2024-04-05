@@ -28,4 +28,4 @@ void ntainp_ccadiscret(std::string& inputfile_name,  //!< input file name
 void SetupParallelOutput(
     std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group);
 
-#endif  // GLOBAL_FULL_INP_CONTROL_H
+#endif

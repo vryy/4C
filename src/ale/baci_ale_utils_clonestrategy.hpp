@@ -83,4 +83,4 @@ namespace ALE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ALE_UTILS_CLONESTRATEGY_H
+#endif

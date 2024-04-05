@@ -758,4 +758,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_CALC_UTILS_H
+#endif

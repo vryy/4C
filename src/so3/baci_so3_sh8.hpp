@@ -343,4 +343,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_SH8_H
+#endif

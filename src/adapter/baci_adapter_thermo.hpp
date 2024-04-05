@@ -304,4 +304,4 @@ namespace ADAPTER
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_THERMO_H
+#endif

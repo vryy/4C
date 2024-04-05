@@ -850,4 +850,4 @@ void CORE::COMM::Exporter::Export(std::map<int, std::map<T, U>>& data)
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_EXPORTER_H
+#endif

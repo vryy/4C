@@ -388,4 +388,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_TET4AV_H
+#endif

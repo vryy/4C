@@ -187,4 +187,4 @@ namespace WEAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // WEAR_PARTITIONED_H
+#endif

@@ -128,4 +128,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_NOXINTERFACE_H
+#endif

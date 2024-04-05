@@ -21,4 +21,4 @@ void porofluidmultiphase_dyn(int restart /* do we have to perform a restart?  */
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROFLUIDMULTIPHASE_DYN_H
+#endif

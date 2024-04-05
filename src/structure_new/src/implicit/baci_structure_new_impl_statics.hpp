@@ -158,4 +158,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_IMPL_STATICS_H
+#endif

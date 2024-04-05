@@ -73,4 +73,4 @@ namespace INPAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_ELEMAG_H
+#endif

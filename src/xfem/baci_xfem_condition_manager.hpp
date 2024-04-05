@@ -798,4 +798,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_CONDITION_MANAGER_H
+#endif

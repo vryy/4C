@@ -156,4 +156,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BINSTRATEGY_MESHFREE_BIN_H
+#endif

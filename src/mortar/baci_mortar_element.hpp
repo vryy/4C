@@ -1123,4 +1123,4 @@ std::ostream& operator<<(std::ostream& os, const MORTAR::Element& ele);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_ELEMENT_H
+#endif

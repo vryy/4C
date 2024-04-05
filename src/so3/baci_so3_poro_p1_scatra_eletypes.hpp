@@ -83,4 +83,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_PORO_P1_SCATRA_ELETYPES_H
+#endif

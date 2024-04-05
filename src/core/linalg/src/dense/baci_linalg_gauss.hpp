@@ -52,4 +52,4 @@ namespace CORE::LINALG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LINALG_GAUSS_H
+#endif
