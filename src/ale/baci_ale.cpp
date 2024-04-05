@@ -29,15 +29,12 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
-#include "baci_linear_solver_preconditioner_linalg.hpp"
 #include "baci_utils_function.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 BACI_NAMESPACE_OPEN
-
-#define SCALING_INFNORM true
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -64,7 +61,6 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
       eledetjac_(Teuchos::null),
       elequality_(Teuchos::null),
       elequalityyesno_(CORE::UTILS::IntegralValue<bool>(*params, "ASSESSMESHQUALITY")),
-      precond_(Teuchos::null),
       aletype_(CORE::UTILS::IntegralValue<INPAR::ALE::AleDynamic>(*params, "ALE_TYPE")),
       maxiter_(params->get<int>("MAXITER")),
       tolres_(params->get<double>("TOLRES")),
@@ -389,53 +385,6 @@ std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynamic name
     default:
       dserror("Cannot make std::string for ALE type %d", name);
       return "";
-  }
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Preconditioner> ALE::Ale::ConstPreconditioner()
-{
-  // TODO (mayr) fix const preconditioner stuff
-
-  return precond_;
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void ALE::Ale::CreatePreconditioner(bool full)
-{
-  if (full)
-  {
-    // partitioned FSI does not use explicit preconditioner objects
-  }
-  else
-  {
-    // This is the MFSI case and we need the preconditioner on the inner dofs only
-    precond_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(solver_));
-
-    Teuchos::RCP<Epetra_CrsMatrix> A = BlockSystemMatrix()->Matrix(0, 0).EpetraMatrix();
-
-    Teuchos::RCP<Epetra_Vector> arowsum;
-    Teuchos::RCP<Epetra_Vector> acolsum;
-
-    if (SCALING_INFNORM)
-    {
-      arowsum = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
-      acolsum = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
-      A->InvRowSums(*arowsum);
-      A->InvColSums(*acolsum);
-      if (A->LeftScale(*arowsum) or A->RightScale(*acolsum)) dserror("ale scaling failed");
-    }
-
-    precond_->Setup(A);
-
-    if (SCALING_INFNORM)
-    {
-      arowsum->Reciprocal(*arowsum);
-      acolsum->Reciprocal(*acolsum);
-      if (A->LeftScale(*arowsum) or A->RightScale(*acolsum)) dserror("ale scaling failed");
-    }
   }
 }
 
