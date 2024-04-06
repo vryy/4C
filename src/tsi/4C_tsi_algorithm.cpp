@@ -436,7 +436,7 @@ void TSI::Algorithm::ApplyStructCouplingState(
 
 
 /*----------------------------------------------------------------------*/
-void TSI::Algorithm::GetContactStrategy()
+void TSI::Algorithm::PrepareContactStrategy()
 {
   INPAR::CONTACT::SolvingStrategy stype =
       CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(

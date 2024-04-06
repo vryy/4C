@@ -160,7 +160,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 #endif
 
   // structural and thermal contact
-  GetContactStrategy();
+  PrepareContactStrategy();
 
 }  // Monolithic()
 
@@ -175,7 +175,7 @@ void TSI::Monolithic::ReadRestart(int step)
 
   // StructureField()->ReadRestart destroyed the old object and created
   // a new one, so we update the pointers
-  GetContactStrategy();
+  PrepareContactStrategy();
 
   // pass the current coupling variables to the respective field
   // second ReadRestart needed due to the coupling variables
@@ -189,7 +189,7 @@ void TSI::Monolithic::ReadRestart(int step)
 
   // StructureField()->ReadRestart destroyed the old object and created
   // a new one, so we update the pointers
-  GetContactStrategy();
+  PrepareContactStrategy();
 
   SetTimeStep(ThermoField()->TimeOld(), step);
 

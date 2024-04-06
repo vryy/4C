@@ -86,7 +86,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   vel_ = StructureField()->WriteAccessVelnp();
 
   // structural and thermal contact
-  GetContactStrategy();
+  PrepareContactStrategy();
 
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
@@ -129,7 +129,7 @@ void TSI::Partitioned::ReadRestart(int step)
       StructureField()->Discretization(), ThermoField()->Discretization());
 
   // structural and thermal contact
-  GetContactStrategy();
+  PrepareContactStrategy();
 
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
