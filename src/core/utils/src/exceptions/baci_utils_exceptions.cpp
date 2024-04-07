@@ -29,12 +29,12 @@ namespace CORE
 {
   namespace INTERNAL
   {
-    void ThrowError(const char* file_name, int line_number, const std::string& format, ...)
+    void throw_error(const char* file_name, int line_number, const std::string& format, ...)
     {
-      ThrowError(file_name, line_number, format.c_str());
+      throw_error(file_name, line_number, format.c_str());
     }
 
-    void ThrowError(const char* file_name, int line_number, const char* format, ...)
+    void throw_error(const char* file_name, int line_number, const char* format, ...)
     {
       int initialized;
       MPI_Initialized(&initialized);
@@ -88,8 +88,13 @@ namespace CORE
 
   const char* Exception::what() const noexcept
   {
-    pimpl_->what_message_ = pimpl_->message + to_string(pimpl_->stacktrace);
+    pimpl_->what_message_ = pimpl_->message;
     return pimpl_->what_message_.c_str();
+  }
+
+  std::string Exception::what_with_stacktrace() const noexcept
+  {
+    return pimpl_->message + to_string(pimpl_->stacktrace);
   }
 
   // This number tells the stack trace class to skip a certain number of frames that are introduced

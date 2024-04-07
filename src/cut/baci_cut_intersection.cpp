@@ -884,7 +884,7 @@ void CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   catch (CORE::Exception& e)
   {
     dserror("Cautch error in the cut_intersection:  \n%s . Current tolerance must be increased",
-        e.what());
+        e.what_with_stacktrace().c_str());
   }
 }
 
@@ -964,7 +964,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       {
         GenerateGmshDump();
         dserror("Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
-            e.what());
+            e.what_with_stacktrace().c_str());
       }
 
       // if newton did not fail, we trust the result
@@ -1013,7 +1013,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           GenerateGmshDump();
           dserror(
               "Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
-              e.what());
+              e.what_with_stacktrace().c_str());
         }
         if (tri_status[tri] != intersect_newton_failed)
         {
@@ -1178,7 +1178,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     {
       GenerateGmshDump();
       dserror("Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
-          e.what());
+          e.what_with_stacktrace().c_str());
     }
 
     // if newton did not fail, we trust the result

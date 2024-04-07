@@ -314,9 +314,9 @@ void testfunction(std::map<std::string, testfunct>::const_iterator iterator,
   }
   catch (CORE::Exception& err)
   {
-    std::cout << "FAILED: " << err.what() << "\n";
+    std::cout << "FAILED: " << err.what_with_stacktrace() << "\n";
     failures.push_back(iterator->first);
-    msgs.push_back(err.what());
+    msgs.push_back(err.what_with_stacktrace());
   }
 }
 
