@@ -88,8 +88,13 @@ namespace CORE
 
   const char* Exception::what() const noexcept
   {
-    pimpl_->what_message_ = pimpl_->message + to_string(pimpl_->stacktrace);
+    pimpl_->what_message_ = pimpl_->message;
     return pimpl_->what_message_.c_str();
+  }
+
+  std::string Exception::what_with_stacktrace() const noexcept
+  {
+    return pimpl_->message + to_string(pimpl_->stacktrace);
   }
 
   // This number tells the stack trace class to skip a certain number of frames that are introduced

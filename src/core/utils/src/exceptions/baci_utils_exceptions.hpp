@@ -48,9 +48,17 @@ namespace CORE
     ~Exception() override;
 
     /**
-     * Return a message that describes what happened and includes a stack trace.
+     * Return a message that describes what happened.
      */
     [[nodiscard]] const char* what() const noexcept override;
+
+    /**
+     * Return a message that describes what happened and includes a stack trace.
+     *
+     * @note Calling this function can be a lot more expensive than the what() function because the
+     * stacktrace needs to be symbolyzed.
+     */
+    [[nodiscard]] std::string what_with_stacktrace() const noexcept;
 
    private:
     /**
