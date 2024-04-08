@@ -20,103 +20,6 @@
 BACI_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  Check, if current node belongs to a beam element         meier 05/14|
- *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamNode(const DRT::Node& node)
-{
-  bool beameles = false;
-  bool othereles = false;
-
-  // TODO: actually we would have to check all elements of all processors!!! Gather?
-  for (int i = 0; i < (int)(node.NumElement()); i++)
-  {
-    if (BeamElement(*(node.Elements())[i]))
-      beameles = true;
-    else
-      othereles = true;
-  }
-
-  if (beameles and othereles)
-    dserror(
-        "Beam elements and other (solid, rigid sphere) elements sharing the same node is currently "
-        "not allowed in BACI!");
-
-  return beameles;
-}
-
-/*----------------------------------------------------------------------*
- | Check, if current node is used for centerline                        |
- | interpolation of a beam element                           grill 05/16|
- *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamCenterlineNode(const DRT::Node& node)
-{
-  bool beamclnode = false;
-
-  // TODO: actually we would have to check all elements of all processors!!! Gather?
-  for (int i = 0; i < (int)(node.NumElement()); i++)
-  {
-    const DRT::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(node.Elements()[i]);
-
-    if (beamele != nullptr)
-      if (beamele->IsCenterlineNode(node)) beamclnode = true;
-  }
-
-  return beamclnode;
-}
-
-/*----------------------------------------------------------------------*
- |  Check, if current node belongs to a rigid sphere element   grill 09/14|
- *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::RigidsphereNode(const DRT::Node& node)
-{
-  bool sphereeles = false;
-  bool othereles = false;
-
-  // TODO: actually we would have to check all elements of all processors!!! Gather?
-  for (int i = 0; i < (int)(node.NumElement()); i++)
-  {
-    if (RigidsphereElement(*(node.Elements())[i]))
-      sphereeles = true;
-    else
-      othereles = true;
-  }
-
-  if (sphereeles and othereles)
-    dserror(
-        "Rigid sphere elements and other (solid, beam) elements sharing the same node is currently "
-        "not allowed in BACI!");
-
-  return sphereeles;
-}
-
-/*----------------------------------------------------------------------*
- |  Check, if current element is a beam element         meier 05/14|
- *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamElement(const DRT::Element& element)
-{
-  const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(&element);
-
-  if (beamele != nullptr)
-    return true;
-  else
-    return false;
-}
-
-/*----------------------------------------------------------------------*
- |  Check, if current element is a rigid sphere element       grill 09/14|
- *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::RigidsphereElement(const DRT::Element& element)
-{
-  const DRT::ElementType& ele_type = element.ElementType();
-
-  if (ele_type == DRT::ELEMENTS::RigidsphereType::Instance())
-    return true;
-  else
-    return false;
-}
-
-/*----------------------------------------------------------------------*
  |  Check, if current element is a solid contact element      popp 05/16|
  *----------------------------------------------------------------------*/
 bool BEAMINTERACTION::SolidContactElement(const DRT::Element& element)
@@ -124,19 +27,6 @@ bool BEAMINTERACTION::SolidContactElement(const DRT::Element& element)
   const DRT::ElementType& ele_type = element.ElementType();
 
   if (ele_type == CONTACT::ElementType::Instance())
-    return true;
-  else
-    return false;
-}
-
-/*----------------------------------------------------------------------*
- |  Check, if current element is a solid meshtying element    popp 05/16|
- *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SolidMeshtyingElement(const DRT::Element& element)
-{
-  const DRT::ElementType& ele_type = element.ElementType();
-
-  if (ele_type == MORTAR::ElementType::Instance())
     return true;
   else
     return false;

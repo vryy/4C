@@ -520,11 +520,6 @@ namespace CONTACT
     bool PairAllreadyExisting(int currid1, int currid2);
 
     /*!
-    \brief Check, if current node is a beam element
-    */
-    bool BeamElement(DRT::Element& element);
-
-    /*!
     \brief Get maximum element length
 
     Finds maximum element radius in the whole discretization for circular cross

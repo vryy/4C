@@ -130,39 +130,9 @@ namespace BEAMINTERACTION
   }
 
   /*!
-  \brief Check, if current node belongs to a beam element
-  */
-  bool BeamNode(const DRT::Node& node);
-
-  /*!
-  \brief Check, if current node is used for centerline interpolation of a beam element
-  */
-  bool BeamCenterlineNode(const DRT::Node& node);
-
-  /*!
-  \brief Check, if current node belongs to a rigid sphere element
-  */
-  bool RigidsphereNode(const DRT::Node& node);
-
-  /*!
-  \brief Check, if current node is a beam element
-  */
-  bool BeamElement(const DRT::Element& element);
-
-  /*!
-  \brief Check, if current node is a rigid sphere element
-  */
-  bool RigidsphereElement(const DRT::Element& element);
-
-  /*!
   \brief Check, if current node is a solid contact element
   */
   bool SolidContactElement(const DRT::Element& element);
-
-  /*!
-  \brief Check, if current node is a solid meshtying element
-  */
-  bool SolidMeshtyingElement(const DRT::Element& element);
 
   /*
   \brief Check, if two elements share a node -> neighbor elements
