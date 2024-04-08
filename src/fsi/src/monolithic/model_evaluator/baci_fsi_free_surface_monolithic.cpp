@@ -1028,11 +1028,7 @@ FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(
   fluidsolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(fluid.LinearSolver()));
 
 #ifndef BLOCKMATRIXMERGE
-  constalesolver_ = ale.ConstPreconditioner();
-  if (constalesolver_ == Teuchos::null)
-    alesolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(ale.LinearSolver()));
-  else
-    alesolver_ = constalesolver_;
+  alesolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(ale.LinearSolver()));
 #endif
 }
 

@@ -46,12 +46,7 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
 
 #ifndef BLOCKMATRIXMERGE
   structuresolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(structure.LinearSolver()));
-
-  constalesolver_ = ale.ConstPreconditioner();
-  if (constalesolver_ == Teuchos::null)
-    alesolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(ale.LinearSolver()));
-  else
-    alesolver_ = constalesolver_;
+  alesolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(ale.LinearSolver()));
 #endif
 
   // check and fix ml nullspace if neccessary
