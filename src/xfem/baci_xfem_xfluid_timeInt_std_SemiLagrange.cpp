@@ -16,7 +16,6 @@
 #include "baci_cut_integrationcell.hpp"
 #include "baci_cut_volumecell.hpp"
 #include "baci_inpar_xfem.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_xfem_dofset.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 

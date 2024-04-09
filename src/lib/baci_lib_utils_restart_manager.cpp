@@ -9,7 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_utils.hpp"
+#include "baci_lib_utils_restart_manager.hpp"
 
 #include "baci_discretization_fem_general_element_center.hpp"
 #include "baci_global_data.hpp"

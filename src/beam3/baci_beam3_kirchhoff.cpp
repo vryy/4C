@@ -19,7 +19,6 @@
 #include "baci_inpar_validparameters.hpp"
 #include "baci_io_linedefinition.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"

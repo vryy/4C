@@ -11,7 +11,6 @@
 
 #include "baci_comm_utils_factory.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_so3_line.hpp"
 

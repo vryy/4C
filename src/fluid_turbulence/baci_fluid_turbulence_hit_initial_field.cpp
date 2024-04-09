@@ -19,7 +19,6 @@ Technical Report 034, MEMS, Rice University (2002) 16.
 #include "baci_fluid_implicit_integration.hpp"
 #include "baci_fluid_timint_hdg.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils.hpp"
 
 #include <cmath>
 #include <complex>

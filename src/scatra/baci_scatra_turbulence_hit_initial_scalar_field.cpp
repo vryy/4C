@@ -14,7 +14,6 @@ transport
 
 #include "baci_comm_exporter.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 
 #include <cmath>

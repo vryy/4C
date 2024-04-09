@@ -15,7 +15,6 @@
 #include "baci_lib_discret_faces.hpp"
 #include "baci_lib_discret_xfem.hpp"
 #include "baci_lib_dofset_fixed_size.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_rebalance.hpp"

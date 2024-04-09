@@ -9,7 +9,6 @@
 #include "baci_comm_utils.hpp"
 
 #include "baci_io_pstream.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>

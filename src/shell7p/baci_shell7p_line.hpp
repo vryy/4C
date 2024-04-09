@@ -13,6 +13,7 @@
 #include "baci_discretization_fem_general_utils_gausspoints.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_element_integration_select.hpp"
+#include "baci_lib_node.hpp"
 #include "baci_shell7p_ele.hpp"
 
 BACI_NAMESPACE_OPEN

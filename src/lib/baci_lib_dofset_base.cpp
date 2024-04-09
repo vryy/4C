@@ -13,7 +13,6 @@
 
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 #include <algorithm>

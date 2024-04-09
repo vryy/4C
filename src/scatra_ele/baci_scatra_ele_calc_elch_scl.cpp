@@ -10,7 +10,6 @@
 #include "baci_scatra_ele_calc_elch_scl.hpp"
 
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_material.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
