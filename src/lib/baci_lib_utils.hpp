@@ -106,14 +106,6 @@ namespace DRT
       /// signal which was caught by the signal handler
       volatile static int signal_;
     };
-
-    /**
-     * \brief Default error handling of scanf().
-     *
-     * \param output (in): output provided by the call of scanf()
-     * \throws dserror() occurs if the function returns without reading any
-     */
-    void Checkscanf(int output);
   }  // namespace UTILS
 }  // namespace DRT
 

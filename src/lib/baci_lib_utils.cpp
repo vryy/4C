@@ -685,15 +685,4 @@ void DRT::UTILS::RestartManager::restart_signal_handler(
 
 volatile int DRT::UTILS::RestartManager::signal_;
 
-
-/*-----------------------------------------------------------------------------*
- *------------------------------------------------------------------------------*/
-void DRT::UTILS::Checkscanf(int output)
-{
-  if (output == EOF)
-  {
-    dserror("Error while reading input.\n");
-  }
-}
-
 BACI_NAMESPACE_CLOSE

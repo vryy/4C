@@ -236,7 +236,10 @@ int main(int argc, char *argv[])
       printf("\n** Enter a character to continue > \n");
       fflush(stdout);
       char go = ' ';
-      DRT::UTILS::Checkscanf(scanf("%c", &go));
+      if (scanf("%c", &go) == EOF)
+      {
+        dserror("Error while reading input.\n");
+      }
     }
   }
 
