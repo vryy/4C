@@ -45,7 +45,7 @@ namespace STR
     std::vector<double> EvaluateTimeDerivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (2); };
+    [[nodiscard]] std::size_t NumberComponents() const override { return (2); };
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (force)
@@ -59,7 +59,7 @@ namespace STR
     std::vector<double> EvaluateTimeDerivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (2); };
+    [[nodiscard]] std::size_t NumberComponents() const override { return (2); };
 
    private:
     double youngmodulus_;

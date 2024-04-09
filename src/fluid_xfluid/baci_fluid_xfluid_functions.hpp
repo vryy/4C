@@ -38,8 +38,12 @@ namespace DRT
       /// ctor
       GerstenbergerForwardfacingStep();
 
-      /// evaluate function at given position in space
       double Evaluate(const double* x, double t, std::size_t component) const override;
+
+      [[nodiscard]] std::size_t NumberComponents() const override
+      {
+        dserror("Number of components not defined for GerstenbergerForwardfacingStep.");
+      };
     };
 
     /*!
@@ -58,8 +62,12 @@ namespace DRT
       MovingLevelSetCylinder(std::vector<double>* origin, double radius,
           std::vector<double>* direction, double distance, double maxspeed);
 
-      /// evaluate function at given position in space
       double Evaluate(const double* x, double t, std::size_t component) const override;
+
+      [[nodiscard]] std::size_t NumberComponents() const override
+      {
+        dserror("Number of components not defined for MovingLevelSetCylinder.");
+      };
 
      private:
       /// Origin of the geometry
@@ -122,6 +130,11 @@ namespace DRT
       MovingLSTorus(std::vector<double>* origin, std::vector<double>* orientationvec_torus,
           double radius, double radius_tube, std::vector<double>* direction, double distance,
           double maxspeed, std::vector<double>* rotvector, double rotspeed, double rotramptime);
+
+      [[nodiscard]] std::size_t NumberComponents() const override
+      {
+        dserror("Number of components not defined for MovingLSTorus.");
+      };
 
      protected:
       /// Origin of the geometry
@@ -196,7 +209,7 @@ namespace DRT
        *
        * \return number of components (u,v,w)
        */
-      std::size_t NumberComponents() const override { return (3); };
+      [[nodiscard]] std::size_t NumberComponents() const override { return (3); };
     };
 
     class MovingLevelSetTorusSliplength : public MovingLSTorus
@@ -234,6 +247,11 @@ namespace DRT
       std::vector<double> EvaluateSpatialDerivative(
           const double* x, double t, std::size_t component) const override;
 
+      [[nodiscard]] std::size_t NumberComponents() const override
+      {
+        dserror("Number of components not defined for TaylorCouetteFlow.");
+      };
+
      private:
       /// Radi
       double radius_inner_;
@@ -257,12 +275,15 @@ namespace DRT
       UrquizaBoxFlow(double lengthx, double lengthy, double rotation, double viscosity,
           double density, int functno, std::vector<double> lincomb);
 
-      /// evaluate function at given position in space
       double Evaluate(const double* x, double t, std::size_t component) const override;
 
-      /// Derivative
       std::vector<double> EvaluateSpatialDerivative(
           const double* x, double t, std::size_t component) const override;
+
+      [[nodiscard]] std::size_t NumberComponents() const override
+      {
+        dserror("Number of components not defined for UrquizaBoxFlow.");
+      };
 
      protected:
       double lengthx_;   /// Length lx -> [-lx,lx]
