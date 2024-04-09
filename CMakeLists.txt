@@ -30,6 +30,20 @@ set(CMAKE_CXX_EXTENSIONS Off)
 set(baci_VERSION_MAJOR 1)
 set(baci_VERSION_MINOR 0)
 
+# Assert a valid build configuration
+set(_allowed_build_types "DEBUG" "RELEASE" "RELWITHDEBINFO")
+if(NOT CMAKE_BUILD_TYPE)
+  message(FATAL_ERROR "Choose a build type. Options are: ${_allowed_build_types}.")
+else()
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BACI_BUILD_TYPE_UPPER)
+  if(NOT ${BACI_BUILD_TYPE_UPPER} IN_LIST _allowed_build_types)
+    message(
+      FATAL_ERROR "Invalid build type ${CMAKE_BUILD_TYPE}. Options are: ${_allowed_build_types}."
+      )
+  endif()
+  message(STATUS "Configuring for build type ${CMAKE_BUILD_TYPE}")
+endif()
+
 # specify where our own cmake modules are located
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
@@ -52,11 +66,6 @@ foreach(_file ${_checks})
   message(VERBOSE "Include ${_file}")
   include(${_file})
 endforeach()
-
-###------------------------------------------------------------------- Default cmake settings
-if(NOT CMAKE_BUILD_TYPE)
-  message(FATAL_ERROR "Choose a build type. Options are Debug and Release.")
-endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

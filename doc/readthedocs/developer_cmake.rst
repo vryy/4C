@@ -69,6 +69,15 @@ Such a local preset could look like this::
       ]
     }
 
+Don't be overwhelmed by the options you could potentially set.
+For a basic build of |FOURC|, you should start with `CMAKE_BUILD_TYPE` (either `RELEASE` or `DEBUG`) and maybe a compiler. We try to
+detect reasonable defaults for you internally. Over time you might realize that you want to turn on
+additional dependencies or features. To see which other options you can set, consult
+the console output of CMake or run `ccmake .` in the build folder.
+
+**Remark:** Variables either start with the prefix `BACI_` indicating that this variable only affects |FOURC| itself,
+or they start with `CMAKE_` indicating that the variable (potentially) affects all dependent projects in a way
+specified directly in the CMake documentation.
 
 Configuration from the IDE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,9 +96,16 @@ Hints for VS Code: You need to install the extensions "CMake Tools" from Microso
 For CMake maintainers
 ~~~~~~~~~~~~~~~~~~~~~
 
+This section documents how we write the CMake code. For users and developers who do not
+work on the build system, this section is not necessary.
+
 Conventions
 ...........
 
+- In general, do not modify `CMAKE_` variables inside CMake files!
+  They affect downstream packages (e.g. from `fetch_content`) as well and we cannot easily know
+  whether these packages can handle our settings.
+- Prefer the modern CMake way and use targets over variables when handling requirements and dependencies.
 - Every variable that is supposed to be set from outside has to start with `BACI_`.
   Variables that toggle a dependency are named `BACI_WITH_<PACKAGE>`. Further options for a package
   are specified by `BACI_<PACKAGE>_<OPTION>`.
