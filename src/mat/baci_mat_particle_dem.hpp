@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_MAT_PARTICLE_DEM_HPP
-#define BACI_MAT_PARTICLE_DEM_HPP
+#ifndef FOUR_C_MAT_PARTICLE_DEM_HPP
+#define FOUR_C_MAT_PARTICLE_DEM_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 07/2018 |

@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 11/12 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_THERMO_HPP
-#define BACI_SO3_THERMO_HPP
+#ifndef FOUR_C_SO3_THERMO_HPP
+#define FOUR_C_SO3_THERMO_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/12 |
@@ -393,4 +393,4 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_THERMO_H
+#endif

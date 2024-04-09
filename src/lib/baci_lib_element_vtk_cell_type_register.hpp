@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_ELEMENT_VTK_CELL_TYPE_REGISTER_HPP
-#define BACI_LIB_ELEMENT_VTK_CELL_TYPE_REGISTER_HPP
+#ifndef FOUR_C_LIB_ELEMENT_VTK_CELL_TYPE_REGISTER_HPP
+#define FOUR_C_LIB_ELEMENT_VTK_CELL_TYPE_REGISTER_HPP
 
 /* headers */
 #include "baci_config.hpp"

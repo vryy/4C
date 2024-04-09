@@ -157,7 +157,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
         << "\n The body is located between x: [0,6.413mm], y: [0,6.413mm], z: "
            "[-13.3335mm,13.3335mm]\n"
         << std::endl;
-#endif  // TFSI
+#endif
 
   // structural and thermal contact
   GetContactStrategy();

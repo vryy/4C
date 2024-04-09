@@ -5,8 +5,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_SCATRA_HPP
-#define BACI_MAT_SCATRA_HPP
+#ifndef FOUR_C_MAT_SCATRA_HPP
+#define FOUR_C_MAT_SCATRA_HPP
 
 
 

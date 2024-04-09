@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LINALG_FORTRAN_DEFINITIONS_HPP
-#define BACI_LINALG_FORTRAN_DEFINITIONS_HPP
+#ifndef FOUR_C_LINALG_FORTRAN_DEFINITIONS_HPP
+#define FOUR_C_LINALG_FORTRAN_DEFINITIONS_HPP
 
 #include "baci_config.hpp"
 

@@ -7,8 +7,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_DYN_NLN_DRT_HPP
-#define BACI_STRUCTURE_DYN_NLN_DRT_HPP
+#ifndef FOUR_C_STRUCTURE_DYN_NLN_DRT_HPP
+#define FOUR_C_STRUCTURE_DYN_NLN_DRT_HPP
 
 #include "baci_config.hpp"
 
@@ -21,4 +21,4 @@ void caldyn_drt();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_DYN_NLN_DRT_H
+#endif

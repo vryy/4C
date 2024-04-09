@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_IO_ELEMENTREADER_HPP
-#define BACI_IO_ELEMENTREADER_HPP
+#ifndef FOUR_C_IO_ELEMENTREADER_HPP
+#define FOUR_C_IO_ELEMENTREADER_HPP
 
 #include "baci_config.hpp"
 

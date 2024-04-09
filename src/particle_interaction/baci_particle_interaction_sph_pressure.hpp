@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_SPH_PRESSURE_HPP
-#define BACI_PARTICLE_INTERACTION_SPH_PRESSURE_HPP
+#ifndef FOUR_C_PARTICLE_INTERACTION_SPH_PRESSURE_HPP
+#define FOUR_C_PARTICLE_INTERACTION_SPH_PRESSURE_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

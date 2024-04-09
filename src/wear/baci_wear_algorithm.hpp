@@ -13,8 +13,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 11/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_WEAR_ALGORITHM_HPP
-#define BACI_WEAR_ALGORITHM_HPP
+#ifndef FOUR_C_WEAR_ALGORITHM_HPP
+#define FOUR_C_WEAR_ALGORITHM_HPP
 
 
 /*----------------------------------------------------------------------*
@@ -109,4 +109,4 @@ namespace WEAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // WEAR_ALGORITHM_H
+#endif

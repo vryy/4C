@@ -8,8 +8,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_EHL_UTILS_HPP
-#define BACI_EHL_UTILS_HPP
+#ifndef FOUR_C_EHL_UTILS_HPP
+#define FOUR_C_EHL_UTILS_HPP
 
 
 #include "baci_config.hpp"
@@ -41,4 +41,4 @@ namespace EHL
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // EHL_UTILS_H
+#endif

@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_SSTI_ALGORITHM_HPP
-#define BACI_SSTI_ALGORITHM_HPP
+#ifndef FOUR_C_SSTI_ALGORITHM_HPP
+#define FOUR_C_SSTI_ALGORITHM_HPP
 
 #include "baci_config.hpp"
 
@@ -180,4 +180,4 @@ namespace SSTI
 }  // namespace SSTI
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSTI_ALGORITHM_H
+#endif

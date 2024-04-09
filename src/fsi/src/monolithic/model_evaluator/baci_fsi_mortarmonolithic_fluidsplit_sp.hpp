@@ -9,8 +9,8 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_HPP
-#define BACI_FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_HPP
+#ifndef FOUR_C_FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_HPP
+#define FOUR_C_FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_HPP
 
 #include "baci_config.hpp"
 
@@ -275,4 +275,4 @@ namespace FSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_H
+#endif

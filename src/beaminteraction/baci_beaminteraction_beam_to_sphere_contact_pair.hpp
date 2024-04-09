@@ -7,8 +7,8 @@
 
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_HPP
-#define BACI_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_HPP
+#ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_HPP
+#define FOUR_C_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_HPP
 
 #include "baci_config.hpp"
 

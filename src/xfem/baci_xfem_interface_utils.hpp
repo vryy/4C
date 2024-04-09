@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_XFEM_INTERFACE_UTILS_HPP
-#define BACI_XFEM_INTERFACE_UTILS_HPP
+#ifndef FOUR_C_XFEM_INTERFACE_UTILS_HPP
+#define FOUR_C_XFEM_INTERFACE_UTILS_HPP
 
 // forward declaration of enums not possible
 #include "baci_config.hpp"
@@ -196,4 +196,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_INTERFACE_UTILS_H
+#endif

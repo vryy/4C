@@ -7,8 +7,8 @@ multiplicatively into elastic and inelastic parts
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_HPP
-#define BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_HPP
+#ifndef FOUR_C_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_HPP
+#define FOUR_C_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_HPP
 
 #include "baci_config.hpp"
 

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DISCRET_FACES_HPP
-#define BACI_LIB_DISCRET_FACES_HPP
+#ifndef FOUR_C_LIB_DISCRET_FACES_HPP
+#define FOUR_C_LIB_DISCRET_FACES_HPP
 
 #include "baci_config.hpp"
 
@@ -348,4 +348,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationFaces& dis);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DISCRET_FACES_H
+#endif

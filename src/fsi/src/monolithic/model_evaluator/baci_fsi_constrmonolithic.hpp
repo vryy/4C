@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_CONSTRMONOLITHIC_HPP
-#define BACI_FSI_CONSTRMONOLITHIC_HPP
+#ifndef FOUR_C_FSI_CONSTRMONOLITHIC_HPP
+#define FOUR_C_FSI_CONSTRMONOLITHIC_HPP
 
 #include "baci_config.hpp"
 

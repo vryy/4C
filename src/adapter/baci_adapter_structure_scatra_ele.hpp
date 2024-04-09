@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_STRUCTURE_SCATRA_ELE_HPP
-#define BACI_ADAPTER_STRUCTURE_SCATRA_ELE_HPP
+#ifndef FOUR_C_ADAPTER_STRUCTURE_SCATRA_ELE_HPP
+#define FOUR_C_ADAPTER_STRUCTURE_SCATRA_ELE_HPP
 
 #include "baci_config.hpp"
 

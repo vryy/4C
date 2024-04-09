@@ -11,8 +11,8 @@ coupling the displacements
 
 
 
-#ifndef BACI_FSI_DIRICHLETNEUMANN_DISP_HPP
-#define BACI_FSI_DIRICHLETNEUMANN_DISP_HPP
+#ifndef FOUR_C_FSI_DIRICHLETNEUMANN_DISP_HPP
+#define FOUR_C_FSI_DIRICHLETNEUMANN_DISP_HPP
 
 #include "baci_config.hpp"
 

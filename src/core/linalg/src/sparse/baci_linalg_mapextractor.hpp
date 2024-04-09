@@ -6,8 +6,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_MAPEXTRACTOR_HPP
-#define BACI_LINALG_MAPEXTRACTOR_HPP
+#ifndef FOUR_C_LINALG_MAPEXTRACTOR_HPP
+#define FOUR_C_LINALG_MAPEXTRACTOR_HPP
 
 #include "baci_config.hpp"
 

@@ -11,8 +11,8 @@ and other data are evaluated
 // End doxygen header.
 
 
-#ifndef BACI_GEOMETRY_PAIR_ELEMENT_HPP
-#define BACI_GEOMETRY_PAIR_ELEMENT_HPP
+#ifndef FOUR_C_GEOMETRY_PAIR_ELEMENT_HPP
+#define FOUR_C_GEOMETRY_PAIR_ELEMENT_HPP
 
 
 #include "baci_config.hpp"

@@ -8,8 +8,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_TIMESTEPPING_MSTEP_HPP
-#define BACI_TIMESTEPPING_MSTEP_HPP
+#ifndef FOUR_C_TIMESTEPPING_MSTEP_HPP
+#define FOUR_C_TIMESTEPPING_MSTEP_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -390,4 +390,4 @@ namespace TIMESTEPPING
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // TIMESTEPPING_MSTEP_H
+#endif

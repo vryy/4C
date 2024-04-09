@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 12/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_WEAR_UTILS_HPP
-#define BACI_WEAR_UTILS_HPP
+#ifndef FOUR_C_WEAR_UTILS_HPP
+#define FOUR_C_WEAR_UTILS_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                  farah 12/13 |
@@ -185,4 +185,4 @@ namespace WEAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // WEAR_UTILS_H
+#endif

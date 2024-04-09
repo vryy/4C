@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROFLUIDMULTIPHASE_ELE_EVALUATOR_HPP
-#define BACI_POROFLUIDMULTIPHASE_ELE_EVALUATOR_HPP
+#ifndef FOUR_C_POROFLUIDMULTIPHASE_ELE_EVALUATOR_HPP
+#define FOUR_C_POROFLUIDMULTIPHASE_ELE_EVALUATOR_HPP
 
 #include "baci_config.hpp"
 
@@ -3312,4 +3312,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROFLUIDMULTIPHASE_ELE_POROFLUID_EVALUATOR_H
+#endif

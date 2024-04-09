@@ -6,8 +6,8 @@
 \level 3
     */
 /*-----------------------------------------------------------*/
-#ifndef BACI_CONSTRAINT_FRAMEWORK_EQUATION_MPC_HPP
-#define BACI_CONSTRAINT_FRAMEWORK_EQUATION_MPC_HPP
+#ifndef FOUR_C_CONSTRAINT_FRAMEWORK_EQUATION_MPC_HPP
+#define FOUR_C_CONSTRAINT_FRAMEWORK_EQUATION_MPC_HPP
 
 #include "baci_config.hpp"
 

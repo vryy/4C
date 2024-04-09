@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_NOX_LINEARSYSTEM_HPP
-#define BACI_FSI_NOX_LINEARSYSTEM_HPP
+#ifndef FOUR_C_FSI_NOX_LINEARSYSTEM_HPP
+#define FOUR_C_FSI_NOX_LINEARSYSTEM_HPP
 
 #include "baci_config.hpp"
 

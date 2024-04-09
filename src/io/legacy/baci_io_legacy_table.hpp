@@ -37,8 +37,8 @@ table. This table can be queried for those values quite easily.
 
 */
 
-#ifndef BACI_IO_LEGACY_TABLE_HPP
-#define BACI_IO_LEGACY_TABLE_HPP
+#ifndef FOUR_C_IO_LEGACY_TABLE_HPP
+#define FOUR_C_IO_LEGACY_TABLE_HPP
 
 #include "baci_config.hpp"
 

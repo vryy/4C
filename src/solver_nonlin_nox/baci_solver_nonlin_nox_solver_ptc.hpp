@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_SOLVER_NONLIN_NOX_SOLVER_PTC_HPP
-#define BACI_SOLVER_NONLIN_NOX_SOLVER_PTC_HPP
+#ifndef FOUR_C_SOLVER_NONLIN_NOX_SOLVER_PTC_HPP
+#define FOUR_C_SOLVER_NONLIN_NOX_SOLVER_PTC_HPP
 
 
 #include "baci_config.hpp"
@@ -467,4 +467,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_SOLVER_PTC_H
+#endif

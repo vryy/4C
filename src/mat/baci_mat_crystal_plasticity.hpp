@@ -153,8 +153,8 @@ TWINBYTWIN		- (optional) vector containing NUMTWINSETS
 /*----------------------------------------------------------------------*
  | definitions															|
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_CRYSTAL_PLASTICITY_HPP
-#define BACI_MAT_CRYSTAL_PLASTICITY_HPP
+#ifndef FOUR_C_MAT_CRYSTAL_PLASTICITY_HPP
+#define FOUR_C_MAT_CRYSTAL_PLASTICITY_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                  			|
@@ -644,4 +644,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_CRYSTAL_PLASTICITY_H
+#endif

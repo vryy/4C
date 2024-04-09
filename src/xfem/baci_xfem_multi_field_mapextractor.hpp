@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------------*/
 
 
-#ifndef BACI_XFEM_MULTI_FIELD_MAPEXTRACTOR_HPP
-#define BACI_XFEM_MULTI_FIELD_MAPEXTRACTOR_HPP
+#ifndef FOUR_C_XFEM_MULTI_FIELD_MAPEXTRACTOR_HPP
+#define FOUR_C_XFEM_MULTI_FIELD_MAPEXTRACTOR_HPP
 
 #include "baci_config.hpp"
 
@@ -724,4 +724,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_MULTI_FIELD_MAPEXTRACTOR_H
+#endif

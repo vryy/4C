@@ -3,8 +3,8 @@
 \level 0
 */
 
-#ifndef BACI_UTILS_FUNCTION_OF_TIME_HPP
-#define BACI_UTILS_FUNCTION_OF_TIME_HPP
+#ifndef FOUR_C_UTILS_FUNCTION_OF_TIME_HPP
+#define FOUR_C_UTILS_FUNCTION_OF_TIME_HPP
 
 #include "baci_config.hpp"
 

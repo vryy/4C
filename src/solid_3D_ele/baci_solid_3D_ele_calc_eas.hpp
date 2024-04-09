@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_3D_ELE_CALC_EAS_HPP
-#define BACI_SOLID_3D_ELE_CALC_EAS_HPP
+#ifndef FOUR_C_SOLID_3D_ELE_CALC_EAS_HPP
+#define FOUR_C_SOLID_3D_ELE_CALC_EAS_HPP
 
 #include "baci_config.hpp"
 
@@ -170,4 +170,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLID_ELE_CALC_EAS_H
+#endif

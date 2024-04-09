@@ -862,7 +862,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
     std::cout << "mechdiss_ = " << mechdiss_->at(gp) << std::endl;
     std::cout << "mechdiss_kTd_->at(gp) = " << mechdiss_kTd_->at(gp) << std::endl;
     std::cout << "Cmat_kdT_vct = " << *Cmat_kdT_vct << std::endl;
-#endif  // DEBUGMATERIAL
+#endif
 
   }  // end plastic step
 

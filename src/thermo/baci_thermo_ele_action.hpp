@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_THERMO_ELE_ACTION_HPP
-#define BACI_THERMO_ELE_ACTION_HPP
+#ifndef FOUR_C_THERMO_ELE_ACTION_HPP
+#define FOUR_C_THERMO_ELE_ACTION_HPP
 
 #include "baci_config.hpp"
 
@@ -138,4 +138,4 @@ namespace THR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_ELE_ACTION_H
+#endif

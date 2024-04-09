@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PASI_PARTITIONED_HPP
-#define BACI_PASI_PARTITIONED_HPP
+#ifndef FOUR_C_PASI_PARTITIONED_HPP
+#define FOUR_C_PASI_PARTITIONED_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

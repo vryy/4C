@@ -12,8 +12,8 @@
 /* definitions */
 
 
-#ifndef BACI_INPAR_VALIDMATERIALS_HPP
-#define BACI_INPAR_VALIDMATERIALS_HPP
+#ifndef FOUR_C_INPAR_VALIDMATERIALS_HPP
+#define FOUR_C_INPAR_VALIDMATERIALS_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */

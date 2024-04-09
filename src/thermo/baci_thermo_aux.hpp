@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_THERMO_AUX_HPP
-#define BACI_THERMO_AUX_HPP
+#ifndef FOUR_C_THERMO_AUX_HPP
+#define FOUR_C_THERMO_AUX_HPP
 
 
 /*----------------------------------------------------------------------*
@@ -45,4 +45,4 @@ namespace THR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_AUX_H
+#endif

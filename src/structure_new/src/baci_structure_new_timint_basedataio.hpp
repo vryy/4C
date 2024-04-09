@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_STRUCTURE_NEW_TIMINT_BASEDATAIO_HPP
-#define BACI_STRUCTURE_NEW_TIMINT_BASEDATAIO_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATAIO_HPP
+#define FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATAIO_HPP
 
 #include "baci_config.hpp"
 
@@ -485,4 +485,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_TIMINT_BASEDATAIO_H
+#endif

@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_COUPLING_VOLMORTAR_UTILS_HPP
-#define BACI_COUPLING_VOLMORTAR_UTILS_HPP
+#ifndef FOUR_C_COUPLING_VOLMORTAR_UTILS_HPP
+#define FOUR_C_COUPLING_VOLMORTAR_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -76,4 +76,4 @@ namespace CORE::VOLMORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // COUPLING_VOLMORTAR_UTILS_H
+#endif

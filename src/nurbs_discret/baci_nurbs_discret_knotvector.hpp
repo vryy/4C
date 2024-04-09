@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_NURBS_DISCRET_KNOTVECTOR_HPP
-#define BACI_NURBS_DISCRET_KNOTVECTOR_HPP
+#ifndef FOUR_C_NURBS_DISCRET_KNOTVECTOR_HPP
+#define FOUR_C_NURBS_DISCRET_KNOTVECTOR_HPP
 
 #include "baci_config.hpp"
 
@@ -510,4 +510,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // NURBS_DISCRET_KNOTVECTOR_H
+#endif

@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_FLUID_ROTSYM_PERIODICBC_HPP
-#define BACI_FLUID_ROTSYM_PERIODICBC_HPP
+#ifndef FOUR_C_FLUID_ROTSYM_PERIODICBC_HPP
+#define FOUR_C_FLUID_ROTSYM_PERIODICBC_HPP
 
 #include "baci_config.hpp"
 
@@ -260,4 +260,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_ROTSYM_PERIODICBC_H
+#endif

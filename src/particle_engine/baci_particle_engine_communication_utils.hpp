@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_ENGINE_COMMUNICATION_UTILS_HPP
-#define BACI_PARTICLE_ENGINE_COMMUNICATION_UTILS_HPP
+#ifndef FOUR_C_PARTICLE_ENGINE_COMMUNICATION_UTILS_HPP
+#define FOUR_C_PARTICLE_ENGINE_COMMUNICATION_UTILS_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

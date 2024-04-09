@@ -9,8 +9,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_LUBRICATION_RESULTTEST_HPP
-#define BACI_LUBRICATION_RESULTTEST_HPP
+#ifndef FOUR_C_LUBRICATION_RESULTTEST_HPP
+#define FOUR_C_LUBRICATION_RESULTTEST_HPP
 
 
 #include "baci_config.hpp"
@@ -81,4 +81,4 @@ namespace LUBRICATION
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LUBRICATION_RESULTTEST_H
+#endif

@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_AMGNXN_OBJECTS_HPP
-#define BACI_LINEAR_SOLVER_AMGNXN_OBJECTS_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_AMGNXN_OBJECTS_HPP
+#define FOUR_C_LINEAR_SOLVER_AMGNXN_OBJECTS_HPP
 
 // Trilinos includes
 #include "baci_config.hpp"
@@ -180,4 +180,4 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_AMGNXN_OBJECTS_H
+#endif

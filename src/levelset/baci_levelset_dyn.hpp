@@ -5,8 +5,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_LEVELSET_DYN_HPP
-#define BACI_LEVELSET_DYN_HPP
+#ifndef FOUR_C_LEVELSET_DYN_HPP
+#define FOUR_C_LEVELSET_DYN_HPP
 
 #include "baci_config.hpp"
 
@@ -18,4 +18,4 @@ void levelset_dyn(int restart /* do we have to perform a restart?  */
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LEVELSET_DYN_H
+#endif

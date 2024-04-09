@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_IO_EVERY_ITERATION_WRITER_HPP
-#define BACI_IO_EVERY_ITERATION_WRITER_HPP
+#ifndef FOUR_C_IO_EVERY_ITERATION_WRITER_HPP
+#define FOUR_C_IO_EVERY_ITERATION_WRITER_HPP
 
 #include "baci_config.hpp"
 
@@ -259,4 +259,4 @@ namespace IO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_IO_EVERY_ITERATION_WRITER_H
+#endif

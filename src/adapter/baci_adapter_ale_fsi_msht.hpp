@@ -8,8 +8,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_ADAPTER_ALE_FSI_MSHT_HPP
-#define BACI_ADAPTER_ALE_FSI_MSHT_HPP
+#ifndef FOUR_C_ADAPTER_ALE_FSI_MSHT_HPP
+#define FOUR_C_ADAPTER_ALE_FSI_MSHT_HPP
 
 
 
@@ -66,4 +66,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_ALE_FSI_MSHT_H
+#endif

@@ -9,8 +9,8 @@ continuous interior penalty) scheme
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_XFEM_EDGESTAB_HPP
-#define BACI_XFEM_EDGESTAB_HPP
+#ifndef FOUR_C_XFEM_EDGESTAB_HPP
+#define FOUR_C_XFEM_EDGESTAB_HPP
 
 
 #include "baci_config.hpp"
@@ -140,4 +140,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_EDGESTAB_H
+#endif

@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_SCATRA_MULTISCALE_HPP
-#define BACI_MAT_SCATRA_MULTISCALE_HPP
+#ifndef FOUR_C_MAT_SCATRA_MULTISCALE_HPP
+#define FOUR_C_MAT_SCATRA_MULTISCALE_HPP
 
 #include "baci_config.hpp"
 

@@ -6,8 +6,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_UTILS_LOCAL_NEWTON_HPP
-#define BACI_UTILS_LOCAL_NEWTON_HPP
+#ifndef FOUR_C_UTILS_LOCAL_NEWTON_HPP
+#define FOUR_C_UTILS_LOCAL_NEWTON_HPP
 
 #include "baci_config.hpp"
 

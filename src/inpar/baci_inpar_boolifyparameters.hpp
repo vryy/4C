@@ -7,8 +7,8 @@
 \level 0
 */
 
-#ifndef BACI_INPAR_BOOLIFYPARAMETERS_HPP
-#define BACI_INPAR_BOOLIFYPARAMETERS_HPP
+#ifndef FOUR_C_INPAR_BOOLIFYPARAMETERS_HPP
+#define FOUR_C_INPAR_BOOLIFYPARAMETERS_HPP
 
 #include "baci_config.hpp"
 
@@ -32,4 +32,4 @@ namespace INPUT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_BOOLIFYPARAMETERS_H
+#endif

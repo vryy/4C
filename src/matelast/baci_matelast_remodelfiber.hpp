@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_REMODELFIBER_HPP
-#define BACI_MATELAST_REMODELFIBER_HPP
+#ifndef FOUR_C_MATELAST_REMODELFIBER_HPP
+#define FOUR_C_MATELAST_REMODELFIBER_HPP
 
 #include "baci_config.hpp"
 
@@ -860,4 +860,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_REMODELFIBER_H
+#endif

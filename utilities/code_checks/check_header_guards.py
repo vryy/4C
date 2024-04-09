@@ -13,6 +13,7 @@ def check_header_guards(look_cmd, allerrors):
 
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         define_name = file_name.replace("-", "_").replace(".", "_").upper() + "_HPP"
+        define_name = define_name.replace("BACI", "FOUR_C")
 
         template_header_if = "#ifndef " + define_name + "\n"
         template_header_define = "#define " + define_name + "\n"

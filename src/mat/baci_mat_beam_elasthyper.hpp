@@ -8,8 +8,8 @@ function)
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_BEAM_ELASTHYPER_HPP
-#define BACI_MAT_BEAM_ELASTHYPER_HPP
+#ifndef FOUR_C_MAT_BEAM_ELASTHYPER_HPP
+#define FOUR_C_MAT_BEAM_ELASTHYPER_HPP
 
 #include "baci_config.hpp"
 

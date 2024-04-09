@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_SINGLETON_OWNER_HPP
-#define BACI_UTILS_SINGLETON_OWNER_HPP
+#ifndef FOUR_C_UTILS_SINGLETON_OWNER_HPP
+#define FOUR_C_UTILS_SINGLETON_OWNER_HPP
 
 #include "baci_config.hpp"
 

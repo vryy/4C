@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_ELEMENT_CENTER_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_ELEMENT_CENTER_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_ELEMENT_CENTER_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_ELEMENT_CENTER_HPP
 
 #include "baci_config.hpp"
 

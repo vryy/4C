@@ -8,8 +8,8 @@
  */
 
 
-#ifndef BACI_POST_ENSIGHT_WRITER_HPP
-#define BACI_POST_ENSIGHT_WRITER_HPP
+#ifndef FOUR_C_POST_ENSIGHT_WRITER_HPP
+#define FOUR_C_POST_ENSIGHT_WRITER_HPP
 
 #include "baci_config.hpp"
 
@@ -441,4 +441,4 @@ class EnsightWriter : public PostWriterBase
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POST_ENSIGHT_WRITER_H
+#endif

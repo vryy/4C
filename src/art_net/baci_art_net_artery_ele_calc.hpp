@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_ART_NET_ARTERY_ELE_CALC_HPP
-#define BACI_ART_NET_ARTERY_ELE_CALC_HPP
+#ifndef FOUR_C_ART_NET_ARTERY_ELE_CALC_HPP
+#define FOUR_C_ART_NET_ARTERY_ELE_CALC_HPP
 
 #include "baci_config.hpp"
 
@@ -104,4 +104,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ART_NET_ARTERY_ELE_CALC_H
+#endif

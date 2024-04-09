@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ELEMAG_TIMEINT_HPP
-#define BACI_ELEMAG_TIMEINT_HPP
+#ifndef FOUR_C_ELEMAG_TIMEINT_HPP
+#define FOUR_C_ELEMAG_TIMEINT_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                             gravemeier 06/17 |
@@ -370,4 +370,4 @@ namespace ELEMAG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELEMAG_TIMEINT_H
+#endif

@@ -59,7 +59,7 @@ void writeComment(const std::string v)
   std::cerr.write(reinterpret_cast<const char*>(&s), sizeof(unsigned int));
   std::cerr << 'C' << v;
 }
-#endif  // PRINT_DEBUG
+#endif
 
 using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_FLUID_UTILS_HPP
-#define BACI_FLUID_UTILS_HPP
+#ifndef FOUR_C_FLUID_UTILS_HPP
+#define FOUR_C_FLUID_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -573,4 +573,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_UTILS_H
+#endif

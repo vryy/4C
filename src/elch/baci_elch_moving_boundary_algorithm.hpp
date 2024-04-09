@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_ELCH_MOVING_BOUNDARY_ALGORITHM_HPP
-#define BACI_ELCH_MOVING_BOUNDARY_ALGORITHM_HPP
+#ifndef FOUR_C_ELCH_MOVING_BOUNDARY_ALGORITHM_HPP
+#define FOUR_C_ELCH_MOVING_BOUNDARY_ALGORITHM_HPP
 
 #include "baci_config.hpp"
 
@@ -110,4 +110,4 @@ namespace ELCH
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELCH_MOVING_BOUNDARY_ALGORITHM_H
+#endif

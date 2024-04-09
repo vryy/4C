@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_UTILS_ELEMENTS_HPP
-#define BACI_LIB_UTILS_ELEMENTS_HPP
+#ifndef FOUR_C_LIB_UTILS_ELEMENTS_HPP
+#define FOUR_C_LIB_UTILS_ELEMENTS_HPP
 
 #include "baci_config.hpp"
 
@@ -63,4 +63,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_UTILS_ELEMENTS_H
+#endif

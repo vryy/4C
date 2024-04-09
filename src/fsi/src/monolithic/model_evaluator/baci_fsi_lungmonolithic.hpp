@@ -9,8 +9,8 @@
 
 
 
-#ifndef BACI_FSI_LUNGMONOLITHIC_HPP
-#define BACI_FSI_LUNGMONOLITHIC_HPP
+#ifndef FOUR_C_FSI_LUNGMONOLITHIC_HPP
+#define FOUR_C_FSI_LUNGMONOLITHIC_HPP
 
 #include "baci_config.hpp"
 

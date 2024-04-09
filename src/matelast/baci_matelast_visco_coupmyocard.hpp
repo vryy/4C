@@ -6,8 +6,8 @@ representing the collagen and elastin matrix surrounding the myocardial fiber (c
 \level 2
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_MATELAST_VISCO_COUPMYOCARD_HPP
-#define BACI_MATELAST_VISCO_COUPMYOCARD_HPP
+#ifndef FOUR_C_MATELAST_VISCO_COUPMYOCARD_HPP
+#define FOUR_C_MATELAST_VISCO_COUPMYOCARD_HPP
 
 #include "baci_config.hpp"
 
@@ -138,4 +138,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_VISCO_COUPMYOCARD_H
+#endif

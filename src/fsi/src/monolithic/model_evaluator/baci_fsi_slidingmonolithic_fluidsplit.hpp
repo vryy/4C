@@ -8,8 +8,8 @@ with condensed fluid interface velocities
 \level 2
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_HPP
-#define BACI_FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_HPP
+#ifndef FOUR_C_FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_HPP
+#define FOUR_C_FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_HPP
 
 
 #include "baci_config.hpp"
@@ -433,4 +433,4 @@ namespace FSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FSI_SLIDINGMONOLITHIC_FLUIDSPLIT_H
+#endif

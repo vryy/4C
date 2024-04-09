@@ -8,8 +8,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_IO_STRING_CONVERTER_HPP
-#define BACI_IO_STRING_CONVERTER_HPP
+#ifndef FOUR_C_IO_STRING_CONVERTER_HPP
+#define FOUR_C_IO_STRING_CONVERTER_HPP
 
 #include "baci_config.hpp"
 

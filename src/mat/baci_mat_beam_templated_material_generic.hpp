@@ -5,8 +5,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_BEAM_TEMPLATED_MATERIAL_GENERIC_HPP
-#define BACI_MAT_BEAM_TEMPLATED_MATERIAL_GENERIC_HPP
+#ifndef FOUR_C_MAT_BEAM_TEMPLATED_MATERIAL_GENERIC_HPP
+#define FOUR_C_MAT_BEAM_TEMPLATED_MATERIAL_GENERIC_HPP
 
 #include "baci_config.hpp"
 

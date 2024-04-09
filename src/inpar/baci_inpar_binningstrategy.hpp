@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_INPAR_BINNINGSTRATEGY_HPP
-#define BACI_INPAR_BINNINGSTRATEGY_HPP
+#ifndef FOUR_C_INPAR_BINNINGSTRATEGY_HPP
+#define FOUR_C_INPAR_BINNINGSTRATEGY_HPP
 
 #include "baci_config.hpp"
 

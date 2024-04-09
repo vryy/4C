@@ -8,8 +8,8 @@
 
 
  *------------------------------------------------------------------------------------------------*/
-#ifndef BACI_FPSI_DEFINES_HPP
-#define BACI_FPSI_DEFINES_HPP
+#ifndef FOUR_C_FPSI_DEFINES_HPP
+#define FOUR_C_FPSI_DEFINES_HPP
 
 #include "baci_config.hpp"
 
@@ -19,4 +19,4 @@ BACI_NAMESPACE_OPEN
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FPSI_DEFINES_H
+#endif

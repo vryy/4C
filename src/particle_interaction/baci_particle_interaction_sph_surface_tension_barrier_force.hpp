@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_SPH_SURFACE_TENSION_BARRIER_FORCE_HPP
-#define BACI_PARTICLE_INTERACTION_SPH_SURFACE_TENSION_BARRIER_FORCE_HPP
+#ifndef FOUR_C_PARTICLE_INTERACTION_SPH_SURFACE_TENSION_BARRIER_FORCE_HPP
+#define FOUR_C_PARTICLE_INTERACTION_SPH_SURFACE_TENSION_BARRIER_FORCE_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

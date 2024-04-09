@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_ALGORITHMBASE_HPP
-#define BACI_ADAPTER_ALGORITHMBASE_HPP
+#ifndef FOUR_C_ADAPTER_ALGORITHMBASE_HPP
+#define FOUR_C_ADAPTER_ALGORITHMBASE_HPP
 
 #include "baci_config.hpp"
 

@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_CUBIC_SPLINE_INTERPOLATION_HPP
-#define BACI_UTILS_CUBIC_SPLINE_INTERPOLATION_HPP
+#ifndef FOUR_C_UTILS_CUBIC_SPLINE_INTERPOLATION_HPP
+#define FOUR_C_UTILS_CUBIC_SPLINE_INTERPOLATION_HPP
 
 #include "baci_config.hpp"
 

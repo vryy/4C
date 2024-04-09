@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_BOUNDINGBOX_HPP
-#define BACI_CUT_BOUNDINGBOX_HPP
+#ifndef FOUR_C_CUT_BOUNDINGBOX_HPP
+#define FOUR_C_CUT_BOUNDINGBOX_HPP
 
 #include "baci_config.hpp"
 

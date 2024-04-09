@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_INTERSECTION_HPP
-#define BACI_CUT_INTERSECTION_HPP
+#ifndef FOUR_C_CUT_INTERSECTION_HPP
+#define FOUR_C_CUT_INTERSECTION_HPP
 
 #include "baci_config.hpp"
 

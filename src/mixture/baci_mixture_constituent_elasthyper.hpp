@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_HPP
-#define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_HPP
+#ifndef FOUR_C_MIXTURE_CONSTITUENT_ELASTHYPER_HPP
+#define FOUR_C_MIXTURE_CONSTITUENT_ELASTHYPER_HPP
 
 #include "baci_config.hpp"
 
@@ -99,4 +99,4 @@ namespace MIXTURE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MIXTURE_CONSTITUENT_ELASTHYPER_H
+#endif

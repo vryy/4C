@@ -7,8 +7,8 @@
 
 
 
-#ifndef BACI_FSI_LUNG_OVERLAPPREC_HPP
-#define BACI_FSI_LUNG_OVERLAPPREC_HPP
+#ifndef FOUR_C_FSI_LUNG_OVERLAPPREC_HPP
+#define FOUR_C_FSI_LUNG_OVERLAPPREC_HPP
 
 #include "baci_config.hpp"
 

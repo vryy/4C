@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_RESULTTEST_HPP
-#define BACI_FSI_RESULTTEST_HPP
+#ifndef FOUR_C_FSI_RESULTTEST_HPP
+#define FOUR_C_FSI_RESULTTEST_HPP
 
 #include "baci_config.hpp"
 
@@ -95,4 +95,4 @@ namespace FSI
 }  // namespace FSI
 BACI_NAMESPACE_CLOSE
 
-#endif  // FSI_RESULTTEST_H
+#endif

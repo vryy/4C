@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_RED_AIRWAYS_RESULTTEST_HPP
-#define BACI_RED_AIRWAYS_RESULTTEST_HPP
+#ifndef FOUR_C_RED_AIRWAYS_RESULTTEST_HPP
+#define FOUR_C_RED_AIRWAYS_RESULTTEST_HPP
 
 #include "baci_config.hpp"
 
@@ -78,4 +78,4 @@ namespace AIRWAY
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // RED_AIRWAYS_RESULTTEST_H
+#endif

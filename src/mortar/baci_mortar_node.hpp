@@ -6,8 +6,8 @@
 
 */
 /*-----------------------------------------------------------------------*/
-#ifndef BACI_MORTAR_NODE_HPP
-#define BACI_MORTAR_NODE_HPP
+#ifndef FOUR_C_MORTAR_NODE_HPP
+#define FOUR_C_MORTAR_NODE_HPP
 
 #include "baci_config.hpp"
 
@@ -712,4 +712,4 @@ std::ostream& operator<<(std::ostream& os, const MORTAR::Node& mrtrnode);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_MORTAR_NODE_H
+#endif

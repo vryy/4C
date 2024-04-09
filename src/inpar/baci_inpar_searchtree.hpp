@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_SEARCHTREE_HPP
-#define BACI_INPAR_SEARCHTREE_HPP
+#ifndef FOUR_C_INPAR_SEARCHTREE_HPP
+#define FOUR_C_INPAR_SEARCHTREE_HPP
 
 #include "baci_config.hpp"
 
@@ -38,4 +38,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_SEARCHTREE_H
+#endif

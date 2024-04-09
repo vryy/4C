@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LINALG_GAUSS_HPP
-#define BACI_LINALG_GAUSS_HPP
+#ifndef FOUR_C_LINALG_GAUSS_HPP
+#define FOUR_C_LINALG_GAUSS_HPP
 
 #include "baci_config.hpp"
 
@@ -52,4 +52,4 @@ namespace CORE::LINALG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LINALG_GAUSS_H
+#endif

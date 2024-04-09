@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_COMM_PACK_BUFFER_HPP
-#define BACI_COMM_PACK_BUFFER_HPP
+#ifndef FOUR_C_COMM_PACK_BUFFER_HPP
+#define FOUR_C_COMM_PACK_BUFFER_HPP
 
 #include "baci_config.hpp"
 

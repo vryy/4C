@@ -9,8 +9,8 @@
 /*---------------------------------------------------------------------*
  | definitions                                             farah 09/14 |
  *---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_INTERPOLATOR_HPP
-#define BACI_CONTACT_INTERPOLATOR_HPP
+#ifndef FOUR_C_CONTACT_INTERPOLATOR_HPP
+#define FOUR_C_CONTACT_INTERPOLATOR_HPP
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 09/14 |
@@ -260,4 +260,4 @@ namespace NTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_INTERPOLATOR_H
+#endif

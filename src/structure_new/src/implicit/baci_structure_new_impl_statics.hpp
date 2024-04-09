@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_IMPL_STATICS_HPP
-#define BACI_STRUCTURE_NEW_IMPL_STATICS_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_IMPL_STATICS_HPP
+#define FOUR_C_STRUCTURE_NEW_IMPL_STATICS_HPP
 
 #include "baci_config.hpp"
 
@@ -158,4 +158,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_IMPL_STATICS_H
+#endif

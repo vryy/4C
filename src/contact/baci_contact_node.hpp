@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_NODE_HPP
-#define BACI_CONTACT_NODE_HPP
+#ifndef FOUR_C_CONTACT_NODE_HPP
+#define FOUR_C_CONTACT_NODE_HPP
 
 #include "baci_config.hpp"
 
@@ -1335,4 +1335,4 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::Node& cnode);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_CONTACT_NODE_H
+#endif

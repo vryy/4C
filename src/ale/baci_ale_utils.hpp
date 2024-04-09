@@ -7,8 +7,8 @@
 \level 2
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_ALE_UTILS_HPP
-#define BACI_ALE_UTILS_HPP
+#ifndef FOUR_C_ALE_UTILS_HPP
+#define FOUR_C_ALE_UTILS_HPP
 
 
 #include "baci_config.hpp"
@@ -77,4 +77,4 @@ namespace ALE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ALE_UTILS_H
+#endif

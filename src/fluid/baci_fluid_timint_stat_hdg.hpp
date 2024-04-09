@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TIMINT_STAT_HDG_HPP
-#define BACI_FLUID_TIMINT_STAT_HDG_HPP
+#ifndef FOUR_C_FLUID_TIMINT_STAT_HDG_HPP
+#define FOUR_C_FLUID_TIMINT_STAT_HDG_HPP
 // TODO als fix
 // fluid_timint_stat_hdg
 // because it is not working
@@ -111,4 +111,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_TIMINT_STAT_HDG_H
+#endif

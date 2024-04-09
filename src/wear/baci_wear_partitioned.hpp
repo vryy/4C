@@ -13,8 +13,8 @@
  | definitions                                              farah 11/13 |
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_WEAR_PARTITIONED_HPP
-#define BACI_WEAR_PARTITIONED_HPP
+#ifndef FOUR_C_WEAR_PARTITIONED_HPP
+#define FOUR_C_WEAR_PARTITIONED_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                  farah 11/13 |
@@ -187,4 +187,4 @@ namespace WEAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // WEAR_PARTITIONED_H
+#endif

@@ -6,8 +6,8 @@
 
     *----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_FLUIDPORO_MULTIPHASE_SINGLEREACTION_HPP
-#define BACI_MAT_FLUIDPORO_MULTIPHASE_SINGLEREACTION_HPP
+#ifndef FOUR_C_MAT_FLUIDPORO_MULTIPHASE_SINGLEREACTION_HPP
+#define FOUR_C_MAT_FLUIDPORO_MULTIPHASE_SINGLEREACTION_HPP
 
 
 #include "baci_config.hpp"
@@ -260,4 +260,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_FLUIDPORO_MULTIPHASE_SINGLEREACTION_H
+#endif

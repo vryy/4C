@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_NOX_SD_HPP
-#define BACI_FSI_NOX_SD_HPP
+#ifndef FOUR_C_FSI_NOX_SD_HPP
+#define FOUR_C_FSI_NOX_SD_HPP
 
 #include "baci_config.hpp"
 

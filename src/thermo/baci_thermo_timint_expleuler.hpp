@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 01/12 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_THERMO_TIMINT_EXPLEULER_HPP
-#define BACI_THERMO_TIMINT_EXPLEULER_HPP
+#ifndef FOUR_C_THERMO_TIMINT_EXPLEULER_HPP
+#define FOUR_C_THERMO_TIMINT_EXPLEULER_HPP
 
 
 /*----------------------------------------------------------------------*
@@ -138,4 +138,4 @@ namespace THR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_TIMINT_EXPLEULER_H
+#endif

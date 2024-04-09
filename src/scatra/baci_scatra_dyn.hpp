@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_DYN_HPP
-#define BACI_SCATRA_DYN_HPP
+#ifndef FOUR_C_SCATRA_DYN_HPP
+#define FOUR_C_SCATRA_DYN_HPP
 
 #include "baci_config.hpp"
 
@@ -19,4 +19,4 @@ void scatra_dyn(int restart /* do we have to perform a restart?  */
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_DYN_H
+#endif

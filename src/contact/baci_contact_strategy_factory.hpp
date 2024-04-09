@@ -6,8 +6,8 @@
 \level 2
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_STRATEGY_FACTORY_HPP
-#define BACI_CONTACT_STRATEGY_FACTORY_HPP
+#ifndef FOUR_C_CONTACT_STRATEGY_FACTORY_HPP
+#define FOUR_C_CONTACT_STRATEGY_FACTORY_HPP
 
 #include "baci_config.hpp"
 
@@ -168,4 +168,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_STRATEGY_FACTORY_H
+#endif

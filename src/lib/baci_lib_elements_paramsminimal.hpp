@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_ELEMENTS_PARAMSMINIMAL_HPP
-#define BACI_LIB_ELEMENTS_PARAMSMINIMAL_HPP
+#ifndef FOUR_C_LIB_ELEMENTS_PARAMSMINIMAL_HPP
+#define FOUR_C_LIB_ELEMENTS_PARAMSMINIMAL_HPP
 
 #include "baci_config.hpp"
 
@@ -83,4 +83,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_ELEMENTS_PARAMSMINIMAL_H
+#endif

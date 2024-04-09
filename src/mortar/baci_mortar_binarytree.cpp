@@ -585,7 +585,7 @@ void MORTAR::BinaryTree::EvaluateSearch()
     binarytree_->CouplingMap()[i].clear();
   binarytree_->CouplingMap().clear();
   binarytree_->CouplingMap().resize(2);
-#endif  // MORTARGMSHCTN
+#endif
   // evaluate search algorithm
   EvaluateSearch(sroot_, mroot_);
 

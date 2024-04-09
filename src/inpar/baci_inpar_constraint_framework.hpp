@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_INPAR_CONSTRAINT_FRAMEWORK_HPP
-#define BACI_INPAR_CONSTRAINT_FRAMEWORK_HPP
+#ifndef FOUR_C_INPAR_CONSTRAINT_FRAMEWORK_HPP
+#define FOUR_C_INPAR_CONSTRAINT_FRAMEWORK_HPP
 
 #include "baci_config.hpp"
 
@@ -33,4 +33,4 @@ namespace INPAR::CONSTRAINTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_BACI_INPAR_CONSTRAINT_MODELS_H
+#endif

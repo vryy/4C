@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 09/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_LAGRANGE_STRATEGY_WEAR_HPP
-#define BACI_CONTACT_LAGRANGE_STRATEGY_WEAR_HPP
+#ifndef FOUR_C_CONTACT_LAGRANGE_STRATEGY_WEAR_HPP
+#define FOUR_C_CONTACT_LAGRANGE_STRATEGY_WEAR_HPP
 
 /*----------------------------------------------------------------------*
  | header                                                   farah 09/13 |
@@ -443,4 +443,4 @@ namespace WEAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_CONTACT_LAGRANGE_STRATEGY_WEAR_H
+#endif

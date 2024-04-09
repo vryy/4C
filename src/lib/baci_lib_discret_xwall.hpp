@@ -10,8 +10,8 @@ of dofs per node on a fluid discretization for xwall
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DISCRET_XWALL_HPP
-#define BACI_LIB_DISCRET_XWALL_HPP
+#ifndef FOUR_C_LIB_DISCRET_XWALL_HPP
+#define FOUR_C_LIB_DISCRET_XWALL_HPP
 
 #include "baci_config.hpp"
 
@@ -93,4 +93,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationXWall& dis);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DISCRET_XWALL_H
+#endif

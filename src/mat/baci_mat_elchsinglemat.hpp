@@ -7,8 +7,8 @@ electric potential as degrees of freedom
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_ELCHSINGLEMAT_HPP
-#define BACI_MAT_ELCHSINGLEMAT_HPP
+#ifndef FOUR_C_MAT_ELCHSINGLEMAT_HPP
+#define FOUR_C_MAT_ELCHSINGLEMAT_HPP
 
 #include "baci_config.hpp"
 

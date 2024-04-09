@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_L2_PROJECTION_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_L2_PROJECTION_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_L2_PROJECTION_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_L2_PROJECTION_HPP
 
 #include "baci_config.hpp"
 
@@ -67,4 +67,4 @@ namespace CORE::FE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_UTILS_H
+#endif

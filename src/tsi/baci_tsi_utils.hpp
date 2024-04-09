@@ -6,8 +6,8 @@
 \level 2
 */
 
-#ifndef BACI_TSI_UTILS_HPP
-#define BACI_TSI_UTILS_HPP
+#ifndef FOUR_C_TSI_UTILS_HPP
+#define FOUR_C_TSI_UTILS_HPP
 
 
 #include "baci_config.hpp"
@@ -113,4 +113,4 @@ namespace TSI
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // TSI_UTILS_H
+#endif

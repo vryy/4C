@@ -7,8 +7,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_GLOBAL_FULL_INIT_CONTROL_HPP
-#define BACI_GLOBAL_FULL_INIT_CONTROL_HPP
+#ifndef FOUR_C_GLOBAL_FULL_INIT_CONTROL_HPP
+#define FOUR_C_GLOBAL_FULL_INIT_CONTROL_HPP
 
 
 #include "baci_config.hpp"

@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#ifndef BACI_ALE_ALE3_NURBS_HPP
-#define BACI_ALE_ALE3_NURBS_HPP
+#ifndef FOUR_C_ALE_ALE3_NURBS_HPP
+#define FOUR_C_ALE_ALE3_NURBS_HPP
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
@@ -153,4 +153,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ALE_ALE3_NURBS_H
+#endif

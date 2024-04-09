@@ -19,8 +19,8 @@ functions there exist also for fields.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_FIELD_HPP
-#define BACI_ADAPTER_FIELD_HPP
+#ifndef FOUR_C_ADAPTER_FIELD_HPP
+#define FOUR_C_ADAPTER_FIELD_HPP
 
 // includes
 #include "baci_config.hpp"

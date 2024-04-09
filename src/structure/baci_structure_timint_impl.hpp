@@ -7,8 +7,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_STRUCTURE_TIMINT_IMPL_HPP
-#define BACI_STRUCTURE_TIMINT_IMPL_HPP
+#ifndef FOUR_C_STRUCTURE_TIMINT_IMPL_HPP
+#define FOUR_C_STRUCTURE_TIMINT_IMPL_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -1061,4 +1061,4 @@ namespace STR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_TIMINT_IMPL_H
+#endif

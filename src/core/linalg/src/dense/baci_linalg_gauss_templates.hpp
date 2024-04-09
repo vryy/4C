@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LINALG_GAUSS_TEMPLATES_HPP
-#define BACI_LINALG_GAUSS_TEMPLATES_HPP
+#ifndef FOUR_C_LINALG_GAUSS_TEMPLATES_HPP
+#define FOUR_C_LINALG_GAUSS_TEMPLATES_HPP
 
 #include "baci_config.hpp"
 

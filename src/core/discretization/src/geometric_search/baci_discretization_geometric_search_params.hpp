@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_PARAMS_HPP
-#define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_PARAMS_HPP
+#ifndef FOUR_C_DISCRETIZATION_GEOMETRIC_SEARCH_PARAMS_HPP
+#define FOUR_C_DISCRETIZATION_GEOMETRIC_SEARCH_PARAMS_HPP
 
 #include "baci_config.hpp"
 

@@ -5,8 +5,8 @@
 
 */
 
-#ifndef BACI_FPSI_HPP
-#define BACI_FPSI_HPP
+#ifndef FOUR_C_FPSI_HPP
+#define FOUR_C_FPSI_HPP
 
 #include "baci_config.hpp"
 

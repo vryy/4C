@@ -5,8 +5,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MIXTURE_GROWTH_STRATEGY_ISOTROPIC_HPP
-#define BACI_MIXTURE_GROWTH_STRATEGY_ISOTROPIC_HPP
+#ifndef FOUR_C_MIXTURE_GROWTH_STRATEGY_ISOTROPIC_HPP
+#define FOUR_C_MIXTURE_GROWTH_STRATEGY_ISOTROPIC_HPP
 
 #include "baci_config.hpp"
 
@@ -52,4 +52,4 @@ namespace MIXTURE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MIXTURE_GROWTH_STRATEGY_ISOTROPIC_H
+#endif

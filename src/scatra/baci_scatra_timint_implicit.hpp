@@ -21,8 +21,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_TIMINT_IMPLICIT_HPP
-#define BACI_SCATRA_TIMINT_IMPLICIT_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_IMPLICIT_HPP
+#define FOUR_C_SCATRA_TIMINT_IMPLICIT_HPP
 
 #include "baci_config.hpp"
 
@@ -1886,4 +1886,4 @@ namespace SCATRA
 }  // namespace SCATRA
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_SCATRA_TIMINT_IMPLICIT_H
+#endif

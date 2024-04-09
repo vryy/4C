@@ -16,8 +16,8 @@
 #include "baci_mat_stvenantkirchhoff.hpp"
 #include "baci_utils_function.hpp"
 
-#ifndef BACI_FLUID_FUNCTIONS_HPP
-#define BACI_FLUID_FUNCTIONS_HPP
+#ifndef FOUR_C_FLUID_FUNCTIONS_HPP
+#define FOUR_C_FLUID_FUNCTIONS_HPP
 
 BACI_NAMESPACE_OPEN
 

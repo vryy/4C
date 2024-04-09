@@ -7,8 +7,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_STI_DYN_HPP
-#define BACI_STI_DYN_HPP
+#ifndef FOUR_C_STI_DYN_HPP
+#define FOUR_C_STI_DYN_HPP
 
 #include "baci_config.hpp"
 

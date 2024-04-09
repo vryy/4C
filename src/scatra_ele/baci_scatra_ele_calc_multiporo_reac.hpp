@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_CALC_MULTIPORO_REAC_HPP
-#define BACI_SCATRA_ELE_CALC_MULTIPORO_REAC_HPP
+#ifndef FOUR_C_SCATRA_ELE_CALC_MULTIPORO_REAC_HPP
+#define FOUR_C_SCATRA_ELE_CALC_MULTIPORO_REAC_HPP
 
 
 #include "baci_config.hpp"
@@ -1587,4 +1587,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_ELE_CALC_MULTIPORO_REAC_H
+#endif

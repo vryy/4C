@@ -9,8 +9,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_EHL_DYN_HPP
-#define BACI_EHL_DYN_HPP
+#ifndef FOUR_C_EHL_DYN_HPP
+#define FOUR_C_EHL_DYN_HPP
 
 #include "baci_config.hpp"
 
@@ -22,4 +22,4 @@ void ehl_dyn();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // EHL_DYN_H
+#endif

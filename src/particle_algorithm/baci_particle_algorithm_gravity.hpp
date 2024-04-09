@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_ALGORITHM_GRAVITY_HPP
-#define BACI_PARTICLE_ALGORITHM_GRAVITY_HPP
+#ifndef FOUR_C_PARTICLE_ALGORITHM_GRAVITY_HPP
+#define FOUR_C_PARTICLE_ALGORITHM_GRAVITY_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

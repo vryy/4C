@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_IO_INPUTREADER_HPP
-#define BACI_IO_INPUTREADER_HPP
+#ifndef FOUR_C_IO_INPUTREADER_HPP
+#define FOUR_C_IO_INPUTREADER_HPP
 
 #include "baci_config.hpp"
 

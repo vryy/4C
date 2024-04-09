@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_SOLVER_NONLIN_NOX_GROUP_HPP
-#define BACI_SOLVER_NONLIN_NOX_GROUP_HPP
+#ifndef FOUR_C_SOLVER_NONLIN_NOX_GROUP_HPP
+#define FOUR_C_SOLVER_NONLIN_NOX_GROUP_HPP
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -339,4 +339,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_GROUP_H
+#endif

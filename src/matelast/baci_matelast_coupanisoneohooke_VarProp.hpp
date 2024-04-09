@@ -6,8 +6,8 @@ with space-time varying coefficients
 \level 3
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_MATELAST_COUPANISONEOHOOKE_VARPROP_HPP
-#define BACI_MATELAST_COUPANISONEOHOOKE_VARPROP_HPP
+#ifndef FOUR_C_MATELAST_COUPANISONEOHOOKE_VARPROP_HPP
+#define FOUR_C_MATELAST_COUPANISONEOHOOKE_VARPROP_HPP
 
 #include "baci_config.hpp"
 
@@ -169,4 +169,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_COUPANISONEOHOOKE_VARPROP_H
+#endif

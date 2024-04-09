@@ -8,8 +8,8 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef BACI_POROELAST_DYN_HPP
-#define BACI_POROELAST_DYN_HPP
+#ifndef FOUR_C_POROELAST_DYN_HPP
+#define FOUR_C_POROELAST_DYN_HPP
 
 #include "baci_config.hpp"
 
@@ -21,4 +21,4 @@ void poroelast_drt();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROELAST_DYN_H
+#endif

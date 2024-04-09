@@ -10,8 +10,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_ADAPTER_FLD_PORO_HPP
-#define BACI_ADAPTER_FLD_PORO_HPP
+#ifndef FOUR_C_ADAPTER_FLD_PORO_HPP
+#define FOUR_C_ADAPTER_FLD_PORO_HPP
 
 #include "baci_config.hpp"
 

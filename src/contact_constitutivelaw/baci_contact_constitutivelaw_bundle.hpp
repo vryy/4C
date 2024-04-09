@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_CONSTITUTIVELAW_BUNDLE_HPP
-#define BACI_CONTACT_CONSTITUTIVELAW_BUNDLE_HPP
+#ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_BUNDLE_HPP
+#define FOUR_C_CONTACT_CONSTITUTIVELAW_BUNDLE_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -83,4 +83,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_CONSTITUTIVELAW_BUNDLE_H
+#endif

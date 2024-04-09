@@ -3,8 +3,8 @@
 \brief Solid Tet4 Element
 \level 3
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_TET4_HPP
-#define BACI_SO3_TET4_HPP
+#ifndef FOUR_C_SO3_TET4_HPP
+#define FOUR_C_SO3_TET4_HPP
 
 
 #include "baci_config.hpp"
@@ -489,4 +489,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_TET4_H
+#endif

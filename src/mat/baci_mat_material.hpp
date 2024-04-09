@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_MATERIAL_HPP
-#define BACI_MAT_MATERIAL_HPP
+#ifndef FOUR_C_MAT_MATERIAL_HPP
+#define FOUR_C_MAT_MATERIAL_HPP
 
 
 

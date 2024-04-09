@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_LEVELSET_HPP
-#define BACI_INPAR_LEVELSET_HPP
+#ifndef FOUR_C_INPAR_LEVELSET_HPP
+#define FOUR_C_INPAR_LEVELSET_HPP
 
 #include "baci_config.hpp"
 
@@ -122,4 +122,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_LEVELSET_H
+#endif

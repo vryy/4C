@@ -12,8 +12,8 @@ Pack, Unpack, NumDofPerNode etc.
 /*----------------------------------------------------------------------*
  | definitions                                                gjb 01/08 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_THERMO_ELEMENT_HPP
-#define BACI_THERMO_ELEMENT_HPP
+#ifndef FOUR_C_THERMO_ELEMENT_HPP
+#define FOUR_C_THERMO_ELEMENT_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                    gjb 01/08 |
@@ -594,4 +594,4 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_ELEMENT_H
+#endif

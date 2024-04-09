@@ -10,8 +10,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FPSI_MONOLITHIC_PLAIN_HPP
-#define BACI_FPSI_MONOLITHIC_PLAIN_HPP
+#ifndef FOUR_C_FPSI_MONOLITHIC_PLAIN_HPP
+#define FOUR_C_FPSI_MONOLITHIC_PLAIN_HPP
 
 #include "baci_config.hpp"
 

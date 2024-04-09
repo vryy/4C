@@ -57,7 +57,7 @@ bool CONTACT::Integrator::AssembleG(
 #ifdef BACI_DEBUG
     std::cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << std::endl;
     std::cout << "Weighted gap: " << snode->Getg() << std::endl;
-#endif // #ifdef BACI_DEBUG
+#endif
     */
   }
 

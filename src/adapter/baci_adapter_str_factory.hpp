@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_STR_FACTORY_HPP
-#define BACI_ADAPTER_STR_FACTORY_HPP
+#ifndef FOUR_C_ADAPTER_STR_FACTORY_HPP
+#define FOUR_C_ADAPTER_STR_FACTORY_HPP
 
 #include "baci_config.hpp"
 
@@ -49,4 +49,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_STR_FACTORY_H
+#endif

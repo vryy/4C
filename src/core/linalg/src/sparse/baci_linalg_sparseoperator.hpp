@@ -7,8 +7,8 @@
 \level 0
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_SPARSEOPERATOR_HPP
-#define BACI_LINALG_SPARSEOPERATOR_HPP
+#ifndef FOUR_C_LINALG_SPARSEOPERATOR_HPP
+#define FOUR_C_LINALG_SPARSEOPERATOR_HPP
 
 #include "baci_config.hpp"
 

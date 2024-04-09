@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_FLUID_MESHTYING_HPP
-#define BACI_FLUID_MESHTYING_HPP
+#ifndef FOUR_C_FLUID_MESHTYING_HPP
+#define FOUR_C_FLUID_MESHTYING_HPP
 
 #include "baci_config.hpp"
 
@@ -356,4 +356,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_MESHTYING_H
+#endif

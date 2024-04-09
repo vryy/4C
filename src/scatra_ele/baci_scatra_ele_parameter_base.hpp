@@ -13,8 +13,8 @@ of the global time integrator, and then never touched again throughout the simul
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_PARAMETER_BASE_HPP
-#define BACI_SCATRA_ELE_PARAMETER_BASE_HPP
+#ifndef FOUR_C_SCATRA_ELE_PARAMETER_BASE_HPP
+#define FOUR_C_SCATRA_ELE_PARAMETER_BASE_HPP
 
 
 #include "baci_config.hpp"

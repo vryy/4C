@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_INPAR_CARDIOVASCULAR0D_HPP
-#define BACI_INPAR_CARDIOVASCULAR0D_HPP
+#ifndef FOUR_C_INPAR_CARDIOVASCULAR0D_HPP
+#define FOUR_C_INPAR_CARDIOVASCULAR0D_HPP
 
 #include "baci_config.hpp"
 
@@ -67,4 +67,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_CARDIOVASCULAR0D_H
+#endif

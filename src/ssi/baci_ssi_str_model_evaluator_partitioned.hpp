@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_SSI_STR_MODEL_EVALUATOR_PARTITIONED_HPP
-#define BACI_SSI_STR_MODEL_EVALUATOR_PARTITIONED_HPP
+#ifndef FOUR_C_SSI_STR_MODEL_EVALUATOR_PARTITIONED_HPP
+#define FOUR_C_SSI_STR_MODEL_EVALUATOR_PARTITIONED_HPP
 
 #include "baci_config.hpp"
 
@@ -71,4 +71,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_STR_MODEL_EVALUATOR_PARTITIONED_H
+#endif

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_NLN_SOLVER_NOX_HPP
-#define BACI_STRUCTURE_NEW_NLN_SOLVER_NOX_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_NLN_SOLVER_NOX_HPP
+#define FOUR_C_STRUCTURE_NEW_NLN_SOLVER_NOX_HPP
 
 #include "baci_config.hpp"
 
@@ -144,4 +144,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_NLN_SOLVER_NOX_H
+#endif

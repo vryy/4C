@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_STRUCTURE_NEW_UTILS_HPP
-#define BACI_STRUCTURE_NEW_UTILS_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_UTILS_HPP
+#define FOUR_C_STRUCTURE_NEW_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -173,4 +173,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_UTILS_H
+#endif

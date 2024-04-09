@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_ELCHPHASE_HPP
-#define BACI_MAT_ELCHPHASE_HPP
+#ifndef FOUR_C_MAT_ELCHPHASE_HPP
+#define FOUR_C_MAT_ELCHPHASE_HPP
 
 
 

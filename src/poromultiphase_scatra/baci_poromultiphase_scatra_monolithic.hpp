@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROMULTIPHASE_SCATRA_MONOLITHIC_HPP
-#define BACI_POROMULTIPHASE_SCATRA_MONOLITHIC_HPP
+#ifndef FOUR_C_POROMULTIPHASE_SCATRA_MONOLITHIC_HPP
+#define FOUR_C_POROMULTIPHASE_SCATRA_MONOLITHIC_HPP
 
 #include "baci_config.hpp"
 
@@ -36,4 +36,4 @@ namespace POROMULTIPHASESCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROMULTIPHASE_SCATRA_MONOLITHIC_H
+#endif

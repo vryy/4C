@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_YOGHURT_HPP
-#define BACI_MAT_YOGHURT_HPP
+#ifndef FOUR_C_MAT_YOGHURT_HPP
+#define FOUR_C_MAT_YOGHURT_HPP
 
 
 

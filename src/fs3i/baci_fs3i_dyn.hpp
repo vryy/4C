@@ -9,8 +9,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_FS3I_DYN_HPP
-#define BACI_FS3I_DYN_HPP
+#ifndef FOUR_C_FS3I_DYN_HPP
+#define FOUR_C_FS3I_DYN_HPP
 
 #include "baci_config.hpp"
 

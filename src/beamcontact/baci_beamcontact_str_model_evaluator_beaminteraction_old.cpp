@@ -131,7 +131,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::EvaluateForceStiff()
 #ifdef GMSHNEWTONSTEPS
   beamcman_->GmshOutput(*disnp_ptr_, EvalData().GetStepNp(), EvalData().GetNlnIter());
   beamcman_->ConsoleOutput();
-#endif  // #ifdef GMSHNEWTONSTEPS
+#endif
 
   // update constraint norm
   beamcman_->UpdateConstrNorm();  // ToDo

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_RANDOM_HPP
-#define BACI_UTILS_RANDOM_HPP
+#ifndef FOUR_C_UTILS_RANDOM_HPP
+#define FOUR_C_UTILS_RANDOM_HPP
 
 #include "baci_config.hpp"
 
@@ -64,4 +64,4 @@ namespace CORE::UTILS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_UTILS_H
+#endif

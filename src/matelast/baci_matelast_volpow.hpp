@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_VOLPOW_HPP
-#define BACI_MATELAST_VOLPOW_HPP
+#ifndef FOUR_C_MATELAST_VOLPOW_HPP
+#define FOUR_C_MATELAST_VOLPOW_HPP
 
 #include "baci_config.hpp"
 
@@ -138,4 +138,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_VOLPOW_H
+#endif

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BVH_HPP
-#define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_BVH_HPP
+#ifndef FOUR_C_DISCRETIZATION_GEOMETRIC_SEARCH_BVH_HPP
+#define FOUR_C_DISCRETIZATION_GEOMETRIC_SEARCH_BVH_HPP
 
 #include "baci_config.hpp"
 

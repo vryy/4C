@@ -8,8 +8,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FBI_CALC_UTILS_HPP
-#define BACI_FBI_CALC_UTILS_HPP
+#ifndef FOUR_C_FBI_CALC_UTILS_HPP
+#define FOUR_C_FBI_CALC_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -91,4 +91,4 @@ namespace FBI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FBI_CALC_UTILS_H
+#endif

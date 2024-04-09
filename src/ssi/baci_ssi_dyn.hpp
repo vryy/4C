@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_SSI_DYN_HPP
-#define BACI_SSI_DYN_HPP
+#ifndef FOUR_C_SSI_DYN_HPP
+#define FOUR_C_SSI_DYN_HPP
 
 #include "baci_config.hpp"
 
@@ -19,4 +19,4 @@ void ssi_drt();
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_DYN_H
+#endif

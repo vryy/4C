@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef BACI_STRUCTURE_TIMINT_HPP
-#define BACI_STRUCTURE_TIMINT_HPP
+#ifndef FOUR_C_STRUCTURE_TIMINT_HPP
+#define FOUR_C_STRUCTURE_TIMINT_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -1286,4 +1286,4 @@ namespace STR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_TIMINT_H
+#endif

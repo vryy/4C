@@ -20,8 +20,8 @@ CORRLENGTH 5.0
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_AAANEOHOOKE_STOPRO_HPP
-#define BACI_MAT_AAANEOHOOKE_STOPRO_HPP
+#ifndef FOUR_C_MAT_AAANEOHOOKE_STOPRO_HPP
+#define FOUR_C_MAT_AAANEOHOOKE_STOPRO_HPP
 
 #include "baci_config.hpp"
 
@@ -202,4 +202,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_AAANEOHOOKE_STOPRO_H
+#endif

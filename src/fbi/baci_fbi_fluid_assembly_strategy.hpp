@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_FBI_FLUID_ASSEMBLY_STRATEGY_HPP
-#define BACI_FBI_FLUID_ASSEMBLY_STRATEGY_HPP
+#ifndef FOUR_C_FBI_FLUID_ASSEMBLY_STRATEGY_HPP
+#define FOUR_C_FBI_FLUID_ASSEMBLY_STRATEGY_HPP
 
 #include "baci_config.hpp"
 

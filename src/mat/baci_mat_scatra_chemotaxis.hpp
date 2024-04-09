@@ -7,8 +7,8 @@ This file contains the base material for chemotactic scalars.
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_SCATRA_CHEMOTAXIS_HPP
-#define BACI_MAT_SCATRA_CHEMOTAXIS_HPP
+#ifndef FOUR_C_MAT_SCATRA_CHEMOTAXIS_HPP
+#define FOUR_C_MAT_SCATRA_CHEMOTAXIS_HPP
 
 #include "baci_config.hpp"
 
@@ -144,4 +144,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_SCATRA_CHEMOTAXIS_MAT_H
+#endif

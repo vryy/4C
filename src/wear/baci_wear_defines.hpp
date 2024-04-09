@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 12/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_WEAR_DEFINES_HPP
-#define BACI_WEAR_DEFINES_HPP
+#ifndef FOUR_C_WEAR_DEFINES_HPP
+#define FOUR_C_WEAR_DEFINES_HPP
 
 #include "baci_config.hpp"
 
@@ -33,4 +33,4 @@ BACI_NAMESPACE_OPEN
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // WEAR_DEFINES_H
+#endif

@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_UTILS_SPLITSTRATEGY_HPP
-#define BACI_SCATRA_UTILS_SPLITSTRATEGY_HPP
+#ifndef FOUR_C_SCATRA_UTILS_SPLITSTRATEGY_HPP
+#define FOUR_C_SCATRA_UTILS_SPLITSTRATEGY_HPP
 
 #include "baci_config.hpp"
 

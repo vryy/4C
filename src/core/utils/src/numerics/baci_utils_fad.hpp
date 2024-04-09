@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_UTILS_FAD_HPP
-#define BACI_UTILS_FAD_HPP
+#ifndef FOUR_C_UTILS_FAD_HPP
+#define FOUR_C_UTILS_FAD_HPP
 
 #include "baci_config.hpp"
 

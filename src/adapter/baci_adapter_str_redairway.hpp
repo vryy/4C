@@ -12,8 +12,8 @@
 /* macros */
 
 
-#ifndef BACI_ADAPTER_STR_REDAIRWAY_HPP
-#define BACI_ADAPTER_STR_REDAIRWAY_HPP
+#ifndef FOUR_C_ADAPTER_STR_REDAIRWAY_HPP
+#define FOUR_C_ADAPTER_STR_REDAIRWAY_HPP
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "baci_config.hpp"

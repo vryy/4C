@@ -9,8 +9,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_PRE_EXODUS_CENTERLINE_HPP
-#define BACI_PRE_EXODUS_CENTERLINE_HPP
+#ifndef FOUR_C_PRE_EXODUS_CENTERLINE_HPP
+#define FOUR_C_PRE_EXODUS_CENTERLINE_HPP
 
 
 #include "baci_config.hpp"
@@ -98,4 +98,4 @@ namespace EXODUS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // PRE_EXODUS_CENTERLINE_H
+#endif

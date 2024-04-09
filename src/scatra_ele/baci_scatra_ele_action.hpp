@@ -9,8 +9,8 @@ comparison instead of a cumbersome std::string compare.
 
 *---------------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_ACTION_HPP
-#define BACI_SCATRA_ELE_ACTION_HPP
+#ifndef FOUR_C_SCATRA_ELE_ACTION_HPP
+#define FOUR_C_SCATRA_ELE_ACTION_HPP
 
 #include "baci_config.hpp"
 
@@ -168,4 +168,4 @@ namespace SCATRA
 }  // namespace SCATRA
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_ELE_ACTION_H
+#endif

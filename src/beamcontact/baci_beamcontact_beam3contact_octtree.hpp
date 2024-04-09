@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_BEAMCONTACT_BEAM3CONTACT_OCTTREE_HPP
-#define BACI_BEAMCONTACT_BEAM3CONTACT_OCTTREE_HPP
+#ifndef FOUR_C_BEAMCONTACT_BEAM3CONTACT_OCTTREE_HPP
+#define FOUR_C_BEAMCONTACT_BEAM3CONTACT_OCTTREE_HPP
 
 #include "baci_config.hpp"
 
@@ -297,4 +297,4 @@ class Beam3ContactOctTree
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BEAMCONTACT_BEAM3CONTACT_OCTTREE_H
+#endif

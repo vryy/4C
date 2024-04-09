@@ -32,8 +32,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                            hemmler 09/16 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_SUPERELASTIC_SMA_HPP
-#define BACI_MAT_SUPERELASTIC_SMA_HPP
+#ifndef FOUR_C_MAT_SUPERELASTIC_SMA_HPP
+#define FOUR_C_MAT_SUPERELASTIC_SMA_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                 hemmler 09/16 |
@@ -291,4 +291,4 @@ namespace MAT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_SUPERELASTIC_SMA_H
+#endif

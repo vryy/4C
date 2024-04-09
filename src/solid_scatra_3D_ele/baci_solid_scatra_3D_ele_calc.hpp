@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_SCATRA_3D_ELE_CALC_HPP
-#define BACI_SOLID_SCATRA_3D_ELE_CALC_HPP
+#ifndef FOUR_C_SOLID_SCATRA_3D_ELE_CALC_HPP
+#define FOUR_C_SOLID_SCATRA_3D_ELE_CALC_HPP
 
 #include "baci_config.hpp"
 
@@ -99,4 +99,4 @@ namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_SOLID_SCATRA_3D_ELE_CALC_HPP
+#endif

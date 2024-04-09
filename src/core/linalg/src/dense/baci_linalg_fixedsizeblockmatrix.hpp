@@ -5,8 +5,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_FIXEDSIZEBLOCKMATRIX_HPP
-#define BACI_LINALG_FIXEDSIZEBLOCKMATRIX_HPP
+#ifndef FOUR_C_LINALG_FIXEDSIZEBLOCKMATRIX_HPP
+#define FOUR_C_LINALG_FIXEDSIZEBLOCKMATRIX_HPP
 
 #include "baci_config.hpp"
 

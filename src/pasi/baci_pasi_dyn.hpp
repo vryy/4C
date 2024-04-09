@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PASI_DYN_HPP
-#define BACI_PASI_DYN_HPP
+#ifndef FOUR_C_PASI_DYN_HPP
+#define FOUR_C_PASI_DYN_HPP
 
 #include "baci_config.hpp"
 

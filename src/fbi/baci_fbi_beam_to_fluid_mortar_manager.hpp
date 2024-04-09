@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_FBI_BEAM_TO_FLUID_MORTAR_MANAGER_HPP
-#define BACI_FBI_BEAM_TO_FLUID_MORTAR_MANAGER_HPP
+#ifndef FOUR_C_FBI_BEAM_TO_FLUID_MORTAR_MANAGER_HPP
+#define FOUR_C_FBI_BEAM_TO_FLUID_MORTAR_MANAGER_HPP
 
 
 #include "baci_config.hpp"

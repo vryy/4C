@@ -4,8 +4,8 @@
 \level 2
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef BACI_IO_RUNTIME_CSV_WRITER_HPP
-#define BACI_IO_RUNTIME_CSV_WRITER_HPP
+#ifndef FOUR_C_IO_RUNTIME_CSV_WRITER_HPP
+#define FOUR_C_IO_RUNTIME_CSV_WRITER_HPP
 
 /*-----------------------------------------------------------------------------------------------*/
 /* headers */

@@ -6,8 +6,8 @@
 
 */
 /*---------------------------------------------------------------------------*/
-#ifndef BACI_TRUSS3_SCATRA_HPP
-#define BACI_TRUSS3_SCATRA_HPP
+#ifndef FOUR_C_TRUSS3_SCATRA_HPP
+#define FOUR_C_TRUSS3_SCATRA_HPP
 
 #include "baci_config.hpp"
 
@@ -121,4 +121,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // TRUSS3_SCATRA_H
+#endif

@@ -14,8 +14,8 @@
 #include "baci_mat_stvenantkirchhoff.hpp"
 #include "baci_utils_function.hpp"
 
-#ifndef BACI_STRUCTURE_NEW_FUNCTIONS_HPP
-#define BACI_STRUCTURE_NEW_FUNCTIONS_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_FUNCTIONS_HPP
+#define FOUR_C_STRUCTURE_NEW_FUNCTIONS_HPP
 
 BACI_NAMESPACE_OPEN
 

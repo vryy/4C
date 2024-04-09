@@ -7,8 +7,8 @@ surface meshes
 \level 3
 *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_CUTWIZARD_HPP
-#define BACI_CUT_CUTWIZARD_HPP
+#ifndef FOUR_C_CUT_CUTWIZARD_HPP
+#define FOUR_C_CUT_CUTWIZARD_HPP
 
 #include "baci_config.hpp"
 

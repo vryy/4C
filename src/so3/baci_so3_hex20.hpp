@@ -4,8 +4,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_HEX20_HPP
-#define BACI_SO3_HEX20_HPP
+#ifndef FOUR_C_SO3_HEX20_HPP
+#define FOUR_C_SO3_HEX20_HPP
 
 #include "baci_config.hpp"
 
@@ -488,4 +488,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_HEX20_H
+#endif

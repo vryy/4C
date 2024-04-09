@@ -2929,7 +2929,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
        }
        }
        // *******************************************************************
-       #endif // #ifdef BACI_DEBUG
+       #endif
        */
 
       break;

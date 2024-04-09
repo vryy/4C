@@ -11,8 +11,8 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_VISCONEOHOOKE_HPP
-#define BACI_MAT_VISCONEOHOOKE_HPP
+#ifndef FOUR_C_MAT_VISCONEOHOOKE_HPP
+#define FOUR_C_MAT_VISCONEOHOOKE_HPP
 
 #include "baci_config.hpp"
 
@@ -182,4 +182,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_VISCONEOHOOKE_H
+#endif

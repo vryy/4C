@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_DEFINES_HPP
-#define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_DEFINES_HPP
+#ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_DEFINES_HPP
+#define FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_DEFINES_HPP
 
 #include "baci_config.hpp"
 
@@ -274,4 +274,4 @@ typedef double TYPEBTS;
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BEAMINTERACTION_BEAM3CONTACT_DEFINES_H
+#endif

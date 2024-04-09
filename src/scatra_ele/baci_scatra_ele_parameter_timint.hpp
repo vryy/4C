@@ -14,8 +14,8 @@ general static parameters required for scalar transport element evaluation.
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_PARAMETER_TIMINT_HPP
-#define BACI_SCATRA_ELE_PARAMETER_TIMINT_HPP
+#ifndef FOUR_C_SCATRA_ELE_PARAMETER_TIMINT_HPP
+#define FOUR_C_SCATRA_ELE_PARAMETER_TIMINT_HPP
 
 #include "baci_config.hpp"
 

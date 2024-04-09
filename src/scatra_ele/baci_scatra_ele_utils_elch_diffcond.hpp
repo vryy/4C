@@ -7,8 +7,8 @@
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_UTILS_ELCH_DIFFCOND_HPP
-#define BACI_SCATRA_ELE_UTILS_ELCH_DIFFCOND_HPP
+#ifndef FOUR_C_SCATRA_ELE_UTILS_ELCH_DIFFCOND_HPP
+#define FOUR_C_SCATRA_ELE_UTILS_ELCH_DIFFCOND_HPP
 
 #include "baci_config.hpp"
 

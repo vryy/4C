@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 08/09 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_THERMO_ELE_IMPL_UTILS_HPP
-#define BACI_THERMO_ELE_IMPL_UTILS_HPP
+#ifndef FOUR_C_THERMO_ELE_IMPL_UTILS_HPP
+#define FOUR_C_THERMO_ELE_IMPL_UTILS_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 08/09 |
@@ -330,4 +330,4 @@ namespace THR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_ELE_IMPL_UTILS_H
+#endif

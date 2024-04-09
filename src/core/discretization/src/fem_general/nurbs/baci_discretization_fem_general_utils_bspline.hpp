@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_BSPLINE_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_BSPLINE_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_UTILS_BSPLINE_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_UTILS_BSPLINE_HPP
 
 #include "baci_config.hpp"
 

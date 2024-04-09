@@ -6,8 +6,8 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 \level 2
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_MATELAST_COUPANISOEXPOTWOCOUP_HPP
-#define BACI_MATELAST_COUPANISOEXPOTWOCOUP_HPP
+#ifndef FOUR_C_MATELAST_COUPANISOEXPOTWOCOUP_HPP
+#define FOUR_C_MATELAST_COUPANISOEXPOTWOCOUP_HPP
 
 #include "baci_config.hpp"
 
@@ -230,4 +230,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_COUPANISOEXPOTWOCOUP_H
+#endif

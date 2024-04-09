@@ -7,8 +7,8 @@ interaction.
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_FBI_CONSTRAINTENFORCER_HPP
-#define BACI_FBI_CONSTRAINTENFORCER_HPP
+#ifndef FOUR_C_FBI_CONSTRAINTENFORCER_HPP
+#define FOUR_C_FBI_CONSTRAINTENFORCER_HPP
 
 #include "baci_config.hpp"
 

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_COMM_UTILS_FACTORY_HPP
-#define BACI_COMM_UTILS_FACTORY_HPP
+#ifndef FOUR_C_COMM_UTILS_FACTORY_HPP
+#define FOUR_C_COMM_UTILS_FACTORY_HPP
 
 #include "baci_config.hpp"
 
@@ -219,4 +219,4 @@ namespace CORE::COMM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_UTILS_FACTORY_H
+#endif

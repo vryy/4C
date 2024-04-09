@@ -9,8 +9,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_ART_NET_ARTERY_ELE_CALC_LIN_EXP_HPP
-#define BACI_ART_NET_ARTERY_ELE_CALC_LIN_EXP_HPP
+#ifndef FOUR_C_ART_NET_ARTERY_ELE_CALC_LIN_EXP_HPP
+#define FOUR_C_ART_NET_ARTERY_ELE_CALC_LIN_EXP_HPP
 
 #include "baci_config.hpp"
 

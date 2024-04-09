@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TIMINT_LOMA_HPP
-#define BACI_FLUID_TIMINT_LOMA_HPP
+#ifndef FOUR_C_FLUID_TIMINT_LOMA_HPP
+#define FOUR_C_FLUID_TIMINT_LOMA_HPP
 
 
 #include "baci_config.hpp"
@@ -122,4 +122,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_TIMINT_LOMA_H
+#endif

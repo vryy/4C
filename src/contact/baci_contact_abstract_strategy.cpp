@@ -1259,7 +1259,7 @@ void CONTACT::AbstractStrategy::InitEvalInterface(
     std::cout << "--------------------------------------------------------------------------------"
               << std::endl;
   }
-#endif  // #ifdef CONTACTSTATUS
+#endif
   //**********************************************************************
 
   return;

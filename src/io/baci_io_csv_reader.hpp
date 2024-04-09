@@ -4,8 +4,8 @@
 \level 1
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef BACI_IO_CSV_READER_HPP
-#define BACI_IO_CSV_READER_HPP
+#ifndef FOUR_C_IO_CSV_READER_HPP
+#define FOUR_C_IO_CSV_READER_HPP
 
 /*-----------------------------------------------------------------------------------------------*/
 #include "baci_config.hpp"

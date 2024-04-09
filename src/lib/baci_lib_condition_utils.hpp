@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_LIB_CONDITION_UTILS_HPP
-#define BACI_LIB_CONDITION_UTILS_HPP
+#ifndef FOUR_C_LIB_CONDITION_UTILS_HPP
+#define FOUR_C_LIB_CONDITION_UTILS_HPP
 
 #include "baci_config.hpp"
 

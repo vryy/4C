@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROFLUIDMULTIPHASE_UTILS_HPP
-#define BACI_POROFLUIDMULTIPHASE_UTILS_HPP
+#ifndef FOUR_C_POROFLUIDMULTIPHASE_UTILS_HPP
+#define FOUR_C_POROFLUIDMULTIPHASE_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -154,4 +154,4 @@ namespace POROFLUIDMULTIPHASE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROFLUIDMULTIPHASE_UTILS_H
+#endif

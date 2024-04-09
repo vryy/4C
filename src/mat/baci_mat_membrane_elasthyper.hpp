@@ -13,8 +13,8 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
 /*----------------------------------------------------------------------*
  | definitions                                           sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MEMBRANE_ELASTHYPER_HPP
-#define BACI_MAT_MEMBRANE_ELASTHYPER_HPP
+#ifndef FOUR_C_MAT_MEMBRANE_ELASTHYPER_HPP
+#define FOUR_C_MAT_MEMBRANE_ELASTHYPER_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                               sfuchs 08/2017 |
@@ -195,4 +195,4 @@ namespace MAT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_MEMBRANE_ELASTHYPER_H
+#endif

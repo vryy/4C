@@ -31,8 +31,8 @@
  */
 
 // header file only included if not yet included!
-#ifndef BACI_BEAM3_EULER_BERNOULLI_HPP
-#define BACI_BEAM3_EULER_BERNOULLI_HPP
+#ifndef FOUR_C_BEAM3_EULER_BERNOULLI_HPP
+#define FOUR_C_BEAM3_EULER_BERNOULLI_HPP
 
 
 #include "baci_config.hpp"

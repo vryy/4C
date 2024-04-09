@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#ifndef BACI_W1_SCATRA_HPP
-#define BACI_W1_SCATRA_HPP
+#ifndef FOUR_C_W1_SCATRA_HPP
+#define FOUR_C_W1_SCATRA_HPP
 
 #include "baci_config.hpp"
 
@@ -176,4 +176,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // W1_SCATRA_H
+#endif

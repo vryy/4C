@@ -11,8 +11,8 @@ parenchyma balloon
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_ADAPTER_FLD_LUNG_HPP
-#define BACI_ADAPTER_FLD_LUNG_HPP
+#ifndef FOUR_C_ADAPTER_FLD_LUNG_HPP
+#define FOUR_C_ADAPTER_FLD_LUNG_HPP
 
 #include "baci_config.hpp"
 

@@ -6,8 +6,8 @@
 \level 2
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_MESHTYING_STRATEGY_FACTORY_HPP
-#define BACI_CONTACT_MESHTYING_STRATEGY_FACTORY_HPP
+#ifndef FOUR_C_CONTACT_MESHTYING_STRATEGY_FACTORY_HPP
+#define FOUR_C_CONTACT_MESHTYING_STRATEGY_FACTORY_HPP
 
 #include "baci_config.hpp"
 
@@ -128,4 +128,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_MESHTYING_STRATEGY_FACTORY_H
+#endif

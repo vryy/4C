@@ -8,8 +8,8 @@
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_TIMINT_CONVCHECK_STRATEGIES_HPP
-#define BACI_SCATRA_TIMINT_CONVCHECK_STRATEGIES_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_CONVCHECK_STRATEGIES_HPP
+#define FOUR_C_SCATRA_TIMINT_CONVCHECK_STRATEGIES_HPP
 
 #include "baci_config.hpp"
 
@@ -339,4 +339,4 @@ namespace SCATRA
 }  // namespace SCATRA
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
+#endif

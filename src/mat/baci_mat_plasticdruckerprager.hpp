@@ -9,8 +9,8 @@ John Wiley & Sons, Ltd, 2008
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_PLASTICDRUCKERPRAGER_HPP
-#define BACI_MAT_PLASTICDRUCKERPRAGER_HPP
+#ifndef FOUR_C_MAT_PLASTICDRUCKERPRAGER_HPP
+#define FOUR_C_MAT_PLASTICDRUCKERPRAGER_HPP
 
 #include "baci_config.hpp"
 

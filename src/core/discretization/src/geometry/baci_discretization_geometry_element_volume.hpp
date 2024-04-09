@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_HPP
-#define BACI_DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_HPP
+#ifndef FOUR_C_DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_HPP
+#define FOUR_C_DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_HPP
 
 
 #include "baci_config.hpp"
@@ -243,4 +243,4 @@ namespace CORE::GEO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_H
+#endif

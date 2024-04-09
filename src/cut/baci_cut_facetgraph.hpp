@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_FACETGRAPH_HPP
-#define BACI_CUT_FACETGRAPH_HPP
+#ifndef FOUR_C_CUT_FACETGRAPH_HPP
+#define FOUR_C_CUT_FACETGRAPH_HPP
 
 #include "baci_config.hpp"
 

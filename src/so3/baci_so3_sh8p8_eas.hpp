@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SO3_SH8P8_EAS_HPP
-#define BACI_SO3_SH8P8_EAS_HPP
+#ifndef FOUR_C_SO3_SH8P8_EAS_HPP
+#define FOUR_C_SO3_SH8P8_EAS_HPP
 
 /*----------------------------------------------------------------------*/
 #include "baci_config.hpp"
@@ -284,4 +284,4 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_SH8P8_EAS_H
+#endif

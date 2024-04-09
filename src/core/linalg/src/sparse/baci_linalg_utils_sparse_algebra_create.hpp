@@ -6,8 +6,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_HPP
-#define BACI_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_HPP
+#ifndef FOUR_C_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_HPP
+#define FOUR_C_LINALG_UTILS_SPARSE_ALGEBRA_CREATE_HPP
 
 #include "baci_config.hpp"
 
@@ -151,4 +151,4 @@ namespace CORE::LINALG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H
+#endif

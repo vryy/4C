@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_HPP
-#define BACI_CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_HPP
+#ifndef FOUR_C_CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_HPP
+#define FOUR_C_CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_HPP
 
 #include "baci_config.hpp"
 
@@ -161,4 +161,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_H
+#endif

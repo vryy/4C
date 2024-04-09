@@ -6,8 +6,8 @@
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_LINALG_ANA_HPP
-#define BACI_LINEAR_SOLVER_PRECONDITIONER_LINALG_ANA_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_PRECONDITIONER_LINALG_ANA_HPP
+#define FOUR_C_LINEAR_SOLVER_PRECONDITIONER_LINALG_ANA_HPP
 
 // Trilinos includes
 #include "baci_config.hpp"
@@ -2311,4 +2311,4 @@ namespace CORE::LINALG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_LINALG_ANA_H
+#endif

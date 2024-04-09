@@ -1,5 +1,5 @@
-#ifndef BACI_SO3_PORO_P1_FWD_HPP
-#define BACI_SO3_PORO_P1_FWD_HPP
+#ifndef FOUR_C_SO3_PORO_P1_FWD_HPP
+#define FOUR_C_SO3_PORO_P1_FWD_HPP
 
 /*----------------------------------------------------------------------*/
 /*! \file

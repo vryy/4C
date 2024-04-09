@@ -12,8 +12,8 @@ volumetric expansion (derivation: see Christian Roth's dissertation, Appendix B)
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MAXWELL_0D_ACINUS_OGDEN_HPP
-#define BACI_MAT_MAXWELL_0D_ACINUS_OGDEN_HPP
+#ifndef FOUR_C_MAT_MAXWELL_0D_ACINUS_OGDEN_HPP
+#define FOUR_C_MAT_MAXWELL_0D_ACINUS_OGDEN_HPP
 
 
 #include "baci_config.hpp"

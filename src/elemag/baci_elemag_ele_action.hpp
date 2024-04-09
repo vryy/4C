@@ -7,8 +7,8 @@
 
 *---------------------------------------------------------------------------*/
 
-#ifndef BACI_ELEMAG_ELE_ACTION_HPP
-#define BACI_ELEMAG_ELE_ACTION_HPP
+#ifndef FOUR_C_ELEMAG_ELE_ACTION_HPP
+#define FOUR_C_ELEMAG_ELE_ACTION_HPP
 
 #include "baci_config.hpp"
 
@@ -62,4 +62,4 @@ namespace ELEMAG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELEMAG_ELE_ACTION_H
+#endif

@@ -5,8 +5,8 @@
 
 */
 
-#ifndef BACI_MAT_TRAIT_THERMO_HPP
-#define BACI_MAT_TRAIT_THERMO_HPP
+#ifndef FOUR_C_MAT_TRAIT_THERMO_HPP
+#define FOUR_C_MAT_TRAIT_THERMO_HPP
 
 #include "baci_config.hpp"
 

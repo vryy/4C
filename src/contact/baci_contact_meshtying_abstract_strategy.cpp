@@ -1200,7 +1200,7 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet() const
     fflush(stdout);
   }
 
-#endif  // #ifdef MESHTYINGASOUTPUT
+#endif
 
   return;
 }

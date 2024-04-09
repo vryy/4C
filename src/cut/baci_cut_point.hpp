@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_POINT_HPP
-#define BACI_CUT_POINT_HPP
+#ifndef FOUR_C_CUT_POINT_HPP
+#define FOUR_C_CUT_POINT_HPP
 
 #include "baci_config.hpp"
 

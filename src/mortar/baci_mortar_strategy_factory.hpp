@@ -6,8 +6,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_MORTAR_STRATEGY_FACTORY_HPP
-#define BACI_MORTAR_STRATEGY_FACTORY_HPP
+#ifndef FOUR_C_MORTAR_STRATEGY_FACTORY_HPP
+#define FOUR_C_MORTAR_STRATEGY_FACTORY_HPP
 
 #include "baci_config.hpp"
 
@@ -185,4 +185,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_STRATEGY_FACTORY_H
+#endif

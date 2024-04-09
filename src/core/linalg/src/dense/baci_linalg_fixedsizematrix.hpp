@@ -6,8 +6,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_FIXEDSIZEMATRIX_HPP
-#define BACI_LINALG_FIXEDSIZEMATRIX_HPP
+#ifndef FOUR_C_LINALG_FIXEDSIZEMATRIX_HPP
+#define FOUR_C_LINALG_FIXEDSIZEMATRIX_HPP
 
 #include "baci_config.hpp"
 
@@ -5132,4 +5132,4 @@ namespace CORE::LINALG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LINALG_FIXEDSIZEMATRIX_H
+#endif

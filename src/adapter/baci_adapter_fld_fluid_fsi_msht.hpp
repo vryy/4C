@@ -7,8 +7,8 @@
 \level 3
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_ADAPTER_FLD_FLUID_FSI_MSHT_HPP
-#define BACI_ADAPTER_FLD_FLUID_FSI_MSHT_HPP
+#ifndef FOUR_C_ADAPTER_FLD_FLUID_FSI_MSHT_HPP
+#define FOUR_C_ADAPTER_FLD_FLUID_FSI_MSHT_HPP
 
 
 #include "baci_config.hpp"
@@ -64,4 +64,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_FLD_FLUID_FSI_MSHT_H
+#endif

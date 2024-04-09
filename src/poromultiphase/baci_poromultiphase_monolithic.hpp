@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROMULTIPHASE_MONOLITHIC_HPP
-#define BACI_POROMULTIPHASE_MONOLITHIC_HPP
+#ifndef FOUR_C_POROMULTIPHASE_MONOLITHIC_HPP
+#define FOUR_C_POROMULTIPHASE_MONOLITHIC_HPP
 
 #include "baci_config.hpp"
 
@@ -35,4 +35,4 @@ namespace POROMULTIPHASE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROMULTIPHASE_MONOLITHIC_H
+#endif

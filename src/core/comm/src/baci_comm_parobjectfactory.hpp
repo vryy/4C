@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_COMM_PAROBJECTFACTORY_HPP
-#define BACI_COMM_PAROBJECTFACTORY_HPP
+#ifndef FOUR_C_COMM_PAROBJECTFACTORY_HPP
+#define FOUR_C_COMM_PAROBJECTFACTORY_HPP
 
 #include "baci_config.hpp"
 

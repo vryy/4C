@@ -9,8 +9,8 @@ with condensed structure interface displacements
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_MORTARMONOLITHIC_STRUCTURESPLIT_HPP
-#define BACI_FSI_MORTARMONOLITHIC_STRUCTURESPLIT_HPP
+#ifndef FOUR_C_FSI_MORTARMONOLITHIC_STRUCTURESPLIT_HPP
+#define FOUR_C_FSI_MORTARMONOLITHIC_STRUCTURESPLIT_HPP
 
 #include "baci_config.hpp"
 

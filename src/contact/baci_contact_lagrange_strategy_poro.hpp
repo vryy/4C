@@ -8,8 +8,8 @@ interface
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_LAGRANGE_STRATEGY_PORO_HPP
-#define BACI_CONTACT_LAGRANGE_STRATEGY_PORO_HPP
+#ifndef FOUR_C_CONTACT_LAGRANGE_STRATEGY_PORO_HPP
+#define FOUR_C_CONTACT_LAGRANGE_STRATEGY_PORO_HPP
 
 #include "baci_config.hpp"
 
@@ -324,4 +324,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_CONTACT_LAGRANGE_STRATEGY_PORO_H
+#endif

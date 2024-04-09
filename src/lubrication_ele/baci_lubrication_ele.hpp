@@ -12,8 +12,8 @@ Pack, Unpack, NumDofPerNode etc.
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_LUBRICATION_ELE_HPP
-#define BACI_LUBRICATION_ELE_HPP
+#ifndef FOUR_C_LUBRICATION_ELE_HPP
+#define FOUR_C_LUBRICATION_ELE_HPP
 
 #include "baci_config.hpp"
 
@@ -541,4 +541,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LUBRICATION_ELE_H
+#endif

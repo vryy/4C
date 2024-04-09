@@ -7,8 +7,8 @@ type, or Sacado FAD type.
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_UTILS_MATHOPERATIONS_HPP
-#define BACI_UTILS_MATHOPERATIONS_HPP
+#ifndef FOUR_C_UTILS_MATHOPERATIONS_HPP
+#define FOUR_C_UTILS_MATHOPERATIONS_HPP
 
 #include "baci_config.hpp"
 

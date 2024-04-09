@@ -4,8 +4,8 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_IO_LINE_PARSER_HPP
-#define BACI_IO_LINE_PARSER_HPP
+#ifndef FOUR_C_IO_LINE_PARSER_HPP
+#define FOUR_C_IO_LINE_PARSER_HPP
 
 #include "baci_config.hpp"
 

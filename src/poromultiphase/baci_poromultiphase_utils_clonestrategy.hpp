@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROMULTIPHASE_UTILS_CLONESTRATEGY_HPP
-#define BACI_POROMULTIPHASE_UTILS_CLONESTRATEGY_HPP
+#ifndef FOUR_C_POROMULTIPHASE_UTILS_CLONESTRATEGY_HPP
+#define FOUR_C_POROMULTIPHASE_UTILS_CLONESTRATEGY_HPP
 
 #include "baci_config.hpp"
 
@@ -62,4 +62,4 @@ namespace POROMULTIPHASE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROMULTIPHASE_UTILS_CLONESTRATEGY_H
+#endif

@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_SSTI_MONOLITHIC_EVALUATE_OFFDIAG_HPP
-#define BACI_SSTI_MONOLITHIC_EVALUATE_OFFDIAG_HPP
+#ifndef FOUR_C_SSTI_MONOLITHIC_EVALUATE_OFFDIAG_HPP
+#define FOUR_C_SSTI_MONOLITHIC_EVALUATE_OFFDIAG_HPP
 
 #include "baci_config.hpp"
 
@@ -106,4 +106,4 @@ namespace SSTI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSTI_MONOLITHIC_EVALUATE_OFFDIAG_H
+#endif

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_UTILS_REFERENCE_CONFIGURATION_HPP
-#define BACI_LIB_UTILS_REFERENCE_CONFIGURATION_HPP
+#ifndef FOUR_C_LIB_UTILS_REFERENCE_CONFIGURATION_HPP
+#define FOUR_C_LIB_UTILS_REFERENCE_CONFIGURATION_HPP
 
 #include "baci_config.hpp"
 
@@ -131,4 +131,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_LIB_UTILS_REFERENCE_CONFIGURATION_H
+#endif

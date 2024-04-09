@@ -10,8 +10,8 @@
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_ALE_FLUID_HPP
-#define BACI_ADAPTER_ALE_FLUID_HPP
+#ifndef FOUR_C_ADAPTER_ALE_FLUID_HPP
+#define FOUR_C_ADAPTER_ALE_FLUID_HPP
 
 
 /*----------------------------------------------------------------------------*/
@@ -77,4 +77,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_ALE_FLUID_H
+#endif

@@ -5318,7 +5318,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 /*----------------------------------------------------------------------*
  |  End: FAD-Check for Linearizations of CPP
  *----------------------------------------------------------------------*/
-#endif  // #ifdef FADCHECKS
+#endif
 
 /*----------------------------------------------------------------------*
 |  FD-Check of stiffness matrix                              meier 11/14|

@@ -6,8 +6,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_SO3_SH8P8_HPP
-#define BACI_SO3_SH8P8_HPP
+#ifndef FOUR_C_SO3_SH8P8_HPP
+#define FOUR_C_SO3_SH8P8_HPP
 
 /*----------------------------------------------------------------------*/
 #include "baci_config.hpp"
@@ -910,4 +910,4 @@ BACI_NAMESPACE_CLOSE
 /* definitions of above declared template functions */
 #include "baci_so3_sh8p8_eas.hpp"
 
-#endif  // SO3_SH8P8_H
+#endif

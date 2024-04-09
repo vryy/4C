@@ -1056,7 +1056,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying(
     bool gmsh =
         CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
     if (gmsh) cmtbridge_->VisualizeGmsh(stepn_, iter_);
-#endif  // #ifdef MORTARGMSH2
+#endif
   }
 
   return;

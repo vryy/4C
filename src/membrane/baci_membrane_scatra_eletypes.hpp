@@ -7,8 +7,8 @@
 \brief Nonlinear Membrane Finite Element Type with ScaTra coupling
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_MEMBRANE_SCATRA_ELETYPES_HPP
-#define BACI_MEMBRANE_SCATRA_ELETYPES_HPP
+#ifndef FOUR_C_MEMBRANE_SCATRA_ELETYPES_HPP
+#define FOUR_C_MEMBRANE_SCATRA_ELETYPES_HPP
 
 #include "baci_config.hpp"
 

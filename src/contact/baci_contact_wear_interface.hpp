@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_WEAR_INTERFACE_HPP
-#define BACI_CONTACT_WEAR_INTERFACE_HPP
+#ifndef FOUR_C_CONTACT_WEAR_INTERFACE_HPP
+#define FOUR_C_CONTACT_WEAR_INTERFACE_HPP
 
 #include "baci_config.hpp"
 
@@ -468,4 +468,4 @@ namespace WEAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_WEAR_INTERFACE_H
+#endif

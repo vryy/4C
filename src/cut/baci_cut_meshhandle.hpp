@@ -7,8 +7,8 @@
 \level 2
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_MESHHANDLE_HPP
-#define BACI_CUT_MESHHANDLE_HPP
+#ifndef FOUR_C_CUT_MESHHANDLE_HPP
+#define FOUR_C_CUT_MESHHANDLE_HPP
 
 #include "baci_config.hpp"
 

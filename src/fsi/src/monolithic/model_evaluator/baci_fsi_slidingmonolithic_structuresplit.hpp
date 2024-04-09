@@ -8,8 +8,8 @@ with condensed structure interface displacements
 \level 2
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_HPP
-#define BACI_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_HPP
+#ifndef FOUR_C_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_HPP
+#define FOUR_C_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_HPP
 
 
 #include "baci_config.hpp"
@@ -403,4 +403,4 @@ namespace FSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_H
+#endif

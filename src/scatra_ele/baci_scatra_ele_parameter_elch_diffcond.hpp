@@ -14,8 +14,8 @@ additional static parameters required for scalar transport element evaluation.
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_PARAMETER_ELCH_DIFFCOND_HPP
-#define BACI_SCATRA_ELE_PARAMETER_ELCH_DIFFCOND_HPP
+#ifndef FOUR_C_SCATRA_ELE_PARAMETER_ELCH_DIFFCOND_HPP
+#define FOUR_C_SCATRA_ELE_PARAMETER_ELCH_DIFFCOND_HPP
 
 #include "baci_config.hpp"
 

@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_HPP
-#define BACI_ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_HPP
+#ifndef FOUR_C_ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_HPP
+#define FOUR_C_ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_HPP
 
 #include "baci_config.hpp"
 
@@ -182,4 +182,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_H
+#endif

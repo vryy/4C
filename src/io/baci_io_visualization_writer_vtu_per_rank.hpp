@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_IO_VISUALIZATION_WRITER_VTU_PER_RANK_HPP
-#define BACI_IO_VISUALIZATION_WRITER_VTU_PER_RANK_HPP
+#ifndef FOUR_C_IO_VISUALIZATION_WRITER_VTU_PER_RANK_HPP
+#define FOUR_C_IO_VISUALIZATION_WRITER_VTU_PER_RANK_HPP
 
 #include "baci_config.hpp"
 

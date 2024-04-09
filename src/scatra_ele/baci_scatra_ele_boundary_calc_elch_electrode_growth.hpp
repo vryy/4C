@@ -8,8 +8,8 @@ growth, e.g., lithium plating
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_GROWTH_HPP
-#define BACI_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_GROWTH_HPP
+#ifndef FOUR_C_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_GROWTH_HPP
+#define FOUR_C_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_GROWTH_HPP
 
 #include "baci_config.hpp"
 

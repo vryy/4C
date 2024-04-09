@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_IO_LINECOMPONENT_HPP
-#define BACI_IO_LINECOMPONENT_HPP
+#ifndef FOUR_C_IO_LINECOMPONENT_HPP
+#define FOUR_C_IO_LINECOMPONENT_HPP
 
 
 #include "baci_config.hpp"

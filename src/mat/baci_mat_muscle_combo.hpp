@@ -8,8 +8,8 @@ active strain approach) with variable time-dependent activation
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_MUSCLE_COMBO_HPP
-#define BACI_MAT_MUSCLE_COMBO_HPP
+#ifndef FOUR_C_MAT_MUSCLE_COMBO_HPP
+#define FOUR_C_MAT_MUSCLE_COMBO_HPP
 
 #include "baci_config.hpp"
 
@@ -230,4 +230,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_MUSCLE_COMBO_H
+#endif

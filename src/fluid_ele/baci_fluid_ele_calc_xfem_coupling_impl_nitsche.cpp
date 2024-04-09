@@ -3246,7 +3246,7 @@ namespace DRT
               derxy_m_viscm_timefacfac_, derxy_m, vderxy_m, funct_m, normal, m_row, mstr_col);
         }
         //-----------------------------------------------------------------
-#endif  // ENFORCE_URQUIZA_GNBC
+#endif
 
         return;
       }

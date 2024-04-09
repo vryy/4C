@@ -5,8 +5,8 @@
 
 */
 
-#ifndef BACI_MAT_TRAIT_SOLID_HPP
-#define BACI_MAT_TRAIT_SOLID_HPP
+#ifndef FOUR_C_MAT_TRAIT_SOLID_HPP
+#define FOUR_C_MAT_TRAIT_SOLID_HPP
 
 #include "baci_config.hpp"
 

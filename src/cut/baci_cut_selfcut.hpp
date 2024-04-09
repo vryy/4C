@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_SELFCUT_HPP
-#define BACI_CUT_SELFCUT_HPP
+#ifndef FOUR_C_CUT_SELFCUT_HPP
+#define FOUR_C_CUT_SELFCUT_HPP
 
 #include "baci_config.hpp"
 

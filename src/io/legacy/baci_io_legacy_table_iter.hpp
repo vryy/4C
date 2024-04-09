@@ -7,8 +7,8 @@
 
 ---------------------------------------------------------------------*/
 
-#ifndef BACI_IO_LEGACY_TABLE_ITER_HPP
-#define BACI_IO_LEGACY_TABLE_ITER_HPP
+#ifndef FOUR_C_IO_LEGACY_TABLE_ITER_HPP
+#define FOUR_C_IO_LEGACY_TABLE_ITER_HPP
 
 #include "baci_config.hpp"
 

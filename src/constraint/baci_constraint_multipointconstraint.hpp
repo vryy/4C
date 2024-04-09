@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CONSTRAINT_MULTIPOINTCONSTRAINT_HPP
-#define BACI_CONSTRAINT_MULTIPOINTCONSTRAINT_HPP
+#ifndef FOUR_C_CONSTRAINT_MULTIPOINTCONSTRAINT_HPP
+#define FOUR_C_CONSTRAINT_MULTIPOINTCONSTRAINT_HPP
 
 #include "baci_config.hpp"
 
@@ -133,4 +133,4 @@ namespace CONSTRAINTS
 }  // namespace CONSTRAINTS
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONSTRAINT_MULTIPOINTCONSTRAINT_H
+#endif

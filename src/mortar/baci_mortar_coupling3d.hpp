@@ -6,8 +6,8 @@
 
 */
 /*-----------------------------------------------------------------------*/
-#ifndef BACI_MORTAR_COUPLING3D_HPP
-#define BACI_MORTAR_COUPLING3D_HPP
+#ifndef FOUR_C_MORTAR_COUPLING3D_HPP
+#define FOUR_C_MORTAR_COUPLING3D_HPP
 
 #include "baci_config.hpp"
 
@@ -720,4 +720,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_COUPLING3D_H
+#endif

@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_ENUM_HPP
-#define BACI_CUT_ENUM_HPP
+#ifndef FOUR_C_CUT_ENUM_HPP
+#define FOUR_C_CUT_ENUM_HPP
 
 #include "baci_config.hpp"
 

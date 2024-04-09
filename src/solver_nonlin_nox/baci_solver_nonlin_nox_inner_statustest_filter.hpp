@@ -16,8 +16,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_HPP
-#define BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_HPP
+#ifndef FOUR_C_SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_HPP
+#define FOUR_C_SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_HPP
 
 #include "baci_config.hpp"
 
@@ -787,4 +787,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_H
+#endif

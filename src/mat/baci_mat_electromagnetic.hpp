@@ -11,8 +11,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_ELECTROMAGNETIC_HPP
-#define BACI_MAT_ELECTROMAGNETIC_HPP
+#ifndef FOUR_C_MAT_ELECTROMAGNETIC_HPP
+#define FOUR_C_MAT_ELECTROMAGNETIC_HPP
 
 #include "baci_config.hpp"
 
@@ -161,4 +161,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_ELECTROMAGNETIC_H
+#endif

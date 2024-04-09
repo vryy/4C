@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_FERECH_PV_HPP
-#define BACI_MAT_FERECH_PV_HPP
+#ifndef FOUR_C_MAT_FERECH_PV_HPP
+#define FOUR_C_MAT_FERECH_PV_HPP
 
 
 

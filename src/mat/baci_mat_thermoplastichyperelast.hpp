@@ -27,8 +27,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 03/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_THERMOPLASTICHYPERELAST_HPP
-#define BACI_MAT_THERMOPLASTICHYPERELAST_HPP
+#ifndef FOUR_C_MAT_THERMOPLASTICHYPERELAST_HPP
+#define FOUR_C_MAT_THERMOPLASTICHYPERELAST_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 03/13 |
@@ -416,4 +416,4 @@ namespace MAT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_THERMOPLASTICHYPERELAST_H
+#endif

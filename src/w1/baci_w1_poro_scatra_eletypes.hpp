@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#ifndef BACI_W1_PORO_SCATRA_ELETYPES_HPP
-#define BACI_W1_PORO_SCATRA_ELETYPES_HPP
+#ifndef FOUR_C_W1_PORO_SCATRA_ELETYPES_HPP
+#define FOUR_C_W1_PORO_SCATRA_ELETYPES_HPP
 
 #include "baci_config.hpp"
 
@@ -154,4 +154,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // W1_PORO_SCATRA_ELETYPES_H
+#endif

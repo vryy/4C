@@ -9,8 +9,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_SO3_PORO_P1_SCATRA_HPP
-#define BACI_SO3_PORO_P1_SCATRA_HPP
+#ifndef FOUR_C_SO3_PORO_P1_SCATRA_HPP
+#define FOUR_C_SO3_PORO_P1_SCATRA_HPP
 
 #include "baci_config.hpp"
 
@@ -133,4 +133,4 @@ namespace DRT
 }  // namespace DRT
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_PORO_P1_SCATRA_H
+#endif

@@ -8,8 +8,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_FACTORY_HPP
-#define BACI_SCATRA_ELE_FACTORY_HPP
+#ifndef FOUR_C_SCATRA_ELE_FACTORY_HPP
+#define FOUR_C_SCATRA_ELE_FACTORY_HPP
 
 #include "baci_config.hpp"
 

@@ -6,8 +6,8 @@
 
 */
 /*-----------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_ANALYTICAL_HPP
-#define BACI_CONTACT_ANALYTICAL_HPP
+#ifndef FOUR_C_CONTACT_ANALYTICAL_HPP
+#define FOUR_C_CONTACT_ANALYTICAL_HPP
 
 #include "baci_config.hpp"
 
@@ -43,4 +43,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_ANALYTICAL_H
+#endif

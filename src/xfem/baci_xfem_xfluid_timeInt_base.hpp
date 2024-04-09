@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_XFEM_XFLUID_TIMEINT_BASE_HPP
-#define BACI_XFEM_XFLUID_TIMEINT_BASE_HPP
+#ifndef FOUR_C_XFEM_XFLUID_TIMEINT_BASE_HPP
+#define FOUR_C_XFEM_XFLUID_TIMEINT_BASE_HPP
 
 #include "baci_config.hpp"
 
@@ -951,4 +951,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_XFLUID_TIMEINT_BASE_H
+#endif

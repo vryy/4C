@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROFLUIDMULTIPHASE_TIMINT_OST_HPP
-#define BACI_POROFLUIDMULTIPHASE_TIMINT_OST_HPP
+#ifndef FOUR_C_POROFLUIDMULTIPHASE_TIMINT_OST_HPP
+#define FOUR_C_POROFLUIDMULTIPHASE_TIMINT_OST_HPP
 
 #include "baci_config.hpp"
 
@@ -91,4 +91,4 @@ namespace POROFLUIDMULTIPHASE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROFLUIDMULTIPHASE_TIMINT_OST_H
+#endif

@@ -4,8 +4,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_FRICTION_NODE_HPP
-#define BACI_CONTACT_FRICTION_NODE_HPP
+#ifndef FOUR_C_CONTACT_FRICTION_NODE_HPP
+#define FOUR_C_CONTACT_FRICTION_NODE_HPP
 
 #include "baci_config.hpp"
 
@@ -621,4 +621,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_CONTACT_FRICTION_NODE_H
+#endif

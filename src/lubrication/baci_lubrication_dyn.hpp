@@ -9,8 +9,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_LUBRICATION_DYN_HPP
-#define BACI_LUBRICATION_DYN_HPP
+#ifndef FOUR_C_LUBRICATION_DYN_HPP
+#define FOUR_C_LUBRICATION_DYN_HPP
 
 #include "baci_config.hpp"
 
@@ -24,4 +24,4 @@ void lubrication_dyn(int restart /* do we have to perform a restart?  */
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LUBRICATION_DYN_H
+#endif

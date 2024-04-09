@@ -862,7 +862,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
       fclose(fp);
     }
   }
-#endif  // ifdef MORTARGMSHTN
+#endif
 
 
   //**********************************************************************

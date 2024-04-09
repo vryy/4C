@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_MIXTURE_HPP
-#define BACI_MAT_MIXTURE_HPP
+#ifndef FOUR_C_MAT_MIXTURE_HPP
+#define FOUR_C_MAT_MIXTURE_HPP
 
 
 #include "baci_config.hpp"
@@ -238,4 +238,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_MIXTURE_H
+#endif

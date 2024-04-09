@@ -7,8 +7,8 @@ St. Venant-Kirchhoff material
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_STVENANTKIRCHHOFF_HPP
-#define BACI_MAT_STVENANTKIRCHHOFF_HPP
+#ifndef FOUR_C_MAT_STVENANTKIRCHHOFF_HPP
+#define FOUR_C_MAT_STVENANTKIRCHHOFF_HPP
 
 
 #include "baci_config.hpp"
@@ -156,4 +156,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_STVENANTKIRCHHOFF_H
+#endif

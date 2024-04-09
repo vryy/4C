@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_HPP
-#define BACI_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_HPP
+#ifndef FOUR_C_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_HPP
+#define FOUR_C_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_HPP
 
 #include "baci_config.hpp"
 
@@ -78,4 +78,4 @@ namespace MIXTURE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MIXTURE_PRESTRESS_STRATEGY_CONSTANT_H
+#endif

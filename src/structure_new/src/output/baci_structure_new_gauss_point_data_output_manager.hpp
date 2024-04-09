@@ -5,8 +5,8 @@
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_HPP
-#define BACI_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_HPP
+#define FOUR_C_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_HPP
 
 #include "baci_config.hpp"
 
@@ -158,4 +158,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H
+#endif

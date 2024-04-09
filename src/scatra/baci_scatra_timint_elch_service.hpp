@@ -8,8 +8,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_TIMINT_ELCH_SERVICE_HPP
-#define BACI_SCATRA_TIMINT_ELCH_SERVICE_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_ELCH_SERVICE_HPP
+#define FOUR_C_SCATRA_TIMINT_ELCH_SERVICE_HPP
 
 #include "baci_config.hpp"
 

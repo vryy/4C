@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DOFSET_HPP
-#define BACI_LIB_DOFSET_HPP
+#ifndef FOUR_C_LIB_DOFSET_HPP
+#define FOUR_C_LIB_DOFSET_HPP
 
 #include "baci_config.hpp"
 
@@ -433,4 +433,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::DofSet& dofset);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DOFSET_H
+#endif

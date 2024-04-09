@@ -13,8 +13,8 @@ be set in problem specific parameter lists derived from this class.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_ELE_PARAMETER_HPP
-#define BACI_FLUID_ELE_PARAMETER_HPP
+#ifndef FOUR_C_FLUID_ELE_PARAMETER_HPP
+#define FOUR_C_FLUID_ELE_PARAMETER_HPP
 
 #include "baci_config.hpp"
 

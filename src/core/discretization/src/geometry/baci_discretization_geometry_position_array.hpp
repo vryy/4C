@@ -6,8 +6,8 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_DISCRETIZATION_GEOMETRY_POSITION_ARRAY_HPP
-#define BACI_DISCRETIZATION_GEOMETRY_POSITION_ARRAY_HPP
+#ifndef FOUR_C_DISCRETIZATION_GEOMETRY_POSITION_ARRAY_HPP
+#define FOUR_C_DISCRETIZATION_GEOMETRY_POSITION_ARRAY_HPP
 
 
 #include "baci_config.hpp"

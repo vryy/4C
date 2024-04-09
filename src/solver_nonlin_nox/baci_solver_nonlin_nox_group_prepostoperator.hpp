@@ -10,8 +10,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_HPP
-#define BACI_SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_HPP
+#ifndef FOUR_C_SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_HPP
+#define FOUR_C_SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_HPP
 
 #include "baci_config.hpp"
 
@@ -228,4 +228,4 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostApplyJacobianInverse(
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_H
+#endif

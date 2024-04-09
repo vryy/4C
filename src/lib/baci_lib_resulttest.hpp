@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_RESULTTEST_HPP
-#define BACI_LIB_RESULTTEST_HPP
+#ifndef FOUR_C_LIB_RESULTTEST_HPP
+#define FOUR_C_LIB_RESULTTEST_HPP
 
 
 #include "baci_config.hpp"

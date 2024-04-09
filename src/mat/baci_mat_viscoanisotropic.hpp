@@ -9,8 +9,8 @@ BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_VISCOANISOTROPIC_HPP
-#define BACI_MAT_VISCOANISOTROPIC_HPP
+#ifndef FOUR_C_MAT_VISCOANISOTROPIC_HPP
+#define FOUR_C_MAT_VISCOANISOTROPIC_HPP
 
 
 #include "baci_config.hpp"
