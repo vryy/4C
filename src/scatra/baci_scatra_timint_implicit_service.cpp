@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_coupling_adapter.hpp"
+#include "baci_discretization_fem_general_utils_superconvergent_patch_recovery.hpp"
 #include "baci_fluid_rotsym_periodicbc_utils.hpp"
 #include "baci_fluid_turbulence_dyn_smag.hpp"
 #include "baci_fluid_turbulence_dyn_vreman.hpp"
@@ -1765,16 +1766,16 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeSuperconvergen
   switch (dim)
   {
     case 3:
-      return DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(
-          discret_, state, statename, numvec, eleparams);
+      return CORE::FE::ComputeSuperconvergentPatchRecovery<3>(
+          *discret_, *state, statename, numvec, eleparams);
       break;
     case 2:
-      return DRT::UTILS::ComputeSuperconvergentPatchRecovery<2>(
-          discret_, state, statename, numvec, eleparams);
+      return CORE::FE::ComputeSuperconvergentPatchRecovery<2>(
+          *discret_, *state, statename, numvec, eleparams);
       break;
     case 1:
-      return DRT::UTILS::ComputeSuperconvergentPatchRecovery<1>(
-          discret_, state, statename, numvec, eleparams);
+      return CORE::FE::ComputeSuperconvergentPatchRecovery<1>(
+          *discret_, *state, statename, numvec, eleparams);
       break;
     default:
       dserror("only 1/2/3D implementation available for superconvergent patch recovery");

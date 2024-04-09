@@ -38,24 +38,6 @@ namespace DRT
   namespace UTILS
   {
     /*!
-      \brief reconstruct nodal values via superconvergent patch recovery
-
-      \return an Epetra_MultiVector based on the discret's node row map containing numvec vectors
-              with the reconstruced state
-
-      \author Georg Hammerl
-      \date 05/15
-     */
-    template <int dim>
-    Teuchos::RCP<Epetra_MultiVector> ComputeSuperconvergentPatchRecovery(
-        Teuchos::RCP<DRT::Discretization> dis,    ///< underlying discretization
-        Teuchos::RCP<const Epetra_Vector> state,  ///< state vector needed on element level
-        const std::string statename,              ///< name of state which will be set
-        const int numvec,                         ///< number of entries per node to project
-        Teuchos::ParameterList& params  ///< parameter list that contains the element action
-    );
-
-    /*!
     \brief handles restart after a certain walltime interval, step interval or on a user signal
 
     \author hammerl
