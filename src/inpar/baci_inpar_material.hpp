@@ -42,7 +42,6 @@ namespace INPAR
                              ///< stochastic mat params
       m_aaaraghavanvorp_damage,  ///< quasi Neo-Hooke material for aneurysmatic artery wall with
                                  ///< damage
-      m_activefiber,             ///< active fiber formation for cell modeling
       m_arrhenius_pv,    ///< material with Arrhenius-type chemical kinetics (progress variable)
       m_arrhenius_spec,  ///< material with Arrhenius-type chemical kinetics (species)
       m_arrhenius_temp,  ///< material with Arrhenius-type chemical kinetics (temperature)
