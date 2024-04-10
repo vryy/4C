@@ -12,4 +12,4 @@ set(OBJS_PRE_EXODUS
 add_executable(pre_exodus EXCLUDE_FROM_ALL ${OBJS_PRE_EXODUS})
 set_target_properties(pre_exodus PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} post)
-baci_target_requires_cyclic_legacy_linking(pre_exodus)
+baci_set_up_executable(pre_exodus)
