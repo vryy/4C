@@ -441,28 +441,28 @@ namespace STR
         return datasdyn_->GetRandomTimeStepFactor() = rand_tsfac;
       }
 
-      //! Get random factor for time step adaption
+      //! Get current refinement level for time step adaption
       [[nodiscard]] virtual int GetDivConRefineLevel() const
       {
         CheckInitSetup();
         return datasdyn_->GetDivConRefineLevel();
       }
 
-      //! Set random factor for time step adaption
+      //! Set refinement level for time step adaption
       virtual int SetDivConRefineLevel(int divconrefinementlevel)
       {
         CheckInitSetup();
         return datasdyn_->GetDivConRefineLevel() = divconrefinementlevel;
       }
 
-      //! Get random factor for time step adaption
+      //! Get step of current refinement level for time step adaption
       [[nodiscard]] virtual int GetDivConNumFineStep() const
       {
         CheckInitSetup();
         return datasdyn_->GetDivConNumFineStep();
       }
 
-      //! Set random factor for time step adaption
+      //! Set step of current refinement level for time step adaption
       virtual int SetDivConNumFineStep(int divconnumfinestep)
       {
         CheckInitSetup();
