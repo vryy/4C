@@ -17,7 +17,6 @@
 #include "baci_discretization_fem_general_utils_gder2.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_air_0d_O2_saturation.hpp"
 #include "baci_mat_hemoglobin_0d_O2_saturation.hpp"
 #include "baci_mat_list.hpp"

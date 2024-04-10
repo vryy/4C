@@ -14,7 +14,6 @@
 #include "baci_config.hpp"
 
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_cnst_1d_art.hpp"
 #include "baci_scatra_ele_calc.hpp"
 

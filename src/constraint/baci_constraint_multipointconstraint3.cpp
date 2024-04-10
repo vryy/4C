@@ -15,7 +15,6 @@
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_dofset_transparent.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"

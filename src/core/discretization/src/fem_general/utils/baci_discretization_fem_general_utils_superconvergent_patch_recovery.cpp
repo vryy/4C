@@ -9,53 +9,38 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_lib_utils.hpp"
+#include "baci_discretization_fem_general_utils_superconvergent_patch_recovery.hpp"
 
-#include "baci_discretization_fem_general_element_center.hpp"
-#include "baci_global_data.hpp"
-#include "baci_io_control.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_gauss.hpp"
-#include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "baci_utils_exceptions.hpp"
-#include "baci_utils_parameter_list.hpp"
 
-#include <Epetra_Comm.h>
 #include <Epetra_FEVector.h>
-
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
 
 BACI_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
- | compute superconvergent patch recovery by polynomial of degree p = 1 |
- | (identical order as shape functions)for a given vector (either       |
- | dof or element based)                                    ghamm 06/14 |
  *----------------------------------------------------------------------*/
 template <int dim>
-Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Vector> state,
-    const std::string statename, const int numvec, Teuchos::ParameterList& params)
+Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
+    DRT::Discretization& dis, const Epetra_Vector& state, const std::string& statename,
+    const int numvec, Teuchos::ParameterList& params)
 {
   const int dimp = dim + 1;
-  const int myrank = dis->Comm().MyPID();
+  const int myrank = dis.Comm().MyPID();
 
   // check whether action type is set
   if (params.getEntryRCP("action") == Teuchos::null) dserror("action type for element is missing");
 
   // decide whether a dof or an element based map is given
   bool dofmaptoreconstruct = false;
-  if (state->Map().PointSameAs(*dis->DofRowMap()))
+  if (state.Map().PointSameAs(*dis.DofRowMap()))
     dofmaptoreconstruct = true;
-  else if (state->Map().PointSameAs(*dis->ElementRowMap()))
+  else if (state.Map().PointSameAs(*dis.ElementRowMap()))
   {
     dofmaptoreconstruct = false;
-    if (numvec != state->NumVectors())
+    if (numvec != state.NumVectors())
       dserror("numvec and number of vectors of state vector must match");
   }
   else
@@ -66,7 +51,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   // handle pbcs if existing
   // build inverse map from slave to master nodes
   std::map<int, int> slavetomastercolnodesmap;
-  std::map<int, std::vector<int>>* allcoupledcolnodes = dis->GetAllPBCCoupledColNodes();
+  std::map<int, std::vector<int>>* allcoupledcolnodes = dis.GetAllPBCCoupledColNodes();
 
   if (allcoupledcolnodes)
   {
@@ -82,8 +67,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   // set up reduced node row map of fluid field
   std::vector<int> reducednoderowmap;
   std::vector<int> reducednodecolmap;
-  const Epetra_Map* fullnoderowmap = dis->NodeRowMap();
-  const Epetra_Map* fullnodecolmap = dis->NodeColMap();
+  const Epetra_Map* fullnoderowmap = dis.NodeRowMap();
+  const Epetra_Map* fullnodecolmap = dis.NodeColMap();
 
   // a little more memory than necessary is possibly reserved here
   reducednoderowmap.reserve(fullnoderowmap->NumMyElements());
@@ -112,14 +97,14 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
 
   // step 1: get state to be reconstruced (e.g. velocity gradient) at element
   // centers (for linear elements the centers are the superconvergent sampling points!)
-  dis->ClearState();
+  dis.ClearState();
   // Set ALE displacements here
   if (dofmaptoreconstruct)
   {
-    dis->SetState(statename, state);
+    dis.SetState(statename, Teuchos::rcpFromRef(state));
   }
 
-  const Epetra_Map* elementrowmap = dis->ElementRowMap();
+  const Epetra_Map* elementrowmap = dis.ElementRowMap();
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered =
       Teuchos::rcp(new Epetra_MultiVector(*elementrowmap, numvec, true));
   Teuchos::RCP<Epetra_MultiVector> centercoords =
@@ -128,7 +113,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  DRT::Element::LocationArray la(dis->NumDofSets());
+  DRT::Element::LocationArray la(dis.NumDofSets());
 
   // define element matrices and vectors
   CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -138,16 +123,16 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   CORE::LINALG::SerialDenseVector elevector3;
 
   // get number of elements
-  const int numele = dis->NumMyRowElements();
+  const int numele = dis.NumMyRowElements();
 
   // loop only row elements
   for (int i = 0; i < numele; ++i)
   {
-    DRT::Element* actele = dis->lRowElement(i);
+    DRT::Element* actele = dis.lRowElement(i);
 
     // get element location vector
     // DRT::Element::LocationArray la(1);
-    actele->LocationVector(*dis, la, false);
+    actele->LocationVector(dis, la, false);
 
     // Reshape element matrices and vectors and initialize to zero
     elevector1.size(numvec);
@@ -155,7 +140,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
 
     // call the element specific evaluate method (elevec1 = velocity gradient, elevec2 = element
     // centroid)
-    actele->Evaluate(params, *dis, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
+    actele->Evaluate(params, dis, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
 
     // store computed values (e.g. velocity gradient) for each element
     for (int j = 0; j < numvec; ++j)
@@ -164,7 +149,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
       if (dofmaptoreconstruct)
         val = elevector1(j);
       else
-        val = (*(*state)(j))[i];
+        val = (*state(j))[i];
 
       int err = elevec_toberecovered->ReplaceMyValue(i, j, val);
       if (err < 0) dserror("multi vector insertion failed");
@@ -179,10 +164,10 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   }  // end element loop
 
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered_col =
-      Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()), numvec, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(dis.ElementColMap()), numvec, true));
   CORE::LINALG::Export(*elevec_toberecovered, *elevec_toberecovered_col);
   Teuchos::RCP<Epetra_MultiVector> centercoords_col =
-      Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()), dim, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(dis.ElementColMap()), dim, true));
   CORE::LINALG::Export(*centercoords, *centercoords_col);
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
@@ -190,7 +175,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   Teuchos::RCP<Epetra_FEVector> nodevec = Teuchos::rcp(new Epetra_FEVector(noderowmap, numvec));
 
   std::vector<DRT::Condition*> conds;
-  dis->GetCondition("SPRboundary", conds);
+  dis.GetCondition("SPRboundary", conds);
 
   // SPR boundary condition must be set for all boundaries except pbc
   if (conds.size() != 1 && conds.size() != 0)
@@ -203,7 +188,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   for (int i = 0; i < nodecolmap.NumMyElements(); ++i)
   {
     const int nodegid = nodecolmap.GID(i);
-    const DRT::Node* node = dis->gNode(nodegid);
+    const DRT::Node* node = dis.gNode(nodegid);
     if (!node) dserror("Cannot find with gid: %d", nodegid);
 
     // distinction between inner nodes and boundary nodes
@@ -276,7 +261,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
         for (int s = 0; s < numslavenodes; ++s)
         {
-          const DRT::Node* slavenode = dis->gNode(slavenodeids[s]);
+          const DRT::Node* slavenode = dis.gNode(slavenodeids[s]);
           // compute offset for slave elements
           for (int d = 0; d < dim; ++d)
             eleoffsets[s][d] = (node->X()[d] - slavenode->X()[d]) /* + ALE DISP */;
@@ -373,7 +358,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
               "small (at least in one direction)");
 
         // build patch for closest node and evaluate patch at boundary node
-        const DRT::Node* closestnode = dis->gNode(closestnodeid);
+        const DRT::Node* closestnode = dis.gNode(closestnodeid);
         const DRT::Element* const* closestnodeadjacentele = closestnode->Elements();
         const int numadjacent = closestnode->NumElement();
 
@@ -469,7 +454,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // build patch for closest node and evaluate patch at boundary node
 
         // get master nodes and corresponding slave nodes
-        DRT::Node* closestnode = dis->gNode(closestnodeid);
+        DRT::Node* closestnode = dis.gNode(closestnodeid);
 
         // leave here in case the closest node is a ghost node
         // only row nodes have all neighboring elements on this proc
@@ -505,7 +490,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
         for (int s = 0; s < numslavenodes; ++s)
         {
-          const DRT::Node* slavenode = dis->gNode(masternode->second[s]);
+          const DRT::Node* slavenode = dis.gNode(masternode->second[s]);
           // compute offset for slave elements
           for (int d = 0; d < dim; ++d)
             eleoffsets[s][d] = (closestnode->X()[d] - slavenode->X()[d]); /* + ALE DISP */
@@ -602,98 +587,14 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   return fullnodevec;
 }
 
-template Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery<1>(
-    Teuchos::RCP<DRT::Discretization>, Teuchos::RCP<const Epetra_Vector>, const std::string,
-    const int, Teuchos::ParameterList&);
-template Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery<2>(
-    Teuchos::RCP<DRT::Discretization>, Teuchos::RCP<const Epetra_Vector>, const std::string,
-    const int, Teuchos::ParameterList&);
-template Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(
-    Teuchos::RCP<DRT::Discretization>, Teuchos::RCP<const Epetra_Vector>, const std::string,
-    const int, Teuchos::ParameterList&);
-
-DRT::UTILS::RestartManager::RestartManager()
-    : startwalltime_(GLOBAL::Problem::Walltime()),
-      restartevrytime_(-1.0),
-      restartcounter_(0),
-      lastacceptedstep_(-1),
-      lasttestedstep_(-1),
-      restartevrystep_(-1)
-{
-  // setup signal handler
-  signal_ = -1;
-  struct sigaction the_action;
-  the_action.sa_sigaction = restart_signal_handler;
-  sigemptyset(&the_action.sa_mask);
-  the_action.sa_flags = SA_SIGINFO;
-
-  if (sigaction(SIGUSR1, &the_action, nullptr))
-    dserror("signal handler for action SIGUSR1 could not be registered");
-  if (sigaction(SIGUSR2, &the_action, nullptr))
-    dserror("signal handler for action SIGUSR2 could not be registered");
-}
-
-/// set the time interval to enforce restart writing
-void DRT::UTILS::RestartManager::SetupRestartManager(
-    const double restartinterval, const int restartevry)
-{
-  restartevrytime_ = restartinterval;
-  restartevrystep_ = restartevry;
-}
-
-/// return whether it is time for a restart after a certain walltime interval
-bool DRT::UTILS::RestartManager::Restart(const int step, const Epetra_Comm& comm)
-{
-  // make sure that all after the first field write restart, too
-  if (step == lastacceptedstep_) return true;
-
-  // make sure that only the first field tests the time limit
-  if (step > lasttestedstep_)
-  {
-    lasttestedstep_ = step;
-
-    // compute elapsed walltime on proc 0 and let it decide for all other procs, too
-    int restarttime = 0;
-    if (comm.MyPID() == 0)
-    {
-      const double elapsedtime = GLOBAL::Problem::Walltime() - startwalltime_;
-      const bool walltimerestart = (int)(elapsedtime / restartevrytime_) > restartcounter_;
-
-      if (step > 0 and (((restartevrystep_ > 0) and (step % restartevrystep_ == 0)) or
-                           walltimerestart or signal_ > 0))
-      {
-        lastacceptedstep_ = step;
-        restarttime = 1;
-        signal_ = -1;
-        // only increment counter for walltime based restart functionality
-        if (walltimerestart) ++restartcounter_;
-      }
-    }
-    comm.Broadcast(&restarttime, 1, 0);
-    return restarttime;
-  }
-
-  return false;
-}
-
-void DRT::UTILS::RestartManager::restart_signal_handler(
-    int signal_number, siginfo_t* signal_information, void* ignored)
-{
-  signal_ = signal_information->si_signo;
-  return;
-}
-
-volatile int DRT::UTILS::RestartManager::signal_;
-
-
-/*-----------------------------------------------------------------------------*
- *------------------------------------------------------------------------------*/
-void DRT::UTILS::Checkscanf(int output)
-{
-  if (output == EOF)
-  {
-    dserror("Error while reading input.\n");
-  }
-}
+template Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery<1>(
+    DRT::Discretization&, const Epetra_Vector&, const std::string&, const int,
+    Teuchos::ParameterList&);
+template Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery<2>(
+    DRT::Discretization&, const Epetra_Vector&, const std::string&, const int,
+    Teuchos::ParameterList&);
+template Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery<3>(
+    DRT::Discretization&, const Epetra_Vector&, const std::string&, const int,
+    Teuchos::ParameterList&);
 
 BACI_NAMESPACE_CLOSE

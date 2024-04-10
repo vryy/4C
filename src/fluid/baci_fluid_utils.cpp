@@ -12,6 +12,7 @@
 #include "baci_fluid_utils.hpp"
 
 #include "baci_discretization_fem_general_l2_projection.hpp"
+#include "baci_discretization_fem_general_utils_superconvergent_patch_recovery.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_implicit_integration.hpp"
 #include "baci_global_data.hpp"
@@ -1109,16 +1110,16 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
       switch (dim)
       {
         case 3:
-          projected_velgrad = DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(
-              discret, vel, "vel", numvec, params);
+          projected_velgrad = CORE::FE::ComputeSuperconvergentPatchRecovery<3>(
+              *discret, *vel, "vel", numvec, params);
           break;
         case 2:
-          projected_velgrad = DRT::UTILS::ComputeSuperconvergentPatchRecovery<2>(
-              discret, vel, "vel", numvec, params);
+          projected_velgrad = CORE::FE::ComputeSuperconvergentPatchRecovery<2>(
+              *discret, *vel, "vel", numvec, params);
           break;
         case 1:
-          projected_velgrad = DRT::UTILS::ComputeSuperconvergentPatchRecovery<1>(
-              discret, vel, "vel", numvec, params);
+          projected_velgrad = CORE::FE::ComputeSuperconvergentPatchRecovery<1>(
+              *discret, *vel, "vel", numvec, params);
           break;
         default:
           dserror("only 1/2/3D implementation available for superconvergent patch recovery");

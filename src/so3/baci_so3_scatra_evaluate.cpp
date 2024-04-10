@@ -10,7 +10,6 @@
 
 #include "baci_discretization_fem_general_element_center.hpp"
 #include "baci_discretization_fem_general_extract_values.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_so3_material.hpp"
 #include "baci_so3_element_service.hpp"
 #include "baci_so3_scatra.hpp"

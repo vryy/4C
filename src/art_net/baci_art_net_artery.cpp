@@ -11,12 +11,10 @@
 
 #include "baci_io_linedefinition.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 
 BACI_NAMESPACE_OPEN
 
-using namespace DRT::UTILS;
 
 DRT::ELEMENTS::ArteryType DRT::ELEMENTS::ArteryType::instance_;
 

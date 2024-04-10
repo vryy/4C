@@ -17,7 +17,6 @@
 #include "baci_fluid_turbulence_dyn_smag.hpp"
 #include "baci_fluid_turbulence_dyn_vreman.hpp"
 #include "baci_fluid_utils.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
 BACI_NAMESPACE_OPEN

@@ -18,7 +18,7 @@
 #include "baci_discretization_fem_general_shape_function_type.hpp"
 #include "baci_global_data_enums.hpp"
 #include "baci_lib_resulttest.hpp"
-#include "baci_lib_utils.hpp"
+#include "baci_lib_utils_restart_manager.hpp"
 #include "baci_utils_function_manager.hpp"
 #include "baci_utils_random.hpp"
 #include "baci_utils_std_cxx20_ranges.hpp"

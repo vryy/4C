@@ -18,7 +18,6 @@
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_list.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_scatra_aniso.hpp"

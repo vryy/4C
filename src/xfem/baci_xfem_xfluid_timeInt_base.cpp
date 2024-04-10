@@ -26,7 +26,6 @@
 #include "baci_io_control.hpp"
 #include "baci_io_gmsh.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_xfem_dofset.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
