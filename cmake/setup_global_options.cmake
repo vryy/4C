@@ -80,7 +80,13 @@ endif()
 baci_process_global_option(BACI_ENABLE_COVERAGE "Set up a build to gather coverage information" OFF)
 if(BACI_ENABLE_COVERAGE)
   baci_add_settings_if_compiles(
-    BACI_COMPILER_SUPPORT_COVERAGE COMPILE_OPTIONS "-fprofile-arcs" "-ftest-coverage"
+    BACI_COMPILER_SUPPORT_COVERAGE
+    COMPILE_OPTIONS
+    "-fprofile-arcs"
+    "-ftest-coverage"
+    LINK_OPTIONS
+    "-fprofile-arcs"
+    "-ftest-coverage"
     )
 
   if(NOT BACI_COMPILER_SUPPORT_COVERAGE)
