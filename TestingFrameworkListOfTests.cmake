@@ -2165,8 +2165,6 @@ baci_test(immersed_bending_struct_part_forcecoup_AITKEN_h8 3 "2")
 baci_test(immersed_oscillating_struct_part_forcecoup_h8 3 "")
 baci_test(immersed_moving_cylinder_part_dispcoup_h8 3 "")
 baci_test(immersed_compressing_struct_part_dispcoup_h8 3 "")
-baci_test(activefiber_square_cell_dashpot_h8 3 "")
-baci_test(activefiber_rectangle_cell_dirich_h8 2 "")
 
 # testing the whole framework: from pre_exodus and baci to the post-filter:
 baci_framework_test(tutorial_battery 2 "")

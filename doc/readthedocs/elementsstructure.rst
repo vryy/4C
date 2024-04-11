@@ -43,4 +43,4 @@ The following materials are used in combination with Structure elements in the i
 - MAT_Membrane_ActiveStrain
 - MAT_Struct_Robinson
 - MAT_StructPoroReactionECM
-- MAT_ACTIVEFIBER
+

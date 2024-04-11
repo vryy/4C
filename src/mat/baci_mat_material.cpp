@@ -15,7 +15,6 @@
 #include "baci_mat_aaaneohooke.hpp"
 #include "baci_mat_aaaneohooke_stopro.hpp"
 #include "baci_mat_aaaraghavanvorp_damage.hpp"
-#include "baci_mat_activefiber.hpp"
 #include "baci_mat_air_0d_O2_saturation.hpp"
 #include "baci_mat_arrhenius_pv.hpp"
 #include "baci_mat_arrhenius_spec.hpp"
@@ -1109,12 +1108,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ElectromagneticMat(curmat));
       auto* params = static_cast<MAT::PAR::ElectromagneticMat*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_activefiber:
-    {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ActiveFiber(curmat));
-      auto* params = static_cast<MAT::PAR::ActiveFiber*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_superelast:
