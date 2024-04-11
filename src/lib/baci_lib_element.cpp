@@ -18,7 +18,6 @@
 #include "baci_lib_condition.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element_append_visualization.hpp"
-#include "baci_lib_element_vtk_cell_type_register.hpp"
 #include "baci_lib_node.hpp"
 #include "baci_mat_material.hpp"
 #include "baci_utils_exceptions.hpp"

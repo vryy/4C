@@ -11,7 +11,6 @@
 
 #include "baci_lib_condition.hpp"
 
-#include "baci_inpar_container.hpp"
 #include "baci_lib_element.hpp"
 
 BACI_NAMESPACE_OPEN

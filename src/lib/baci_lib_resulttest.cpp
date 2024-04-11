@@ -11,8 +11,6 @@
 
 #include "baci_lib_resulttest.hpp"
 
-#include "baci_global_data.hpp"
-#include "baci_io_control.hpp"
 #include "baci_io_inputreader.hpp"
 #include "baci_io_linedefinition.hpp"
 #include "baci_io_pstream.hpp"
