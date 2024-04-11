@@ -167,8 +167,7 @@ namespace GEOMETRYPAIR
 
       if constexpr (element_type::element_dim_ == 2)
       {
-        using type_weights = CORE::LINALG::Matrix<element_type::n_nodes_, 1, double>;
-        CORE::FE::NURBS::nurbs_get_2D_funct<V, T, type_weights, typename V::scalar_type>(N, xi,
+        CORE::FE::NURBS::nurbs_get_2D_funct<typename V::scalar_type>(N, xi,
             shape_function_data.myknots_, shape_function_data.weights_,
             element_type::discretization_);
       }
@@ -204,10 +203,9 @@ namespace GEOMETRYPAIR
 
       if constexpr (element_type::element_dim_ == 2)
       {
-        using type_weights = CORE::LINALG::Matrix<element_type::n_nodes_, 1, double>;
-        CORE::FE::NURBS::nurbs_get_2D_funct_deriv<type_dummy, V, T, type_weights,
-            typename V::scalar_type>(N_dummy, dN, xi, shape_function_data.myknots_,
-            shape_function_data.weights_, element_type::discretization_);
+        CORE::FE::NURBS::nurbs_get_2D_funct_deriv<typename V::scalar_type>(N_dummy, dN, xi,
+            shape_function_data.myknots_, shape_function_data.weights_,
+            element_type::discretization_);
       }
       else if constexpr (element_type::element_dim_ == 3)
       {
