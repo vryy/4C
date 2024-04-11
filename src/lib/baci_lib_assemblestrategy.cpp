@@ -15,7 +15,6 @@
 #include "baci_lib_assemblestrategy.hpp"
 
 #include "baci_lib_discret.hpp"
-#include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_sparseoperator.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 

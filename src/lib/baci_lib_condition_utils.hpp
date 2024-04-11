@@ -171,18 +171,6 @@ namespace DRT
         std::map<int, Teuchos::RCP<DRT::Element>>& elements, const std::string& condname,
         const int label = -1);
 
-
-    /// Create element map to given condition
-    /*!
-      \pre Geometry must be available in condition
-
-      \param dis : (in) Discretization
-      \param condname : (in) name of condition in question
-      \param colmap : (in) whether we want to create a (ghosted) column map
-    */
-    Teuchos::RCP<Epetra_Map> ConditionElementMap(
-        const DRT::Discretization& dis, const std::string& condname, bool colmap);
-
     /// Find all conditions with given name that all nodes of the element have in common
     /*!
       \param ele (in) the element
@@ -207,15 +195,6 @@ namespace DRT
      */
     Teuchos::RCP<std::set<int>> ConditionedElementMap(
         const DRT::Discretization& dis, const std::string& condname);
-
-    /// Writes debug output for volumetric coupling
-    void WriteBoundarySurfacesVolumeCoupling(
-        std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>
-            surfmap,  // map containing the surfaces of the boundary condition
-        int condID,   // condition ID
-        int numproc,  // number of procs
-        int mypid     // current proc
-    );
 
     /*!
      * \brief This method checks whether handed in conditions are defined on the same set of nodes

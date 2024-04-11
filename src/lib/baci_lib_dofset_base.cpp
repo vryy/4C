@@ -17,7 +17,6 @@
 
 #include <algorithm>
 #include <iostream>
-#include <numeric>
 
 BACI_NAMESPACE_OPEN
 

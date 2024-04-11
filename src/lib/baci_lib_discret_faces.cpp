@@ -12,7 +12,6 @@
 #include "baci_lib_discret_faces.hpp"
 
 #include "baci_comm_utils_factory.hpp"
-#include "baci_global_data.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 
