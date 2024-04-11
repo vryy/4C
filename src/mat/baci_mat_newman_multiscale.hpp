@@ -31,14 +31,22 @@ namespace MAT
       //! create instance of Newman multi-scale material
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
-      //! return electronic conductivity
-      double Sigma() const { return sigma_; };
+      //! electronic conductivity
+      double electronic_cond() const { return electronic_cond_; }
+
+      //! function number to scale electronic conductivity with. The argument for the function is
+      //! the concentration
+      int conc_dep_scale_func_num() const { return conc_dep_scale_func_num_; }
 
      private:
       //! @name parameters for Newman multi-scale material
       //@{
       //! electronic conductivity
-      const double sigma_;
+      const double electronic_cond_;
+
+      //! function number to scale electronic conductivity with. The argument for the function is
+      //! the concentration
+      const int conc_dep_scale_func_num_;
       //@}
     };  // class MAT::PAR::NewmanMultiScale
   }     // namespace PAR
@@ -120,8 +128,8 @@ namespace MAT
       return Teuchos::rcp(new NewmanMultiScale(*this));
     };
 
-    //! return electronic conductivity
-    double Sigma() const { return params_->Sigma(); };
+    //! compute electronic conductivity and scale by function evaluated at @p gp
+    double electronic_cond(int gp) const;
 
    private:
     //! return material parameters
