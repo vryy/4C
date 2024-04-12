@@ -2023,9 +2023,6 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
     case DRT::ELEMENTS::struct_calc_energy:
       action = "calc_struct_energy";
       break;
-    case DRT::ELEMENTS::struct_calc_errornorms:
-      action = "calc_struct_errornorms";
-      break;
     case DRT::ELEMENTS::multi_init_eas:
       action = "multi_eas_init";
       break;

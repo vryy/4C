@@ -560,9 +560,6 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
     OutputEnergy();
   }
 
-  // print error norms
-  OutputErrorNorms();
-
   //  OutputVolumeMass();
 
   // ToDo output of nodal positions in current configuration
@@ -978,104 +975,6 @@ int STR::TIMINT::Base::GroupId() const
 {
   Teuchos::RCP<CORE::COMM::Communicators> group = GLOBAL::Problem::Instance()->GetCommunicators();
   return group->GroupId();
-}
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::OutputErrorNorms()
-{
-  // get parameters
-  const Teuchos::ParameterList& params = GLOBAL::Problem::Instance()->StructuralDynamicParams();
-
-  // get error calculation info
-  const auto calcerr = CORE::UTILS::IntegralValue<INPAR::STR::CalcError>(params, "CALCERROR");
-
-  switch (calcerr)
-  {
-    case INPAR::STR::no_error_calculation:
-    {
-      return;
-    }
-    case INPAR::STR::byfunct:
-    {
-      // initialize variables
-      Teuchos::RCP<CORE::LINALG::SerialDenseVector> norms =
-          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
-      norms->putScalar(0.0);
-
-      // call discretization to evaluate error norms
-      Teuchos::ParameterList p;
-      p.set("action", "calc_struct_errornorms");
-      Discretization()->ClearState();
-      Discretization()->SetState("displacement", Dispnp());
-      Discretization()->EvaluateScalars(p, norms);
-      Discretization()->ClearState();
-
-      // print error
-      if (dataglobalstate_->GetMyRank() == 0)
-      {
-        {
-          std::cout.precision(8);
-          std::cout << std::endl;
-          std::cout << "---- Error norm for analytical solution -------------------" << std::endl;
-          std::cout << "| absolute L_2 displacement error norm:   " << sqrt((*norms)(0))
-                    << std::endl;
-          std::cout << "-----------------------------------------------------------" << std::endl;
-          std::cout << std::endl;
-        }
-
-        // print last error in a seperate file
-
-        // append error of the last time step to the error file
-        if ((dataglobalstate_->GetStepN() == datasdyn_->GetStepMax()) or
-            (dataglobalstate_->GetTimeN() == datasdyn_->GetTimeMax()))  // write results to file
-        {
-          std::ostringstream temp;
-          const std::string simulation =
-              GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
-          const std::string fname = simulation + ".abserror";
-
-          std::ofstream f;
-          f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-          f << "#| " << simulation << "\n";
-          f << "#| Step | Time | abs. L2-error displacement |\n";
-          f << dataglobalstate_->GetStepN() << " " << dataglobalstate_->GetTimeN() << " "
-            << sqrt((*norms)(0)) << "\n";
-          f.flush();
-          f.close();
-        }
-
-        std::ostringstream temp;
-        const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
-        const std::string fname = simulation + "_time.abserror";
-
-        if (dataglobalstate_->GetStepN() == 1)
-        {
-          std::ofstream f;
-          f.open(fname.c_str());
-          f << "#| Step | Time | abs. L2-error displacement |\n";
-          f << std::setprecision(10) << dataglobalstate_->GetStepN() << " " << std::setw(1)
-            << std::setprecision(5) << dataglobalstate_->GetTimeN() << std::setw(1)
-            << std::setprecision(6) << " " << sqrt((*norms)(0)) << "\n";
-          f.flush();
-          f.close();
-        }
-        else
-        {
-          std::ofstream f;
-          f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-          f << std::setprecision(10) << dataglobalstate_->GetStepN() << " " << std::setw(3)
-            << std::setprecision(5) << dataglobalstate_->GetTimeN() << std::setw(1)
-            << std::setprecision(6) << " " << sqrt((*norms)(0)) << "\n";
-          f.flush();
-          f.close();
-        }
-      }
-    }
-    break;
-    default:
-      dserror("Cannot calculate error. Unknown type of analytical test problem");
-      break;
-  }
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

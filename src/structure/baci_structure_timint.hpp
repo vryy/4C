@@ -470,13 +470,10 @@ namespace STR
     //! Active set, energy and momentum output for contact
     void OutputContact();
 
-    //! Error norm output
-    void OutputErrorNorms();
-
     //! Nodal positions output
     void OutputNodalPositions();
 
-    //! Error norm output
+    //! Output volume mass
     void OutputVolumeMass();
 
     //! Output on the micro-scale (multi-scale analysis)

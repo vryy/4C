@@ -3,7 +3,7 @@
 \brief averaged nodal volume tet4
 \level 3
 *----------------------------------------------------------------------*/
-#include "baci_contact_analytical.hpp"
+
 #include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"

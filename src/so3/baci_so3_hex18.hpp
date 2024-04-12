@@ -344,7 +344,6 @@ namespace DRT
         calc_struct_reset_all,    //!< reset elementwise internal variables
                                   //!< to state in the beginning of the computation
         calc_struct_energy,       //!< compute internal energy
-        calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
         calc_recover
       };
 

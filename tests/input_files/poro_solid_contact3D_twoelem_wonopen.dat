@@ -100,7 +100,6 @@ SEMI_SMOOTH_CT                  100
 CONTACTFORCE_ENDTIME            No
 VELOCITY_UPDATE                 No
 EMOUTPUT                        None
-ERROR_NORMS                     None
 NORMCOMBI_RESFCONTCONSTR        And
 NORMCOMBI_DISPLAGR              And
 TOLCONTCONSTR                   1e-06

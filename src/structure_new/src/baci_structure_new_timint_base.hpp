@@ -517,9 +517,6 @@ namespace STR
       virtual void Output() { Output(false); }
       void Output(bool forced_writerestart) override;
 
-      /// output error norms
-      virtual void OutputErrorNorms();
-
       /// Write Gmsh output for structural field
       void WriteGmshStrucOutputStep() override;
 

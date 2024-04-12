@@ -28,9 +28,7 @@ NUMSTEP          10
 TIMESTEP         0.0125
 LINEAR_SOLVER    1
 INITIALDISP      displacement_by_function
-CALCERROR        byfunct
 STARTFUNCNO      1
-CALCERRORFUNCNO  1
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG           TrLike
 ALPHA_F          0.0
