@@ -54,7 +54,6 @@ namespace DRT
       struct_calc_store_istep,  //!< store internal information in history
       struct_calc_recover_istep,            //!< recover internal information from history
       struct_calc_energy,                   //!< compute internal energy
-      struct_calc_errornorms,               //!< compute error norms (L2,H1,energy)
       struct_postprocess_thickness,         //!< postprocess thickness of membrane finite elements
       struct_init_gauss_point_data_output,  //!< initialize quantities for output of gauss point
                                             //!< data
@@ -127,8 +126,6 @@ namespace DRT
         return struct_calc_recover_istep;
       else if (action == "calc_struct_energy")
         return struct_calc_energy;
-      else if (action == "calc_struct_errornorms")
-        return struct_calc_errornorms;
       else if (action == "multi_eas_init")
         return multi_init_eas;
       else if (action == "multi_eas_set")
@@ -208,8 +205,6 @@ namespace DRT
           return "struct_calc_recover_istep";
         case struct_calc_energy:
           return "struct_calc_energy";
-        case struct_calc_errornorms:
-          return "struct_calc_errornorms";
         case struct_postprocess_thickness:
           return "struct_postprocess_thickness";
         case struct_init_gauss_point_data_output:

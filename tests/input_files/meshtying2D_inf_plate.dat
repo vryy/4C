@@ -39,7 +39,6 @@ DIVERCONT    continue
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 SYSTEM               cond
-ERROR_NORMS          plate
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN           dual
 LM_QUAD               quad

@@ -338,7 +338,6 @@ namespace DRT
         calc_struct_reset_istep,  //!< reset elementwise internal variables
                                   //!< during iteration to last converged state
         calc_struct_energy,       //!< compute internal energy
-        calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
         prestress_update,
         multi_readrestart,  //!< multi-scale: read restart on microscale
         multi_calc_dens     //!< multi-scale: calculate homogenized density

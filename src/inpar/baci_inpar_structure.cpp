@@ -345,14 +345,6 @@ namespace INPAR
       // Function to evaluate initial displacement
       CORE::UTILS::IntParameter("STARTFUNCNO", -1, "Function for Initial displacement", &sdyn);
 
-      // Flag to (de)activate error calculations
-      setStringToIntegralParameter<int>("CALCERROR", "no",
-          "Flag to (de)activate error calculations", tuple<std::string>("no", "byfunct"),
-          tuple<int>(no_error_calculation, byfunct), &sdyn);
-
-      // Function number to calculate the error
-      CORE::UTILS::IntParameter("CALCERRORFUNCNO", -1, "Function for Error Calculation", &sdyn);
-
       /*--------------------------------------------------------------------*/
       /* parameters for time step size adaptivity in structural dynamics */
       Teuchos::ParameterList& tap = sdyn.sublist("TIMEADAPTIVITY", false, "");
