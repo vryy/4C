@@ -120,7 +120,10 @@ baci_process_global_option(
 ##
 
 if(${BACI_BUILD_TYPE_UPPER} MATCHES DEBUG)
-  set(BACI_DEBUG "ON")
+  set(BACI_DEBUG
+      "ON"
+      CACHE BOOL "Forced ON due to build type DEBUG" FORCE
+      )
   target_compile_options(baci_private_compile_interface INTERFACE "-Og")
   target_link_options(baci_private_compile_interface INTERFACE "-Og")
 
