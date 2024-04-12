@@ -22,12 +22,12 @@ between the xfluid class and the cut-library
 #include "baci_io_pstream.hpp"
 #include "baci_lib_dofset_transparent_independent.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_mat_elasthyper.hpp"
 #include "baci_mat_newtonianfluid.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_so3_hex8.hpp"
 #include "baci_so3_surface.hpp"
 #include "baci_xfem_discretization_utils.hpp"
@@ -135,7 +135,7 @@ void XFEM::MeshCoupling::CreateCutterDisFromCondition(std::string suffix)
   cutter_dis_->ReplaceDofSet(newdofset);  // do not call this with true!!
 
   // create node and element distribution with elements and nodes ghosted on all processors
-  DRT::UTILS::GhostDiscretizationOnAllProcs(cutter_dis_);
+  CORE::REBALANCE::GhostDiscretizationOnAllProcs(cutter_dis_);
   cutter_dis_->FillComplete();
 }
 
@@ -1872,7 +1872,7 @@ void XFEM::MeshCouplingFSI::LiftDrag(const int step, const double time) const
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<const Epetra_Vector> iforcecol =
-      DRT::UTILS::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
+      CORE::REBALANCE::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
 
   if (myrank_ == 0)
   {

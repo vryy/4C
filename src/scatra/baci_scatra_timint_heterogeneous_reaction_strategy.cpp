@@ -15,7 +15,7 @@
 #include "baci_lib_utils_createdis.hpp"
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_print.hpp"
 #include "baci_scatra_ele.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_timint_implicit.hpp"

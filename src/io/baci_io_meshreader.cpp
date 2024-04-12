@@ -18,8 +18,8 @@
 #include "baci_io_nodereader.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_rebalance.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_graph_based.hpp"
+#include "baci_rebalance_print.hpp"
 
 #include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_TimeMonitor.hpp>

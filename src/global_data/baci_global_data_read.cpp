@@ -39,7 +39,7 @@
 #include "baci_mat_scatra_multiscale.hpp"
 #include "baci_nurbs_discret.hpp"
 #include "baci_particle_engine_particlereader.hpp"
-#include "baci_rebalance.hpp"
+#include "baci_rebalance_graph_based.hpp"
 #include "baci_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN

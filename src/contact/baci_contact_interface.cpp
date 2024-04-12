@@ -29,7 +29,7 @@
 #include "baci_mortar_defines.hpp"
 #include "baci_mortar_dofset.hpp"
 #include "baci_mortar_projector.hpp"
-#include "baci_rebalance.hpp"
+#include "baci_rebalance_graph_based.hpp"
 #include "baci_scatra_ele_parameter_boundary.hpp"
 
 #include <Epetra_CrsMatrix.h>

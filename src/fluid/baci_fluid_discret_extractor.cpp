@@ -16,7 +16,7 @@
 #include "baci_lib_discret_xwall.hpp"
 #include "baci_lib_dofset_transparent.hpp"
 #include "baci_lib_periodicbc.hpp"
-#include "baci_rebalance.hpp"
+#include "baci_rebalance_graph_based.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

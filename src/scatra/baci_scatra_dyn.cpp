@@ -14,7 +14,7 @@
 #include "baci_global_data.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_scatra_algorithm.hpp"
 #include "baci_scatra_ele.hpp"
 #include "baci_scatra_resulttest.hpp"
@@ -152,7 +152,7 @@ void scatra_dyn(int restart)
         std::vector<Teuchos::RCP<DRT::Discretization>> dis;
         dis.push_back(scatradis);
 
-        DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+        CORE::REBALANCE::RebalanceDiscretizationsByBinning(dis, false);
       }
 
       // assign degrees of freedom and rebuild geometries
@@ -280,7 +280,7 @@ void scatra_dyn(int restart)
         dis.push_back(fluiddis);
         dis.push_back(scatradis);
 
-        DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+        CORE::REBALANCE::RebalanceDiscretizationsByBinning(dis, false);
       }
 
       // ensure that all dofs are assigned in the right order;

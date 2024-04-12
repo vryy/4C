@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_REBALANCE_HPP
-#define FOUR_C_REBALANCE_HPP
+#ifndef FOUR_C_REBALANCE_GRAPH_BASED_HPP
+#define FOUR_C_REBALANCE_GRAPH_BASED_HPP
 
 #include "baci_config.hpp"
 

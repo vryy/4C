@@ -12,10 +12,12 @@
 
 #include "baci_beam3_base.hpp"
 #include "baci_bele_bele3.hpp"
+#include "baci_binstrategy.hpp"
 #include "baci_comm_exporter.hpp"
 #include "baci_fluid_ele.hpp"
-#include "baci_lib_utils_parallel.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_io_pstream.hpp"
+#include "baci_rebalance_binning_based.hpp"
+#include "baci_rebalance_print.hpp"
 #include "baci_rigidsphere.hpp"
 #include "baci_scatra_ele.hpp"
 #include "baci_so3_base.hpp"
@@ -345,7 +347,6 @@ namespace BINSTRATEGY
         for (int dim = 0; dim < 3; ++dim) currpos[dim] = node_with_position_Dofs->X()[dim];
       }
     }
-
   }  // namespace UTILS
 }  // namespace BINSTRATEGY
 

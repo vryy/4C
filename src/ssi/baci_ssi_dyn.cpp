@@ -11,7 +11,7 @@
 
 #include "baci_global_data.hpp"
 #include "baci_io_control.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_print.hpp"
 #include "baci_ssi_monolithic.hpp"
 #include "baci_ssi_partitioned_1wc.hpp"
 #include "baci_ssi_partitioned_2wc.hpp"

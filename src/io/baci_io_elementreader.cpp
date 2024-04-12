@@ -13,8 +13,8 @@
 #include "baci_comm_utils_factory.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_elementdefinition.hpp"
-#include "baci_lib_utils_parallel.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_binning_based.hpp"
+#include "baci_rebalance_print.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

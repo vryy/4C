@@ -13,10 +13,10 @@
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_dofset_transparent.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_utils_function_of_time.hpp"
 
 #include <iostream>
@@ -55,7 +55,7 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
     {
       Teuchos::RCP<Epetra_Map> newcolnodemap =
-          DRT::UTILS::ComputeNodeColMap(actdisc_, discriter->second);
+          CORE::REBALANCE::ComputeNodeColMap(actdisc_, discriter->second);
       actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
       Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
       (discriter->second)->ReplaceDofSet(newdofset);

@@ -23,13 +23,13 @@
 #include "baci_inpar_contact.hpp"
 #include "baci_io.hpp"
 #include "baci_io_pstream.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_mortar_matrix_transform.hpp"
 #include "baci_mortar_utils.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_utils_epetra_exceptions.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -244,7 +244,7 @@ void CONTACT::AUG::Strategy::PostSetup(bool redistributed, bool init)
     if ((not Data().GOldActiveSlaveNodesPtr().is_null()) and
         (Data().GOldActiveSlaveNodes().NumGlobalElements() > 0))
     {
-      Data().GOldActiveSlaveNodesPtr() = DRT::UTILS::RedistributeInAccordanceWithReference(
+      Data().GOldActiveSlaveNodesPtr() = CORE::REBALANCE::RebalanceInAccordanceWithReference(
           SlRowNodes(), Data().GOldActiveSlaveNodes());
     }
   }

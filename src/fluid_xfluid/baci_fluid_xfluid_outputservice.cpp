@@ -24,8 +24,8 @@
 #include "baci_io_gmsh.hpp"
 #include "baci_lib_discret_xfem.hpp"
 #include "baci_lib_dofset_transparent_independent.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_utils_parameter_list.hpp"
 #include "baci_xfem_condition_manager.hpp"
 #include "baci_xfem_discretization_utils.hpp"
@@ -282,19 +282,19 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutput(
   if (!gmsh_sol_out_) return;
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      DRT::UTILS::GetColVersionOfRowVector(discret_, state->Velnp());
+      CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Velnp());
 
   Teuchos::RCP<const Epetra_Vector> output_col_acc = Teuchos::null;
 
   if (state->Accnp() != Teuchos::null)
   {
-    output_col_acc = DRT::UTILS::GetColVersionOfRowVector(discret_, state->Accnp());
+    output_col_acc = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Accnp());
   }
 
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = DRT::UTILS::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->dispnp_);
 
 
   // no counter for standard solution output : -1
@@ -313,19 +313,19 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutputPrevious(
   if (!gmsh_ref_sol_out_) return;
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      DRT::UTILS::GetColVersionOfRowVector(discret_, state->Veln());
+      CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Veln());
 
   Teuchos::RCP<const Epetra_Vector> output_col_acc = Teuchos::null;
 
   if (state->Accn() != Teuchos::null)
   {
-    output_col_acc = DRT::UTILS::GetColVersionOfRowVector(discret_, state->Accn());
+    output_col_acc = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Accn());
   }
 
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = DRT::UTILS::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->dispnp_);
 
 
   const std::string prefix("ref_SOL");
@@ -345,10 +345,10 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutputDebug(
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = DRT::UTILS::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->dispnp_);
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      DRT::UTILS::GetColVersionOfRowVector(discret_, state->Velnp());
+      CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Velnp());
   const std::string prefix("SOL");
   GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_vel, Teuchos::null,
       dispnp_col);
@@ -366,11 +366,11 @@ void FLD::XFluidOutputServiceGmsh::GmshResidualOutputDebug(
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = DRT::UTILS::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->dispnp_);
 
 
   Teuchos::RCP<const Epetra_Vector> output_col_residual =
-      DRT::UTILS::GetColVersionOfRowVector(discret_, state->Residual());
+      CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Residual());
   const std::string prefix("RES");
   GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_residual,
       Teuchos::null, dispnp_col);
@@ -388,10 +388,10 @@ void FLD::XFluidOutputServiceGmsh::GmshIncrementOutputDebug(
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = DRT::UTILS::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->dispnp_);
 
   Teuchos::RCP<const Epetra_Vector> output_col_incvel =
-      DRT::UTILS::GetColVersionOfRowVector(discret_, state->IncVel());
+      CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->IncVel());
   const std::string prefix("INC");
   GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_incvel, Teuchos::null,
       dispnp_col);

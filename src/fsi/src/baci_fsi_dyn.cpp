@@ -61,10 +61,10 @@
 #include "baci_lib_dofset_fixed_size.hpp"
 #include "baci_lib_resulttest.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_poroelast_utils_clonestrategy.hpp"
 #include "baci_poroelast_utils_setup.hpp"
+#include "baci_rebalance_binning_based.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -329,7 +329,7 @@ void fsi_immersed_drt()
   if (structdis->GetCondition("PointCoupling") != nullptr)
   {
     structdis->FillComplete(false, false, false);
-    DRT::UTILS::RedistributeDiscretizationsByBinning({structdis}, true);
+    CORE::REBALANCE::RebalanceDiscretizationsByBinning({structdis}, true);
   }
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {
@@ -426,7 +426,7 @@ void fsi_ale_drt()
   if (structdis->GetCondition("PointCoupling") != nullptr)
   {
     structdis->FillComplete(false, false, false);
-    DRT::UTILS::RedistributeDiscretizationsByBinning({structdis}, true);
+    CORE::REBALANCE::RebalanceDiscretizationsByBinning({structdis}, true);
   }
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {

@@ -24,7 +24,7 @@
 #include "baci_lib_discret_hdg.hpp"
 #include "baci_lib_utils_createdis.hpp"
 #include "baci_particle_engine_particlereader.hpp"
-#include "baci_rebalance.hpp"
+#include "baci_rebalance_graph_based.hpp"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterListExceptions.hpp>

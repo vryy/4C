@@ -20,9 +20,9 @@
 #include "baci_io_control.hpp"
 #include "baci_io_inputreader.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_mat_par_bundle.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_scatra_ele.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
@@ -230,7 +230,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
   auto structdis = problem->GetDis(struct_disname);
   auto scatradis = problem->GetDis(scatra_disname);
 
-  if (redistribute_struct_dis) DRT::UTILS::RedistributeDiscretizationsByBinning({structdis}, false);
+  if (redistribute_struct_dis)
+    CORE::REBALANCE::RebalanceDiscretizationsByBinning({structdis}, false);
 
   if (scatradis->NumGlobalNodes() == 0)
   {
@@ -646,13 +647,13 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
     // first we bin the scatra discretization
     std::vector<Teuchos::RCP<DRT::Discretization>> dis;
     dis.push_back(scatradis);
-    DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+    CORE::REBALANCE::RebalanceDiscretizationsByBinning(dis, false);
 
-    DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
+    CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
         *scatradis, *scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
 
     // now we redistribute the structure dis to match the scatra dis
-    DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(*scatradis, *structdis);
+    CORE::REBALANCE::MatchElementDistributionOfMatchingDiscretizations(*scatradis, *structdis);
   }
   else if (redistribution_type == SSI::RedistributionType::binning)
   {
@@ -661,7 +662,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
     dis.push_back(structdis);
     dis.push_back(scatradis);
 
-    DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+    CORE::REBALANCE::RebalanceDiscretizationsByBinning(dis, false);
   }
 }
 

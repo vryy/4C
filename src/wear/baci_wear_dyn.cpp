@@ -19,7 +19,7 @@
 #include "baci_inpar_wear.hpp"
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_wear_partitioned.hpp"
 
 #include <Epetra_MpiComm.h>
@@ -83,7 +83,7 @@ void wear_dyn_drt(int restart)
       dis.push_back(structdis);
       dis.push_back(aledis);
 
-      DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+      CORE::REBALANCE::RebalanceDiscretizationsByBinning(dis, false);
     }
   }
   // ***********************************************************

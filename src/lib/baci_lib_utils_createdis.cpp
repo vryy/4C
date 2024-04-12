@@ -14,7 +14,7 @@
 
 #include "baci_io_linedefinition.hpp"
 #include "baci_lib_dofset_transparent_independent.hpp"
-#include "baci_lib_utils_parallel.hpp"
+#include "baci_rebalance_binning_based.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
