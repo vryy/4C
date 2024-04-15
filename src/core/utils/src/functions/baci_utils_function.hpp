@@ -101,7 +101,7 @@ namespace CORE::UTILS
     };
 
     /// Return number of components of function
-    virtual std::size_t NumberComponents() const { return 0; }
+    [[nodiscard]] virtual std::size_t NumberComponents() const = 0;
   };
 
 
@@ -133,7 +133,7 @@ namespace CORE::UTILS
     std::vector<double> EvaluateTimeDerivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (expr_.size()); }
+    [[nodiscard]] std::size_t NumberComponents() const override { return (expr_.size()); }
 
    private:
     using ValueType = double;
@@ -211,7 +211,7 @@ namespace CORE::UTILS
         const std::size_t component) const = 0;
 
     //! Return number of components of function
-    virtual std::size_t NumberComponents() const = 0;
+    [[nodiscard]] virtual std::size_t NumberComponents() const = 0;
   };
 
 
@@ -244,7 +244,7 @@ namespace CORE::UTILS
         const std::size_t component) const override;
 
     /// return the number of components
-    std::size_t NumberComponents() const override { return (expr_.size()); }
+    [[nodiscard]] std::size_t NumberComponents() const override { return (expr_.size()); }
 
    private:
     using ValueType = double;
