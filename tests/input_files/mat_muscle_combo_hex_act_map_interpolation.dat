@@ -1,10 +1,10 @@
 -----------------------------------------------------------------------TITLE
-Testcase for testing MAT_Muscle_Combo material and usage of activation type map_from_csv.
-Activation values are supplied via a csv file for two timesteps (t=0.0 and t=0.01) and the given element ids.
-Results are evaluated at t=0.005 to test whether linearly interpolating between the times given in the csv file works correctly.
+Testcase for testing MAT_Muscle_Combo material and usage of activation type map.
+Activation values are supplied via a pattern file for two timesteps (t=0.0 and t=0.01) and the given element ids.
+Results are evaluated at t=0.005 to test whether linearly interpolating between the times given in the pattern file works correctly.
 
 The setup of the test-case are 2 cubes. 
-For cube 1, the activation in the csv file are set to 0 to mimic a passive material as in the original test case mat_muscle_combo_hex.dat 
+For cube 1, the activation in the pattern file are set to 0 to mimic a passive material as in the original test case mat_muscle_combo_hex.dat 
 For cube 2, the activation values are given at the discrete time steps t=0.0 and t=0.01. 
 Results were verified against a computation using a SYMBOLIC_FUNCTION_OF_SPACE_TIME interpolating between the same times and activation values.
 
@@ -84,10 +84,10 @@ STRUCTURE DIS structure NODE 13 QUANTITY dispz VALUE -3.13585365738472566e-01 TO
 STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE -3.13585365738472566e-01 TOLERANCE 1e-9 
 -------------------------------------------------------------------MATERIALS
 // passive unmixed material used for cube 1
-MAT 1 MAT_Muscle_Combo ALPHA 15.0 BETA 1.0 GAMMA 5.0 KAPPA 100.0 POPT 73.52 OMEGA0 0.8 LAMBDAMIN 0.682 LAMBDAOPT 1.192 ACTEVALTYPE map ACTCSV mat_muscle_combo_hex_csv_act_map_interpolation.csv DENS 1.0
+MAT 1 MAT_Muscle_Combo ALPHA 15.0 BETA 1.0 GAMMA 5.0 KAPPA 100.0 POPT 73.52 OMEGA0 0.8 LAMBDAMIN 0.682 LAMBDAOPT 1.192 ACTEVALTYPE map MAPFILE mat_muscle_combo_hex_act_map_interpolation.pattern DENS 1.0
 
 // active unmixed material used for cube 2
-MAT 2 MAT_Muscle_Combo ALPHA 19.69 BETA 1.19 GAMMA 0.1599 KAPPA 100.0 POPT 73.52 OMEGA0 0.7388 LAMBDAMIN 0.682 LAMBDAOPT 1.192 ACTEVALTYPE map ACTCSV mat_muscle_combo_hex_csv_act_map_interpolation.csv DENS 1.0
+MAT 2 MAT_Muscle_Combo ALPHA 19.69 BETA 1.19 GAMMA 0.1599 KAPPA 100.0 POPT 73.52 OMEGA0 0.7388 LAMBDAMIN 0.682 LAMBDAOPT 1.192 ACTEVALTYPE map MAPFILE mat_muscle_combo_hex_act_map_interpolation.pattern DENS 1.0
 ----------------------------------------------------------------------FUNCT1
 // function for application of Dirichlet conditions on top surface of cube 1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a

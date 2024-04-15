@@ -513,26 +513,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     // choice function
     std::vector<Teuchos::RCP<INPUT::LineComponent>> activation_function;
     activation_function.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent(
-        "ACTFUNCT", "function id for time- and space-dependency of muscle activation")));
-    activation_function.emplace_back(Teuchos::rcp(new INPUT::IntComponent("ACTFUNCT")));
+        "FUNCTID", "function id for time- and space-dependency of muscle activation")));
+    activation_function.emplace_back(Teuchos::rcp(new INPUT::IntComponent("FUNCTID")));
     activation_evaluation_choices.emplace(
         static_cast<int>(INPAR::MAT::ActivationType::function_of_space_time),
         std::make_pair("function", activation_function));
 
     // choice map
-    // definition of operation and print string for post processed component "ACTCSV"
+    // definition of operation and print string for post processed component "MAPFILE"
     using actMapType = std::unordered_map<int, std::vector<std::pair<double, double>>>;
     std::function<const actMapType(const std::string&)> operation =
-        [](const std::string& csv_file) -> actMapType
+        [](const std::string& map_file) -> actMapType
     {
-      // csv file needs to be placed in same folder as input file
+      // map pattern file needs to be placed in same folder as input file
       std::filesystem::path input_file_path =
           GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName();
-      const auto csv_file_path = input_file_path.replace_filename(csv_file);
+      const auto map_file_path = input_file_path.replace_filename(map_file);
 
-      std::ifstream csv_stream(csv_file_path);
+      std::ifstream file_stream(map_file_path);
 
-      if (csv_stream.fail()) dserror("Invalid csv file %s!", csv_file_path.c_str());
+      if (file_stream.fail()) dserror("Invalid file %s!", map_file_path.c_str());
 
       auto map_reduction_operation = [](actMapType&& acc, actMapType&& next)
       {
@@ -543,24 +543,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
         return acc;
       };
 
-      return IO::ReadCsvAsLines<actMapType, actMapType>(csv_stream, map_reduction_operation);
+      return IO::ReadCsvAsLines<actMapType, actMapType>(file_stream, map_reduction_operation);
     };
     const std::string print_string = std::string(
-        "map of activation values retrieved from csv file with rows in the format \"eleid: time_1, "
-        "act_value_1; time_2, act_value_2; ...\"");
+        "map of activation values retrieved from pattern file with rows in the format \"eleid: "
+        "time_1, act_value_1; time_2, act_value_2; ...\"");
 
     std::vector<Teuchos::RCP<INPUT::LineComponent>> activation_map;
-    activation_map.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent(
-        "ACTCSV", "csv file for time- and space-dependency of muscle activation")));
+    activation_map.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("MAPFILE",
+        "pattern file containing a map of elementwise-defined discrete values for time- and "
+        "space-dependency of muscle activation")));
     activation_map.emplace_back(
-        Teuchos::rcp(new INPUT::ProcessedComponent("ACTCSV", operation, print_string, false)));
+        Teuchos::rcp(new INPUT::ProcessedComponent("MAPFILE", operation, print_string, false)));
     activation_evaluation_choices.emplace(
-        static_cast<int>(INPAR::MAT::ActivationType::map_from_csv),
-        std::make_pair("map", activation_map));
+        static_cast<int>(INPAR::MAT::ActivationType::map), std::make_pair("map", activation_map));
 
     m->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("ACTEVALTYPE",
         "type of time- and space-dependency of muscle activation: "
-        "SYMBOLIC_FUNCTION_OF_SPACE_TIME or MAP_FROM_CSV",
+        "function or map",
         false)));
     m->AddComponent(Teuchos::rcp(new INPUT::SwitchComponent("ACTEVALTYPE",
         INPAR::MAT::ActivationType::function_of_space_time, activation_evaluation_choices)));

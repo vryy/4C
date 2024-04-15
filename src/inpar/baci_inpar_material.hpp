@@ -344,9 +344,9 @@ namespace INPAR
     //! valid types for prescription of time-/space-dependent muscle activation
     enum ActivationType
     {
-      function_of_space_time,  ///< activation prescription via a symbolic function of space and
-                               ///< time
-      map_from_csv             ///< activation prescription via an input csv file
+      function_of_space_time,  ///< analytical activation prescription via a symbolic function of
+                               ///< space and time
+      map  ///< discrete elementwise-defined activation prescription via an input pattern file
     };
   }  // namespace MAT
 }  // namespace INPAR

@@ -382,7 +382,7 @@ double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const d
   return sigma_max_ft;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
+double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByMap(const double sigma_max,
     const std::unordered_map<int, std::vector<std::pair<double, double>>> &activation_map,
     const double t_current, const int activation_map_key)
 {
@@ -391,7 +391,7 @@ double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const d
 
   if (it == activation_map.end())
   {
-    dserror("Key %d not found in csv mapping data.", activation_map_key);
+    dserror("Key (element id) %d not found in activation map.", activation_map_key);
   }
   const double ft = LineralyInterpolateBetweenTimes(it->second, t_current);
 

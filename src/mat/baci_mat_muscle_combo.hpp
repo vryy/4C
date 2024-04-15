@@ -73,7 +73,7 @@ namespace MAT
        *
        * Depending on the type of activation prescription this is one of the options below:
        * - Id of the function in the input file specifying an analytical function
-       * - Map retrieved from the csv file path in the input file specifying a discrete values.
+       * - Map retrieved from the pattern file path in the input file specifying a discrete values.
        *   The integer key refers to the elememt ids, the vector bundles time-activation pairs.
        */
       using ActivationParameterVariant = std::variant<std::monostate, const int,
@@ -84,7 +84,7 @@ namespace MAT
       const double density_;  ///< density
       //@}
 
-    };  // end class Muscle_Combo
+    };  // end class MuscleCombo
   }     // end namespace PAR
 
 
