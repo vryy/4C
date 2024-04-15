@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Membrane_tri3Type DRT::ELEMENTS::Membrane_tri3Type::instance_;
+DRT::ELEMENTS::MembraneTri3Type DRT::ELEMENTS::MembraneTri3Type::instance_;
 
-DRT::ELEMENTS::Membrane_tri3Type& DRT::ELEMENTS::Membrane_tri3Type::Instance() { return instance_; }
+DRT::ELEMENTS::MembraneTri3Type& DRT::ELEMENTS::MembraneTri3Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_tri3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneTri3Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>* object =
       new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>(-1, -1);
@@ -31,7 +31,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_tri3Type::Create(const std::vecto
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri3Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneTri3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE3" && eledistype == "TRI3")
@@ -43,14 +43,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri3Type::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri3Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneTri3Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::Membrane_tri3Type::NodalBlockInformation(
+void DRT::ELEMENTS::MembraneTri3Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
@@ -58,13 +58,13 @@ void DRT::ELEMENTS::Membrane_tri3Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_tri3Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::MembraneTri3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::Membrane_tri3Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneTri3Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE3"];
@@ -87,11 +87,11 @@ void DRT::ELEMENTS::Membrane_tri3Type::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  |  TRI 6 Element                                          fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Membrane_tri6Type DRT::ELEMENTS::Membrane_tri6Type::instance_;
+DRT::ELEMENTS::MembraneTri6Type DRT::ELEMENTS::MembraneTri6Type::instance_;
 
-DRT::ELEMENTS::Membrane_tri6Type& DRT::ELEMENTS::Membrane_tri6Type::Instance() { return instance_; }
+DRT::ELEMENTS::MembraneTri6Type& DRT::ELEMENTS::MembraneTri6Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_tri6Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneTri6Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>* object =
       new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>(-1, -1);
@@ -99,7 +99,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_tri6Type::Create(const std::vecto
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri6Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneTri6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE6" && eledistype == "TRI6")
@@ -111,14 +111,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri6Type::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri6Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneTri6Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::Membrane_tri6Type::NodalBlockInformation(
+void DRT::ELEMENTS::MembraneTri6Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
@@ -126,13 +126,13 @@ void DRT::ELEMENTS::Membrane_tri6Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_tri6Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::MembraneTri6Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::Membrane_tri6Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneTri6Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE6"];
@@ -155,14 +155,11 @@ void DRT::ELEMENTS::Membrane_tri6Type::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Membrane_quad4Type DRT::ELEMENTS::Membrane_quad4Type::instance_;
+DRT::ELEMENTS::MembraneQuad4Type DRT::ELEMENTS::MembraneQuad4Type::instance_;
 
-DRT::ELEMENTS::Membrane_quad4Type& DRT::ELEMENTS::Membrane_quad4Type::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::MembraneQuad4Type& DRT::ELEMENTS::MembraneQuad4Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_quad4Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneQuad4Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>* object =
       new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>(-1, -1);
@@ -170,7 +167,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_quad4Type::Create(const std::vect
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad4Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneQuad4Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE4" && eledistype == "QUAD4")
@@ -182,14 +179,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad4Type::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad4Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneQuad4Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::Membrane_quad4Type::NodalBlockInformation(
+void DRT::ELEMENTS::MembraneQuad4Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
@@ -197,13 +194,13 @@ void DRT::ELEMENTS::Membrane_quad4Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_quad4Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::MembraneQuad4Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::Membrane_quad4Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneQuad4Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE4"];
@@ -226,14 +223,11 @@ void DRT::ELEMENTS::Membrane_quad4Type::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  |  QUAD 9 Element                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Membrane_quad9Type DRT::ELEMENTS::Membrane_quad9Type::instance_;
+DRT::ELEMENTS::MembraneQuad9Type DRT::ELEMENTS::MembraneQuad9Type::instance_;
 
-DRT::ELEMENTS::Membrane_quad9Type& DRT::ELEMENTS::Membrane_quad9Type::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::MembraneQuad9Type& DRT::ELEMENTS::MembraneQuad9Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_quad9Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneQuad9Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>* object =
       new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>(-1, -1);
@@ -241,7 +235,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::Membrane_quad9Type::Create(const std::vect
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad9Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneQuad9Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE9" && eledistype == "QUAD9")
@@ -253,14 +247,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad9Type::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad9Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneQuad9Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
       Teuchos::rcp(new DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::Membrane_quad9Type::NodalBlockInformation(
+void DRT::ELEMENTS::MembraneQuad9Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;  // number of degrees of freedom per node
@@ -268,13 +262,13 @@ void DRT::ELEMENTS::Membrane_quad9Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_quad9Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::MembraneQuad9Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::Membrane_quad9Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneQuad9Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions["MEMBRANE9"];

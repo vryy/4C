@@ -214,7 +214,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   // p-block separated pattern = "full matrix pattern";                      // assembles the whole
   // u-p matrix
 
-  INPAR::FLUID::EOS_GP_Pattern eos_gp_pattern = fldpara_intface_->Face_EOS_GP_Pattern();
+  INPAR::FLUID::EosGpPattern eos_gp_pattern = fldpara_intface_->Face_EOS_GP_Pattern();
 
 
   int numblocks = 0;

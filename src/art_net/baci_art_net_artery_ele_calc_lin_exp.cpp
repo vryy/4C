@@ -295,7 +295,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Initial(Artery* ele,
   int myrank = discretization.Comm().MyPID();
   if (material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
-    const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
+    const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
     //    std::vector<int>::iterator it = lm.begin();
 
     if (myrank == nodes[0]->Owner())
@@ -438,7 +438,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
   // check here, if we really have an artery !!
   if (material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
-    const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
+    const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
     Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
@@ -936,7 +936,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   // check here, if we really have an artery !!
   if (material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
-    const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
+    const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
     Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
@@ -1177,7 +1177,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
   // check here, if we really have an artery !!
   if (material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
-    const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
+    const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
     Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
@@ -1559,7 +1559,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcPostprocessingValues(Arter
   // check here, if we really have an artery !!
   if (material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
-    const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
+    const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
     Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
@@ -1726,7 +1726,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
   // check here, if we really have an artery !!
   if (material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
-    const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
+    const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
     Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
     // Read in initial cross-sectional area at node 2

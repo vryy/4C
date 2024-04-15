@@ -606,7 +606,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
   Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
 
   // set verbosity
-  auto verbosityLevel = CORE::UTILS::IntegralValue<IO::verbositylevel>(
+  auto verbosityLevel = CORE::UTILS::IntegralValue<IO::Verbositylevel>(
       GLOBAL::Problem::Instance()->IOParams(), "VERBOSITY");
 
   switch (verbosityLevel)

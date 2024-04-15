@@ -272,7 +272,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool scre
   {
     if (myrank_ == 0 and screenoutput) IO::cout << "\t * 2/6 Cut_SelfCut ...      ";
 
-    point_pool->SetMergeStrategy(Pointpool_MergeStrategy::SelfCutLoad);
+    point_pool->SetMergeStrategy(PointpoolMergeStrategy::SelfCutLoad);
 
     SelfCut selfcut(*cut_mesh_[0], myrank_);
 
@@ -281,7 +281,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool scre
   else if (myrank_ == 0 and screenoutput)
     IO::cout << "\t *2/6 (Skip Cut_SelfCut) ...";
 
-  point_pool->SetMergeStrategy(Pointpool_MergeStrategy::NormalCutLoad);
+  point_pool->SetMergeStrategy(PointpoolMergeStrategy::NormalCutLoad);
 }
 
 /*------------------------------------------------------------------------------------------------*

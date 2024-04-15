@@ -36,9 +36,9 @@ namespace DRT
 
     */
     template <class so3_ele, CORE::FE::CellType distype>
-    class So3_Poro_P1_Scatra : public So3_Poro_P1<so3_ele, distype>
+    class So3PoroP1Scatra : public So3PoroP1<so3_ele, distype>
     {
-      typedef So3_Poro_P1<so3_ele, distype> my;
+      typedef So3PoroP1<so3_ele, distype> my;
 
      public:
       //@}
@@ -50,7 +50,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      So3_Poro_P1_Scatra(int id, int owner);
+      So3PoroP1Scatra(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -58,7 +58,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So3_Poro_P1_Scatra(const So3_Poro_P1_Scatra& old);
+      So3PoroP1Scatra(const So3PoroP1Scatra& old);
 
       //@}
 
@@ -124,7 +124,7 @@ namespace DRT
 
      protected:
       //! don't want = operator
-      So3_Poro_P1_Scatra& operator=(const So3_Poro_P1_Scatra& old);
+      So3PoroP1Scatra& operator=(const So3PoroP1Scatra& old);
 
     };  // class So3_Poro_P1_Scatra
 

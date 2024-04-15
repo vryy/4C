@@ -120,7 +120,7 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       fres_(Teuchos::null),
       freact_(Teuchos::null),
       updateprojection_(false),
-      stcscale_(CORE::UTILS::IntegralValue<INPAR::STR::STC_Scale>(sdynparams, "STC_SCALING")),
+      stcscale_(CORE::UTILS::IntegralValue<INPAR::STR::StcScale>(sdynparams, "STC_SCALING")),
       stclayer_(sdynparams.get<int>("STC_LAYER")),
       ptcdt_(sdynparams.get<double>("PTCDT")),
       dti_(1.0 / ptcdt_)
@@ -558,12 +558,12 @@ void STR::TimIntImpl::PrepareLineSearch()
   for (int i = 0; i < discret_->NumMyRowElements(); i++)
   {
     DRT::Element* actele = discret_->lRowElement(i);
-    DRT::ELEMENTS::So_hex8* ele_hex8 = dynamic_cast<DRT::ELEMENTS::So_hex8*>(actele);
+    DRT::ELEMENTS::SoHex8* ele_hex8 = dynamic_cast<DRT::ELEMENTS::SoHex8*>(actele);
     if ((ele_hex8 != nullptr && ele_hex8->HaveEAS() == true) ||
-        (actele->ElementType() == DRT::ELEMENTS::So_Hex8P1J1Type::Instance()) ||
-        (actele->ElementType() == DRT::ELEMENTS::So_shw6Type::Instance()))
+        (actele->ElementType() == DRT::ELEMENTS::SoHex8P1J1Type::Instance()) ||
+        (actele->ElementType() == DRT::ELEMENTS::SoShw6Type::Instance()))
       haveCondensationLocal = 1;
-    if (actele->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance())
+    if (actele->ElementType() == DRT::ELEMENTS::SoSh8p8Type::Instance())
       dserror(
           "no line search for this element implemented.\n"
           "Feel free to implement similar to hex8 with EAS");

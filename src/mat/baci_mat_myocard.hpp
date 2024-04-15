@@ -265,7 +265,7 @@ namespace MAT
     int nb_state_variables_;
 
     // Type of material model
-    Teuchos::RCP<Myocard_General> myocard_mat_;
+    Teuchos::RCP<MyocardGeneral> myocard_mat_;
 
     /// diffusion at element center
     bool diff_at_ele_center_;

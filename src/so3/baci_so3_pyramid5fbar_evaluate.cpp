@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -48,44 +48,44 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDOF_SOP5, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::So_pyramid5fbar::ActionType act = So_pyramid5fbar::none;
+  DRT::ELEMENTS::SoPyramid5fbar::ActionType act = SoPyramid5fbar::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_struct_linstiff")
-    act = So_pyramid5fbar::calc_struct_linstiff;
+    act = SoPyramid5fbar::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
-    act = So_pyramid5fbar::calc_struct_nlnstiff;
+    act = SoPyramid5fbar::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
-    act = So_pyramid5fbar::calc_struct_internalforce;
+    act = SoPyramid5fbar::calc_struct_internalforce;
   else if (action == "calc_struct_linstiffmass")
-    act = So_pyramid5fbar::calc_struct_linstiffmass;
+    act = SoPyramid5fbar::calc_struct_linstiffmass;
   else if (action == "calc_struct_nlnstiffmass")
-    act = So_pyramid5fbar::calc_struct_nlnstiffmass;
+    act = SoPyramid5fbar::calc_struct_nlnstiffmass;
   else if (action == "calc_struct_nlnstifflmass")
-    act = So_pyramid5fbar::calc_struct_nlnstifflmass;
+    act = SoPyramid5fbar::calc_struct_nlnstifflmass;
   else if (action == "calc_struct_stress")
-    act = So_pyramid5fbar::calc_struct_stress;
+    act = SoPyramid5fbar::calc_struct_stress;
   else if (action == "calc_struct_eleload")
-    act = So_pyramid5fbar::calc_struct_eleload;
+    act = SoPyramid5fbar::calc_struct_eleload;
   else if (action == "calc_struct_fsiload")
-    act = So_pyramid5fbar::calc_struct_fsiload;
+    act = SoPyramid5fbar::calc_struct_fsiload;
   else if (action == "calc_struct_update_istep")
-    act = So_pyramid5fbar::calc_struct_update_istep;
+    act = SoPyramid5fbar::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
-    act = So_pyramid5fbar::calc_struct_reset_istep;
+    act = SoPyramid5fbar::calc_struct_reset_istep;
   else if (action == "calc_struct_reset_all")
-    act = So_pyramid5fbar::calc_struct_reset_all;
+    act = SoPyramid5fbar::calc_struct_reset_all;
   else if (action == "multi_readrestart")
-    act = So_pyramid5fbar::multi_readrestart;
+    act = SoPyramid5fbar::multi_readrestart;
   else if (action == "multi_calc_dens")
-    act = So_pyramid5fbar::multi_calc_dens;
+    act = SoPyramid5fbar::multi_calc_dens;
   else if (action == "calc_struct_prestress_update")
-    act = So_pyramid5fbar::prestress_update;
+    act = SoPyramid5fbar::prestress_update;
   else if (action == "calc_struct_energy")
-    act = So_pyramid5::calc_struct_energy;
+    act = SoPyramid5::calc_struct_energy;
   else if (action == "calc_struct_recover")
     return 0;
   else if (action == "calc_struct_predict")
@@ -499,7 +499,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)           seitz 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5fbar::InitJacobianMapping()
+void DRT::ELEMENTS::SoPyramid5fbar::InitJacobianMapping()
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
   CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;
@@ -545,7 +545,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_pyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoPyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
@@ -645,11 +645,11 @@ int DRT::ELEMENTS::So_pyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& para
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                           // current displacements
-    std::vector<double>* vel,                                            // current velocities
-    std::vector<double>* acc,                                            // current accelerations
-    std::vector<double>& residual,                                       // current residual displ
+void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                          // current displacements
+    std::vector<double>* vel,                                           // current velocities
+    std::vector<double>* acc,                                           // current accelerations
+    std::vector<double>& residual,                                      // current residual displ
     std::vector<double>& dispmat,                                 // current material displacements
     CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,   // element mass matrix
@@ -1347,12 +1347,12 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_pyramid5fbarType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoPyramid5fbarType::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_pyramid5fbar*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoPyramid5fbar*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_pyramid5fbar* failed");
     actele->InitJacobianMapping();
   }
@@ -1363,7 +1363,7 @@ int DRT::ELEMENTS::So_pyramid5fbarType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  | compute def gradient at every gaussian point (protected) seitz 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5fbar::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoPyramid5fbar::DefGradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
@@ -1426,7 +1426,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::DefGradient(const std::vector<double>& disp
 /*------------------------------------------------------------------------*
  | compute Jac.mapping wrt deformed configuration (protected) seitz 03/15 |
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5fbar::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoPyramid5fbar::UpdateJacobianMapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();

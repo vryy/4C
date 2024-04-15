@@ -26,12 +26,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      * HEX8 element
      *----------------------------------------------------------------------*/
-    class So_hex8PlastType : public So_hex8Type
+    class SoHex8PlastType : public SoHex8Type
     {
      public:
       std::string Name() const override { return "So_hex8PlastType"; }
 
-      static So_hex8PlastType& Instance();
+      static SoHex8PlastType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -47,7 +47,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex8PlastType instance_;
+      static SoHex8PlastType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH8PLAST"; }
     };  // class So_hex8PlastType
@@ -56,12 +56,12 @@ namespace DRT
     /*----------------------------------------------------------------------------*
      * HEX18 Element
      *----------------------------------------------------------------------------*/
-    class So_hex18PlastType : public So_hex18Type
+    class SoHex18PlastType : public SoHex18Type
     {
      public:
       std::string Name() const override { return "So_hex18PlastType"; }
 
-      static So_hex18PlastType& Instance();
+      static SoHex18PlastType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -77,7 +77,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex18PlastType instance_;
+      static SoHex18PlastType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH18PLAST"; }
     };  // class So_hex18PlastType
@@ -86,12 +86,12 @@ namespace DRT
     /*----------------------------------------------------------------------------*
      * HEX27 Element
      *----------------------------------------------------------------------------*/
-    class So_hex27PlastType : public So_hex27Type
+    class SoHex27PlastType : public SoHex27Type
     {
      public:
       std::string Name() const override { return "So_hex27PlastType"; }
 
-      static So_hex27PlastType& Instance();
+      static SoHex27PlastType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -107,7 +107,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex27PlastType instance_;
+      static SoHex27PlastType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH27PLAST"; }
     };  // class So_hex27PlastType
@@ -116,12 +116,12 @@ namespace DRT
     /*----------------------------------------------------------------------------*
      * TET4 Element
      *----------------------------------------------------------------------------*/
-    class So_tet4PlastType : public So_tet4Type
+    class SoTet4PlastType : public SoTet4Type
     {
      public:
       std::string Name() const override { return "So_tet4PlastType"; }
 
-      static So_tet4PlastType& Instance();
+      static SoTet4PlastType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -137,7 +137,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet4PlastType instance_;
+      static SoTet4PlastType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT4PLAST"; }
     };  // class So_tet4PlastType
@@ -146,12 +146,12 @@ namespace DRT
     /*----------------------------------------------------------------------------*
      * NURBS27 Element
      *----------------------------------------------------------------------------*/
-    class So_nurbs27PlastType : public NURBS::So_nurbs27Type
+    class SoNurbs27PlastType : public NURBS::SoNurbs27Type
     {
      public:
       std::string Name() const override { return "So_nurbs27PlastType"; }
 
-      static So_nurbs27PlastType& Instance();
+      static SoNurbs27PlastType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -167,7 +167,7 @@ namespace DRT
           override;
 
      private:
-      static So_nurbs27PlastType instance_;
+      static SoNurbs27PlastType instance_;
 
       std::string GetElementTypeString() const { return "SONURBS27PLAST"; }
     };  // class So_nurbs27PlastType

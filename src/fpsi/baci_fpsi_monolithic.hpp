@@ -63,7 +63,7 @@ namespace FSI
 
 namespace FPSI
 {
-  class MonolithicBase : public FPSI_Base
+  class MonolithicBase : public FpsiBase
   {
    public:
     //! ctor

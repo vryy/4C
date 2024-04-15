@@ -1092,7 +1092,7 @@ namespace FLD
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)
     {
-      enum format
+      enum Format
       {
         write_single_record,
         write_multiple_records,

@@ -422,7 +422,7 @@ namespace CORE::GEO
           vc_sets_outside_;  ///< connected sets of volume-cells with outside position
 
 
-      CORE::GEN::pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
+      CORE::GEN::Pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
           bcell_sets_;
     };
 
@@ -615,7 +615,7 @@ namespace CORE::GEO
       std::vector<plain_volumecell_set>
           connected_vc_sets_outside_;  ///< connected volume-cells with outside position
 
-      CORE::GEN::pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
+      CORE::GEN::Pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
           connected_bcell_sets_;
 
       std::vector<Element*> subelements_;  ///< the quadratic element's linear sub-elements

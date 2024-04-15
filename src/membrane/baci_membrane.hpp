@@ -61,10 +61,10 @@ namespace DRT
     {
      public:
       //! @name Friends
-      friend class Membrane_tri3Type;
-      friend class Membrane_tri6Type;
-      friend class Membrane_quad4Type;
-      friend class Membrane_quad9Type;
+      friend class MembraneTri3Type;
+      friend class MembraneTri6Type;
+      friend class MembraneQuad4Type;
+      friend class MembraneQuad9Type;
       template <CORE::FE::CellType distype2>
       friend class MembraneLine;
 
@@ -150,19 +150,19 @@ namespace DRT
         {
           case CORE::FE::CellType::tri3:
           {
-            return Membrane_tri3Type::Instance().UniqueParObjectId();
+            return MembraneTri3Type::Instance().UniqueParObjectId();
           }
           case CORE::FE::CellType::tri6:
           {
-            return Membrane_tri6Type::Instance().UniqueParObjectId();
+            return MembraneTri6Type::Instance().UniqueParObjectId();
           }
           case CORE::FE::CellType::quad4:
           {
-            return Membrane_quad4Type::Instance().UniqueParObjectId();
+            return MembraneQuad4Type::Instance().UniqueParObjectId();
           }
           case CORE::FE::CellType::quad9:
           {
-            return Membrane_quad9Type::Instance().UniqueParObjectId();
+            return MembraneQuad9Type::Instance().UniqueParObjectId();
           }
           default:
             dserror("unknown element type!");
@@ -239,22 +239,22 @@ namespace DRT
         {
           case CORE::FE::CellType::tri3:
           {
-            return Membrane_tri3Type::Instance();
+            return MembraneTri3Type::Instance();
           }
           break;
           case CORE::FE::CellType::tri6:
           {
-            return Membrane_tri6Type::Instance();
+            return MembraneTri6Type::Instance();
           }
           break;
           case CORE::FE::CellType::quad4:
           {
-            return Membrane_quad4Type::Instance();
+            return MembraneQuad4Type::Instance();
           }
           break;
           case CORE::FE::CellType::quad9:
           {
-            return Membrane_quad9Type::Instance();
+            return MembraneQuad9Type::Instance();
           }
           break;
           default:
@@ -262,7 +262,7 @@ namespace DRT
             break;
         }
         // Intel compiler needs a return so
-        return Membrane_quad4Type::Instance();
+        return MembraneQuad4Type::Instance();
       };
 
       /*!
@@ -511,12 +511,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  LINE 2 Element                                         fbraeu 06/16 |
      *----------------------------------------------------------------------*/
-    class Membrane_line2Type : public DRT::ElementType
+    class MembraneLine2Type : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "Membrane_line2Type"; }
 
-      static Membrane_line2Type& Instance();
+      static MembraneLine2Type& Instance();
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
@@ -534,18 +534,18 @@ namespace DRT
       }
 
      private:
-      static Membrane_line2Type instance_;
+      static MembraneLine2Type instance_;
     };
 
     /*----------------------------------------------------------------------*
      |  LINE 3 Element                                         fbraeu 06/16 |
      *----------------------------------------------------------------------*/
-    class Membrane_line3Type : public DRT::ElementType
+    class MembraneLine3Type : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "Membrane_line3Type"; }
 
-      static Membrane_line3Type& Instance();
+      static MembraneLine3Type& Instance();
 
       Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
@@ -563,7 +563,7 @@ namespace DRT
       }
 
      private:
-      static Membrane_line3Type instance_;
+      static MembraneLine3Type instance_;
     };
 
     /*!
@@ -580,8 +580,8 @@ namespace DRT
     {
      public:
       //! @name Friends
-      friend class Membrane_line2Type;
-      friend class Membrane_line3Type;
+      friend class MembraneLine2Type;
+      friend class MembraneLine3Type;
 
       //! @name Constructors and destructors and related methods
 
@@ -634,11 +634,11 @@ namespace DRT
         {
           case CORE::FE::CellType::line2:
           {
-            return Membrane_line2Type::Instance().UniqueParObjectId();
+            return MembraneLine2Type::Instance().UniqueParObjectId();
           }
           case CORE::FE::CellType::line3:
           {
-            return Membrane_line3Type::Instance().UniqueParObjectId();
+            return MembraneLine3Type::Instance().UniqueParObjectId();
           }
           default:
             dserror("unknown line type!");
@@ -722,18 +722,18 @@ namespace DRT
         {
           case CORE::FE::CellType::line2:
           {
-            return Membrane_line2Type::Instance();
+            return MembraneLine2Type::Instance();
           }
           case CORE::FE::CellType::line3:
           {
-            return Membrane_line3Type::Instance();
+            return MembraneLine3Type::Instance();
           }
           default:
             dserror("unknown line type!");
             break;
         }
         // Intel compiler needs a return so
-        return Membrane_line2Type::Instance();
+        return MembraneLine2Type::Instance();
       };
 
       //@}

@@ -17,13 +17,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_line2Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneLine2Type::Create(const int id, const int owner)
 {
   // return Teuchos::rcp( new MembraneLine( id, owner ) );
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_line3Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneLine3Type::Create(const int id, const int owner)
 {
   // return Teuchos::rcp( new MembraneLine( id, owner ) );
   return Teuchos::null;

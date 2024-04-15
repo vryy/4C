@@ -13,6 +13,10 @@
 
 #include "baci_config.hpp"
 
+// Do not try to lint the following names. They are all defined by Trilinos. Including this header
+// and not using all identifiers will lead to clang-tidy thinking these are our own names.
+// NOLINTBEGIN(readability-identifier-naming)
+
 class Epetra_BlockMap;
 class Epetra_Map;
 class Epetra_Vector;
@@ -71,5 +75,7 @@ namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
+// NOLINTEND(readability-identifier-naming)
 
 #endif

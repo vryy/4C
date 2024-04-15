@@ -22,10 +22,10 @@ CONTACT::IntegratorNitscheFpi::IntegratorNitscheFpi(
     Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : IntegratorNitschePoro(params, eletype, comm), ele_contact_state_(-2)
 {
-  if (imortar_.isParameter("XFluid_Contact_Comm"))
-    xf_c_comm_ = imortar_.get<Teuchos::RCP<XFEM::XFluid_Contact_Comm>>("XFluid_Contact_Comm");
+  if (imortar_.isParameter("XFluidContactComm"))
+    xf_c_comm_ = imortar_.get<Teuchos::RCP<XFEM::XFluidContactComm>>("XFluidContactComm");
   else
-    dserror("Couldn't find XFluid_Contact_Comm!");
+    dserror("Couldn't find XFluidContactComm!");
 }
 
 /*----------------------------------------------------------------------*
@@ -66,18 +66,18 @@ void CONTACT::IntegratorNitscheFpi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-    double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
-    std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-    CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-    std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-    std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi)
+    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
+    CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
 {
   // Here the consistent element normal is use to allow for a continous transition between FSI and
   // Contact
   double n[3];
   sele.ComputeUnitNormalAtXi(sxi, n);
-  std::vector<CORE::GEN::pairedvector<int, double>> dn(3, sele.NumNode() * 3);
+  std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.NumNode() * 3);
   dynamic_cast<CONTACT::Element&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
   GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt, gap,
@@ -89,12 +89,12 @@ void CONTACT::IntegratorNitscheFpi::IntegrateGP_3D(MORTAR::Element& sele, MORTAR
 template <int dim>
 void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxi,
     const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, const double jac,
-    const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-    const CORE::GEN::pairedvector<int, double>& dgapgp, const double* gpn,
-    std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& dmxi, const double jac,
+    const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
+    const CORE::GEN::Pairedvector<int, double>& dgapgp, const double* gpn,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
   // first rough check
   if (gap > 10 * std::max(sele.MaxEdgeSize(), mele.MaxEdgeSize())) return;
@@ -204,7 +204,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 
   if (snn_pengap >= normal_contact_transition && !FSI_integrated)
   {
-    CORE::GEN::pairedvector<int, double> lin_fluid_traction(0);
+    CORE::GEN::Pairedvector<int, double> lin_fluid_traction(0);
     IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
         normal_contact_transition, lin_fluid_traction, lin_fluid_traction, normal, dnmap_unit);
 #ifdef WRITE_GMSH
@@ -231,10 +231,10 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
   }
 
   double cauchy_nn_weighted_average = 0.;
-  CORE::GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
+  CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
       sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
       mele.MoData().ParentDisp().size());
-  CORE::GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
+  CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
       sele.MoData().ParentPFPres().size() + mele.MoData().ParentPFPres().size());
 
   SoEleCauchy<dim>(sele, sxi, dsxi, wgt, normal, dnmap_unit, normal, dnmap_unit, ws,
@@ -245,7 +245,7 @@ void CONTACT::IntegratorNitscheFpi::GPTSForces(MORTAR::Element& sele, MORTAR::El
       cauchy_nn_weighted_average_deriv_p);
 
   const double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
-  CORE::GEN::pairedvector<int, double> d_snn_av_pen_gap(
+  CORE::GEN::Pairedvector<int, double> d_snn_av_pen_gap(
       cauchy_nn_weighted_average_deriv_d.size() + dgapgp.size());
   for (const auto& p : cauchy_nn_weighted_average_deriv_d) d_snn_av_pen_gap[p.first] += p.second;
   for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;

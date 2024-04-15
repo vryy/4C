@@ -755,7 +755,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarMatrixP();
 
   // get info about STC feature
-  INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
+  INPAR::STR::StcScale stcalgo = StructureField()->GetSTCAlgo();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat = Teuchos::null;
   if (stcalgo != INPAR::STR::stc_none) stcmat = StructureField()->GetSTCMat();
 
@@ -1060,7 +1060,7 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
 
     // get info about STC feature and unscale solution if necessary
-    INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
+    INPAR::STR::StcScale stcalgo = StructureField()->GetSTCAlgo();
     if (stcalgo != INPAR::STR::stc_none)
     {
       StructureField()->GetSTCMat()->Multiply(false, *sy, *sy);

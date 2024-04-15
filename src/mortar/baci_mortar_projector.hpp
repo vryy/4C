@@ -64,11 +64,11 @@ namespace MORTAR
 
     virtual bool ProjectSNodeByMNodalNormalLin(MORTAR::Node& snode, MORTAR::Element& mele,
         double* xi, double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) = 0;
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin) = 0;
 
     virtual bool ProjectSNodeByMNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) = 0;
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin) = 0;
   };  // class Projector
 
   /*!
@@ -201,12 +201,12 @@ namespace MORTAR
     // TODO explanation
     bool ProjectSNodeByMNodalNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override;
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin) override;
 
     // TODO explanation
     bool ProjectSNodeByMNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override;
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin) override;
 
    protected:
     bool ProjectSNodeByMNormal3D(
@@ -214,22 +214,22 @@ namespace MORTAR
 
     bool ProjectSNodeByMNormal3DLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
 
     bool ProjectSNodeByMNormal2D(
         MORTAR::Node& snode, MORTAR::Element& mele, double* xi, double* normal, double& dist);
 
     bool ProjectSNodeByMNodalNormal2DLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
 
     bool ProjectSNodeByMNodalNormal3DLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
 
     bool ProjectSNodeByMNormal2DLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief Evaluate F for nodal normal projection
@@ -275,14 +275,14 @@ namespace MORTAR
 
   */
   template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-  class ProjectorCalc_EleBased : public Projector
+  class ProjectorCalcEleBased : public Projector
   {
    public:
     // constructor
-    ProjectorCalc_EleBased();
+    ProjectorCalcEleBased();
 
     /// Singleton access method
-    static ProjectorCalc_EleBased<distypeS, distypeM>* Instance(
+    static ProjectorCalcEleBased<distypeS, distypeM>* Instance(
         CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
     //! ns_: number of slave element nodes
@@ -409,7 +409,7 @@ namespace MORTAR
 
     bool ProjectSNodeByMNodalNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin) override
     {
       dserror("ERROR");
       return false;
@@ -417,7 +417,7 @@ namespace MORTAR
 
     bool ProjectSNodeByMNormalLin(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin) override
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin) override
     {
       dserror("ERROR");
       return false;

@@ -361,7 +361,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         // standard evaluation (incompressible, plane stress)
         if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
         {
-          Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(DRT::Element::Material(), true)
+          Teuchos::rcp_dynamic_cast<MAT::MembraneElastHyper>(DRT::Element::Material(), true)
               ->StrainEnergy(cauchygreen_loc, psi, gp, Id());
         }
         else

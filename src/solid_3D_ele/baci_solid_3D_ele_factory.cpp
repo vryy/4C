@@ -147,12 +147,12 @@ namespace
    * @tparam typename : Template parameter that may be a valid type or not
    */
   template <typename, typename = void>
-  struct have_formulation : std::false_type
+  struct HaveFormulation : std::false_type
   {
   };
 
   template <typename T>
-  struct have_formulation<T, std::void_t<typename T::type>> : std::true_type
+  struct HaveFormulation<T, std::void_t<typename T::type>> : std::true_type
   {
   };
 }  // namespace
@@ -178,7 +178,7 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
                           constexpr INPAR::STR::KinemType kinemtype_c = kinemtype_t();
                           constexpr ElementTechnology eletech_c = eletech_t();
                           constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
-                          if constexpr (have_formulation<SolidCalculationFormulation<celltype_c,
+                          if constexpr (HaveFormulation<SolidCalculationFormulation<celltype_c,
                                             kinemtype_c, eletech_c, prestress_tech_c>>::value)
                           {
                             return typename SolidCalculationFormulation<celltype_c, kinemtype_c,

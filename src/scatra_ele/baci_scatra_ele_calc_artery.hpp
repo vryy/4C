@@ -191,7 +191,7 @@ namespace DRT
               ele->Material(1)->MaterialType());
 
         // here we rely that the Artery material has been added as second material
-        arterymat_ = Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(ele->Material(1));
+        arterymat_ = Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(ele->Material(1));
 
         materialset_ = true;
       }
@@ -206,7 +206,7 @@ namespace DRT
       double Visc() { return ArteryMat()->Viscosity(); }
 
       //! return artery material
-      Teuchos::RCP<MAT::Cnst_1d_art> ArteryMat()
+      Teuchos::RCP<MAT::Cnst1dArt> ArteryMat()
       {
         if (!materialset_) dserror("Artery Material has not yet been set in Variablemanager");
 
@@ -215,7 +215,7 @@ namespace DRT
 
      private:
       //! artery material
-      Teuchos::RCP<MAT::Cnst_1d_art> arterymat_;
+      Teuchos::RCP<MAT::Cnst1dArt> arterymat_;
 
       //! check if artery material has been set
       bool materialset_;

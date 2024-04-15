@@ -15,12 +15,11 @@
 
 #include "baci_linalg_fixedsizematrix.hpp"
 
+#include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
-
-class Epetra_Comm;
 
 FOUR_C_NAMESPACE_OPEN
 

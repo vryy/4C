@@ -17,18 +17,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-class Myocard_General
+class MyocardGeneral
 
 {
  public:
   /// construct empty material object
-  Myocard_General(){};
+  MyocardGeneral(){};
 
   /// construct empty material object
-  explicit Myocard_General(const double eps_deriv_myocard, const std::string tissue);
+  explicit MyocardGeneral(const double eps_deriv_myocard, const std::string tissue);
 
   /// destructor
-  virtual ~Myocard_General() = default;
+  virtual ~MyocardGeneral() = default;
   /// compute reaction coefficient for multiple Gauss points
   virtual double ReaCoeff(const double phi, const double dt, int gp)
   {

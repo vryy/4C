@@ -51,14 +51,14 @@ namespace CORE::LINALG
 
 namespace FS3I
 {
-  class FS3I_Base
+  class FS3IBase
   {
    public:
     /// constructor of base class
-    FS3I_Base();
+    FS3IBase();
 
     /// destructor of base class
-    virtual ~FS3I_Base() = default;
+    virtual ~FS3IBase() = default;
 
     /// initialize this class
     virtual void Init();

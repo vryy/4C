@@ -32,14 +32,14 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    class So_sh8;
+    class SoSh8;
 
-    class So_sh8p8Type : public So_sh8Type
+    class SoSh8p8Type : public SoSh8Type
     {
      public:
       std::string Name() const override { return "So_sh8p8Type"; }
 
-      static So_sh8p8Type& Instance();
+      static SoSh8p8Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -61,7 +61,7 @@ namespace DRT
           override;
 
      private:
-      static So_sh8p8Type instance_;
+      static SoSh8p8Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDSH8P8"; }
     };
@@ -91,12 +91,12 @@ namespace DRT
     ///
     /// \author bborn
     /// \date 03/09
-    class So_sh8p8 : public So_sh8
+    class SoSh8p8 : public SoSh8
     {
      public:
       /// @name Friends
       //@{
-      friend class So_sh8p8Type;
+      friend class SoSh8p8Type;
       friend class Soh8Surface;
       friend class Soh8Line;
       //@}
@@ -197,14 +197,14 @@ namespace DRT
       //@{
 
       /// Standard Constructor
-      So_sh8p8(int id,  ///<  A unique global ID
-          int owner     ///< elements owning processor
+      SoSh8p8(int id,  ///<  A unique global ID
+          int owner    ///< elements owning processor
       );
 
       /// Copy Constructor
       ///
       /// Makes a deep copy of a Element
-      So_sh8p8(const So_sh8p8& old);
+      SoSh8p8(const SoSh8p8& old);
 
       /// Deep copy this instance of Solid3 and return pointer to the copy
       ///
@@ -216,10 +216,7 @@ namespace DRT
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of this file.
-      int UniqueParObjectId() const override
-      {
-        return So_sh8p8Type::Instance().UniqueParObjectId();
-      }
+      int UniqueParObjectId() const override { return SoSh8p8Type::Instance().UniqueParObjectId(); }
 
       /// Pack this class so it can be communicated
       ///
@@ -234,7 +231,7 @@ namespace DRT
       /// Print this element
       void Print(std::ostream& os) const override;
 
-      So_sh8p8Type& ElementType() const override { return So_sh8p8Type::Instance(); }
+      SoSh8p8Type& ElementType() const override { return SoSh8p8Type::Instance(); }
 
       //@}
 
@@ -334,7 +331,7 @@ namespace DRT
 
      private:
       /// don't want = operator
-      So_sh8p8& operator=(const So_sh8p8& old);
+      SoSh8p8& operator=(const SoSh8p8& old);
 
       /// kind of stabilisation, cf. #StabilisationType
       StabilisationType stab_;
@@ -892,7 +889,7 @@ namespace DRT
 
       //! Calculate the STC matrix
       virtual void CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>& elemat1,
-          const INPAR::STR::STC_Scale stc_scaling, const int stc_layer, std::vector<int>& lm,
+          const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
           DRT::Discretization& discretization, bool calcinverse);
 
 

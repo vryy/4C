@@ -151,7 +151,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
   if (material->MaterialType() != INPAR::MAT::m_cnst_art) dserror("Wrong material type for artery");
 
   // cast the material to artery material material
-  const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
+  const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
 
   if (actmat->IsCollapsed()) return;
 
@@ -227,7 +227,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateFlow(Artery* ele,
   if (material->MaterialType() != INPAR::MAT::m_cnst_art) dserror("Wrong material type for artery");
 
   // cast the material to artery material material
-  const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
+  const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
 
   // Read in diameter
   const double diam = actmat->Diam();

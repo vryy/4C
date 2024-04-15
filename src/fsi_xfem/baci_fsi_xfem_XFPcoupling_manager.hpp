@@ -32,11 +32,11 @@ namespace XFEM
   class ConditionManager;
   class MeshCouplingFPI;
 
-  class XFPCoupling_Manager : public Coupling_Manager, public Coupling_Comm_Manager
+  class XfpCouplingManager : public CouplingManager, public CouplingCommManager
   {
    public:
     /// constructor
-    explicit XFPCoupling_Manager(Teuchos::RCP<ConditionManager> condmanager,
+    explicit XfpCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
         Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid,
         std::vector<int> idx);
 

@@ -337,7 +337,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroSingleReaction::CreateMaterial()
 /*----------------------------------------------------------------------*
  *  translate coupling type                             vuong 08/16      |
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroSingleReaction::porofluid_reaction_coupling
+MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling
 MAT::PAR::FluidPoroSingleReaction::SetCouplingType(Teuchos::RCP<MAT::PAR::Material> matdata)
 {
   if (*(matdata->Get<std::string>("COUPLING")) == "scalar_by_function")

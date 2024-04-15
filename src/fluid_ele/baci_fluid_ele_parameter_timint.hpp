@@ -112,7 +112,7 @@ namespace DRT
       //! time algorithm
       INPAR::FLUID::TimeIntegrationScheme timealgo_;
       //! One Step Theta discretization for the continuity and pressure.
-      INPAR::FLUID::OST_Cont_and_Press ostalgo_;
+      INPAR::FLUID::OstContAndPress ostalgo_;
       //! New One Step Theta implementation flag
       bool ostnew_;
       //! actual time to evaluate the body BC

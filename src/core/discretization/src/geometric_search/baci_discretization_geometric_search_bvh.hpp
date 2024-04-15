@@ -45,7 +45,7 @@ namespace CORE::GEOMETRICSEARCH
   std::pair<std::vector<int>, std::vector<int>> CollisionSearch(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
-      const IO::verbositylevel verbosity);
+      const IO::Verbositylevel verbosity);
 
 }  // namespace CORE::GEOMETRICSEARCH
 

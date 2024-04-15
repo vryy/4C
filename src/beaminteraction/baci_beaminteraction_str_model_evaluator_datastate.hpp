@@ -18,10 +18,9 @@
 
 #include "baci_timestepping_mstep.hpp"
 
-#include <set>
+#include <Epetra_FEVector.h>
 
-// forward declaration
-class Epetra_FEVector;
+#include <set>
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -37,36 +37,36 @@ namespace MAT
     class Summand;
   }  // namespace ELASTIC
 
-  class Membrane_ElastHyper;
+  class MembraneElastHyper;
 
   namespace PAR
   {
-    class Membrane_ElastHyper : public MAT::PAR::ElastHyper
+    class MembraneElastHyper : public MAT::PAR::ElastHyper
     {
-      friend class MAT::Membrane_ElastHyper;
+      friend class MAT::MembraneElastHyper;
 
      public:
       /// standard constructor
-      Membrane_ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MembraneElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
-    };  // class Membrane_ElastHyper
+    };  // class MembraneElastHyper
 
   }  // namespace PAR
 
-  class Membrane_ElastHyperType : public CORE::COMM::ParObjectType
+  class MembraneElastHyperType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "Membrane_ElastHyperType"; }
 
-    static Membrane_ElastHyperType& Instance() { return instance_; };
+    static MembraneElastHyperType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Membrane_ElastHyperType instance_;
+    static MembraneElastHyperType instance_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -100,14 +100,14 @@ namespace MAT
   // forward declaration
   class Material;
 
-  class Membrane_ElastHyper : public ElastHyper, public MAT::MembraneMaterialLocalCoordinates
+  class MembraneElastHyper : public ElastHyper, public MAT::MembraneMaterialLocalCoordinates
   {
    public:
     /// construct empty material object
-    Membrane_ElastHyper();
+    MembraneElastHyper();
 
     /// construct the material object given material parameters
-    explicit Membrane_ElastHyper(MAT::PAR::Membrane_ElastHyper* params);
+    explicit MembraneElastHyper(MAT::PAR::MembraneElastHyper* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -118,7 +118,7 @@ namespace MAT
     /// top of parobject.H (this file) and should return it in this method.
     int UniqueParObjectId() const override
     {
-      return Membrane_ElastHyperType::Instance().UniqueParObjectId();
+      return MembraneElastHyperType::Instance().UniqueParObjectId();
     }
 
     /// \brief Pack this class so it can be communicated
@@ -154,7 +154,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new Membrane_ElastHyper(*this));
+      return Teuchos::rcp(new MembraneElastHyper(*this));
     }
 
     /// setup

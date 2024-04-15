@@ -86,7 +86,7 @@ namespace CORE::GEO
        *  \param point   (in) : Given global point object.
        *  \param floattype (in) : Floattype to compute geometric operations. */
       static Teuchos::RCP<Position> Create(const Element& element, const Point& point,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double);
 
       /** \brief build variant #2
        *
@@ -99,7 +99,7 @@ namespace CORE::GEO
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const Element& element,
           const CORE::LINALG::Matrix<rdim, 1>& xyz,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double);
       /** \brief build variant #3
        *
        *  \param xyze    (in) : Global nodal positions of the element.
@@ -111,13 +111,13 @@ namespace CORE::GEO
       template <unsigned rdim, unsigned cdim, unsigned rdim_2>
       static Teuchos::RCP<Position> Create(const CORE::LINALG::Matrix<rdim, cdim>& xyze,
           const CORE::LINALG::Matrix<rdim_2, 1>& xyz, const CORE::FE::CellType& distype,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double);
 
       /// \brief build variant #3-1 (CORE::LINALG::SerialDenseMatrix)
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const CORE::LINALG::SerialDenseMatrix& xyze,
           const CORE::LINALG::Matrix<rdim, 1>& xyz, const CORE::FE::CellType& distype,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double);
 
       /** \brief build variant #4
        *
@@ -131,7 +131,7 @@ namespace CORE::GEO
       static Teuchos::RCP<Position> Create(const std::vector<Node*> nodes,
           const CORE::LINALG::Matrix<rdim, 1>& xyz,
           CORE::FE::CellType distype = CORE::FE::CellType::dis_none,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double);
 
       /// @}
      public:
@@ -255,7 +255,7 @@ namespace CORE::GEO
     template <unsigned probdim, CORE::FE::CellType eletype,
         unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
         unsigned dim = CORE::FE::dim<eletype>,
-        INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
+        INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double>
     class PositionGeneric : public Position
     {
      public:
@@ -400,7 +400,7 @@ namespace CORE::GEO
     template <unsigned probdim, CORE::FE::CellType eletype,
         unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
         unsigned dim = CORE::FE::dim<eletype>,
-        INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
+        INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double>
     class ComputePosition
         : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
     {
@@ -446,7 +446,7 @@ namespace CORE::GEO
     template <unsigned probdim, CORE::FE::CellType eletype,
         unsigned numNodesElement = CORE::FE::num_nodes<eletype>,
         unsigned dim = CORE::FE::dim<eletype>,
-        INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
+        INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double>
     class ComputeEmbeddedPosition
         : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
     {
@@ -551,7 +551,7 @@ namespace CORE::GEO
        *  \param point   (in) : Given global point
        *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const Element& element, const Point& point,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const;
 
       /** \brief build variant #2
        *
@@ -560,7 +560,7 @@ namespace CORE::GEO
        *  \param xyz     (in) : Global coordinates of the given point
        *  *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const Element& element, const double* xyz,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const;
 
       /** \brief build variant #3
        *
@@ -570,7 +570,7 @@ namespace CORE::GEO
        *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const double* xyze, const double* xyz,
           const CORE::FE::CellType& distype,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const;
 
       /** \brief build variant #4
        *
@@ -580,14 +580,14 @@ namespace CORE::GEO
        *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const std::vector<Node*> nodes, const double* xyz,
           CORE::FE::CellType distype = CORE::FE::CellType::dis_none,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const;
 
       /// \brief specify general floattype for all geometric operations in CORE::GEO::CUT::POSITON
-      static void SpecifyGeneralPosFloattype(INPAR::CUT::CUT_Floattype floattype)
+      static void SpecifyGeneralPosFloattype(INPAR::CUT::CutFloattype floattype)
       {
         general_pos_floattype_ = floattype;
       }
-      static void SpecifyGeneralDistFloattype(INPAR::CUT::CUT_Floattype floattype)
+      static void SpecifyGeneralDistFloattype(INPAR::CUT::CutFloattype floattype)
       {
         general_dist_floattype_ = floattype;
       }
@@ -601,7 +601,7 @@ namespace CORE::GEO
        public:
         static Position* Create(const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
             const CORE::LINALG::Matrix<probdim, 1>& xyz,
-            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+            INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
           return nullptr;
         }
@@ -617,7 +617,7 @@ namespace CORE::GEO
        public:
         static Position* Create(const CORE::LINALG::Matrix<dim, numNodesElement>& xyze,
             const CORE::LINALG::Matrix<dim, 1>& xyz,
-            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+            INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
               "Wrong template combination: ProbDim must be unequal"
@@ -632,7 +632,7 @@ namespace CORE::GEO
        public:
         static Position* Create(const CORE::LINALG::Matrix<1, numNodesElement>& xyze,
             const CORE::LINALG::Matrix<1, 1>& xyz,
-            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+            INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
               "Wrong template combination: ProbDim must be larger"
@@ -647,7 +647,7 @@ namespace CORE::GEO
        public:
         static Position* Create(const CORE::LINALG::Matrix<1, numNodesElement>& xyze,
             const CORE::LINALG::Matrix<1, 1>& xyz,
-            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+            INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
               "Wrong template combination: ProbDim must be larger"
@@ -662,7 +662,7 @@ namespace CORE::GEO
        public:
         static Position* Create(const CORE::LINALG::Matrix<2, numNodesElement>& xyze,
             const CORE::LINALG::Matrix<2, 1>& xyz,
-            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+            INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
               "Wrong template combination: ProbDim must be larger"
@@ -678,7 +678,7 @@ namespace CORE::GEO
        public:
         static Position* Create(const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
             const CORE::LINALG::Matrix<probdim, 1>& xyz,
-            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+            INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
               "Wrong template combination: ProbDim must be equal"
@@ -697,7 +697,7 @@ namespace CORE::GEO
        public:
         static Position* Create(const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
             const CORE::LINALG::Matrix<probdim, 1>& xyz,
-            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+            INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
           switch (UseDistFloattype(floattype))
           {
@@ -727,7 +727,7 @@ namespace CORE::GEO
        public:
         static Position* Create(const CORE::LINALG::Matrix<dim, numNodesElement>& xyze,
             const CORE::LINALG::Matrix<dim, 1>& xyz,
-            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+            INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
           switch (UsePosFloattype(floattype))
           {
@@ -766,7 +766,7 @@ namespace CORE::GEO
       template <unsigned probdim, CORE::FE::CellType eletype, unsigned dim = CORE::FE::dim<eletype>,
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const
       {
         CORE::LINALG::Matrix<probdim, numNodesElement> xyze;
         element.Coordinates(xyze);
@@ -795,7 +795,7 @@ namespace CORE::GEO
       /// concrete create variant #1
       template <CORE::FE::CellType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const Point& point,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const
       {
         const int dim = CORE::FE::dim<eletype>;
         if (dim > probdim_)
@@ -835,7 +835,7 @@ namespace CORE::GEO
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(const Element& element,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
       {
         CORE::LINALG::Matrix<probdim, numNodesElement> xyze;
         element.Coordinates(xyze);
@@ -863,7 +863,7 @@ namespace CORE::GEO
       /// concrete create variant #2
       template <CORE::FE::CellType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const double* xyz,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const
       {
         const int dim = CORE::FE::dim<eletype>;
         if (dim > probdim_)
@@ -909,7 +909,7 @@ namespace CORE::GEO
       static Teuchos::RCP<Position> BuildPosition(
           const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
       {
         if (probdim > dim)
         {
@@ -934,7 +934,7 @@ namespace CORE::GEO
       /// concrete create variant #3
       template <CORE::FE::CellType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const double* xyze, const double* xyz,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const
       {
         const unsigned num_nodes_ele = CORE::FE::num_nodes<eletype>;
         switch (probdim_)
@@ -975,7 +975,7 @@ namespace CORE::GEO
           unsigned numNodesElement = CORE::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> BuildPosition(const std::vector<Node*> nodes,
           const CORE::LINALG::Matrix<probdim, 1>& xyz,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
       {
         if (not(nodes.size() == numNodesElement))
           dserror(
@@ -1014,7 +1014,7 @@ namespace CORE::GEO
       template <CORE::FE::CellType eletype>
       Teuchos::RCP<Position> CreateConcretePosition(const std::vector<Node*> nodes,
           const double* xyz,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) const
       {
         switch (probdim_)
         {
@@ -1039,12 +1039,12 @@ namespace CORE::GEO
       /// @}
 
       /*! \brief get general floattype for all geometric operations in CORE::GEO::CUT::POSITON*/
-      static INPAR::CUT::CUT_Floattype UsePosFloattype(INPAR::CUT::CUT_Floattype floattype);
-      static INPAR::CUT::CUT_Floattype UseDistFloattype(INPAR::CUT::CUT_Floattype floattype);
+      static INPAR::CUT::CutFloattype UsePosFloattype(INPAR::CUT::CutFloattype floattype);
+      static INPAR::CUT::CutFloattype UseDistFloattype(INPAR::CUT::CutFloattype floattype);
 
       /*! \brief general floattype for all geometric operations in CORE::GEO::CUT::POSITON*/
-      static INPAR::CUT::CUT_Floattype general_pos_floattype_;
-      static INPAR::CUT::CUT_Floattype general_dist_floattype_;
+      static INPAR::CUT::CutFloattype general_pos_floattype_;
+      static INPAR::CUT::CutFloattype general_dist_floattype_;
 
       /// problem dimension
       unsigned probdim_;

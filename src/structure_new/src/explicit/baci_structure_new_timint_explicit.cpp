@@ -208,7 +208,7 @@ void STR::TIMINT::Explicit::PrintStep()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::STR::STC_Scale STR::TIMINT::Explicit::GetSTCAlgo()
+INPAR::STR::StcScale STR::TIMINT::Explicit::GetSTCAlgo()
 {
   CheckInitSetup();
   dserror("GetSTCAlgo() has not been tested for explicit time integration.");

@@ -28,7 +28,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Wall1Poro<distype>::PreEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   if (scatra_coupling_)
@@ -69,7 +69,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -137,7 +137,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Wall1Poro<distype>::MyEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -520,7 +520,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::NonlinearStiffnessPoroelast(
+void DRT::ELEMENTS::Wall1Poro<distype>::NonlinearStiffnessPoroelast(
     std::vector<int>& lm,                                 // location matrix
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,         // current displacements
     CORE::LINALG::Matrix<numdim_, numnod_>& vel,          // current velocities
@@ -567,7 +567,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::NonlinearStiffnessPoroelast(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::NonlinearStiffnessPoroelastPressureBased(
+void DRT::ELEMENTS::Wall1Poro<distype>::NonlinearStiffnessPoroelastPressureBased(
     std::vector<int>& lm,                          // location matrix
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,  // current displacements
     const std::vector<double>& ephi,               // primary variable for poro-multiphase flow
@@ -600,7 +600,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::NonlinearStiffnessPoroelastPressureBase
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Wall1Poro<distype>::GaussPointLoop(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
     const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp,
@@ -735,7 +735,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(Teuchos::ParameterList& 
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopPressureBased(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Wall1Poro<distype>::GaussPointLoopPressureBased(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
     const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp, const std::vector<double>& ephi,
@@ -862,7 +862,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopPressureBased(Teuchos::Pa
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(const int& gp,
+void DRT::ELEMENTS::Wall1Poro<distype>::FillMatrixAndVectors(const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J, const double& press,
     const double& porosity, const CORE::LINALG::Matrix<numdim_, 1>& velint,
@@ -1054,7 +1054,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(const int& gp,
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsPressureBased(const int& gp,
+void DRT::ELEMENTS::Wall1Poro<distype>::FillMatrixAndVectorsPressureBased(const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J, const double& press,
     const CORE::LINALG::Matrix<numstr_, numdof_>& bop,
@@ -1125,8 +1125,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsPressureBased(const
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsBrinkman(const int& gp,
-    const double& J, const double& porosity, const CORE::LINALG::Matrix<numdim_, numdim_>& fvelder,
+void DRT::ELEMENTS::Wall1Poro<distype>::FillMatrixAndVectorsBrinkman(const int& gp, const double& J,
+    const double& porosity, const CORE::LINALG::Matrix<numdim_, numdim_>& fvelder,
     const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd_inv,
     const CORE::LINALG::Matrix<numstr_, numdof_>& bop,
     const CORE::LINALG::Matrix<numdim_, numdim_>& C_inv,
@@ -1211,7 +1211,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsBrinkman(const int&
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingPoroelast(std::vector<int>& lm,  // location matrix
+void DRT::ELEMENTS::Wall1Poro<distype>::CouplingPoroelast(std::vector<int>& lm,  // location matrix
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,    // current displacements
     CORE::LINALG::Matrix<numdim_, numnod_>& vel,     // current velocities
     CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,  // current fluid velocity
@@ -1249,7 +1249,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingPoroelast(std::vector<int>& lm,
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingPoroelastPressureBased(
+void DRT::ELEMENTS::Wall1Poro<distype>::CouplingPoroelastPressureBased(
     std::vector<int>& lm,                          // location matrix
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,  // current displacements
     const std::vector<double>& ephi,            // current primary variable for poro-multiphase flow
@@ -1283,7 +1283,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingPoroelastPressureBased(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Wall1Poro<distype>::GaussPointLoopOD(Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
     const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp,
@@ -1389,7 +1389,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(Teuchos::ParameterList
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopODPressureBased(
+void DRT::ELEMENTS::Wall1Poro<distype>::GaussPointLoopODPressureBased(
     Teuchos::ParameterList& params, const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
     const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp, const std::vector<double>& ephi,
@@ -1480,7 +1480,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopODPressureBased(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(const int& gp,
+void DRT::ELEMENTS::Wall1Poro<distype>::FillMatrixAndVectorsOD(const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J, const double& porosity,
     const double& dphi_dp, const CORE::LINALG::Matrix<numdim_, 1>& velint,
@@ -1592,7 +1592,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(const int& gp,
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsODPressureBased(const int& gp,
+void DRT::ELEMENTS::Wall1Poro<distype>::FillMatrixAndVectorsODPressureBased(const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J,
     const CORE::LINALG::Matrix<numstr_, numdof_>& bop,
@@ -1639,7 +1639,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsODPressureBased(con
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsBrinkmanOD(const int& gp,
+void DRT::ELEMENTS::Wall1Poro<distype>::FillMatrixAndVectorsBrinkmanOD(const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J, const double& porosity,
     const double& dphi_dp, const CORE::LINALG::Matrix<numdim_, numdim_>& fvelder,
@@ -1719,7 +1719,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsBrinkmanOD(const in
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingStressPoroelast(
+void DRT::ELEMENTS::Wall1Poro<distype>::CouplingStressPoroelast(
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,    // current displacements
     CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,  // current fluid velocities
     CORE::LINALG::Matrix<numnod_, 1>& epreaf,        // current fluid pressure
@@ -1803,7 +1803,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingStressPoroelast(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
+void DRT::ELEMENTS::Wall1Poro<distype>::InitElement()
 {
   CORE::LINALG::Matrix<numdim_, numnod_> deriv;
   CORE::LINALG::Matrix<numnod_, numdim_> xrefe;
@@ -1847,7 +1847,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeJacobianDeterminantVolumeChangeAndLinearizations(
+void DRT::ELEMENTS::Wall1Poro<distype>::ComputeJacobianDeterminantVolumeChangeAndLinearizations(
     double& J, double& volchange, CORE::LINALG::Matrix<1, numdof_>& dJ_dus,
     CORE::LINALG::Matrix<1, numdof_>& dvolchange_dus,
     const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
@@ -1888,7 +1888,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeJacobianDeterminantVolumeChangeA
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeJacobianDeterminantVolumeChange(double& J,
+void DRT::ELEMENTS::Wall1Poro<distype>::ComputeJacobianDeterminantVolumeChange(double& J,
     double& volchange, const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
     const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp)
@@ -1920,8 +1920,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeJacobianDeterminantVolumeChange(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::PK2toCauchy(
-    CORE::LINALG::Matrix<Wall1::numstr_, 1>& stress, CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
+void DRT::ELEMENTS::Wall1Poro<distype>::PK2toCauchy(CORE::LINALG::Matrix<Wall1::numstr_, 1>& stress,
+    CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
     CORE::LINALG::Matrix<numdim_, numdim_>& cauchystress)
 {
   // calculate the Jacobi-deterinant
@@ -1940,7 +1940,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PK2toCauchy(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeDefGradient(
+void DRT::ELEMENTS::Wall1Poro<distype>::ComputeDefGradient(
     CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr)
@@ -1960,7 +1960,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeDefGradient(
 }
 
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeBOperator(
+inline void DRT::ELEMENTS::Wall1Poro<distype>::ComputeBOperator(
     CORE::LINALG::Matrix<numstr_, numdof_>& bop,
     const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ)
@@ -1998,7 +1998,7 @@ inline void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeBOperator(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeShapeFunctionsAndDerivatives(const int& gp,
+void DRT::ELEMENTS::Wall1Poro<distype>::ComputeShapeFunctionsAndDerivatives(const int& gp,
     CORE::LINALG::Matrix<numnod_, 1>& shapefct, CORE::LINALG::Matrix<numdim_, numnod_>& deriv,
     CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ)
 {
@@ -2039,7 +2039,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeShapeFunctionsAndDerivatives(con
 }
 
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::Wall1_Poro<distype>::ComputeJacobianDeterminant(const int& gp,
+double DRT::ELEMENTS::Wall1Poro<distype>::ComputeJacobianDeterminant(const int& gp,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
     const CORE::LINALG::Matrix<numdim_, numnod_>& deriv)
 {
@@ -2058,7 +2058,7 @@ double DRT::ELEMENTS::Wall1_Poro<distype>::ComputeJacobianDeterminant(const int&
 }
 
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeLinearizationOfJacobian(
+inline void DRT::ELEMENTS::Wall1Poro<distype>::ComputeLinearizationOfJacobian(
     CORE::LINALG::Matrix<1, numdof_>& dJ_dus, const double& J,
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
     const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd_inv)
@@ -2087,7 +2087,7 @@ inline void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeLinearizationOfJacobian(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeAuxiliaryValues(
+void DRT::ELEMENTS::Wall1Poro<distype>::ComputeAuxiliaryValues(
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ,
     const CORE::LINALG::Matrix<numdim_, numdim_>& defgrd_inv,
     const CORE::LINALG::Matrix<numdim_, numdim_>& C_inv,
@@ -2150,7 +2150,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeAuxiliaryValues(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosityAndLinearization(
+void DRT::ELEMENTS::Wall1Poro<distype>::ComputePorosityAndLinearization(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapfct,
     const CORE::LINALG::Matrix<numnod_, 1>* myporosity,
@@ -2168,7 +2168,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosityAndLinearization(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosityAndLinearizationOD(
+void DRT::ELEMENTS::Wall1Poro<distype>::ComputePorosityAndLinearizationOD(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const CORE::LINALG::Matrix<numnod_, 1>& shapfct,
     const CORE::LINALG::Matrix<numnod_, 1>* myporosity, double& porosity, double& dphi_dp)
@@ -2182,7 +2182,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosityAndLinearizationOD(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSolPressureDeriv(const std::vector<double>& phiAtGP,
+void DRT::ELEMENTS::Wall1Poro<distype>::ComputeSolPressureDeriv(const std::vector<double>& phiAtGP,
     const int numfluidphases, std::vector<double>& solidpressderiv)
 {
   // zero out everything
@@ -2238,7 +2238,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSolPressureDeriv(const std::vect
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeLinearizationOfSolPressWrtDisp(
+void DRT::ELEMENTS::Wall1Poro<distype>::ComputeLinearizationOfSolPressWrtDisp(
     const double fluidpress, const double porosity, const int totalnumdofpernode,
     const int numfluidphases, const int numvolfrac, const std::vector<double>& phiAtGP,
     const CORE::LINALG::Matrix<1, numdof_>& dphi_dus, CORE::LINALG::Matrix<1, numdof_>& dps_dus)
@@ -2270,7 +2270,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeLinearizationOfSolPressWrtDisp(
  * derivative of sol. pres. at GP for multiphase flow   kremheller 10/17|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::RecalculateSolPressureDeriv(
+void DRT::ELEMENTS::Wall1Poro<distype>::RecalculateSolPressureDeriv(
     const std::vector<double>& phiAtGP, const int totalnumdofpernode, const int numfluidphases,
     const int numvolfrac, const double press, const double porosity,
     std::vector<double>& solidpressderiv)
@@ -2304,7 +2304,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::RecalculateSolPressureDeriv(
 }
 
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSolPressureAtGP(
+double DRT::ELEMENTS::Wall1Poro<distype>::ComputeSolPressureAtGP(
     const int totalnumdofpernode, const int numfluidphases, const std::vector<double>& phiAtGP)
 {
   // initialize auxiliary variables
@@ -2329,7 +2329,7 @@ double DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSolPressureAtGP(
 }
 
 template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::Wall1_Poro<distype>::RecalculateSolPressureAtGP(double press,
+double DRT::ELEMENTS::Wall1Poro<distype>::RecalculateSolPressureAtGP(double press,
     const double porosity, const int totalnumdofpernode, const int numfluidphases,
     const int numvolfrac, const std::vector<double>& phiAtGP)
 {
@@ -2360,7 +2360,7 @@ double DRT::ELEMENTS::Wall1_Poro<distype>::RecalculateSolPressureAtGP(double pre
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePrimaryVariableAtGP(const std::vector<double>& ephi,
+void DRT::ELEMENTS::Wall1Poro<distype>::ComputePrimaryVariableAtGP(const std::vector<double>& ephi,
     const int totalnumdofpernode, const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
     std::vector<double>& phiAtGP)
 {
@@ -2377,7 +2377,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePrimaryVariableAtGP(const std::v
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::ExtractValuesFromGlobalVector(
+void DRT::ELEMENTS::Wall1Poro<distype>::ExtractValuesFromGlobalVector(
     const DRT::Discretization& discretization, const int& dofset, const std::vector<int>& lm,
     CORE::LINALG::Matrix<numdim_, numnod_>* matrixtofill,
     CORE::LINALG::Matrix<numnod_, 1>* vectortofill, const std::string state)
@@ -2441,7 +2441,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ExtractValuesFromGlobalVector(
 }
 
 template <CORE::FE::CellType distype>
-std::vector<double> DRT::ELEMENTS::Wall1_Poro<distype>::ComputeAnisotropicPermeabilityCoeffsAtGP(
+std::vector<double> DRT::ELEMENTS::Wall1Poro<distype>::ComputeAnisotropicPermeabilityCoeffsAtGP(
     const CORE::LINALG::Matrix<numnod_, 1>& shapefct) const
 {
   std::vector<double> anisotropic_permeability_coeffs(numdim_, 0.0);
@@ -2459,10 +2459,10 @@ std::vector<double> DRT::ELEMENTS::Wall1_Poro<distype>::ComputeAnisotropicPermea
   return anisotropic_permeability_coeffs;
 }
 
-template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs4>;
-template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs9>;
+template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs4>;
+template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs9>;
 
 FOUR_C_NAMESPACE_CLOSE

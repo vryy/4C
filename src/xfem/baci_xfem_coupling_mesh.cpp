@@ -323,7 +323,7 @@ void XFEM::MeshVolCoupling::Init()
     ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int, double>());
 
     traceEstimate_eigenvalue_update_ =
-        CORE::UTILS::IntegralValue<INPAR::XFEM::TraceEstimate_eigenvalue_update>(
+        CORE::UTILS::IntegralValue<INPAR::XFEM::TraceEstimateEigenvalueUpdate>(
             GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("STABILIZATION"),
             "UPDATE_EIGENVALUE_TRACE_ESTIMATE");
   }
@@ -2307,7 +2307,7 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
 
   if (coupl_ele->Shape() == CORE::FE::CellType::hex8)
   {
-    DRT::ELEMENTS::So_hex8* solid_ele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(coupl_ele);
+    DRT::ELEMENTS::SoHex8* solid_ele = dynamic_cast<DRT::ELEMENTS::SoHex8*>(coupl_ele);
     if (solid_ele == nullptr)
       dserror(
           "XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: Cast of coupl_ele to solid_ele "

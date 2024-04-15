@@ -14,7 +14,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords(
+void DRT::ELEMENTS::SoHex8::soh8_ElementCenterRefeCoords(
     CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& centercoord,
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe) const
 {
@@ -26,8 +26,7 @@ void DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords(
 }
 
 
-void DRT::ELEMENTS::So_hex8::soh8_GaussPointRefeCoords(
-    CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& gpcoord,
+void DRT::ELEMENTS::SoHex8::soh8_GaussPointRefeCoords(CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& gpcoord,
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe, int const gp) const
 {
   const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();

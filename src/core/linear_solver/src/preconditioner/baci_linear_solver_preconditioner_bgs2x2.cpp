@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::BGS2x2_Operator::BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A,
+CORE::LINALG::BgS2x2Operator::BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A,
     const Teuchos::ParameterList& list1, const Teuchos::ParameterList& list2, int global_iter,
     double global_omega, int block1_iter, double block1_omega, int block2_iter, double block2_omega,
     bool fliporder)
@@ -69,7 +69,7 @@ CORE::LINALG::BGS2x2_Operator::BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::BGS2x2_Operator::SetupBlockPreconditioners()
+void CORE::LINALG::BgS2x2Operator::SetupBlockPreconditioners()
 {
   Teuchos::RCP<CORE::LINALG::Solver> s1 =
       Teuchos::rcp(new CORE::LINALG::Solver(list1_, A_->Comm(), false));
@@ -89,7 +89,7 @@ void CORE::LINALG::BGS2x2_Operator::SetupBlockPreconditioners()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::LINALG::BGS2x2_Operator::ApplyInverse(
+int CORE::LINALG::BgS2x2Operator::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   Teuchos::RCP<Epetra_MultiVector> y1 = mmex_.ExtractVector(Y, firstind_);
@@ -175,7 +175,7 @@ int CORE::LINALG::BGS2x2_Operator::ApplyInverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::BGS2x2_Operator::LocalBlockRichardson(
+void CORE::LINALG::BgS2x2Operator::LocalBlockRichardson(
     Teuchos::RCP<CORE::LINALG::Preconditioner> solver, const CORE::LINALG::SparseMatrix& Op,
     Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> y,
     Teuchos::RCP<Epetra_MultiVector> tmpx, int iter, double omega) const

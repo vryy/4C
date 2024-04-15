@@ -110,8 +110,8 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
       // printf("lm=%f\n", -coconstlaw_->Evaluate(kappa * gap));
 
       // contribution of derivative of normal
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
-      CORE::GEN::pairedvector<int, double>::iterator ncurr;
+      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      CORE::GEN::Pairedvector<int, double>::iterator ncurr;
 
       for (int j = 0; j < dim; ++j)
       {

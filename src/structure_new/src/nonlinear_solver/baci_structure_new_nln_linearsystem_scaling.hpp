@@ -68,7 +68,7 @@ namespace STR
         Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_scaled_;
 
         //! scale thickness of shells
-        const enum INPAR::STR::STC_Scale stcscale_;
+        const enum INPAR::STR::StcScale stcscale_;
 
         //! number of layers for multilayered case
         const int stclayer_;

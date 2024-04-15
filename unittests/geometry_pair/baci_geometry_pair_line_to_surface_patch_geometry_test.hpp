@@ -109,7 +109,7 @@ namespace
       {
         for (unsigned int i_node = 0; i_node < n_nodes_volume; i_node++)
           node_ids[i_node] = connectivity_volumes[i_node + n_nodes_volume * i_el] - 1;
-        new_element = Teuchos::rcp<DRT::Element>(new DRT::ELEMENTS::So_hex8(i_el, 0));
+        new_element = Teuchos::rcp<DRT::Element>(new DRT::ELEMENTS::SoHex8(i_el, 0));
         new_element->SetNodeIds(n_nodes_volume, node_ids.data());
         discret->AddElement(new_element);
       }

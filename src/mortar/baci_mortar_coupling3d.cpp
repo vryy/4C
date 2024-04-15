@@ -830,7 +830,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
    {
    Vertex& testv = poly1[i];
    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2]
-   << std::endl; std::cout << "Type: " << testv.VType() << std::endl; std::cout << "Alpha: " <<
+   << std::endl; std::cout << "Type: " << testv.v_type() << std::endl; std::cout << "Alpha: " <<
    testv.Alpha() << std::endl; std::cout << "Node id: " << testv.Nodeids()[0] << std::endl <<
    std::endl;
    }
@@ -840,7 +840,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
    {
    Vertex& testv = poly2[i];
    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2]
-   << std::endl; std::cout << "Type: " << testv.VType() << std::endl; std::cout << "Alpha: " <<
+   << std::endl; std::cout << "Type: " << testv.v_type() << std::endl; std::cout << "Alpha: " <<
    testv.Alpha() << std::endl; std::cout << "Node id: " << testv.Nodeids()[0] << std::endl <<
    std::endl;
    }
@@ -851,7 +851,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
    {
    Vertex& testv = intersec1[i];
    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2]
-   << std::endl; std::cout << "Type: " << testv.VType() << std::endl; std::cout << "Alpha: " <<
+   << std::endl; std::cout << "Type: " << testv.v_type() << std::endl; std::cout << "Alpha: " <<
    testv.Alpha() << std::endl; std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " <<
    testv.Nodeids()[1]
    << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl << std::endl;
@@ -862,7 +862,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
    {
    Vertex& testv = intersec2[i];
    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2]
-   << std::endl; std::cout << "Type: " << testv.VType() << std::endl; std::cout << "Alpha: " <<
+   << std::endl; std::cout << "Type: " << testv.v_type() << std::endl; std::cout << "Alpha: " <<
    testv.Alpha() << std::endl; std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " <<
    testv.Nodeids()[1]
    << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl << std::endl;
@@ -1165,7 +1165,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
           if (out)
             std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1]
                       << " " << current->Coord()[2] << std::endl;
-          respoly.push_back(Vertex(current->Coord(), current->VType(), current->Nodeids(), nullptr,
+          respoly.push_back(Vertex(current->Coord(), current->v_type(), current->Nodeids(), nullptr,
               nullptr, false, false, nullptr, -1.0));
         } while (current->Intersect() == false);
         if (out)
@@ -1182,7 +1182,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
           if (out)
             std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1]
                       << " " << current->Coord()[2] << std::endl;
-          respoly.push_back(Vertex(current->Coord(), current->VType(), current->Nodeids(), nullptr,
+          respoly.push_back(Vertex(current->Coord(), current->v_type(), current->Nodeids(), nullptr,
               nullptr, false, false, nullptr, -1.0));
         } while (current->Intersect() == false);
         if (out)
@@ -1995,7 +1995,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       Vertex& testv = intersec[i];
       std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
                 << testv.Coord()[2] << std::endl;
-      std::cout << "Type: " << testv.VType() << std::endl;
+      std::cout << "Type: " << testv.v_type() << std::endl;
       std::cout << "Alpha: " << testv.Alpha() << std::endl;
       std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1] << " "
                 << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl
@@ -2064,7 +2064,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       Vertex& testv = collintersec[i];
       std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
                 << testv.Coord()[2] << std::endl;
-      std::cout << "Type: " << testv.VType() << std::endl;
+      std::cout << "Type: " << testv.v_type() << std::endl;
       std::cout << "Alpha: " << testv.Alpha() << std::endl;
       std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1] << " "
                 << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl
@@ -2313,7 +2313,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       Vertex& testv = convexhull[i];
       std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
                 << testv.Coord()[2] << std::endl;
-      std::cout << "Type: " << testv.VType() << std::endl;
+      std::cout << "Type: " << testv.v_type() << std::endl;
     }
   }
 
@@ -2333,7 +2333,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     bool close = false;
 
     // do not collapse poly1 (slave) points
-    if (convexhull[i].VType() == MORTAR::Vertex::slave)
+    if (convexhull[i].v_type() == MORTAR::Vertex::slave)
     {
       collconvexhull.push_back(convexhull[i]);
       continue;
@@ -2343,7 +2343,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     for (int j = 0; j < (int)convexhull.size(); ++j)
     {
       // only collapse with poly1 (slave) points
-      if (convexhull[j].VType() != MORTAR::Vertex::slave) continue;
+      if (convexhull[j].v_type() != MORTAR::Vertex::slave) continue;
 
       // distance vector
       std::array<double, 3> diff = {0.0, 0.0, 0.0};
@@ -2359,19 +2359,19 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     }
 
     // do not check poly2 (master) points
-    if (convexhull[i].VType() == MORTAR::Vertex::projmaster)
+    if (convexhull[i].v_type() == MORTAR::Vertex::projmaster)
     {
       if (!close) collconvexhull.push_back(convexhull[i]);
       continue;
     }
 
     // check intersec points against poly2 (master) points
-    if (!close && convexhull[i].VType() == MORTAR::Vertex::lineclip)
+    if (!close && convexhull[i].v_type() == MORTAR::Vertex::lineclip)
     {
       for (int j = 0; j < (int)convexhull.size(); ++j)
       {
         // only collapse with poly2 (master) points
-        if (convexhull[j].VType() != MORTAR::Vertex::projmaster) continue;
+        if (convexhull[j].v_type() != MORTAR::Vertex::projmaster) continue;
 
         // distance vector
         std::array<double, 3> diff = {0.0, 0.0, 0.0};
@@ -2400,7 +2400,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       Vertex& testv = collconvexhull[i];
       std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
                 << testv.Coord()[2] << std::endl;
-      std::cout << "Type: " << testv.VType() << std::endl;
+      std::cout << "Type: " << testv.v_type() << std::endl;
     }
   }
 
@@ -2675,7 +2675,7 @@ bool MORTAR::Coupling3d::HasProjStatus()
 
       // check if this clip vertex is slave-type and has the
       // current slave node id
-      if ((int)(Clip()[j].VType()) == Vertex::slave)
+      if ((int)(Clip()[j].v_type()) == Vertex::slave)
         if (mycnode->Id() == Clip()[j].Nodeids()[0]) identical = true;
 
       // set hasproj to true, if so
@@ -2698,8 +2698,8 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
 
   // preparations
   int clipsize = (int)(Clip().size());
-  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linvertex(
-      clipsize, std::vector<CORE::GEN::pairedvector<int, double>>(3, 3 * nsrows + 3 * nmrows));
+  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> linvertex(
+      clipsize, std::vector<CORE::GEN::Pairedvector<int, double>>(3, 3 * nsrows + 3 * nmrows));
 
   // get integration type
   INPAR::MORTAR::Triangulation tri_type =
@@ -2739,7 +2739,7 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
  |  Triangulation of clip polygon (3D) - DELAUNAY             popp 08/11|
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3d::DelaunayTriangulation(
-    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex, double tol)
+    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol)
 {
   // preparations
   Cells().resize(0);
@@ -3226,12 +3226,12 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
  |  Triangulation of clip polygon (3D) - CENTER               popp 08/11|
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3d::CenterTriangulation(
-    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex, double tol)
+    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol)
 {
   // preparations
   Cells().resize(0);
   int clipsize = (int)(Clip().size());
-  std::vector<CORE::GEN::pairedvector<int, double>> lincenter(
+  std::vector<CORE::GEN::Pairedvector<int, double>> lincenter(
       3, (MasterElement().NumNode() + SlaveElement().NumNode()) * 3);
 
   //**********************************************************************

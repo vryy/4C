@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                     brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-MAT::PAR::Membrane_ActiveStrain::Membrane_ActiveStrain(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::MembraneActiveStrain::MembraneActiveStrain(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       matid_passive_(*matdata->Get<int>("MATIDPASSIVE")),
       scalid_voltage_(*matdata->Get<int>("SCALIDVOLTAGE")),
@@ -39,21 +39,21 @@ MAT::PAR::Membrane_ActiveStrain::Membrane_ActiveStrain(Teuchos::RCP<MAT::PAR::Ma
       alpha2_(*matdata->Get<double>("ALPHA2"))
 {
   return;
-}  // MAT::PAR::Membrane_ActiveStrain::Membrane_ActiveStrain
+}  // MAT::PAR::MembraneActiveStrain::MembraneActiveStrain
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::Membrane_ActiveStrain::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::MembraneActiveStrain::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::Membrane_ActiveStrain(this));
-}  // MAT::PAR::Membrane_ActiveStrain::CreateMaterial
+  return Teuchos::rcp(new MAT::MembraneActiveStrain(this));
+}  // MAT::PAR::MembraneActiveStrain::CreateMaterial
 
-MAT::Membrane_ActiveStrainType MAT::Membrane_ActiveStrainType::instance_;
+MAT::MembraneActiveStrainType MAT::MembraneActiveStrainType::instance_;
 
-CORE::COMM::ParObject* MAT::Membrane_ActiveStrainType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MembraneActiveStrainType::Create(const std::vector<char>& data)
 {
-  MAT::Membrane_ActiveStrain* membrane_activestrain = new MAT::Membrane_ActiveStrain();
+  MAT::MembraneActiveStrain* membrane_activestrain = new MAT::MembraneActiveStrain();
   membrane_activestrain->Unpack(data);
 
   return membrane_activestrain;
@@ -62,7 +62,7 @@ CORE::COMM::ParObject* MAT::Membrane_ActiveStrainType::Create(const std::vector<
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-MAT::Membrane_ActiveStrain::Membrane_ActiveStrain()
+MAT::MembraneActiveStrain::MembraneActiveStrain()
     : params_(nullptr),
       matpassive_(nullptr),
       voltage_(Teuchos::null),
@@ -71,12 +71,12 @@ MAT::Membrane_ActiveStrain::Membrane_ActiveStrain()
       fibervecs_(false)
 {
   return;
-}  // MAT::Membrane_ActiveStrain::Membrane_ActiveStrain()
+}  // MAT::MembraneActiveStrain::MembraneActiveStrain()
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-MAT::Membrane_ActiveStrain::Membrane_ActiveStrain(MAT::PAR::Membrane_ActiveStrain* params)
+MAT::MembraneActiveStrain::MembraneActiveStrain(MAT::PAR::MembraneActiveStrain* params)
     : params_(params),
       matpassive_(nullptr),
       voltage_(Teuchos::null),
@@ -85,12 +85,12 @@ MAT::Membrane_ActiveStrain::Membrane_ActiveStrain(MAT::PAR::Membrane_ActiveStrai
       fibervecs_(false)
 {
   return;
-}  // MAT::Membrane_ActiveStrain::Membrane_ActiveStrain()
+}  // MAT::MembraneActiveStrain::MembraneActiveStrain()
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::MembraneActiveStrain::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -135,12 +135,12 @@ void MAT::Membrane_ActiveStrain::Pack(CORE::COMM::PackBuffer& data) const
   }
 
   return;
-}  // MAT::Membrane_ActiveStrain::Pack()
+}  // MAT::MembraneActiveStrain::Pack()
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::Unpack(const std::vector<char>& data)
+void MAT::MembraneActiveStrain::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -156,7 +156,7 @@ void MAT::Membrane_ActiveStrain::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Membrane_ActiveStrain*>(mat);
+        params_ = static_cast<MAT::PAR::MembraneActiveStrain*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -205,12 +205,12 @@ void MAT::Membrane_ActiveStrain::Unpack(const std::vector<char>& data)
     activation_->at(gp) = activation_gp;
   }
   return;
-}  // MAT::Membrane_ActiveStrain::Unpack()
+}  // MAT::MembraneActiveStrain::Unpack()
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::Setup(int numgp, INPUT::LineDefinition* linedef)
+void MAT::MembraneActiveStrain::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // setup fibervectors
   SetupFiberVectors(numgp, linedef);
@@ -235,13 +235,13 @@ void MAT::Membrane_ActiveStrain::Setup(int numgp, INPUT::LineDefinition* linedef
 
   isinit_ = true;
   return;
-}  // MAT::Membrane_ActiveStrain::Setup()
+}  // MAT::MembraneActiveStrain::Setup()
 
 /*----------------------------------------------------------------------*
  | active strain and hyperelastic stress response plus elasticity tensor|
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
+void MAT::MembraneActiveStrain::EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
     const CORE::LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
     const CORE::LINALG::Matrix<3, 3>& Q_trafo, CORE::LINALG::Matrix<3, 1>& stress,
     CORE::LINALG::Matrix<3, 3>& cmat, const int gp, const int eleGID)
@@ -323,7 +323,7 @@ void MAT::Membrane_ActiveStrain::EvaluateMembrane(const CORE::LINALG::Matrix<3, 
   // compute passive green lagrange strain
   CORE::LINALG::Matrix<3, 3> cmatpassive_loc(true);
   CORE::LINALG::Matrix<3, 1> S_passive_loc_voigt(true);
-  Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(matpassive_, true)
+  Teuchos::rcp_dynamic_cast<MAT::MembraneElastHyper>(matpassive_, true)
       ->EvaluateMembrane(defgrd_passive_local, cauchygreen_passive_local, params, Q_trafo,
           S_passive_loc_voigt, cmatpassive_loc, gp, eleGID);
 
@@ -355,38 +355,38 @@ void MAT::Membrane_ActiveStrain::EvaluateMembrane(const CORE::LINALG::Matrix<3, 
   Pullback4thTensorVoigt(defgrd_active_inv_loc_red, cmatpassive_loc, cmat);
 
   return;
-}  // MAT::Membrane_ActiveStrain::Evaluate
+}  // MAT::MembraneActiveStrain::Evaluate
 
 /*----------------------------------------------------------------------*
  | Update internal variables                       brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::Update()
+void MAT::MembraneActiveStrain::Update()
 {
   matpassive_->Update();
-}  // MAT::Membrane_ActiveStrain::Update
+}  // MAT::MembraneActiveStrain::Update
 
 /*----------------------------------------------------------------------*
  | Reset internal variables                        brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::ResetStep()
+void MAT::MembraneActiveStrain::ResetStep()
 {
   matpassive_->ResetStep();
-}  // MAT::Membrane_ActiveStrain::ResetStep
+}  // MAT::MembraneActiveStrain::ResetStep
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::VisNames(std::map<std::string, int>& names)
+void MAT::MembraneActiveStrain::VisNames(std::map<std::string, int>& names)
 {
   matpassive_->VisNames(names);
   names["voltage"] = 1;     // scalar
   names["activation"] = 1;  // scalar
-}  // MAT::Membrane_ActiveStrain::VisNames
+}  // MAT::MembraneActiveStrain::VisNames
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-bool MAT::Membrane_ActiveStrain::VisData(
+bool MAT::MembraneActiveStrain::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "voltage")
@@ -409,12 +409,12 @@ bool MAT::Membrane_ActiveStrain::VisData(
   }
 
   return matpassive_->VisData(name, data, numgp, eleID);
-}  // MAT::Membrane_ActiveStrain::VisData
+}  // MAT::MembraneActiveStrain::VisData
 
 /*----------------------------------------------------------------------*
  | setup fiber vectors                                                  |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefinition* linedef)
+void MAT::MembraneActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefinition* linedef)
 {
   CORE::LINALG::Matrix<3, 1> dir;
 
@@ -472,12 +472,12 @@ void MAT::Membrane_ActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefinit
         "assumption!");
   }
 
-}  // MAT::Membrane_ActiveStrain::SetupFiberVectors
+}  // MAT::MembraneActiveStrain::SetupFiberVectors
 
 /*----------------------------------------------------------------------*
  * Function which reads in the fiber direction
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::ReadDir(
+void MAT::MembraneActiveStrain::ReadDir(
     INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& dir)
 {
   std::vector<double> fiber;
@@ -494,9 +494,9 @@ void MAT::Membrane_ActiveStrain::ReadDir(
   for (int i = 0; i < 3; ++i) dir(i) = fiber[i] / fnorm;
 
   return;
-}  // MAT::Membrane_ActiveStrain::ReadDir
+}  // MAT::MembraneActiveStrain::ReadDir
 
-void MAT::Membrane_ActiveStrain::SetupNormalDirection()
+void MAT::MembraneActiveStrain::SetupNormalDirection()
 {
   if (fibervecs_.size() != 2)
   {
@@ -516,12 +516,12 @@ void MAT::Membrane_ActiveStrain::SetupNormalDirection()
   normaldir.Scale(1 / norm);
 
   fibervecs_.push_back(normaldir);
-}  // MAT::Membrane_ActiveStrain::SetupNormalDirection
+}  // MAT::MembraneActiveStrain::SetupNormalDirection
 
 /*---------------------------------------------------------------------*
  | Pullback of the tangent from intermediate to reference configuration|
  *---------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::Pullback4thTensorVoigt(
+void MAT::MembraneActiveStrain::Pullback4thTensorVoigt(
     const CORE::LINALG::Matrix<2, 2>& defgrd_active_inv_red,
     const CORE::LINALG::Matrix<3, 3>& cmat_passive_intermediate,
     CORE::LINALG::Matrix<3, 3>& cmat_reference)
@@ -560,12 +560,12 @@ void MAT::Membrane_ActiveStrain::Pullback4thTensorVoigt(
     }
   }
 
-}  // MAT::Membrane_ActiveStrain::Pullback4thTensorVoigt
+}  // MAT::MembraneActiveStrain::Pullback4thTensorVoigt
 
 /*---------------------------------------------------------------------*
  | transform voigt to tensor notation                                  |
  *---------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::Tensor2x2Indices(int p, int* i, int* j)
+void MAT::MembraneActiveStrain::Tensor2x2Indices(int p, int* i, int* j)
 {
   switch (p)
   {
@@ -582,12 +582,12 @@ void MAT::Membrane_ActiveStrain::Tensor2x2Indices(int p, int* i, int* j)
       *j = 1;
       break;
   }
-}  // MAT::Membrane_ActiveStrain::Voigt3Index
+}  // MAT::MembraneActiveStrain::Voigt3Index
 
 /*---------------------------------------------------------------------*
  | transform tensor to voigt notation (public)                         |
  *---------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::Voigt3Index(int i, int j, int* p)
+void MAT::MembraneActiveStrain::Voigt3Index(int i, int j, int* p)
 {
   if (i == 0 && j == 0)
     *p = 0;
@@ -595,6 +595,6 @@ void MAT::Membrane_ActiveStrain::Voigt3Index(int i, int j, int* p)
     *p = 1;
   else if ((i == 0 && j == 1) || (i == 1 && j == 0))
     *p = 2;
-}  // MAT::Membrane_ActiveStrain::Voigt3Index
+}  // MAT::MembraneActiveStrain::Voigt3Index
 
 FOUR_C_NAMESPACE_CLOSE

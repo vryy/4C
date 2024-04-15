@@ -16,14 +16,11 @@
 
 #include "baci_config.hpp"
 
+#include <Epetra_BlockMap.h>
+#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
-
-// forward declarations
-class Epetra_MultiVector;
-class Epetra_Operator;
-class Epetra_BlockMap;
 
 FOUR_C_NAMESPACE_OPEN
 

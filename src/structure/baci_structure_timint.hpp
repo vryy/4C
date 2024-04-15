@@ -811,7 +811,7 @@ namespace STR
     Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override = 0;
 
     //! get type of thickness scaling for thin shell structures
-    INPAR::STR::STC_Scale GetSTCAlgo() override = 0;
+    INPAR::STR::StcScale GetSTCAlgo() override = 0;
 
     //! Access to scaling matrix for STC
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override = 0;

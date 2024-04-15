@@ -301,14 +301,14 @@ namespace CONTACT
 
     /*--------------------------------------------------------------------------*/
     /// empty correction strategy
-    class PenaltyUpdate_Empty : public PenaltyUpdate
+    class PenaltyUpdateEmpty : public PenaltyUpdate
     {
      public:
-      PenaltyUpdate_Empty(){/* empty */};
+      PenaltyUpdateEmpty(){/* empty */};
 
-      explicit PenaltyUpdate_Empty(const PenaltyUpdate& pu) : PenaltyUpdate(pu){/* empty */};
+      explicit PenaltyUpdateEmpty(const PenaltyUpdate& pu) : PenaltyUpdate(pu){/* empty */};
 
-      PenaltyUpdate_Empty(const PenaltyUpdate_Empty& pu) = delete;
+      PenaltyUpdateEmpty(const PenaltyUpdateEmpty& pu) = delete;
 
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 
@@ -323,15 +323,15 @@ namespace CONTACT
     /** \brief sufficient linear reduction correction strategy
      *
      *  \author hiermeier */
-    class PenaltyUpdate_SufficientLinReduction : public PenaltyUpdate
+    class PenaltyUpdateSufficientLinReduction : public PenaltyUpdate
     {
      public:
-      PenaltyUpdate_SufficientLinReduction() = default;
+      PenaltyUpdateSufficientLinReduction() = default;
 
-      explicit PenaltyUpdate_SufficientLinReduction(const PenaltyUpdate& pu)
+      explicit PenaltyUpdateSufficientLinReduction(const PenaltyUpdate& pu)
           : PenaltyUpdate(pu){/* empty */};
 
-      PenaltyUpdate_SufficientLinReduction(const PenaltyUpdate_SufficientLinReduction& pu) = delete;
+      PenaltyUpdateSufficientLinReduction(const PenaltyUpdateSufficientLinReduction& pu) = delete;
 
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 
@@ -355,15 +355,15 @@ namespace CONTACT
     /** \brief sufficient angle correction strategy
      *
      *  \author hiermeier */
-    class PenaltyUpdate_SufficientAngle : public PenaltyUpdate
+    class PenaltyUpdateSufficientAngle : public PenaltyUpdate
     {
      public:
-      PenaltyUpdate_SufficientAngle() = default;
+      PenaltyUpdateSufficientAngle() = default;
 
-      explicit PenaltyUpdate_SufficientAngle(const PenaltyUpdate& pu)
+      explicit PenaltyUpdateSufficientAngle(const PenaltyUpdate& pu)
           : PenaltyUpdate(pu){/* empty */};
 
-      PenaltyUpdate_SufficientAngle(const PenaltyUpdate_SufficientAngle& pu) = delete;
+      PenaltyUpdateSufficientAngle(const PenaltyUpdateSufficientAngle& pu) = delete;
 
       INPAR::CONTACT::PenaltyUpdate Type() const override;
 

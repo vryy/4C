@@ -138,8 +138,8 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(
 
     // Setup material, calls overloaded function Setup(linedef) for each Maxwell_0d_acinus material
     Teuchos::RCP<MAT::Material> mat = Material();
-    Teuchos::RCP<MAT::Maxwell_0d_acinus> acinus_mat =
-        Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(Material());
+    Teuchos::RCP<MAT::Maxwell0dAcinus> acinus_mat =
+        Teuchos::rcp_dynamic_cast<MAT::Maxwell0dAcinus>(Material());
     acinus_mat->Setup(linedef);
   }
   else

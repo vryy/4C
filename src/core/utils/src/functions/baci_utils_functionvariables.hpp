@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // define periodicstruct
-struct periodicstruct
+struct Periodicstruct
 {
   bool periodic;
   double t1;
@@ -89,7 +89,7 @@ namespace CORE::UTILS
   {
    public:
     LinearInterpolationVariable(std::string name, std::vector<double> times,
-        std::vector<double> values, struct periodicstruct periodicdata);
+        std::vector<double> values, struct Periodicstruct periodicdata);
 
     /// evaluate the function at given time
     double Value(const double t) override;
@@ -127,7 +127,7 @@ namespace CORE::UTILS
   {
    public:
     MultiFunctionVariable(std::string name, std::vector<double> times,
-        std::vector<std::string> description_vec, struct periodicstruct periodicdata);
+        std::vector<std::string> description_vec, struct Periodicstruct periodicdata);
 
     /// evaluate the function at given time
     double Value(const double t) override;
@@ -162,7 +162,7 @@ namespace CORE::UTILS
   {
    public:
     FourierInterpolationVariable(std::string name, std::vector<double> times,
-        std::vector<double> values, struct periodicstruct periodicdata);
+        std::vector<double> values, struct Periodicstruct periodicdata);
 
     /// evaluate the function at given time
     double Value(const double t) override;

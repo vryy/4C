@@ -29,13 +29,13 @@ namespace XFEM
   class ConditionManager;
   class MeshCouplingFluidFluid;
 
-  class XFFCoupling_Manager : public Coupling_Manager, public Coupling_Comm_Manager
+  class XffCouplingManager : public CouplingManager, public CouplingCommManager
   {
    public:
     /// constructor
     // in idx ... idx[0] fluid discretization index , idx[1] fluid discretization index in the
     // blockmatrix
-    explicit XFFCoupling_Manager(Teuchos::RCP<ConditionManager> condmanager,
+    explicit XffCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
         Teuchos::RCP<FLD::XFluid> xfluid, Teuchos::RCP<FLD::XFluid> fluid, std::vector<int> idx);
     //! @name Destruction
     //@{

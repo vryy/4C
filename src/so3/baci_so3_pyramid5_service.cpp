@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  return Center Coords in Reference System                            |
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::SoPyramid5::sop5_ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();

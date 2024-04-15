@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
+FS3I::PartFS3I2Wc::PartFS3I2Wc(const Epetra_Comm& comm)
     : PartFS3I(comm),
       itmax_(GLOBAL::Problem::Instance()
                  ->FS3IDynamicParams()
@@ -45,7 +45,7 @@ FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_2WC::Init()
+void FS3I::PartFS3I2Wc::Init()
 {
   // call Init() in base class
   FS3I::PartFS3I::Init();
@@ -55,7 +55,7 @@ void FS3I::PartFS3I_2WC::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_2WC::Setup()
+void FS3I::PartFS3I2Wc::Setup()
 {
   // call Setup() in base class
   FS3I::PartFS3I::Setup();
@@ -65,7 +65,7 @@ void FS3I::PartFS3I_2WC::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_2WC::Timeloop()
+void FS3I::PartFS3I2Wc::Timeloop()
 {
   CheckIsInit();
   CheckIsSetup();
@@ -106,7 +106,7 @@ void FS3I::PartFS3I_2WC::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_2WC::InitialCalculations()
+void FS3I::PartFS3I2Wc::InitialCalculations()
 {
   // set initial fluid velocity field for evaluation of initial scalar
   // time derivative in fluid-based scalar transport
@@ -148,7 +148,7 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_2WC::PrepareTimeStep()
+void FS3I::PartFS3I2Wc::PrepareTimeStep()
 {
   CheckIsInit();
   CheckIsSetup();
@@ -175,7 +175,7 @@ void FS3I::PartFS3I_2WC::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_2WC::OuterLoop()
+void FS3I::PartFS3I2Wc::OuterLoop()
 {
   // set iteration number and stop criterion
   int itnum = 0;
@@ -248,7 +248,7 @@ void FS3I::PartFS3I_2WC::OuterLoop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
+void FS3I::PartFS3I2Wc::SetScaTraValuesInFSI()
 {
   // set scalar and thermodynamic pressure values as well as time
   // derivatives and discretization from fluid scalar in fluid
@@ -321,7 +321,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FS3I::PartFS3I_2WC::ConvergenceCheck(int itnum)
+bool FS3I::PartFS3I2Wc::ConvergenceCheck(int itnum)
 {
   // define flags for fluid and scatra convergence check
   bool fluidstopnonliniter = false;
@@ -360,7 +360,7 @@ bool FS3I::PartFS3I_2WC::ConvergenceCheck(int itnum)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FS3I::PartFS3I_2WC::ScatraConvergenceCheck(int itnum)
+bool FS3I::PartFS3I2Wc::ScatraConvergenceCheck(int itnum)
 {
   // define flags for convergence check for scatra fields
   bool scatra1stopnonliniter = false;
@@ -396,7 +396,7 @@ bool FS3I::PartFS3I_2WC::ScatraConvergenceCheck(int itnum)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_2WC::TimeUpdateAndOutput()
+void FS3I::PartFS3I2Wc::TimeUpdateAndOutput()
 {
   // prepare output for FSI
   constexpr bool force_prepare = false;

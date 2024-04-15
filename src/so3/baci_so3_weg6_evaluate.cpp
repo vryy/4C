@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -48,40 +48,40 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
+  DRT::ELEMENTS::SoWeg6::ActionType act = SoWeg6::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_struct_linstiff")
-    act = So_weg6::calc_struct_linstiff;
+    act = SoWeg6::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
-    act = So_weg6::calc_struct_nlnstiff;
+    act = SoWeg6::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
-    act = So_weg6::calc_struct_internalforce;
+    act = SoWeg6::calc_struct_internalforce;
   else if (action == "calc_struct_linstiffmass")
-    act = So_weg6::calc_struct_linstiffmass;
+    act = SoWeg6::calc_struct_linstiffmass;
   else if (action == "calc_struct_nlnstiffmass")
-    act = So_weg6::calc_struct_nlnstiffmass;
+    act = SoWeg6::calc_struct_nlnstiffmass;
   else if (action == "calc_struct_stress")
-    act = So_weg6::calc_struct_stress;
+    act = SoWeg6::calc_struct_stress;
   else if (action == "calc_struct_eleload")
-    act = So_weg6::calc_struct_eleload;
+    act = SoWeg6::calc_struct_eleload;
   else if (action == "calc_struct_fsiload")
-    act = So_weg6::calc_struct_fsiload;
+    act = SoWeg6::calc_struct_fsiload;
   else if (action == "calc_struct_update_istep")
-    act = So_weg6::calc_struct_update_istep;
+    act = SoWeg6::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
-    act = So_weg6::calc_struct_reset_istep;
+    act = SoWeg6::calc_struct_reset_istep;
   else if (action == "calc_struct_reset_all")
-    act = So_weg6::calc_struct_reset_all;
+    act = SoWeg6::calc_struct_reset_all;
   else if (action == "calc_struct_energy")
-    act = So_weg6::calc_struct_energy;
+    act = SoWeg6::calc_struct_energy;
   else if (action == "calc_struct_prestress_update")
-    act = So_weg6::prestress_update;
+    act = SoWeg6::prestress_update;
   else if (action == "calc_global_gpstresses_map")
-    act = So_weg6::calc_global_gpstresses_map;
+    act = SoWeg6::calc_global_gpstresses_map;
   else if (action == "calc_struct_recover")
     return 0;
   else if (action == "calc_struct_predict")
@@ -542,7 +542,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_weg6::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoWeg6::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
@@ -553,7 +553,7 @@ int DRT::ELEMENTS::So_weg6::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
+void DRT::ELEMENTS::SoWeg6::InitJacobianMapping()
 {
   /* pointer to (static) shape function array
    * for each node, evaluated at each gp*/
@@ -597,11 +597,11 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                        // current displacements
-    std::vector<double>* vel,                                         // current velocities
-    std::vector<double>* acc,                                         // current accelerations
-    std::vector<double>& residual,                                    // current residual displ
+void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                       // current displacements
+    std::vector<double>* vel,                                        // current velocities
+    std::vector<double>* acc,                                        // current accelerations
+    std::vector<double>& residual,                                   // current residual displ
     std::vector<double>& dispmat,                                 // current material displacements
     CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,   // element mass matrix
@@ -1008,7 +1008,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fcts at all 6 Gauss Points           maf 09/08|
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::sow6_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::SoWeg6::sow6_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
@@ -1029,7 +1029,7 @@ std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::sow6_s
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fct-derivs at all 6 Gauss Points     maf 09/08|
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::So_weg6::sow6_derivs()
+std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::SoWeg6::sow6_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
@@ -1050,7 +1050,7 @@ std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::So_we
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Weights at all 6 Gauss Points              maf 09/08|
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
+std::vector<double> DRT::ELEMENTS::SoWeg6::sow6_weights()
 {
   std::vector<double> weights(NUMGPT_WEG6);
   const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::wedge_6point;
@@ -1066,7 +1066,7 @@ std::vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex8                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
+void DRT::ELEMENTS::SoWeg6::sow6_shapederiv(
     CORE::LINALG::Matrix<NUMNOD_WEG6, NUMGPT_WEG6>** shapefct,  // pointer to pointer of shapefct
     CORE::LINALG::Matrix<NUMDOF_WEG6, NUMNOD_WEG6>** deriv,     // pointer to pointer of derivs
     CORE::LINALG::Matrix<NUMGPT_WEG6, 1>** weights)             // pointer to pointer of weights
@@ -1123,7 +1123,7 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                         bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::sow6_lumpmass(CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass)
+void DRT::ELEMENTS::SoWeg6::sow6_lumpmass(CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -1145,12 +1145,12 @@ void DRT::ELEMENTS::So_weg6::sow6_lumpmass(CORE::LINALG::Matrix<NUMDOF_WEG6, NUM
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_weg6Type::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoWeg6Type::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoWeg6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_weg6* failed");
     actele->InitJacobianMapping();
   }
@@ -1160,7 +1160,7 @@ int DRT::ELEMENTS::So_weg6Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoWeg6::DefGradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
@@ -1200,7 +1200,7 @@ void DRT::ELEMENTS::So_weg6::DefGradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoWeg6::UpdateJacobianMapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
@@ -1245,10 +1245,10 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
 /*----------------------------------------------------------------------*
  |  remodeling of fiber directions (protected)               tinkl 01/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                   // current displacements
-    Teuchos::ParameterList& params,                              // algorithmic parameters e.g. time
-    const Teuchos::RCP<MAT::Material>& mat)                      // material
+void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                  // current displacements
+    Teuchos::ParameterList& params,                             // algorithmic parameters e.g. time
+    const Teuchos::RCP<MAT::Material>& mat)                     // material
 {
   if ((Material()->MaterialType() == INPAR::MAT::m_constraintmixture) ||
       (Material()->MaterialType() == INPAR::MAT::m_elasthyper))

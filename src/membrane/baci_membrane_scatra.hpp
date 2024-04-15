@@ -68,19 +68,19 @@ namespace DRT
         {
           case CORE::FE::CellType::tri3:
           {
-            return MembraneScatra_tri3Type::Instance().UniqueParObjectId();
+            return MembraneScatraTri3Type::Instance().UniqueParObjectId();
           }
           case CORE::FE::CellType::tri6:
           {
-            return MembraneScatra_tri6Type::Instance().UniqueParObjectId();
+            return MembraneScatraTri6Type::Instance().UniqueParObjectId();
           }
           case CORE::FE::CellType::quad4:
           {
-            return MembraneScatra_quad4Type::Instance().UniqueParObjectId();
+            return MembraneScatraQuad4Type::Instance().UniqueParObjectId();
           }
           case CORE::FE::CellType::quad9:
           {
-            return MembraneScatra_quad9Type::Instance().UniqueParObjectId();
+            return MembraneScatraQuad9Type::Instance().UniqueParObjectId();
           }
           default:
             dserror("unknown element type!");
@@ -122,22 +122,22 @@ namespace DRT
         {
           case CORE::FE::CellType::tri3:
           {
-            return MembraneScatra_tri3Type::Instance();
+            return MembraneScatraTri3Type::Instance();
           }
           break;
           case CORE::FE::CellType::tri6:
           {
-            return MembraneScatra_tri6Type::Instance();
+            return MembraneScatraTri6Type::Instance();
           }
           break;
           case CORE::FE::CellType::quad4:
           {
-            return MembraneScatra_quad4Type::Instance();
+            return MembraneScatraQuad4Type::Instance();
           }
           break;
           case CORE::FE::CellType::quad9:
           {
-            return MembraneScatra_quad9Type::Instance();
+            return MembraneScatraQuad9Type::Instance();
           }
           break;
           default:
@@ -145,7 +145,7 @@ namespace DRT
             break;
         }
         // Intel compiler needs a return so
-        return Membrane_quad4Type::Instance();
+        return MembraneQuad4Type::Instance();
       };
 
       //@}

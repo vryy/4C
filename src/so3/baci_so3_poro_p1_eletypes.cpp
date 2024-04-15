@@ -18,43 +18,42 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex8PoroP1Type DRT::ELEMENTS::So_hex8PoroP1Type::instance_;
+DRT::ELEMENTS::SoHex8PoroP1Type DRT::ELEMENTS::SoHex8PoroP1Type::instance_;
 
-DRT::ELEMENTS::So_hex8PoroP1Type& DRT::ELEMENTS::So_hex8PoroP1Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoHex8PoroP1Type& DRT::ELEMENTS::SoHex8PoroP1Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8PoroP1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8PoroP1Type::Create(const std::vector<char>& data)
 {
   auto* object =
-      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(-1, -1);
+      new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroP1Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(
-            id, owner));
+        new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroP1Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroP1Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(id, owner));
+      new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::So_hex8PoroP1Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex8PoroP1Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8poro;
-  So_hex8PoroType::SetupElementDefinition(definitions_hex8poro);
+  SoHex8PoroType::SetupElementDefinition(definitions_hex8poro);
 
   std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8poro["SOLIDH8PORO"];
 
@@ -63,7 +62,7 @@ void DRT::ELEMENTS::So_hex8PoroP1Type::SetupElementDefinition(
   defs["HEX8"] = defs_hex8["HEX8"];
 }
 
-void DRT::ELEMENTS::So_hex8PoroP1Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoHex8PoroP1Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 4;
@@ -71,23 +70,23 @@ void DRT::ELEMENTS::So_hex8PoroP1Type::NodalBlockInformation(
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoHex8PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-int DRT::ELEMENTS::So_hex8PoroP1Type::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoHex8PoroP1Type::Initialize(DRT::Discretization& dis)
 {
-  So_hex8Type::Initialize(dis);
+  SoHex8Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
+        dynamic_cast<DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So3_Poro_P1* failed");
-    actele->So3_Poro_P1<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>::InitElement();
+    actele->So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>::InitElement();
   }
   return 0;
 }
@@ -96,43 +95,42 @@ int DRT::ELEMENTS::So_hex8PoroP1Type::Initialize(DRT::Discretization& dis)
  |  TET 4 Element                                                       |
  *----------------------------------------------------------------------*/
 
-DRT::ELEMENTS::So_tet4PoroP1Type DRT::ELEMENTS::So_tet4PoroP1Type::instance_;
+DRT::ELEMENTS::SoTet4PoroP1Type DRT::ELEMENTS::SoTet4PoroP1Type::instance_;
 
-DRT::ELEMENTS::So_tet4PoroP1Type& DRT::ELEMENTS::So_tet4PoroP1Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoTet4PoroP1Type& DRT::ELEMENTS::SoTet4PoroP1Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4PoroP1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4PoroP1Type::Create(const std::vector<char>& data)
 {
   auto* object =
-      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(-1, -1);
+      new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroP1Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroP1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(
-            id, owner));
+        new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroP1Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroP1Type::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(id, owner));
+      new DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::So_tet4PoroP1Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoTet4PoroP1Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet4;
-  So_tet4PoroType::SetupElementDefinition(definitions_tet4);
+  SoTet4PoroType::SetupElementDefinition(definitions_tet4);
 
   std::map<std::string, INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4PORO"];
 
@@ -141,22 +139,22 @@ void DRT::ELEMENTS::So_tet4PoroP1Type::SetupElementDefinition(
   defs["TET4"] = defs_tet4["TET4"];
 }
 
-int DRT::ELEMENTS::So_tet4PoroP1Type::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoTet4PoroP1Type::Initialize(DRT::Discretization& dis)
 {
-  So_tet4PoroType::Initialize(dis);
+  SoTet4PoroType::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>*>(
+        dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>::InitElement();
+    actele->So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>::InitElement();
   }
   return 0;
 }
 
-void DRT::ELEMENTS::So_tet4PoroP1Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoTet4PoroP1Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 4;
@@ -164,7 +162,7 @@ void DRT::ELEMENTS::So_tet4PoroP1Type::NodalBlockInformation(
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_tet4PoroP1Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoTet4PoroP1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);

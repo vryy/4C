@@ -15,16 +15,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::NURBS::Ale3_NurbsType DRT::ELEMENTS::NURBS::Ale3_NurbsType::instance_;
+DRT::ELEMENTS::NURBS::Ale3NurbsType DRT::ELEMENTS::NURBS::Ale3NurbsType::instance_;
 
-DRT::ELEMENTS::NURBS::Ale3_NurbsType& DRT::ELEMENTS::NURBS::Ale3_NurbsType::Instance()
+DRT::ELEMENTS::NURBS::Ale3NurbsType& DRT::ELEMENTS::NURBS::Ale3NurbsType::Instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale3NurbsType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::NURBS::Ale3Nurbs* object = new DRT::ELEMENTS::NURBS::Ale3Nurbs(-1, -1);
   object->Unpack(data);
@@ -33,7 +33,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create(const std::v
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3NurbsType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ALE3")
@@ -48,7 +48,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3NurbsType::Create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Ale3Nurbs(id, owner));
@@ -56,7 +56,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::Ale3_NurbsType::NodalBlockInformation(
+void DRT::ELEMENTS::NURBS::Ale3NurbsType::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -66,7 +66,7 @@ void DRT::ELEMENTS::NURBS::Ale3_NurbsType::NodalBlockInformation(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NURBS::Ale3_NurbsType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NURBS::Ale3NurbsType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);

@@ -120,9 +120,9 @@ namespace CORE::GEO
       };
 
       /// visitor that collects cycles in a planar graph
-      struct face_visitor : public boost::planar_face_traversal_visitor
+      struct FaceVisitor : public boost::planar_face_traversal_visitor
       {
-        face_visitor(name_map_t name_map, std::vector<Cycle>& cycles)
+        FaceVisitor(name_map_t name_map, std::vector<Cycle>& cycles)
             : name_map_(name_map), cycles_(cycles)
         {
         }
@@ -152,11 +152,11 @@ namespace CORE::GEO
       };
 
       /// filter that selects all edges to a given marker
-      struct edge_filter
+      struct EdgeFilter
       {
-        edge_filter() : g_(nullptr), component_(nullptr), c_(0) {}
+        EdgeFilter() : g_(nullptr), component_(nullptr), c_(0) {}
 
-        edge_filter(graph_t& g, const std::vector<int>& component, int c)
+        EdgeFilter(graph_t& g, const std::vector<int>& component, int c)
             : g_(&g), component_(&component), c_(c)
         {
         }
@@ -178,14 +178,14 @@ namespace CORE::GEO
         int c_;
       };
 
-      typedef boost::filtered_graph<graph_t, edge_filter> filtered_graph_t;
+      typedef boost::filtered_graph<graph_t, EdgeFilter> filtered_graph_t;
 
       typedef std::vector<vertex_t> cycle_t;
 
 #ifdef CUT_USE_SORTED_VECTOR
-      typedef sorted_vector<cycle_t*> plain_cycle_set;
-      typedef sorted_vector<vertex_t> plain_vertix_set;
-      typedef sorted_vector<std::pair<vertex_t, vertex_t>> plain_graph_edge_set;
+      typedef SortedVector<cycle_t*> plain_cycle_set;
+      typedef SortedVector<vertex_t> plain_vertix_set;
+      typedef SortedVector<std::pair<vertex_t, vertex_t>> plain_graph_edge_set;
 #else
       typedef std::set<cycle_t*> plain_cycle_set;
       typedef std::set<vertex_t> plain_vertix_set;

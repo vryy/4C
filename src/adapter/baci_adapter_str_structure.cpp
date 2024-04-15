@@ -159,8 +159,8 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
 
   if (solver != Teuchos::null && (solver->Params().isSublist("Belos Parameters")) &&
       solver->Params().isSublist("ML Parameters")  // TODO what about MueLu?
-      && CORE::UTILS::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING") !=
-             INPAR::STR::stc_none)
+      &&
+      CORE::UTILS::IntegralValue<INPAR::STR::StcScale>(sdyn, "STC_SCALING") != INPAR::STR::stc_none)
   {
     Teuchos::ParameterList& mllist = solver->Params().sublist("ML Parameters");
     Teuchos::RCP<std::vector<double>> ns =
@@ -197,7 +197,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
     const std::string action = "calc_stc_matrix_inverse";
     p.set("action", action);
     p.set<int>(
-        "stc_scaling", CORE::UTILS::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING"));
+        "stc_scaling", CORE::UTILS::IntegralValue<INPAR::STR::StcScale>(sdyn, "STC_SCALING"));
     p.set("stc_layer", 1);
 
     actdis->Evaluate(p, stcinv, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);

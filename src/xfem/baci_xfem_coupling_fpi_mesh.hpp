@@ -41,7 +41,7 @@ namespace XFEM
   class MeshCouplingFPI : public MeshVolCoupling
   {
    public:
-    enum coupled_field
+    enum CoupledField
     {
       ps_ps,
       ps_pf,
@@ -59,7 +59,7 @@ namespace XFEM
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
         const int step,         ///< time step
-        MeshCouplingFPI::coupled_field field  ///< which field is coupled to the fluid
+        MeshCouplingFPI::CoupledField field  ///< which field is coupled to the fluid
     );
 
     //! cutter dis should be loaded into the cut?
@@ -140,13 +140,13 @@ namespace XFEM
     double Get_fpi_pcontact_fullfraction() { return fpsi_contact_fullpcfraction_; }
 
     /// Assign communicator to contact to mesh coupling object
-    void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm)
+    void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm)
     {
       xf_c_comm_ = xf_c_comm;
     }
 
     /// Get communicator to contact
-    Teuchos::RCP<XFEM::XFluid_Contact_Comm> Get_Contact_Comm()
+    Teuchos::RCP<XFEM::XFluidContactComm> Get_Contact_Comm()
     {
       if (xf_c_comm_ == Teuchos::null)
         dserror("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
@@ -239,7 +239,7 @@ namespace XFEM
 
     //---------------------------------configuration--------------------------------
     //! @name type of poro field coupled to xfluid handled by this mesh coupling object!
-    MeshCouplingFPI::coupled_field coupled_field_;
+    MeshCouplingFPI::CoupledField coupled_field_;
 
     //! Full BJ Variant or BJSaffmann?
     bool full_BJ_;
@@ -264,7 +264,7 @@ namespace XFEM
     double fpsi_contact_fullpcfraction_;
 
     //! Xfluid Contact Communicator
-    Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm_;
+    Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm_;
 
     //@}
   };

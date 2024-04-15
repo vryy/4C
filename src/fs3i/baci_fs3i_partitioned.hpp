@@ -62,7 +62,7 @@ namespace CORE::LINALG
 
 namespace FS3I
 {
-  class PartFS3I : public FS3I_Base
+  class PartFS3I : public FS3IBase
   {
    public:
     //! constructor of base class for partitioned FS3I

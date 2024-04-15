@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::AAAraghavanvorp_damage::AAAraghavanvorp_damage(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::AaAraghavanvorpDamage::AaAraghavanvorpDamage(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
 
       bulk_(*matdata->Get<double>("BULK")),          /// Bulk's modulus (Volumetric)
@@ -45,18 +45,18 @@ MAT::PAR::AAAraghavanvorp_damage::AAAraghavanvorp_damage(Teuchos::RCP<MAT::PAR::
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::PAR::AAAraghavanvorp_damage::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::AaAraghavanvorpDamage::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::AAAraghavanvorp_damage(this));
+  return Teuchos::rcp(new MAT::AaAraghavanvorpDamage(this));
 }
 
 
-MAT::AAAraghavanvorp_damageType MAT::AAAraghavanvorp_damageType::instance_;
+MAT::AaAraghavanvorpDamageType MAT::AaAraghavanvorpDamageType::instance_;
 
 
-CORE::COMM::ParObject* MAT::AAAraghavanvorp_damageType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AaAraghavanvorpDamageType::Create(const std::vector<char>& data)
 {
-  MAT::AAAraghavanvorp_damage* aaadamage = new MAT::AAAraghavanvorp_damage();
+  MAT::AaAraghavanvorpDamage* aaadamage = new MAT::AaAraghavanvorpDamage();
   aaadamage->Unpack(data);
   return aaadamage;  // aaadam;
 }
@@ -65,7 +65,7 @@ CORE::COMM::ParObject* MAT::AAAraghavanvorp_damageType::Create(const std::vector
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  ^_^gm 05/09 |
  *----------------------------------------------------------------------*/
-MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage() : params_(nullptr)
+MAT::AaAraghavanvorpDamage::AaAraghavanvorpDamage() : params_(nullptr)
 {
   isinit_ = false;  ///< indicates if material is initialized by calling the #Initialized routine
   // damage history parameters
@@ -84,7 +84,7 @@ MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage() : params_(nullptr)
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)   ^_^gm 05/09 |
  *----------------------------------------------------------------------*/
-MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage(MAT::PAR::AAAraghavanvorp_damage* params)
+MAT::AaAraghavanvorpDamage::AaAraghavanvorpDamage(MAT::PAR::AaAraghavanvorpDamage* params)
     : params_(params)
 {
 }
@@ -92,7 +92,7 @@ MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage(MAT::PAR::AAAraghavanvorp_da
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  ^_^gm 05/09 |
  *----------------------------------------------------------------------*/
-void MAT::AAAraghavanvorp_damage::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::AaAraghavanvorpDamage::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -126,7 +126,7 @@ void MAT::AAAraghavanvorp_damage::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)   ^_^gm 05/09 |
  *----------------------------------------------------------------------*/
-void MAT::AAAraghavanvorp_damage::Unpack(const std::vector<char>& data)
+void MAT::AaAraghavanvorpDamage::Unpack(const std::vector<char>& data)
 {
   std::cout << "UNPACK \n";
   // isinit_=true; // corretto ore 14:27
@@ -145,7 +145,7 @@ void MAT::AAAraghavanvorp_damage::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::AAAraghavanvorp_damage*>(mat);
+        params_ = static_cast<MAT::PAR::AaAraghavanvorpDamage*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -179,7 +179,7 @@ void MAT::AAAraghavanvorp_damage::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup: Initialize/allocate internal g variables (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::AAAraghavanvorp_damage::Setup(int numgp, INPUT::LineDefinition* linedef)
+void MAT::AaAraghavanvorpDamage::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   double strength = 0.0;  // section for extracting the element strength
   linedef->ExtractDouble("STRENGTH", strength);
@@ -225,7 +225,7 @@ void MAT::AAAraghavanvorp_damage::Setup(int numgp, INPUT::LineDefinition* linede
  |  Update: internal stress variables              (public)         05/08|
  *----------------------------------------------------------------------*/
 
-void MAT::AAAraghavanvorp_damage::Update()
+void MAT::AaAraghavanvorpDamage::Update()
 {
   // std::cout << " fcg"; // std::string to declare when the function is called,normally after
   // convergence.
@@ -254,7 +254,7 @@ void MAT::AAAraghavanvorp_damage::Update()
  |  Transform Second Piola-Kirchhoff Stress Tensor in the Cauchy one(public)         05/08|
  *----------------------------------------------------------------------*/
 
-void MAT::AAAraghavanvorp_damage::StressTensTransfSPKtoCauchy(
+void MAT::AaAraghavanvorpDamage::StressTensTransfSPKtoCauchy(
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& f,       ///< deformation gradient tensor
     const double detf,                               ///< determinant of deformation gradient tensor
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo,   ///< 2nd PK-stress
@@ -292,7 +292,7 @@ void MAT::AAAraghavanvorp_damage::StressTensTransfSPKtoCauchy(
 /*----------------------------------------------------------------------*
  |  Transform Cauchy Stress Tensor in the Second Piola-Kirchhoff one(public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::AAAraghavanvorp_damage::StressTensTransfCauchytoSPK(
+void MAT::AaAraghavanvorpDamage::StressTensTransfCauchytoSPK(
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& invf,  ///< deformation gradient tensor
     const double detf,                             ///< determinant of deformation gradient tensor
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& cstress,  ///< Cauchy-stress
@@ -360,7 +360,7 @@ void MAT::AAAraghavanvorp_damage::StressTensTransfCauchytoSPK(
  J    .. det(F) determinante of the Jacobian matrix, IIIc^0.5
 
   */
-void MAT::AAAraghavanvorp_damage::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::AaAraghavanvorpDamage::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)

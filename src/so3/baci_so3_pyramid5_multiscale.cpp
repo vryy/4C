@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 // this routine is intended to determine a homogenized material
 // density for multi-scale analyses by averaging over the initial volume
 
-void DRT::ELEMENTS::So_pyramid5::sop5_homog(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SoPyramid5::sop5_homog(Teuchos::ParameterList& params)
 {
   if (GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
   {
@@ -47,7 +47,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_homog(Teuchos::ParameterList& params)
 /*----------------------------------------------------------------------*
  |  Read restart on the microscale                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5::sop5_read_restart_multi()
+void DRT::ELEMENTS::SoPyramid5::sop5_read_restart_multi()
 {
   Teuchos::RCP<MAT::Material> mat = Material();
 

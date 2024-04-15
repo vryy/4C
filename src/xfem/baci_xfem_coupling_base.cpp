@@ -722,7 +722,7 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xflu
     double& NIT_visc_stab_fac,       ///< viscous part of Nitsche's penalty term
     double& NIT_visc_stab_fac_tang,  ///< viscous part of Nitsche's penalty term in tang direction
     const double& NITStabScaling, const double& NITStabScalingTang, const bool& IsPseudo2D,
-    const INPAR::XFEM::ViscStab_TraceEstimate ViscStab_TraceEstimate)
+    const INPAR::XFEM::ViscStabTraceEstimate ViscStab_TraceEstimate)
 {
   double penscaling = 0.0;
   if (GetAveragingStrategy() != INPAR::XFEM::Embedded_Sided)

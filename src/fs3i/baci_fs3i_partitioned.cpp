@@ -50,7 +50,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm) : FS3I_Base(), comm_(comm)
+FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm) : FS3IBase(), comm_(comm)
 {
   // Keep constructor empty!
   return;
@@ -61,7 +61,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm) : FS3I_Base(), comm_(comm)
 void FS3I::PartFS3I::Init()
 {
   // call setup in base class
-  FS3I::FS3I_Base::Init();
+  FS3I::FS3IBase::Init();
 
   volume_fieldcouplings_.push_back(CORE::UTILS::IntegralValue<INPAR::FS3I::VolumeCoupling>(
       GLOBAL::Problem::Instance()->FS3IDynamicParams(), "FLUIDSCAL_FIELDCOUPLING"));
@@ -312,7 +312,7 @@ void FS3I::PartFS3I::Init()
 void FS3I::PartFS3I::Setup()
 {
   // call setup in base class
-  FS3I::FS3I_Base::Setup();
+  FS3I::FS3IBase::Setup();
 
   // setup structure scatra
   structscatra_->Setup();

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            vuong 03/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_base::So_base(int id, int owner)
+DRT::ELEMENTS::SoBase::SoBase(int id, int owner)
     : DRT::Element(id, owner),
       kintype_(INPAR::STR::KinemType::vague),
       interface_ptr_(Teuchos::null),
@@ -34,7 +34,7 @@ DRT::ELEMENTS::So_base::So_base(int id, int owner)
  |  copy-ctor (public)                                       vuong 03/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_base::So_base(const DRT::ELEMENTS::So_base& old)
+DRT::ELEMENTS::SoBase::SoBase(const DRT::ELEMENTS::SoBase& old)
     : DRT::Element(old),
       kintype_(old.kintype_),
       interface_ptr_(old.interface_ptr_),
@@ -47,7 +47,7 @@ DRT::ELEMENTS::So_base::So_base(const DRT::ELEMENTS::So_base& old)
  |  Pack data                                                  (public) |
  |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_base::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoBase::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -69,7 +69,7 @@ void DRT::ELEMENTS::So_base::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_base::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoBase::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -90,14 +90,14 @@ void DRT::ELEMENTS::So_base::Unpack(const std::vector<char>& data)
  |  return solid material                                      (public) |
  |                                                           seitz 03/15|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::So_base::SolidMaterial(int nummat) const
+Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::SoBase::SolidMaterial(int nummat) const
 {
   return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_base::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+void DRT::ELEMENTS::SoBase::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
     interface_ptr_ = p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface");
@@ -107,14 +107,14 @@ void DRT::ELEMENTS::So_base::SetParamsInterfacePtr(const Teuchos::ParameterList&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::So_base::ParamsInterfacePtr()
+Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::SoBase::ParamsInterfacePtr()
 {
   return interface_ptr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::So_base::StrParamsInterface()
+STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::SoBase::StrParamsInterface()
 {
   if (not IsParamsInterface()) dserror("The interface ptr is not set!");
   return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_, true));
@@ -122,7 +122,7 @@ STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::So_base::StrParamsInterface()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_base::ErrorHandling(const double& det_curr, Teuchos::ParameterList& params,
+void DRT::ELEMENTS::SoBase::ErrorHandling(const double& det_curr, Teuchos::ParameterList& params,
     const int line_id, const STR::ELEMENTS::EvalErrorFlag flag)
 {
   // check, if errors are tolerated or should throw a dserror
@@ -153,7 +153,7 @@ void DRT::ELEMENTS::So_base::ErrorHandling(const double& det_curr, Teuchos::Para
 }
 
 // Check, whether the material post setup routine was
-void DRT::ELEMENTS::So_base::EnsureMaterialPostSetup(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SoBase::EnsureMaterialPostSetup(Teuchos::ParameterList& params)
 {
   if (!material_post_setup_)
   {
@@ -161,7 +161,7 @@ void DRT::ELEMENTS::So_base::EnsureMaterialPostSetup(Teuchos::ParameterList& par
   }
 }
 
-void DRT::ELEMENTS::So_base::MaterialPostSetup(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SoBase::MaterialPostSetup(Teuchos::ParameterList& params)
 {
   // This is the minimal implementation. Advanced materials may need extra implementation here.
   SolidMaterial()->PostSetup(params, Id());

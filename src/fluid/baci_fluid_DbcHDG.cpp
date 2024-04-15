@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::Discretization& discret,
+void FLD::UTILS::DbcHdgFluid::ReadDirichletCondition(const DRT::Discretization& discret,
     const DRT::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
@@ -35,7 +35,7 @@ void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::Discretization&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
+void FLD::UTILS::DbcHdgFluid::ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
     const DRT::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 
@@ -136,7 +136,7 @@ void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::DiscretizationF
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::Discretization& discret,
+void FLD::UTILS::DbcHdgFluid::DoDirichletCondition(const DRT::Discretization& discret,
     const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
     const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
@@ -150,7 +150,7 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::Discretization& d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFaces& discret,
+void FLD::UTILS::DbcHdgFluid::DoDirichletCondition(const DRT::DiscretizationFaces& discret,
     const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
     const Epetra_IntVector& toggle) const
 {

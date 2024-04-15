@@ -25,7 +25,7 @@ namespace INPAR
     /*!
      * \ brief write either no, row or column bins for visualization
      */
-    enum writebins
+    enum Writebins
     {
       none,
       rows,

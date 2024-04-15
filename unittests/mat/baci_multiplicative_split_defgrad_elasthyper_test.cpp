@@ -127,10 +127,10 @@ namespace
 
       // get pointer to parameter class
       parameters_multiplicative_split_defgrad_ = Teuchos::rcp(
-          new MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper(multiplicativeSplitDefgradData));
+          new MAT::PAR::MultiplicativeSplitDefgradElastHyper(multiplicativeSplitDefgradData));
 
       // setup pointer to MultiplicativeSplitDefgrad_ElastHyper object
-      multiplicative_split_defgrad_ = Teuchos::rcp(new MAT::MultiplicativeSplitDefgrad_ElastHyper(
+      multiplicative_split_defgrad_ = Teuchos::rcp(new MAT::MultiplicativeSplitDefgradElastHyper(
           parameters_multiplicative_split_defgrad_.get()));
     }
 
@@ -314,11 +314,11 @@ namespace
     CORE::LINALG::Matrix<8, 1> delta_ref_;
 
     // pointer to material parameters
-    Teuchos::RCP<MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper>
+    Teuchos::RCP<MAT::PAR::MultiplicativeSplitDefgradElastHyper>
         parameters_multiplicative_split_defgrad_;
 
     // pointer to material
-    Teuchos::RCP<MAT::MultiplicativeSplitDefgrad_ElastHyper> multiplicative_split_defgrad_;
+    Teuchos::RCP<MAT::MultiplicativeSplitDefgradElastHyper> multiplicative_split_defgrad_;
   };
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateAdditionalCmat)

@@ -43,7 +43,7 @@ This is the enumeration of all types of different integration schemes
 This is the enumeration of all types of different integration schemes
 
 *-----------------------------------------------------------------------*/
-typedef enum _RED_AIRWAYS_DYNTYPE
+typedef enum RedAirwaysDyntype
 {
   one_step_theta,
   linear,
@@ -91,7 +91,7 @@ namespace INPAR
     This is the enumeration of all types of different relaxation types
 
     *-----------------------------------------------------------------------*/
-    enum RELAXTYPE_3D_0D
+    enum Relaxtype3D0D
     {
       norelaxation,
       fixedrelaxation,

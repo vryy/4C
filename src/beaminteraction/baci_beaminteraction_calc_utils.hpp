@@ -16,11 +16,8 @@
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_linalg_mapextractor.hpp"
 
+#include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
-
-// forward declaration
-class Epetra_FEVector;
-class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 

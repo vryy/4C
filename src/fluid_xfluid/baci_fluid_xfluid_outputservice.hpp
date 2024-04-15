@@ -51,7 +51,7 @@ namespace CORE::GEO
 namespace XFEM
 {
   class ConditionManager;
-  class XFEM_EdgeStab;
+  class XfemEdgeStab;
 }  // namespace XFEM
 
 namespace FLD
@@ -130,8 +130,8 @@ namespace FLD
     ){};
 
     /// Gmsh output for EOS
-    virtual void GmshOutputEOS(int step,             ///< step number
-        Teuchos::RCP<XFEM::XFEM_EdgeStab> edge_stab  ///< stabilization handler
+    virtual void GmshOutputEOS(int step,            ///< step number
+        Teuchos::RCP<XFEM::XfemEdgeStab> edge_stab  ///< stabilization handler
     ){};
 
    protected:
@@ -218,8 +218,8 @@ namespace FLD
     );
 
     /// Gmsh output for EOS
-    void GmshOutputEOS(int step,                     ///< step number
-        Teuchos::RCP<XFEM::XFEM_EdgeStab> edge_stab  ///< stabilization handler
+    void GmshOutputEOS(int step,                    ///< step number
+        Teuchos::RCP<XFEM::XfemEdgeStab> edge_stab  ///< stabilization handler
         ) override;
 
    private:

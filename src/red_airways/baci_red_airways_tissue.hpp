@@ -135,7 +135,7 @@ namespace AIRWAY
     double omega_;
 
     /// fixed relaxation paramater
-    INPAR::ARTNET::RELAXTYPE_3D_0D relaxtype_;
+    INPAR::ARTNET::Relaxtype3D0D relaxtype_;
   };
 }  // namespace AIRWAY
 

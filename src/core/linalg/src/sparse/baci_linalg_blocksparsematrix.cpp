@@ -611,7 +611,7 @@ void CORE::LINALG::DefaultBlockMatrixStrategy::Complete(bool enforce_complete)
     {
       int rgid = rowmap.GID(rlid);
       std::transform(ghost_[rgid].begin(), ghost_[rgid].end(), std::inserter(cgids, cgids.begin()),
-          select1st<std::map<int, double>::value_type>());
+          Select1st<std::map<int, double>::value_type>());
     }
   }
 

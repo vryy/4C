@@ -47,19 +47,19 @@ namespace DRT
       static Wall1ScatraType instance_;
     };
 
-    class Wall1_Scatra : public Wall1
+    class Wall1Scatra : public Wall1
     {
      public:
       /// @name Constructors and destructors and related methods
 
       /// Standard Constructor
-      Wall1_Scatra(int id,  ///< A unique global id
+      Wall1Scatra(int id,  ///< A unique global id
           int owner);
 
       /// Copy Constructor
       ///
       /// Makes a deep copy of a Element
-      Wall1_Scatra(const Wall1_Scatra& old);
+      Wall1Scatra(const Wall1Scatra& old);
 
       /// Deep copy this instance of Wall1 and return pointer to the copy
       ///
@@ -152,7 +152,7 @@ namespace DRT
 
      protected:
       //! don't want = operator
-      Wall1_Scatra& operator=(const Wall1_Scatra& old);
+      Wall1Scatra& operator=(const Wall1Scatra& old);
 
       int MyEvaluate(
           Teuchos::ParameterList&

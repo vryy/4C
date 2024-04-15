@@ -25,14 +25,14 @@ namespace MAT
   {
     namespace PAR
     {
-      typedef enum _DISTR_TYPE_
+      typedef enum DistrType
       {
         distr_type_undefined = 0,
         distr_type_vonmisesfisher = 1,
         distr_type_bingham = 2
       } DISTR_TYPE_;
 
-      typedef enum _STRATEGY_TYPE_
+      typedef enum StrategyType
       {
         strategy_type_undefined = 0,
         strategy_type_standard = 1,

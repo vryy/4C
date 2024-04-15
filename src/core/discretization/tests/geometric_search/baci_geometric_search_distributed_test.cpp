@@ -42,7 +42,7 @@ namespace
     std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> primitives_, predicates_;
     Teuchos::RCP<Epetra_Comm> comm_;
     int my_rank_;
-    IO::verbositylevel verbosity_;
+    IO::Verbositylevel verbosity_;
   };
 
   /**

@@ -42,9 +42,9 @@ namespace FLD
 
     */
 
-    class Fluid_couplingBc;
+    class FluidCouplingBc;
 
-    class Fluid_couplingWrapperBase
+    class FluidCouplingWrapperBase
     {
       friend class FluidImplicitTimeInt;
 
@@ -52,32 +52,32 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      Fluid_couplingWrapperBase(Teuchos::RCP<DRT::Discretization> dis_3D,
+      FluidCouplingWrapperBase(Teuchos::RCP<DRT::Discretization> dis_3D,
           Teuchos::RCP<DRT::Discretization> dis_redD, IO::DiscretizationWriter& output,
           double dt_3d, double dt_redD);
 
       /*!
       \brief Destructor
       */
-      virtual ~Fluid_couplingWrapperBase() = default;
+      virtual ~FluidCouplingWrapperBase() = default;
 
       /*!
-      \brief Wrapper for Fluid_couplingWrapper::FlowRateCalculation
+      \brief Wrapper for FluidCouplingWrapper::FlowRateCalculation
       */
       void FlowRateCalculation(double time, double dta);
 
       /*!
-      \brief Wrapper for Fluid_couplingWrapper::PressureCalculation
+      \brief Wrapper for FluidCouplingWrapper::PressureCalculation
       */
       void PressureCalculation(double time, double dta);
 
       /*!
-      \brief Wrapper for Fluid_couplingWrapper::OutflowBoundary
+      \brief Wrapper for FluidCouplingWrapper::OutflowBoundary
       */
       void ApplyBoundaryConditions(double time, double dta, double theta);
 
       /*!
-      \brief Wrapper for Fluid_couplingWrapper::UpdateResidual
+      \brief Wrapper for FluidCouplingWrapper::UpdateResidual
       */
       void UpdateResidual(Teuchos::RCP<Epetra_Vector> residual);
 
@@ -87,12 +87,12 @@ namespace FLD
           Teuchos::RCP<Epetra_Vector> velnp, const Epetra_Map& condmap, double time);
 
       /*!
-      \brief Wrapper for Fluid_couplingWrapper::WriteRestart
+      \brief Wrapper for FluidCouplingWrapper::WriteRestart
       */
       void WriteRestart(IO::DiscretizationWriter& output);
 
       /*!
-      \brief Wrapper for Fluid_couplingWrapper::ReadRestart
+      \brief Wrapper for FluidCouplingWrapper::ReadRestart
       */
       void ReadRestart(IO::DiscretizationReader& reader);
 
@@ -112,7 +112,7 @@ namespace FLD
       /*!
       \brief all single coupling conditions
       */
-      std::map<const int, Teuchos::RCP<Fluid_couplingBc>> coup_map3D_;
+      std::map<const int, Teuchos::RCP<FluidCouplingBc>> coup_map3D_;
 
       //! map of coupling variables returned by the reduced-D model at time step n+1
       Teuchos::RCP<std::map<std::string, double>> mapRed_Dnp_;
@@ -145,17 +145,17 @@ namespace FLD
       //! the reduced model time step size
       double dt_rm_;
 
-    };  // class Fluid_couplingWrapper
+    };  // class FluidCouplingWrapper
 
     template <class red_D_time_int>
 
-    class Fluid_couplingWrapper : public Fluid_couplingWrapperBase
+    class FluidCouplingWrapper : public FluidCouplingWrapperBase
     {
      public:
-      Fluid_couplingWrapper(Teuchos::RCP<DRT::Discretization> dis_3D,
+      FluidCouplingWrapper(Teuchos::RCP<DRT::Discretization> dis_3D,
           Teuchos::RCP<DRT::Discretization> dis_redD, Teuchos::RCP<red_D_time_int> time_intg,
           IO::DiscretizationWriter& output, double dt_3d, double dt_rm)
-          : Fluid_couplingWrapperBase(dis_3D, dis_redD, output, dt_3d, dt_rm),
+          : FluidCouplingWrapperBase(dis_3D, dis_redD, output, dt_3d, dt_rm),
             reduced_D_time_integ_(time_intg)
       {
       }
@@ -184,27 +184,27 @@ namespace FLD
 
     */
 
-    class Fluid_couplingBc
+    class FluidCouplingBc
     {
-      friend class Fluid_couplingWrapperBase;
+      friend class FluidCouplingWrapperBase;
 
      public:
       /*!
       \brief Standard Constructor
       */
-      Fluid_couplingBc(Teuchos::RCP<DRT::Discretization> dis_3D,
+      FluidCouplingBc(Teuchos::RCP<DRT::Discretization> dis_3D,
           Teuchos::RCP<DRT::Discretization> dis_reD, IO::DiscretizationWriter& output, double dt_3d,
           double dt_rm, int condid, int numcond, int numcond2);
 
       /*!
       \brief Empty Constructor
       */
-      Fluid_couplingBc();
+      FluidCouplingBc();
 
       /*!
       \brief Destructor
       */
-      virtual ~Fluid_couplingBc() = default;
+      virtual ~FluidCouplingBc() = default;
 
      protected:
       /*!
@@ -312,7 +312,7 @@ namespace FLD
       //! corrector variable for dirichlet velocity s.t. applied flowrate is correct
       double alfa_;
 
-    };  // class Fluid_couplingBc
+    };  // class FluidCouplingBc
 
   }  // namespace UTILS
 }  // namespace FLD

@@ -529,7 +529,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& 
 
             // stiffness
             std::map<int, double> dgap = dgap_[node_gid];
-            std::vector<CORE::GEN::pairedvector<int, double>> dnormal = dnormals_[node_gid];
+            std::vector<CORE::GEN::Pairedvector<int, double>> dnormal = dnormals_[node_gid];
 
             // check if projection exists
             if (!dnormal.empty() && !dgap.empty())
@@ -760,7 +760,7 @@ void CONSTRAINTS::SpringDashpot::InitializeCurSurfNormal()
   // create temp vectors for gap initialization
   std::map<int, std::map<int, double>> tmpdgap_;
   std::map<int, std::vector<double>> tmpnormals_;
-  std::map<int, std::vector<CORE::GEN::pairedvector<int, double>>> tmpdnormals_;
+  std::map<int, std::vector<CORE::GEN::Pairedvector<int, double>>> tmpdnormals_;
 
   // empty displacement vector
   Teuchos::RCP<Epetra_Vector> disp;

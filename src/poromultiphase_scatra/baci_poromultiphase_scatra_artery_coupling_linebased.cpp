@@ -130,7 +130,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCFor
     {
       DRT::Element* actele = eles[iele];
       const auto& arterymat =
-          Teuchos::rcp_dynamic_cast<const MAT::Cnst_1d_art>(actele->Material(artelematerial));
+          Teuchos::rcp_dynamic_cast<const MAT::Cnst1dArt>(actele->Material(artelematerial));
       if (not arterymat->IsCollapsed())
       {
         all_eles_collapsed = false;
@@ -413,8 +413,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
     const double initlength = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(artele, arterydis_);
 
     // first add all contributions int unaffected_diams_artery_row-vector
-    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
-        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(artele->Material());
+    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(artele->Material());
     if (arterymat == Teuchos::null) dserror("cast to artery material failed");
     const double length_diam = initlength * arterymat->Diam();
     unaffected_diams_artery_row->SumIntoGlobalValues(1, &artelegid, &length_diam);
@@ -429,8 +429,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
     const int artelegid = coupl_elepairs_[i]->Ele1GID();
     DRT::Element* artele = arterydis_->gElement(artelegid);
 
-    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
-        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(artele->Material());
+    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(artele->Material());
     if (arterymat == Teuchos::null) dserror("cast to artery material failed");
     const double length_diam = init_segment_length * arterymat->Diam();
     unaffected_diams_artery_row->SumIntoGlobalValues(1, &artelegid, &length_diam);
@@ -458,8 +458,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
 
     DRT::Element* artele = arterydis_->gElement(artelegid);
 
-    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
-        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(artele->Material());
+    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(artele->Material());
     if (arterymat == Teuchos::null) dserror("cast to artery material failed");
 
     // TODO: this will not work for higher order artery eles
@@ -671,8 +671,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
     }
 
     // get the artery-material
-    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
-        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(actele->Material());
+    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(actele->Material());
     if (arterymat == Teuchos::null) dserror("cast to artery material failed");
 
     // set to zero if collapsed
@@ -877,8 +877,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::DepthFirstSear
     const double diam = (*ele_diams_artery_full_overlap)[Elements[i_element]->LID()];
 
     // get the artery-material
-    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
-        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(Elements[i_element]->Material());
+    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(Elements[i_element]->Material());
     if (arterymat == Teuchos::null) dserror("cast to artery material failed");
 
     // if the element is not collapsed it is connected to this node and we continue with the

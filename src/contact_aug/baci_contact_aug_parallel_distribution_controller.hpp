@@ -15,9 +15,8 @@
 #include "baci_contact_aug_timemonitor.hpp"
 #include "baci_mortar_paramsinterface.hpp"
 
+#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-
-class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 

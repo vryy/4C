@@ -38,9 +38,9 @@ namespace MAT
        public:
         /// factory method
         static Teuchos::RCP<ReactionInterface> CreateReaction(
-            MAT::PAR::reaction_coupling couplingtype,  //!< coupling type definig reaction
-            bool isreacstart,                          //!< flag for reaction start feature
-            const std::vector<double>& reacstart       //!< reaction start vector
+            MAT::PAR::ReactionCoupling couplingtype,  //!< coupling type definig reaction
+            bool isreacstart,                         //!< flag for reaction start feature
+            const std::vector<double>& reacstart      //!< reaction start vector
         );
 
         /// standard constructor

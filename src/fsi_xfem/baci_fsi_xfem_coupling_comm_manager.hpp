@@ -47,11 +47,11 @@ namespace CORE::ADAPTER
 
 namespace XFEM
 {
-  class Coupling_Comm_Manager
+  class CouplingCommManager
   {
    public:
-    enum transfer_type  // partial is on the interfacee //full is the whole discretisation //global
-                        // is for all discretizations
+    enum TransferType  // partial is on the interfacee //full is the whole discretisation //global
+                       // is for all discretizations
     {
       full_to_full,
       full_to_partial,
@@ -61,7 +61,7 @@ namespace XFEM
       full_to_global,
     };
 
-    enum matrix_transfer_type
+    enum MatrixTransferType
     {
       row,
       col,
@@ -69,31 +69,31 @@ namespace XFEM
     };
 
     //! constructor
-    explicit Coupling_Comm_Manager(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis,
+    explicit CouplingCommManager(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis,
         std::string cond_name, int startdim = 0, int enddim = 3);
 
     //! constructor
-    explicit Coupling_Comm_Manager(Teuchos::RCP<const DRT::Discretization> dis0,
+    explicit CouplingCommManager(Teuchos::RCP<const DRT::Discretization> dis0,
         std::string cond_name, int startdim = 0, int enddim = 3);
 
     //! constructor
-    explicit Coupling_Comm_Manager(Teuchos::RCP<const DRT::Discretization> dis0,
+    explicit CouplingCommManager(Teuchos::RCP<const DRT::Discretization> dis0,
         Teuchos::RCP<const DRT::Discretization> dis1, std::string cond_name, int startdim = 0,
         int enddim = 3);
 
     //! virtual destructor to support polymorph destruction
-    virtual ~Coupling_Comm_Manager() = default;
+    virtual ~CouplingCommManager() = default;
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
     //! RCP<const Epetra_Vector> vecA
     void InsertVector(const int idxA, Teuchos::RCP<const Epetra_Vector> vecA, const int idxB,
-        Teuchos::RCP<Epetra_Vector> vecB, const Coupling_Comm_Manager::transfer_type ttype,
+        Teuchos::RCP<Epetra_Vector> vecB, const CouplingCommManager::TransferType ttype,
         bool add = false, double scale = 1.0);
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
     //! RCP<Epetra_Vector> vecA
     void InsertVector(const int idxA, Teuchos::RCP<Epetra_Vector> vecA, const int idxB,
-        Teuchos::RCP<Epetra_Vector> vecB, const Coupling_Comm_Manager::transfer_type ttype,
+        Teuchos::RCP<Epetra_Vector> vecB, const CouplingCommManager::TransferType ttype,
         bool add = false, double scale = 1.0)
     {
       InsertVector(
@@ -106,7 +106,7 @@ namespace XFEM
         int transform_id,  // Unique Id to be set for this transformation object (to be save use
                            // different one, for different matrix transformation)
         int idxA, const CORE::LINALG::SparseMatrix& matA, int idxB,
-        CORE::LINALG::SparseMatrix& matB, const Coupling_Comm_Manager::matrix_transfer_type mttype,
+        CORE::LINALG::SparseMatrix& matB, const CouplingCommManager::MatrixTransferType mttype,
         double scale = 1.0, bool exactmatch = true, bool addmatrix = false);
 
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> GetMapExtractor(int idx);

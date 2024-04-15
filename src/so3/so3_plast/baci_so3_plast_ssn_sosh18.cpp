@@ -24,17 +24,17 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 11/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_sh18PlastType DRT::ELEMENTS::So_sh18PlastType::instance_;
+DRT::ELEMENTS::SoSh18PlastType DRT::ELEMENTS::SoSh18PlastType::instance_;
 
-DRT::ELEMENTS::So_sh18PlastType& DRT::ELEMENTS::So_sh18PlastType::Instance() { return instance_; }
+DRT::ELEMENTS::SoSh18PlastType& DRT::ELEMENTS::SoSh18PlastType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 11/14 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::So_sh18PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoSh18PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_sh18Plast(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoSh18Plast(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -43,12 +43,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::So_sh18PlastType::Create(const std::vector
 | create the new element type (public)                     seitz 11/14 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18PlastType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh18Plast(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18Plast(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -58,9 +58,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18PlastType::Create(
 | create the new element type (public)                     seitz 11/14 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18PlastType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18PlastType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh18Plast(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18Plast(id, owner));
   return ele;
 }
 
@@ -68,19 +68,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18PlastType::Create(const int id,
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 11/14 |
 *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_sh18PlastType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoSh18PlastType::Initialize(DRT::Discretization& dis)
 {
-  return So_sh18Type::Initialize(dis);
+  return SoSh18Type::Initialize(dis);
 }
 
 /*----------------------------------------------------------------------*
  | setup the element definition (public)                    seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18PlastType::SetupElementDefinition(
+void DRT::ELEMENTS::SoSh18PlastType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_sh18;
-  So_sh18Type::SetupElementDefinition(definitions_sh18);
+  SoSh18Type::SetupElementDefinition(definitions_sh18);
 
   std::map<std::string, INPUT::LineDefinition>& defs_sh18 = definitions_sh18["SOLIDSH18"];
 
@@ -92,11 +92,11 @@ void DRT::ELEMENTS::So_sh18PlastType::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 11/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(int id, int owner)
-    : So_base(id, owner),
-      DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(id, owner),
-      DRT::ELEMENTS::So_hex18(id, owner),
-      DRT::ELEMENTS::So_sh18(id, owner)
+DRT::ELEMENTS::SoSh18Plast::SoSh18Plast(int id, int owner)
+    : SoBase(id, owner),
+      DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>(id, owner),
+      DRT::ELEMENTS::SoHex18(id, owner),
+      DRT::ELEMENTS::SoSh18(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
       GLOBAL::Problem::Instance()->getParameterList();
@@ -112,11 +112,11 @@ DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(int id, int owner)
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                       seitz 11/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(const DRT::ELEMENTS::So_sh18Plast& old)
-    : So_base(old),
-      DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(old),
-      DRT::ELEMENTS::So_hex18(old),
-      DRT::ELEMENTS::So_sh18(old)
+DRT::ELEMENTS::SoSh18Plast::SoSh18Plast(const DRT::ELEMENTS::SoSh18Plast& old)
+    : SoBase(old),
+      DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>(old),
+      DRT::ELEMENTS::SoHex18(old),
+      DRT::ELEMENTS::SoSh18(old)
 {
   return;
 }
@@ -125,16 +125,16 @@ DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(const DRT::ELEMENTS::So_sh18Plast& old
  | deep copy this instance of Solid3 and return pointer to              |
  | it (public)                                              seitz 11/14 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_sh18Plast::Clone() const
+DRT::Element* DRT::ELEMENTS::SoSh18Plast::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_sh18Plast(*this);
+  auto* newelement = new DRT::ELEMENTS::SoSh18Plast(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18Plast::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoSh18Plast::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -143,11 +143,11 @@ void DRT::ELEMENTS::So_sh18Plast::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
 
-  // add base class So3_Plast Element
-  DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::Pack(data);
+  // add base class So3Plast Element
+  DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>::Pack(data);
 
   // add base class So3_sh18
-  DRT::ELEMENTS::So_sh18::Pack(data);
+  DRT::ELEMENTS::SoSh18::Pack(data);
 
   return;
 }
@@ -155,7 +155,7 @@ void DRT::ELEMENTS::So_sh18Plast::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18Plast::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoSh18Plast::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -164,9 +164,9 @@ void DRT::ELEMENTS::So_sh18Plast::Unpack(const std::vector<char>& data)
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::Unpack(basedata);
+  DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>::Unpack(basedata);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So_sh18::Unpack(basedata);
+  DRT::ELEMENTS::SoSh18::Unpack(basedata);
 
   SyncEAS();
 
@@ -175,7 +175,7 @@ void DRT::ELEMENTS::So_sh18Plast::Unpack(const std::vector<char>& data)
   return;
 }
 
-void DRT::ELEMENTS::So_sh18Plast::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoSh18Plast::Print(std::ostream& os) const
 {
   os << "So_sh18Plast ";
   Element::Print(os);
@@ -186,12 +186,12 @@ void DRT::ELEMENTS::So_sh18Plast::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 11/14 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_sh18Plast::ReadElement(
+bool DRT::ELEMENTS::SoSh18Plast::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
-  bool read = (DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::ReadElement(
-                   eletype, distype, linedef) &&
-               DRT::ELEMENTS::So_sh18::ReadElement(eletype, distype, linedef));
+  bool read =
+      (DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>::ReadElement(eletype, distype, linedef) &&
+          DRT::ELEMENTS::SoSh18::ReadElement(eletype, distype, linedef));
 
   // sync the EAS info
   SyncEAS();
@@ -203,29 +203,28 @@ bool DRT::ELEMENTS::So_sh18Plast::ReadElement(
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18Plast::SyncEAS()
+void DRT::ELEMENTS::SoSh18Plast::SyncEAS()
 {
   if (eas_ == true)
   {
     eastype_ = soh18p_eassosh18;
     neas_ = num_eas;
-    So3_Plast<CORE::FE::CellType::hex18>::KaaInv_ =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(
-            Teuchos::View, So_sh18::KaaInv_.A(), num_eas, num_eas, num_eas));
-    So3_Plast<CORE::FE::CellType::hex18>::Kad_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(
-        Teuchos::View, So_sh18::Kad_.A(), num_eas, num_eas, numdofperelement_));
-    So3_Plast<CORE::FE::CellType::hex18>::feas_ = Teuchos::rcp(
-        new CORE::LINALG::SerialDenseVector(Teuchos::View, So_sh18::feas_.A(), num_eas));
-    So3_Plast<CORE::FE::CellType::hex18>::alpha_eas_ = Teuchos::rcp(
-        new CORE::LINALG::SerialDenseVector(Teuchos::View, So_sh18::alpha_eas_.A(), num_eas));
-    So3_Plast<CORE::FE::CellType::hex18>::alpha_eas_last_timestep_ =
+    So3Plast<CORE::FE::CellType::hex18>::KaaInv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(
+        Teuchos::View, SoSh18::KaaInv_.A(), num_eas, num_eas, num_eas));
+    So3Plast<CORE::FE::CellType::hex18>::Kad_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(
+        Teuchos::View, SoSh18::Kad_.A(), num_eas, num_eas, numdofperelement_));
+    So3Plast<CORE::FE::CellType::hex18>::feas_ = Teuchos::rcp(
+        new CORE::LINALG::SerialDenseVector(Teuchos::View, SoSh18::feas_.A(), num_eas));
+    So3Plast<CORE::FE::CellType::hex18>::alpha_eas_ = Teuchos::rcp(
+        new CORE::LINALG::SerialDenseVector(Teuchos::View, SoSh18::alpha_eas_.A(), num_eas));
+    So3Plast<CORE::FE::CellType::hex18>::alpha_eas_last_timestep_ =
         Teuchos::rcp(new CORE::LINALG::SerialDenseVector(
-            Teuchos::View, So_sh18::alpha_eas_last_timestep_.A(), num_eas));
-    So3_Plast<CORE::FE::CellType::hex18>::alpha_eas_delta_over_last_timestep_ =
+            Teuchos::View, SoSh18::alpha_eas_last_timestep_.A(), num_eas));
+    So3Plast<CORE::FE::CellType::hex18>::alpha_eas_delta_over_last_timestep_ =
         Teuchos::rcp(new CORE::LINALG::SerialDenseVector(
-            Teuchos::View, So_sh18::alpha_eas_delta_over_last_timestep_.A(), num_eas));
-    So3_Plast<CORE::FE::CellType::hex18>::alpha_eas_inc_ = Teuchos::rcp(
-        new CORE::LINALG::SerialDenseVector(Teuchos::View, So_sh18::alpha_eas_inc_.A(), num_eas));
+            Teuchos::View, SoSh18::alpha_eas_delta_over_last_timestep_.A(), num_eas));
+    So3Plast<CORE::FE::CellType::hex18>::alpha_eas_inc_ = Teuchos::rcp(
+        new CORE::LINALG::SerialDenseVector(Teuchos::View, SoSh18::alpha_eas_inc_.A(), num_eas));
     Kba_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
         numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, num_eas, true)));
   }
@@ -233,10 +232,10 @@ void DRT::ELEMENTS::So_sh18Plast::SyncEAS()
   {
     eastype_ = soh8p_easnone;
     neas_ = 0;
-    So3_Plast<CORE::FE::CellType::hex18>::KaaInv_ = Teuchos::null;
-    So3_Plast<CORE::FE::CellType::hex18>::Kad_ = Teuchos::null;
-    So3_Plast<CORE::FE::CellType::hex18>::feas_ = Teuchos::null;
-    So3_Plast<CORE::FE::CellType::hex18>::alpha_eas_ = Teuchos::null;
+    So3Plast<CORE::FE::CellType::hex18>::KaaInv_ = Teuchos::null;
+    So3Plast<CORE::FE::CellType::hex18>::Kad_ = Teuchos::null;
+    So3Plast<CORE::FE::CellType::hex18>::feas_ = Teuchos::null;
+    So3Plast<CORE::FE::CellType::hex18>::alpha_eas_ = Teuchos::null;
     Kba_ = Teuchos::null;
   }
 }
@@ -246,9 +245,9 @@ void DRT::ELEMENTS::So_sh18Plast::SyncEAS()
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // current displacements
-    std::vector<double>& vel,                                               // current velocities
-    std::vector<double>& temp,                                              // current temperatures
+void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // current displacements
+    std::vector<double>& vel,                                              // current velocities
+    std::vector<double>& temp,                                             // current temperatures
     CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
         stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>* massmatrix,  // element mass matrix
@@ -307,10 +306,10 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
   // prepare EAS***************************************
   if (eas_)
   {
-    So_sh18::EasSetup(M_gp, G3_0_contra, xrefe);
-    So_sh18::feas_.Clear();
-    So_sh18::KaaInv_.Clear();
-    So_sh18::Kad_.Clear();
+    SoSh18::EasSetup(M_gp, G3_0_contra, xrefe);
+    SoSh18::feas_.Clear();
+    SoSh18::KaaInv_.Clear();
+    SoSh18::Kad_.Clear();
   }
   // prepare EAS***************************************
 
@@ -323,9 +322,9 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
 
     // in-plane shape functions and derivatives
     CORE::LINALG::Matrix<9, 1> shapefunct_q9;
-    CORE::FE::shape_function<CORE::FE::CellType::quad9>(So_sh18::xsi_[gp], shapefunct_q9);
+    CORE::FE::shape_function<CORE::FE::CellType::quad9>(SoSh18::xsi_[gp], shapefunct_q9);
     CORE::LINALG::Matrix<2, 9> deriv_q9;
-    CORE::FE::shape_function_deriv1<CORE::FE::CellType::quad9>(So_sh18::xsi_[gp], deriv_q9);
+    CORE::FE::shape_function_deriv1<CORE::FE::CellType::quad9>(SoSh18::xsi_[gp], deriv_q9);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
@@ -339,11 +338,11 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
       {
         jac(0, dim) +=
             .5 * deriv_q9(0, k) * (xrefe(k + 9, dim) + xrefe(k, dim)) +
-            .5 * So_sh18::xsi_[gp](2) * deriv_q9(0, k) * (xrefe(k + 9, dim) - xrefe(k, dim));
+            .5 * SoSh18::xsi_[gp](2) * deriv_q9(0, k) * (xrefe(k + 9, dim) - xrefe(k, dim));
 
         jac(1, dim) +=
             .5 * deriv_q9(1, k) * (xrefe(k + 9, dim) + xrefe(k, dim)) +
-            .5 * So_sh18::xsi_[gp](2) * deriv_q9(1, k) * (xrefe(k + 9, dim) - xrefe(k, dim));
+            .5 * SoSh18::xsi_[gp](2) * deriv_q9(1, k) * (xrefe(k + 9, dim) - xrefe(k, dim));
 
         jac(2, dim) += .5 * shapefunct_q9(k) * (xrefe(k + 9, dim) - xrefe(k, dim));
       }
@@ -381,7 +380,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
       for (int dim = 0; dim < 3; ++dim) t33 += jac(2, dim) * G3_0_contra(dim);
 
       M.Multiply(t33 * t33 / detJ, TinvT, M_gp[gp], 0.);
-      glstrain.Multiply(1., M, So_sh18::alpha_eas_, 1.);
+      glstrain.Multiply(1., M, SoSh18::alpha_eas_, 1.);
     }
     // end EAS: enhance the strains *******************************************
 
@@ -399,18 +398,18 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
         {
           defgrd_loc(dim, 0) += .5 * deriv_q9(0, k) *
                                 ((xcurr(k + 9, dim) + xcurr(k, dim)) +
-                                    So_sh18::xsi_[gp](2) * (xcurr(k + 9, dim) - xcurr(k, dim)));
+                                    SoSh18::xsi_[gp](2) * (xcurr(k + 9, dim) - xcurr(k, dim)));
           defgrd_loc(dim, 1) += .5 * deriv_q9(1, k) *
                                 ((xcurr(k + 9, dim) + xcurr(k, dim)) +
-                                    So_sh18::xsi_[gp](2) * (xcurr(k + 9, dim) - xcurr(k, dim)));
+                                    SoSh18::xsi_[gp](2) * (xcurr(k + 9, dim) - xcurr(k, dim)));
           defgrd_loc(dim, 2) += .5 * shapefunct_q9(k) * (xcurr(k + 9, dim) - xcurr(k, dim));
         }
 
       // displacement-based deformation gradient
       CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd_disp;
-      defgrd_disp.MultiplyNT(defgrd_loc, So_sh18::invJ_[gp]);
+      defgrd_disp.MultiplyNT(defgrd_loc, SoSh18::invJ_[gp]);
       if (eas_ || dsg_shear_ || dsg_membrane_ || dsg_ctl_)
-        So_sh18::CalcConsistentDefgrd(defgrd_disp, glstrain, defgrd);
+        SoSh18::CalcConsistentDefgrd(defgrd_disp, glstrain, defgrd);
     }
 
     // plastic flow increment
@@ -517,7 +516,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
     }
     // end of stress output ***************************************************
 
-    double detJ_w = detJ * So_sh18::wgt_[gp];
+    double detJ_w = detJ * SoSh18::wgt_[gp];
 
     // update internal force vector
     if (force != nullptr) force->MultiplyTN(detJ_w, bop, pk2, 1.0);
@@ -538,9 +537,9 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
       {
         CORE::LINALG::Matrix<6, num_eas> cM;
         cM.Multiply(cmat, M);
-        So_sh18::KaaInv_.MultiplyTN(detJ_w, M, cM, 1.);
-        So_sh18::Kad_.MultiplyTN(detJ_w, M, cb, 1.);
-        So_sh18::feas_.MultiplyTN(detJ_w, M, pk2, 1.);
+        SoSh18::KaaInv_.MultiplyTN(detJ_w, M, cM, 1.);
+        SoSh18::Kad_.MultiplyTN(detJ_w, M, cb, 1.);
+        SoSh18::feas_.MultiplyTN(detJ_w, M, pk2, 1.);
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, numdofperelement_, numstr_, num_eas>(
             1.0, Kda.values(), detJ_w, cb.A(), M.A());
       }
@@ -551,7 +550,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
     {
       // shape function and derivatives
       CORE::LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
-      CORE::FE::shape_function<CORE::FE::CellType::hex18>(So_sh18::xsi_[gp], shapefunct);
+      CORE::FE::shape_function<CORE::FE::CellType::hex18>(SoSh18::xsi_[gp], shapefunct);
 
       double density = Material()->Density(gp);
 
@@ -601,16 +600,16 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
   if ((stiffmatrix || force) && eas_)
   {
     CORE::LINALG::FixedSizeSerialDenseSolver<num_eas, num_eas, 1> solve_for_KaaInv;
-    solve_for_KaaInv.SetMatrix(So_sh18::KaaInv_);
+    solve_for_KaaInv.SetMatrix(SoSh18::KaaInv_);
     int err2 = solve_for_KaaInv.Factor();
     int err = solve_for_KaaInv.Invert();
     if ((err != 0) || (err2 != 0)) dserror("Inversion of Kaa failed");
 
     CORE::LINALG::Matrix<NUMDOF_SOH18, num_eas> KdaKaa;
     CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_, num_eas, num_eas>(
-        0., KdaKaa.A(), 1., Kda.values(), So_sh18::KaaInv_.A());
-    if (stiffmatrix) stiffmatrix->Multiply(-1., KdaKaa, So_sh18::Kad_, 1.);
-    if (force) force->Multiply(-1., KdaKaa, So_sh18::feas_, 1.);
+        0., KdaKaa.A(), 1., Kda.values(), SoSh18::KaaInv_.A());
+    if (stiffmatrix) stiffmatrix->Multiply(-1., KdaKaa, SoSh18::Kad_, 1.);
+    if (force) force->Multiply(-1., KdaKaa, SoSh18::feas_, 1.);
   }
 
   return;

@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -49,38 +49,38 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<81, 1> elevec2(elevec2_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::NURBS::So_nurbs27::ActionType act = So_nurbs27::none;
+  DRT::ELEMENTS::NURBS::SoNurbs27::ActionType act = SoNurbs27::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_struct_linstiff")
-    act = So_nurbs27::calc_struct_linstiff;
+    act = SoNurbs27::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
-    act = So_nurbs27::calc_struct_nlnstiff;
+    act = SoNurbs27::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
-    act = So_nurbs27::calc_struct_internalforce;
+    act = SoNurbs27::calc_struct_internalforce;
   else if (action == "calc_struct_linstiffmass")
-    act = So_nurbs27::calc_struct_linstiffmass;
+    act = SoNurbs27::calc_struct_linstiffmass;
   else if (action == "calc_struct_nlnstiffmass")
-    act = So_nurbs27::calc_struct_nlnstiffmass;
+    act = SoNurbs27::calc_struct_nlnstiffmass;
   else if (action == "calc_struct_eleload")
-    act = So_nurbs27::calc_struct_eleload;
+    act = SoNurbs27::calc_struct_eleload;
   else if (action == "calc_struct_fsiload")
-    act = So_nurbs27::calc_struct_fsiload;
+    act = SoNurbs27::calc_struct_fsiload;
   else if (action == "calc_struct_update_istep")
-    act = So_nurbs27::calc_struct_update_istep;
+    act = SoNurbs27::calc_struct_update_istep;
   else if (action == "calc_stc_matrix")
-    act = So_nurbs27::calc_stc_matrix;
+    act = SoNurbs27::calc_stc_matrix;
   else if (action == "calc_stc_matrix_inverse")
-    act = So_nurbs27::calc_stc_matrix_inverse;
+    act = SoNurbs27::calc_stc_matrix_inverse;
   else if (action == "calc_struct_reset_istep")
-    act = So_nurbs27::calc_struct_reset_istep;
+    act = SoNurbs27::calc_struct_reset_istep;
   else if (action == "calc_struct_energy")
-    act = So_nurbs27::calc_struct_energy;
+    act = SoNurbs27::calc_struct_energy;
   else if (action == "calc_struct_nlnstifflmass")
-    act = So_nurbs27::calc_struct_nlnstifflmass;
+    act = SoNurbs27::calc_struct_nlnstifflmass;
   else if (action == "calc_struct_recover")
     return 0;
   else if (action == "calc_struct_predict")
@@ -185,7 +185,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
 
     case calc_stc_matrix_inverse:
     {
-      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the query!");
       else
@@ -197,7 +197,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
 
     case calc_stc_matrix:
     {
-      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the query!");
       else
@@ -231,8 +231,8 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  | calc. scaled thickness matrix for thin shell-like structs   (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81>& elemat1,
-    const INPAR::STR::STC_Scale stc_scaling, const int stc_layer, std::vector<int>& lm,
+void DRT::ELEMENTS::NURBS::SoNurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81>& elemat1,
+    const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
     DRT::Discretization& discretization, bool do_inverse)
 {
   // --------------------------------------------------
@@ -535,7 +535,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::NURBS::SoNurbs27::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
@@ -675,7 +675,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& dis)
+void DRT::ELEMENTS::NURBS::SoNurbs27::InitJacobianMapping(DRT::Discretization& dis)
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
@@ -737,7 +737,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
+void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
     std::vector<int>& lm,                       // location matrix
     DRT::Discretization& discretization,        // discretisation to extract knot vector
     std::vector<double>& disp,                  // current displacements
@@ -979,7 +979,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
+std::vector<CORE::LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_shapefcts(
     const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     const CORE::LINALG::Matrix<27, 1>& weights)
 {
@@ -1007,7 +1007,7 @@ std::vector<CORE::LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::So_nurbs27::sonur
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
+std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_derivs(
     const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     const CORE::LINALG::Matrix<27, 1>& weights)
 {
@@ -1036,7 +1036,7 @@ std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonur
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Weights at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
+std::vector<double> DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_gpweights()
 {
   const int numgp = 27;
 
@@ -1054,12 +1054,12 @@ std::vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NURBS::So_nurbs27Type::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::NURBS::SoNurbs27Type::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::NURBS::So_nurbs27*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::NURBS::SoNurbs27*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_nurbs27* failed");
     actele->InitJacobianMapping(dis);
   }
@@ -1070,7 +1070,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  calculate internal energy of the element (private)                  |
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
+double DRT::ELEMENTS::NURBS::SoNurbs27::CalcIntEnergy(
     DRT::Discretization& discretization,  // discretisation to extract knot vector
     std::vector<double>& disp,            // current displacements
     Teuchos::ParameterList& params)       // strain output option
@@ -1194,7 +1194,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                               bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::lumpmass(
+void DRT::ELEMENTS::NURBS::SoNurbs27::lumpmass(
     CORE::LINALG::Matrix<NUMDOF_SONURBS27, NUMDOF_SONURBS27>* emass)
 {
   // lump mass matrix

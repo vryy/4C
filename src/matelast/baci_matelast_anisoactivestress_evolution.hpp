@@ -30,11 +30,11 @@ namespace MAT
        * MIN_ACTIVATION -20.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0 [STRAIN_DEPENDENCY No]
        * [LAMBDA_LOWER 0.707] [LAMBDA_UPPER 1.414]
        */
-      class AnisoActiveStress_Evolution : public MAT::PAR::ParameterAniso
+      class AnisoActiveStressEvolution : public MAT::PAR::ParameterAniso
       {
        public:
         /// standard constructor
-        explicit AnisoActiveStress_Evolution(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+        explicit AnisoActiveStressEvolution(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -115,11 +115,11 @@ namespace MAT
      * cardiac muscle (1998), Progress in Biophysics and Molecular Biology
      * </ul>
      */
-    class AnisoActiveStress_Evolution : public Summand
+    class AnisoActiveStressEvolution : public Summand
     {
      public:
       /// constructor with given material parameters
-      explicit AnisoActiveStress_Evolution(MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params);
+      explicit AnisoActiveStressEvolution(MAT::ELASTIC::PAR::AnisoActiveStressEvolution* params);
 
       ///@name Packing and Unpacking
       //@{
@@ -202,7 +202,7 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params_;
+      MAT::ELASTIC::PAR::AnisoActiveStressEvolution* params_;
 
       /// Active stress at current time step
       double tauc_np_;

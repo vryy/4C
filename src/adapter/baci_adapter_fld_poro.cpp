@@ -45,7 +45,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
     Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix,
     Teuchos::RCP<CORE::LINALG::SparseMatrix> StructVelConstraintMatrix,
     Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
-    POROELAST::coupltype coupltype)
+    POROELAST::Coupltype coupltype)
 {
   if (!(Discretization()->Filled())) dserror("FillComplete() was not called");
   if (!Discretization()->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -93,7 +93,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
     // set action for elements
     params.set<int>("action", FLD::no_penetration);
     // params.set<Teuchos::RCP< std::set<int> > >("condIDs",condIDs);
-    params.set<POROELAST::coupltype>("coupling", POROELAST::fluidfluid);
+    params.set<POROELAST::Coupltype>("coupling", POROELAST::fluidfluid);
     params.set<int>("Physical Type", INPAR::FLUID::poro);
 
     DRT::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
@@ -114,7 +114,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
 
     // set action for elements
     params.set<int>("action", FLD::no_penetration);
-    params.set<POROELAST::coupltype>("coupling", POROELAST::fluidstructure);
+    params.set<POROELAST::Coupltype>("coupling", POROELAST::fluidstructure);
     params.set<int>("Physical Type", INPAR::FLUID::poro);
 
     // build specific assemble strategy for the fluid-mechanical system matrix

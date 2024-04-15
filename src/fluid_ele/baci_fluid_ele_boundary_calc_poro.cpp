@@ -2118,8 +2118,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
   CORE::LINALG::Matrix<Base::numdofpernode_, 1> nodenormal(true);
 
   // check which matrix is to be filled
-  POROELAST::coupltype coupling =
-      params.get<POROELAST::coupltype>("coupling", POROELAST::undefined);
+  POROELAST::Coupltype coupling =
+      params.get<POROELAST::Coupltype>("coupling", POROELAST::undefined);
 
   if (coupling == POROELAST::fluidfluid)
   {
@@ -2493,8 +2493,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
     dserror("PoroBoundary is only implemented for 3D and 2D!");
 
-  POROELAST::coupltype coupling =
-      params.get<POROELAST::coupltype>("coupling", POROELAST::undefined);
+  POROELAST::Coupltype coupling =
+      params.get<POROELAST::Coupltype>("coupling", POROELAST::undefined);
   if (coupling == POROELAST::undefined) dserror("no coupling defined for poro-boundary condition");
   const bool offdiag(coupling == POROELAST::fluidstructure);
 
@@ -2864,8 +2864,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
     dserror("PressureCoupling is only implemented for 2D and 3D!");
 
-  POROELAST::coupltype coupling =
-      params.get<POROELAST::coupltype>("coupling", POROELAST::undefined);
+  POROELAST::Coupltype coupling =
+      params.get<POROELAST::Coupltype>("coupling", POROELAST::undefined);
   if (coupling == POROELAST::undefined) dserror("no coupling defined for poro-boundary condition");
   const bool offdiag(coupling == POROELAST::fluidstructure);
 

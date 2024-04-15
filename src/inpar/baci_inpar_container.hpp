@@ -25,8 +25,6 @@
 #include <any>
 #include <string>
 
-class Epetra_MultiVector;
-class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -13,14 +13,11 @@
 
 #include "baci_config.hpp"
 
+#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <set>
 #include <vector>
-
-// forward declarations
-class Epetra_Vector;
-class Epetra_Map;
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -16,8 +16,7 @@
 
 #include "baci_structure_new_impl_generic.hpp"
 
-// forward declarations
-class Epetra_MultiVector;
+#include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 

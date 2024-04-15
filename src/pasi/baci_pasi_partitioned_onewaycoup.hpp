@@ -33,7 +33,7 @@ namespace PASI
    *
    * \author Sebastian Fuchs \date 02/2017
    */
-  class PASI_PartOneWayCoup : public PartitionedAlgo
+  class PasiPartOneWayCoup : public PartitionedAlgo
   {
    public:
     /*!
@@ -44,7 +44,7 @@ namespace PASI
      * \param[in] comm   communicator
      * \param[in] params particle structure interaction parameter list
      */
-    explicit PASI_PartOneWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit PasiPartOneWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief setup pasi algorithm

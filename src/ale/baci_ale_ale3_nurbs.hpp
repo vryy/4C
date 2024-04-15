@@ -26,12 +26,12 @@ namespace DRT
   {
     namespace NURBS
     {
-      class Ale3_NurbsType : public DRT::ElementType
+      class Ale3NurbsType : public DRT::ElementType
       {
        public:
         std::string Name() const override { return "Ale3_NurbsType"; }
 
-        static Ale3_NurbsType& Instance();
+        static Ale3NurbsType& Instance();
 
         CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -54,7 +54,7 @@ namespace DRT
         }
 
        private:
-        static Ale3_NurbsType instance_;
+        static Ale3NurbsType instance_;
       };
 
       /*----------------------------------------------------------------------------*/
@@ -90,10 +90,10 @@ namespace DRT
         */
         int UniqueParObjectId() const override
         {
-          return Ale3_NurbsType::Instance().UniqueParObjectId();
+          return Ale3NurbsType::Instance().UniqueParObjectId();
         }
 
-        virtual DRT::ElementType& ElementType() { return Ale3_NurbsType::Instance(); }
+        virtual DRT::ElementType& ElementType() { return Ale3NurbsType::Instance(); }
 
         /// Print this element
         void Print(std::ostream& os) const override;

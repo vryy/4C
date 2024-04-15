@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -124,7 +124,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       for (double& myre : myres) myre = 0.0;
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild)
+      if (eastype_ != DRT::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr, nullptr,
             nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
@@ -159,7 +159,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       CORE::FE::ExtractMyValues(*res, myres, lm);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild)
+      if (eastype_ != DRT::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, &elevec3, nullptr,
             nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
@@ -196,7 +196,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild)
+      if (eastype_ != DRT::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
             params, INPAR::STR::stress_none, INPAR::STR::strain_none);
@@ -238,7 +238,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
       CORE::FE::ExtractMyValues(*res, myres, lm);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild)
+      if (eastype_ != DRT::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, nullptr,
             nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
@@ -297,7 +297,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
           params, "ioplstrain", INPAR::STR::strain_none);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild)
+      if (eastype_ != DRT::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
             params, iostress, iostrain);
@@ -448,7 +448,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
 
     case ELEMENTS::shell_calc_stc_matrix:
     {
-      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
         dserror(
             "Action demands to calculate the STC (Scaled Thickness "
@@ -462,7 +462,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
     break;
     case ELEMENTS::shell_calc_stc_matrix_inverse:
     {
-      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
         dserror(
             "Action demands to calculate the STC (Scaled Thickness "
@@ -474,15 +474,15 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     case ELEMENTS::struct_calc_recover:
-      So_hex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
       break;
     case ELEMENTS::struct_calc_energy:
     {
-      if (eastype_ == DRT::ELEMENTS::So_hex8::soh8_easmild)
+      if (eastype_ == DRT::ELEMENTS::SoHex8::soh8_easmild)
       {
-        So_hex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra,
-            elevec1_epetra, elevec2_epetra, elevec3_epetra);
+        SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+            elevec2_epetra, elevec3_epetra);
         return 0;
       }
 
@@ -520,7 +520,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_mass_volume:
     case ELEMENTS::analyse_jacobian_determinant:
     {
-      So_hex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
+      SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
       break;
     }
@@ -536,7 +536,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
+double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
     const std::vector<double>& disp, Teuchos::ParameterList& params)
 {
   if (PRESTRESS::IsMulf(pstype_)) dserror("mulf is unsupported for the So_sh8 element!");
@@ -731,11 +731,11 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                        // current displacements
-    std::vector<double>& residual,                                    // current residual displ
-    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,      // element stiffness matrix
-    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,       // element mass matrix
+void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                       // current displacements
+    std::vector<double>& residual,                                   // current residual displ
+    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,     // element stiffness matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,      // element mass matrix
     CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force,      // element internal force vector
     CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force_str,  // element structural force vector
     CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
@@ -1223,7 +1223,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
 /*----------------------------------------------------------------------*
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::sosh8_anssetup(
+void DRT::ELEMENTS::SoSh8::sosh8_anssetup(
     const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,  // material element coords
     const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,  // current element coords
     std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>**
@@ -1359,7 +1359,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_anssetup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_sh8::sosh8_evaluatejacobians(const unsigned gp,
+bool DRT::ELEMENTS::SoSh8::sosh8_evaluatejacobians(const unsigned gp,
     const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
     const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,
     const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
@@ -1384,7 +1384,7 @@ bool DRT::ELEMENTS::So_sh8::sosh8_evaluatejacobians(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::sosh8_evaluatejacobian(const unsigned gp,
+void DRT::ELEMENTS::SoSh8::sosh8_evaluatejacobian(const unsigned gp,
     const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
     const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& x,
     CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac, double& detJ) const
@@ -1402,7 +1402,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_evaluatejacobian(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::So_sh8::sosh8_third_invariant(
+double DRT::ELEMENTS::SoSh8::sosh8_third_invariant(
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain) const
 {
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> rcg(glstrain);
@@ -1419,7 +1419,7 @@ double DRT::ELEMENTS::So_sh8::sosh8_third_invariant(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::sosh8_get_bop_loc(const unsigned gp,
+void DRT::ELEMENTS::SoSh8::sosh8_get_bop_loc(const unsigned gp,
     const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr, const double* r,
     const double* s, const CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc,
@@ -1492,7 +1492,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_get_bop_loc(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::sosh8_get_glstrain_loc(const unsigned gp,
+void DRT::ELEMENTS::SoSh8::sosh8_get_glstrain_loc(const unsigned gp,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
     const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_sps,
@@ -1604,7 +1604,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_get_glstrain_loc(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::sosh8_get_deformationgradient(const unsigned gp,
+void DRT::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
     const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
     const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
@@ -1636,7 +1636,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_get_deformationgradient(const unsigned gp,
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(
+void DRT::ELEMENTS::SoSh8::sosh8_evaluateT(
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT)
 {
@@ -1701,7 +1701,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(
 /*----------------------------------------------------------------------*
  |  return Cauchy stress at gp                                 maf 06/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(
+void DRT::ELEMENTS::SoSh8::sosh8_Cauchy(
     CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress, const int gp,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
@@ -1790,8 +1790,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(
   return;
 }
 
-void DRT::ELEMENTS::So_sh8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
-    const INPAR::STR::STC_Scale stc_scaling, const int stc_layer, std::vector<int>& lm,
+void DRT::ELEMENTS::SoSh8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
+    const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
     DRT::Discretization& discretization, bool calcinverse)
 {
   /// Compute C based on element aspect ratio
@@ -1992,7 +1992,7 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMD
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 
@@ -2004,7 +2004,7 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
   {
     // get the actual element
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_)
@@ -2013,14 +2013,14 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
       switch (actele->thickdir_)
       {
         // check for automatic definition of thickness direction
-        case DRT::ELEMENTS::So_sh8::autoj:
+        case DRT::ELEMENTS::SoSh8::autoj:
         {
           actele->thickdir_ = actele->sosh8_findthickdir();
           altered = true;
           break;
         }
         // check for enforced definition of thickness direction
-        case DRT::ELEMENTS::So_sh8::globx:
+        case DRT::ELEMENTS::SoSh8::globx:
         {
           CORE::LINALG::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(0) = 1.0;
@@ -2028,7 +2028,7 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
           altered = true;
           break;
         }
-        case DRT::ELEMENTS::So_sh8::globy:
+        case DRT::ELEMENTS::SoSh8::globy:
         {
           CORE::LINALG::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(1) = 1.0;
@@ -2036,7 +2036,7 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
           altered = true;
           break;
         }
-        case DRT::ELEMENTS::So_sh8::globz:
+        case DRT::ELEMENTS::SoSh8::globz:
         {
           CORE::LINALG::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(2) = 1.0;
@@ -2048,7 +2048,7 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
           break;
       }
 
-      if (altered and (actele->thickdir_ != DRT::ELEMENTS::So_sh8::undefined))
+      if (altered and (actele->thickdir_ != DRT::ELEMENTS::SoSh8::undefined))
       {
         // special element-dependent input of material parameters
         if (actele->Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic)
@@ -2065,15 +2065,15 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
 
       switch (actele->thickdir_)
       {
-        case DRT::ELEMENTS::So_sh8::globx:
-        case DRT::ELEMENTS::So_sh8::globy:
-        case DRT::ELEMENTS::So_sh8::globz:
+        case DRT::ELEMENTS::SoSh8::globx:
+        case DRT::ELEMENTS::SoSh8::globy:
+        case DRT::ELEMENTS::SoSh8::globz:
         {
           dserror("This should have been replaced by auto(r|s|t)");
           break;
         }
-        case DRT::ELEMENTS::So_sh8::autor:
-        case DRT::ELEMENTS::So_sh8::enfor:
+        case DRT::ELEMENTS::SoSh8::autor:
+        case DRT::ELEMENTS::SoSh8::enfor:
         {
           // resorting of nodes,
           // such that previous local r-dir is local t-dir afterwards
@@ -2091,8 +2091,8 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case DRT::ELEMENTS::So_sh8::autos:
-        case DRT::ELEMENTS::So_sh8::enfos:
+        case DRT::ELEMENTS::SoSh8::autos:
+        case DRT::ELEMENTS::SoSh8::enfos:
         {
           // resorting of nodes,
           // such that previous local s-dir is local t-dir afterwards
@@ -2108,8 +2108,8 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case DRT::ELEMENTS::So_sh8::autot:
-        case DRT::ELEMENTS::So_sh8::enfot:
+        case DRT::ELEMENTS::SoSh8::autot:
+        case DRT::ELEMENTS::SoSh8::enfot:
         {
           // no resorting necessary
           for (int node = 0; node < 8; ++node)
@@ -2120,42 +2120,42 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case DRT::ELEMENTS::So_sh8::undefined:
+        case DRT::ELEMENTS::SoSh8::undefined:
         {
-          if (actele->eastype_ == DRT::ELEMENTS::So_sh8::soh8_eassosh8)
+          if (actele->eastype_ == DRT::ELEMENTS::SoSh8::soh8_eassosh8)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easmild);
-            actele->anstype_ = So_sh8::ansnone;
+            actele->soh8_reiniteas(DRT::ELEMENTS::SoHex8::soh8_easmild);
+            actele->anstype_ = SoSh8::ansnone;
             actele->InitJacobianMapping();
             num_morphed_so_hex8_easmild++;
           }
-          else if (actele->eastype_ == DRT::ELEMENTS::So_sh8::soh8_easnone)
+          else if (actele->eastype_ == DRT::ELEMENTS::SoSh8::soh8_easnone)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easnone);
-            actele->anstype_ = So_sh8::ansnone;
+            actele->soh8_reiniteas(DRT::ELEMENTS::SoHex8::soh8_easnone);
+            actele->anstype_ = SoSh8::ansnone;
             actele->InitJacobianMapping();
             num_morphed_so_hex8_easnone++;
           }
-          else if (actele->eastype_ == DRT::ELEMENTS::So_hex8::soh8_easmild)
+          else if (actele->eastype_ == DRT::ELEMENTS::SoHex8::soh8_easmild)
           {
             // this might happen in post filter (for morped sosh8->soh8)
-            actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easmild);
-            actele->anstype_ = So_sh8::ansnone;
+            actele->soh8_reiniteas(DRT::ELEMENTS::SoHex8::soh8_easmild);
+            actele->anstype_ = SoSh8::ansnone;
             actele->InitJacobianMapping();
           }
-          else if (actele->eastype_ == DRT::ELEMENTS::So_hex8::soh8_easnone)
+          else if (actele->eastype_ == DRT::ELEMENTS::SoHex8::soh8_easnone)
           {
             // this might happen in post filter (for morped sosh8->soh8)
-            actele->anstype_ = So_sh8::ansnone;
+            actele->anstype_ = SoSh8::ansnone;
             actele->InitJacobianMapping();
           }
           else
             dserror("Undefined EAS type");
           break;
         }
-        case DRT::ELEMENTS::So_sh8::none:
+        case DRT::ELEMENTS::SoSh8::none:
           break;
         default:
           dserror("no thickness direction for So_sh8");
@@ -2189,7 +2189,7 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     actele->InitJacobianMapping();
   }

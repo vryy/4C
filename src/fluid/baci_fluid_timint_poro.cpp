@@ -213,7 +213,7 @@ void FLD::TimIntPoro::PoroIntUpdate()
     eleparams.set<int>("action", FLD::poro_boundary);
     eleparams.set("total time", time_);
     eleparams.set("delta time", dta_);
-    eleparams.set<POROELAST::coupltype>("coupling", POROELAST::fluidfluid);
+    eleparams.set<POROELAST::Coupltype>("coupling", POROELAST::fluidfluid);
     eleparams.set<int>("Physical Type", physicaltype_);
 
     discret_->ClearState();
@@ -235,7 +235,7 @@ void FLD::TimIntPoro::PoroIntUpdate()
 
     // set action for elements
     eleparams.set<int>("action", FLD::poro_prescoupl);
-    eleparams.set<POROELAST::coupltype>("coupling", POROELAST::fluidfluid);
+    eleparams.set<POROELAST::Coupltype>("coupling", POROELAST::fluidfluid);
     eleparams.set<int>("Physical Type", physicaltype_);
 
     discret_->ClearState();

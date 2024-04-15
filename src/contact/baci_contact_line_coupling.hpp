@@ -35,7 +35,7 @@ namespace CONTACT
   {
    public:
     //! @name Enums and Friends
-    enum intType  // integration types
+    enum IntType  // integration types
     {
       lts,  // line to segment
       stl   // segment to line
@@ -51,7 +51,7 @@ namespace CONTACT
      */
     LineToSurfaceCoupling3d(DRT::Discretization& idiscret, int dim, Teuchos::ParameterList& params,
         Element& pEle, Teuchos::RCP<MORTAR::Element>& lEle, std::vector<Element*> surfEles,
-        LineToSurfaceCoupling3d::intType itype);
+        LineToSurfaceCoupling3d::IntType itype);
 
     /*!
      \brief Destructor
@@ -111,7 +111,7 @@ namespace CONTACT
 
      */
     virtual void CreateIntegrationLines(
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex);
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex);
 
     /*!
      \brief Get interface discretization
@@ -156,17 +156,17 @@ namespace CONTACT
 
      */
     virtual void LinearizeVertices(
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex);
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex);
 
     /*!
      \brief perform linearization of line clip
 
      */
     virtual void LineclipVertexLinearization(MORTAR::Vertex& currv,
-        std::vector<CORE::GEN::pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
         MORTAR::Vertex* sv2, MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linsnodes,
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linmnodes);
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linsnodes,
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linmnodes);
 
     /*!
      \brief Get coupling slave element
@@ -279,17 +279,17 @@ namespace CONTACT
      \brief Return the 'DerivAuxn' map (vector) of this coupling pair
 
      */
-    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivAuxn() { return derivauxn_; }
+    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivAuxn() { return derivauxn_; }
     /*!
      \brief Return the 'DerivAuxc' map (vector) of this coupling pair
 
      */
-    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivAuxc() { return derivauxc_; }
+    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivAuxc() { return derivauxc_; }
     //  /*!
     //   \brief Return the 'DerivAuxnLine' map (vector) of this coupling pair
     //
     //   */
-    //  virtual std::vector<CORE::GEN::pairedvector<int, double> >& GetDerivAuxnLine()
+    //  virtual std::vector<CORE::GEN::Pairedvector<int, double> >& GetDerivAuxnLine()
     //  {
     //    return derivauxnLine_;
     //  }
@@ -299,14 +299,14 @@ namespace CONTACT
 
      */
     void MasterVertexLinearization(
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& currlin);
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin);
 
     /*!
      \brief perform linearization of slave vertices
 
      */
     void SlaveVertexLinearization(
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& currlin);
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin);
 
     /*!
      \brief Check / set projection status of slave nodes (3D)
@@ -349,7 +349,7 @@ namespace CONTACT
     \brief Return integration type
 
     */
-    virtual LineToSurfaceCoupling3d::intType& IType() { return intType_; }
+    virtual LineToSurfaceCoupling3d::IntType& IType() { return intType_; }
 
    private:
     //! don't want = operator and cctor
@@ -377,15 +377,15 @@ namespace CONTACT
     std::set<std::pair<int, int>>
         donebefore_;  //< set of master node pairs to guarantee uniqueness of line-line clipping
     Teuchos::RCP<MORTAR::IntCell> intCell_;  //< vector of integration lines
-    std::vector<CORE::GEN::pairedvector<int, double>>
+    std::vector<CORE::GEN::Pairedvector<int, double>>
         derivauxn_;  //< derivatives of auxiliary plane normal
-    std::vector<CORE::GEN::pairedvector<int, double>>
+    std::vector<CORE::GEN::Pairedvector<int, double>>
         derivauxnLine_;  //< derivatives of auxiliary line normal
-    std::vector<CORE::GEN::pairedvector<int, double>>
+    std::vector<CORE::GEN::Pairedvector<int, double>>
         derivauxc_;  //< derivatives of auxiliary plane normal
 
     // integration type:
-    LineToSurfaceCoupling3d::intType intType_;
+    LineToSurfaceCoupling3d::IntType intType_;
   };
 
   /*----------------------------------------------------------------------*
@@ -422,7 +422,7 @@ namespace CONTACT
 
      */
     virtual void LineIntersection(double* sxi, double* mxi,
-        CORE::GEN::pairedvector<int, double>& dsxi, CORE::GEN::pairedvector<int, double>& dmxi);
+        CORE::GEN::Pairedvector<int, double>& dsxi, CORE::GEN::Pairedvector<int, double>& dmxi);
 
     /*!
      \brief Checks validity
@@ -434,7 +434,7 @@ namespace CONTACT
      \brief calculate angle between line elements
 
      */
-    virtual double CalcCurrentAngle(CORE::GEN::pairedvector<int, double>& lineAngle);
+    virtual double CalcCurrentAngle(CORE::GEN::Pairedvector<int, double>& lineAngle);
 
     /*!
      \brief Checks parallelity
@@ -448,8 +448,8 @@ namespace CONTACT
      \brief evaluate terms
 
      */
-    virtual void EvaluateTerms(double* sxi, double* mxi, CORE::GEN::pairedvector<int, double>& dsxi,
-        CORE::GEN::pairedvector<int, double>& dmxi);
+    virtual void EvaluateTerms(double* sxi, double* mxi, CORE::GEN::Pairedvector<int, double>& dsxi,
+        CORE::GEN::Pairedvector<int, double>& dmxi);
 
     /*!
      \brief Get communicator

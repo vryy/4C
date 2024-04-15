@@ -47,7 +47,7 @@ Teuchos::RCP<FPSI::Utils> FPSI::Utils::Instance()
 /*----------------------------------------------------------------------/
 | Setup Discretization                                           rauch  |
 /----------------------------------------------------------------------*/
-Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(const Epetra_Comm& comm,
+Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::SetupDiscretizations(const Epetra_Comm& comm,
     const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
@@ -150,13 +150,13 @@ Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(const Epetra_Com
   SetupInterfaceMap(comm, structdis, porofluiddis, fluiddis, aledis);
 
   // 4.- get coupling algorithm
-  Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
+  Teuchos::RCP<FPSI::FpsiBase> fpsi_algo = Teuchos::null;
   int coupling = CORE::UTILS::IntegralValue<int>(fpsidynparams, "COUPALGO");
   switch (coupling)
   {
     case fpsi_monolithic_plain:
     {
-      fpsi_algo = Teuchos::rcp(new FPSI::Monolithic_Plain(comm, fpsidynparams, poroelastdynparams));
+      fpsi_algo = Teuchos::rcp(new FPSI::MonolithicPlain(comm, fpsidynparams, poroelastdynparams));
       break;
     }  // case monolithic
     case partitioned:

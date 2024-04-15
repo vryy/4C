@@ -24,12 +24,12 @@ namespace DRT
   namespace ELEMENTS
   {
 
-    class So_hex8fbarType : public DRT::ElementType
+    class SoHex8fbarType : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_hex8fbarType"; }
 
-      static So_hex8fbarType& Instance();
+      static SoHex8fbarType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -51,7 +51,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex8fbarType instance_;
+      static SoHex8fbarType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH8FBAR"; }
     };
@@ -68,11 +68,11 @@ namespace DRT
     Refer also to the HiWi report of Stefanos Tsoukalas, 2010
 
     */
-    class So_hex8fbar : public So_hex8
+    class SoHex8fbar : public SoHex8
     {
      public:
       //! @name Friends
-      friend class So_hex8fbarType;
+      friend class SoHex8fbarType;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -83,7 +83,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      So_hex8fbar(int id, int owner);
+      SoHex8fbar(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -91,7 +91,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_hex8fbar(const So_hex8fbar& old);
+      SoHex8fbar(const SoHex8fbar& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -110,7 +110,7 @@ namespace DRT
       */
       int UniqueParObjectId() const override
       {
-        return So_hex8fbarType::Instance().UniqueParObjectId();
+        return SoHex8fbarType::Instance().UniqueParObjectId();
       }
 
       /*!
@@ -139,7 +139,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return So_hex8fbarType::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoHex8fbarType::Instance(); }
 
       //@}
 
@@ -201,7 +201,7 @@ namespace DRT
 
      protected:
       //! don't want = operator
-      So_hex8fbar& operator=(const So_hex8fbar& old);
+      SoHex8fbar& operator=(const SoHex8fbar& old);
 
       // compute Jacobian mapping wrt to deformed configuration
       void UpdateJacobianMapping(

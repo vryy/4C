@@ -29,7 +29,7 @@ namespace CORE::GEO
       /** \brief Simplified version of the base class for 1-D elements
        *
        *  \author hiermeier \date 11/16 */
-      class SimplePointGraph_1D : public PointGraph
+      class SimplePointGraph1D : public PointGraph
       {
        public:
         class Graph : public PointGraph::Graph
@@ -50,7 +50,7 @@ namespace CORE::GEO
         };  // struct Graph
 
         /// constructor
-        SimplePointGraph_1D(
+        SimplePointGraph1D(
             Mesh& mesh, Element* element, Side* side, Location location, Strategy strategy);
 
        protected:
@@ -88,7 +88,7 @@ namespace CORE::GEO
       /** \brief Modified version of the base class for 2-D elements
        *
        *  \author hiermeier \date 11/16 */
-      class SimplePointGraph_2D : public PointGraph
+      class SimplePointGraph2D : public PointGraph
       {
        public:
         class Graph : public PointGraph::Graph
@@ -151,11 +151,11 @@ namespace CORE::GEO
         inline unsigned NumSurfaces() const { return graph_2d_->SurfaceMainCycles().size(); }
 
         /// constructor
-        SimplePointGraph_2D(
+        SimplePointGraph2D(
             Mesh& mesh, Element* element, Side* side, Location location, Strategy strategy);
 
         // empty constructor
-        SimplePointGraph_2D();
+        SimplePointGraph2D();
 
         void FindLineFacetCycles(const plain_facet_set& line_facets, Element* parent_element);
 
@@ -181,7 +181,7 @@ namespace CORE::GEO
         void FindCycles(Element* element, Cycle& cycle);
 
        private:
-        Teuchos::RCP<SimplePointGraph_2D::Graph> graph_2d_;
+        Teuchos::RCP<SimplePointGraph2D::Graph> graph_2d_;
       };  // class SimplePointGraph_2D
 
     }  // namespace IMPL

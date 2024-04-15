@@ -18,8 +18,6 @@
 
 #include <Teuchos_RCP.hpp>
 
-class Epetra_Map;
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace DRT

@@ -35,11 +35,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for aneurysm wall material
-    class AAAraghavanvorp_damage : public Parameter
+    class AaAraghavanvorpDamage : public Parameter
     {
      public:
       /// standard constructor
-      AAAraghavanvorp_damage(Teuchos::RCP<MAT::PAR::Material> matdata);
+      AaAraghavanvorpDamage(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -64,29 +64,29 @@ namespace MAT
 
   }  // namespace PAR
 
-  class AAAraghavanvorp_damageType : public CORE::COMM::ParObjectType
+  class AaAraghavanvorpDamageType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "AAAraghavanvorp_damageType"; }
 
-    static AAAraghavanvorp_damageType& Instance() { return instance_; };
+    static AaAraghavanvorpDamageType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static AAAraghavanvorp_damageType instance_;
+    static AaAraghavanvorpDamageType instance_;
   };
 
   /*----------------------------------------------------------------------*/
   /// aneurysm wall material with damage according Simo approach explained in Holzapfel (p298)
-  class AAAraghavanvorp_damage : public So3Material
+  class AaAraghavanvorpDamage : public So3Material
   {
    public:
     // empty constructor
-    AAAraghavanvorp_damage();
+    AaAraghavanvorpDamage();
 
     // constructor with given material parameters
-    AAAraghavanvorp_damage(MAT::PAR::AAAraghavanvorp_damage* params);
+    AaAraghavanvorpDamage(MAT::PAR::AaAraghavanvorpDamage* params);
 
     //! @name Packing and Unpacking
 
@@ -98,7 +98,7 @@ namespace MAT
     */
     int UniqueParObjectId() const override
     {
-      return AAAraghavanvorp_damageType::Instance().UniqueParObjectId();
+      return AaAraghavanvorpDamageType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -162,7 +162,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new AAAraghavanvorp_damage(*this));
+      return Teuchos::rcp(new AaAraghavanvorpDamage(*this));
     }
 
     /// Initialize internal stress variables
@@ -199,7 +199,7 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::AAAraghavanvorp_damage* params_;
+    MAT::PAR::AaAraghavanvorpDamage* params_;
     // damage history parameter g
     Teuchos::RCP<std::vector<CORE::LINALG::Matrix<1, 1>>> histgcurr_;  ///< current damage parameter
     Teuchos::RCP<std::vector<CORE::LINALG::Matrix<1, 1>>>

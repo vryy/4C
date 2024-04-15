@@ -55,19 +55,19 @@ namespace DRT::ELEMENTS
   namespace DETAILS
   {
     template <typename SolidFormulation, typename = void>
-    struct is_prestress_updatable : std::false_type
+    struct IsPrestressUpdatable : std::false_type
     {
     };
 
     template <typename SolidFormulation>
-    struct is_prestress_updatable<SolidFormulation,
+    struct IsPrestressUpdatable<SolidFormulation,
         std::enable_if_t<SolidFormulation::is_prestress_updatable, void>> : std::true_type
     {
     };
   }  // namespace DETAILS
 
   template <typename SolidFormulation>
-  constexpr bool is_prestress_updatable = DETAILS::is_prestress_updatable<SolidFormulation>::value;
+  constexpr bool is_prestress_updatable = DETAILS::IsPrestressUpdatable<SolidFormulation>::value;
 
   namespace DETAILS
   {

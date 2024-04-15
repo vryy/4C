@@ -129,10 +129,10 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCell(
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::IntegrationCellCreator::Execute(Mesh& mesh)
 {
-  for (std::map<VolumeCell*, volume>::iterator it = cells_.begin(); it != cells_.end(); ++it)
+  for (std::map<VolumeCell*, Volume>::iterator it = cells_.begin(); it != cells_.end(); ++it)
   {
     VolumeCell* vc = it->first;
-    volume& cell = it->second;
+    Volume& cell = it->second;
     cell.Execute(mesh, vc);
   }
 }
@@ -240,7 +240,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Create2DCell(
   const enum INPAR::CUT::BoundaryCellPosition bcell_pos =
       mesh.CreateOptions().GenBoundaryCellPosition();
 
-  IMPL::SimplePointGraph_2D pg = IMPL::SimplePointGraph_2D();
+  IMPL::SimplePointGraph2D pg = IMPL::SimplePointGraph2D();
   pg.FindLineFacetCycles(facets, cell->ParentElement());
 
   for (IMPL::PointGraph::facet_iterator it = pg.fbegin(); it != pg.fend(); ++it)

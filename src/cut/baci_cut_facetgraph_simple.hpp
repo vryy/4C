@@ -24,11 +24,11 @@ namespace CORE::GEO
   namespace CUT
   {
     /*--------------------------------------------------------------------------*/
-    class SimpleFacetGraph_1D : public FacetGraph
+    class SimpleFacetGraph1D : public FacetGraph
     {
      public:
       /// constructor
-      SimpleFacetGraph_1D(const std::vector<Side*>& sides, const plain_facet_set& facets);
+      SimpleFacetGraph1D(const std::vector<Side*>& sides, const plain_facet_set& facets);
 
       void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
 
@@ -41,11 +41,11 @@ namespace CORE::GEO
     };  // class  SimpleFacetGraph_1D
 
     /*--------------------------------------------------------------------------*/
-    class SimpleFacetGraph_2D : public FacetGraph
+    class SimpleFacetGraph2D : public FacetGraph
     {
      public:
       /// constructor
-      SimpleFacetGraph_2D(const std::vector<Side*>& sides, const plain_facet_set& facets);
+      SimpleFacetGraph2D(const std::vector<Side*>& sides, const plain_facet_set& facets);
 
       void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
 

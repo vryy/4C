@@ -27,15 +27,15 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class So_sh18Type : public So_hex18Type
+    class SoSh18Type : public SoHex18Type
     {
      public:
       //! @name Friends
-      friend class So_sh18PlastType;
+      friend class SoSh18PlastType;
 
-      std::string Name() const override { return "So_sh18Type"; }
+      std::string Name() const override { return "SoSh18Type"; }
 
-      static So_sh18Type& Instance();
+      static SoSh18Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -51,7 +51,7 @@ namespace DRT
           override;
 
      private:
-      static So_sh18Type instance_;
+      static SoSh18Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDSH18"; }
     };
@@ -62,12 +62,12 @@ namespace DRT
     A structural 18-node hexahedral solid element for large deformations.
     Quadratic interpolation within a plane and linear interpolation in the third direction
     */
-    class So_sh18 : public virtual So_hex18
+    class SoSh18 : public virtual SoHex18
     {
      public:
       //! @name Friends
-      friend class So_sh18Type;
-      friend class So_sh18PlastType;
+      friend class SoSh18Type;
+      friend class SoSh18PlastType;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -78,7 +78,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      So_sh18(int id, int owner);
+      SoSh18(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -86,7 +86,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_sh18(const So_sh18& old);
+      SoSh18(const SoSh18& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -104,7 +104,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return So_sh18Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return SoSh18Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -139,7 +139,7 @@ namespace DRT
 
 
 
-      DRT::ElementType& ElementType() const override { return So_sh18Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoSh18Type::Instance(); }
 
       //@}
 
@@ -194,7 +194,7 @@ namespace DRT
       // internal calculation methods
 
       //! don't want = operator
-      So_sh18& operator=(const So_sh18& old);
+      SoSh18& operator=(const SoSh18& old);
 
 
       //! init the inverse of the jacobian and its determinant in the material configuration

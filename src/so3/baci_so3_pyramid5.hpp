@@ -37,12 +37,12 @@ namespace DRT
     // forward declarations
     class PreStress;
 
-    class So_pyramid5Type : public DRT::ElementType
+    class SoPyramid5Type : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_pyramid5Type"; }
 
-      static So_pyramid5Type& Instance();
+      static SoPyramid5Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -64,17 +64,17 @@ namespace DRT
           override;
 
      private:
-      static So_pyramid5Type instance_;
+      static SoPyramid5Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDP5"; }
     };
 
 
-    class So_pyramid5 : public So_base
+    class SoPyramid5 : public SoBase
     {
      public:
       //! @name Friends
-      friend class So_pyramid5Type;
+      friend class SoPyramid5Type;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -89,7 +89,7 @@ namespace DRT
           CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* defgrd,
           CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* euler_almansi);
 
-      So_pyramid5(int id, int owner);
+      SoPyramid5(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -97,7 +97,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_pyramid5(const So_pyramid5& old);
+      SoPyramid5(const SoPyramid5& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -148,7 +148,7 @@ namespace DRT
       */
       int UniqueParObjectId() const override
       {
-        return So_pyramid5Type::Instance().UniqueParObjectId();
+        return SoPyramid5Type::Instance().UniqueParObjectId();
       }
 
       /*!
@@ -202,7 +202,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return So_pyramid5Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoPyramid5Type::Instance(); }
 
       //@}
 
@@ -365,7 +365,7 @@ namespace DRT
       // internal calculation methods
 
       //! don't want = operator
-      So_pyramid5& operator=(const So_pyramid5& old);
+      SoPyramid5& operator=(const SoPyramid5& old);
 
 
       //! init the inverse of the jacobian and its determinant in the material configuration

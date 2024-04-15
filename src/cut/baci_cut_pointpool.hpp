@@ -32,7 +32,7 @@ namespace CORE::GEO
     class Side;
 
     ///< Specifies the merge Strategy of the Pointpool
-    enum Pointpool_MergeStrategy
+    enum PointpoolMergeStrategy
     {
       InitialLoad,
       SelfCutLoad,
@@ -62,11 +62,11 @@ namespace CORE::GEO
       /// If a point with the coordinates "x" does not exists, it creates a new point
       /// correspondingly
       Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
-          Pointpool_MergeStrategy merge_strategy);
+          PointpoolMergeStrategy merge_strategy);
 
       /// Get the point with the specified coordinates "x" from the pointpool
       Point* GetPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
-          Pointpool_MergeStrategy merge_strategy);
+          PointpoolMergeStrategy merge_strategy);
 
       /// Simply insert p into the pointpool and correspondingly modify the boundingbox size
       void AddPoint(const double* x, Teuchos::RCP<Point> p);
@@ -237,11 +237,11 @@ namespace CORE::GEO
       /// Get Points
       const RCPPointSet& GetPoints() { return tree_.GetPoints(); }
 
-      void SetMergeStrategy(Pointpool_MergeStrategy strategy) { merge_strategy_ = strategy; }
+      void SetMergeStrategy(PointpoolMergeStrategy strategy) { merge_strategy_ = strategy; }
 
      private:
       ///< Current Merge Strategy of the Pointpool
-      Pointpool_MergeStrategy merge_strategy_;
+      PointpoolMergeStrategy merge_strategy_;
 
       ///< the PointPool class is represented by the first node in the OctTree
       OctTreeNode tree_;

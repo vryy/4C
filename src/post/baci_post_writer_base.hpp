@@ -14,11 +14,11 @@
 
 #include "baci_post_filter_base.hpp"
 
+#include <Epetra_MultiVector.h>
+
 #include <fstream>
 #include <string>
 #include <vector>
-
-class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 

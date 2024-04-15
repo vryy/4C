@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>& eledefs,
-    std::vector<EXODUS::cond_def>& condefs)
+void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>& eledefs,
+    std::vector<EXODUS::CondDef>& condefs)
 {
   using namespace FourC;
 
@@ -130,14 +130,14 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>
       // in case of eb we differntiate between 'element' or 'condition'
       if (type.compare("ELEMENT") == 0)
       {
-        EXODUS::elem_def edef = EXODUS::ReadEdef(mesh_entity, id, actcond);
+        EXODUS::ElemDef edef = EXODUS::ReadEdef(mesh_entity, id, actcond);
         eledefs.push_back(edef);
       }
       else if (type.compare("CONDITION") == 0)
       {
         // the geometry type is figured out by finding the identifier e.g. "SURF"
         // within the condition name (sectionname) which therefore should carry it!
-        EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
+        EXODUS::CondDef cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
         switch (cdef.gtype)
         {
           case DRT::Condition::Point:
@@ -206,7 +206,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>
     }
     else if (mesh_entity.compare(nsmarker) == 0)
     {
-      EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
+      EXODUS::CondDef cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
       switch (cdef.gtype)
       {
         case DRT::Condition::Point:
@@ -269,7 +269,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>
     }
     else if (mesh_entity.compare(ssmarker) == 0)
     {
-      EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
+      EXODUS::CondDef cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
       condefs.push_back(cdef);
     }
     else
@@ -283,10 +283,10 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-EXODUS::elem_def EXODUS::ReadEdef(
+EXODUS::ElemDef EXODUS::ReadEdef(
     const std::string& mesh_entity, const int id, const std::string& actcond)
 {
-  EXODUS::elem_def edef;
+  EXODUS::ElemDef edef;
   edef.id = id;
   edef.me = EXODUS::bceb;
 
@@ -310,12 +310,12 @@ EXODUS::elem_def EXODUS::ReadEdef(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-EXODUS::cond_def EXODUS::ReadCdef(
+EXODUS::CondDef EXODUS::ReadCdef(
     const std::string& mesh_entity, const int id, const std::string& actcond)
 {
   using namespace FourC;
 
-  EXODUS::cond_def cdef;
+  EXODUS::CondDef cdef;
   cdef.id = id;
   if (mesh_entity.compare(1, 2, "eb") == 0)
     cdef.me = EXODUS::bceb;
@@ -366,7 +366,7 @@ EXODUS::cond_def EXODUS::ReadCdef(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::elem_def& def)
+void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::ElemDef& def)
 {
   std::string mesh_entity;
   if (def.me == EXODUS::bceb)
@@ -383,7 +383,7 @@ void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::elem_def& def)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::cond_def& def)
+void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::CondDef& def)
 {
   std::string mesh_entity;
   if (def.me == EXODUS::bceb)
@@ -402,7 +402,7 @@ void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::cond_def& def)
 /*----------------------------------------------------------------------*
  * check if periodic boundary conditions are defined        u.may 02/10 *
  *----------------------------------------------------------------------*/
-bool EXODUS::PeriodicBoundaryConditionsFound(std::vector<EXODUS::cond_def> condefs)
+bool EXODUS::PeriodicBoundaryConditionsFound(std::vector<EXODUS::CondDef> condefs)
 {
   bool pbc_defined = false;
   for (unsigned int i = 0; i < condefs.size(); i++)
@@ -426,7 +426,7 @@ bool EXODUS::PeriodicBoundaryConditionsFound(std::vector<EXODUS::cond_def> conde
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectNodalCoordinatesForPeriodicBoundaryConditions(
-    EXODUS::Mesh& mesh, std::vector<EXODUS::cond_def> condefs)
+    EXODUS::Mesh& mesh, std::vector<EXODUS::CondDef> condefs)
 {
   CorrectYZPlaneForPeriodicBoundaryConditions(mesh, condefs);
   CorrectXZPlaneForPeriodicBoundaryConditions(mesh, condefs);
@@ -441,7 +441,7 @@ void EXODUS::CorrectNodalCoordinatesForPeriodicBoundaryConditions(
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
-    EXODUS::Mesh& mesh, const std::vector<EXODUS::cond_def>& condefs)
+    EXODUS::Mesh& mesh, const std::vector<EXODUS::CondDef>& condefs)
 {
   // loop over all conditions
   for (unsigned int i = 0; i < condefs.size(); i++)
@@ -454,7 +454,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
             condefs[i].desc.find("ANGLE 0") != std::string::npos))
     {
       // store master pbc
-      const EXODUS::cond_def master_con = condefs[i];
+      const EXODUS::CondDef master_con = condefs[i];
       const int master_nodeset_id = master_con.id;
 
       // get condition id for master pbc
@@ -466,7 +466,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       string_mconditionidstream >> master_conditionID;
 
       // find matching slave pbc node set
-      EXODUS::cond_def slave_con;
+      EXODUS::CondDef slave_con;
       int slave_conditionID = -1;
       bool matchingIDfound = false;
       for (unsigned int i_slave = 0; i_slave < condefs.size(); i_slave++)
@@ -578,7 +578,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
-    EXODUS::Mesh& mesh, const std::vector<EXODUS::cond_def>& condefs)
+    EXODUS::Mesh& mesh, const std::vector<EXODUS::CondDef>& condefs)
 {
   // loop over all conditions
   for (unsigned int i = 0; i < condefs.size(); i++)
@@ -591,7 +591,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
             condefs[i].desc.find("ANGLE 0") != std::string::npos))
     {
       // store master pbc
-      const EXODUS::cond_def master_con = condefs[i];
+      const EXODUS::CondDef master_con = condefs[i];
       const int master_nodeset_id = master_con.id;
 
       // get condition id for master pbc
@@ -603,7 +603,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       string_mconditionidstream >> master_conditionID;
 
       // find matching slave pbc node set
-      EXODUS::cond_def slave_con;
+      EXODUS::CondDef slave_con;
       int slave_conditionID = -1;
       bool matchingIDfound = false;
 
@@ -716,7 +716,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
-    EXODUS::Mesh& mesh, const std::vector<EXODUS::cond_def>& condefs)
+    EXODUS::Mesh& mesh, const std::vector<EXODUS::CondDef>& condefs)
 {
   // loop over all conditions
   for (unsigned int i = 0; i < condefs.size(); i++)
@@ -729,7 +729,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
             condefs[i].desc.find("ANGLE 0") != std::string::npos))
     {
       // store master pbc
-      const EXODUS::cond_def master_con = condefs[i];
+      const EXODUS::CondDef master_con = condefs[i];
       const int master_nodeset_id = master_con.id;
 
       // get condition id for master pbc
@@ -741,7 +741,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
       string_mconditionidstream >> master_conditionID;
 
       // find matching slave pbc node set
-      EXODUS::cond_def slave_con;
+      EXODUS::CondDef slave_con;
       int slave_conditionID = -1;
       bool matchingIDfound = false;
       for (unsigned int i_slave = 0; i_slave < condefs.size(); i_slave++)

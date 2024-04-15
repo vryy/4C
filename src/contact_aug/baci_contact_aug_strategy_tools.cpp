@@ -93,13 +93,13 @@ void CONTACT::AUG::Strategy::AugFDCheckGlobal(CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::Strategy::FD_Debug* CONTACT::AUG::Strategy::FD_Debug::Instance(
+CONTACT::AUG::Strategy::FdDebug* CONTACT::AUG::Strategy::FdDebug::Instance(
     Strategy* strat, const double delta, CORE::UTILS::SingletonAction action)
 {
-  static CORE::UTILS::SingletonOwner<CONTACT::AUG::Strategy::FD_Debug> owner(
+  static CORE::UTILS::SingletonOwner<CONTACT::AUG::Strategy::FdDebug> owner(
       [=]()
       {
-        std::unique_ptr<CONTACT::AUG::Strategy::FD_Debug> instance(new FD_Debug);
+        std::unique_ptr<CONTACT::AUG::Strategy::FdDebug> instance(new FdDebug);
         instance->Init(strat, delta);
         return instance;
       });
@@ -109,7 +109,7 @@ CONTACT::AUG::Strategy::FD_Debug* CONTACT::AUG::Strategy::FD_Debug::Instance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FD_Debug::Init(Strategy* strat, const double delta)
+void CONTACT::AUG::Strategy::FdDebug::Init(Strategy* strat, const double delta)
 {
   if (not strat) dserror("nullptr pointer!");
 
@@ -120,7 +120,7 @@ void CONTACT::AUG::Strategy::FD_Debug::Init(Strategy* strat, const double delta)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FD_Debug::Evaluate(
+void CONTACT::AUG::Strategy::FdDebug::Evaluate(
     const Teuchos::RCP<CORE::LINALG::SparseMatrix>& derivMatrixPtr,
     Teuchos::RCP<Epetra_Vector>& rhsVector, CONTACT::ParamsInterface& cparams)
 {
@@ -303,7 +303,7 @@ void CONTACT::AUG::Strategy::FD_Debug::Evaluate(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FD_Debug::DoPerturbation(const int gid, const int dof)
+void CONTACT::AUG::Strategy::FdDebug::DoPerturbation(const int gid, const int dof)
 {
   DRT::Node* node = FindINode(gid);
 
@@ -333,7 +333,7 @@ void CONTACT::AUG::Strategy::FD_Debug::DoPerturbation(const int gid, const int d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FD_Debug::UndoPerturbation(const int gid, const int dof) const
+void CONTACT::AUG::Strategy::FdDebug::UndoPerturbation(const int gid, const int dof) const
 {
   DRT::Node* node = FindINode(gid);
 
@@ -346,7 +346,7 @@ void CONTACT::AUG::Strategy::FD_Debug::UndoPerturbation(const int gid, const int
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::Node* CONTACT::AUG::Strategy::FD_Debug::FindINode(const int gid) const
+DRT::Node* CONTACT::AUG::Strategy::FdDebug::FindINode(const int gid) const
 {
   DRT::Node* node = nullptr;
 

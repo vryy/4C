@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   if (la.Size() > 1)
@@ -177,7 +177,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -186,7 +186,7 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // start with ActionType "none"
-  typename So3_Scatra::ActionType act = So3_Scatra::none;
+  typename So3Scatra::ActionType act = So3Scatra::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -195,7 +195,7 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_struct_stiffscalar")
-    act = So3_Scatra::calc_struct_stiffscalar;
+    act = So3Scatra::calc_struct_stiffscalar;
 
   // at the moment all cases need the PreEvaluate routine, since we always need the concentration
   // value at the gp
@@ -205,7 +205,7 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList
   switch (act)
   {
     // coupling terms K_dS of stiffness matrix K^{SSI} for monolithic SSI
-    case So3_Scatra::calc_struct_stiffscalar:
+    case So3Scatra::calc_struct_stiffscalar:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
@@ -236,7 +236,7 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp_nodal_values,
     const std::vector<double>& scalar_nodal_values, const CORE::LINALG::Matrix<3, 1>& n,
     const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtX
  | for monolithic SSI, contribution to k_dS (private)                   |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::LocationArray& la,
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::LocationArray& la,
     std::vector<double>& disp,                         // current displacement
     CORE::LINALG::SerialDenseMatrix& stiffmatrix_kdS,  // (numdim_*numnod_ ; numnod_)
     Teuchos::ParameterList& params)
@@ -396,7 +396,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
  | calculate the nonlinear B-operator (private)           schmidt 10/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::CalculateBop(
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::CalculateBop(
     CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,  //!< (o): nonlinear B-operator
     const CORE::LINALG::Matrix<numdim_, numdim_>* defgrad,  //!< (i): deformation gradient
     const CORE::LINALG::Matrix<numdim_, numnod_>* N_XYZ)
@@ -468,7 +468,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::CalculateBop(
  | initialize element (private)                            schmidt 10/17|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::InitElement()
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::InitElement()
 {
   // resize gauss point coordinates, inverse of the jacobian and determinant of the jacobian
   xsi_.resize(numgpt_);
@@ -515,11 +515,11 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::InitElement()
 }
 
 
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8fbar, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoWeg6, CORE::FE::CellType::wedge6>;
 
 FOUR_C_NAMESPACE_CLOSE

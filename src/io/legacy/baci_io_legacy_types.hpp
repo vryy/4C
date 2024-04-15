@@ -52,7 +52,7 @@ FOUR_C_NAMESPACE_OPEN
   \author u.kue
   \date 08/04
 */
-enum SYMBOL_TYPES
+enum SymbolTypes
 {
   sym_undefined,
   sym_string,
@@ -90,7 +90,7 @@ struct SYMBOL
     double real;
     struct MAP* dir;
   } s;
-  SYMBOL_TYPES type;
+  SymbolTypes type;
   struct SYMBOL* next;
 };
 
@@ -111,13 +111,13 @@ struct SYMBOL
   \author u.kue
   \date 08/04
 */
-struct MAP_NODE
+struct MapNode
 {
   char* key;
   SYMBOL* symbol;
   int count;
-  struct MAP_NODE* lhs;
-  struct MAP_NODE* rhs;
+  struct MapNode* lhs;
+  struct MapNode* rhs;
 };
 
 
@@ -132,7 +132,7 @@ struct MAP_NODE
 */
 struct MAP
 {
-  MAP_NODE root;
+  MapNode root;
   int count{};
 };
 

@@ -715,7 +715,7 @@ double MORTAR::Element::ComputeAveragedUnitNormalAtXi(const double* xi, double* 
  |  Compute unit normal derivative at loc. coord. xi          popp 03/09|
  *----------------------------------------------------------------------*/
 void MORTAR::Element::DerivUnitNormalAtXi(
-    const double* xi, std::vector<CORE::GEN::pairedvector<int, double>>& derivn)
+    const double* xi, std::vector<CORE::GEN::Pairedvector<int, double>>& derivn)
 {
   // initialize variables
   const int nnodes = NumNode();
@@ -746,7 +746,7 @@ void MORTAR::Element::DerivUnitNormalAtXi(
   for (int i = 0; i < 3; ++i) n[i] /= length;
 
   // check if this mortar ele is an IntEle
-  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> nodelin(0);
+  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> nodelin(0);
   NodeLinearization(nodelin);
 
   int nderiv = nnodes * 3;
@@ -757,9 +757,9 @@ void MORTAR::Element::DerivUnitNormalAtXi(
   derivn.resize(3, nderiv);
 
   // non-unit normal derivative
-  std::vector<CORE::GEN::pairedvector<int, double>> derivnnu(
+  std::vector<CORE::GEN::Pairedvector<int, double>> derivnnu(
       3, nderiv);  // assume that each node has 3 dofs...
-  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
 
   // now the derivative
   for (int n = 0; n < nnodes; ++n)
@@ -1017,7 +1017,7 @@ double MORTAR::Element::Jacobian(const double* xi)
  |  Evaluate directional deriv. of Jacobian det.              popp 05/08|
  *----------------------------------------------------------------------*/
 void MORTAR::Element::DerivJacobian(
-    const double* xi, CORE::GEN::pairedvector<int, double>& derivjac)
+    const double* xi, CORE::GEN::Pairedvector<int, double>& derivjac)
 {
   // get element nodes
   int nnodes = NumNode();
@@ -1206,7 +1206,7 @@ double MORTAR::Element::ComputeArea()
 /*----------------------------------------------------------------------*
  |  Compute length / area of the element                     seitz 09/17|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::ComputeAreaDeriv(CORE::GEN::pairedvector<int, double>& area_deriv)
+double MORTAR::Element::ComputeAreaDeriv(CORE::GEN::Pairedvector<int, double>& area_deriv)
 {
   double area = 0.0;
   CORE::FE::CellType dt = Shape();
@@ -1273,9 +1273,9 @@ double MORTAR::Element::ComputeAreaDeriv(CORE::GEN::pairedvector<int, double>& a
       detg = Jacobian(gpc);
       area += integrator.Weight(j) * detg;
 
-      CORE::GEN::pairedvector<int, double> derivjac(NumNode() * Dim());
+      CORE::GEN::Pairedvector<int, double> derivjac(NumNode() * Dim());
       DerivJacobian(gpc, derivjac);
-      for (CORE::GEN::pairedvector<int, double>::const_iterator p = derivjac.begin();
+      for (CORE::GEN::Pairedvector<int, double>::const_iterator p = derivjac.begin();
            p != derivjac.end(); ++p)
         area_deriv[p->first] += integrator.Weight(j) * p->second;
     }
@@ -1650,10 +1650,10 @@ void MORTAR::Element::DeleteSearchElements()
  |  Derivatives of nodal spatial coords                      seitz 03/15|
  *----------------------------------------------------------------------*/
 void MORTAR::Element::NodeLinearization(
-    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& nodelin)
+    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& nodelin)
 {
   // resize the linearizations
-  nodelin.resize(NumNode(), std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
+  nodelin.resize(NumNode(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
 
   // loop over all intEle nodes
   for (int in = 0; in < NumNode(); ++in)

@@ -44,7 +44,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm) : PartFS3I_1WC(comm), comm_(comm)
+FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm) : PartFS3I1Wc(comm), comm_(comm)
 {
   // has to stay empty
   return;
@@ -63,7 +63,7 @@ void FS3I::BiofilmFSI::Init()
               << std::endl;
 
   // call Init() in base class
-  FS3I::PartFS3I_1WC::Init();
+  FS3I::PartFS3I1Wc::Init();
 
   //---------------------------------------------------------------------
   // set up struct ale
@@ -159,7 +159,7 @@ void FS3I::BiofilmFSI::Init()
 void FS3I::BiofilmFSI::Setup()
 {
   // call Setup() in base class
-  FS3I::PartFS3I_1WC::Setup();
+  FS3I::PartFS3I1Wc::Setup();
 
   Teuchos::RCP<DRT::Discretization> structaledis = GLOBAL::Problem::Instance()->GetDis("structale");
 

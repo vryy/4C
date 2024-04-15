@@ -30,7 +30,7 @@ namespace DRT::ELEMENTS
 {
   namespace DETAILS
   {
-    using ImplementedSolidCellTypes = CORE::FE::celltype_sequence<CORE::FE::CellType::hex8,
+    using ImplementedSolidCellTypes = CORE::FE::CelltypeSequence<CORE::FE::CellType::hex8,
         CORE::FE::CellType::hex18, CORE::FE::CellType::hex20, CORE::FE::CellType::hex27,
         CORE::FE::CellType::nurbs27, CORE::FE::CellType::tet4, CORE::FE::CellType::tet10,
         CORE::FE::CellType::wedge6, CORE::FE::CellType::pyramid5>;
@@ -44,14 +44,14 @@ namespace DRT::ELEMENTS
             ImplementedSolidCellTypes>;
 
     using FbarEvaluators = CORE::FE::apply_celltype_sequence<FBarSolidIntegrator,
-        CORE::FE::celltype_sequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
+        CORE::FE::CelltypeSequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
     using EASEvaluators = CORE::FE::BaseTypeList<
         SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>,
         SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21>>;
     using MulfEvaluators =
         CORE::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes>;
     using FBarMulfEvaluators = CORE::FE::apply_celltype_sequence<MulfFBarSolidIntegrator,
-        CORE::FE::celltype_sequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
+        CORE::FE::CelltypeSequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
 
     using SolidEvaluators =
         CORE::FE::Join<DisplacementBasedEvaluators, DisplacementBasedLinearKinematicsEvaluators,

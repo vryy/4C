@@ -18,42 +18,42 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex8PoroType DRT::ELEMENTS::So_hex8PoroType::instance_;
+DRT::ELEMENTS::SoHex8PoroType DRT::ELEMENTS::SoHex8PoroType::instance_;
 
-DRT::ELEMENTS::So_hex8PoroType& DRT::ELEMENTS::So_hex8PoroType::Instance() { return instance_; }
+DRT::ELEMENTS::SoHex8PoroType& DRT::ELEMENTS::SoHex8PoroType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8PoroType::Create(const std::vector<char>& data)
 {
   auto* object =
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(-1, -1);
+      new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(id, owner));
+        new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>(id, owner));
+      new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::So_hex8PoroType::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex8PoroType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8;
-  So_hex8Type::SetupElementDefinition(definitions_hex8);
+  SoHex8Type::SetupElementDefinition(definitions_hex8);
 
   std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
 
@@ -69,14 +69,14 @@ void DRT::ELEMENTS::So_hex8PoroType::SetupElementDefinition(
                      .Build();
 }
 
-int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoHex8PoroType::Initialize(DRT::Discretization& dis)
 {
-  So_hex8Type::Initialize(dis);
+  SoHex8Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
+        dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_poro* failed");
     actele->InitElement();
@@ -88,42 +88,42 @@ int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  TET 4 Element                                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_tet4PoroType DRT::ELEMENTS::So_tet4PoroType::instance_;
+DRT::ELEMENTS::SoTet4PoroType DRT::ELEMENTS::SoTet4PoroType::instance_;
 
-DRT::ELEMENTS::So_tet4PoroType& DRT::ELEMENTS::So_tet4PoroType::Instance() { return instance_; }
+DRT::ELEMENTS::SoTet4PoroType& DRT::ELEMENTS::SoTet4PoroType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4PoroType::Create(const std::vector<char>& data)
 {
   auto* object =
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(-1, -1);
+      new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(id, owner));
+        new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>(id, owner));
+      new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::So_tet4PoroType::SetupElementDefinition(
+void DRT::ELEMENTS::SoTet4PoroType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet4;
-  So_tet4Type::SetupElementDefinition(definitions_tet4);
+  SoTet4Type::SetupElementDefinition(definitions_tet4);
 
   std::map<std::string, INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
 
@@ -139,17 +139,17 @@ void DRT::ELEMENTS::So_tet4PoroType::SetupElementDefinition(
                      .Build();
 }
 
-int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoTet4PoroType::Initialize(DRT::Discretization& dis)
 {
-  So_tet4Type::Initialize(dis);
+  SoTet4Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>*>(
+        dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>::InitElement();
+    actele->So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>::InitElement();
   }
   return 0;
 }
@@ -157,42 +157,42 @@ int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  HEX 27 Element                                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex27PoroType DRT::ELEMENTS::So_hex27PoroType::instance_;
+DRT::ELEMENTS::SoHex27PoroType DRT::ELEMENTS::SoHex27PoroType::instance_;
 
-DRT::ELEMENTS::So_hex27PoroType& DRT::ELEMENTS::So_hex27PoroType::Instance() { return instance_; }
+DRT::ELEMENTS::SoHex27PoroType& DRT::ELEMENTS::SoHex27PoroType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_hex27PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoHex27PoroType::Create(const std::vector<char>& data)
 {
   auto* object =
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>(-1, -1);
+      new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>(id, owner));
+        new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>(id, owner));
+      new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::So_hex27PoroType::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex27PoroType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex27;
-  So_hex27Type::SetupElementDefinition(definitions_hex27);
+  SoHex27Type::SetupElementDefinition(definitions_hex27);
 
   std::map<std::string, INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
 
@@ -205,17 +205,17 @@ void DRT::ELEMENTS::So_hex27PoroType::SetupElementDefinition(
                       .Build();
 }
 
-int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoHex27PoroType::Initialize(DRT::Discretization& dis)
 {
-  So_hex27Type::Initialize(dis);
+  SoHex27Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>*>(
+        dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>::InitElement();
+    actele->So3Poro<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>::InitElement();
   }
   return 0;
 }
@@ -223,42 +223,42 @@ int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  TET 10 Element                                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_tet10PoroType DRT::ELEMENTS::So_tet10PoroType::instance_;
+DRT::ELEMENTS::SoTet10PoroType DRT::ELEMENTS::SoTet10PoroType::instance_;
 
-DRT::ELEMENTS::So_tet10PoroType& DRT::ELEMENTS::So_tet10PoroType::Instance() { return instance_; }
+DRT::ELEMENTS::SoTet10PoroType& DRT::ELEMENTS::SoTet10PoroType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_tet10PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoTet10PoroType::Create(const std::vector<char>& data)
 {
   auto* object =
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>(-1, -1);
+      new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>(id, owner));
+        new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>(id, owner));
+      new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::So_tet10PoroType::SetupElementDefinition(
+void DRT::ELEMENTS::SoTet10PoroType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet10;
-  So_tet10Type::SetupElementDefinition(definitions_tet10);
+  SoTet10Type::SetupElementDefinition(definitions_tet10);
 
   std::map<std::string, INPUT::LineDefinition>& defs_tet10 = definitions_tet10["SOLIDT10"];
 
@@ -271,17 +271,17 @@ void DRT::ELEMENTS::So_tet10PoroType::SetupElementDefinition(
                       .Build();
 }
 
-int DRT::ELEMENTS::So_tet10PoroType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoTet10PoroType::Initialize(DRT::Discretization& dis)
 {
-  So_tet10Type::Initialize(dis);
+  SoTet10Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>*>(
+        dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_tet10_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>::InitElement();
+    actele->So3Poro<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>::InitElement();
   }
   return 0;
 }
@@ -289,48 +289,45 @@ int DRT::ELEMENTS::So_tet10PoroType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  NURBS 27 Element                                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_nurbs27PoroType DRT::ELEMENTS::So_nurbs27PoroType::instance_;
+DRT::ELEMENTS::SoNurbs27PoroType DRT::ELEMENTS::SoNurbs27PoroType::instance_;
 
-DRT::ELEMENTS::So_nurbs27PoroType& DRT::ELEMENTS::So_nurbs27PoroType::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::SoNurbs27PoroType& DRT::ELEMENTS::SoNurbs27PoroType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_nurbs27PoroType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoNurbs27PoroType::Create(const std::vector<char>& data)
 {
   auto* object =
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>(
+      new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::NURBS::SoNurbs27, CORE::FE::CellType::nurbs27>(
           -1, -1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27PoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>(
+        new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::NURBS::SoNurbs27, CORE::FE::CellType::nurbs27>(
             id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>(
+      new DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::NURBS::SoNurbs27, CORE::FE::CellType::nurbs27>(
           id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::So_nurbs27PoroType::SetupElementDefinition(
+void DRT::ELEMENTS::SoNurbs27PoroType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_nurbs27;
-  NURBS::So_nurbs27Type::SetupElementDefinition(definitions_nurbs27);
+  NURBS::SoNurbs27Type::SetupElementDefinition(definitions_nurbs27);
 
   std::map<std::string, INPUT::LineDefinition>& defs_nurbs27 = definitions_nurbs27["SONURBS27"];
 
@@ -343,17 +340,17 @@ void DRT::ELEMENTS::So_nurbs27PoroType::SetupElementDefinition(
                         .Build();
 }
 
-int DRT::ELEMENTS::So_nurbs27PoroType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoNurbs27PoroType::Initialize(DRT::Discretization& dis)
 {
-  NURBS::So_nurbs27Type::Initialize(dis);
+  NURBS::SoNurbs27Type::Initialize(dis);
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<
-        DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>*>(
+        DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::NURBS::SoNurbs27, CORE::FE::CellType::nurbs27>*>(
         dis.lColElement(i));
     if (!actele) dserror("cast to So_nurbs27_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, CORE::FE::CellType::nurbs27>::InitElement();
+    actele->So3Poro<DRT::ELEMENTS::NURBS::SoNurbs27, CORE::FE::CellType::nurbs27>::InitElement();
   }
   return 0;
 }

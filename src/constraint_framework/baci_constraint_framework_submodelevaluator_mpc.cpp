@@ -50,15 +50,15 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
   // Map the Node ids to the respective corner of the rve --> rveCornerNodeIdMap
   switch (rveRefType_)
   {
-    case INPAR::RVE_MPC::rveReferenceDeformationDefinition::automatic:
+    case INPAR::RVE_MPC::RveReferenceDeformationDefinition::automatic:
     {
       BuildPeriodicRveCornerNodeMap(rveBoundaryNodeIdMap, rveCornerNodeIdMap);
     }
     break;
 
-    case INPAR::RVE_MPC::rveReferenceDeformationDefinition::manual:
+    case INPAR::RVE_MPC::RveReferenceDeformationDefinition::manual:
     {
-      if (rveDim_ != INPAR::RVE_MPC::rveDimension::rve2d)
+      if (rveDim_ != INPAR::RVE_MPC::RveDimension::rve2d)
         dserror("Manual Edge node definition is not implemented for 3D RVEs");
 
       // Read the reference points
@@ -123,20 +123,20 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput(
 
   mpcParameterList_ = GLOBAL::Problem::Instance()->RveMultiPointConstraintParams();
 
-  rveRefType_ = CORE::UTILS::IntegralValue<INPAR::RVE_MPC::rveReferenceDeformationDefinition>(
+  rveRefType_ = CORE::UTILS::IntegralValue<INPAR::RVE_MPC::RveReferenceDeformationDefinition>(
       mpcParameterList_, "RVE_REFERENCE_POINTS");
 
-  strategy_ = CORE::UTILS::IntegralValue<INPAR::RVE_MPC::enforcementStrategy>(
+  strategy_ = CORE::UTILS::IntegralValue<INPAR::RVE_MPC::EnforcementStrategy>(
       mpcParameterList_, "ENFORCEMENT");
 
 
   // Check the enforcement strategy
   switch (strategy_)
   {
-    case INPAR::RVE_MPC::enforcementStrategy::lagrangeMultiplier:
+    case INPAR::RVE_MPC::EnforcementStrategy::lagrangeMultiplier:
       dserror("Constraint Enforcement via Lagrange Multiplier Methode is not impl.");
 
-    case INPAR::RVE_MPC::enforcementStrategy::penalty:
+    case INPAR::RVE_MPC::EnforcementStrategy::penalty:
     {
       IO::cout(IO::minimal) << "Constraint enforcement strategy: Penalty method" << IO::endl;
       const Teuchos::ParameterList& MpcList =
@@ -156,12 +156,12 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput(
   if (linePeriodicRveConditions_.size() == 0 && surfacePeriodicRveConditions_.size() != 0)
   {
     IO::cout(IO::verbose) << "Rve dimension: 3d" << IO::endl;
-    rveDim_ = INPAR::RVE_MPC::rveDimension::rve3d;
+    rveDim_ = INPAR::RVE_MPC::RveDimension::rve3d;
   }
   else if (linePeriodicRveConditions_.size() != 0 && surfacePeriodicRveConditions_.size() == 0)
   {
     IO::cout(IO::verbose) << "Rve dimensions: 2d" << IO::endl;
-    rveDim_ = INPAR::RVE_MPC::rveDimension::rve2d;
+    rveDim_ = INPAR::RVE_MPC::RveDimension::rve2d;
   }
   else
   {
@@ -188,7 +188,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput(
                         << " linear coupled equations" << IO::endl;
 
   if (pointPeriodicRveRefConditions_.size() == 0 &&
-      rveRefType_ == INPAR::RVE_MPC::rveReferenceDeformationDefinition::manual)
+      rveRefType_ == INPAR::RVE_MPC::RveReferenceDeformationDefinition::manual)
   {
     dserror(
         "A DESIGN POINT PERIODIC RVE 2D BOUNDARY REFERENCE CONDITIONS is req. for manual ref. "
@@ -197,14 +197,14 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput(
   }
 
   if (pointPeriodicRveRefConditions_.size() != 0 &&
-      rveRefType_ == INPAR::RVE_MPC::rveReferenceDeformationDefinition::automatic)
+      rveRefType_ == INPAR::RVE_MPC::RveReferenceDeformationDefinition::automatic)
     dserror("Set the RVE_REFERENCE_POINTS to manual");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::FindOppositeEdgeNode(
-    const int nodeID, INPAR::RVE_MPC::rveEdgeIdentifiers edge,
+    const int nodeID, INPAR::RVE_MPC::RveEdgeIdentifiers edge,
     std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap)
 {
   std::string newPos;
@@ -214,7 +214,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::FindOpposite
 
   switch (edge)
   {
-    case INPAR::RVE_MPC::rveEdgeIdentifiers::Gamma_xm:
+    case INPAR::RVE_MPC::RveEdgeIdentifiers::Gamma_xm:
     {
       R_ipim = r_xmxp_;
       newPos = "x+";
@@ -223,7 +223,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::FindOpposite
       break;
     }
 
-    case INPAR::RVE_MPC::rveEdgeIdentifiers::Gamma_ym:
+    case INPAR::RVE_MPC::RveEdgeIdentifiers::Gamma_ym:
     {
       R_ipim = r_ymyp_;
       newPos = "y+";
@@ -278,12 +278,12 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildPeriod
   }
   switch (rveRefType_)
   {
-    case INPAR::RVE_MPC::rveReferenceDeformationDefinition::automatic:
+    case INPAR::RVE_MPC::RveReferenceDeformationDefinition::automatic:
     {
       switch (rveDim_)
       {
-        case INPAR::RVE_MPC::rveDimension::rve3d:
-        case INPAR::RVE_MPC::rveDimension::rve2d:
+        case INPAR::RVE_MPC::RveDimension::rve3d:
+        case INPAR::RVE_MPC::RveDimension::rve2d:
         {
           int numDim = 3;
           std::map<std::string, std::string> refEndNodeMap = {
@@ -387,7 +387,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildPeriod
       }
       break;
     }
-    case INPAR::RVE_MPC::rveReferenceDeformationDefinition::manual:
+    case INPAR::RVE_MPC::RveReferenceDeformationDefinition::manual:
     {
       IO::cout(IO::verbose) << "General 2D RVE" << IO::endl;
       for (const auto& elem : rveRefNodeMap_)
@@ -403,7 +403,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildPeriod
         {
           PBC.push_back(discret_ptr_->gNode(nodeXm));
           PBC.push_back(discret_ptr_->gNode(FindOppositeEdgeNode(
-              nodeXm, INPAR::RVE_MPC::rveEdgeIdentifiers::Gamma_xm, rveBoundaryNodeIdMap)));
+              nodeXm, INPAR::RVE_MPC::RveEdgeIdentifiers::Gamma_xm, rveBoundaryNodeIdMap)));
           PBC.push_back(rveRefNodeMap_["N1L"]);
           PBC.push_back(rveRefNodeMap_["N2"]);
           PBCs.push_back(PBC);
@@ -424,7 +424,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildPeriod
         if (nodeYm != rveRefNodeMap_["N1B"]->Id() && nodeYm != rveRefNodeMap_["N2"]->Id())
         {
           PBC.push_back(discret_ptr_->gNode(FindOppositeEdgeNode(
-              nodeYm, INPAR::RVE_MPC::rveEdgeIdentifiers::Gamma_ym, rveBoundaryNodeIdMap)));
+              nodeYm, INPAR::RVE_MPC::RveEdgeIdentifiers::Gamma_ym, rveBoundaryNodeIdMap)));
           PBC.push_back(discret_ptr_->gNode(nodeYm));
           PBC.push_back(rveRefNodeMap_["N4"]);
           PBC.push_back(rveRefNodeMap_["N1B"]);
@@ -662,7 +662,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildPeriod
 {
   switch (rveDim_)
   {
-    case INPAR::RVE_MPC::rveDimension::rve2d:
+    case INPAR::RVE_MPC::RveDimension::rve2d:
     {
       //* Get the Corner Node Ids */
       /*              N4 -- N
@@ -705,7 +705,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildPeriod
       IO::cout(IO::verbose) << "N4: " << rveCornerNodeIdMap["N4"] << IO::endl;
     }
     break;
-    case INPAR::RVE_MPC::rveDimension::rve3d:
+    case INPAR::RVE_MPC::RveDimension::rve3d:
     {
       //  z ^        N8 +  +   +   N7
       //    |      + .            + +
@@ -751,7 +751,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
 {
   switch (rveDim_)
   {
-    case INPAR::RVE_MPC::rveDimension::rve2d:
+    case INPAR::RVE_MPC::RveDimension::rve2d:
     {
       discret_ptr_->GetCondition("LinePeriodicRve", linePeriodicRveConditions_);
 
@@ -780,7 +780,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
     }
     break;
 
-    case INPAR::RVE_MPC::rveDimension::rve3d:
+    case INPAR::RVE_MPC::RveDimension::rve3d:
     {
       discret_ptr_->GetCondition("SurfacePeriodicRve", surfacePeriodicRveConditions_);
 

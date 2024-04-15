@@ -6540,7 +6540,7 @@ void FLD::FluidImplicitTimeInt::ApplyDirichletBC(Teuchos::ParameterList& params,
   // If we have HDG discret
   if (dynamic_cast<const DRT::DiscretizationHDG*>(&(*discret_)) != nullptr)
   {
-    auto dbc = Teuchos::rcp<const DRT::UTILS::Dbc>(new const FLD::UTILS::DbcHDG_Fluid());
+    auto dbc = Teuchos::rcp<const DRT::UTILS::Dbc>(new const FLD::UTILS::DbcHdgFluid());
     (*dbc)(*discret_, params, systemvector, systemvectord, systemvectordd, Teuchos::null,
         recreatemap ? dbcmaps_ : Teuchos::null);
   }

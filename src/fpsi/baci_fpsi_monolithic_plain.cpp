@@ -43,7 +43,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FPSI::Monolithic_Plain::Monolithic_Plain(const Epetra_Comm& comm,
+FPSI::MonolithicPlain::MonolithicPlain(const Epetra_Comm& comm,
     const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
     : Monolithic(comm, fpsidynparams, poroelastdynparams)
 {
@@ -152,7 +152,7 @@ FPSI::Monolithic_Plain::Monolithic_Plain(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic_Plain::SetupSystem()
+void FPSI::MonolithicPlain::SetupSystem()
 {
   const Teuchos::ParameterList& fpsidynparams = GLOBAL::Problem::Instance()->FPSIDynamicParams();
 
@@ -204,7 +204,7 @@ void FPSI::Monolithic_Plain::SetupSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic_Plain::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
+void FPSI::MonolithicPlain::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
 
@@ -224,9 +224,9 @@ void FPSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fpsidy
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic_Plain::SetupRHS(bool firstcall)
+void FPSI::MonolithicPlain::SetupRHS(bool firstcall)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic_Plain::SetupRHS");
+  TEUCHOS_FUNC_TIME_MONITOR("FPSI::MonolithicPlain::SetupRHS");
   // create full monolithic rhs vector
 
   rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
@@ -251,9 +251,9 @@ void FPSI::Monolithic_Plain::SetupRHS(bool firstcall)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic_Plain::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat)
+void FPSI::MonolithicPlain::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic_Plain::SetupSystemMatrix");
+  TEUCHOS_FUNC_TIME_MONITOR("FPSI::MonolithicPlain::SetupSystemMatrix");
   mat.UnComplete();  // basically makes no sense as all blocks will be assigned later!!!
 
   // get single field block matrices
@@ -561,7 +561,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic_Plain::SetupVector(Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv,
+void FPSI::MonolithicPlain::SetupVector(Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv,
     Teuchos::RCP<const Epetra_Vector> pfv, Teuchos::RCP<const Epetra_Vector> fv,
     Teuchos::RCP<const Epetra_Vector> av, double fluidscale)
 {
@@ -609,7 +609,7 @@ void FPSI::Monolithic_Plain::SetupVector(Epetra_Vector& f, Teuchos::RCP<const Ep
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic_Plain::SetupRHSLambda(Epetra_Vector& f)
+void FPSI::MonolithicPlain::SetupRHSLambda(Epetra_Vector& f)
 {
   if (lambda_ != Teuchos::null)  // FSI - Interface?
   {
@@ -633,7 +633,7 @@ void FPSI::Monolithic_Plain::SetupRHSLambda(Epetra_Vector& f)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic_Plain::SetupRHSFirstIter(Epetra_Vector& f)
+void FPSI::MonolithicPlain::SetupRHSFirstIter(Epetra_Vector& f)
 {
   // This method is directly take from FSImonolithic_fluidsplit. As at the moment no predictors are
   // considered (does not improve the convergence a lot), all terms coming from predictors are
@@ -848,13 +848,13 @@ void FPSI::Monolithic_Plain::SetupRHSFirstIter(Epetra_Vector& f)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic_Plain::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+void FPSI::MonolithicPlain::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
     Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& pfx,
     Teuchos::RCP<const Epetra_Vector>& fx,
     Teuchos::RCP<const Epetra_Vector>& ax,  ///< ale displacements
     bool firstiter_)                        ///< firstiteration?
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic_Plain::ExtractFieldVectors");
+  TEUCHOS_FUNC_TIME_MONITOR("FPSI::MonolithicPlain::ExtractFieldVectors");
 
   // porous medium
   sx = Extractor().ExtractVector(x, structure_block_);
@@ -949,7 +949,7 @@ void FPSI::Monolithic_Plain::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
 /* Recover the Lagrange multiplier at the interface   ... FPSI adapted version of mayr.mt (03/2012)
  */
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic_Plain::RecoverLagrangeMultiplier()
+void FPSI::MonolithicPlain::RecoverLagrangeMultiplier()
 {
   // For overlapping interfaces also the FPSI Coupling Matrixes should be considered in the
   // condensation procedure ... not done yet!!!!

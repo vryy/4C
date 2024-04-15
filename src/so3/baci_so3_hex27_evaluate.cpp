@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -50,45 +50,45 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDOF_SOH27, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::So_hex27::ActionType act = So_hex27::none;
+  DRT::ELEMENTS::SoHex27::ActionType act = SoHex27::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_struct_linstiff")
-    act = So_hex27::calc_struct_linstiff;
+    act = SoHex27::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
-    act = So_hex27::calc_struct_nlnstiff;
+    act = SoHex27::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
-    act = So_hex27::calc_struct_internalforce;
+    act = SoHex27::calc_struct_internalforce;
   else if (IsParamsInterface() &&
            ParamsInterface().GetActionType() == ELEMENTS::struct_calc_internalinertiaforce)
-    act = So_hex27::calc_struct_internalinertiaforce;
+    act = SoHex27::calc_struct_internalinertiaforce;
   else if (action == "calc_struct_linstiffmass")
-    act = So_hex27::calc_struct_linstiffmass;
+    act = SoHex27::calc_struct_linstiffmass;
   else if (action == "calc_struct_nlnstiffmass")
-    act = So_hex27::calc_struct_nlnstiffmass;
+    act = SoHex27::calc_struct_nlnstiffmass;
   else if (action == "calc_struct_nlnstifflmass")
-    act = So_hex27::calc_struct_nlnstifflmass;
+    act = SoHex27::calc_struct_nlnstifflmass;
   else if (action == "calc_struct_stress")
-    act = So_hex27::calc_struct_stress;
+    act = SoHex27::calc_struct_stress;
   else if (action == "calc_struct_eleload")
-    act = So_hex27::calc_struct_eleload;
+    act = SoHex27::calc_struct_eleload;
   else if (action == "calc_struct_fsiload")
-    act = So_hex27::calc_struct_fsiload;
+    act = SoHex27::calc_struct_fsiload;
   else if (action == "calc_struct_update_istep")
-    act = So_hex27::calc_struct_update_istep;
+    act = SoHex27::calc_struct_update_istep;
   else if (action == "calc_struct_prestress_update")
-    act = So_hex27::prestress_update;
+    act = SoHex27::prestress_update;
   else if (action == "calc_struct_reset_istep")
-    act = So_hex27::calc_struct_reset_istep;
+    act = SoHex27::calc_struct_reset_istep;
   else if (action == "calc_struct_energy")
-    act = So_hex27::calc_struct_energy;
+    act = SoHex27::calc_struct_energy;
   else if (action == "multi_readrestart")
-    act = So_hex27::multi_readrestart;
+    act = SoHex27::multi_readrestart;
   else if (action == "multi_calc_dens")
-    act = So_hex27::multi_calc_dens;
+    act = SoHex27::multi_calc_dens;
   else if (action == "calc_struct_recover")
     return 0;
   else if (action == "calc_struct_predict")
@@ -221,11 +221,11 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       // Therefore, a view is only set in cases where the evaluated mass matrix should also be
       // exported in elemat2.
       CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> mass_matrix_evaluate;
-      if (act != So_hex27::calc_struct_internalinertiaforce) mass_matrix_evaluate.SetView(elemat2);
+      if (act != SoHex27::calc_struct_internalinertiaforce) mass_matrix_evaluate.SetView(elemat2);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
-      if (act == So_hex27::calc_struct_internalinertiaforce)
+      if (act == SoHex27::calc_struct_internalinertiaforce)
       {
         soh27_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, nullptr,
             &mass_matrix_evaluate, &elevec1, &elevec2, nullptr, nullptr, nullptr, nullptr, params,
@@ -519,7 +519,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
   |  Integrate a Volume Neumann boundary condition (public)               |
   *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex27::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoHex27::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
@@ -633,7 +633,7 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
+void DRT::ELEMENTS::SoHex27::InitJacobianMapping()
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
       soh27_derivs();
@@ -670,11 +670,11 @@ void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                           popp 09/11 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                          // current displacements
-    std::vector<double>& residual,                                      // current residual displ
-    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* stiffmatrix,      // element stiffness matrix
-    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,       // element mass matrix
+void DRT::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                         // current displacements
+    std::vector<double>& residual,                                     // current residual displ
+    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* stiffmatrix,     // element stiffness matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,      // element mass matrix
     CORE::LINALG::Matrix<NUMDOF_SOH27, 1>* force,  // element internal force vector
     CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestress,    // stresses at GP
     CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestrain,    // strains at GP
@@ -1006,11 +1006,11 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                          // current displacements
-    std::vector<double>* vel,                                           // current velocities
-    std::vector<double>* acc,                                           // current accelerations
-    std::vector<double>& residual,                                      // current residual displ
+void DRT::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                         // current displacements
+    std::vector<double>* vel,                                          // current velocities
+    std::vector<double>* acc,                                          // current accelerations
+    std::vector<double>& residual,                                     // current residual displ
     std::vector<double>& dispmat,  // current material displacements
     CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,   // element mass matrix
@@ -1469,8 +1469,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                                          |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::soh27_lumpmass(
-    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass)
+void DRT::ELEMENTS::SoHex27::soh27_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -1492,7 +1491,7 @@ void DRT::ELEMENTS::So_hex27::soh27_lumpmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> DRT::ELEMENTS::So_hex27::soh27_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> DRT::ELEMENTS::SoHex27::soh27_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
@@ -1514,8 +1513,7 @@ std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> DRT::ELEMENTS::So_hex27::soh2
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>>
-DRT::ELEMENTS::So_hex27::soh27_derivs()
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> DRT::ELEMENTS::SoHex27::soh27_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
@@ -1536,7 +1534,7 @@ DRT::ELEMENTS::So_hex27::soh27_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Weights at all 27 Gauss Points                       |
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
+std::vector<double> DRT::ELEMENTS::SoHex27::soh27_weights()
 {
   std::vector<double> weights(NUMGPT_SOH27);
   const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
@@ -1551,7 +1549,7 @@ std::vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex27                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::soh27_shapederiv(
+void DRT::ELEMENTS::SoHex27::soh27_shapederiv(
     CORE::LINALG::Matrix<NUMNOD_SOH27, NUMGPT_SOH27>** shapefct,  // pointer to pointer of shapefct
     CORE::LINALG::Matrix<NUMDOF_SOH27, NUMNOD_SOH27>** deriv,     // pointer to pointer of derivs
     CORE::LINALG::Matrix<NUMGPT_SOH27, 1>** weights)              // pointer to pointer of weights
@@ -1608,12 +1606,12 @@ void DRT::ELEMENTS::So_hex27::soh27_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex27Type::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoHex27Type::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_hex27*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex27*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27* failed");
     actele->InitJacobianMapping();
   }
@@ -1623,7 +1621,7 @@ int DRT::ELEMENTS::So_hex27Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)            |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoHex27::DefGradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
@@ -1663,7 +1661,7 @@ void DRT::ELEMENTS::So_hex27::DefGradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected)          |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoHex27::UpdateJacobianMapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =

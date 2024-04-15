@@ -60,7 +60,7 @@ namespace DRT
 
       //! get information, whether L2-projection between stress fields is accomplished on whole cut
       //! element or on physical volume
-      INPAR::XFEM::Hybrid_LM_L2_Proj HybridLM_L2Proj() const { return hybrid_lm_l2_proj_; }
+      INPAR::XFEM::HybridLmL2Proj HybridLM_L2Proj() const { return hybrid_lm_l2_proj_; }
 
       //@}
 
@@ -72,14 +72,14 @@ namespace DRT
 
       //! get the type of how to estimate the scaling of the trace inequality used for the viscous
       //! part of Nitsche's method?
-      INPAR::XFEM::ViscStab_TraceEstimate ViscStabTracEstimate() const
+      INPAR::XFEM::ViscStabTraceEstimate ViscStabTracEstimate() const
       {
         return visc_stab_trace_estimate_;
       };
 
       //! get the element length definition used for viscous part of the penalty term in Nitsche's
       //! method
-      INPAR::XFEM::ViscStab_hk ViscStabHK() const { return visc_stab_hk_; };
+      INPAR::XFEM::ViscStabHk ViscStabHK() const { return visc_stab_hk_; };
 
       //! get the dimensionless user defined scaling for the penalty term in Nitsche's method and
       //! scaling factor for the MHVS method (then gamma = 1/n, see publications)
@@ -130,7 +130,7 @@ namespace DRT
       /*----------------------------------------------------*/
       //@{
       //! get the type of scaling for convective/inflow stabilization term for xfluid-fluid problems
-      INPAR::XFEM::XFF_ConvStabScaling XffConvStabScaling() const { return xff_conv_stab_scaling_; }
+      INPAR::XFEM::XffConvStabScaling XffConvStabScaling() const { return xff_conv_stab_scaling_; }
 
       //! get the type of scaling for convective/inflow stabilization term for classical xfluid
       //! problem
@@ -198,7 +198,7 @@ namespace DRT
 
       //! for coupling using stress-based LM: L2-projection between stress fields on whole cut
       //! element or on physical volume
-      INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj_;
+      INPAR::XFEM::HybridLmL2Proj hybrid_lm_l2_proj_;
 
       //@}
 
@@ -211,10 +211,10 @@ namespace DRT
 
       //! how to estimate the scaling of the trace inequality used for the viscous part of Nitsche's
       //! method?
-      INPAR::XFEM::ViscStab_TraceEstimate visc_stab_trace_estimate_;
+      INPAR::XFEM::ViscStabTraceEstimate visc_stab_trace_estimate_;
 
       //! element length definition used for viscous part of the penalty term in Nitsche's method
-      INPAR::XFEM::ViscStab_hk visc_stab_hk_;
+      INPAR::XFEM::ViscStabHk visc_stab_hk_;
 
       //! dimensionless user defined scaling for the penalty term in Nitsche's method and
       //! scaling factor for the MHVS method (then gamma = 1/n, see publications),
@@ -248,7 +248,7 @@ namespace DRT
       //@{
 
       //! type of convective scaling for xfluid-fluid problem
-      INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling_;
+      INPAR::XFEM::XffConvStabScaling xff_conv_stab_scaling_;
 
       //! type of convective scaling for xfluid problem
       INPAR::XFEM::ConvStabScaling conv_stab_scaling_;

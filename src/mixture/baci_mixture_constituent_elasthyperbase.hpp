@@ -29,14 +29,14 @@ namespace MAT
 
 namespace MIXTURE
 {
-  class MixtureConstituent_ElastHyperBase;
+  class MixtureConstituentElastHyperBase;
 
   namespace PAR
   {
-    class MixtureConstituent_ElastHyperBase : public MIXTURE::PAR::MixtureConstituent
+    class MixtureConstituentElastHyperBase : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituent_ElastHyperBase(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureConstituentElastHyperBase(const Teuchos::RCP<MAT::PAR::Material>& matdata);
       int GetPrestressingMatId() const { return matid_prestress_strategy_; }
 
       /// @name material parameters
@@ -60,12 +60,12 @@ namespace MIXTURE
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
    * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
    */
-  class MixtureConstituent_ElastHyperBase : public MIXTURE::MixtureConstituent
+  class MixtureConstituentElastHyperBase : public MIXTURE::MixtureConstituent
   {
    public:
     /// Constructor for the material given the material parameters
-    explicit MixtureConstituent_ElastHyperBase(
-        MIXTURE::PAR::MixtureConstituent_ElastHyperBase* params, int id);
+    explicit MixtureConstituentElastHyperBase(
+        MIXTURE::PAR::MixtureConstituentElastHyperBase* params, int id);
 
     /*!
      * \brief Pack data into a char vector from this class
@@ -190,7 +190,7 @@ namespace MIXTURE
     //@}
 
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituent_ElastHyperBase* params_;
+    MIXTURE::PAR::MixtureConstituentElastHyperBase* params_;
 
     /// map to materials/potential summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;

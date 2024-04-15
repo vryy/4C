@@ -26,12 +26,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  HEX 8 Element                                         schmidt 09/17 |
      *----------------------------------------------------------------------*/
-    class So_hex8PoroScatraType : public So_hex8PoroType
+    class SoHex8PoroScatraType : public SoHex8PoroType
     {
      public:
       std::string Name() const override { return "So_hex8PoroScatraType"; }
 
-      static So_hex8PoroScatraType& Instance();
+      static SoHex8PoroScatraType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -45,7 +45,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex8PoroScatraType instance_;
+      static SoHex8PoroScatraType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH8POROSCATRA"; }
     };
@@ -53,12 +53,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  TET 4 Element                                         schmidt 09/17 |
      *----------------------------------------------------------------------*/
-    class So_tet4PoroScatraType : public So_tet4PoroType
+    class SoTet4PoroScatraType : public SoTet4PoroType
     {
      public:
       std::string Name() const override { return "So_tet4PoroScatraType"; }
 
-      static So_tet4PoroScatraType& Instance();
+      static SoTet4PoroScatraType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -72,7 +72,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet4PoroScatraType instance_;
+      static SoTet4PoroScatraType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT4POROSCATRA"; }
     };
@@ -81,12 +81,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  HEX 27 Element                                        schmidt 09/17 |
      *----------------------------------------------------------------------*/
-    class So_hex27PoroScatraType : public So_hex27PoroType
+    class SoHex27PoroScatraType : public SoHex27PoroType
     {
      public:
       std::string Name() const override { return "So_hex27PoroScatraType"; }
 
-      static So_hex27PoroScatraType& Instance();
+      static SoHex27PoroScatraType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -100,7 +100,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex27PoroScatraType instance_;
+      static SoHex27PoroScatraType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH27POROSCATRA"; }
     };
@@ -108,12 +108,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  TET 10 Element                                        schmidt 09/17 |
      *----------------------------------------------------------------------*/
-    class So_tet10PoroScatraType : public So_tet10PoroType
+    class SoTet10PoroScatraType : public SoTet10PoroType
     {
      public:
       std::string Name() const override { return "So_tet10PoroScatraType"; }
 
-      static So_tet10PoroScatraType& Instance();
+      static SoTet10PoroScatraType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -127,7 +127,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet10PoroScatraType instance_;
+      static SoTet10PoroScatraType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT10POROSCATRA"; }
     };
@@ -135,12 +135,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  NURBS 27 Element                                      schmidt 09/17 |
      *----------------------------------------------------------------------*/
-    class So_nurbs27PoroScatraType : public So_nurbs27PoroType
+    class SoNurbs27PoroScatraType : public SoNurbs27PoroType
     {
      public:
       std::string Name() const override { return "So_nurbs27PoroScatraType"; }
 
-      static So_nurbs27PoroScatraType& Instance();
+      static SoNurbs27PoroScatraType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -154,7 +154,7 @@ namespace DRT
           override;
 
      private:
-      static So_nurbs27PoroScatraType instance_;
+      static SoNurbs27PoroScatraType instance_;
 
       std::string GetElementTypeString() const { return "SONURBS27POROSCATRA"; }
     };

@@ -229,8 +229,8 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
     exit(1);
   }
   const MAT::PAR::Parameter* amat = GLOBAL::Problem::Instance()->Materials()->ParameterById(aid);
-  const MAT::PAR::Air_0d_O2_saturation* aactmat =
-      static_cast<const MAT::PAR::Air_0d_O2_saturation*>(amat);
+  const MAT::PAR::Air0dO2Saturation* aactmat =
+      static_cast<const MAT::PAR::Air0dO2Saturation*>(amat);
 
   // get atmospheric pressure
   const double patm = aactmat->atmospheric_p_;
@@ -250,8 +250,8 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
     exit(1);
   }
   const MAT::PAR::Parameter* bmat = GLOBAL::Problem::Instance()->Materials()->ParameterById(bid);
-  const MAT::PAR::Hemoglobin_0d_O2_saturation* bactmat =
-      static_cast<const MAT::PAR::Hemoglobin_0d_O2_saturation*>(bmat);
+  const MAT::PAR::Hemoglobin0dO2Saturation* bactmat =
+      static_cast<const MAT::PAR::Hemoglobin0dO2Saturation*>(bmat);
 
   // how much of blood satisfies this rule
   double per_volume_blood = bactmat->per_volume_blood_;

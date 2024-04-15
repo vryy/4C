@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::So3_Poro_P1_Scatra(int id, int owner)
-    : So3_Poro_P1<so3_ele, distype>(id, owner), impltype_(INPAR::SCATRA::impltype_undefined)
+DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::So3PoroP1Scatra(int id, int owner)
+    : So3PoroP1<so3_ele, distype>(id, owner), impltype_(INPAR::SCATRA::impltype_undefined)
 {
   return;
 }
@@ -30,9 +30,9 @@ DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::So3_Poro_P1_Scatra(int id, 
  |  copy-ctor (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::So3_Poro_P1_Scatra(
-    const DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>& old)
-    : So3_Poro_P1<so3_ele, distype>(old), impltype_(old.impltype_)
+DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::So3PoroP1Scatra(
+    const DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>& old)
+    : So3PoroP1<so3_ele, distype>(old), impltype_(old.impltype_)
 {
   return;
 }
@@ -42,9 +42,9 @@ DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::So3_Poro_P1_Scatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Clone() const
+DRT::Element* DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>(*this);
   return newelement;
 }
 
@@ -52,7 +52,7 @@ DRT::Element* DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Clone() const
  |  Pack data (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -74,7 +74,7 @@ void DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Pack(CORE::COMM::PackB
  |  Unpack data (public)                                  schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -97,7 +97,7 @@ void DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Unpack(const std::vect
  |  print this element (public)                           schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Print(std::ostream& os) const
+void DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_Poro_P1_Scatra ";
   os << CORE::FE::CellTypeToString(distype).c_str() << " ";
@@ -109,19 +109,19 @@ void DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Print(std::ostream& os
  | get the unique ParObject Id (public)                    schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::UniqueParObjectId() const
+int DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::UniqueParObjectId() const
 {
   int parobjectid(-1);
   switch (distype)
   {
     case CORE::FE::CellType::hex8:
     {
-      parobjectid = So_hex8PoroP1ScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoHex8PoroP1ScatraType::Instance().UniqueParObjectId();
       break;
     }
     case CORE::FE::CellType::tet4:
     {
-      parobjectid = So_tet4PoroP1ScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoTet4PoroP1ScatraType::Instance().UniqueParObjectId();
       break;
     }
     default:
@@ -137,26 +137,26 @@ int DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::UniqueParObjectId() con
  | get the element type (public)                           schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ElementType& DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::ElementType() const
+DRT::ElementType& DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::ElementType() const
 {
   switch (distype)
   {
     case CORE::FE::CellType::tet4:
-      return So_tet4PoroP1ScatraType::Instance();
+      return SoTet4PoroP1ScatraType::Instance();
     case CORE::FE::CellType::hex8:
-      return So_hex8PoroP1ScatraType::Instance();
+      return SoHex8PoroP1ScatraType::Instance();
     default:
       dserror("unknown element type!");
       break;
   }
-  return So_hex8PoroP1ScatraType::Instance();
+  return SoHex8PoroP1ScatraType::Instance();
 }
 
 /*----------------------------------------------------------------------*
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::ReadElement(
+bool DRT::ELEMENTS::So3PoroP1Scatra<so3_ele, distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element
@@ -199,7 +199,7 @@ bool DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::ReadElement(
 /*----------------------------------------------------------------------*
  |                                                         schmidt 09/17|
  *----------------------------------------------------------------------*/
-template class DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3PoroP1Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::So3PoroP1Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>;
 
 FOUR_C_NAMESPACE_CLOSE

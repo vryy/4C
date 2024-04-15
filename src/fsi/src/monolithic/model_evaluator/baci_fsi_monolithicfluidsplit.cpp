@@ -594,7 +594,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseMatri
   const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // get info about STC feature
-  INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
+  INPAR::STR::StcScale stcalgo = StructureField()->GetSTCAlgo();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat = Teuchos::null;
   // if STC is to be used, get STC matrix from structure field
   if (stcalgo != INPAR::STR::stc_none) stcmat = StructureField()->GetSTCMat();
@@ -888,7 +888,7 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
 
     // get info about STC feature and unscale solution if necessary
-    INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
+    INPAR::STR::StcScale stcalgo = StructureField()->GetSTCAlgo();
     if (stcalgo != INPAR::STR::stc_none)
     {
       StructureField()->GetSTCMat()->Multiply(false, *sy, *sy);

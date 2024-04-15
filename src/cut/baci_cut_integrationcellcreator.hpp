@@ -77,10 +77,10 @@ namespace CORE::GEO
       /// add the volume cell information during the Create<Shape>Cell calls
       void Add(VolumeCell* vc, CORE::FE::CellType shape, const std::vector<Point*>& points)
       {
-        volume& v = cells_[vc];
-        std::vector<ic>& cells = v.domain_;
-        cells.push_back(ic());
-        ic& cell = cells.back();
+        Volume& v = cells_[vc];
+        std::vector<Ic>& cells = v.domain_;
+        cells.push_back(Ic());
+        Ic& cell = cells.back();
         cell.shape_ = shape;
         cell.points_.reserve(points.size());
         cell.points_.assign(points.begin(), points.end());
@@ -97,10 +97,10 @@ namespace CORE::GEO
       void AddSide(
           VolumeCell* vc, Facet* facet, CORE::FE::CellType shape, const std::vector<Point*>& side)
       {
-        volume& cell = cells_[vc];
-        std::vector<bc>& bcells = cell.boundary_;
-        bcells.push_back(bc());
-        bc& bcell = bcells.back();
+        Volume& cell = cells_[vc];
+        std::vector<Bc>& bcells = cell.boundary_;
+        bcells.push_back(Bc());
+        Bc& bcell = bcells.back();
         bcell.shape_ = shape;
         bcell.facet_ = facet;
         bcell.side_.reserve(side.size());
@@ -109,7 +109,7 @@ namespace CORE::GEO
 
       /*-------------------------------------------------------------------------*/
       /// construction of a boundary integration cell
-      struct bc
+      struct Bc
       {
         CORE::FE::CellType shape_;
         std::vector<Point*> side_;
@@ -124,7 +124,7 @@ namespace CORE::GEO
 
       /*-------------------------------------------------------------------------*/
       /// construction of a volume integration cell
-      struct ic
+      struct Ic
       {
         CORE::FE::CellType shape_;
         std::vector<Point*> points_;
@@ -135,10 +135,10 @@ namespace CORE::GEO
 
       /*-------------------------------------------------------------------------*/
       /** \brief Create all volume and boundary integration cells                */
-      struct volume
+      struct Volume
       {
-        std::vector<ic> domain_;
-        std::vector<bc> boundary_;
+        std::vector<Ic> domain_;
+        std::vector<Bc> boundary_;
 
         /** \brief This routine initiates the volume and boundary cell creation.
          *
@@ -146,20 +146,20 @@ namespace CORE::GEO
          *  already added by the Add() and AddSide() methods. */
         void Execute(Mesh& mesh, VolumeCell* vc)
         {
-          for (std::vector<ic>::iterator i = domain_.begin(); i != domain_.end(); ++i)
+          for (std::vector<Ic>::iterator i = domain_.begin(); i != domain_.end(); ++i)
           {
-            ic& cell = *i;
+            Ic& cell = *i;
             cell.Execute(mesh, vc);
           }
-          for (std::vector<bc>::iterator i = boundary_.begin(); i != boundary_.end(); ++i)
+          for (std::vector<Bc>::iterator i = boundary_.begin(); i != boundary_.end(); ++i)
           {
-            bc& bcell = *i;
+            Bc& bcell = *i;
             bcell.Execute(mesh, vc);
           }
         }
       };  // struct volume
 
-      std::map<VolumeCell*, volume> cells_;
+      std::map<VolumeCell*, Volume> cells_;
     };
 
   }  // namespace CUT

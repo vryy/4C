@@ -44,12 +44,12 @@ void CONTACT::IntegratorNitschePoro::IntegrateGP_3D(MORTAR::Element& sele, MORTA
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-    double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
-    std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-    CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-    std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-    std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi)
+    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
+    CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
 {
   // TEUCHOS_FUNC_TIME_MONITOR("CONTACT::IntegratorNitsche::IntegrateGP_3D");
   // We use the consistent element normal for poro contact!
@@ -57,7 +57,7 @@ void CONTACT::IntegratorNitschePoro::IntegrateGP_3D(MORTAR::Element& sele, MORTA
   {
     double n[3];
     sele.ComputeUnitNormalAtXi(sxi, n);
-    std::vector<CORE::GEN::pairedvector<int, double>> dn(3, sele.NumNode() * 3);
+    std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.NumNode() * 3);
     dynamic_cast<CONTACT::Element&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
     GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
@@ -75,12 +75,12 @@ void CONTACT::IntegratorNitschePoro::IntegrateGP_2D(MORTAR::Element& sele, MORTA
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
     CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
     CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-    double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
-    std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-    CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-    std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-    std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi)
+    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
+    CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
 {
   dserror("2D is not implemented!");
 }
@@ -91,12 +91,12 @@ void CONTACT::IntegratorNitschePoro::IntegrateGP_2D(MORTAR::Element& sele, MORTA
 template <int dim>
 void CONTACT::IntegratorNitschePoro::GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
     const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxi,
     const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, const double jac,
-    const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-    const CORE::GEN::pairedvector<int, double>& dgapgp, const double* gpn,
-    std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& dmxi, const double jac,
+    const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
+    const CORE::GEN::Pairedvector<int, double>& dgapgp, const double* gpn,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
   if (sele.Owner() != Comm_.MyPID()) return;
 
@@ -110,8 +110,8 @@ void CONTACT::IntegratorNitschePoro::GPTSForces(MORTAR::Element& sele, MORTAR::E
   if (dim != Dim()) dserror("dimension inconsistency");
 
   CORE::LINALG::Matrix<dim, 1> slave_normal, master_normal;
-  std::vector<CORE::GEN::pairedvector<int, double>> deriv_slave_normal(0, 0);
-  std::vector<CORE::GEN::pairedvector<int, double>> deriv_master_normal(0, 0);
+  std::vector<CORE::GEN::Pairedvector<int, double>> deriv_slave_normal(0, 0);
+  std::vector<CORE::GEN::Pairedvector<int, double>> deriv_master_normal(0, 0);
   sele.ComputeUnitNormalAtXi(sxi, slave_normal.A());
   mele.ComputeUnitNormalAtXi(mxi, master_normal.A());
   sele.DerivUnitNormalAtXi(sxi, deriv_slave_normal);
@@ -125,10 +125,10 @@ void CONTACT::IntegratorNitschePoro::GPTSForces(MORTAR::Element& sele, MORTAR::E
   CONTACT::UTILS::NitscheWeightsAndScaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
 
   double cauchy_nn_weighted_average = 0.;
-  CORE::GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
+  CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
       sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
       mele.MoData().ParentDisp().size());
-  CORE::GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
+  CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
       sele.MoData().ParentPFPres().size() + mele.MoData().ParentPFPres().size());
 
   SoEleCauchy<dim>(sele, sxi, dsxi, wgt, slave_normal, deriv_slave_normal, normal, dnmap_unit, ws,
@@ -139,7 +139,7 @@ void CONTACT::IntegratorNitschePoro::GPTSForces(MORTAR::Element& sele, MORTAR::E
       cauchy_nn_weighted_average_deriv_p);
 
   const double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
-  CORE::GEN::pairedvector<int, double> d_snn_av_pen_gap(
+  CORE::GEN::Pairedvector<int, double> d_snn_av_pen_gap(
       cauchy_nn_weighted_average_deriv_d.size() + dgapgp.size());
   for (const auto& p : cauchy_nn_weighted_average_deriv_d) d_snn_av_pen_gap[p.first] += p.second;
   for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;
@@ -162,13 +162,13 @@ void CONTACT::IntegratorNitschePoro::GPTSForces(MORTAR::Element& sele, MORTAR::E
 
 template <int dim>
 void CONTACT::IntegratorNitschePoro::SoEleCauchy(MORTAR::Element& moEle, double* boundary_gpcoord,
-    std::vector<CORE::GEN::pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
+    std::vector<CORE::GEN::Pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
     const CORE::LINALG::Matrix<dim, 1>& normal,
-    std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& normal_deriv,
     const CORE::LINALG::Matrix<dim, 1>& direction,
-    std::vector<CORE::GEN::pairedvector<int, double>>& direction_deriv, const double w,
-    double& cauchy_nt, CORE::GEN::pairedvector<int, double>& deriv_sigma_nt_d,
-    CORE::GEN::pairedvector<int, double>& deriv_sigma_nt_p)
+    std::vector<CORE::GEN::Pairedvector<int, double>>& direction_deriv, const double w,
+    double& cauchy_nt, CORE::GEN::Pairedvector<int, double>& deriv_sigma_nt_d,
+    CORE::GEN::Pairedvector<int, double>& deriv_sigma_nt_p)
 {
   CORE::LINALG::Matrix<dim, 1> pxsi(true);
   CORE::LINALG::Matrix<dim, dim> derivtravo_slave;
@@ -181,14 +181,14 @@ void CONTACT::IntegratorNitschePoro::SoEleCauchy(MORTAR::Element& moEle, double*
 
   if (!moEle.MoData().ParentPFPres().size())
   {
-    dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())
+    dynamic_cast<DRT::ELEMENTS::SoBase*>(moEle.ParentElement())
         ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction,
             sigma_nt, &dsntdd, nullptr, nullptr, nullptr, nullptr, &dsntdn, &dsntdt, &dsntdpxi,
             nullptr, nullptr, nullptr, nullptr, nullptr);
   }
   else
   {
-    dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
+    dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
         moEle.ParentElement())
         ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(),
             moEle.MoData().ParentPFPres(), normal, direction, sigma_nt, &dsntdd, &dsntdp, &dsntdn,
@@ -202,14 +202,14 @@ void CONTACT::IntegratorNitschePoro::SoEleCauchy(MORTAR::Element& moEle, double*
 
   for (int d = 0; d < dim; ++d)
   {
-    for (CORE::GEN::pairedvector<int, double>::const_iterator p = normal_deriv[d].begin();
+    for (CORE::GEN::Pairedvector<int, double>::const_iterator p = normal_deriv[d].begin();
          p != normal_deriv[d].end(); ++p)
       deriv_sigma_nt_d[p->first] += dsntdn(d) * p->second * w;
   }
 
   for (int d = 0; d < dim; ++d)
   {
-    for (CORE::GEN::pairedvector<int, double>::const_iterator p = direction_deriv[d].begin();
+    for (CORE::GEN::Pairedvector<int, double>::const_iterator p = direction_deriv[d].begin();
          p != direction_deriv[d].end(); ++p)
       deriv_sigma_nt_d[p->first] += dsntdt(d) * p->second * w;
   }
@@ -224,12 +224,12 @@ void CONTACT::IntegratorNitschePoro::SoEleCauchy(MORTAR::Element& moEle, double*
 template <int dim>
 void CONTACT::IntegratorNitschePoro::IntegrateTest(const double fac, MORTAR::Element& ele,
     const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& dxi, const double jac,
-    const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
-    const double test_val, const CORE::GEN::pairedvector<int, double>& test_deriv_d,
-    const CORE::GEN::pairedvector<int, double>& test_deriv_p,
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi, const double jac,
+    const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
+    const double test_val, const CORE::GEN::Pairedvector<int, double>& test_deriv_d,
+    const CORE::GEN::Pairedvector<int, double>& test_deriv_p,
     const CORE::LINALG::Matrix<dim, 1>& test_dir,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& test_dir_deriv)
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& test_dir_deriv)
 {
   if (abs(fac) < 1.e-16) return;
 
@@ -256,9 +256,9 @@ template <int dim>
 void CONTACT::IntegratorNitschePoro::IntegratePoroNoOutFlow(const double fac, MORTAR::Element& ele,
     double* xi, const CORE::LINALG::SerialDenseVector& shape,
     const CORE::LINALG::SerialDenseMatrix& deriv, const double jac,
-    const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
+    const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
     const CORE::LINALG::Matrix<dim, 1>& normal,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& normal_deriv,
     MORTAR::Element& otherele, const CORE::LINALG::SerialDenseVector& othershape)
 {
   if (abs(fac) < 1e-16) return;
@@ -477,35 +477,35 @@ void CONTACT::IntegratorNitschePoro::GetPoroQuantitiesatGP(MORTAR::Element& ele,
 
 template void CONTACT::IntegratorNitschePoro::IntegrateTest<2>(const double, MORTAR::Element&,
     const CORE::LINALG::SerialDenseVector&, const CORE::LINALG::SerialDenseMatrix&,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& i, const double,
-    const CORE::GEN::pairedvector<int, double>&, const double, const double,
-    const CORE::GEN::pairedvector<int, double>&, const CORE::GEN::pairedvector<int, double>&,
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& i, const double,
+    const CORE::GEN::Pairedvector<int, double>&, const double, const double,
+    const CORE::GEN::Pairedvector<int, double>&, const CORE::GEN::Pairedvector<int, double>&,
     const CORE::LINALG::Matrix<2, 1>& test_dir,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& test_dir_deriv);
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& test_dir_deriv);
 template void CONTACT::IntegratorNitschePoro::IntegrateTest<3>(const double, MORTAR::Element&,
     const CORE::LINALG::SerialDenseVector&, const CORE::LINALG::SerialDenseMatrix&,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& i, const double,
-    const CORE::GEN::pairedvector<int, double>&, const double, const double,
-    const CORE::GEN::pairedvector<int, double>&, const CORE::GEN::pairedvector<int, double>&,
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& i, const double,
+    const CORE::GEN::Pairedvector<int, double>&, const double, const double,
+    const CORE::GEN::Pairedvector<int, double>&, const CORE::GEN::Pairedvector<int, double>&,
     const CORE::LINALG::Matrix<3, 1>& test_dir,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& test_dir_deriv);
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& test_dir_deriv);
 
 template void CONTACT::IntegratorNitschePoro::IntegratePoroNoOutFlow<3>(const double fac,
     MORTAR::Element& ele, double* xi, const CORE::LINALG::SerialDenseVector& shape,
     const CORE::LINALG::SerialDenseMatrix& deriv, const double jac,
-    const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
+    const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
     const CORE::LINALG::Matrix<3, 1>& normal,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
+    const std::vector<CORE::GEN::Pairedvector<int, double>>& normal_deriv,
     MORTAR::Element& otherele, const CORE::LINALG::SerialDenseVector& othershape);
 
 template void CONTACT::IntegratorNitschePoro::SoEleCauchy<3>(MORTAR::Element& moEle,
     double* boundary_gpcoord,
-    std::vector<CORE::GEN::pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
+    std::vector<CORE::GEN::Pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
     const CORE::LINALG::Matrix<3, 1>& normal,
-    std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& normal_deriv,
     const CORE::LINALG::Matrix<3, 1>& direction,
-    std::vector<CORE::GEN::pairedvector<int, double>>& direction_deriv, const double w,
-    double& cauchy_nt, CORE::GEN::pairedvector<int, double>& deriv_sigma_nt_d,
-    CORE::GEN::pairedvector<int, double>& deriv_sigma_nt_p);
+    std::vector<CORE::GEN::Pairedvector<int, double>>& direction_deriv, const double w,
+    double& cauchy_nt, CORE::GEN::Pairedvector<int, double>& deriv_sigma_nt_d,
+    CORE::GEN::Pairedvector<int, double>& deriv_sigma_nt_p);
 
 FOUR_C_NAMESPACE_CLOSE

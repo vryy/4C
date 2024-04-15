@@ -1150,7 +1150,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::F
 {
   //------------------------------------------------------------------
   // get and set density and viscosity (still required for following routines:
-  // FluidImpedanceBc/FluidVolumetricSurfaceFlowBc/Fluid_couplingBc::Area)
+  // FluidImpedanceBc/FluidVolumetricSurfaceFlowBc/FluidCouplingBc::Area)
   //------------------------------------------------------------------
   Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
   if (mat->MaterialType() == INPAR::MAT::m_fluid)

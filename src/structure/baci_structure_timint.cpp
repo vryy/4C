@@ -295,7 +295,7 @@ void STR::TimInt::Setup()
     {
       // get the actual element
 
-      if (discret_->lColElement(i)->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance())
+      if (discret_->lColElement(i)->ElementType() == DRT::ELEMENTS::SoSh8p8Type::Instance())
         locnumsosh8p8 += 1;
     }
     // Was at least one SoSh8P8 found on one processor?

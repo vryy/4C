@@ -39,12 +39,12 @@ namespace
         testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, coords[lid], 0)));
 
       // create 1 element
-      testele_ = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(0, 0));
+      testele_ = Teuchos::rcp(new DRT::ELEMENTS::SoHex8(0, 0));
       testele_->SetNodeIds(8, nodeids.data());
       testdis_->AddElement(testele_);
       testdis_->FillComplete(false, false, false);
 
-      copytestele_ = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(*testele_));
+      copytestele_ = Teuchos::rcp(new DRT::ELEMENTS::SoHex8(*testele_));
     }
 
     // Delete pointers.
@@ -62,9 +62,9 @@ namespace
     //! dummy discretization for holding element and node pointers
     Teuchos::RCP<DRT::Discretization> testdis_;
     //! the hex8 element to be tested
-    Teuchos::RCP<DRT::ELEMENTS::So_hex8> testele_;
+    Teuchos::RCP<DRT::ELEMENTS::SoHex8> testele_;
     //! a copy of the hex8 element to test the copy constructor
-    Teuchos::RCP<DRT::ELEMENTS::So_hex8> copytestele_;
+    Teuchos::RCP<DRT::ELEMENTS::SoHex8> copytestele_;
   };
 
   /**

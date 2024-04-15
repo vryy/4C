@@ -44,7 +44,7 @@ namespace MAT
        * @brief enum for mapping between material parameter and entry in the matparams_ vector for
        * all elasthyper summands
        */
-      enum matparamelastnames_
+      enum Matparamelastnames
       {
         coupneohooke_c,
         coupneohooke_beta,

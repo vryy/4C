@@ -3400,10 +3400,10 @@ void MORTAR::Interface::AssembleD(CORE::LINALG::SparseMatrix& dglobal)
     /**************************************************** D-matrix ******/
     if ((mrtrnode->MoData().GetD()).size() > 0)
     {
-      const CORE::GEN::pairedvector<int, double>& dmap = mrtrnode->MoData().GetD();
+      const CORE::GEN::Pairedvector<int, double>& dmap = mrtrnode->MoData().GetD();
       int rowsize = mrtrnode->NumDof();
 
-      CORE::GEN::pairedvector<int, double>::const_iterator colcurr;
+      CORE::GEN::Pairedvector<int, double>::const_iterator colcurr;
 
       for (colcurr = dmap.begin(); colcurr != dmap.end(); ++colcurr)
       {
@@ -4092,7 +4092,7 @@ void MORTAR::Interface::DetectTiedSlaveNodes(int& founduntied)
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // perform detection
-    const CORE::GEN::pairedvector<int, double>& dmap = mrtrnode->MoData().GetD();
+    const CORE::GEN::Pairedvector<int, double>& dmap = mrtrnode->MoData().GetD();
     const std::map<int, double>& mmap = mrtrnode->MoData().GetM();
     int sized = dmap.size();
     int sizem = mmap.size();

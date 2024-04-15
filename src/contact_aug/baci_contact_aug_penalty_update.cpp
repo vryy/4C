@@ -48,20 +48,20 @@ CONTACT::AUG::PenaltyUpdate* CONTACT::AUG::PenaltyUpdate::Create(
     case INPAR::CONTACT::PenaltyUpdate::sufficient_lin_reduction:
     {
       // call copy constructor
-      if (pu_src) return new PenaltyUpdate_SufficientLinReduction(*pu_src);
-      return new PenaltyUpdate_SufficientLinReduction();
+      if (pu_src) return new PenaltyUpdateSufficientLinReduction(*pu_src);
+      return new PenaltyUpdateSufficientLinReduction();
     }
     case INPAR::CONTACT::PenaltyUpdate::sufficient_angle:
     {
       // call copy constructor
-      if (pu_src) return new PenaltyUpdate_SufficientAngle(*pu_src);
-      return new PenaltyUpdate_SufficientAngle();
+      if (pu_src) return new PenaltyUpdateSufficientAngle(*pu_src);
+      return new PenaltyUpdateSufficientAngle();
     }
     case INPAR::CONTACT::PenaltyUpdate::none:
     {
       // call copy constructor
-      if (pu_src) return new PenaltyUpdate_Empty(*pu_src);
-      return new PenaltyUpdate_Empty();
+      if (pu_src) return new PenaltyUpdateEmpty(*pu_src);
+      return new PenaltyUpdateEmpty();
     }
     case INPAR::CONTACT::PenaltyUpdate::vague:
     {
@@ -357,21 +357,21 @@ void CONTACT::AUG::PenaltyUpdate::PrintUpdate(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdate_Empty::Type() const
+INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdateEmpty::Type() const
 {
   return INPAR::CONTACT::PenaltyUpdate::none;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdate_SufficientLinReduction::Type() const
+INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdateSufficientLinReduction::Type() const
 {
   return INPAR::CONTACT::PenaltyUpdate::sufficient_lin_reduction;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate_SufficientLinReduction::SetState(
+void CONTACT::AUG::PenaltyUpdateSufficientLinReduction::SetState(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
   PenaltyUpdate::SetState(cparams, xold, dir);
@@ -380,8 +380,8 @@ void CONTACT::AUG::PenaltyUpdate_SufficientLinReduction::SetState(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum CONTACT::AUG::PenaltyUpdate::Status
-CONTACT::AUG::PenaltyUpdate_SufficientLinReduction::Execute(const CONTACT::ParamsInterface& cparams)
+enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdateSufficientLinReduction::Execute(
+    const CONTACT::ParamsInterface& cparams)
 {
   const State& state = GetState();
 
@@ -402,7 +402,7 @@ CONTACT::AUG::PenaltyUpdate_SufficientLinReduction::Execute(const CONTACT::Param
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 enum CONTACT::AUG::PenaltyUpdate::Status
-CONTACT::AUG::PenaltyUpdate_SufficientLinReduction::ExecuteDecrease(
+CONTACT::AUG::PenaltyUpdateSufficientLinReduction::ExecuteDecrease(
     const CONTACT::ParamsInterface& cparams)
 {
   const State& state = GetState();
@@ -427,28 +427,28 @@ CONTACT::AUG::PenaltyUpdate_SufficientLinReduction::ExecuteDecrease(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::PenaltyUpdate_SufficientLinReduction::BetaTheta() const
+double CONTACT::AUG::PenaltyUpdateSufficientLinReduction::BetaTheta() const
 {
   return Data().SaData().GetPenaltyCorrectionParameter();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::PenaltyUpdate_SufficientLinReduction::BetaThetaDecrease() const
+double CONTACT::AUG::PenaltyUpdateSufficientLinReduction::BetaThetaDecrease() const
 {
   return Data().SaData().GetPenaltyDecreaseCorrectionParameter();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdate_SufficientAngle::Type() const
+INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdateSufficientAngle::Type() const
 {
   return INPAR::CONTACT::PenaltyUpdate::sufficient_angle;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate_SufficientAngle::SetState(
+void CONTACT::AUG::PenaltyUpdateSufficientAngle::SetState(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
   PenaltyUpdate::SetState(cparams, xold, dir);
@@ -526,7 +526,7 @@ void CONTACT::AUG::PenaltyUpdate_SufficientAngle::SetState(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdate_SufficientAngle::Execute(
+enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdateSufficientAngle::Execute(
     const CONTACT::ParamsInterface& cparams)
 {
   if (Ratio() > 1.0)
@@ -539,7 +539,7 @@ enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdate_SufficientA
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::PenaltyUpdate_SufficientAngle::BetaAngle() const
+double CONTACT::AUG::PenaltyUpdateSufficientAngle::BetaAngle() const
 {
   return Data().SaData().GetPenaltyCorrectionParameter();
 }

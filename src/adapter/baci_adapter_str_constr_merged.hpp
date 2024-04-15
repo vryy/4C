@@ -130,7 +130,7 @@ namespace ADAPTER
       return structure_->GetConstraintManager();
     };
 
-    INPAR::STR::STC_Scale GetSTCAlgo() override { return structure_->GetSTCAlgo(); };
+    INPAR::STR::StcScale GetSTCAlgo() override { return structure_->GetSTCAlgo(); };
 
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
     {

@@ -1000,14 +1000,14 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
   //**************************************************
   //      LINEARIZATION
   //**************************************************
-  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   for (int j = 0; j < (int)((Data().GetDerivTangent()).size()); ++j)
     (Data().GetDerivTangent())[j].clear();
   (Data().GetDerivTangent()).resize(0, 0);
   if ((int)Data().GetDerivTangent().size() == 0) Data().GetDerivTangent().resize(3, 2 * 100);
 
-  std::vector<CORE::GEN::pairedvector<int, double>> lint(3, 100);  // added all sizes
+  std::vector<CORE::GEN::Pairedvector<int, double>> lint(3, 100);  // added all sizes
   if (n1 != nullptr)
   {
     lint[0][n1->Dofs()[0]] += 1;
@@ -1021,12 +1021,12 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
     lint[2][n2->Dofs()[2]] -= 1;
   }
   // first part
-  std::vector<CORE::GEN::pairedvector<int, double>> Lin1(3, 100);  // added all sizes
+  std::vector<CORE::GEN::Pairedvector<int, double>> Lin1(3, 100);  // added all sizes
   for (_CI p = lint[0].begin(); p != lint[0].end(); ++p) Lin1[0][p->first] += p->second / length;
   for (_CI p = lint[1].begin(); p != lint[1].end(); ++p) Lin1[1][p->first] += p->second / length;
   for (_CI p = lint[2].begin(); p != lint[2].end(); ++p) Lin1[2][p->first] += p->second / length;
 
-  CORE::GEN::pairedvector<int, double> Lin2(100);  // added all sizes
+  CORE::GEN::Pairedvector<int, double> Lin2(100);  // added all sizes
   for (_CI p = lint[0].begin(); p != lint[0].end(); ++p)
     Lin2[p->first] += p->second * MoData().EdgeTangent()[0];
   for (_CI p = lint[1].begin(); p != lint[1].end(); ++p)
@@ -1034,7 +1034,7 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
   for (_CI p = lint[2].begin(); p != lint[2].end(); ++p)
     Lin2[p->first] += p->second * MoData().EdgeTangent()[2];
 
-  std::vector<CORE::GEN::pairedvector<int, double>> Lin3(3, 100);  // added all sizes
+  std::vector<CORE::GEN::Pairedvector<int, double>> Lin3(3, 100);  // added all sizes
   for (_CI p = Lin2.begin(); p != Lin2.end(); ++p)
     Lin3[0][p->first] += p->second * MoData().EdgeTangent()[0] / (length * length * length);
   for (_CI p = Lin2.begin(); p != Lin2.end(); ++p)
@@ -1231,13 +1231,13 @@ void CONTACT::Node::DerivAveragedNormal(
   // normalize directional derivative
   // (length differs for weighted/unweighted case but not the procedure!)
   // (be careful with reference / copy of derivative maps!)
-  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-  CORE::GEN::pairedvector<int, double>& derivnx = Data().GetDerivN()[0];
-  CORE::GEN::pairedvector<int, double>& derivny = Data().GetDerivN()[1];
-  CORE::GEN::pairedvector<int, double>& derivnz = Data().GetDerivN()[2];
-  CORE::GEN::pairedvector<int, double> cderivnx = Data().GetDerivN()[0];
-  CORE::GEN::pairedvector<int, double> cderivny = Data().GetDerivN()[1];
-  CORE::GEN::pairedvector<int, double> cderivnz = Data().GetDerivN()[2];
+  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  CORE::GEN::Pairedvector<int, double>& derivnx = Data().GetDerivN()[0];
+  CORE::GEN::Pairedvector<int, double>& derivny = Data().GetDerivN()[1];
+  CORE::GEN::Pairedvector<int, double>& derivnz = Data().GetDerivN()[2];
+  CORE::GEN::Pairedvector<int, double> cderivnx = Data().GetDerivN()[0];
+  CORE::GEN::Pairedvector<int, double> cderivny = Data().GetDerivN()[1];
+  CORE::GEN::Pairedvector<int, double> cderivnz = Data().GetDerivN()[2];
   const double nxnx = MoData().n()[0] * MoData().n()[0];
   const double nxny = MoData().n()[0] * MoData().n()[1];
   const double nxnz = MoData().n()[0] * MoData().n()[2];
@@ -1302,8 +1302,8 @@ void CONTACT::Node::DerivAveragedNormal(
     // get directional derivative of nodal tangent txi "for free"
     // (we just have to use the orthogonality of n and t)
     // the directional derivative of nodal tangent teta is 0
-    CORE::GEN::pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
-    CORE::GEN::pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+    CORE::GEN::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+    CORE::GEN::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
 
     for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxix[p->first] = -(p->second);
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p) derivtxiy[p->first] = (p->second);
@@ -1320,9 +1320,9 @@ void CONTACT::Node::DerivAveragedNormal(
 
     // get normalized tangent derivative txi
     // use corkscrew rule from BuildAveragedNormal()
-    CORE::GEN::pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
-    CORE::GEN::pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
-    CORE::GEN::pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
+    CORE::GEN::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+    CORE::GEN::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+    CORE::GEN::Pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
 
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p)
     {
@@ -1345,8 +1345,8 @@ void CONTACT::Node::DerivAveragedNormal(
     // use definitions for txi from BuildAveragedNormal()
     if (abs(MoData().n()[0]) > 1.0e-4 || abs(MoData().n()[1]) > 1.0e-4)
     {
-      CORE::GEN::pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
-      CORE::GEN::pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+      CORE::GEN::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+      CORE::GEN::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
 
       for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxix[p->first] -= (p->second);
 
@@ -1354,8 +1354,8 @@ void CONTACT::Node::DerivAveragedNormal(
     }
     else
     {
-      CORE::GEN::pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
-      CORE::GEN::pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
+      CORE::GEN::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+      CORE::GEN::Pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
 
       for (CI p = derivnz.begin(); p != derivnz.end(); ++p) derivtxiy[p->first] -= (p->second);
 
@@ -1364,13 +1364,13 @@ void CONTACT::Node::DerivAveragedNormal(
 
     // normalize txi directional derivative
     // (identical to normalization of normal derivative)
-    typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-    CORE::GEN::pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
-    CORE::GEN::pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
-    CORE::GEN::pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
-    CORE::GEN::pairedvector<int, double> cderivtxix = Data().GetDerivTxi()[0];
-    CORE::GEN::pairedvector<int, double> cderivtxiy = Data().GetDerivTxi()[1];
-    CORE::GEN::pairedvector<int, double> cderivtxiz = Data().GetDerivTxi()[2];
+    typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+    CORE::GEN::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+    CORE::GEN::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+    CORE::GEN::Pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
+    CORE::GEN::Pairedvector<int, double> cderivtxix = Data().GetDerivTxi()[0];
+    CORE::GEN::Pairedvector<int, double> cderivtxiy = Data().GetDerivTxi()[1];
+    CORE::GEN::Pairedvector<int, double> cderivtxiz = Data().GetDerivTxi()[2];
     const double txtx = Data().txi()[0] * Data().txi()[0];
     const double txty = Data().txi()[0] * Data().txi()[1];
     const double txtz = Data().txi()[0] * Data().txi()[2];
@@ -1432,9 +1432,9 @@ void CONTACT::Node::DerivAveragedNormal(
 
     // get normalized tangent derivative teta
     // use corkscrew rule from BuildAveragedNormal()
-    CORE::GEN::pairedvector<int, double>& derivtetax = Data().GetDerivTeta()[0];
-    CORE::GEN::pairedvector<int, double>& derivtetay = Data().GetDerivTeta()[1];
-    CORE::GEN::pairedvector<int, double>& derivtetaz = Data().GetDerivTeta()[2];
+    CORE::GEN::Pairedvector<int, double>& derivtetax = Data().GetDerivTeta()[0];
+    CORE::GEN::Pairedvector<int, double>& derivtetay = Data().GetDerivTeta()[1];
+    CORE::GEN::Pairedvector<int, double>& derivtetaz = Data().GetDerivTeta()[2];
 
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p)
     {

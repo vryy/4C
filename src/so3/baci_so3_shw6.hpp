@@ -22,12 +22,12 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class So_shw6Type : public DRT::ElementType
+    class SoShw6Type : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_shw6Type"; }
 
-      static So_shw6Type& Instance();
+      static SoShw6Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -49,7 +49,7 @@ namespace DRT
           override;
 
      private:
-      static So_shw6Type instance_;
+      static SoShw6Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDSHW6"; }
     };
@@ -68,11 +68,11 @@ namespace DRT
     See Diss. Frank Koschnick for details.
 
     */
-    class So_shw6 : public So_weg6
+    class SoShw6 : public SoWeg6
     {
      public:
       //! @name Friends
-      friend class So_shw6Type;
+      friend class SoShw6Type;
       friend class Soweg6Surface;
       friend class Soweg6Line;
 
@@ -85,7 +85,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owning processor
       */
-      So_shw6(int id, int owner);
+      SoShw6(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -93,7 +93,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_shw6(const So_shw6& old);
+      SoShw6(const SoShw6& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -110,7 +110,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return So_shw6Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return SoShw6Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -144,7 +144,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return So_shw6Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoShw6Type::Instance(); }
 
       //@}
 
@@ -202,7 +202,7 @@ namespace DRT
       bool nodes_rearranged_{};
 
       //! don't want = operator
-      So_shw6& operator=(const So_shw6& old);
+      SoShw6& operator=(const SoShw6& old);
 
       /*!
       \brief Evaluate an element

@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::AAAneohooke_stopro::AAAneohooke_stopro(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::AaAneohookeStopro::AaAneohookeStopro(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_mean_(*matdata->Get<double>("YOUNG")),
       nue_(*matdata->Get<double>("NUE")),
@@ -44,16 +44,16 @@ MAT::PAR::AAAneohooke_stopro::AAAneohooke_stopro(Teuchos::RCP<MAT::PAR::Material
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::PAR::AAAneohooke_stopro::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::AaAneohookeStopro::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::AAAneohooke_stopro(this));
+  return Teuchos::rcp(new MAT::AaAneohookeStopro(this));
 }
 
-MAT::AAAneohooke_stoproType MAT::AAAneohooke_stoproType::instance_;
+MAT::AaAneohookeStoproType MAT::AaAneohookeStoproType::instance_;
 
-CORE::COMM::ParObject* MAT::AAAneohooke_stoproType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AaAneohookeStoproType::Create(const std::vector<char>& data)
 {
-  MAT::AAAneohooke_stopro* aaa = new MAT::AAAneohooke_stopro();
+  MAT::AaAneohookeStopro* aaa = new MAT::AaAneohookeStopro();
   aaa->Unpack(data);
   return aaa;
 }
@@ -62,7 +62,7 @@ CORE::COMM::ParObject* MAT::AAAneohooke_stoproType::Create(const std::vector<cha
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-MAT::AAAneohooke_stopro::AAAneohooke_stopro()
+MAT::AaAneohookeStopro::AaAneohookeStopro()
     : params_(nullptr), isinit_beta_(false), isinit_youngs_(false)
 {
 }
@@ -71,7 +71,7 @@ MAT::AAAneohooke_stopro::AAAneohooke_stopro()
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   chfoe 03/08 |
  *----------------------------------------------------------------------*/
-MAT::AAAneohooke_stopro::AAAneohooke_stopro(MAT::PAR::AAAneohooke_stopro* params)
+MAT::AaAneohookeStopro::AaAneohookeStopro(MAT::PAR::AaAneohookeStopro* params)
     : params_(params), beta_(0.0), isinit_beta_(false), youngs_(0.0), isinit_youngs_(false)
 {
 }
@@ -79,7 +79,7 @@ MAT::AAAneohooke_stopro::AAAneohooke_stopro(MAT::PAR::AAAneohooke_stopro* params
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke_stopro::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::AaAneohookeStopro::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -97,7 +97,7 @@ void MAT::AAAneohooke_stopro::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke_stopro::Unpack(const std::vector<char>& data)
+void MAT::AaAneohookeStopro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -114,7 +114,7 @@ void MAT::AAAneohooke_stopro::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::AAAneohooke_stopro*>(mat);
+        params_ = static_cast<MAT::PAR::AaAneohookeStopro*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -126,7 +126,7 @@ void MAT::AAAneohooke_stopro::Unpack(const std::vector<char>& data)
 
 
 // initialize function to be called from MLMC to get beta from a random field
-void MAT::AAAneohooke_stopro::Init(double value_stopro, std::string stochpar)
+void MAT::AaAneohookeStopro::Init(double value_stopro, std::string stochpar)
 {
   if (!stochpar.compare("BETA"))
   {
@@ -148,7 +148,7 @@ void MAT::AAAneohooke_stopro::Init(double value_stopro, std::string stochpar)
 }
 
 
-void MAT::AAAneohooke_stopro::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::AaAneohookeStopro::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -339,7 +339,7 @@ void MAT::AAAneohooke_stopro::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------*
  |  Calculate strain energy                                biehler 12/13|
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke_stopro::StrainEnergy(
+void MAT::AaAneohookeStopro::StrainEnergy(
     const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   /*
@@ -437,7 +437,7 @@ void MAT::AAAneohooke_stopro::StrainEnergy(
   return;
 }
 
-void MAT::AAAneohooke_stopro::VisNames(std::map<std::string, int>& names)
+void MAT::AaAneohookeStopro::VisNames(std::map<std::string, int>& names)
 {
   std::string fiber = "beta";
   names[fiber] = 1;  // scalar
@@ -448,7 +448,7 @@ void MAT::AAAneohooke_stopro::VisNames(std::map<std::string, int>& names)
 }
 
 
-bool MAT::AAAneohooke_stopro::VisData(
+bool MAT::AaAneohookeStopro::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "beta")

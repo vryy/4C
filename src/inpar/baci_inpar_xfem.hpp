@@ -72,7 +72,7 @@ namespace INPAR
     };
 
     /// L2 stress projection on whole fluid element or on partial fluid element
-    enum Hybrid_LM_L2_Proj
+    enum HybridLmL2Proj
     {
       Hybrid_LM_L2_Proj_full,
       Hybrid_LM_L2_Proj_part
@@ -80,7 +80,7 @@ namespace INPAR
 
     /// estimate of the scaling of the trace inequality for viscous interface stabilization
     /// (Nitsche's method)
-    enum ViscStab_TraceEstimate
+    enum ViscStabTraceEstimate
     {
       ViscStab_TraceEstimate_CT_div_by_hk,  /// estimate of the trace-inequality by trace-constant
                                             /// divided by a characteristic element length
@@ -89,7 +89,7 @@ namespace INPAR
     };
 
     /// how often should the local eigenvalue problem be updated
-    enum TraceEstimate_eigenvalue_update
+    enum TraceEstimateEigenvalueUpdate
     {
       Eigenvalue_update_every_iter,      /// every Newton iteration
       Eigenvalue_update_every_timestep,  /// every timestep
@@ -97,7 +97,7 @@ namespace INPAR
     };
 
     /// definition of characteristic element length in cut elements
-    enum ViscStab_hk
+    enum ViscStabHk
     {
       ViscStab_hk_vol_equivalent,           /// volume equivalent element diameter
       ViscStab_hk_cut_vol_div_by_cut_surf,  /// physical partial/cut volume divided by physical
@@ -129,7 +129,7 @@ namespace INPAR
     };
 
     /// type of scaling for convective/inflow stabilization term (xfluid-fluid applications)
-    enum XFF_ConvStabScaling
+    enum XffConvStabScaling
     {
       XFF_ConvStabScaling_upwinding,  ///
       XFF_ConvStabScaling_only_averaged,
@@ -162,7 +162,7 @@ namespace INPAR
     };
 
     /// xfluidfluid-fsi-monolithic approach
-    enum Monolithic_xffsi_Approach
+    enum MonolithicXffsiApproach
     {
       XFFSI_Full_Newton,
       XFFSI_FixedALE_Interpolation,

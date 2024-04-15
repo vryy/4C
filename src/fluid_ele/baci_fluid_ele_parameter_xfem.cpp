@@ -179,18 +179,18 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
   coupling_method_ =
       CORE::UTILS::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
 
-  hybrid_lm_l2_proj_ = CORE::UTILS::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(
-      params_xf_stab, "HYBRID_LM_L2_PROJ");
+  hybrid_lm_l2_proj_ =
+      CORE::UTILS::IntegralValue<INPAR::XFEM::HybridLmL2Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
 
   //--------------------------------------------
   // parameters for the viscous stabilization in Nitsche's method and MixedHybrid_LM methods
   //---------------------------------------------
 
-  visc_stab_trace_estimate_ = CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStab_TraceEstimate>(
+  visc_stab_trace_estimate_ = CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStabTraceEstimate>(
       params_xf_stab, "VISC_STAB_TRACE_ESTIMATE");
 
   visc_stab_hk_ =
-      CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab, "VISC_STAB_HK");
+      CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStabHk>(params_xf_stab, "VISC_STAB_HK");
 
   nit_stab_gamma_ = params_xf_stab.get<double>("NIT_STAB_FAC");
 
@@ -211,7 +211,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
   // parameters for the convective interface stabilizations
   //---------------------------------------------
 
-  xff_conv_stab_scaling_ = CORE::UTILS::IntegralValue<INPAR::XFEM::XFF_ConvStabScaling>(
+  xff_conv_stab_scaling_ = CORE::UTILS::IntegralValue<INPAR::XFEM::XffConvStabScaling>(
       params_xf_stab, "XFF_CONV_STAB_SCALING");
   conv_stab_scaling_ =
       CORE::UTILS::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab, "CONV_STAB_SCALING");

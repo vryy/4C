@@ -307,7 +307,7 @@ namespace DRT
       void compute_patch_hk(Fluid* master,       ///< master fluid element
           Fluid* slave,                          ///< slave fluid element
           DRT::ELEMENTS::FluidIntFace* intface,  ///< intface element
-          const INPAR::FLUID::EOS_ElementLength&
+          const INPAR::FLUID::EosElementLength&
               eos_element_length  ///< which definition of element length?
       );
 
@@ -914,7 +914,7 @@ namespace DRT
        \brief computation of the EOS-stabilization parameter and ghost penalty parameter
       */
       void ComputeStabilizationParams(const bool is_ghost_penalty_reconstruct,
-          const bool use2ndderiv, const INPAR::FLUID::EOS_TauType tautype,
+          const bool use2ndderiv, const INPAR::FLUID::EosTauType tautype,
           const bool EOS_conv_stream, const bool EOS_conv_cross, const bool EOS_div_vel_jump,
           const double max_vel_L2_norm, const double timefac, const double gamma_ghost_penalty_visc,
           const double gamma_ghost_penalty_trans, const double gamma_ghost_penalty_u_2nd,

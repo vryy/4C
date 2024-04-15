@@ -17,10 +17,9 @@ distributions
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_pairedvector.hpp"
 
+#include <Epetra_Export.h>
+#include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
-
-class Epetra_Map;
-class Epetra_Export;
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -32,11 +31,11 @@ namespace MORTAR
 {
   class MatrixRowColTransformer
   {
-    typedef CORE::GEN::pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Export>>
+    typedef CORE::GEN::Pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Export>>
         plain_block_export_pairs;
 
    public:
-    typedef CORE::GEN::pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Map>*>
+    typedef CORE::GEN::Pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Map>*>
         plain_block_map_pairs;
 
    public:

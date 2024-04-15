@@ -44,7 +44,7 @@ namespace ALE
 
 namespace FS3I
 {
-  class BiofilmFSI : public PartFS3I_1WC
+  class BiofilmFSI : public PartFS3I1Wc
   {
    public:
     BiofilmFSI(const Epetra_Comm& comm);

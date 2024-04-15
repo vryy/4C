@@ -74,7 +74,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   // kintype is passed to the cloned thermo element
   INPAR::STR::KinemType kintype = INPAR::STR::KinemType::linear;
   // if oldele is a so3_base element or a so3_Plast element
-  DRT::ELEMENTS::So_base* so_base = dynamic_cast<DRT::ELEMENTS::So_base*>(oldele);
+  DRT::ELEMENTS::SoBase* so_base = dynamic_cast<DRT::ELEMENTS::SoBase*>(oldele);
   if (so_base != nullptr)
     kintype = so_base->KinematicType();
   else
@@ -310,7 +310,7 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
   }
 
   // if Aele is a so3_base element
-  DRT::ELEMENTS::So_base* so_base = dynamic_cast<DRT::ELEMENTS::So_base*>(ele1);
+  DRT::ELEMENTS::SoBase* so_base = dynamic_cast<DRT::ELEMENTS::SoBase*>(ele1);
   if (so_base != nullptr)
     kintype = so_base->KinematicType();
   else

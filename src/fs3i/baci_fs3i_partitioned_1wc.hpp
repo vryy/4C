@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FS3I
 {
-  class PartFS3I_1WC : public PartFS3I
+  class PartFS3I1Wc : public PartFS3I
   {
    public:
-    PartFS3I_1WC(const Epetra_Comm& comm);
+    PartFS3I1Wc(const Epetra_Comm& comm);
 
     void Init() override;
 

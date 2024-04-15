@@ -566,18 +566,18 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
   {
     DRT::Element* actele = actdis_->lRowElement(i);
     // Detect plasticity -------------------------------------------------------
-    if (actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::So_hex18PlastType::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::So_sh18PlastType::Instance())
+    if (actele->ElementType() == DRT::ELEMENTS::SoHex8PlastType::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::SoHex27PlastType::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::SoSh8PlastType::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::SoHex18PlastType::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::SoSh18PlastType::Instance())
     {
       if (actele->Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
         isplasticity_local = true;
     }
 
     // Detect EAS --------------------------------------------------------------
-    DRT::ELEMENTS::So_base* so_base_ele = dynamic_cast<DRT::ELEMENTS::So_base*>(actele);
+    DRT::ELEMENTS::SoBase* so_base_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(actele);
     if (so_base_ele != nullptr)
     {
       if (so_base_ele->HaveEAS()) iseas_local = 1;
@@ -593,10 +593,10 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
       if (solid->HaveEAS()) iseas_local = 1;
 
     // Detect additional pressure dofs -----------------------------------------
-    if (actele->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance()) ispressure_local = 1;
+    if (actele->ElementType() == DRT::ELEMENTS::SoSh8p8Type::Instance()) ispressure_local = 1;
 
     // Detect fbar
-    DRT::ELEMENTS::So_hex8fbar* so_hex8fbar_ele = dynamic_cast<DRT::ELEMENTS::So_hex8fbar*>(actele);
+    DRT::ELEMENTS::SoHex8fbar* so_hex8fbar_ele = dynamic_cast<DRT::ELEMENTS::SoHex8fbar*>(actele);
     if (so_hex8fbar_ele != nullptr) isfbar_local = 1;
 
     // Detect non-additive rotation-vector DOFs --------------------------------

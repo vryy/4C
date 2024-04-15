@@ -413,8 +413,8 @@ CORE::LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele
   // case of evaluation on lateral surface
   if (evaluate_on_lateral_surface)
   {
-    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
-        Teuchos::rcp_static_cast<MAT::Cnst_1d_art>(ele->Material());
+    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
+        Teuchos::rcp_static_cast<MAT::Cnst1dArt>(ele->Material());
     if (arterymat == Teuchos::null) dserror("Cast to artery material failed!");
     const double radius = arterymat->Diam() / 2.0;
     for (int idim = 0; idim < 3; idim++)

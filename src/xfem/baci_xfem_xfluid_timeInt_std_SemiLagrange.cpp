@@ -27,8 +27,8 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------------------------------*
  * Semi-Lagrange Back-Tracking algorithm constructor                                 schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-XFEM::XFLUID_SemiLagrange::XFLUID_SemiLagrange(
-    XFEM::XFLUID_TIMEINT_BASE& timeInt,  /// time integration base class object
+XFEM::XfluidSemiLagrange::XfluidSemiLagrange(
+    XFEM::XfluidTimeintBase& timeInt,  /// time integration base class object
     const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt>>&
         reconstr_method,                      /// reconstruction map for nodes and its dofsets
     INPAR::XFEM::XFluidTimeInt& timeIntType,  /// type of time integration
@@ -37,7 +37,7 @@ XFEM::XFLUID_SemiLagrange::XFLUID_SemiLagrange(
     const double& theta,                      /// OST theta
     bool initialize                           /// is initialization?
     )
-    : XFLUID_STD(timeInt, reconstr_method, timeIntType, veln, dt, initialize),
+    : XfluidStd(timeInt, reconstr_method, timeIntType, veln, dt, initialize),
       theta_default_(theta),
       relTolIncr_(1.0e-10),
       relTolRes_(1.0e-10)
@@ -50,7 +50,7 @@ XFEM::XFLUID_SemiLagrange::XFLUID_SemiLagrange(
 /*------------------------------------------------------------------------------------------------*
  * Semi-Lagrangean Back-Tracking main algorithm                                      schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::compute(
+void XFEM::XfluidSemiLagrange::compute(
     std::vector<Teuchos::RCP<Epetra_Vector>>& newRowVectorsn  // row
 )
 {
@@ -476,11 +476,11 @@ void XFEM::XFLUID_SemiLagrange::compute(
 /*------------------------------------------------------------------------------------------------*
  * Main Newton loop of the Semi-Lagrangian Back-Tracking algorithm                   schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to element
-    TimeIntData* data,                                          /// current data
-    CORE::LINALG::Matrix<3, 1>& xi,                             /// local coordinates of point
-    CORE::LINALG::Matrix<3, 1>& vel,                            /// velocity at current point
-    bool& elefound                                              /// is element found ?
+void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to element
+    TimeIntData* data,                                         /// current data
+    CORE::LINALG::Matrix<3, 1>& xi,                            /// local coordinates of point
+    CORE::LINALG::Matrix<3, 1>& vel,                           /// velocity at current point
+    bool& elefound                                             /// is element found ?
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
@@ -694,8 +694,8 @@ void XFEM::XFLUID_SemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to e
 /*------------------------------------------------------------------------------------------------*
  * One Newton iteration of the Semi-Lagrangian Back-Tracking algorithm               schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::NewtonIter(DRT::Element*& ele,  /// pointer to element to be updated
-    TimeIntData* data,                                          /// current data to be updated
+void XFEM::XfluidSemiLagrange::NewtonIter(DRT::Element*& ele,  /// pointer to element to be updated
+    TimeIntData* data,                                         /// current data to be updated
     CORE::LINALG::Matrix<3, 1>& xi,        /// local coordinates w.r.t ele to be updated
     CORE::LINALG::Matrix<3, 1>& residuum,  /// residual for semilagrangean backtracking
     CORE::LINALG::Matrix<3, 1>& incr,  /// computed increment for lagrangean origin to be updated
@@ -753,7 +753,7 @@ void XFEM::XFLUID_SemiLagrange::NewtonIter(DRT::Element*& ele,  /// pointer to e
 /*------------------------------------------------------------------------------------------------*
  * check if newton iteration searching for the Lagrangian origin has finished        schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::XFLUID_SemiLagrange::globalNewtonFinished(int counter) const
+bool XFEM::XfluidSemiLagrange::globalNewtonFinished(int counter) const
 {
   if (counter == newton_max_iter_ * numproc_) return true;  // maximal number of iterations reached
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
@@ -771,7 +771,7 @@ bool XFEM::XFLUID_SemiLagrange::globalNewtonFinished(int counter) const
 /*------------------------------------------------------------------------------------------------*
  * Decide how or if to continue when the startpoint approximation changed the side  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::XFLUID_SemiLagrange::continueForChangingSide(
+bool XFEM::XfluidSemiLagrange::continueForChangingSide(
     TimeIntData* data,  ///< current data to be updated
     DRT::Element* ele,  ///< pointer to element the current point lies in
     std::vector<int>&
@@ -838,7 +838,7 @@ bool XFEM::XFLUID_SemiLagrange::continueForChangingSide(
 /*------------------------------------------------------------------------------------------------*
  * Computing final data where Semi-Lagrangian approach failed                        schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
+void XFEM::XfluidSemiLagrange::getDataForNotConvergedNodes()
 {
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
 
@@ -891,7 +891,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
 /*------------------------------------------------------------------------------------------------*
  * rewrite data for new computation                                                  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::newIteration_prepare(
+void XFEM::XfluidSemiLagrange::newIteration_prepare(
     std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors)
 {
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
@@ -912,7 +912,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_prepare(
 /*------------------------------------------------------------------------------------------------*
  * compute Gradients at side-changing nodes                                          schott 04/13 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
+void XFEM::XfluidSemiLagrange::newIteration_nodalData(
     std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectors)
 {
   const int nsd = 3;
@@ -1067,7 +1067,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
 /*------------------------------------------------------------------------------------------------*
  * reinitialize data for new computation                                         winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::reinitializeData()
+void XFEM::XfluidSemiLagrange::reinitializeData()
 {
   dserror("adapt implementation of this function");
   dserror("adapt, how to get nds_np?");
@@ -1167,10 +1167,10 @@ void XFEM::XFLUID_SemiLagrange::reinitializeData()
 /*------------------------------------------------------------------------------------------------*
  * call back-tracking of data at final Lagrangian origin of a point                  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::callBackTracking(DRT::Element*& ele,  /// pointer to element
-    TimeIntData* data,                                                /// data
-    CORE::LINALG::Matrix<3, 1>& xi,                                   /// local coordinates
-    const char* backTrackingType                                      /// type of backTracking
+void XFEM::XfluidSemiLagrange::callBackTracking(DRT::Element*& ele,  /// pointer to element
+    TimeIntData* data,                                               /// data
+    CORE::LINALG::Matrix<3, 1>& xi,                                  /// local coordinates
+    const char* backTrackingType                                     /// type of backTracking
 )
 {
   switch (ele->Shape())
@@ -1198,10 +1198,10 @@ void XFEM::XFLUID_SemiLagrange::callBackTracking(DRT::Element*& ele,  /// pointe
  * back-tracking of data at final Lagrangian origin of a point                       schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 template <const int numnode, CORE::FE::CellType DISTYPE>
-void XFEM::XFLUID_SemiLagrange::backTracking(DRT::Element*& fittingele,  /// pointer to element
-    TimeIntData* data,                                                   /// data
-    CORE::LINALG::Matrix<3, 1>& xi,                                      /// local coordinates
-    const char* backTrackingType                                         /// type of backTracking
+void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// pointer to element
+    TimeIntData* data,                                                  /// data
+    CORE::LINALG::Matrix<3, 1>& xi,                                     /// local coordinates
+    const char* backTrackingType                                        /// type of backTracking
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
@@ -1525,8 +1525,8 @@ void XFEM::XFLUID_SemiLagrange::backTracking(DRT::Element*& fittingele,  /// poi
 /*------------------------------------------------------------------------------------------------*
  * determine point's dofset in element ele w.r.t old or new interface position       schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to element
-    CORE::LINALG::Matrix<3, 1>& x,                                 /// global coordinates of point
+void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to element
+    CORE::LINALG::Matrix<3, 1>& x,                                /// global coordinates of point
     std::vector<int>& nds,  /// determine the points dofset w.r.t old/new interface position
     CORE::GEO::CUT::VolumeCell*& vc,  /// valid fluid volumecell the point x lies in
     bool step_np                      /// computation w.r.t old or new interface position?
@@ -1666,7 +1666,7 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer t
 /*------------------------------------------------------------------------------------------------*
  * compute gradients at nodes for that SL-reconstruction is called                   schott 04/13 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::computeNodalGradient(
+void XFEM::XfluidSemiLagrange::computeNodalGradient(
     const std::vector<Teuchos::RCP<Epetra_Vector>>&
         colVectors,                    ///< all vectors for that we reconstruct the their gradients
     DRT::Node* node,                   ///< node at which we reconstruct the gradients
@@ -1739,7 +1739,7 @@ void XFEM::XFLUID_SemiLagrange::computeNodalGradient(
 /*------------------------------------------------------------------------------------------------*
  * get the time integration factor theta fitting to the computation type             schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-double XFEM::XFLUID_SemiLagrange::Theta(TimeIntData* data) const
+double XFEM::XfluidSemiLagrange::Theta(TimeIntData* data) const
 {
   double theta = -1.0;
 
@@ -1766,7 +1766,7 @@ double XFEM::XFLUID_SemiLagrange::Theta(TimeIntData* data) const
 /*------------------------------------------------------------------------------------------------*
  * export alternative algo data to neighbour proc                                    schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
+void XFEM::XfluidSemiLagrange::exportAlternativAlgoData()
 {
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
 
@@ -1881,7 +1881,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
 
       timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp,
           initialpoint, initial_eid, initial_ele_owner,
-          (TimeIntData::type)newtype));  // startOwner is current proc
+          (TimeIntData::Type)newtype));  // startOwner is current proc
     }                                    // end loop over number of nodes to get
 
     // processors wait for each other
@@ -1894,7 +1894,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
 /*------------------------------------------------------------------------------------------------*
  * export data while Newton loop to neighbour proc                                   schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
+void XFEM::XfluidSemiLagrange::exportIterData(bool& procDone)
 {
 #ifdef DEBUG_SEMILAGRANGE
   IO::cout << "\n\t=============================";
@@ -2035,7 +2035,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
 
       timeIntData_->push_back(
           TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, initialpoint, initial_eid,
-              initial_ele_owner, startpoint, searchedProcs, iter, (TimeIntData::type)newtype));
+              initial_ele_owner, startpoint, searchedProcs, iter, (TimeIntData::Type)newtype));
     }  // end loop over number of points to get
 
     // processors wait for each other

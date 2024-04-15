@@ -13,11 +13,8 @@
 
 #include "baci_inpar_contact.hpp"
 
+#include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
-
-// forward declarations
-class Epetra_Comm;
-class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 

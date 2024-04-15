@@ -26,12 +26,12 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class So_sh8Type : public So_hex8Type
+    class SoSh8Type : public SoHex8Type
     {
      public:
-      std::string Name() const override { return "So_sh8Type"; }
+      std::string Name() const override { return "SoSh8Type"; }
 
-      static So_sh8Type& Instance();
+      static SoSh8Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -53,7 +53,7 @@ namespace DRT
           override;
 
      private:
-      static So_sh8Type instance_;
+      static SoSh8Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDSH8"; }
     };
@@ -70,11 +70,11 @@ namespace DRT
     Refer also to the Semesterarbeit of Alexander Popp, 2006
 
     */
-    class So_sh8 : public So_hex8
+    class SoSh8 : public SoHex8
     {
      public:
       //! @name Friends
-      friend class So_sh8Type;
+      friend class SoSh8Type;
       friend class Soh8Surface;
       friend class Soh8Line;
 
@@ -87,7 +87,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owning processor
       */
-      So_sh8(int id, int owner);
+      SoSh8(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -95,7 +95,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_sh8(const So_sh8& old);
+      SoSh8(const SoSh8& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -112,7 +112,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return So_sh8Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return SoSh8Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -135,7 +135,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      So_sh8Type& ElementType() const override { return So_sh8Type::Instance(); }
+      SoSh8Type& ElementType() const override { return SoSh8Type::Instance(); }
 
       //@}
 
@@ -210,7 +210,7 @@ namespace DRT
 
      private:
       // don't want = operator
-      So_sh8& operator=(const So_sh8& old);
+      SoSh8& operator=(const SoSh8& old);
 
      protected:
       static constexpr int num_sp = 8;  ///< number of ANS sampling points, here 8
@@ -273,7 +273,7 @@ namespace DRT
 
       //! Calculate the STC matrix
       virtual void CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
-          const INPAR::STR::STC_Scale stc_scaling, const int stc_layer, std::vector<int>& lm,
+          const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
           DRT::Discretization& discretization, bool calcinverse);
 
       //! Find parametric co-ordinate which directs in enforced thickness direction

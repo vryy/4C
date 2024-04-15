@@ -18,13 +18,11 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
+#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-
-// forward declarations
-class Epetra_IntVector;
 
 FOUR_C_NAMESPACE_OPEN
 

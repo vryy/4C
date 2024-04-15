@@ -15,12 +15,8 @@ to disk
 
 #include "baci_io_control.hpp"
 
+#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-
-// forward declarations
-class Epetra_Vector;
-class Epetra_MultiVector;
-class Epetra_Map;
 
 FOUR_C_NAMESPACE_OPEN
 

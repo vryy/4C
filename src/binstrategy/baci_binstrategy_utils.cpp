@@ -98,7 +98,7 @@ namespace BINSTRATEGY
       {
         return BINSTRATEGY::UTILS::RigidSphere;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != nullptr ||
+      else if (dynamic_cast<DRT::ELEMENTS::SoBase const*>(eleptr) != nullptr ||
                dynamic_cast<DRT::ELEMENTS::Solid const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Solid;

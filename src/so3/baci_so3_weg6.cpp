@@ -28,38 +28,38 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::So_weg6Type DRT::ELEMENTS::So_weg6Type::instance_;
+DRT::ELEMENTS::SoWeg6Type DRT::ELEMENTS::SoWeg6Type::instance_;
 
-DRT::ELEMENTS::So_weg6Type& DRT::ELEMENTS::So_weg6Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoWeg6Type& DRT::ELEMENTS::SoWeg6Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_weg6Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoWeg6Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_weg6(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoWeg6(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoWeg6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_weg6(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoWeg6(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoWeg6Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_weg6(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoWeg6(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_weg6Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoWeg6Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -67,13 +67,13 @@ void DRT::ELEMENTS::So_weg6Type::NodalBlockInformation(
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_weg6Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoWeg6Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoWeg6Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -97,8 +97,8 @@ void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition(
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner)
-    : So_base(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
+DRT::ELEMENTS::SoWeg6::SoWeg6(int id, int owner)
+    : SoBase(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
   invJ_.resize(NUMGPT_WEG6);
   detJ_.resize(NUMGPT_WEG6);
@@ -126,8 +126,8 @@ DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner)
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_weg6::So_weg6(const DRT::ELEMENTS::So_weg6& old)
-    : So_base(old), detJ_(old.detJ_), pstype_(old.pstype_), pstime_(old.pstime_), time_(old.time_)
+DRT::ELEMENTS::SoWeg6::SoWeg6(const DRT::ELEMENTS::SoWeg6& old)
+    : SoBase(old), detJ_(old.detJ_), pstype_(old.pstype_), pstime_(old.pstime_), time_(old.time_)
 {
   invJ_.resize(old.invJ_.size());
   for (unsigned int i = 0; i < invJ_.size(); ++i)
@@ -143,9 +143,9 @@ DRT::ELEMENTS::So_weg6::So_weg6(const DRT::ELEMENTS::So_weg6& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_weg6::Clone() const
+DRT::Element* DRT::ELEMENTS::SoWeg6::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_weg6(*this);
+  auto* newelement = new DRT::ELEMENTS::SoWeg6(*this);
   return newelement;
 }
 
@@ -153,13 +153,13 @@ DRT::Element* DRT::ELEMENTS::So_weg6::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::So_weg6::Shape() const { return CORE::FE::CellType::wedge6; }
+CORE::FE::CellType DRT::ELEMENTS::SoWeg6::Shape() const { return CORE::FE::CellType::wedge6; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoWeg6::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -168,7 +168,7 @@ void DRT::ELEMENTS::So_weg6::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  So_base::Pack(data);
+  SoBase::Pack(data);
 
   // Pack prestress
   AddtoPack(data, static_cast<int>(pstype_));
@@ -195,7 +195,7 @@ void DRT::ELEMENTS::So_weg6::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoWeg6::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  So_base::Unpack(basedata);
+  SoBase::Unpack(basedata);
   // prestress_
   pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
@@ -240,7 +240,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoWeg6::Print(std::ostream& os) const
 {
   os << "So_weg6 ";
   Element::Print(os);
@@ -249,7 +249,7 @@ void DRT::ELEMENTS::So_weg6::Print(std::ostream& os) const
 }
 
 
-std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::SoWeg6::ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
@@ -277,7 +277,7 @@ std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                maf 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::VisNames(std::map<std::string, int>& names)
+void DRT::ELEMENTS::SoWeg6::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
 
@@ -287,7 +287,7 @@ void DRT::ELEMENTS::So_weg6::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         maf 07/08|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_weg6::VisData(const std::string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::SoWeg6::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name, data)) return true;
@@ -300,7 +300,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const std::string& name, std::vector<double
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_weg6::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoWeg6::Surfaces()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
       CORE::COMM::buildSurfaces, *this);
@@ -309,7 +309,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_weg6::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_weg6::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoWeg6::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
       CORE::COMM::buildLines, *this);

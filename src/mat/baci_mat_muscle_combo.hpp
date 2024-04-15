@@ -32,11 +32,11 @@ namespace MAT
 {
   namespace PAR
   {
-    class Muscle_Combo : public Parameter
+    class MuscleCombo : public Parameter
     {
      public:
       /// constructor
-      Muscle_Combo(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MuscleCombo(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
@@ -88,17 +88,17 @@ namespace MAT
   }     // end namespace PAR
 
 
-  class Muscle_ComboType : public CORE::COMM::ParObjectType
+  class MuscleComboType : public CORE::COMM::ParObjectType
   {
    public:
     [[nodiscard]] std::string Name() const override { return "Muscle_ComboType"; }
 
-    static Muscle_ComboType& Instance() { return instance_; };
+    static MuscleComboType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Muscle_ComboType instance_;
+    static MuscleComboType instance_;
   };
 
 
@@ -127,18 +127,18 @@ namespace MAT
    * parameters in hyperelastic biological materials', International Journal of Non-Linear
    * Mechanics, vol. 95, pp. 162-167, 2017, doi:10.1016/j.ijnonlinmec.2017.06.012.
    */
-  class Muscle_Combo : public So3Material
+  class MuscleCombo : public So3Material
   {
    public:
     // Constructor for empty material object
-    Muscle_Combo();
+    MuscleCombo();
 
     // Constructor for the material given the material parameters
-    explicit Muscle_Combo(MAT::PAR::Muscle_Combo* params);
+    explicit MuscleCombo(MAT::PAR::MuscleCombo* params);
 
     [[nodiscard]] Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new Muscle_Combo(*this));
+      return Teuchos::rcp(new MuscleCombo(*this));
     }
 
     [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
@@ -158,7 +158,7 @@ namespace MAT
 
     [[nodiscard]] int UniqueParObjectId() const override
     {
-      return Muscle_ComboType::Instance().UniqueParObjectId();
+      return MuscleComboType::Instance().UniqueParObjectId();
     }
 
     void Pack(CORE::COMM::PackBuffer& data) const override;
@@ -213,7 +213,7 @@ namespace MAT
         const double derivPa, double& omegaa, double& derivOmegaa, double& derivDerivOmegaa);
 
     /// Combo material parameters
-    MAT::PAR::Muscle_Combo* params_{};
+    MAT::PAR::MuscleCombo* params_{};
 
     /// Holder for anisotropic behavior
     MAT::Anisotropy anisotropy_;

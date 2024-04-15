@@ -16,12 +16,10 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
-
-// forward declaration
-class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 

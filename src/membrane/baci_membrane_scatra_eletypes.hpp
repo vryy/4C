@@ -26,12 +26,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  TRI 3 Element                                          sfuchs 05/18 |
      *----------------------------------------------------------------------*/
-    class MembraneScatra_tri3Type : public Membrane_tri3Type
+    class MembraneScatraTri3Type : public MembraneTri3Type
     {
      public:
       std::string Name() const override { return "MembraneScatra_tri3Type"; }
 
-      static MembraneScatra_tri3Type& Instance();
+      static MembraneScatraTri3Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -45,18 +45,18 @@ namespace DRT
           override;
 
      private:
-      static MembraneScatra_tri3Type instance_;
+      static MembraneScatraTri3Type instance_;
     };
 
     /*----------------------------------------------------------------------*
      |  TRI 6 Element                                          sfuchs 05/18 |
      *----------------------------------------------------------------------*/
-    class MembraneScatra_tri6Type : public Membrane_tri6Type
+    class MembraneScatraTri6Type : public MembraneTri6Type
     {
      public:
       std::string Name() const override { return "MembraneScatra_tri6Type"; }
 
-      static MembraneScatra_tri6Type& Instance();
+      static MembraneScatraTri6Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -70,18 +70,18 @@ namespace DRT
           override;
 
      private:
-      static MembraneScatra_tri6Type instance_;
+      static MembraneScatraTri6Type instance_;
     };
 
     /*----------------------------------------------------------------------*
      |  QUAD 4 Element                                         sfuchs 05/18 |
      *----------------------------------------------------------------------*/
-    class MembraneScatra_quad4Type : public Membrane_quad4Type
+    class MembraneScatraQuad4Type : public MembraneQuad4Type
     {
      public:
       std::string Name() const override { return "MembraneScatra_quad4Type"; }
 
-      static MembraneScatra_quad4Type& Instance();
+      static MembraneScatraQuad4Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -95,18 +95,18 @@ namespace DRT
           override;
 
      private:
-      static MembraneScatra_quad4Type instance_;
+      static MembraneScatraQuad4Type instance_;
     };
 
     /*----------------------------------------------------------------------*
      |  QUAD 9 Element                                         sfuchs 05/18 |
      *----------------------------------------------------------------------*/
-    class MembraneScatra_quad9Type : public Membrane_quad9Type
+    class MembraneScatraQuad9Type : public MembraneQuad9Type
     {
      public:
       std::string Name() const override { return "MembraneScatra_quad9Type"; }
 
-      static MembraneScatra_quad9Type& Instance();
+      static MembraneScatraQuad9Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -120,7 +120,7 @@ namespace DRT
           override;
 
      private:
-      static MembraneScatra_quad9Type instance_;
+      static MembraneScatraQuad9Type instance_;
     };
 
   }  // namespace ELEMENTS

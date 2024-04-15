@@ -33,9 +33,9 @@ FOUR_C_NAMESPACE_OPEN
  * dependent on the local coordinates along the ray, decide which
  * side lies in front of the other one
  *--------------------------------------------------------------------*/
-struct nextSideAlongRay
+struct NextSideAlongRay
 {
-  nextSideAlongRay(CORE::GEO::CUT::Point* startpoint, CORE::GEO::CUT::Point* cutpoint)
+  NextSideAlongRay(CORE::GEO::CUT::Point* startpoint, CORE::GEO::CUT::Point* cutpoint)
       : startpoint_(startpoint), cutpoint_(cutpoint)
   {
     startpoint_->Coordinates(startpoint_xyz_.A());
@@ -615,7 +615,7 @@ bool CORE::GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* 
    * along this ray determines the order of the sides */
   //------------------------------------------------------------------------
   if (point_cut_sides.size() > 1)
-    std::sort(point_cut_sides.begin(), point_cut_sides.end(), nextSideAlongRay(p, cutpoint));
+    std::sort(point_cut_sides.begin(), point_cut_sides.end(), NextSideAlongRay(p, cutpoint));
 
   //------------------------------------------------------------------------
   /* determine the inside/outside position w.r.t the chosen cut-side

@@ -44,7 +44,7 @@ XFEM::MeshCouplingFPI::MeshCouplingFPI(
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
     const int step,         ///< time step
-    MeshCouplingFPI::coupled_field field  ///< which field is coupled to the fluid
+    MeshCouplingFPI::CoupledField field  ///< which field is coupled to the fluid
     )
     : MeshVolCoupling(bg_dis, cond_name, cond_dis, coupling_id, time, step,
           (field == MeshCouplingFPI::ps_ps

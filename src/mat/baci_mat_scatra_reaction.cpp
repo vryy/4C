@@ -209,7 +209,7 @@ MAT::ScatraReactionMatType MAT::ScatraReactionMatType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::reaction_coupling MAT::PAR::ScatraReactionMat::SetCouplingType(
+MAT::PAR::ReactionCoupling MAT::PAR::ScatraReactionMat::SetCouplingType(
     Teuchos::RCP<MAT::PAR::Material> matdata)
 {
   if (*(matdata->Get<std::string>("COUPLING")) == "simple_multiplicative")

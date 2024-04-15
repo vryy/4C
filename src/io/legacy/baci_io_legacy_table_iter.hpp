@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
   \date 08/06
  */
 /*----------------------------------------------------------------------*/
-typedef struct _STACK_ELEMENT
+typedef struct StackElement
 {
-  struct _STACK_ELEMENT* snext;
-  MAP_NODE* map_node;
+  struct StackElement* snext;
+  MapNode* map_node;
 } STACK_ELEMENT;
 
 
@@ -39,7 +39,7 @@ typedef struct _STACK_ELEMENT
   \date 08/06
  */
 /*----------------------------------------------------------------------*/
-typedef struct _STACK
+typedef struct Stack
 {
   int count;
   STACK_ELEMENT head;
@@ -57,7 +57,7 @@ typedef struct _STACK
   \date 08/06
  */
 /*----------------------------------------------------------------------*/
-typedef struct _MAP_ITERATOR
+typedef struct MapIterator
 {
   MAP* map;
   STACK stack;
@@ -68,7 +68,7 @@ void init_map_iterator(MAP_ITERATOR* iterator, MAP* map);
 
 int next_map_node(MAP_ITERATOR* iterator);
 
-MAP_NODE* iterator_get_node(MAP_ITERATOR* iterator);
+MapNode* iterator_get_node(MAP_ITERATOR* iterator);
 
 FOUR_C_NAMESPACE_CLOSE
 

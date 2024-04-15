@@ -23,12 +23,12 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    class So_pyramid5fbarType : public DRT::ElementType
+    class SoPyramid5fbarType : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_pyramid5fbarType"; }
 
-      static So_pyramid5fbarType& Instance();
+      static SoPyramid5fbarType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -50,18 +50,18 @@ namespace DRT
           override;
 
      private:
-      static So_pyramid5fbarType instance_;
+      static SoPyramid5fbarType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDP5FBAR"; }
     };
 
 
 
-    class So_pyramid5fbar : public So_pyramid5
+    class SoPyramid5fbar : public SoPyramid5
     {
      public:
       //! @name Friends
-      friend class So_pyramid5fbarType;
+      friend class SoPyramid5fbarType;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -72,7 +72,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      So_pyramid5fbar(int id, int owner);
+      SoPyramid5fbar(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -80,7 +80,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_pyramid5fbar(const So_pyramid5fbar& old);
+      SoPyramid5fbar(const SoPyramid5fbar& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -99,7 +99,7 @@ namespace DRT
       */
       int UniqueParObjectId() const override
       {
-        return So_pyramid5fbarType::Instance().UniqueParObjectId();
+        return SoPyramid5fbarType::Instance().UniqueParObjectId();
       }
 
       /*!
@@ -128,7 +128,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return So_pyramid5fbarType::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoPyramid5fbarType::Instance(); }
 
       //@}
 
@@ -190,7 +190,7 @@ namespace DRT
 
      protected:
       //! don't want = operator
-      So_pyramid5fbar& operator=(const So_pyramid5fbar& old);
+      SoPyramid5fbar& operator=(const SoPyramid5fbar& old);
 
       // compute Jacobian mapping wrt to deformed configuration
       virtual void UpdateJacobianMapping(

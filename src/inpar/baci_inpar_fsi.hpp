@@ -29,7 +29,7 @@ namespace INPUT
 /* The coupling methods for FSI. */
 /*----------------------------------------------------------------------*/
 // ToDo: put into the namespace INPAR::FSI ! No typedef?
-typedef enum _FSI_COUPLING
+typedef enum FsiCoupling
 {
   fsi_coupling_freesurface = -1,
   fsi_coupling_undefined = 0,

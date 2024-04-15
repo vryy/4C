@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::SimpleFacetGraph_1D::SimpleFacetGraph_1D(
+CORE::GEO::CUT::SimpleFacetGraph1D::SimpleFacetGraph1D(
     const std::vector<Side*>& sides, const plain_facet_set& facets)
     : FacetGraph() /* call empty base class constructor */
 {
@@ -40,7 +40,7 @@ CORE::GEO::CUT::SimpleFacetGraph_1D::SimpleFacetGraph_1D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::SimpleFacetGraph_1D::CreateVolumeCells(
+void CORE::GEO::CUT::SimpleFacetGraph1D::CreateVolumeCells(
     Mesh& mesh, Element* element, plain_volumecell_set& cells)
 {
   if (all_facets_.size() < 1) return;
@@ -68,7 +68,7 @@ void CORE::GEO::CUT::SimpleFacetGraph_1D::CreateVolumeCells(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::SimpleFacetGraph_1D::SortFacets(
+void CORE::GEO::CUT::SimpleFacetGraph1D::SortFacets(
     const Element* element, std::map<double, Facet*>& sorted_facets) const
 {
   Edge* edge = element->Sides()[0]->Edges()[0];
@@ -89,7 +89,7 @@ void CORE::GEO::CUT::SimpleFacetGraph_1D::SortFacets(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::SimpleFacetGraph_1D::CombineFacetsToLineVolumes(
+void CORE::GEO::CUT::SimpleFacetGraph1D::CombineFacetsToLineVolumes(
     const std::map<double, Facet*>& sorted_facets, std::vector<plain_facet_set>& volumes) const
 {
   std::map<double, Facet*>::const_iterator end_cit = sorted_facets.end();
@@ -111,7 +111,7 @@ void CORE::GEO::CUT::SimpleFacetGraph_1D::CombineFacetsToLineVolumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::SimpleFacetGraph_2D::SimpleFacetGraph_2D(
+CORE::GEO::CUT::SimpleFacetGraph2D::SimpleFacetGraph2D(
     const std::vector<Side*>& sides, const plain_facet_set& facets)
     : FacetGraph() /* call empty base class constructor */
 {
@@ -130,7 +130,7 @@ CORE::GEO::CUT::SimpleFacetGraph_2D::SimpleFacetGraph_2D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::SimpleFacetGraph_2D::CreateVolumeCells(
+void CORE::GEO::CUT::SimpleFacetGraph2D::CreateVolumeCells(
     Mesh& mesh, Element* element, plain_volumecell_set& cells)
 {
   std::vector<plain_facet_set> volumes;
@@ -140,12 +140,12 @@ void CORE::GEO::CUT::SimpleFacetGraph_2D::CreateVolumeCells(
 
   Side* side = sides[0];
 
-  IMPL::SimplePointGraph_2D pg_2d(
+  IMPL::SimplePointGraph2D pg_2d(
       mesh, element, side, IMPL::PointGraph::element_side, IMPL::PointGraph::all_lines);
 
   volumes.reserve(pg_2d.NumSurfaces());
 
-  for (IMPL::SimplePointGraph_2D::surface_const_iterator sit = pg_2d.sbegin(); sit != pg_2d.send();
+  for (IMPL::SimplePointGraph2D::surface_const_iterator sit = pg_2d.sbegin(); sit != pg_2d.send();
        ++sit)
   {
     Cycle vol_point_cycle = *sit;

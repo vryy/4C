@@ -25,11 +25,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FS3I
 {
-  class PartFPS3I_1WC : public PartFPS3I
+  class PartFpS3I1Wc : public PartFPS3I
   {
    public:
     //! constructor of one-way coupled FPS3I
-    PartFPS3I_1WC(const Epetra_Comm& comm);
+    PartFpS3I1Wc(const Epetra_Comm& comm);
 
     //! initialize this class
     void Init() override;

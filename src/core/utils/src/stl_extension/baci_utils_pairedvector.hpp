@@ -55,11 +55,11 @@ namespace CORE::GEN
    * the container it is based on. Note especially that the elements are not
    * sorted.
    */
-  template <typename Key, typename T, typename insert_policy = default_insert_policy<Key, T>>
-  class pairedvector : protected insert_policy
+  template <typename Key, typename T, typename insert_policy = DefaultInsertPolicy<Key, T>>
+  class Pairedvector : protected insert_policy
   {
    private:
-    typedef pairedvector<Key, T, insert_policy> class_type;
+    typedef Pairedvector<Key, T, insert_policy> class_type;
     typedef insert_policy base_type;
     typedef typename base_type::pairedvector_type pairedvector_type;
     typedef typename base_type::pair_type pair_type;
@@ -73,7 +73,7 @@ namespace CORE::GEN
      *          number of entries.
      *  @param reserve The number of elements that are preallocated
      */
-    pairedvector(size_t reserve)
+    Pairedvector(size_t reserve)
         : _m(reserve + insert_policy::capacity_offset(), pair_type()), _entries(0)
     {
     }
@@ -83,7 +83,7 @@ namespace CORE::GEN
      *          number of entries. Use resize as soon as you know the necessary
      *          number of elements.
      */
-    pairedvector() : _m(insert_policy::capacity_offset(), pair_type()), _entries(0) {}
+    Pairedvector() : _m(insert_policy::capacity_offset(), pair_type()), _entries(0) {}
 
     /**
      *  @brief  constructor creates no elements, but reserves the maximum
@@ -92,7 +92,7 @@ namespace CORE::GEN
      *  @param default_key default value for the key within the pair
      *  @param default_T   default value for the data within the pair
      */
-    pairedvector(size_t reserve, Key default_key, T default_T)
+    Pairedvector(size_t reserve, Key default_key, T default_T)
         : _m(reserve + insert_policy::capacity_offset(), pair_type(default_key, default_T)),
           _entries(0)
     {
@@ -105,7 +105,7 @@ namespace CORE::GEN
      *  @param[in] type   Apply this copy type.
      *
      *  \author hiermeier \date 05/17 */
-    pairedvector(const pairedvector& source, enum GEN::CopyType type = DeepCopy)
+    Pairedvector(const Pairedvector& source, enum GEN::CopyType type = DeepCopy)
         : _m(0, pair_type()), _entries(0)
 
     {
@@ -126,34 +126,34 @@ namespace CORE::GEN
 
     /**
      *  Returns a read/write iterator that points to the first
-     *  element in the %pairedvector.  Iteration is done in ordinary
+     *  element in the %Pairedvector.  Iteration is done in ordinary
      *  element order.
      */
     iterator begin() { return base_type::begin(_m.begin()); }
 
     /**
      *  Returns a read-only (constant) iterator that points to the first pair
-     *  in the %pairedvector.  Iteration is done in ordinary
+     *  in the %Pairedvector.  Iteration is done in ordinary
      *  element order.
      */
     const_iterator begin() const { return base_type::begin(_m.begin()); }
 
     /**
      *  Returns a read/write iterator that points one past the last
-     *  pair in the %pairedvector.  Iteration is done in ordinary
+     *  pair in the %Pairedvector.  Iteration is done in ordinary
      *  element order.
      */
     iterator end() { return base_type::end(_m.begin() + _entries); }
 
     /**
      *  Returns a read-only (constant) iterator that points one past the last
-     *  pair in the %pairedvector.  Iteration is done in ordinary
+     *  pair in the %Pairedvector.  Iteration is done in ordinary
      *  element order.
      */
     const_iterator end() const { return base_type::end(_m.begin() + _entries); }
 
     /**
-     *  @brief  Tries to locate an element in a %pairedvector.
+     *  @brief  Tries to locate an element in a %Pairedvector.
      *  @param  k  Key of (key, value) %pair to be located.
      *  @return Iterator pointing to sought-after element, or end() if not
      *          found.
@@ -166,7 +166,7 @@ namespace CORE::GEN
     iterator find(const Key k) { return base_type::find(k, _m, _entries); }
 
     /**
-     *  @brief  Tries to locate an element in a %pairedvector.
+     *  @brief  Tries to locate an element in a %Pairedvector.
      *  @param  k  Key of (key, value) %pair to be located.
      *  @return Read-only (constant) iterator pointing to sought-after
      *          element, or end() if not found.
@@ -181,7 +181,7 @@ namespace CORE::GEN
     /**
      * @param  x  Data with which old elements are overwritten.
      *
-     *  Erases all elements in a %pairedvector.  Note that this function only
+     *  Erases all elements in a %Pairedvector.  Note that this function only
      *  erases the elements, and that if the elements themselves are
      *  pointers, the pointed-to memory is not touched in any way.
      *  Managing the pointer is the user's responsibility.
@@ -198,14 +198,14 @@ namespace CORE::GEN
     }
 
     /**
-     *  @brief  Resizes the %pairedvector to the specified number of elements.
+     *  @brief  Resizes the %Pairedvector to the specified number of elements.
      *  @param  new_size  Number of elements the %vector should contain.
      *  @param  x  Data with which new elements should be populated.
      *
-     *  This function will %resize the %pairedvector to the specified
+     *  This function will %resize the %Pairedvector to the specified
      *  number of elements.  If the number is smaller than the
-     *  %pairedvector's current size the %pairedvector is truncated, otherwise
-     *  the %pairedvector is extended and new elements are populated with
+     *  %Pairedvector's current size the %Pairedvector is truncated, otherwise
+     *  the %Pairedvector is extended and new elements are populated with
      *  given data.
      */
     void resize(size_t new_size, pair_type x = pair_type())
@@ -221,7 +221,7 @@ namespace CORE::GEN
     }
 
     /**
-     *  @brief  Subscript ( @c [] ) access to %pairedvector data.
+     *  @brief  Subscript ( @c [] ) access to %Pairedvector data.
      *  @param  k  The key for which data should be retrieved.
      *  @return A reference to the data of the (key,data) %pair.
      *
@@ -261,30 +261,30 @@ namespace CORE::GEN
     void complete() { _entries = insert_policy::complete(_m, _entries); }
 
     /**
-     *  @brief  Access to %pairedvector data.
+     *  @brief  Access to %Pairedvector data.
      *  @param  k  The key for which data should be retrieved.
      *  @return A reference to the data whose key is equivalent to @a k, if
-     *          such a data is present in the %pairedvector.
+     *          such a data is present in the %Pairedvector.
      *  @throw  CORE::Exception("invalid key")  If no such data is present.
      */
     T& at(const Key k) { return base_type::at(k, _m, _entries); }
 
     /**
-     *  @brief  Access to %pairedvector data.
+     *  @brief  Access to %Pairedvector data.
      *  @param  k  The key for which data should be retrieved.
      *  @return A reference to the data whose key is equivalent to @a k, if
-     *          such a data is present in the %pairedvector.
+     *          such a data is present in the %Pairedvector.
      *  @throw  CORE::Exception("invalid key")  If no such data is present.
      */
     const T& at(const Key k) const { return base_type::at(k, _m, _entries); }
 
-    /** Returns the current capacity of the %pairedvector.  */
+    /** Returns the current capacity of the %Pairedvector.  */
     size_t capacity() const
     {
       return (_m.size() > 0 ? _m.size() - insert_policy::capacity_offset() : 0);
     }
 
-    /**  Returns the number of elements in the %pairedvector.  */
+    /**  Returns the number of elements in the %Pairedvector.  */
     size_t size() const { return _entries; }
 
     /**
@@ -298,14 +298,14 @@ namespace CORE::GEN
       return;
     }
 
-    /** Returns true if the %pairedvector is empty.  (Thus begin() would equal
+    /** Returns true if the %Pairedvector is empty.  (Thus begin() would equal
      *  end().)
      */
     bool empty() const { return (_entries <= 0); }
 
     /**
-     *  @brief  Swaps data with another %pairedvector.
-     *  @param  x  A %pairedvector of identical allocator type.
+     *  @brief  Swaps data with another %Pairedvector.
+     *  @param  x  A %Pairedvector of identical allocator type.
      *
      *  This exchanges the elements between two vectors in constant time.
      *  (Three pointers and the entries information, so it should be quite fast.)
@@ -324,10 +324,10 @@ namespace CORE::GEN
     }
 
     /**
-     *  @brief  assign a source %pairedvector to this %pairedvector
-     *  @param  a %pairedvector of identical allocator type.
+     *  @brief  assign a source %Pairedvector to this %Pairedvector
+     *  @param  a %Pairedvector of identical allocator type.
      *
-     *  If necessary the capacity of this %pairedvector will be modified. All
+     *  If necessary the capacity of this %Pairedvector will be modified. All
      *  previous elements are lost and will be overwritten by the source values.
      */
     class_type& operator=(const class_type& source)
@@ -337,10 +337,10 @@ namespace CORE::GEN
     }
 
     /**
-     *  @brief  assign a source %std::map to this %pairedvector
+     *  @brief  assign a source %std::map to this %Pairedvector
      *  @param  a %std_::map of identical allocator type.
      *
-     *  If necessary the capacity of this %pairedvector will be modified. All
+     *  If necessary the capacity of this %Pairedvector will be modified. All
      *  previous elements are lost and will be overwritten by the source values.
      */
     class_type& operator=(const std::map<Key, T>& source)
@@ -353,7 +353,7 @@ namespace CORE::GEN
 
     /** @brief clone the source object
      *
-     *  If necessary the capacity of this %pairedvector will be modified. All
+     *  If necessary the capacity of this %Pairedvector will be modified. All
      *  previous elements are lost and will be overwritten by the source values.
      *
      *  @param[in] source  Clone the given object.
@@ -380,11 +380,11 @@ namespace CORE::GEN
     }
 
     /**
-     *  @brief  print the %pairedvector
+     *  @brief  print the %Pairedvector
      *  @param  output stream.
      *  @param  sort the entries before the actual print is performed.
      *
-     *  Print the %pairedvector information in column format. By default the
+     *  Print the %Pairedvector information in column format. By default the
      *  entries are sorted with respect to their KEY entries.
      *
      *  @author hiermeier @date 07/17 */
@@ -393,7 +393,7 @@ namespace CORE::GEN
       pairedvector_type sorted_m(_m.begin(), _m.begin() + _entries);
       if (sort) std::sort(sorted_m.begin(), sorted_m.end(), pair_comp<pair_type>);
 
-      os << "CORE::GEN::pairedvector [size= " << size() << ", capacity=" << capacity() << "]\n";
+      os << "CORE::GEN::Pairedvector [size= " << size() << ", capacity=" << capacity() << "]\n";
       if (sort) os << "sorted ";
       os << "entries {KEY, T}:\n";
       for (auto& p : sorted_m) os << "{" << p.first << ", " << p.second << "}\n";
@@ -445,9 +445,9 @@ namespace CORE::GEN
     /// number of entries (without the pre-allocated entries, _entries != _m.size())
     size_t _entries;
 
-  };  // class pairedvector
+  };  // class Pairedvector
 
-  /** @brief print sorted %pairedvector (row format)
+  /** @brief print sorted %Pairedvector (row format)
    *
    *  @param[in] os  output stream
    *  @param[in] vec paired vector object which is going to be printed
@@ -455,7 +455,7 @@ namespace CORE::GEN
    *
    *  @author hiermeier @date 05/17 */
   template <typename Key, typename T0, typename... Ts>
-  std::ostream& operator<<(std::ostream& os, const pairedvector<Key, T0, Ts...>& vec)
+  std::ostream& operator<<(std::ostream& os, const Pairedvector<Key, T0, Ts...>& vec)
   {
     std::vector<std::pair<Key, T0>> sorted_vec(vec.begin(), vec.end());
     std::sort(sorted_vec.begin(), sorted_vec.end(), pair_comp<std::pair<Key, T0>>);
@@ -467,13 +467,13 @@ namespace CORE::GEN
     return os;
   }
 
-  /// template alias for the pairedvector using the default_insert_policy
+  /// template alias for the Pairedvector using the default_insert_policy
   template <typename Key, typename T>
-  using default_pairedvector = pairedvector<Key, T, default_insert_policy<Key, T>>;
+  using default_pairedvector = Pairedvector<Key, T, DefaultInsertPolicy<Key, T>>;
 
-  /// template alias for the pairedvector using the quick_insert_policy
+  /// template alias for the Pairedvector using the quick_insert_policy
   template <typename Key, typename T>
-  using quick_pairedvector = pairedvector<Key, T, quick_insert_policy<Key, T>>;
+  using quick_pairedvector = Pairedvector<Key, T, QuickInsertPolicy<Key, T>>;
 
 }  // namespace CORE::GEN
 

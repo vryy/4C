@@ -153,7 +153,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1LineType::Create(const int id, co
  |  ctor (public)                                            mgit 01/08/|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
-    : So_base(id, owner),
+    : SoBase(id, owner),
       material_(0),
       thickness_(0.0),
       old_step_length_(0.0),
@@ -175,7 +175,7 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
  |  copy-ctor (public)                                       mgit 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1::Wall1(const DRT::ELEMENTS::Wall1& old)
-    : So_base(old),
+    : SoBase(old),
       material_(old.material_),
       thickness_(old.thickness_),
       old_step_length_(old.old_step_length_),
@@ -223,7 +223,7 @@ void DRT::ELEMENTS::Wall1::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  So_base::Pack(data);
+  SoBase::Pack(data);
   // material_
   AddtoPack(data, material_);
   // thickness
@@ -264,7 +264,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  So_base::Unpack(basedata);
+  SoBase::Unpack(basedata);
   // material_
   ExtractfromPack(position, data, material_);
   // thickness_

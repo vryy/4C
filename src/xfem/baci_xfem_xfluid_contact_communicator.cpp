@@ -32,7 +32,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
+void XFEM::XFluidContactComm::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
@@ -46,10 +46,10 @@ void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::Cut
 
   Teuchos::ParameterList& params_xf_stab = fluidparams->sublist("XFLUID DYNAMIC/STABILIZATION");
 
-  visc_stab_trace_estimate_ = CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStab_TraceEstimate>(
+  visc_stab_trace_estimate_ = CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStabTraceEstimate>(
       params_xf_stab, "VISC_STAB_TRACE_ESTIMATE");
   visc_stab_hk_ =
-      CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab, "VISC_STAB_HK");
+      CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStabHk>(params_xf_stab, "VISC_STAB_HK");
   nit_stab_gamma_ = params_xf_stab.get<double>("NIT_STAB_FAC");
   is_pseudo_2D_ = (bool)CORE::UTILS::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
   mass_conservation_scaling_ = CORE::UTILS::IntegralValue<INPAR::XFEM::MassConservationScaling>(
@@ -96,7 +96,7 @@ void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::Cut
   if (mc_.size())
   {
     if (!fluiddis_->Comm().MyPID())
-      std::cout << "==| XFluid_Contact_Comm: Loaded " << mc_.size()
+      std::cout << "==| XFluidContactComm: Loaded " << mc_.size()
                 << " Mesh Coupling Objects! |==" << std::endl;
   }
   else
@@ -124,7 +124,7 @@ void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::Cut
   Create_New_Gmsh_files();
 }
 
-double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::Element* ele,
+double XFEM::XFluidContactComm::Get_FSI_Traction(MORTAR::Element* ele,
     const CORE::LINALG::Matrix<3, 1>& xsi_parent, const CORE::LINALG::Matrix<2, 1>& xsi_boundary,
     const CORE::LINALG::Matrix<3, 1>& normal, bool& FSI_integrated,
     bool& gp_on_this_proc,  // for serial run
@@ -172,7 +172,7 @@ double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::Element* ele,
 
   if (!volumecell)
   {
-    std::cout << "==| You have a mail from XFluid_Contact_Comm: As I couldn't find an appropriate "
+    std::cout << "==| You have a mail from XFluidContactComm: As I couldn't find an appropriate "
                  "fluid solution at your gausspoint I decided that the solution is 0.0! |=="
               << std::endl;
     return 0.0;
@@ -256,7 +256,7 @@ double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::Element* ele,
   }
 }
 
-bool XFEM::XFluid_Contact_Comm::CheckNitscheContactState(CONTACT::Element* cele,
+bool XFEM::XFluidContactComm::CheckNitscheContactState(CONTACT::Element* cele,
     const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
     const double& full_fsi_traction,        // stressfluid + penalty
     double& gap                             // gap
@@ -271,7 +271,7 @@ bool XFEM::XFluid_Contact_Comm::CheckNitscheContactState(CONTACT::Element* cele,
   return false;  // dummy to make compiler happy :)
 }
 
-bool XFEM::XFluid_Contact_Comm::Get_Contact_State(int sid,      // Solid Surface Element
+bool XFEM::XFluidContactComm::Get_Contact_State(int sid,        // Solid Surface Element
     std::string mcname, const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
     const double& full_fsi_traction,                            // stressfluid + penalty ...
     double& gap)
@@ -290,7 +290,7 @@ bool XFEM::XFluid_Contact_Comm::Get_Contact_State(int sid,      // Solid Surface
   }
 }
 
-void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vector<int>& fluid_nds,
+void XFEM::XFluidContactComm::Get_States(const int fluidele_id, const std::vector<int>& fluid_nds,
     const DRT::ELEMENTS::StructuralSurface* sele, const CORE::LINALG::Matrix<2, 1>& selexsi,
     const CORE::LINALG::Matrix<3, 1>& x, DRT::Element*& fluidele,
     CORE::LINALG::SerialDenseMatrix& ele_xyze, std::vector<double>& velpres,
@@ -437,7 +437,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
   return;
 }
 
-void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
+void XFEM::XFluidContactComm::Get_Penalty_Param(DRT::Element* fluidele,
     CORE::GEO::CUT::VolumeCell* volumecell, CORE::LINALG::SerialDenseMatrix& ele_xyze,
     const CORE::LINALG::Matrix<3, 1>& elenormal, double& penalty_fac,
     const CORE::LINALG::Matrix<3, 1>& vel_m)
@@ -551,7 +551,7 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
   return;
 }
 
-void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(
+void XFEM::XFluidContactComm::Get_Penalty_Param(
     DRT::ELEMENTS::StructuralSurface* sele, double& penalty_fac)
 {
   penalty_fac = nit_stab_gamma_ *
@@ -561,7 +561,7 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(
   return;
 }
 
-void XFEM::XFluid_Contact_Comm::SetupSurfElePtrs(DRT::Discretization& contact_interface_dis)
+void XFEM::XFluidContactComm::SetupSurfElePtrs(DRT::Discretization& contact_interface_dis)
 {
   if (ele_ptrs_already_setup_) return;
 
@@ -655,7 +655,7 @@ void XFEM::XFluid_Contact_Comm::SetupSurfElePtrs(DRT::Discretization& contact_in
       dynamic_cast<CONTACT::NitscheStrategyFpi*>(&contact_strategy_);  // might be nullptr
 }
 
-bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& sele,
+bool XFEM::XFluidContactComm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& sele,
     CORE::LINALG::Matrix<2, 1>& xsi, CORE::GEO::CUT::SideHandle*& sidehandle, std::vector<int>& nds,
     int& eleid, CORE::GEO::CUT::VolumeCell*& volumecell, CORE::LINALG::Matrix<3, 1>& elenormal,
     CORE::LINALG::Matrix<3, 1>& x, bool& FSI_integrated, double& distance)
@@ -802,7 +802,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
             CORE::GEO::CUT::OUTPUT::GmshFacetDump(file, afacet, "sides", true);
             CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
             CORE::GEO::CUT::OUTPUT::GmshWriteSection(file, "ALLFACETS", facets, true);
-            std::cout << "==| Warning from of your friendly XFluid_Contact_Comm: I have untriagled "
+            std::cout << "==| Warning from of your friendly XFluidContactComm: I have untriagled "
                          "faces (DEBUG_OUT_D003.pos)! |=="
                       << std::endl;
           }
@@ -921,7 +921,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
   return true;
 }
 
-CORE::GEO::CUT::Side* XFEM::XFluid_Contact_Comm::FindnextPhysicalSide(CORE::LINALG::Matrix<3, 1>& x,
+CORE::GEO::CUT::Side* XFEM::XFluidContactComm::FindnextPhysicalSide(CORE::LINALG::Matrix<3, 1>& x,
     CORE::GEO::CUT::Side* initSide, CORE::GEO::CUT::SideHandle*& sidehandle,
     CORE::LINALG::Matrix<2, 1>& newxsi, double& distance)
 {
@@ -992,7 +992,7 @@ CORE::GEO::CUT::Side* XFEM::XFluid_Contact_Comm::FindnextPhysicalSide(CORE::LINA
   return newSide;
 }
 
-double XFEM::XFluid_Contact_Comm::DistancetoSide(CORE::LINALG::Matrix<3, 1>& x,
+double XFEM::XFluidContactComm::DistancetoSide(CORE::LINALG::Matrix<3, 1>& x,
     CORE::GEO::CUT::Side* side, CORE::LINALG::Matrix<3, 1>& closest_x)
 {
   double distance = 1e200;
@@ -1040,9 +1040,9 @@ double XFEM::XFluid_Contact_Comm::DistancetoSide(CORE::LINALG::Matrix<3, 1>& x,
   return distance;
 }
 
-double XFEM::XFluid_Contact_Comm::Get_h() { return mc_[0]->Get_h(); }
+double XFEM::XFluidContactComm::Get_h() { return mc_[0]->Get_h(); }
 
-void XFEM::XFluid_Contact_Comm::Update_physical_sides(CORE::GEO::CUT::Side* side,
+void XFEM::XFluidContactComm::Update_physical_sides(CORE::GEO::CUT::Side* side,
     std::set<CORE::GEO::CUT::Side*>& performed_sides,
     std::set<CORE::GEO::CUT::Side*>& physical_sides)
 {
@@ -1068,7 +1068,7 @@ void XFEM::XFluid_Contact_Comm::Update_physical_sides(CORE::GEO::CUT::Side* side
   }
 }
 
-std::vector<CORE::GEO::CUT::Side*> XFEM::XFluid_Contact_Comm::GetNewNeighboringSides(
+std::vector<CORE::GEO::CUT::Side*> XFEM::XFluidContactComm::GetNewNeighboringSides(
     CORE::GEO::CUT::Side* side, std::set<CORE::GEO::CUT::Side*>& performed_sides)
 {
   std::vector<CORE::GEO::CUT::Side*> neighbors;
@@ -1129,7 +1129,7 @@ std::vector<CORE::GEO::CUT::Side*> XFEM::XFluid_Contact_Comm::GetNewNeighboringS
   return neighbors;
 }
 
-CORE::GEO::CUT::Element* XFEM::XFluid_Contact_Comm::GetNextElement(CORE::GEO::CUT::Element* ele,
+CORE::GEO::CUT::Element* XFEM::XFluidContactComm::GetNextElement(CORE::GEO::CUT::Element* ele,
     std::set<CORE::GEO::CUT::Element*>& performed_elements, int& lastid)
 {
   CORE::GEO::CUT::Element* newele = nullptr;
@@ -1187,14 +1187,14 @@ CORE::GEO::CUT::Element* XFEM::XFluid_Contact_Comm::GetNextElement(CORE::GEO::CU
   return newele;
 }
 
-void XFEM::XFluid_Contact_Comm::RegisterSideProc(int sid)
+void XFEM::XFluidContactComm::RegisterSideProc(int sid)
 {
   if (!parallel_) return;
   if (GetContactEle(sid)) my_sele_ids_.insert(GetContactEle(sid)->Id());
 }
 
 
-void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
+void XFEM::XFluidContactComm::GetCutSideIntegrationPoints(
     int sid, CORE::LINALG::SerialDenseMatrix& coords, std::vector<double>& weights, int& npg)
 {
   CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(GetSurfSid(sid));
@@ -1378,11 +1378,11 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   return;
 }
 
-void XFEM::XFluid_Contact_Comm::FillComplete_SeleMap()
+void XFEM::XFluidContactComm::FillComplete_SeleMap()
 {
   if (!parallel_) return;
   if (cutwizard_ == Teuchos::null)
-    dserror("XFluid_Contact_Comm::FillComplete_SeleMap: CutWizard not set!");
+    dserror("XFluidContactComm::FillComplete_SeleMap: CutWizard not set!");
 
   // We also add all unphysical sides
   for (std::size_t i = 0; i < mortarId_to_sosid_.size(); ++i)
@@ -1402,13 +1402,13 @@ void XFEM::XFluid_Contact_Comm::FillComplete_SeleMap()
       new Epetra_Map(-1, my_sele_ids.size(), my_sele_ids.data(), 0, fluiddis_->Comm()));
 }
 
-void XFEM::XFluid_Contact_Comm::PrepareTimeStep()
+void XFEM::XFluidContactComm::PrepareTimeStep()
 {
   higher_contact_elements_.clear();
   higher_contact_elements_comm_.clear();
 }
 
-void XFEM::XFluid_Contact_Comm::PrepareIterationStep()
+void XFEM::XFluidContactComm::PrepareIterationStep()
 {
   higher_contact_elements_comm_.clear();
 
@@ -1429,17 +1429,17 @@ void XFEM::XFluid_Contact_Comm::PrepareIterationStep()
   }
 }
 
-double XFEM::XFluid_Contact_Comm::Get_fpi_pcontact_exchange_dist()
+double XFEM::XFluidContactComm::Get_fpi_pcontact_exchange_dist()
 {
   return mcfpi_ps_pf_->Get_fpi_pcontact_exchange_dist();
 }
 
-double XFEM::XFluid_Contact_Comm::Get_fpi_pcontact_fullfraction()
+double XFEM::XFluidContactComm::Get_fpi_pcontact_fullfraction()
 {
   return mcfpi_ps_pf_->Get_fpi_pcontact_fullfraction();
 }
 
-void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
+void XFEM::XFluidContactComm::Create_New_Gmsh_files()
 {
 #ifdef WRITE_GMSH
   std::vector<std::string> sections;
@@ -1500,7 +1500,7 @@ void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
   sum_gps_.resize(5);
 }
 
-void XFEM::XFluid_Contact_Comm::Gmsh_Write(CORE::LINALG::Matrix<3, 1> x, double val, int section)
+void XFEM::XFluidContactComm::Gmsh_Write(CORE::LINALG::Matrix<3, 1> x, double val, int section)
 {
 #ifdef WRITE_GMSH
   plot_data_[section].push_back(std::pair<CORE::LINALG::Matrix<3, 1>, double>(x, val));

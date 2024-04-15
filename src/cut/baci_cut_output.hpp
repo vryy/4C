@@ -453,11 +453,11 @@ namespace CORE::GEO
       // for sorted_vector<T*>
       template <class T>
       void GmshWriteSection(std::ofstream& file, const std::string& section,
-          sorted_vector<T*> container, bool close_file = false, bool to_local = false,
+          SortedVector<T*> container, bool close_file = false, bool to_local = false,
           Element* ele = nullptr)
       {
         if (section != "") GmshNewSection(file, section);
-        for (typename sorted_vector<T*>::iterator t = container.begin(); t != container.end(); ++t)
+        for (typename SortedVector<T*>::iterator t = container.begin(); t != container.end(); ++t)
           GmshObjectDump<T>(file, (*t), to_local, ele);
         if (section != "") GmshEndSection(file, close_file);
       }
@@ -465,11 +465,11 @@ namespace CORE::GEO
       // for sorted_vector<T*,true,PointPidLess>
       template <class T>
       void GmshWriteSection(std::ofstream& file, const std::string& section,
-          sorted_vector<T*, true, PointPidLess> container, bool close_file = false,
+          SortedVector<T*, true, PointPidLess> container, bool close_file = false,
           bool to_local = false, Element* ele = nullptr)
       {
         if (section != "") GmshNewSection(file, section);
-        for (typename sorted_vector<T*, true, PointPidLess>::iterator t = container.begin();
+        for (typename SortedVector<T*, true, PointPidLess>::iterator t = container.begin();
              t != container.end(); ++t)
           GmshObjectDump<T>(file, (*t), to_local, ele);
         if (section != "") GmshEndSection(file, close_file);

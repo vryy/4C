@@ -76,7 +76,7 @@ bool CORE::UTILS::ParsedFunctionVariable::ContainTime(const double t) { return t
 
 
 CORE::UTILS::LinearInterpolationVariable::LinearInterpolationVariable(std::string name,
-    std::vector<double> times, std::vector<double> values, struct periodicstruct periodicdata)
+    std::vector<double> times, std::vector<double> values, struct Periodicstruct periodicdata)
     : FunctionVariable(std::move(name)),
       times_(std::move(times)),
       values_(std::move(values)),
@@ -207,7 +207,7 @@ bool CORE::UTILS::LinearInterpolationVariable::ContainTime(const double t)
 
 CORE::UTILS::MultiFunctionVariable::MultiFunctionVariable(std::string name,
     std::vector<double> times, std::vector<std::string> description_vec,
-    struct periodicstruct periodicdata)
+    struct Periodicstruct periodicdata)
     : FunctionVariable(std::move(name)),
       times_(std::move(times)),
       periodic_(periodicdata.periodic),
@@ -365,7 +365,7 @@ bool CORE::UTILS::MultiFunctionVariable::ContainTime(const double t)
 
 
 CORE::UTILS::FourierInterpolationVariable::FourierInterpolationVariable(std::string name,
-    std::vector<double> times, std::vector<double> values, struct periodicstruct periodicdata)
+    std::vector<double> times, std::vector<double> values, struct Periodicstruct periodicdata)
     : FunctionVariable(std::move(name)),
       times_(std::move(times)),
       values_(std::move(values)),

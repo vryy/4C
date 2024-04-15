@@ -37,11 +37,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for aneurysm wall material
-    class AAAneohooke_stopro : public Parameter
+    class AaAneohookeStopro : public Parameter
     {
      public:
       /// standard constructor
-      AAAneohooke_stopro(Teuchos::RCP<MAT::PAR::Material> matdata);
+      AaAneohookeStopro(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -66,29 +66,29 @@ namespace MAT
   }     // namespace PAR
 
 
-  class AAAneohooke_stoproType : public CORE::COMM::ParObjectType
+  class AaAneohookeStoproType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "AAAneohooke_stoproType"; }
 
-    static AAAneohooke_stoproType& Instance() { return instance_; };
+    static AaAneohookeStoproType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static AAAneohooke_stoproType instance_;
+    static AaAneohookeStoproType instance_;
   };
 
   /*----------------------------------------------------------------------*/
   /// aneurysm wall material according to Raghavan and Vorp [2000]
-  class AAAneohooke_stopro : public So3Material
+  class AaAneohookeStopro : public So3Material
   {
    public:
     // empty constructor
-    AAAneohooke_stopro();
+    AaAneohookeStopro();
 
     // constructor with given material parameters
-    AAAneohooke_stopro(MAT::PAR::AAAneohooke_stopro* params);
+    AaAneohookeStopro(MAT::PAR::AaAneohookeStopro* params);
 
     /// check if element kinematics and material kinematics are compatible
     void ValidKinematics(INPAR::STR::KinemType kinem) override
@@ -107,7 +107,7 @@ namespace MAT
     */
     int UniqueParObjectId() const override
     {
-      return AAAneohooke_stoproType::Instance().UniqueParObjectId();
+      return AaAneohookeStoproType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -159,7 +159,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new AAAneohooke_stopro(*this));
+      return Teuchos::rcp(new AaAneohookeStopro(*this));
     }
 
     // Init stochastic beta
@@ -186,7 +186,7 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::AAAneohooke_stopro* params_;
+    MAT::PAR::AaAneohookeStopro* params_;
 
     // stochastic beta
     // put beta and youngs not in params because it will be elementspecific

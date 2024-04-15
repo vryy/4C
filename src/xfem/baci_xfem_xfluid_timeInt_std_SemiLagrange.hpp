@@ -32,7 +32,7 @@ namespace XFEM
   // forward declarations
   /*========================================================================*/
 
-  class XFLUID_TIMEINT_BASE;
+  class XfluidTimeintBase;
   class TimeIntData;
 
 
@@ -42,7 +42,7 @@ namespace XFEM
     It bases on the Semi-Lagrangian approach described in
     "/intern/arbeiten/diplomarbeiten/WinklmaierMartin2010.pdf"
    */
-  class XFLUID_SemiLagrange : public XFLUID_STD
+  class XfluidSemiLagrange : public XfluidStd
   {
    public:
     /*========================================================================*/
@@ -50,8 +50,8 @@ namespace XFEM
     /*========================================================================*/
 
     //! constructor
-    explicit XFLUID_SemiLagrange(
-        XFEM::XFLUID_TIMEINT_BASE& timeInt,  ///< time integration base class object
+    explicit XfluidSemiLagrange(
+        XFEM::XfluidTimeintBase& timeInt,  ///< time integration base class object
         const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt>>&
             reconstr_method,                      ///< reconstruction map for nodes and its dofsets
         INPAR::XFEM::XFluidTimeInt& timeIntType,  ///< type of time integration

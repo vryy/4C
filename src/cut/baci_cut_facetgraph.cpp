@@ -291,10 +291,10 @@ Teuchos::RCP<CORE::GEO::CUT::FacetGraph> CORE::GEO::CUT::FacetGraph::Create(
   switch (dim)
   {
     case 1:
-      fg = Teuchos::rcp(new SimpleFacetGraph_1D(sides, facets));
+      fg = Teuchos::rcp(new SimpleFacetGraph1D(sides, facets));
       break;
     case 2:
-      fg = Teuchos::rcp(new SimpleFacetGraph_2D(sides, facets));
+      fg = Teuchos::rcp(new SimpleFacetGraph2D(sides, facets));
       break;
     case 3:
       fg = Teuchos::rcp(new FacetGraph(sides, facets));

@@ -71,7 +71,7 @@ namespace XFEM
             penscaling,  ///< material dependent penalty scaling (e.g. visceff) divided by h
         const double& NIT_stabscaling,  ///< basic nit penalty stab scaling
         const bool& is_pseudo_2D,       ///< is pseudo 2d
-        const INPAR::XFEM::ViscStab_TraceEstimate&
+        const INPAR::XFEM::ViscStabTraceEstimate&
             visc_stab_trace_estimate,  ///< how to estimate the scaling from the trace inequality
         double& NIT_visc_stab_fac      ///< viscous part of Nitsche's penalty term
     );
@@ -138,7 +138,7 @@ namespace XFEM
             bcells,  ///< bcells for boundary cell integration
         const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
             bintpoints,  ///< integration points for boundary cell integration
-        const INPAR::XFEM::ViscStab_hk visc_stab_hk,  ///< h definition
+        const INPAR::XFEM::ViscStabHk visc_stab_hk,  ///< h definition
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> emb =
             Teuchos::null,            ///< pointer to the embedded coupling implementation
         DRT::Element* face = nullptr  ///< side element in 3D
@@ -166,7 +166,7 @@ namespace XFEM
         const double NITStabScaling,      ///< scaling of nit stab fac
         INPAR::XFEM::ConvStabScaling
             ConvStabScaling,  ///< which convective stab. scaling of inflow stab
-        INPAR::XFEM::XFF_ConvStabScaling
+        INPAR::XFEM::XffConvStabScaling
             XFF_ConvStabScaling,            ///< which convective stab. scaling on XFF interface
         const bool IsConservative = false,  ///< conservative formulation of navier stokes
         bool error_calc = false  ///< when called in error calculation, don't add the inflow terms

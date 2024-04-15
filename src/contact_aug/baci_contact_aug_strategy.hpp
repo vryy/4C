@@ -1091,11 +1091,11 @@ namespace CONTACT
        *
        *  This function is only suitable for the augmented Lagrange formulation due to
        *  the special structure of the EvaluateContact implementation! */
-      class FD_Debug
+      class FdDebug
       {
        public:
         /// singleton creation
-        static FD_Debug* Instance(Strategy* strat, const double delta = 1.0e-8,
+        static FdDebug* Instance(Strategy* strat, const double delta = 1.0e-8,
             CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
         /// perform the FD evaluate calls
@@ -1104,7 +1104,7 @@ namespace CONTACT
 
        private:
         /// constructor
-        FD_Debug() : strat_(nullptr), delta_(0.0), is_fd_check_(false)
+        FdDebug() : strat_(nullptr), delta_(0.0), is_fd_check_(false)
         { /*empty*/
         }
 

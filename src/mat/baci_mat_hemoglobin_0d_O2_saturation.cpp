@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Hemoglobin_0d_O2_saturation::Hemoglobin_0d_O2_saturation(
+MAT::PAR::Hemoglobin0dO2Saturation::Hemoglobin0dO2Saturation(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       per_volume_blood_(*matdata->Get<double>("PerVolumeBlood")),
@@ -33,18 +33,18 @@ MAT::PAR::Hemoglobin_0d_O2_saturation::Hemoglobin_0d_O2_saturation(
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Hemoglobin_0d_O2_saturation::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::Hemoglobin0dO2Saturation::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::Hemoglobin_0d_O2_saturation(this));
+  return Teuchos::rcp(new MAT::Hemoglobin0dO2Saturation(this));
 }
 
 
-MAT::Hemoglobin_0d_O2_saturationType MAT::Hemoglobin_0d_O2_saturationType::instance_;
+MAT::Hemoglobin0dO2SaturationType MAT::Hemoglobin0dO2SaturationType::instance_;
 
 
-CORE::COMM::ParObject* MAT::Hemoglobin_0d_O2_saturationType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Hemoglobin0dO2SaturationType::Create(const std::vector<char>& data)
 {
-  MAT::Hemoglobin_0d_O2_saturation* hem_0d_O2_sat = new MAT::Hemoglobin_0d_O2_saturation();
+  MAT::Hemoglobin0dO2Saturation* hem_0d_O2_sat = new MAT::Hemoglobin0dO2Saturation();
   hem_0d_O2_sat->Unpack(data);
   return hem_0d_O2_sat;
 }
@@ -52,13 +52,12 @@ CORE::COMM::ParObject* MAT::Hemoglobin_0d_O2_saturationType::Create(const std::v
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Hemoglobin_0d_O2_saturation::Hemoglobin_0d_O2_saturation() : params_(nullptr) {}
+MAT::Hemoglobin0dO2Saturation::Hemoglobin0dO2Saturation() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Hemoglobin_0d_O2_saturation::Hemoglobin_0d_O2_saturation(
-    MAT::PAR::Hemoglobin_0d_O2_saturation* params)
+MAT::Hemoglobin0dO2Saturation::Hemoglobin0dO2Saturation(MAT::PAR::Hemoglobin0dO2Saturation* params)
     : params_(params)
 {
 }
@@ -66,7 +65,7 @@ MAT::Hemoglobin_0d_O2_saturation::Hemoglobin_0d_O2_saturation(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Hemoglobin_0d_O2_saturation::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::Hemoglobin0dO2Saturation::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -84,7 +83,7 @@ void MAT::Hemoglobin_0d_O2_saturation::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Hemoglobin_0d_O2_saturation::Unpack(const std::vector<char>& data)
+void MAT::Hemoglobin0dO2Saturation::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -101,7 +100,7 @@ void MAT::Hemoglobin_0d_O2_saturation::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Hemoglobin_0d_O2_saturation*>(mat);
+        params_ = static_cast<MAT::PAR::Hemoglobin0dO2Saturation*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

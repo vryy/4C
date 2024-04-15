@@ -34,29 +34,29 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::So_hex8Type DRT::ELEMENTS::So_hex8Type::instance_;
+DRT::ELEMENTS::SoHex8Type DRT::ELEMENTS::SoHex8Type::instance_;
 
-DRT::ELEMENTS::So_hex8Type& DRT::ELEMENTS::So_hex8Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoHex8Type& DRT::ELEMENTS::SoHex8Type::Instance() { return instance_; }
 
 namespace
 {
-  const std::string name = DRT::ELEMENTS::So_hex8Type::Instance().Name();
+  const std::string name = DRT::ELEMENTS::SoHex8Type::Instance().Name();
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_hex8(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoHex8(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex8(id, owner));
     return ele;
   }
 
@@ -64,14 +64,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8Type::Create(
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex8(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_hex8Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoHex8Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -79,13 +79,13 @@ void DRT::ELEMENTS::So_hex8Type::NodalBlockInformation(
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_hex8Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoHex8Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex8Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -107,16 +107,16 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition(
 }
 
 // initialization of static gauss point rule for the so_hex8 element
-const CORE::FE::IntPointsAndWeights<NUMDIM_SOH8> DRT::ELEMENTS::So_hex8::gp_rule_(
+const CORE::FE::IntPointsAndWeights<NUMDIM_SOH8> DRT::ELEMENTS::SoHex8::gp_rule_(
     CORE::FE::IntPointsAndWeights<NUMDIM_SOH8>(
-        static_cast<enum CORE::FE::GaussRule3D>(GP_RULE_SOH8::rule)));
+        static_cast<enum CORE::FE::GaussRule3D>(GpRuleSoH8::rule)));
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
-    : So_base(id, owner),
+DRT::ELEMENTS::SoHex8::SoHex8(int id, int owner)
+    : SoBase(id, owner),
       easdata_(EASData()),
       analyticalmaterialtangent_(true),
       pstype_(INPAR::STR::PreStress::none),
@@ -161,8 +161,8 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
-    : So_base(old),
+DRT::ELEMENTS::SoHex8::SoHex8(const DRT::ELEMENTS::SoHex8& old)
+    : SoBase(old),
       eastype_(old.eastype_),
       neas_(old.neas_),
       easdata_(old.easdata_),
@@ -201,9 +201,9 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_hex8::Clone() const
+DRT::Element* DRT::ELEMENTS::SoHex8::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_hex8(*this);
+  auto* newelement = new DRT::ELEMENTS::SoHex8(*this);
   return newelement;
 }
 
@@ -211,13 +211,13 @@ DRT::Element* DRT::ELEMENTS::So_hex8::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::So_hex8::Shape() const { return CORE::FE::CellType::hex8; }
+CORE::FE::CellType DRT::ELEMENTS::SoHex8::Shape() const { return CORE::FE::CellType::hex8; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoHex8::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -226,7 +226,7 @@ void DRT::ELEMENTS::So_hex8::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  So_base::Pack(data);
+  SoBase::Pack(data);
   // eastype_
   AddtoPack(data, eastype_);
   // neas_
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::So_hex8::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoHex8::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -271,7 +271,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  So_base::Unpack(basedata);
+  SoBase::Unpack(basedata);
   // eastype_
   eastype_ = static_cast<EASType>(ExtractInt(position, data));
   // neas_
@@ -294,7 +294,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
     {
       int numgpt = NUMGPT_SOH8;
       // see whether I am actually a So_hex8fbar element
-      auto* me = dynamic_cast<DRT::ELEMENTS::So_hex8fbar*>(this);
+      auto* me = dynamic_cast<DRT::ELEMENTS::SoHex8fbar*>(this);
       if (me) numgpt += 1;  // one more history entry for centroid data in hex8fbar
       prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, numgpt));
     }
@@ -317,7 +317,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoHex8::Print(std::ostream& os) const
 {
   os << "So_hex8 ";
   Element::Print(os);
@@ -362,7 +362,7 @@ void DRT::ELEMENTS::So_hex8::Print(std::ostream& os) const
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex8::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoHex8::Surfaces()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
       CORE::COMM::buildSurfaces, *this);
@@ -371,7 +371,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex8::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex8::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoHex8::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
       CORE::COMM::buildLines, *this);
@@ -380,7 +380,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex8::Lines()
 /*----------------------------------------------------------------------*
  |  get location of element center                              jb 08/11|
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::SoHex8::ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
@@ -408,7 +408,7 @@ std::vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                maf 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::VisNames(std::map<std::string, int>& names)
+void DRT::ELEMENTS::SoHex8::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
 
@@ -418,7 +418,7 @@ void DRT::ELEMENTS::So_hex8::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         maf 01/08|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_hex8::VisData(const std::string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::SoHex8::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name, data)) return true;
@@ -427,7 +427,7 @@ bool DRT::ELEMENTS::So_hex8::VisData(const std::string& name, std::vector<double
 }
 
 // Compute nodal fibers and call post setup routine of the materials
-void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SoHex8::MaterialPostSetup(Teuchos::ParameterList& params)
 {
   if (DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::hex8>(Nodes()))
   {
@@ -450,7 +450,7 @@ void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
   }
 
   // Call super post setup
-  So_base::MaterialPostSetup(params);
+  SoBase::MaterialPostSetup(params);
 
   // Cleanup ParameterList to not carry all fibers the whole simulation
   // do not throw an error if key does not exist.

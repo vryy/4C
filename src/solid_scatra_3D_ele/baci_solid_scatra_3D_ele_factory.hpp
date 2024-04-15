@@ -32,7 +32,7 @@ namespace DRT::ELEMENTS
   namespace DETAILS
   {
 
-    using ImplementedSolidScatraCellTypes = CORE::FE::celltype_sequence<CORE::FE::CellType::hex8,
+    using ImplementedSolidScatraCellTypes = CORE::FE::CelltypeSequence<CORE::FE::CellType::hex8,
         CORE::FE::CellType::hex27, CORE::FE::CellType::tet4, CORE::FE::CellType::tet10>;
 
     template <CORE::FE::CellType celltype>

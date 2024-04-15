@@ -252,13 +252,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_Inada::Myocard_Inada() {}
+MyocardInada::MyocardInada() {}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_Inada::Myocard_Inada(const double eps0_deriv_myocard, const std::string tissue)
+MyocardInada::MyocardInada(const double eps0_deriv_myocard, const std::string tissue)
     : tools_(), s0_(29, 0.0), s_(29, 0.0), r_(29, 0.0), a_(82, 0.0), c_(63, 0.0)
 
 {
@@ -571,7 +571,7 @@ Myocard_Inada::Myocard_Inada(const double eps0_deriv_myocard, const std::string 
  |  Compute Reaction Coefficient for Material and new State Variables   |
  |                                                (public)  ljag  09/13 |
  *----------------------------------------------------------------------*/
-double Myocard_Inada::ReaCoeff(const double phi, const double dt)
+double MyocardInada::ReaCoeff(const double phi, const double dt)
 {
   s0_[0] = phi;
   s_[0] = phi;
@@ -850,12 +850,12 @@ double Myocard_Inada::ReaCoeff(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int Myocard_Inada::GetNumberOfInternalStateVariables() const { return 29; }
+int MyocardInada::GetNumberOfInternalStateVariables() const { return 29; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Myocard_Inada::GetInternalState(const int k) const
+double MyocardInada::GetInternalState(const int k) const
 {
   double val = 0.0;
   if (k == -1)
@@ -873,7 +873,7 @@ double Myocard_Inada::GetInternalState(const int k) const
 /*----------------------------------------------------------------------*
  |  set  internal state of the material                     cbert 08/13 |
  *----------------------------------------------------------------------*/
-void Myocard_Inada::SetInternalState(const int k, const double val)
+void MyocardInada::SetInternalState(const int k, const double val)
 {
   if (k == -1)
   {
@@ -891,12 +891,12 @@ void Myocard_Inada::SetInternalState(const int k, const double val)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int Myocard_Inada::GetNumberOfIonicCurrents() const { return 11; }
+int MyocardInada::GetNumberOfIonicCurrents() const { return 11; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Myocard_Inada::GetIonicCurrents(const int k) const
+double MyocardInada::GetIonicCurrents(const int k) const
 {
   double val = 0.0;
   switch (k)
@@ -942,7 +942,7 @@ double Myocard_Inada::GetIonicCurrents(const int k) const
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void Myocard_Inada::Update(const double phi, const double dt)
+void MyocardInada::Update(const double phi, const double dt)
 {
   VOI_ += dt;
   // update initial values for next time step

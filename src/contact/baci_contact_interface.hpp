@@ -839,7 +839,7 @@ namespace CONTACT
     */
     virtual void EvaluateDistances(const Teuchos::RCP<const Epetra_Vector>& vec,
         std::map<int, std::vector<double>>& mynormals,
-        std::map<int, std::vector<CORE::GEN::pairedvector<int, double>>>& dmynormals,
+        std::map<int, std::vector<CORE::GEN::Pairedvector<int, double>>>& dmynormals,
         std::map<int, double>& mygap, std::map<int, std::map<int, double>>& dmygap);
 
     /*!
@@ -1382,7 +1382,7 @@ namespace CONTACT
 
     */
     virtual void SetCPPNormal(MORTAR::Node& snode, double* normal,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normallin);
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normallin);
 
     /*!
     \brief do calculations which are required for contact term evaluation:
@@ -1436,35 +1436,35 @@ namespace CONTACT
 
     */
     virtual double ComputeCPPNormal(MORTAR::Node& mrtrnode, std::vector<MORTAR::Element*> meles,
-        double* normal, std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
+        double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief 2D routine for cpp normal
 
     */
     virtual double ComputeCPPNormal2D(MORTAR::Node& mrtrnode, std::vector<MORTAR::Element*> meles,
-        double* normal, std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
+        double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief 3D routine for cpp normal
 
     */
     virtual double ComputeCPPNormal3D(MORTAR::Node& mrtrnode, std::vector<MORTAR::Element*> meles,
-        double* normal, std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin);
+        double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief Compute normal between slave and master node
 
     */
     virtual double ComputeNormalNodeToNode(MORTAR::Node& snode, MORTAR::Node& mnode, double* normal,
-        std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin);
+        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin);
 
     /*!
     \brief Compute normal between slave node and master edge ele
 
     */
     virtual double ComputeNormalNodeToEdge(MORTAR::Node& snode, MORTAR::Element& mele,
-        double* normal, std::vector<CORE::GEN::pairedvector<int, double>>& normaltonodelin);
+        double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin);
 
     /*!
     \brief Compute scaling factors for transition between nts, mortar etc.

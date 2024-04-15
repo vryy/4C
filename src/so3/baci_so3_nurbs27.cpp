@@ -22,42 +22,42 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::NURBS::So_nurbs27Type DRT::ELEMENTS::NURBS::So_nurbs27Type::instance_;
+DRT::ELEMENTS::NURBS::SoNurbs27Type DRT::ELEMENTS::NURBS::SoNurbs27Type::instance_;
 
-DRT::ELEMENTS::NURBS::So_nurbs27Type& DRT::ELEMENTS::NURBS::So_nurbs27Type::Instance()
+DRT::ELEMENTS::NURBS::SoNurbs27Type& DRT::ELEMENTS::NURBS::SoNurbs27Type::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::So_nurbs27Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::SoNurbs27Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::NURBS::So_nurbs27(-1, -1);
+  auto* object = new DRT::ELEMENTS::NURBS::SoNurbs27(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::So_nurbs27Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::SoNurbs27Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NURBS::SoNurbs27(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::So_nurbs27Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::SoNurbs27Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NURBS::SoNurbs27(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::NURBS::So_nurbs27Type::NodalBlockInformation(
+void DRT::ELEMENTS::NURBS::SoNurbs27Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -65,13 +65,13 @@ void DRT::ELEMENTS::NURBS::So_nurbs27Type::NodalBlockInformation(
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NURBS::So_nurbs27Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NURBS::SoNurbs27Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::NURBS::So_nurbs27Type::SetupElementDefinition(
+void DRT::ELEMENTS::NURBS::SoNurbs27Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -89,7 +89,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27Type::SetupElementDefinition(
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) : So_base(id, owner)
+DRT::ELEMENTS::NURBS::SoNurbs27::SoNurbs27(int id, int owner) : SoBase(id, owner)
 {
   invJ_.resize(NUMGPT_SONURBS27, CORE::LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
   detJ_.resize(NUMGPT_SONURBS27, 0.0);
@@ -110,8 +110,8 @@ DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) : So_base(id, ow
  |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(const DRT::ELEMENTS::NURBS::So_nurbs27& old)
-    : So_base(old), detJ_(old.detJ_)
+DRT::ELEMENTS::NURBS::SoNurbs27::SoNurbs27(const DRT::ELEMENTS::NURBS::SoNurbs27& old)
+    : SoBase(old), detJ_(old.detJ_)
 {
   invJ_.resize(old.invJ_.size());
   for (int i = 0; i < (int)invJ_.size(); ++i)
@@ -126,16 +126,16 @@ DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(const DRT::ELEMENTS::NURBS::So_nurb
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::NURBS::So_nurbs27::Clone() const
+DRT::Element* DRT::ELEMENTS::NURBS::SoNurbs27::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::NURBS::So_nurbs27(*this);
+  auto* newelement = new DRT::ELEMENTS::NURBS::SoNurbs27(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::NURBS::So_nurbs27::Shape() const
+CORE::FE::CellType DRT::ELEMENTS::NURBS::SoNurbs27::Shape() const
 {
   return CORE::FE::CellType::nurbs27;
 }
@@ -143,7 +143,7 @@ CORE::FE::CellType DRT::ELEMENTS::NURBS::So_nurbs27::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::NURBS::SoNurbs27::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -152,7 +152,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  So_base::Pack(data);
+  SoBase::Pack(data);
 
   // detJ_
   AddtoPack(data, detJ_);
@@ -169,7 +169,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::NURBS::SoNurbs27::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -178,7 +178,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  So_base::Unpack(basedata);
+  SoBase::Unpack(basedata);
   // detJ_
   ExtractfromPack(position, data, detJ_);
   // invJ_
@@ -197,7 +197,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::Print(std::ostream& os) const
+void DRT::ELEMENTS::NURBS::SoNurbs27::Print(std::ostream& os) const
 {
   os << "So_nurbs27 ";
   Element::Print(os);
@@ -209,18 +209,18 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::SoNurbs27::Surfaces()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, So_nurbs27>(
+  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, SoNurbs27>(
       CORE::COMM::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::SoNurbs27::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralLine, So_nurbs27>(
+  return CORE::COMM::ElementBoundaryFactory<StructuralLine, SoNurbs27>(
       CORE::COMM::buildLines, *this);
 }
 

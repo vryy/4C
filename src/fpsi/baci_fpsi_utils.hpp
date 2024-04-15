@@ -33,7 +33,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
 namespace FPSI
 {
-  class FPSI_Base;
+  class FpsiBase;
 
   class Utils
   {
@@ -45,7 +45,7 @@ namespace FPSI
     static Teuchos::RCP<FPSI::Utils> instance_;
 
     //! Setup Discretizations for FPSI problem (clone ALE and porofluid and setup interfaces)
-    Teuchos::RCP<FPSI::FPSI_Base> SetupDiscretizations(const Epetra_Comm& comm,
+    Teuchos::RCP<FPSI::FpsiBase> SetupDiscretizations(const Epetra_Comm& comm,
         const Teuchos::ParameterList& fpsidynparams,
         const Teuchos::ParameterList& poroelastdynparams);
 

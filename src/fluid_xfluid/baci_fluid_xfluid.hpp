@@ -80,7 +80,7 @@ namespace XFEM
   class ConditionManager;
   class MeshCoupling;
   class XFEMDofSet;
-  class XFEM_EdgeStab;
+  class XfemEdgeStab;
   class XFluidTimeInt;
 }  // namespace XFEM
 
@@ -716,7 +716,7 @@ namespace FLD
     //! @name
 
     /// edge stabilization and ghost penalty object
-    Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
+    Teuchos::RCP<XFEM::XfemEdgeStab> edgestab_;
 
     /// edgebased stabilization or ghost penalty stabilization (1st order, 2nd order derivatives,
     /// viscous, transient) due to Nitsche's method

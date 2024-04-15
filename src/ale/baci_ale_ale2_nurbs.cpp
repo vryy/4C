@@ -13,16 +13,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::NURBS::Ale2_NurbsType DRT::ELEMENTS::NURBS::Ale2_NurbsType::instance_;
+DRT::ELEMENTS::NURBS::Ale2NurbsType DRT::ELEMENTS::NURBS::Ale2NurbsType::instance_;
 
-DRT::ELEMENTS::NURBS::Ale2_NurbsType& DRT::ELEMENTS::NURBS::Ale2_NurbsType::Instance()
+DRT::ELEMENTS::NURBS::Ale2NurbsType& DRT::ELEMENTS::NURBS::Ale2NurbsType::Instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::NURBS::Ale2Nurbs* object = new DRT::ELEMENTS::NURBS::Ale2Nurbs(-1, -1);
   object->Unpack(data);
@@ -31,7 +31,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create(const std::v
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ALE2")
@@ -46,7 +46,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Ale2Nurbs(id, owner));

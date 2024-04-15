@@ -23,22 +23,22 @@ namespace CORE::GEN
 {
   /// struct containing the base type of the pairedmatrix class
   template <typename Key, typename T, typename inner_insert_policy, typename outer_insert_policy>
-  struct pairedmatrix_base
+  struct PairedmatrixBase
   {
-    typedef pairedvector<Key, pairedvector<Key, T, inner_insert_policy>, outer_insert_policy> type;
+    typedef Pairedvector<Key, Pairedvector<Key, T, inner_insert_policy>, outer_insert_policy> type;
   };
 
-  template <typename Key, typename T, typename inner_insert_policy = default_insert_policy<Key, T>,
+  template <typename Key, typename T, typename inner_insert_policy = DefaultInsertPolicy<Key, T>,
       typename outer_insert_policy =
-          default_insert_policy<Key, pairedvector<Key, T, inner_insert_policy>>>
-  class pairedmatrix
-      : public pairedmatrix_base<Key, T, inner_insert_policy, outer_insert_policy>::type
+          DefaultInsertPolicy<Key, Pairedvector<Key, T, inner_insert_policy>>>
+  class Pairedmatrix
+      : public PairedmatrixBase<Key, T, inner_insert_policy, outer_insert_policy>::type
   {
-    typedef pairedvector<Key, T, inner_insert_policy> inner_pairedvector_type;
-    typedef pairedvector<Key, inner_pairedvector_type, outer_insert_policy> base_type;
+    typedef Pairedvector<Key, T, inner_insert_policy> inner_pairedvector_type;
+    typedef Pairedvector<Key, inner_pairedvector_type, outer_insert_policy> base_type;
     typedef std::pair<Key, inner_pairedvector_type> pair_type;
     typedef std::vector<pair_type> pairedmatrix_type;
-    typedef pairedmatrix<Key, T, inner_insert_policy, outer_insert_policy> class_type;
+    typedef Pairedmatrix<Key, T, inner_insert_policy, outer_insert_policy> class_type;
 
    public:
     /**
@@ -46,7 +46,7 @@ namespace CORE::GEN
      *          number of entries.
      *  @param reserve The number of elements that are preallocated
      */
-    pairedmatrix(size_t reserve)
+    Pairedmatrix(size_t reserve)
         : base_type(reserve, Key(), inner_pairedvector_type(reserve)), _max_row_capacity(reserve)
     {
     }
@@ -56,7 +56,7 @@ namespace CORE::GEN
      *          number of entries. Use resize as soon as you know the necessary
      *          number of elements.
      */
-    pairedmatrix() : base_type(), _max_row_capacity(0) {}
+    Pairedmatrix() : base_type(), _max_row_capacity(0) {}
 
     /**
      *  @brief  constructor creates no elements, but reserves the maximum
@@ -65,7 +65,7 @@ namespace CORE::GEN
      *  @param default_key default value for the key within the pair
      *  @param default_T   default value for the data within the pair
      */
-    pairedmatrix(size_t reserve, Key default_key, inner_pairedvector_type default_T)
+    Pairedmatrix(size_t reserve, Key default_key, inner_pairedvector_type default_T)
         : base_type(reserve, default_key, default_T), _max_row_capacity(default_T.capacity())
     {
     }
@@ -76,7 +76,7 @@ namespace CORE::GEN
      *  @param[in] source %pairedmatrix object we want to copy.
      *  @param[in] type   Apply this copy type.
      */
-    pairedmatrix(const inner_pairedvector_type& source, enum GEN::CopyType type = DeepCopy)
+    Pairedmatrix(const inner_pairedvector_type& source, enum GEN::CopyType type = DeepCopy)
         : base_type(), _max_row_capacity(0)
     {
       const size_t src_max_row_capacity = maxRowCapacity(source);
@@ -242,14 +242,14 @@ namespace CORE::GEN
 
   /*--------------------------------------------------------------------------*/
 
-  /** @brief (Re)set a %pairedvector
+  /** @brief (Re)set a %Pairedvector
    *
-   *  @param[in]  reserve_size  Maximal necessary capacity of the %pairedvector.
-   *  @param[out] paired_vec    Reset this %pairedvector.
+   *  @param[in]  reserve_size  Maximal necessary capacity of the %Pairedvector.
+   *  @param[out] paired_vec    Reset this %Pairedvector.
    *
    *  \author hiermeier \date 03/17 */
   template <typename Key, typename... Ts>
-  inline void reset(const unsigned reserve_size, pairedvector<Key, Ts...>& paired_vec)
+  inline void reset(const unsigned reserve_size, Pairedvector<Key, Ts...>& paired_vec)
   {
     if (not paired_vec.empty()) paired_vec.clear();
 
@@ -265,16 +265,16 @@ namespace CORE::GEN
    *  \author hiermeier \date 03/17 */
   template <typename Key, typename... Ts>
   inline void reset(const unsigned reserve_size, const unsigned row_reserve_size,
-      pairedmatrix<Key, Ts...>& paired_mat)
+      Pairedmatrix<Key, Ts...>& paired_mat)
   {
     if (not paired_mat.empty())
     {
-      paired_mat.clear(pairedmatrix<Key, Ts...>::default_pair(row_reserve_size));
+      paired_mat.clear(Pairedmatrix<Key, Ts...>::default_pair(row_reserve_size));
     }
 
     if (paired_mat.capacity() < reserve_size)
     {
-      paired_mat.resize(reserve_size, pairedmatrix<Key, Ts...>::default_pair(row_reserve_size));
+      paired_mat.resize(reserve_size, Pairedmatrix<Key, Ts...>::default_pair(row_reserve_size));
     }
   }
 
@@ -286,7 +286,7 @@ namespace CORE::GEN
    *
    *  @author hiermeier @date 03/17 */
   template <typename Key, typename... Ts>
-  inline void reset(const unsigned reserve_size, pairedmatrix<Key, Ts...>& paired_mat)
+  inline void reset(const unsigned reserve_size, Pairedmatrix<Key, Ts...>& paired_mat)
   {
     reset<Key, Ts...>(reserve_size, reserve_size, paired_mat);
   }
@@ -337,7 +337,7 @@ namespace CORE::GEN
    *
    *  @author hiermeier @date 11/17 */
   template <typename Key, typename T0, typename... Ts>
-  inline void weak_reset(pairedvector<Key, T0, Ts...>& paired_vec)
+  inline void weak_reset(Pairedvector<Key, T0, Ts...>& paired_vec)
   {
     for (auto& pair : paired_vec) pair.second = T0();
   }
@@ -352,7 +352,7 @@ namespace CORE::GEN
    *
    *  @author hiermeier @date 11/17 */
   template <typename Key, typename... Ts>
-  inline void weak_reset(pairedmatrix<Key, Ts...>& paired_mat)
+  inline void weak_reset(Pairedmatrix<Key, Ts...>& paired_mat)
   {
     for (auto& pair : paired_mat) weak_reset(pair.second);
   }
@@ -488,13 +488,13 @@ namespace CORE::GEN
 
   /// template alias for the pairedmatrix using the default_insert_policy
   template <typename Key, typename T>
-  using default_pairedmatrix = pairedmatrix<Key, T, default_insert_policy<Key, T>,
-      default_insert_policy<Key, default_pairedvector<Key, T>>>;
+  using default_pairedmatrix = Pairedmatrix<Key, T, DefaultInsertPolicy<Key, T>,
+      DefaultInsertPolicy<Key, default_pairedvector<Key, T>>>;
 
   /// template alias for the pairedmatrix using the quick_insert_policy
   template <typename Key, typename T>
-  using quick_pairedmatrix = pairedmatrix<Key, T, quick_insert_policy<Key, T>,
-      quick_insert_policy<Key, quick_pairedvector<Key, T>>>;
+  using quick_pairedmatrix = Pairedmatrix<Key, T, QuickInsertPolicy<Key, T>,
+      QuickInsertPolicy<Key, quick_pairedvector<Key, T>>>;
 }  // namespace CORE::GEN
 
 

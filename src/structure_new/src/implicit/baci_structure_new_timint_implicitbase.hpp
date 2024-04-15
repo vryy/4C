@@ -48,7 +48,7 @@ namespace STR
 
 
       /// Get type of thickness scaling for thin shell structures (derived)
-      INPAR::STR::STC_Scale GetSTCAlgo() override;
+      INPAR::STR::StcScale GetSTCAlgo() override;
 
       /// Get stc matrix (derived)
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override;

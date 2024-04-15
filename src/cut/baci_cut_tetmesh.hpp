@@ -277,7 +277,7 @@ namespace CORE::GEO
 
 #ifdef CUT_USE_SORTED_VECTOR
       template <int length>
-      class PlainEntitySet : public sorted_vector<Entity<length>*>
+      class PlainEntitySet : public SortedVector<Entity<length>*>
       {
       };
 #else

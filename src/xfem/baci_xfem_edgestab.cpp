@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
  |  prepares edge based stabilization and ghost penaly in case of XFEM  |
  |  and calls evaluate routine                             schott 03/12 |
  *----------------------------------------------------------------------*/
-void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
+void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
     Teuchos::ParameterList& eleparams,                      ///< element parameter list
     Teuchos::RCP<DRT::Discretization> discret,              ///< discretization
     DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element
@@ -593,7 +593,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
  | calls the evaluate and assemble routine for edge based stabilization |
  | and ghost penaly in the XFEM                            schott 03/12 |
  *----------------------------------------------------------------------*/
-void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty(
+void XFEM::XfemEdgeStab::AssembleEdgeStabGhostPenalty(
     Teuchos::ParameterList& eleparams,        ///< element parameter list
     const INPAR::XFEM::FaceType& face_type,   ///< which type of face std, ghost, ghost-penalty
     DRT::ELEMENTS::FluidIntFace* intface,     ///< internal face element
@@ -633,7 +633,7 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty(
  | get the cut side for face's element identified using the sorted      |
  | node ids                                                schott 04/12 |
  *----------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetFace(
+CORE::GEO::CUT::SideHandle* XFEM::XfemEdgeStab::GetFace(
     DRT::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard)
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: GetFace");
@@ -655,7 +655,7 @@ CORE::GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetFace(
 /*----------------------------------------------------------------------*
  | reset maps for output                                    kruse 04/15 |
  *----------------------------------------------------------------------*/
-void XFEM::XFEM_EdgeStab::Reset()
+void XFEM::XfemEdgeStab::Reset()
 {
   ghost_penalty_stab_.clear();
   edge_based_stab_.clear();
@@ -666,7 +666,7 @@ void XFEM::XFEM_EdgeStab::Reset()
 /*----------------------------------------------------------------------*
  |  prepares edge based stabilization for standard fluid   schott 05/12 |
  *----------------------------------------------------------------------*/
-void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
+void XFEM::XfemEdgeStab::EvaluateEdgeStabStd(
     Teuchos::ParameterList& eleparams,                      ///< element parameter list
     Teuchos::RCP<DRT::Discretization> discret,              ///< discretization
     DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element
@@ -717,7 +717,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
  |  where EOS pressure stab. shall be applied to interface-contributing |
  |  embedded fluid elements                               (kruse 10/14) |
  *----------------------------------------------------------------------*/
-void XFEM::XFEM_EdgeStab::EvaluateEdgeStabBoundaryGP(
+void XFEM::XfemEdgeStab::EvaluateEdgeStabBoundaryGP(
     Teuchos::ParameterList& eleparams,          ///< element parameter list
     Teuchos::RCP<DRT::Discretization> discret,  ///< discretization
     Teuchos::RCP<DRT::Discretization>

@@ -172,7 +172,7 @@ namespace MORTAR
      \brief Return the 'DerivAuxn' map (vector) of this coupling pair
 
      */
-    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivAuxn() { return derivauxn_; }
+    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivAuxn() { return derivauxn_; }
 
     /*!
      \brief Return the LM interpolation / testing type for quadratic FE
@@ -254,7 +254,7 @@ namespace MORTAR
 
      */
     virtual bool VertexLinearization(
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex,
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex,
         std::map<int, double>& projpar, bool printderiv = false)
     {
       return true;
@@ -265,8 +265,8 @@ namespace MORTAR
 
      */
     virtual bool CenterLinearization(
-        const std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex,
-        std::vector<CORE::GEN::pairedvector<int, double>>& lincenter)
+        const std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& lincenter)
     {
       return true;
     }
@@ -307,9 +307,9 @@ namespace MORTAR
      */
     virtual bool Triangulation(std::map<int, double>& projpar, double tol);
     virtual bool DelaunayTriangulation(
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex, double tol);
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol);
     virtual bool CenterTriangulation(
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex, double tol);
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol);
 
     /*!
      \brief Check / set projection status of slave nodes (3D)
@@ -455,7 +455,7 @@ namespace MORTAR
     std::vector<Vertex> clip_;         // clipped polygon vertex objects
 
     std::vector<Teuchos::RCP<IntCell>> cells_;  // vector of integration cells
-    std::vector<CORE::GEN::pairedvector<int, double>>
+    std::vector<CORE::GEN::Pairedvector<int, double>>
         derivauxn_;  // derivatives of auxiliary plane normal
   };
   // class Coupling3d

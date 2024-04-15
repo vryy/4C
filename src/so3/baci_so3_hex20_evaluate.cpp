@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoHex20::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -50,42 +50,42 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDOF_SOH20, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::So_hex20::ActionType act = So_hex20::none;
+  DRT::ELEMENTS::SoHex20::ActionType act = SoHex20::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_struct_linstiff")
-    act = So_hex20::calc_struct_linstiff;
+    act = SoHex20::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
-    act = So_hex20::calc_struct_nlnstiff;
+    act = SoHex20::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
-    act = So_hex20::calc_struct_internalforce;
+    act = SoHex20::calc_struct_internalforce;
   else if (action == "calc_struct_linstiffmass")
-    act = So_hex20::calc_struct_linstiffmass;
+    act = SoHex20::calc_struct_linstiffmass;
   else if (action == "calc_struct_nlnstiffmass")
-    act = So_hex20::calc_struct_nlnstiffmass;
+    act = SoHex20::calc_struct_nlnstiffmass;
   else if (action == "calc_struct_nlnstifflmass")
-    act = So_hex20::calc_struct_nlnstifflmass;
+    act = SoHex20::calc_struct_nlnstifflmass;
   else if (action == "calc_struct_stress")
-    act = So_hex20::calc_struct_stress;
+    act = SoHex20::calc_struct_stress;
   else if (action == "calc_struct_eleload")
-    act = So_hex20::calc_struct_eleload;
+    act = SoHex20::calc_struct_eleload;
   else if (action == "calc_struct_fsiload")
-    act = So_hex20::calc_struct_fsiload;
+    act = SoHex20::calc_struct_fsiload;
   else if (action == "calc_struct_update_istep")
-    act = So_hex20::calc_struct_update_istep;
+    act = SoHex20::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
-    act = So_hex20::calc_struct_reset_istep;
+    act = SoHex20::calc_struct_reset_istep;
   else if (action == "calc_struct_prestress_update")
-    act = So_hex20::prestress_update;
+    act = SoHex20::prestress_update;
   else if (action == "calc_struct_energy")
-    act = So_hex20::calc_struct_energy;
+    act = SoHex20::calc_struct_energy;
   else if (action == "multi_readrestart")
-    act = So_hex20::multi_readrestart;
+    act = SoHex20::multi_readrestart;
   else if (action == "multi_calc_dens")
-    act = So_hex20::multi_calc_dens;
+    act = SoHex20::multi_calc_dens;
   else if (action == "calc_struct_recover")
     return 0;
   else if (action == "calc_struct_predict")
@@ -465,7 +465,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex20::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoHex20::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
@@ -579,7 +579,7 @@ int DRT::ELEMENTS::So_hex20::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex20::InitJacobianMapping()
+void DRT::ELEMENTS::SoHex20::InitJacobianMapping()
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> derivs =
       soh20_derivs();
@@ -615,11 +615,11 @@ void DRT::ELEMENTS::So_hex20::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                           popp 09/11 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                          // current displacements
-    std::vector<double>& residual,                                      // current residual displ
-    CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* stiffmatrix,      // element stiffness matrix
-    CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* massmatrix,       // element mass matrix
+void DRT::ELEMENTS::SoHex20::soh20_linstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                         // current displacements
+    std::vector<double>& residual,                                     // current residual displ
+    CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* stiffmatrix,     // element stiffness matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* massmatrix,      // element mass matrix
     CORE::LINALG::Matrix<NUMDOF_SOH20, 1>* force,  // element internal force vector
     CORE::LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
     CORE::LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
@@ -885,11 +885,11 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(std::vector<int>& lm,  // locat
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                          // current displacements
-    std::vector<double>* vel,                                           // current velocities
-    std::vector<double>* acc,                                           // current accelerations
-    std::vector<double>& residual,                                      // current residual displ
+void DRT::ELEMENTS::SoHex20::soh20_nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                         // current displacements
+    std::vector<double>* vel,                                          // current velocities
+    std::vector<double>* acc,                                          // current accelerations
+    std::vector<double>& residual,                                     // current residual displ
     std::vector<double>& dispmat,  // current material displacements
     CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* massmatrix,   // element mass matrix
@@ -1284,8 +1284,7 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(std::vector<int>& lm,  // locat
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                                          |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex20::soh20_lumpmass(
-    CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* emass)
+void DRT::ELEMENTS::SoHex20::soh20_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -1307,7 +1306,7 @@ void DRT::ELEMENTS::So_hex20::soh20_lumpmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Shape fcts at all 20 Gauss Points                     |
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20::soh20_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::SoHex20::soh20_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> shapefcts(NUMGPT_SOH20);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 20
@@ -1329,8 +1328,7 @@ std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> DRT::ELEMENTS::So_hex20::soh2
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Shape fct derivs at all 20 Gauss Points              |
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>>
-DRT::ELEMENTS::So_hex20::soh20_derivs()
+std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> DRT::ELEMENTS::SoHex20::soh20_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> derivs(NUMGPT_SOH20);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 20
@@ -1351,7 +1349,7 @@ DRT::ELEMENTS::So_hex20::soh20_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Weights at all 20 Gauss Points                       |
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::So_hex20::soh20_weights()
+std::vector<double> DRT::ELEMENTS::SoHex20::soh20_weights()
 {
   std::vector<double> weights(NUMGPT_SOH20);
   const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
@@ -1366,7 +1364,7 @@ std::vector<double> DRT::ELEMENTS::So_hex20::soh20_weights()
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex20                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex20::soh20_shapederiv(
+void DRT::ELEMENTS::SoHex20::soh20_shapederiv(
     CORE::LINALG::Matrix<NUMNOD_SOH20, NUMGPT_SOH20>** shapefct,  // pointer to pointer of shapefct
     CORE::LINALG::Matrix<NUMDOF_SOH20, NUMNOD_SOH20>** deriv,     // pointer to pointer of derivs
     CORE::LINALG::Matrix<NUMGPT_SOH20, 1>** weights)              // pointer to pointer of weights
@@ -1423,12 +1421,12 @@ void DRT::ELEMENTS::So_hex20::soh20_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex20Type::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoHex20Type::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_hex20*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex20*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex20* failed");
     actele->InitJacobianMapping();
   }
@@ -1438,7 +1436,7 @@ int DRT::ELEMENTS::So_hex20Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)            |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex20::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoHex20::DefGradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> derivs =
@@ -1478,7 +1476,7 @@ void DRT::ELEMENTS::So_hex20::DefGradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected)          |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex20::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoHex20::UpdateJacobianMapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> derivs =

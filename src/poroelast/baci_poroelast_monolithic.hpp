@@ -224,7 +224,7 @@ namespace POROELAST
 
     //! Evaluate no penetration condition
     void EvaluateCondition(Teuchos::RCP<CORE::LINALG::SparseOperator> Sysmat,
-        POROELAST::coupltype coupltype = POROELAST::fluidfluid);
+        POROELAST::Coupltype coupltype = POROELAST::fluidfluid);
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step

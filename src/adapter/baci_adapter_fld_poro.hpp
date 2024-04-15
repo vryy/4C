@@ -52,7 +52,7 @@ namespace ADAPTER
         Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> StructVelConstraintMatrix,
         Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
-        POROELAST::coupltype coupltype = POROELAST::fluidfluid);
+        POROELAST::Coupltype coupltype = POROELAST::fluidfluid);
 
     //! calls the VelPresSplitter on the time integrator
     virtual Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter();

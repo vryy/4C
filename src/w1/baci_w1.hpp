@@ -106,7 +106,7 @@ namespace DRT
      * - [4] WA Wall and B Bornemann, Nichtlineare Finite-Element-Methoden,
      *   Vorlesungsskript, Lehrstuhl fuer Numerische Mechanik, SS 2007.
      */
-    class Wall1 : public So_base
+    class Wall1 : public SoBase
     {
      public:
       /// @name Friends

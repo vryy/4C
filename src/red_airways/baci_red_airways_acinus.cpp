@@ -246,8 +246,8 @@ void DRT::ELEMENTS::RedAcinus::VisNames(std::map<std::string, int>& names)
   Teuchos::RCP<MAT::Material> mat = Material();
 
   // cast to specific material, because general material does not have VisNames/VisData
-  Teuchos::RCP<MAT::Maxwell_0d_acinus> mxwll_0d_acin =
-      Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(Material());
+  Teuchos::RCP<MAT::Maxwell0dAcinus> mxwll_0d_acin =
+      Teuchos::rcp_dynamic_cast<MAT::Maxwell0dAcinus>(Material());
   mxwll_0d_acin->VisNames(names);
 }
 
@@ -261,8 +261,8 @@ bool DRT::ELEMENTS::RedAcinus::VisData(const std::string& name, std::vector<doub
   if (DRT::Element::VisData(name, data)) return true;
 
   // cast to specific material, because general material does not have VisNames/VisData
-  Teuchos::RCP<MAT::Maxwell_0d_acinus> mxwll_0d_acin =
-      Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(Material());
+  Teuchos::RCP<MAT::Maxwell0dAcinus> mxwll_0d_acin =
+      Teuchos::rcp_dynamic_cast<MAT::Maxwell0dAcinus>(Material());
 
   return mxwll_0d_acin->VisData(name, data, this->Id());
 }

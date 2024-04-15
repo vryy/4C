@@ -242,8 +242,8 @@ namespace MAT
     //@}
 
    private:
-    struct loadingData;
-    struct material;
+    struct LoadingData;
+    struct Material;
 
     //! my material parameters
     MAT::PAR::SuperElasticSMA* params_;
@@ -269,15 +269,15 @@ namespace MAT
 
     //! Returns the residual of the local Newton step
     virtual CORE::LINALG::Matrix<2, 1> ComputeLocalNewtonResidual(
-        CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, loadingData loading, material mat_data);
+        CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data);
 
     //! Returns the system matrix of the local Newton step
     virtual CORE::LINALG::Matrix<2, 2> ComputeLocalNewtonJacobian(
-        CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, loadingData loading, material mat_data);
+        CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data);
 
     //! Returns the loading in the local Newton step, without historical data.
-    virtual loadingData ComputeLocalNewtonLoading(
-        double xi_s, double log_strain_vol, double log_strain_dev_norm, material mat_data);
+    virtual LoadingData ComputeLocalNewtonLoading(
+        double xi_s, double log_strain_vol, double log_strain_dev_norm, Material mat_data);
 
     //! indicator if #Initialize routine has been called
     bool isinit_;

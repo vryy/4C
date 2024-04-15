@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                              maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_easinit()
+void DRT::ELEMENTS::SoHex8::soh8_easinit()
 {
   // EAS enhanced strain parameters at currently investigated load/time step
   CORE::LINALG::SerialDenseMatrix alpha(neas_, 1);
@@ -51,28 +51,28 @@ void DRT::ELEMENTS::So_hex8::soh8_easinit()
 /*----------------------------------------------------------------------*
  |  re-initialize EAS data (private)                           maf 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASType EASType)
+void DRT::ELEMENTS::SoHex8::soh8_reiniteas(const DRT::ELEMENTS::SoHex8::EASType EASType)
 {
   switch (EASType)
   {
-    case DRT::ELEMENTS::So_hex8::soh8_easfull:
+    case DRT::ELEMENTS::SoHex8::soh8_easfull:
       neas_ = 21;
       break;
-    case DRT::ELEMENTS::So_hex8::soh8_easmild:
+    case DRT::ELEMENTS::SoHex8::soh8_easmild:
       neas_ = 9;
       break;
-    case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
+    case DRT::ELEMENTS::SoHex8::soh8_eassosh8:
       neas_ = 7;
       break;
-    case DRT::ELEMENTS::So_hex8::soh8_easa:
-      neas_ = DRT::ELEMENTS::So_sh8p8::NUMEAS_A_;
+    case DRT::ELEMENTS::SoHex8::soh8_easa:
+      neas_ = DRT::ELEMENTS::SoSh8p8::NUMEAS_A_;
       break;
-    case DRT::ELEMENTS::So_hex8::soh8_easnone:
+    case DRT::ELEMENTS::SoHex8::soh8_easnone:
       neas_ = 0;
       break;
   }
   eastype_ = EASType;
-  if (eastype_ == DRT::ELEMENTS::So_hex8::soh8_easnone) return;
+  if (eastype_ == DRT::ELEMENTS::SoHex8::soh8_easnone) return;
   CORE::LINALG::SerialDenseMatrix* alpha = nullptr;    // EAS alphas
   CORE::LINALG::SerialDenseMatrix* alphao = nullptr;   // EAS alphas
   CORE::LINALG::SerialDenseMatrix* feas = nullptr;     // EAS history
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
 /*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_eassetup(
+void DRT::ELEMENTS::SoHex8::soh8_eassetup(
     std::vector<CORE::LINALG::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
     double& detJ0,                                        // det of Jacobian at origin
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
@@ -369,7 +369,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
 /*----------------------------------------------------------------------*
  |  Update EAS parameters (private)                                     |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_easupdate()
+void DRT::ELEMENTS::SoHex8::soh8_easupdate()
 {
   const auto* alpha = &easdata_.alpha;    // Alpha_{n+1}
   auto* alphao = &easdata_.alphao;        // Alpha_n
@@ -380,22 +380,22 @@ void DRT::ELEMENTS::So_hex8::soh8_easupdate()
 
   switch (eastype_)
   {
-    case DRT::ELEMENTS::So_hex8::soh8_easfull:
+    case DRT::ELEMENTS::SoHex8::soh8_easfull:
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alphao, *alpha);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, soh8_easfull>(*Kaainvo, *Kaainv);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, NUMDOF_SOH8>(*Kdao, *Kda);
       break;
-    case DRT::ELEMENTS::So_hex8::soh8_easmild:
+    case DRT::ELEMENTS::SoHex8::soh8_easmild:
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alphao, *alpha);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, soh8_easmild>(*Kaainvo, *Kaainv);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, NUMDOF_SOH8>(*Kdao, *Kda);
       break;
-    case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
+    case DRT::ELEMENTS::SoHex8::soh8_eassosh8:
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainvo, *Kaainv);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
       break;
-    case DRT::ELEMENTS::So_hex8::soh8_easnone:
+    case DRT::ELEMENTS::SoHex8::soh8_easnone:
       break;
     default:
       dserror("Don't know what to do with EAS type %d", eastype_);
@@ -406,7 +406,7 @@ void DRT::ELEMENTS::So_hex8::soh8_easupdate()
 /*----------------------------------------------------------------------*
  |  Restore EAS parameters (private)                                     |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_easrestore()
+void DRT::ELEMENTS::SoHex8::soh8_easrestore()
 {
   auto* alpha = &easdata_.alpha;            // Alpha_{n+1}
   const auto* alphao = &easdata_.alphao;    // Alpha_n
@@ -417,22 +417,22 @@ void DRT::ELEMENTS::So_hex8::soh8_easrestore()
 
   switch (eastype_)
   {
-    case DRT::ELEMENTS::So_hex8::soh8_easfull:
+    case DRT::ELEMENTS::SoHex8::soh8_easfull:
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alpha, *alphao);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, soh8_easfull>(*Kaainv, *Kaainvo);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, NUMDOF_SOH8>(*Kda, *Kdao);
       break;
-    case DRT::ELEMENTS::So_hex8::soh8_easmild:
+    case DRT::ELEMENTS::SoHex8::soh8_easmild:
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alpha, *alphao);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, soh8_easmild>(*Kaainv, *Kaainvo);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, NUMDOF_SOH8>(*Kda, *Kdao);
       break;
-    case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
+    case DRT::ELEMENTS::SoHex8::soh8_eassosh8:
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainv, *Kaainvo);
       CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kda, *Kdao);
       break;
-    case DRT::ELEMENTS::So_hex8::soh8_easnone:
+    case DRT::ELEMENTS::SoHex8::soh8_easnone:
       break;
     default:
       dserror("Don't know what to do with EAS type %d", eastype_);

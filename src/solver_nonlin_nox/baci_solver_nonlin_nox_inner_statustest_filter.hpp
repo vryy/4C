@@ -49,7 +49,7 @@ namespace NOX
       {
         /** \brief binary class to compare two RCPs */
         template <typename T>
-        struct rcp_comp
+        struct RcpComp
         {
           inline bool operator()(const Teuchos::RCP<T>& i, const Teuchos::RCP<T>& j) const
           {
@@ -702,7 +702,7 @@ namespace NOX
 
            private:
             /// this vector contains all registered filter points
-            static std::set<Teuchos::RCP<Point>, rcp_comp<Point>> filter_point_register_;
+            static std::set<Teuchos::RCP<Point>, RcpComp<Point>> filter_point_register_;
 
           };  // struct Point
 

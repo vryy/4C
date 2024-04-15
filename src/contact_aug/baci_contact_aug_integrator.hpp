@@ -372,7 +372,7 @@ namespace CONTACT
       // Jacobian derivative (1-st order)
       Deriv1stMap derivjac_;
 
-      CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp_;
+      CORE::GEN::Pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp_;
 
       // directional derivative of slave GP normal (non-unit)
       Deriv1stMap dmap_nxsl_gp_;

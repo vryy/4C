@@ -31,20 +31,20 @@ namespace MAT
   }  // namespace ELASTIC
 
   // forward declaration
-  class GrowthRemodel_ElastHyper;
+  class GrowthRemodelElastHyper;
 
   namespace PAR
   {
-    class GrowthRemodel_ElastHyper : public Parameter
+    class GrowthRemodelElastHyper : public Parameter
     {
-      friend class MAT::GrowthRemodel_ElastHyper;
+      friend class MAT::GrowthRemodelElastHyper;
 
      public:
       /// standard constructor
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      GrowthRemodel_ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthRemodelElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -116,37 +116,37 @@ namespace MAT
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
-    };  // class GrowthRemodel_ElastHyper
+    };  // class GrowthRemodelElastHyper
 
   }  // namespace PAR
 
-  class GrowthRemodel_ElastHyperType : public CORE::COMM::ParObjectType
+  class GrowthRemodelElastHyperType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "GrowthRemodel_ElastHyperType"; }
 
-    static GrowthRemodel_ElastHyperType& Instance() { return instance_; };
+    static GrowthRemodelElastHyperType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static GrowthRemodel_ElastHyperType instance_;
+    static GrowthRemodelElastHyperType instance_;
   };
 
 
   /*----------------------------------------------------------------------*/
   class Material;
 
-  class GrowthRemodel_ElastHyper : public So3Material,
-                                   public MembraneMaterialGlobalCoordinates,
-                                   public MembraneMaterialInelasticThickness
+  class GrowthRemodelElastHyper : public So3Material,
+                                  public MembraneMaterialGlobalCoordinates,
+                                  public MembraneMaterialInelasticThickness
   {
    public:
     /// construct empty material object
-    GrowthRemodel_ElastHyper();
+    GrowthRemodelElastHyper();
 
     /// construct the material object given material parameters
-    explicit GrowthRemodel_ElastHyper(MAT::PAR::GrowthRemodel_ElastHyper* params);
+    explicit GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelElastHyper* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -157,7 +157,7 @@ namespace MAT
     /// top of parobject.H (this file) and should return it in this method.
     int UniqueParObjectId() const override
     {
-      return GrowthRemodel_ElastHyperType::Instance().UniqueParObjectId();
+      return GrowthRemodelElastHyperType::Instance().UniqueParObjectId();
     }
 
     /// \brief Pack this class so it can be communicated
@@ -202,7 +202,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new GrowthRemodel_ElastHyper(*this));
+      return Teuchos::rcp(new GrowthRemodelElastHyper(*this));
     }
 
     /// material mass density
@@ -460,7 +460,7 @@ namespace MAT
         const int eleGID) const;             ///< Element ID
 
     /// My material parameters
-    MAT::PAR::GrowthRemodel_ElastHyper* params_;
+    MAT::PAR::GrowthRemodelElastHyper* params_;
 
     /// Map to remodelfiber material summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::RemodelFiber>> potsumrf_;

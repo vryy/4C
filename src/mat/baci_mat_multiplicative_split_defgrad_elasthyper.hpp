@@ -40,11 +40,11 @@ namespace MAT
       temperature
     };
 
-    class MultiplicativeSplitDefgrad_ElastHyper : public Parameter
+    class MultiplicativeSplitDefgradElastHyper : public Parameter
     {
      public:
       /// standard constructor
-      explicit MultiplicativeSplitDefgrad_ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit MultiplicativeSplitDefgradElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
@@ -68,17 +68,17 @@ namespace MAT
 
   }  // namespace PAR
 
-  class MultiplicativeSplitDefgrad_ElastHyperType : public CORE::COMM::ParObjectType
+  class MultiplicativeSplitDefgradElastHyperType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "MultiplicativeSplitDefgrad_ElastHyperType"; }
 
-    static MultiplicativeSplitDefgrad_ElastHyperType& Instance() { return instance_; };
+    static MultiplicativeSplitDefgradElastHyperType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static MultiplicativeSplitDefgrad_ElastHyperType instance_;
+    static MultiplicativeSplitDefgradElastHyperType instance_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -118,7 +118,7 @@ namespace MAT
     int NumInelasticDefGrad() const { return static_cast<int>(facdefgradin_.size()); }
 
     /// Assigns the different inelastic factors to different sources
-    void Setup(MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params);
+    void Setup(MAT::PAR::MultiplicativeSplitDefgradElastHyper* params);
 
    private:
     /// vector that holds pairs of inelastic contribution and respective source
@@ -142,19 +142,19 @@ namespace MAT
     that are needed to set up the system to be solved are evaluated in the derived classes
     of the interface class 'InelasticDefgradFactors'.
 */
-  class MultiplicativeSplitDefgrad_ElastHyper : public So3Material
+  class MultiplicativeSplitDefgradElastHyper : public So3Material
   {
    public:
     /// construct empty material object
-    MultiplicativeSplitDefgrad_ElastHyper();
+    MultiplicativeSplitDefgradElastHyper();
 
     /// construct the material object given material parameters
-    explicit MultiplicativeSplitDefgrad_ElastHyper(
-        MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params);
+    explicit MultiplicativeSplitDefgradElastHyper(
+        MAT::PAR::MultiplicativeSplitDefgradElastHyper* params);
 
     int UniqueParObjectId() const override
     {
-      return MultiplicativeSplitDefgrad_ElastHyperType::Instance().UniqueParObjectId();
+      return MultiplicativeSplitDefgradElastHyperType::Instance().UniqueParObjectId();
     }
 
     void Pack(CORE::COMM::PackBuffer& data) const override;
@@ -174,7 +174,7 @@ namespace MAT
 
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new MultiplicativeSplitDefgrad_ElastHyper(*this));
+      return Teuchos::rcp(new MultiplicativeSplitDefgradElastHyper(*this));
     }
 
     double Density() const override { return params_->density_; }
@@ -400,7 +400,7 @@ namespace MAT
     Teuchos::RCP<InelasticFactorsHandler> inelastic_;
 
     /// My material parameters
-    MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params_;
+    MAT::PAR::MultiplicativeSplitDefgradElastHyper* params_;
 
     /// map to elastic materials/potential summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsumel_;

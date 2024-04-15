@@ -65,7 +65,7 @@ namespace XFEM
   \brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented,
   continuous interior penalty) scheme
    */
-  class XFEM_EdgeStab
+  class XfemEdgeStab
   {
    public:
     //! prepares edge based stabilization and ghost penaly in case of XFEM and calls evaluate

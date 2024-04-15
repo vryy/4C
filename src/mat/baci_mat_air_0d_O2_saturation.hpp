@@ -28,11 +28,11 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// material parameters for Air 0D O2 saturation material
     ///
-    class Air_0d_O2_saturation : public Parameter
+    class Air0dO2Saturation : public Parameter
     {
      public:
       /// standard constructor
-      Air_0d_O2_saturation(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Air0dO2Saturation(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -49,31 +49,31 @@ namespace MAT
 
   }  // namespace PAR
 
-  class Air_0d_O2_saturationType : public CORE::COMM::ParObjectType
+  class Air0dO2SaturationType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "air_0d_O2_saturationType"; }
 
-    static Air_0d_O2_saturationType& Instance() { return instance_; };
+    static Air0dO2SaturationType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Air_0d_O2_saturationType instance_;
+    static Air0dO2SaturationType instance_;
   };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Air 0D O2 saturation material
   ///
   /// This object exists (several times) at every element
-  class Air_0d_O2_saturation : public Material
+  class Air0dO2Saturation : public Material
   {
    public:
     /// construct empty material object
-    Air_0d_O2_saturation();
+    Air0dO2Saturation();
 
     /// construct the material object given material parameters
-    explicit Air_0d_O2_saturation(MAT::PAR::Air_0d_O2_saturation* params);
+    explicit Air0dO2Saturation(MAT::PAR::Air0dO2Saturation* params);
 
     //! @name Packing and Unpacking
 
@@ -85,7 +85,7 @@ namespace MAT
     */
     int UniqueParObjectId() const override
     {
-      return Air_0d_O2_saturationType::Instance().UniqueParObjectId();
+      return Air0dO2SaturationType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -125,7 +125,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new Air_0d_O2_saturation(*this));
+      return Teuchos::rcp(new Air0dO2Saturation(*this));
     }
 
     /// Atmospheric pressure
@@ -139,7 +139,7 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::Air_0d_O2_saturation* params_;
+    MAT::PAR::Air0dO2Saturation* params_;
   };
 
 }  // namespace MAT

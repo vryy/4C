@@ -42,7 +42,7 @@ namespace CONTACT
     typedef std::vector<FourC::INPAR::CONTACT::SolvingStrategy> plain_strattype_set;
 
 #if defined(INSERT_AND_SORT)
-    typedef CORE::GEN::pairedvector<int, double, GEN::insert_and_sort_policy<int, double>>
+    typedef CORE::GEN::Pairedvector<int, double, GEN::insert_and_sort_policy<int, double>>
         Deriv1stMap;
     typedef CORE::GEN::pairedmatrix<int, double, GEN::insert_and_sort_policy<int, double>>
         Deriv2ndMap;

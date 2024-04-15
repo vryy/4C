@@ -44,15 +44,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /// \date 08/13
 
-class Myocard_Minimal : public Myocard_General
+class MyocardMinimal : public MyocardGeneral
 
 {
  public:
   /// construct empty material object
-  Myocard_Minimal();
+  MyocardMinimal();
 
   /// construct empty material object
-  explicit Myocard_Minimal(const double eps_deriv_myocard, const std::string tissue, int num_gp);
+  explicit MyocardMinimal(const double eps_deriv_myocard, const std::string tissue, int num_gp);
 
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt) override;
@@ -98,7 +98,7 @@ class Myocard_Minimal : public Myocard_General
 
 
  private:
-  Myocard_Tools tools_;
+  MyocardTools tools_;
 
   /// perturbation for numerical approximation of the derivative
   double eps_deriv_;

@@ -290,7 +290,7 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecondition
     }
     else if (Params().isSublist("AMGnxn Parameters"))
     {
-      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::AMGnxn_Preconditioner(Params()));
+      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::AmGnxnPreconditioner(Params()));
     }
     else
       dserror(

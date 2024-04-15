@@ -104,8 +104,8 @@ void Sysmat(DRT::ELEMENTS::RedAcinus* ele, CORE::LINALG::SerialDenseVector& epnp
     const double volAlvDuct = acinus_params.alveolar_duct_volume;
     const auto NumOfAcini = double(floor(VolAcinus / volAlvDuct));
 
-    const Teuchos::RCP<MAT::Maxwell_0d_acinus> acinus_mat =
-        Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(ele->Material());
+    const Teuchos::RCP<MAT::Maxwell0dAcinus> acinus_mat =
+        Teuchos::rcp_dynamic_cast<MAT::Maxwell0dAcinus>(ele->Material());
 
     // Evaluate material law for acinus
     acinus_mat->Evaluate(epnp, epn, epnm, sysmat, rhs, params, NumOfAcini, volAlvDuct, time, dt);
@@ -302,8 +302,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
         }
         const MAT::PAR::Parameter* smat =
             GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-        const MAT::PAR::Air_0d_O2_saturation* actmat =
-            static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
+        const MAT::PAR::Air0dO2Saturation* actmat =
+            static_cast<const MAT::PAR::Air0dO2Saturation*>(smat);
 
         // get atmospheric pressure
         double patm = actmat->atmospheric_p_;
@@ -1171,8 +1171,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
         exit(1);
       }
       const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-      const MAT::PAR::Air_0d_O2_saturation* actmat =
-          static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
+      const MAT::PAR::Air0dO2Saturation* actmat =
+          static_cast<const MAT::PAR::Air0dO2Saturation*>(smat);
 
       // get atmospheric pressure
       double patm = actmat->atmospheric_p_;
@@ -1427,8 +1427,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
       exit(1);
     }
     const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-    const MAT::PAR::Air_0d_O2_saturation* actmat =
-        static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
+    const MAT::PAR::Air0dO2Saturation* actmat =
+        static_cast<const MAT::PAR::Air0dO2Saturation*>(smat);
 
     // get atmospheric pressure
     double patm = actmat->atmospheric_p_;

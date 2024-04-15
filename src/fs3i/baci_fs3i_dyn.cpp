@@ -33,7 +33,7 @@ void fs3i_dyn()
 {
   const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("structure")->Comm();
 
-  Teuchos::RCP<FS3I::FS3I_Base> fs3i;
+  Teuchos::RCP<FS3I::FS3IBase> fs3i;
 
   // what's the current problem type?
   GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
@@ -42,7 +42,7 @@ void fs3i_dyn()
   {
     case GLOBAL::ProblemType::gas_fsi:
     {
-      fs3i = Teuchos::rcp(new FS3I::PartFS3I_1WC(comm));
+      fs3i = Teuchos::rcp(new FS3I::PartFS3I1Wc(comm));
     }
     break;
     case GLOBAL::ProblemType::ac_fsi:
@@ -52,7 +52,7 @@ void fs3i_dyn()
     break;
     case GLOBAL::ProblemType::thermo_fsi:
     {
-      fs3i = Teuchos::rcp(new FS3I::PartFS3I_2WC(comm));
+      fs3i = Teuchos::rcp(new FS3I::PartFS3I2Wc(comm));
     }
     break;
     case GLOBAL::ProblemType::biofilm_fsi:
@@ -62,7 +62,7 @@ void fs3i_dyn()
     break;
     case GLOBAL::ProblemType::fps3i:
     {
-      fs3i = Teuchos::rcp(new FS3I::PartFPS3I_1WC(comm));
+      fs3i = Teuchos::rcp(new FS3I::PartFpS3I1Wc(comm));
     }
     break;
     default:

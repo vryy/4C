@@ -776,7 +776,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
           }
           const MAT::PAR::Parameter* smat =
               GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-          const auto* actmat = static_cast<const MAT::PAR::Hemoglobin_0d_O2_saturation*>(smat);
+          const auto* actmat = static_cast<const MAT::PAR::Hemoglobin0dO2Saturation*>(smat);
 
           // how much of blood satisfies this rule
           double per_volume_blood = actmat->per_volume_blood_;
@@ -811,7 +811,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
           }
           const MAT::PAR::Parameter* smat =
               GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-          const auto* actmat = static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
+          const auto* actmat = static_cast<const MAT::PAR::Air0dO2Saturation*>(smat);
 
           // get atmospheric pressure
           double patm = actmat->atmospheric_p_;
@@ -1896,8 +1896,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
         }
         const MAT::PAR::Parameter* smat =
             GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-        const MAT::PAR::Air_0d_O2_saturation* actmat =
-            static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
+        const MAT::PAR::Air0dO2Saturation* actmat =
+            static_cast<const MAT::PAR::Air0dO2Saturation*>(smat);
 
         // get atmospheric pressure
         double patm = actmat->atmospheric_p_;
@@ -1931,8 +1931,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
         }
         const MAT::PAR::Parameter* smat =
             GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-        const MAT::PAR::Hemoglobin_0d_O2_saturation* actmat =
-            static_cast<const MAT::PAR::Hemoglobin_0d_O2_saturation*>(smat);
+        const MAT::PAR::Hemoglobin0dO2Saturation* actmat =
+            static_cast<const MAT::PAR::Hemoglobin0dO2Saturation*>(smat);
 
         // how much of blood satisfies this rule
         double per_volume_blood = actmat->per_volume_blood_;
@@ -2296,8 +2296,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
       exit(1);
     }
     const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-    const MAT::PAR::Air_0d_O2_saturation* actmat =
-        static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
+    const MAT::PAR::Air0dO2Saturation* actmat =
+        static_cast<const MAT::PAR::Air0dO2Saturation*>(smat);
 
     // get atmospheric pressure
     double patm = actmat->atmospheric_p_;
@@ -2335,8 +2335,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
       exit(1);
     }
     const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-    const MAT::PAR::Hemoglobin_0d_O2_saturation* actmat =
-        static_cast<const MAT::PAR::Hemoglobin_0d_O2_saturation*>(smat);
+    const MAT::PAR::Hemoglobin0dO2Saturation* actmat =
+        static_cast<const MAT::PAR::Hemoglobin0dO2Saturation*>(smat);
 
     // how much of blood satisfies this rule
     double per_volume_blood = actmat->per_volume_blood_;

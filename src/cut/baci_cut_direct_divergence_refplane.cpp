@@ -206,7 +206,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
   // output. First get all the facets of the volumecell and compute the equation of plane for each
   // facet Store them in a data structure which stores the sides based on n_x in descending order
   //---
-  std::multimap<double, std::pair<std::vector<double>, std::vector<Point*>>, compareClass>
+  std::multimap<double, std::pair<std::vector<double>, std::vector<Point*>>, CompareClass>
       facet_data;
   for (plain_facet_set::const_iterator it = allfacets.begin(); it != allfacets.end(); it++)
   {
@@ -277,7 +277,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
   // output. First get all the sides of the element and compute the equation of plane for each side
   // Store them in a data structure which stores the sides based on n_x in descending order
   //---
-  std::multimap<double, std::pair<std::vector<double>, std::vector<Point*>>, compareClass>
+  std::multimap<double, std::pair<std::vector<double>, std::vector<Point*>>, CompareClass>
       side_data;
   for (std::vector<Side*>::const_iterator it = allsides.begin(); it != allsides.end(); it++)
   {

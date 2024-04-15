@@ -33,14 +33,14 @@ namespace IO
 
 namespace XFEM
 {
-  class Coupling_Manager
+  class CouplingManager
   {
    public:
     //! @name Destruction
     //@{
 
     /// virtual to get polymorph destruction
-    virtual ~Coupling_Manager() = default;
+    virtual ~CouplingManager() = default;
     //! predict states in the coupling object
     virtual void PredictCouplingStates() = 0;
 

@@ -261,8 +261,8 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
 /*----------------------------------------------------------------------*
  |  map IntElement coord derivatives to Element (public)      popp 03/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::pairedvector<int, double>>& dxi,
-    std::vector<CORE::GEN::pairedvector<int, double>>& dparxi)
+bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& dparxi)
 {
   // outdated (popp 05/2016)
   // - affine mapping is only correct for undistorted planar elements
@@ -270,7 +270,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::pairedvector<i
   dserror("MapToParent() function is outdated");
 
   // map iterator
-  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
 
   // *********************************************************************
   // do mapping for given IntElement and Element
@@ -479,7 +479,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::pairedvector<i
 }
 
 void MORTAR::IntElement::NodeLinearization(
-    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& nodelin)
+    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& nodelin)
 {
   switch (parele_->Shape())
   {
@@ -492,7 +492,7 @@ void MORTAR::IntElement::NodeLinearization(
     case CORE::FE::CellType::tri6:
     {
       // resize the linearizations
-      nodelin.resize(NumNode(), std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
+      nodelin.resize(NumNode(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
 
       // loop over all intEle nodes
       for (int in = 0; in < NumNode(); ++in)
@@ -506,7 +506,7 @@ void MORTAR::IntElement::NodeLinearization(
     {
       // resize the linearizations
       nodelin.resize(NumNode(),
-          std::vector<CORE::GEN::pairedvector<int, double>>(3, 3 * (parele_->NumNode())));
+          std::vector<CORE::GEN::Pairedvector<int, double>>(3, 3 * (parele_->NumNode())));
 
       // parameter space coords of pseudo nodes
       double pseudo_nodes_param_coords[4][2];
@@ -569,10 +569,10 @@ void MORTAR::IntElement::NodeLinearization(
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 MORTAR::IntCell::IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coords, double* auxn,
-    const CORE::FE::CellType& shape, std::vector<CORE::GEN::pairedvector<int, double>>& linv1,
-    std::vector<CORE::GEN::pairedvector<int, double>>& linv2,
-    std::vector<CORE::GEN::pairedvector<int, double>>& linv3,
-    std::vector<CORE::GEN::pairedvector<int, double>>& linauxn)
+    const CORE::FE::CellType& shape, std::vector<CORE::GEN::Pairedvector<int, double>>& linv1,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& linv2,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& linv3,
+    std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn)
     : id_(id), slaveId_(-1), masterId_(-1), nvertices_(nvertices), coords_(coords), shape_(shape)
 {
   // store auxiliary plane normal
@@ -755,10 +755,10 @@ double MORTAR::IntCell::Jacobian()
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det. AuxPlane     popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::IntCell::DerivJacobian(CORE::GEN::pairedvector<int, double>& derivjac)
+void MORTAR::IntCell::DerivJacobian(CORE::GEN::Pairedvector<int, double>& derivjac)
 {
   // define iterator
-  typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
+  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
 
   // 1d line element
   if (Shape() == CORE::FE::CellType::line2)
@@ -774,7 +774,7 @@ void MORTAR::IntCell::DerivJacobian(CORE::GEN::pairedvector<int, double>& derivj
     double fac = 0.25 * linv;
 
     // linearizarion of v
-    std::vector<CORE::GEN::pairedvector<int, double>> vg(3, 1000);
+    std::vector<CORE::GEN::Pairedvector<int, double>> vg(3, 1000);
 
     // first entry (x component lin)
     for (CI p = GetDerivVertex(0)[0].begin(); p != GetDerivVertex(0)[0].end(); ++p)
@@ -795,7 +795,7 @@ void MORTAR::IntCell::DerivJacobian(CORE::GEN::pairedvector<int, double>& derivj
       vg[2][p->first] -= (p->second);
 
     // linearizarion of v^t * v
-    CORE::GEN::pairedvector<int, double> vv(1000);
+    CORE::GEN::Pairedvector<int, double> vv(1000);
 
     // delta v^T * v
     for (CI p = vg[0].begin(); p != vg[0].end(); ++p) vv[p->first] += v[0] * (p->second);
@@ -905,7 +905,7 @@ void MORTAR::IntCell::DerivJacobian(CORE::GEN::pairedvector<int, double>& derivj
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::Vertex::Vertex(std::vector<double> coord, Vertex::vType type, std::vector<int> nodeids,
+MORTAR::Vertex::Vertex(std::vector<double> coord, Vertex::VType type, std::vector<int> nodeids,
     Vertex* next, Vertex* prev, bool intersect, bool entryexit, Vertex* neighbor, double alpha)
     : coord_(coord),
       type_(type),

@@ -30,11 +30,11 @@ namespace MAT
 {
   namespace PAR
   {
-    class Muscle_Giantesio : public Parameter
+    class MuscleGiantesio : public Parameter
     {
      public:
       /// constructor
-      Muscle_Giantesio(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MuscleGiantesio(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
@@ -101,17 +101,17 @@ namespace MAT
   }     // end namespace PAR
 
 
-  class Muscle_GiantesioType : public CORE::COMM::ParObjectType
+  class MuscleGiantesioType : public CORE::COMM::ParObjectType
   {
    public:
     [[nodiscard]] std::string Name() const override { return "Muscle_GiantesioType"; }
 
-    static Muscle_GiantesioType& Instance() { return instance_; };
+    static MuscleGiantesioType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Muscle_GiantesioType instance_;
+    static MuscleGiantesioType instance_;
   };
   /*!
    * @brief Giantesio muscle material
@@ -131,18 +131,18 @@ namespace MAT
    * International journal for numerical methods in biomedical engineering, vol. 30, no. 5, pp.
    * 545-562, 2014, doi: 10.1002/cnm.2618.
    */
-  class Muscle_Giantesio : public MAT::So3Material
+  class MuscleGiantesio : public MAT::So3Material
   {
    public:
     // Constructor for empty material object
-    Muscle_Giantesio();
+    MuscleGiantesio();
 
     // Constructor for the material given the material parameters
-    explicit Muscle_Giantesio(MAT::PAR::Muscle_Giantesio* params);
+    explicit MuscleGiantesio(MAT::PAR::MuscleGiantesio* params);
 
     [[nodiscard]] Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new Muscle_Giantesio(*this));
+      return Teuchos::rcp(new MuscleGiantesio(*this));
     }
 
     [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
@@ -162,7 +162,7 @@ namespace MAT
 
     [[nodiscard]] int UniqueParObjectId() const override
     {
-      return Muscle_GiantesioType::Instance().UniqueParObjectId();
+      return MuscleGiantesioType::Instance().UniqueParObjectId();
     }
 
     void Pack(CORE::COMM::PackBuffer& data) const override;
@@ -314,7 +314,7 @@ namespace MAT
     bool IsActive(const double& currentTime);
 
     /// Giantesio material parameters
-    MAT::PAR::Muscle_Giantesio* params_{};
+    MAT::PAR::MuscleGiantesio* params_{};
 
     /// Fibre stretch of the previous timestep
     double lambdaMOld_;

@@ -38,7 +38,7 @@ namespace CORE::FE::DETAILS
 
   template <template <CellType> typename Base, template <typename...> typename TypeList,
       CellType... celltypes>
-  struct apply_celltype_sequence<TypeList, Base, celltype_sequence<celltypes...>>
+  struct apply_celltype_sequence<TypeList, Base, CelltypeSequence<celltypes...>>
   {
     using type = TypeList<Base<celltypes>...>;
   };
@@ -47,7 +47,7 @@ namespace CORE::FE::DETAILS
   struct celltype_sequence_to_string_array;
 
   template <CellType... celltypes>
-  struct celltype_sequence_to_string_array<celltype_sequence<celltypes...>>
+  struct celltype_sequence_to_string_array<CelltypeSequence<celltypes...>>
   {
     static constexpr std::array value = {DETAILS::CellTypeInformation<celltypes>::name...};
   };
@@ -56,7 +56,7 @@ namespace CORE::FE::DETAILS
   struct celltype_sequence_to_array;
 
   template <CellType... celltypes>
-  struct celltype_sequence_to_array<celltype_sequence<celltypes...>>
+  struct celltype_sequence_to_array<CelltypeSequence<celltypes...>>
   {
     static constexpr std::array value = {celltypes...};
   };
@@ -67,20 +67,20 @@ namespace CORE::FE::DETAILS
   template <std::size_t first, std::size_t... ints>
   struct celltype_sequence_generator<first, std::integer_sequence<std::size_t, ints...>>
   {
-    using type = celltype_sequence<static_cast<CellType>(ints + first)...>;
+    using type = CelltypeSequence<static_cast<CellType>(ints + first)...>;
   };
 
   template <typename T>
   struct first_celltype_in_sequence;
 
   template <CellType celltype, CellType... celltypes>
-  struct first_celltype_in_sequence<celltype_sequence<celltype, celltypes...>>
+  struct first_celltype_in_sequence<CelltypeSequence<celltype, celltypes...>>
   {
     static constexpr CellType value = celltype;
   };
 
   template <CellType... celltypes>
-  constexpr bool IsCellTypeInSequence(CellType celltype, celltype_sequence<celltypes...>)
+  constexpr bool IsCellTypeInSequence(CellType celltype, CelltypeSequence<celltypes...>)
   {
     return ((celltype == celltypes) || ...);
   }

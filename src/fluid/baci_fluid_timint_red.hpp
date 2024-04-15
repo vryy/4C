@@ -38,10 +38,10 @@ namespace FLD
     class FluidWkOptimizationWrapper;
     class FluidVolumetricSurfaceFlowWrapper;
     class TotalTractionCorrector;
-    class Fluid_couplingWrapperBase;
+    class FluidCouplingWrapperBase;
     class VolumetricFlowMapExtractor;
     template <class red_D_time_int>
-    class Fluid_couplingWrapper;
+    class FluidCouplingWrapper;
   }  // namespace UTILS
 
   class TimIntRedModels : public virtual FluidImplicitTimeInt
@@ -145,13 +145,13 @@ namespace FLD
     Teuchos::RCP<UTILS::TotalTractionCorrector> traction_vel_comp_adder_bc_;
 
     /// bio related, 3D to reduced-D coupling
-    Teuchos::RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_art_;
+    Teuchos::RCP<UTILS::FluidCouplingWrapperBase> coupled3D_redDbc_art_;
 
     /// 1D arterial network time integration
     Teuchos::RCP<ADAPTER::ArtNet> ART_timeInt_;
 
     /// bio related, 3D to reduced-D coupling
-    Teuchos::RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_airways_;
+    Teuchos::RCP<UTILS::FluidCouplingWrapperBase> coupled3D_redDbc_airways_;
 
     /// 1D arterial network time integration
     Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> airway_imp_timeInt_;

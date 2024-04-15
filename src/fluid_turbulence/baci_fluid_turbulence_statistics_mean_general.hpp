@@ -226,7 +226,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> curr_avg_scatra_;
 
     //! compare operator for doubles up to a precision of 1e-8
-    struct doublecomp
+    struct Doublecomp
     {
       bool operator()(const double lhs, const double rhs) const { return lhs < (rhs - 1e-8); }
     };

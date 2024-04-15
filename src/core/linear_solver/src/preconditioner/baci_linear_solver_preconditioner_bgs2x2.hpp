@@ -26,20 +26,20 @@ FOUR_C_NAMESPACE_OPEN
 namespace CORE::LINALG
 {
   /// Block Gauss-Seidel preconditioner for a 2x2 system
-  class BGS2x2_Operator : public Epetra_Operator
+  class BgS2x2Operator : public Epetra_Operator
   {
    public:
     /*!
     \brief Standard Constructor
     */
-    explicit BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& list1,
+    explicit BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& list1,
         const Teuchos::ParameterList& list2, int global_iter, double global_omega, int block1_iter,
         double block1_omega, int block2_iter, double block2_omega, bool fliporder);
 
     /*!
     \brief Destructor
     */
-    ~BGS2x2_Operator() override
+    ~BgS2x2Operator() override
     {
       solver1_ = Teuchos::null;
       solver2_ = Teuchos::null;
@@ -99,8 +99,8 @@ namespace CORE::LINALG
 
    private:
     // don't want copy-ctor and = operator
-    BGS2x2_Operator(BGS2x2_Operator& old);
-    BGS2x2_Operator operator=(const BGS2x2_Operator& old);
+    BgS2x2Operator(BgS2x2Operator& old);
+    BgS2x2Operator operator=(const BgS2x2Operator& old);
 
     /// Richardson iteration on one block using the given flags
     void LocalBlockRichardson(Teuchos::RCP<Preconditioner> solver, const SparseMatrix& Op,

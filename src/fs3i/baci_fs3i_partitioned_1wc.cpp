@@ -26,12 +26,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::PartFS3I_1WC::PartFS3I_1WC(const Epetra_Comm& comm) : PartFS3I(comm) {}
+FS3I::PartFS3I1Wc::PartFS3I1Wc(const Epetra_Comm& comm) : PartFS3I(comm) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_1WC::Init()
+void FS3I::PartFS3I1Wc::Init()
 {
   FS3I::PartFS3I::Init();
   return;
@@ -39,7 +39,7 @@ void FS3I::PartFS3I_1WC::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_1WC::Setup()
+void FS3I::PartFS3I1Wc::Setup()
 {
   FS3I::PartFS3I::Setup();
   return;
@@ -47,7 +47,7 @@ void FS3I::PartFS3I_1WC::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_1WC::Timeloop()
+void FS3I::PartFS3I1Wc::Timeloop()
 {
   CheckIsInit();
   CheckIsSetup();
@@ -84,7 +84,7 @@ void FS3I::PartFS3I_1WC::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_1WC::DoFSIStep()
+void FS3I::PartFS3I1Wc::DoFSIStep()
 {
   fsi_->PrepareTimeStep();
   fsi_->TimeStep(fsi_);
@@ -97,7 +97,7 @@ void FS3I::PartFS3I_1WC::DoFSIStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_1WC::DoScatraStep()
+void FS3I::PartFS3I1Wc::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -130,7 +130,7 @@ void FS3I::PartFS3I_1WC::DoScatraStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I_1WC::PrepareTimeStep()
+void FS3I::PartFS3I1Wc::PrepareTimeStep()
 {
   CheckIsInit();
   CheckIsSetup();
@@ -153,7 +153,7 @@ void FS3I::PartFS3I_1WC::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
+bool FS3I::PartFS3I1Wc::ScatraConvergenceCheck(const int itnum)
 {
   const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
   INPAR::SCATRA::SolverType scatra_solvtype =

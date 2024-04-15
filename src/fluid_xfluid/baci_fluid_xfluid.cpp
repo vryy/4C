@@ -69,7 +69,7 @@ FLD::XFluid::XFluid(const Teuchos::RCP<DRT::Discretization>& actdis,
       xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
       xfluid_timint_check_interfacetips_(true),
       xfluid_timint_check_sliding_on_surface_(true),
-      edgestab_(Teuchos::rcp(new XFEM::XFEM_EdgeStab())),
+      edgestab_(Teuchos::rcp(new XFEM::XfemEdgeStab())),
       turbmodel_(INPAR::FLUID::dynamic_smagorinsky),
       evaluate_cut_(true),
       newton_restart_monolithic_(false)
@@ -4284,16 +4284,16 @@ void FLD::XFluid::XTimint_SemiLagrangean(
   // TODO: set this param
   int totalitnumFRS_ = 0;
   int itemaxFRS_ = 5;
-  Teuchos::RCP<XFEM::XFLUID_STD> timeIntStd_ = Teuchos::null;
+  Teuchos::RCP<XFEM::XfluidStd> timeIntStd_ = Teuchos::null;
 
   INPAR::XFEM::XFluidTimeInt xfemtimeint_ = INPAR::XFEM::Xf_TimeInt_STD_by_SL;
 
   if (totalitnumFRS_ == 0)  // construct time int classes once every time step
   {
     // basic time integration data
-    Teuchos::RCP<XFEM::XFLUID_TIMEINT_BASE> timeIntData = Teuchos::null;
+    Teuchos::RCP<XFEM::XfluidTimeintBase> timeIntData = Teuchos::null;
 
-    timeIntData = Teuchos::rcp(new XFEM::XFLUID_TIMEINT_BASE(discret_, bounddis, wizard_Intn_,
+    timeIntData = Teuchos::rcp(new XFEM::XfluidTimeintBase(discret_, bounddis, wizard_Intn_,
         state_->Wizard(), dofset_Intn_, state_->DofSet(), oldColStateVectorsn, dispn, dispnp,
         *dofcolmap_Intn_, *newdofrowmap, Teuchos::null));
 
@@ -4308,7 +4308,7 @@ void FLD::XFluid::XTimint_SemiLagrangean(
       case INPAR::XFEM::Xf_TimeInt_STD_by_SL:
       {
         // time integration data for standard dofs, semi-lagrangean approach
-        timeIntStd_ = Teuchos::rcp(new XFEM::XFLUID_SemiLagrange(
+        timeIntStd_ = Teuchos::rcp(new XFEM::XfluidSemiLagrange(
             *timeIntData, node_to_reconstr_method, xfemtimeint_, veln_col, dta_, theta_, true));
         break;
       }

@@ -28,7 +28,7 @@ namespace
 {
   using ActivationMapType = std::unordered_map<int, std::vector<std::pair<double, double>>>;
 
-  MAT::PAR::Muscle_Combo::ActivationParameterVariant GetActivationParams(
+  MAT::PAR::MuscleCombo::ActivationParameterVariant GetActivationParams(
       const Teuchos::RCP<MAT::PAR::Material>& matdata,
       const INPAR::MAT::ActivationType& activation_type)
   {
@@ -48,19 +48,19 @@ namespace
 
   struct ActivationParamsVisitor
   {
-    MAT::Muscle_Combo::ActivationEvaluatorVariant operator()(const int function_id) const
+    MAT::MuscleCombo::ActivationEvaluatorVariant operator()(const int function_id) const
     {
       return &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
           function_id - 1);
     }
 
-    MAT::Muscle_Combo::ActivationEvaluatorVariant operator()(
+    MAT::MuscleCombo::ActivationEvaluatorVariant operator()(
         const ActivationMapType& activation_csv_data_map) const
     {
       return &activation_csv_data_map;
     }
 
-    MAT::Muscle_Combo::ActivationEvaluatorVariant operator()(const std::monostate& /*unused*/) const
+    MAT::MuscleCombo::ActivationEvaluatorVariant operator()(const std::monostate& /*unused*/) const
     {
       dserror(
           "Error in ActivationParamsVisitor. You're calling it with the default-constructed "
@@ -97,7 +97,7 @@ namespace
 }  // namespace
 
 
-MAT::PAR::Muscle_Combo::Muscle_Combo(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       alpha_(*matdata->Get<double>("ALPHA")),
       beta_(*matdata->Get<double>("BETA")),
@@ -133,21 +133,21 @@ MAT::PAR::Muscle_Combo::Muscle_Combo(Teuchos::RCP<MAT::PAR::Material> matdata)
   if (density_ < 0.0) dserror("DENS should be positive");
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Muscle_Combo::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::MuscleCombo::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::Muscle_Combo(this));
+  return Teuchos::rcp(new MAT::MuscleCombo(this));
 }
 
-MAT::Muscle_ComboType MAT::Muscle_ComboType::instance_;
+MAT::MuscleComboType MAT::MuscleComboType::instance_;
 
-CORE::COMM::ParObject* MAT::Muscle_ComboType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MuscleComboType::Create(const std::vector<char>& data)
 {
-  auto* muscle_combo = new MAT::Muscle_Combo();
+  auto* muscle_combo = new MAT::MuscleCombo();
   muscle_combo->Unpack(data);
   return muscle_combo;
 }
 
-MAT::Muscle_Combo::Muscle_Combo()
+MAT::MuscleCombo::MuscleCombo()
     : params_(nullptr),
       anisotropy_(),
       anisotropyExtension_(true, 0.0, 0,
@@ -158,7 +158,7 @@ MAT::Muscle_Combo::Muscle_Combo()
 {
 }
 
-MAT::Muscle_Combo::Muscle_Combo(MAT::PAR::Muscle_Combo* params)
+MAT::MuscleCombo::MuscleCombo(MAT::PAR::MuscleCombo* params)
     : params_(params),
       anisotropy_(),
       anisotropyExtension_(true, 0.0, 0,
@@ -179,7 +179,7 @@ MAT::Muscle_Combo::Muscle_Combo(MAT::PAR::Muscle_Combo* params)
   // cannot set activation_function here, because function manager did not yet read functions
 }
 
-void MAT::Muscle_Combo::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::MuscleCombo::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -196,7 +196,7 @@ void MAT::Muscle_Combo::Pack(CORE::COMM::PackBuffer& data) const
   anisotropyExtension_.PackAnisotropy(data);
 }
 
-void MAT::Muscle_Combo::Unpack(const std::vector<char>& data)
+void MAT::MuscleCombo::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -218,7 +218,7 @@ void MAT::Muscle_Combo::Unpack(const std::vector<char>& data)
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
-        params_ = static_cast<MAT::PAR::Muscle_Combo*>(mat);
+        params_ = static_cast<MAT::PAR::MuscleCombo*>(mat);
         activationEvaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
       }
       else
@@ -232,7 +232,7 @@ void MAT::Muscle_Combo::Unpack(const std::vector<char>& data)
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void MAT::Muscle_Combo::Setup(int numgp, INPUT::LineDefinition* linedef)
+void MAT::MuscleCombo::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);
@@ -241,12 +241,12 @@ void MAT::Muscle_Combo::Setup(int numgp, INPUT::LineDefinition* linedef)
   activationEvaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
 }
 
-void MAT::Muscle_Combo::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
+void MAT::MuscleCombo::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
     Teuchos::ParameterList& params, int const eleGID)
 {
 }
 
-void MAT::Muscle_Combo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -398,8 +398,8 @@ void MAT::Muscle_Combo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   cmat->Update(1.0, ccmat, 1.0);
 }
 
-void MAT::Muscle_Combo::EvaluateActiveNominalStress(Teuchos::ParameterList& params,
-    const int eleGID, const double lambdaM, double& intPa, double& Pa, double& derivPa)
+void MAT::MuscleCombo::EvaluateActiveNominalStress(Teuchos::ParameterList& params, const int eleGID,
+    const double lambdaM, double& intPa, double& Pa, double& derivPa)
 {
   // save current simulation time
   double t_tot = params.get<double>("total time", -1);
@@ -439,7 +439,7 @@ void MAT::Muscle_Combo::EvaluateActiveNominalStress(Teuchos::ParameterList& para
   derivPa = Poptft * dFxidLamdaM;
 }
 
-void MAT::Muscle_Combo::EvaluateActivationLevel(const double lambdaM, const double intPa,
+void MAT::MuscleCombo::EvaluateActivationLevel(const double lambdaM, const double intPa,
     const double Pa, const double derivPa, double& omegaa, double& derivOmegaa,
     double& derivDerivOmegaa)
 {

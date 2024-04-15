@@ -737,7 +737,7 @@ namespace STR
     }
 
     //! Get type of thickness scaling for thin shell structures
-    INPAR::STR::STC_Scale GetSTCAlgo() override { return stcscale_; }
+    INPAR::STR::StcScale GetSTCAlgo() override { return stcscale_; }
 
     //! Access to scaling matrix for STC
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
@@ -1041,7 +1041,7 @@ namespace STR
 
     //! @name STC Scaling for thin shell structures
     //@{
-    enum INPAR::STR::STC_Scale stcscale_;              //!< scale thickness of shells?
+    enum INPAR::STR::StcScale stcscale_;               //!< scale thickness of shells?
     double stcfact_;                                   //!< scaling factor for STC
     int stclayer_;                                     //! number of layers for multilayered case
     Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat_;  //!< scaling matrix for STC

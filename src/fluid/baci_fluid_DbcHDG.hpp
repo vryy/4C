@@ -32,11 +32,11 @@ namespace FLD
     /** \brief Specialized Dbc evaluation class for HDG discretizations
      *
      *  \author hiermeier \date 10/16 */
-    class DbcHDG_Fluid : public DRT::UTILS::Dbc
+    class DbcHdgFluid : public DRT::UTILS::Dbc
     {
      public:
       /// constructor
-      DbcHDG_Fluid(){};
+      DbcHdgFluid(){};
 
      protected:
       /** \brief Determine Dirichlet condition

@@ -266,8 +266,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::m_aaaneohooke_stopro:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::AAAneohooke_stopro(curmat));
-      auto* params = static_cast<MAT::PAR::AAAneohooke_stopro*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::AaAneohookeStopro(curmat));
+      auto* params = static_cast<MAT::PAR::AaAneohookeStopro*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_aaagasser:
@@ -279,15 +279,15 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::m_aaaraghavanvorp_damage:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::AAAraghavanvorp_damage(curmat));
-      auto* params = static_cast<MAT::PAR::AAAraghavanvorp_damage*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::AaAraghavanvorpDamage(curmat));
+      auto* params = static_cast<MAT::PAR::AaAraghavanvorpDamage*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_aaa_mixedeffects:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::AAA_mixedeffects(curmat));
-      auto* params = static_cast<MAT::PAR::AAA_mixedeffects*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::AaaMixedeffects(curmat));
+      auto* params = static_cast<MAT::PAR::AaaMixedeffects*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_lubrication:
@@ -389,22 +389,22 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     }
     case INPAR::MAT::m_muscle_combo:
     {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Muscle_Combo(curmat));
-      auto* params = static_cast<MAT::PAR::Muscle_Combo*>(curmat->Parameter());
+      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::MuscleCombo(curmat));
+      auto* params = static_cast<MAT::PAR::MuscleCombo*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_muscle_giantesio:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Muscle_Giantesio(curmat));
-      auto* params = static_cast<MAT::PAR::Muscle_Giantesio*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::MuscleGiantesio(curmat));
+      auto* params = static_cast<MAT::PAR::MuscleGiantesio*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_muscle_weickenmeier:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Muscle_Weickenmeier(curmat));
-      auto* params = static_cast<MAT::PAR::Muscle_Weickenmeier*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::MuscleWeickenmeier(curmat));
+      auto* params = static_cast<MAT::PAR::MuscleWeickenmeier*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_myocard:
@@ -886,58 +886,57 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     }
     case INPAR::MAT::m_cnst_art:
     {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Cnst_1d_art(curmat));
-      auto* params = static_cast<MAT::PAR::Cnst_1d_art*>(curmat->Parameter());
+      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Cnst1dArt(curmat));
+      auto* params = static_cast<MAT::PAR::Cnst1dArt*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_0d_maxwell_acinus:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus(curmat));
-      auto* params = static_cast<MAT::PAR::Maxwell_0d_acinus*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::Maxwell0dAcinus(curmat));
+      auto* params = static_cast<MAT::PAR::Maxwell0dAcinus*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_0d_maxwell_acinus_neohookean:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus_NeoHookean(curmat));
-      auto* params = static_cast<MAT::PAR::Maxwell_0d_acinus_NeoHookean*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::Maxwell0dAcinusNeoHookean(curmat));
+      auto* params = static_cast<MAT::PAR::Maxwell0dAcinusNeoHookean*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_0d_maxwell_acinus_exponential:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus_Exponential(curmat));
-      auto* params = static_cast<MAT::PAR::Maxwell_0d_acinus_Exponential*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::Maxwell0dAcinusExponential(curmat));
+      auto* params = static_cast<MAT::PAR::Maxwell0dAcinusExponential*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_0d_maxwell_acinus_doubleexponential:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus_DoubleExponential(curmat));
-      auto* params =
-          static_cast<MAT::PAR::Maxwell_0d_acinus_DoubleExponential*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::Maxwell0dAcinusDoubleExponential(curmat));
+      auto* params = static_cast<MAT::PAR::Maxwell0dAcinusDoubleExponential*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_0d_maxwell_acinus_ogden:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus_Ogden(curmat));
-      auto* params = static_cast<MAT::PAR::Maxwell_0d_acinus_Ogden*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::Maxwell0dAcinusOgden(curmat));
+      auto* params = static_cast<MAT::PAR::Maxwell0dAcinusOgden*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_0d_o2_hemoglobin_saturation:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Hemoglobin_0d_O2_saturation(curmat));
-      auto* params = static_cast<MAT::PAR::Hemoglobin_0d_O2_saturation*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::Hemoglobin0dO2Saturation(curmat));
+      auto* params = static_cast<MAT::PAR::Hemoglobin0dO2Saturation*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_0d_o2_air_saturation:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Air_0d_O2_saturation(curmat));
-      auto* params = static_cast<MAT::PAR::Air_0d_O2_saturation*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::Air0dO2Saturation(curmat));
+      auto* params = static_cast<MAT::PAR::Air0dO2Saturation*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_th_fourier_iso:
@@ -955,22 +954,22 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::m_membrane_elasthyper:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Membrane_ElastHyper(curmat));
-      auto* params = static_cast<MAT::PAR::Membrane_ElastHyper*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::MembraneElastHyper(curmat));
+      auto* params = static_cast<MAT::PAR::MembraneElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_membrane_activestrain:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::Membrane_ActiveStrain(curmat));
-      auto* params = static_cast<MAT::PAR::Membrane_ActiveStrain*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::MembraneActiveStrain(curmat));
+      auto* params = static_cast<MAT::PAR::MembraneActiveStrain*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_growthremodel_elasthyper:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::GrowthRemodel_ElastHyper(curmat));
-      auto* params = static_cast<MAT::PAR::GrowthRemodel_ElastHyper*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::GrowthRemodelElastHyper(curmat));
+      auto* params = static_cast<MAT::PAR::GrowthRemodelElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_mixture:
@@ -982,9 +981,9 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::m_multiplicative_split_defgrad_elasthyper:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper(curmat));
+        curmat->SetParameter(new MAT::PAR::MultiplicativeSplitDefgradElastHyper(curmat));
       auto* params =
-          static_cast<MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper*>(curmat->Parameter());
+          static_cast<MAT::PAR::MultiplicativeSplitDefgradElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_growth_volumetric:

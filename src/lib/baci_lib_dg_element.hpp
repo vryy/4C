@@ -15,13 +15,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
-  class DG_Element
+  class DgElement
   {
    public:
     /*!
      \brief Destructor
     */
-    virtual ~DG_Element() = default;
+    virtual ~DgElement() = default;
     virtual int NumDofPerNodeAuxiliary() const = 0;
 
     virtual int NumDofPerElementAuxiliary() const = 0;

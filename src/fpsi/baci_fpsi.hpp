@@ -18,11 +18,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FPSI
 {
-  class FPSI_Base : public ADAPTER::AlgorithmBase
+  class FpsiBase : public ADAPTER::AlgorithmBase
   {
    public:
     /// constructor of base class
-    FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams);
+    FpsiBase(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams);
 
     /// setup
     virtual void SetupSystem() = 0;

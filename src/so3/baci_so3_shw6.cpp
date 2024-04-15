@@ -17,39 +17,39 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
+DRT::ELEMENTS::SoShw6Type DRT::ELEMENTS::SoShw6Type::instance_;
 
-DRT::ELEMENTS::So_shw6Type& DRT::ELEMENTS::So_shw6Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoShw6Type& DRT::ELEMENTS::SoShw6Type::Instance() { return instance_; }
 
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_shw6Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoShw6Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_shw6(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoShw6(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoShw6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_shw6(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoShw6(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoShw6Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_shw6(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoShw6(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_shw6Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoShw6Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -57,13 +57,13 @@ void DRT::ELEMENTS::So_shw6Type::NodalBlockInformation(
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_shw6Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoShw6Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoShw6Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -85,7 +85,7 @@ void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition(
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_shw6::So_shw6(int id, int owner) : DRT::ELEMENTS::So_weg6(id, owner)
+DRT::ELEMENTS::SoShw6::SoShw6(int id, int owner) : DRT::ELEMENTS::SoWeg6(id, owner)
 {
   eastype_ = soshw6_easnone;
   neas_ = 0;
@@ -107,7 +107,7 @@ DRT::ELEMENTS::So_shw6::So_shw6(int id, int owner) : DRT::ELEMENTS::So_weg6(id, 
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_shw6::So_shw6(const DRT::ELEMENTS::So_shw6& old) : DRT::ELEMENTS::So_weg6(old)
+DRT::ELEMENTS::SoShw6::SoShw6(const DRT::ELEMENTS::SoShw6& old) : DRT::ELEMENTS::SoWeg6(old)
 {
   return;
 }
@@ -116,9 +116,9 @@ DRT::ELEMENTS::So_shw6::So_shw6(const DRT::ELEMENTS::So_shw6& old) : DRT::ELEMEN
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_shw6::Clone() const
+DRT::Element* DRT::ELEMENTS::SoShw6::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_shw6(*this);
+  auto* newelement = new DRT::ELEMENTS::SoShw6(*this);
   return newelement;
 }
 
@@ -127,7 +127,7 @@ DRT::Element* DRT::ELEMENTS::So_shw6::Clone() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoShw6::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -136,7 +136,7 @@ void DRT::ELEMENTS::So_shw6::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So_weg6 Element
-  DRT::ELEMENTS::So_weg6::Pack(data);
+  DRT::ELEMENTS::SoWeg6::Pack(data);
   // eastype_
   AddtoPack(data, eastype_);
   // neas_
@@ -155,7 +155,7 @@ void DRT::ELEMENTS::So_shw6::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoShw6::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -164,7 +164,7 @@ void DRT::ELEMENTS::So_shw6::Unpack(const std::vector<char>& data)
   // extract base class So_weg6 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So_weg6::Unpack(basedata);
+  DRT::ELEMENTS::SoWeg6::Unpack(basedata);
   // eastype_
   eastype_ = static_cast<EASType>(ExtractInt(position, data));
   // neas_
@@ -185,7 +185,7 @@ void DRT::ELEMENTS::So_shw6::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoShw6::Print(std::ostream& os) const
 {
   os << "So_shw6 ";
   Element::Print(os);

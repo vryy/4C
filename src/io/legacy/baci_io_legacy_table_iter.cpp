@@ -39,7 +39,7 @@ void init_map_iterator(MAP_ITERATOR* iterator, MAP* map)
   \date 08/06
  */
 /*----------------------------------------------------------------------*/
-static void push_map_node(MAP_ITERATOR* iterator, MAP_NODE* map_node)
+static void push_map_node(MAP_ITERATOR* iterator, MapNode* map_node)
 {
   STACK_ELEMENT* new_element;
 
@@ -110,9 +110,9 @@ int next_map_node(MAP_ITERATOR* iterator)
     {
       if (iterator->stack.head.snext != nullptr)
       {
-        MAP_NODE* tmp;
-        MAP_NODE* lhs;
-        MAP_NODE* rhs;
+        MapNode* tmp;
+        MapNode* lhs;
+        MapNode* rhs;
 
         /* we remove the first member of the stack and add his rhs and lhs */
         tmp = iterator->stack.head.snext->map_node;
@@ -143,6 +143,6 @@ int next_map_node(MAP_ITERATOR* iterator)
   \date 08/06
  */
 /*----------------------------------------------------------------------*/
-MAP_NODE* iterator_get_node(MAP_ITERATOR* iterator) { return iterator->stack.head.snext->map_node; }
+MapNode* iterator_get_node(MAP_ITERATOR* iterator) { return iterator->stack.head.snext->map_node; }
 
 FOUR_C_NAMESPACE_CLOSE

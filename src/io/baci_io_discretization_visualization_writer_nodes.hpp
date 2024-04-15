@@ -15,11 +15,8 @@
 
 #include "baci_config.hpp"
 
+#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
-
-// forward declarations
-class Epetra_Vector;
-class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 

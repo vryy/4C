@@ -29,11 +29,11 @@ namespace MAT
        * <h3>Input line</h3>
        * MAT 1 CoupAnisoNeoHooke_VarProp C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
        */
-      class CoupAnisoNeoHooke_VarProp : public MAT::PAR::ParameterAniso
+      class CoupAnisoNeoHookeVarProp : public MAT::PAR::ParameterAniso
       {
        public:
         /// standard constructor
-        CoupAnisoNeoHooke_VarProp(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+        CoupAnisoNeoHookeVarProp(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -83,14 +83,14 @@ namespace MAT
      * finite strains: ... 2000
      * </ul>
      */
-    class CoupAnisoNeoHooke_VarProp : public Summand
+    class CoupAnisoNeoHookeVarProp : public Summand
     {
      public:
       /// empty constructor
       //    CoupAnisoNeoHooke_VarProp();
 
       /// constructor with given material parameters
-      CoupAnisoNeoHooke_VarProp(MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp* params);
+      CoupAnisoNeoHookeVarProp(MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp* params);
 
       ///@name Packing and Unpacking
       //@{
@@ -156,7 +156,7 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp* params_;
+      MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp* params_;
 
       /// fiber direction
       CORE::LINALG::Matrix<3, 1> a_;

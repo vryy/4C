@@ -17,10 +17,9 @@
 
 #include "baci_io_visualization_manager.hpp"
 
+#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
-class Epetra_Map;
-class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -43,19 +43,19 @@ namespace CORE::LINEAR_SOLVER
   Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)
 
    */
-  class CheapSIMPLE_BlockPreconditioner : public virtual Epetra_Operator
+  class CheapSimpleBlockPreconditioner : public virtual Epetra_Operator
   {
    public:
     /*!
         \brief Standard Constructor
     */
-    explicit CheapSIMPLE_BlockPreconditioner(Teuchos::RCP<Epetra_Operator> A,
+    explicit CheapSimpleBlockPreconditioner(Teuchos::RCP<Epetra_Operator> A,
         const Teuchos::ParameterList& predict_list, const Teuchos::ParameterList& correct_list);
 
     /*!
         \brief Destructor
     */
-    ~CheapSIMPLE_BlockPreconditioner() override
+    ~CheapSimpleBlockPreconditioner() override
     {
       vsolver_ = Teuchos::null;  // solver objects only generated for SIMPLE and SIMPLER (not for
                                  // CheapSIMPLE)
@@ -215,8 +215,8 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     // don't want copy-ctor and = operator
-    CheapSIMPLE_BlockPreconditioner(CheapSIMPLE_BlockPreconditioner& old);
-    CheapSIMPLE_BlockPreconditioner operator=(const CheapSIMPLE_BlockPreconditioner& old);
+    CheapSimpleBlockPreconditioner(CheapSimpleBlockPreconditioner& old);
+    CheapSimpleBlockPreconditioner operator=(const CheapSimpleBlockPreconditioner& old);
 
     /*!
       \brief setup phase of preconditioner

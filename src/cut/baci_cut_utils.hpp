@@ -55,22 +55,22 @@ namespace CORE::GEO
 
 #ifdef CUT_USE_SORTED_VECTOR
 
-    typedef sorted_vector<int> plain_int_set;
+    typedef SortedVector<int> plain_int_set;
 
-    typedef sorted_vector<Node*> plain_node_set;
-    typedef sorted_vector<Edge*> plain_edge_set;
-    typedef sorted_vector<Side*> plain_side_set;
-    typedef sorted_vector<Element*> plain_element_set;
+    typedef SortedVector<Node*> plain_node_set;
+    typedef SortedVector<Edge*> plain_edge_set;
+    typedef SortedVector<Side*> plain_side_set;
+    typedef SortedVector<Element*> plain_element_set;
 
-    typedef sorted_vector<Point*> plain_point_set;
-    typedef sorted_vector<Line*> plain_line_set;
-    typedef sorted_vector<Facet*> plain_facet_set;
-    typedef sorted_vector<VolumeCell*> plain_volumecell_set;
+    typedef SortedVector<Point*> plain_point_set;
+    typedef SortedVector<Line*> plain_line_set;
+    typedef SortedVector<Facet*> plain_facet_set;
+    typedef SortedVector<VolumeCell*> plain_volumecell_set;
 
-    typedef sorted_vector<std::pair<Point*, Point*>> point_line_set;
+    typedef SortedVector<std::pair<Point*, Point*>> point_line_set;
 
-    typedef sorted_vector<BoundaryCell*> plain_boundarycell_set;
-    typedef sorted_vector<IntegrationCell*> plain_integrationcell_set;
+    typedef SortedVector<BoundaryCell*> plain_boundarycell_set;
+    typedef SortedVector<IntegrationCell*> plain_integrationcell_set;
 
     template <class set>
     void set_erase(set& s, typename set::iterator& i)

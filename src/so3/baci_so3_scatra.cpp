@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::So3_Scatra(int id, int owner)
+DRT::ELEMENTS::So3Scatra<so3_ele, distype>::So3Scatra(int id, int owner)
     : so3_ele(id, owner),
       impltype_(INPAR::SCATRA::impltype_undefined),
       intpoints_(distype == CORE::FE::CellType::tet4
@@ -45,8 +45,8 @@ DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::So3_Scatra(int id, int owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::So3_Scatra(
-    const DRT::ELEMENTS::So3_Scatra<so3_ele, distype>& old)
+DRT::ELEMENTS::So3Scatra<so3_ele, distype>::So3Scatra(
+    const DRT::ELEMENTS::So3Scatra<so3_ele, distype>& old)
     : so3_ele(old),
       impltype_(old.impltype_),
       intpoints_(old.intpoints_),
@@ -63,9 +63,9 @@ DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::So3_Scatra(
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Clone() const
+DRT::Element* DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So3_Scatra<so3_ele, distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::So3Scatra<so3_ele, distype>(*this);
   return newelement;
 }
 
@@ -74,7 +74,7 @@ DRT::Element* DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Clone() const
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -109,7 +109,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& d
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Unpack(const std::vector<char>
  |  print this element (public)                              vuong 03/12|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Print(std::ostream& os) const
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_scatra ";
   os << " Discretization type: " << CORE::FE::CellTypeToString(distype).c_str();
@@ -159,7 +159,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Print(std::ostream& os) const
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::ReadElement(
+bool DRT::ELEMENTS::So3Scatra<so3_ele, distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   so3_ele::ReadElement(eletype, eledistype, linedef);
@@ -197,7 +197,7 @@ bool DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::ReadElement(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-inline DRT::Node** DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Nodes()
+inline DRT::Node** DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Nodes()
 {
   return so3_ele::Nodes();
 }
@@ -205,7 +205,7 @@ inline DRT::Node** DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Nodes()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Material() const
+inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Material() const
 {
   return so3_ele::Material();
 }
@@ -213,7 +213,7 @@ inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-inline int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Id() const
+inline int DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Id() const
 {
   return so3_ele::Id();
 }
@@ -223,7 +223,7 @@ inline int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Id() const
  | set the material  (public)                                 schmidt 10/17 |
  *                                                                          */
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::SetMaterial(int matnum)
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::SetMaterial(int matnum)
 {
   // call base class
   so3_ele::SetMaterial(matnum);
@@ -245,11 +245,11 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::SetMaterial(int matnum)
 }
 
 
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, CORE::FE::CellType::wedge6>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8fbar, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoWeg6, CORE::FE::CellType::wedge6>;
 
 FOUR_C_NAMESPACE_CLOSE

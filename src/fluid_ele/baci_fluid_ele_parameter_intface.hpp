@@ -85,7 +85,7 @@ namespace DRT
       };
 
       //! set the EOS pattern for the assembly of the current face
-      void Set_Face_EOS_GP_Pattern(const INPAR::FLUID::EOS_GP_Pattern face_eos_gp_pattern)
+      void Set_Face_EOS_GP_Pattern(const INPAR::FLUID::EosGpPattern face_eos_gp_pattern)
       {
         face_eos_gp_pattern_ = face_eos_gp_pattern;
       };
@@ -136,17 +136,17 @@ namespace DRT
 
       /// parameter for edge-based (EOS,CIP) stabilizations
       //! Flag to (de)activate pressure stabilization
-      INPAR::FLUID::EOS_Pres EOS_Pres() const { return EOS_pres_; };
+      INPAR::FLUID::EosPres EOS_Pres() const { return EOS_pres_; };
       //! Flag to (de)activate convective streamline stabilization
-      INPAR::FLUID::EOS_Conv_Stream EOS_Conv_Stream() const { return EOS_conv_stream_; };
+      INPAR::FLUID::EosConvStream EOS_Conv_Stream() const { return EOS_conv_stream_; };
       //! Flag to (de)activate convective crosswind stabilization
-      INPAR::FLUID::EOS_Conv_Cross EOS_Conv_Cross() const { return EOS_conv_cross_; };
+      INPAR::FLUID::EosConvCross EOS_Conv_Cross() const { return EOS_conv_cross_; };
       //! Flag to (de)activate divergence stabilization
-      INPAR::FLUID::EOS_Div EOS_Div() const { return EOS_div_; };
+      INPAR::FLUID::EosDiv EOS_Div() const { return EOS_div_; };
       //! Flag to define element length
-      INPAR::FLUID::EOS_ElementLength EOS_element_length() const { return EOS_element_length_; };
+      INPAR::FLUID::EosElementLength EOS_element_length() const { return EOS_element_length_; };
       //! Flag to define tau for edge-based stabilization
-      INPAR::FLUID::EOS_TauType EOS_WhichTau() const { return EOS_whichtau_actual_; };
+      INPAR::FLUID::EosTauType EOS_WhichTau() const { return EOS_whichtau_actual_; };
 
       bool Is_EOS_Pres() const { return EOS_pres_ != INPAR::FLUID::EOS_PRES_none; };
       //! Flag to (de)activate convective streamline stabilization
@@ -218,7 +218,7 @@ namespace DRT
       bool Face_GP_u_p_2nd() { return is_face_GP_u_p_2nd_; };
 
       //! get the EOS pattern for the assembly of the current face
-      INPAR::FLUID::EOS_GP_Pattern Face_EOS_GP_Pattern() { return face_eos_gp_pattern_; };
+      INPAR::FLUID::EosGpPattern Face_EOS_GP_Pattern() { return face_eos_gp_pattern_; };
 
       //! get flag if step is a ghost-penalty reconstruction step for xfluid time integration
       bool Is_GhostPenaltyReconstruction() { return is_ghost_penalty_reconstruction_step_; };
@@ -252,24 +252,24 @@ namespace DRT
       /*----------------------------------------------------*/
 
       //! which EOS pressure stabilization
-      INPAR::FLUID::EOS_Pres EOS_pres_;
+      INPAR::FLUID::EosPres EOS_pres_;
 
       //! which EOS convective streamline stabilization
-      INPAR::FLUID::EOS_Conv_Stream EOS_conv_stream_;
+      INPAR::FLUID::EosConvStream EOS_conv_stream_;
 
       //! which EOS convective crosswind stabilization
-      INPAR::FLUID::EOS_Conv_Cross EOS_conv_cross_;
+      INPAR::FLUID::EosConvCross EOS_conv_cross_;
 
       //! which EOS divergence stabilization
-      INPAR::FLUID::EOS_Div EOS_div_;
+      INPAR::FLUID::EosDiv EOS_div_;
 
 
       //! which EOS stabilization parameter definition
-      INPAR::FLUID::EOS_TauType EOS_whichtau_;
-      INPAR::FLUID::EOS_TauType EOS_whichtau_actual_;
+      INPAR::FLUID::EosTauType EOS_whichtau_;
+      INPAR::FLUID::EosTauType EOS_whichtau_actual_;
 
       //! which EOS characteristic element length definition
-      INPAR::FLUID::EOS_ElementLength EOS_element_length_;
+      INPAR::FLUID::EosElementLength EOS_element_length_;
 
       //! flag to active special least-squares condition for pseudo 2D examples where pressure level
       //! is determined via Krylov-projection
@@ -327,7 +327,7 @@ namespace DRT
       //! @name Combined EOS/Ghost-Penalty parameters, individually set for each face
       /*----------------------------------------------------*/
 
-      INPAR::FLUID::EOS_GP_Pattern face_eos_gp_pattern_;
+      INPAR::FLUID::EosGpPattern face_eos_gp_pattern_;
 
       /*----------------------------------------------------*/
       //! @name Flag for ghost-penalty reconstruction steps

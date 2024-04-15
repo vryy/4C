@@ -42,7 +42,7 @@ namespace CORE::GEOMETRICSEARCH
   std::vector<std::tuple<int, int, int, int, int>> GlobalCollisionSearch(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
-      const IO::verbositylevel verbosity);
+      const IO::Verbositylevel verbosity);
 
 }  // namespace CORE::GEOMETRICSEARCH
 

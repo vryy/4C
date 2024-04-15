@@ -37,12 +37,12 @@ namespace DRT
     // forward declarations
     class PreStress;
 
-    class So_hex20Type : public DRT::ElementType
+    class SoHex20Type : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_hex20Type"; }
 
-      static So_hex20Type& Instance();
+      static SoHex20Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -64,7 +64,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex20Type instance_;
+      static SoHex20Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH20"; }
     };
@@ -79,11 +79,11 @@ namespace DRT
 
     \author kloeppel
     */
-    class So_hex20 : public So_base
+    class SoHex20 : public SoBase
     {
      public:
       //! @name Friends
-      friend class So_hex20Type;
+      friend class SoHex20Type;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -94,7 +94,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      So_hex20(int id, int owner);
+      SoHex20(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -102,7 +102,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_hex20(const So_hex20& old);
+      SoHex20(const SoHex20& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -151,10 +151,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
-      {
-        return So_hex20Type::Instance().UniqueParObjectId();
-      }
+      int UniqueParObjectId() const override { return SoHex20Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -207,7 +204,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return So_hex20Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoHex20Type::Instance(); }
 
       //@}
 
@@ -365,7 +362,7 @@ namespace DRT
       // internal calculation methods
 
       //! don't want = operator
-      So_hex20& operator=(const So_hex20& old);
+      SoHex20& operator=(const SoHex20& old);
 
 
       //! init the inverse of the jacobian and its determinant in the material configuration

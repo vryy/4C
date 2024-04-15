@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-FPSI::FPSI_Base::FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams)
+FPSI::FpsiBase::FpsiBase(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams)
     : AlgorithmBase(comm, fpsidynparams)
 {
   // nothing to do ... so far
@@ -27,7 +27,7 @@ FPSI::FPSI_Base::FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList
 /*----------------------------------------------------------------------*
  | redistribute the FPSI interface                           thon 11/14 |
  *----------------------------------------------------------------------*/
-void FPSI::FPSI_Base::RedistributeInterface()
+void FPSI::FpsiBase::RedistributeInterface()
 {
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::AAA_mixedeffects::AAA_mixedeffects(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::AaaMixedeffects::AaaMixedeffects(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       nue_(*matdata->Get<double>("NUE")),
       age_(*matdata->Get<double>("AGE")),
@@ -33,17 +33,17 @@ MAT::PAR::AAA_mixedeffects::AAA_mixedeffects(Teuchos::RCP<MAT::PAR::Material> ma
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::PAR::AAA_mixedeffects::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::AaaMixedeffects::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::AAA_mixedeffects(this));
+  return Teuchos::rcp(new MAT::AaaMixedeffects(this));
 }
 
-MAT::AAA_mixedeffectsType MAT::AAA_mixedeffectsType::instance_;
+MAT::AaaMixedeffectsType MAT::AaaMixedeffectsType::instance_;
 
 
-CORE::COMM::ParObject* MAT::AAA_mixedeffectsType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::AaaMixedeffectsType::Create(const std::vector<char>& data)
 {
-  MAT::AAA_mixedeffects* aaa = new MAT::AAA_mixedeffects();
+  MAT::AaaMixedeffects* aaa = new MAT::AaaMixedeffects();
   aaa->Unpack(data);
   return aaa;
 }
@@ -52,18 +52,18 @@ CORE::COMM::ParObject* MAT::AAA_mixedeffectsType::Create(const std::vector<char>
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-MAT::AAA_mixedeffects::AAA_mixedeffects() : params_(nullptr) {}
+MAT::AaaMixedeffects::AaaMixedeffects() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   chfoe 03/08 |
  *----------------------------------------------------------------------*/
-MAT::AAA_mixedeffects::AAA_mixedeffects(MAT::PAR::AAA_mixedeffects* params) : params_(params) {}
+MAT::AaaMixedeffects::AaaMixedeffects(MAT::PAR::AaaMixedeffects* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAA_mixedeffects::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::AaaMixedeffects::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -81,7 +81,7 @@ void MAT::AAA_mixedeffects::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAA_mixedeffects::Unpack(const std::vector<char>& data)
+void MAT::AaaMixedeffects::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -99,7 +99,7 @@ void MAT::AAA_mixedeffects::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::AAA_mixedeffects*>(mat);
+        params_ = static_cast<MAT::PAR::AaaMixedeffects*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -155,7 +155,7 @@ void MAT::AAA_mixedeffects::Unpack(const std::vector<char>& data)
      with nu = 0.45  we have K =  20 alpha
 
  */
-void MAT::AAA_mixedeffects::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::AaaMixedeffects::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -346,7 +346,7 @@ void MAT::AAA_mixedeffects::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
      with nu = 0.45  we have K =  20 alpha
 
  */
-void MAT::AAA_mixedeffects::Evaluate(const CORE::LINALG::SerialDenseVector* glstrain_e,
+void MAT::AaaMixedeffects::Evaluate(const CORE::LINALG::SerialDenseVector* glstrain_e,
     CORE::LINALG::SerialDenseMatrix* cmat_e, CORE::LINALG::SerialDenseVector* stress_e,
     double elelocalrad)
 {

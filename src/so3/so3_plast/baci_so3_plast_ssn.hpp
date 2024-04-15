@@ -44,7 +44,7 @@ namespace DRT
      * Solid Hex8 has EAS enhancement of GL-strains to avoid locking.
      * New enum for so3_plast. Currently only for hex8
      */
-    enum So3Plast_EASType  // with meaningful value for matrix size info
+    enum So3PlastEasType  // with meaningful value for matrix size info
     {
       soh8p_easnone,   //!< no EAS i.e. displacement based with tremendous locking
       soh8p_eassosh8,  //!< related to Solid-Shell, 7 parameters to alleviate
@@ -65,11 +65,11 @@ namespace DRT
     //! A C++ version of a 3 dimensional solid element with modifications von Mises
     //! plasticity using a semi-smooth Newton method
     template <CORE::FE::CellType distype>
-    class So3_Plast : public virtual So_base
+    class So3Plast : public virtual SoBase
     {
       //! @name Friends
-      friend class So_hex8PlastType;
-      friend class So_hex27PlastType;
+      friend class SoHex8PlastType;
+      friend class SoHex27PlastType;
 
      public:
       //@}
@@ -77,13 +77,13 @@ namespace DRT
 
 
       //! Standard Constructor
-      So3_Plast(int id,  //!< (i) this element's global id
-          int owner      //!< elements owner
+      So3Plast(int id,  //!< (i) this element's global id
+          int owner     //!< elements owner
       );
 
       //! Copy Constructor
       //! Makes a deep copy of a Element
-      So3_Plast(const So3_Plast& old);
+      So3Plast(const So3Plast& old);
 
       //! Deep copy this instance of Solid3 and return pointer to the copy
       //!
@@ -322,7 +322,7 @@ namespace DRT
 
      protected:
       //! don't want = operator
-      So3_Plast& operator=(const So3_Plast& old) = delete;
+      So3Plast& operator=(const So3Plast& old) = delete;
 
       //! number of plastic variables at each gauss point
       enum PlSpinType
@@ -643,7 +643,7 @@ namespace DRT
       Teuchos::RCP<CORE::LINALG::SerialDenseVector> alpha_eas_last_timestep_;
       Teuchos::RCP<CORE::LINALG::SerialDenseVector> alpha_eas_delta_over_last_timestep_;
       Teuchos::RCP<CORE::LINALG::SerialDenseVector> alpha_eas_inc_;
-      DRT::ELEMENTS::So3Plast_EASType eastype_;
+      DRT::ELEMENTS::So3PlastEasType eastype_;
       int neas_{};
 
       // TSI ******************************************************
@@ -1140,9 +1140,9 @@ namespace DRT
       void GetNurbsEleInfo(DRT::Discretization* dis = nullptr);
 
 
-    };  // class So3_Plast
+    };  // class So3Plast
 
-    template <DRT::ELEMENTS::So3Plast_EASType eastype>
+    template <DRT::ELEMENTS::So3PlastEasType eastype>
     struct PlastEasTypeToNumEas
     {
     };
@@ -1172,7 +1172,7 @@ namespace DRT
       static constexpr int neas = 0;
     };
 
-    int PlastEasTypeToNumEasV(DRT::ELEMENTS::So3Plast_EASType et);
+    int PlastEasTypeToNumEasV(DRT::ELEMENTS::So3PlastEasType et);
 
   }  // namespace ELEMENTS
 }  // namespace DRT
