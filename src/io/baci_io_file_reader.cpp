@@ -1,11 +1,11 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*! \file
-\brief Read csv input
+\brief Read files
 \level 1
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "baci_io_csv_reader.hpp"
+#include "baci_io_file_reader.hpp"
 
 #include "baci_utils_exceptions.hpp"
 

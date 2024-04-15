@@ -2,9 +2,9 @@ set(TESTNAME unittests_io)
 
 set(SOURCE_LIST
     # cmake-format: sortable
-    baci_csv_reader_test.cpp
     baci_discretization_nodal_coordinates_test.cpp
     baci_domainreader_test.cpp
+    baci_file_reader_test.cpp
     baci_gridgenerator_test.cpp
     baci_pstream_test.cpp
     baci_string_converter_test.cpp

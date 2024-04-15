@@ -12,7 +12,7 @@
 #include "baci_global_data.hpp"
 #include "baci_inpar_material.hpp"
 #include "baci_io_control.hpp"
-#include "baci_io_csv_reader.hpp"
+#include "baci_io_file_reader.hpp"
 #include "baci_io_linecomponent.hpp"
 #include "baci_io_materialdefinition.hpp"
 
@@ -543,7 +543,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
         return acc;
       };
 
-      return IO::ReadCsvAsLines<actMapType, actMapType>(file_stream, map_reduction_operation);
+      return IO::ReadFileAsLines<actMapType, actMapType>(file_stream, map_reduction_operation);
     };
     const std::string print_string = std::string(
         "map of activation values retrieved from pattern file with rows in the format \"eleid: "
