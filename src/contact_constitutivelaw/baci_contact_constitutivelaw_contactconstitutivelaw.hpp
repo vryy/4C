@@ -13,6 +13,7 @@ contact pressure based on micro interactions
 #define BACI_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_HPP
 
 
+
 #include "baci_config.hpp"
 
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"

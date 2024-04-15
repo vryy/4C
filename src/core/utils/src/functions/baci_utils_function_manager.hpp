@@ -83,7 +83,7 @@ namespace CORE::UTILS
      */
     template <typename T>
     const T& FunctionById(int num) const;
-    
+
     template <typename T>
     void SetFunctions(const std::vector<T>& functions)
     {
@@ -94,6 +94,7 @@ namespace CORE::UTILS
     /// Internal storage for all functions. We use type erasure via std::any to store various
     /// Function objects belonging to distinct interfaces.
     std::vector<std::any> functions_;
+
 
     /**
      * Store the lines we can read and how to convert them into a BACI Function.
@@ -132,23 +133,21 @@ const T& CORE::UTILS::FunctionManager::FunctionById(int num) const
   }
   else
   {
-    const std::string actual_type_name = std::invoke(
-        [&function_any]()
-        {
-          const std::string actual_type_name_with_rcp_prefix =
-              CORE::UTILS::TryDemangle(function_any.type().name());
+    const std::string actual_type_name = std::invoke([&function_any]() {
+      const std::string actual_type_name_with_rcp_prefix =
+          CORE::UTILS::TryDemangle(function_any.type().name());
 
-          // find the outermost pair of angle brackets which should enclose the type inside an RCP
-          const std::size_t start = actual_type_name_with_rcp_prefix.find_first_of('<');
-          const std::size_t end = actual_type_name_with_rcp_prefix.find_last_of('>');
+      // find the outermost pair of angle brackets which should enclose the type inside an RCP
+      const std::size_t start = actual_type_name_with_rcp_prefix.find_first_of('<');
+      const std::size_t end = actual_type_name_with_rcp_prefix.find_last_of('>');
 
-          // if we actually have an RCP, return the contained type name, otherwise fall back to the
-          // full type name
-          if (std::string_view(actual_type_name_with_rcp_prefix.c_str(), start) == "Teuchos::RCP")
-            return std::string(actual_type_name_with_rcp_prefix, start + 1, end - start - 1);
-          else
-            return actual_type_name_with_rcp_prefix;
-        });
+      // if we actually have an RCP, return the contained type name, otherwise fall back to the
+      // full type name
+      if (std::string_view(actual_type_name_with_rcp_prefix.c_str(), start) == "Teuchos::RCP")
+        return std::string(actual_type_name_with_rcp_prefix, start + 1, end - start - 1);
+      else
+        return actual_type_name_with_rcp_prefix;
+    });
 
     dserror(
         "You tried to query function %d as a function of type '%s'.\n"
