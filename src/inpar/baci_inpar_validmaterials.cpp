@@ -1273,18 +1273,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticNlnLogNeoHooke",
         "hyperelastic / finite strain plastic von Mises material "
-        "with linear and exponential isotropic hardening",
+        "with linear and exponential isotropic hardening or the definition of a hardening function "
+        "(VARFUNCTION using the variable epsp)",
         INPAR::MAT::m_plnlnlogneohooke));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "NUE", "Poisson's ratio");
     AddNamedReal(m, "DENS", "mass density");
-    AddNamedReal(m, "YIELD", "yield stress");
-    AddNamedReal(m, "ISOHARD", "isotropic hardening modulus");
-    AddNamedReal(m, "SATHARDENING", "saturation hardening");
-    AddNamedReal(m, "HARDEXPO", "linear hardening exponent");
+    AddNamedReal(m, "YIELD", "yield stress", 0, true);
+    AddNamedReal(m, "ISOHARD", "isotropic hardening modulus", 0, true);
+    AddNamedReal(m, "SATHARDENING", "saturation hardening", 0, true);
+    AddNamedReal(m, "HARDEXPO", "linear hardening exponent", 0, true);
     AddNamedReal(m, "VISC", "VISCOSITY", 0., true);
     AddNamedReal(m, "RATE_DEPENDENCY", "rate dependency", 0., true);
+    AddNamedInt(m, "HARDENING_FUNC", "Function number for isotropic hardening", 0, true);
 
     AppendMaterialDefinition(matlist, m);
   }

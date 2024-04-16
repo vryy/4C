@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+
 /*! \file
 \brief Contains the functions to establish local material law /
        stress-strain law for isotropic material following large strain
@@ -37,6 +37,14 @@
 
 BACI_NAMESPACE_OPEN
 
+namespace CORE
+{
+  namespace UTILS
+  {
+    class FunctionOfAnything;
+  }
+}  // namespace CORE
+
 namespace MAT
 {
   namespace PAR
@@ -70,6 +78,13 @@ namespace MAT
       const double visc_;
       //! rate dependency
       const double rate_dependency_;
+      //! function ID for evaluation of saturation
+      const int functionID_hardening_;
+      //! maximum number of Newton Raphson iterations
+      const int max_iterations_;
+      //! newton Raphson tolerance
+      const double tolerance_nr_;
+
 
       //@}
 
@@ -97,6 +112,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   //! wrapper for finite strain elasto-plastic material
+
   class PlasticNlnLogNeoHooke : public So3Material
   {
    public:
@@ -179,16 +195,27 @@ namespace MAT
     //! Output is called after(!!) Update, so that newest values are included in
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
-    double AccumulatedStrain(int gp) const { return (accplstrainlast_->at(gp)); }
+    double AccumulatedStrain(int gp) const { return (accplstrainlast_.at(gp)); }
 
-    //! check if history variables are already initialized
-    bool Initialized() const { return (isinit_ and (accplstraincurr_ != Teuchos::null)); }
+    //! return 1 if the material point is actively yielding (gamma > 0); else 0
+    double ActiveYielding(int gp) const { return (activeyield_.at(gp)); }
+
+    //! //! check if history variables are already initialized
+    bool Initialized() const { return (isinit_ and !accplstraincurr_.empty()); }
 
     //! return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;
 
     //! return visualization data
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+
+    //! return names of visualization data available for direct VTK output
+    void RegisterOutputDataNames(
+        std::unordered_map<std::string, int>& names_and_size) const override;
+
+    //! return visualization data for direct VTK output
+    bool EvaluateOutputData(
+        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
     bool NeedsDefgrd() override { return true; };
@@ -209,31 +236,32 @@ namespace MAT
         const CORE::LINALG::Matrix<6, 1>*
             glstrain,                        //!< input Green-Lagrange strain (redundant with defo
                                              //   but used for neo-hooke evaluation; maybe remove
-        Teuchos::ParameterList& params,      //!< input paramter list (e.g. Young's, ...)
+        Teuchos::ParameterList& params,      //!< input parameter list (e.g. Young's, ...)
         CORE::LINALG::Matrix<6, 1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
         CORE::LINALG::Matrix<6, 6>* cmat,    //!< output (mandatory) material stiffness matrix
-        int gp,                              //!< Gazss point
+        int gp,                              //!< Gauss point
         int eleGID) override;
-
-    //@}
 
    private:
     //! my material parameters
     MAT::PAR::PlasticNlnLogNeoHooke* params_;
 
     //! inverse right cauchy green of plastic strain
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> invplrcglast_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> invplrcglast_;
     //! inverse right cauchy green of plastic strain
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> invplrcgcurr_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> invplrcgcurr_;
 
-    //! old (i.e. at t_n) accumulated palstic strain
-    Teuchos::RCP<std::vector<double>> accplstrainlast_;
-    //! current (i.e. at t_n+1) accumulated palstic strain
-    Teuchos::RCP<std::vector<double>> accplstraincurr_;
+    //! old (i.e. at t_n) accumulated plastic strain
+    std::vector<double> accplstrainlast_;
+    //! current (i.e. at t_n+1) accumulated plastic strain
+    std::vector<double> accplstraincurr_;
+    //! active yielding between t_n and t_n+1
+    std::vector<double> activeyield_;
+
+    const CORE::UTILS::FunctionOfAnything* hardening_function_{nullptr};
 
     //! indicator if #Initialize routine has been called
     bool isinit_;
-
   };  // class PlasticNlnLogNeoHooke
 
 }  // namespace MAT
