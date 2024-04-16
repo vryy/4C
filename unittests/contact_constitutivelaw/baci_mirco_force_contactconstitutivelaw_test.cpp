@@ -115,7 +115,7 @@ namespace
   //! test member function EvaluateDeriv
   TEST_F(MircoConstitutiveLawForceTest, TestEvaluateDeriv)
   {
-    // EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-12.0, cnode), 1.34284789678326e-04, 1.e-10);
+    EXPECT_NEAR(coconstlaw_->EvaluateDeriv(-12.0, cnode.get()), 1.34284789678326e-04, 1.e-10);
     EXPECT_ANY_THROW(coconstlaw_->EvaluateDeriv(-0.25, cnode.get()));
   }
 }  // namespace
