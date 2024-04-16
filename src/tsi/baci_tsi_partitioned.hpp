@@ -12,8 +12,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 12/09 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_TSI_PARTITIONED_HPP
-#define BACI_TSI_PARTITIONED_HPP
+#ifndef FOUR_C_TSI_PARTITIONED_HPP
+#define FOUR_C_TSI_PARTITIONED_HPP
 
 
 /*----------------------------------------------------------------------*
@@ -157,4 +157,4 @@ namespace TSI
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // TSI_PARTITIONED_H
+#endif

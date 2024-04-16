@@ -5,14 +5,15 @@
 \level 3
 */
 
-#ifndef BACI_SHELL7P_LINE_HPP
-#define BACI_SHELL7P_LINE_HPP
+#ifndef FOUR_C_SHELL7P_LINE_HPP
+#define FOUR_C_SHELL7P_LINE_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_discretization_fem_general_utils_gausspoints.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_element_integration_select.hpp"
+#include "baci_lib_node.hpp"
 #include "baci_shell7p_ele.hpp"
 
 BACI_NAMESPACE_OPEN

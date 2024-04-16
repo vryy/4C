@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_BEAMINTERACTION_CROSSLINKER_NODE_HPP
-#define BACI_BEAMINTERACTION_CROSSLINKER_NODE_HPP
+#ifndef FOUR_C_BEAMINTERACTION_CROSSLINKER_NODE_HPP
+#define FOUR_C_BEAMINTERACTION_CROSSLINKER_NODE_HPP
 
 #include "baci_config.hpp"
 
@@ -300,4 +300,4 @@ std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& 
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_BEAMINTERACTION_CROSSLINKER_NODE_H
+#endif

@@ -662,6 +662,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflowIntegra
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_s2icoupling_flux, condparams);
 
+  condparams.set<bool>("only_positive_fluxes", true);
+
   condparams.set<int>("evaluate_manifold_coupling", 1);
 
   // integrated scalars of this condition
@@ -739,6 +741,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Output()
 {
   dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
+  std::map<std::string, std::vector<double>> output_data;
   for (const auto& inflow_comp : inflow_)
   {
     const std::string manifold_string = "manifold " + std::to_string(inflow_comp.first);
@@ -747,23 +750,18 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Output()
     const auto domainintegral_cond = domainintegral_.find(inflow_comp.first);
     const double domainint = domainintegral_cond->second;
 
-    runtime_csvwriter_->AppendDataVector("Integral of " + manifold_string, {domainint});
+    output_data["Integral of " + manifold_string] = {domainint};
 
     for (int i = 0; i < static_cast<int>(inflow_comp.second.size()); ++i)
     {
-      runtime_csvwriter_->AppendDataVector(
-          "Total flux of scalar " + std::to_string(i + 1) + " into " + manifold_string,
-          {inflow_comp.second[i]});
-      runtime_csvwriter_->AppendDataVector(
-          "Mean flux of scalar " + std::to_string(i + 1) + " into " + manifold_string,
-          {inflow_comp.second[i] / domainint});
+      output_data["Total flux of scalar " + std::to_string(i + 1) + " into " + manifold_string] = {
+          inflow_comp.second[i]};
+      output_data["Mean flux of scalar " + std::to_string(i + 1) + " into " + manifold_string] = {
+          inflow_comp.second[i] / domainint};
     }
   }
-
-  runtime_csvwriter_->ResetTimeAndTimeStep(
-      scatra_manifold_->ScaTraField()->Time(), scatra_manifold_->ScaTraField()->Step());
-
-  runtime_csvwriter_->WriteFile();
+  runtime_csvwriter_->WriteDataToFile(scatra_manifold_->ScaTraField()->Time(),
+      scatra_manifold_->ScaTraField()->Step(), output_data);
 }
 
 /*----------------------------------------------------------------------*

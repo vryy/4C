@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_XFEM_XFFCOUPLING_MANAGER_HPP
-#define BACI_FSI_XFEM_XFFCOUPLING_MANAGER_HPP
+#ifndef FOUR_C_FSI_XFEM_XFFCOUPLING_MANAGER_HPP
+#define FOUR_C_FSI_XFEM_XFFCOUPLING_MANAGER_HPP
 
 #include "baci_config.hpp"
 

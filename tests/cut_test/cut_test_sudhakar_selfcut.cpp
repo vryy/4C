@@ -204,8 +204,6 @@ void test_sud_sc1()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
-
-  intersection.Status();
   intersection.CutTest_Cut(true, "Tessellation");
 
   std::vector<double> tessVol, momFitVol, dirDivVol;
@@ -218,8 +216,6 @@ void test_sud_sc1()
     GEO::CUT::VolumeCell* vc = &**i;
     tessVol.push_back(vc->Volume());
   }
-
-  intersection.Status();
 
   for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)

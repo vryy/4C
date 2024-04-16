@@ -13,6 +13,7 @@
 #include "baci_coupling_adapter_converter.hpp"
 #include "baci_coupling_adapter_mortar.hpp"
 #include "baci_coupling_volmortar_shape.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_fluid_utils.hpp"
 #include "baci_global_data.hpp"
@@ -115,6 +116,8 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       growthscatrablock_(Teuchos::null),
       growthgrowthblock_(Teuchos::null),
       equilibration_(Teuchos::null),
+      output_interface_flux_(CORE::UTILS::IntegralValue<bool>(
+          parameters.sublist("S2I COUPLING"), "OUTPUT_INTERFACE_FLUX")),
       has_capacitive_contributions_(false),
       kinetics_conditions_meshtying_slaveside_(),
       slaveonly_(CORE::UTILS::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY")),
@@ -1906,6 +1909,9 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
   kinetics_conditions_meshtying_slaveside_.clear();
   master_conditions_.clear();
+  runtime_csvwriter_.emplace(scatratimint_->Discretization()->Comm().MyPID(),
+      *scatratimint_->DiscWriter()->Output(), "kinetics_interface_flux");
+
   for (auto* s2imeshtying_cond : s2imeshtying_conditions)
   {
     for (auto* s2ikinetics_cond : s2ikinetics_conditions)
@@ -1955,6 +1961,11 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                   "is only implemented for OST and BDF2 time integration schemes.");
             }
           }
+          std::stringstream condition_flux_name, condition_area_name;
+          condition_flux_name << "flux_S2I_condition_" << s2ikinetics_cond_id;
+          condition_area_name << "area_S2I_condition_" << s2ikinetics_cond_id;
+          runtime_csvwriter_->RegisterDataVector(condition_flux_name.str(), 1, 16);
+          runtime_csvwriter_->RegisterDataVector(condition_area_name.str(), 1, 16);
 
           break;
         }
@@ -3228,6 +3239,64 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
     // output target state vector of discrete scatra-scatra interface layer thicknesses
     scatratimint_->DiscWriter()->WriteVector("intlayerthickness", intlayerthickness);
   }
+  if (output_interface_flux_) OutputInterfaceFlux();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::OutputInterfaceFlux() const
+{
+  AddTimeIntegrationSpecificVectors();
+  std::vector<DRT::Condition*> s2ikinetics_conditions(0, nullptr);
+  scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
+
+  std::map<std::string, std::vector<double>> output_data;
+
+  for (auto* s2ikinetics_cond : s2ikinetics_conditions)
+  {
+    // only slave side has relevant information
+    if (*s2ikinetics_cond->Get<int>("interface side") == static_cast<int>(INPAR::S2I::side_slave))
+    {
+      const int condition_id = *s2ikinetics_cond->Get<int>("ConditionID");
+      auto s2i_flux =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(scatratimint_->NumDofPerNode()));
+      auto boundaryint_vector = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
+      {
+        Teuchos::ParameterList condparams;
+
+        CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+            "action", SCATRA::BoundaryAction::calc_s2icoupling_flux, condparams);
+
+        scatratimint_->Discretization()->EvaluateScalars(
+            condparams, s2i_flux, "S2IKinetics", condition_id);
+      }
+
+      {
+        Teuchos::ParameterList condparams;
+
+        // overwrite action in parameter list
+        CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
+            "action", SCATRA::BoundaryAction::calc_boundary_integral, condparams);
+
+        // compute value of boundary integral
+        scatratimint_->Discretization()->EvaluateScalars(
+            condparams, boundaryint_vector, "S2IKinetics", condition_id);
+      }
+
+      // extract value of boundary integral
+      const double boundaryint = (*boundaryint_vector)(0);
+      s2i_flux->scale(1.0 / boundaryint);
+
+      std::stringstream condition_flux_name, condition_area_name;
+      condition_flux_name << "flux_S2I_condition_" << condition_id;
+      condition_area_name << "area_S2I_condition_" << condition_id;
+
+      dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+      output_data[condition_flux_name.str()] = {(*s2i_flux)[1]};
+      output_data[condition_area_name.str()] = {boundaryint};
+    }
+  }
+  runtime_csvwriter_->WriteDataToFile(scatratimint_->Time(), scatratimint_->Step(), output_data);
 }
 
 /*----------------------------------------------------------------------*
@@ -4180,7 +4249,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
     dserror("Cannot extract state vector \"" + statename + "\" from interface discretization!");
 
   // extract nodal state variables associated with slave element
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_slave_, 1>>(
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_slave_, 1>>(
       *state, estate_slave, la_slave[nds].lm_);
 }
 
@@ -4200,9 +4269,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
     dserror("Cannot extract state vector \"" + statename + "\" from interface discretization!");
 
   // extract nodal state variables associated with slave and master elements
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_slave_, 1>>(
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_slave_, 1>>(
       *state, estate_slave, la_slave[nds].lm_);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_master_, 1>>(
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_master_, 1>>(
       *state, estate_master, la_master[nds].lm_);
 }
 

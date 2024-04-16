@@ -12,8 +12,8 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_MAT_GROWTH_LAW_HPP
-#define BACI_MAT_GROWTH_LAW_HPP
+#ifndef FOUR_C_MAT_GROWTH_LAW_HPP
+#define FOUR_C_MAT_GROWTH_LAW_HPP
 
 #include "baci_config.hpp"
 
@@ -1496,4 +1496,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_GROWTH_LAW_H
+#endif

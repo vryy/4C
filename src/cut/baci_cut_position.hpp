@@ -10,8 +10,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_POSITION_HPP
-#define BACI_CUT_POSITION_HPP
+#ifndef FOUR_C_CUT_POSITION_HPP
+#define FOUR_C_CUT_POSITION_HPP
 
 #include "baci_config.hpp"
 

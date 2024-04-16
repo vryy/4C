@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_CONSTRAINT_DOFSET_HPP
-#define BACI_CONSTRAINT_DOFSET_HPP
+#ifndef FOUR_C_CONSTRAINT_DOFSET_HPP
+#define FOUR_C_CONSTRAINT_DOFSET_HPP
 
 #include "baci_config.hpp"
 
@@ -84,4 +84,4 @@ std::ostream& operator<<(std::ostream& os, const CONSTRAINTS::ConstraintDofSet& 
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONSTRAINT_DOFSET_H
+#endif

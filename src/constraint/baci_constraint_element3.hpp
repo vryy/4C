@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CONSTRAINT_ELEMENT3_HPP
-#define BACI_CONSTRAINT_ELEMENT3_HPP
+#ifndef FOUR_C_CONSTRAINT_ELEMENT3_HPP
+#define FOUR_C_CONSTRAINT_ELEMENT3_HPP
 
 
 #include "baci_config.hpp"

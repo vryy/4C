@@ -11,11 +11,11 @@
 #include "baci_beam3_reissner.hpp"
 #include "baci_beam3_spatial_discretization_utils.hpp"
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_largerotations.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_mat_beam_elasthyper.hpp"
@@ -159,7 +159,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
       {
@@ -414,13 +414,13 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
       if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
-      DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
+      CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
       if (act == ELEMENTS::struct_calc_brownianforce)
       {

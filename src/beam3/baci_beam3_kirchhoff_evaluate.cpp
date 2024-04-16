@@ -13,6 +13,7 @@
 #include "baci_beam3_spatial_discretization_utils.hpp"
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "baci_beaminteraction_periodic_boundingbox.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_largerotations.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
@@ -121,7 +122,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
 
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
 
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
@@ -162,13 +163,13 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
       if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
-      DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
+      CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
       if (act == ELEMENTS::struct_calc_brownianforce)
         CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, nullptr, &elevec1);
@@ -2080,7 +2081,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+  CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
   CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double> disp_totlag(true);
 

@@ -6,10 +6,10 @@ Teuchos Time Monitor
 The ``TimeMonitor`` from ``Trilinos`` package ``Teuchos`` provides MPI collective timer statistics.
 Refer to the ``Teuchos::TimeMonitor`` Class Reference https://trilinos.org/docs/dev/packages/teuchos/doc/html/classTeuchos_1_1TimeMonitor.html for a detailed documentation.
 
-Add a timer for a method in BACI
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Add a timer for a method in |FOURC|
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to get parallel timing statistics of a method in BACI include the following header
+In order to get parallel timing statistics of a method in |FOURC| include the following header
 
 ::
 
@@ -45,7 +45,7 @@ Running a simulation on 3 processors for example yields the following ``TimeMoni
 
 The output gives the minimum, maximum, and mean ``execution time (number of counts)`` for all processors and also the mean execution time over all counts.
 
-**Note:** The ``TimeMonitor`` output of a BACI simulation in general already contains a variety of methods that are monitored, meaning there is a line with timings for each method in the output.
+**Note:** The ``TimeMonitor`` output of a |FOURC| simulation in general already contains a variety of methods that are monitored, meaning there is a line with timings for each method in the output.
 
 How to interpret the output of the ``TimeMonitor``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

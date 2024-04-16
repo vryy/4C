@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_TIMINT_BASE_HPP
-#define BACI_STRUCTURE_NEW_TIMINT_BASE_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_TIMINT_BASE_HPP
+#define FOUR_C_STRUCTURE_NEW_TIMINT_BASE_HPP
 
 #include "baci_config.hpp"
 
@@ -441,28 +441,28 @@ namespace STR
         return datasdyn_->GetRandomTimeStepFactor() = rand_tsfac;
       }
 
-      //! Get random factor for time step adaption
+      //! Get current refinement level for time step adaption
       [[nodiscard]] virtual int GetDivConRefineLevel() const
       {
         CheckInitSetup();
         return datasdyn_->GetDivConRefineLevel();
       }
 
-      //! Set random factor for time step adaption
+      //! Set refinement level for time step adaption
       virtual int SetDivConRefineLevel(int divconrefinementlevel)
       {
         CheckInitSetup();
         return datasdyn_->GetDivConRefineLevel() = divconrefinementlevel;
       }
 
-      //! Get random factor for time step adaption
+      //! Get step of current refinement level for time step adaption
       [[nodiscard]] virtual int GetDivConNumFineStep() const
       {
         CheckInitSetup();
         return datasdyn_->GetDivConNumFineStep();
       }
 
-      //! Set random factor for time step adaption
+      //! Set step of current refinement level for time step adaption
       virtual int SetDivConNumFineStep(int divconnumfinestep)
       {
         CheckInitSetup();
@@ -516,9 +516,6 @@ namespace STR
       /// output results (implicit and explicit)
       virtual void Output() { Output(false); }
       void Output(bool forced_writerestart) override;
-
-      /// output error norms
-      virtual void OutputErrorNorms();
 
       /// Write Gmsh output for structural field
       void WriteGmshStrucOutputStep() override;
@@ -926,4 +923,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_TIMINT_BASE_H
+#endif

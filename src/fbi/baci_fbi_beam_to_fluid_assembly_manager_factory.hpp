@@ -9,8 +9,8 @@ constraint discretization approach
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FBI_BEAM_TO_FLUID_ASSEMBLY_MANAGER_FACTORY_HPP
-#define BACI_FBI_BEAM_TO_FLUID_ASSEMBLY_MANAGER_FACTORY_HPP
+#ifndef FOUR_C_FBI_BEAM_TO_FLUID_ASSEMBLY_MANAGER_FACTORY_HPP
+#define FOUR_C_FBI_BEAM_TO_FLUID_ASSEMBLY_MANAGER_FACTORY_HPP
 
 #include "baci_config.hpp"
 

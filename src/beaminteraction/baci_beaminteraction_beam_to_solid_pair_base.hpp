@@ -8,13 +8,14 @@
 // End doxygen header.
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_PAIR_BASE_HPP
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_PAIR_BASE_HPP
+#ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_PAIR_BASE_HPP
+#define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_PAIR_BASE_HPP
 
 
 #include "baci_config.hpp"
 
 #include "baci_beaminteraction_contact_pair.hpp"
+#include "baci_geometry_pair_element.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -182,10 +183,10 @@ namespace BEAMINTERACTION
     std::vector<GEOMETRYPAIR::LineSegment<segments_scalar_type>> line_to_3D_segments_;
 
     //! Current nodal positions (and tangents) of the beam.
-    CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> ele1pos_;
+    GEOMETRYPAIR::ElementData<beam, scalar_type> ele1pos_;
 
     //! Reference nodal positions (and tangents) of the beam.
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_;
+    GEOMETRYPAIR::ElementData<beam, double> ele1posref_;
   };
 }  // namespace BEAMINTERACTION
 

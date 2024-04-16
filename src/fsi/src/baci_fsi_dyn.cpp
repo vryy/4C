@@ -49,7 +49,6 @@
 #include "baci_fsi_resulttest.hpp"
 #include "baci_fsi_slidingmonolithic_fluidsplit.hpp"
 #include "baci_fsi_slidingmonolithic_structuresplit.hpp"
-#include "baci_fsi_structureale.hpp"
 #include "baci_fsi_utils.hpp"
 #include "baci_fsi_xfem_fluid.hpp"
 #include "baci_fsi_xfem_monolithic.hpp"
@@ -496,25 +495,6 @@ void fsi_ale_drt()
   FSI_COUPLING coupling = CORE::UTILS::IntegralValue<FSI_COUPLING>(fsidyn, "COUPALGO");
   switch (coupling)
   {
-    case fsi_pseudo_structureale:
-    {
-      // pseudo FSI problem used to find starting configuration
-
-      Teuchos::RCP<FSI::StructureALE> fsi = Teuchos::rcp(new FSI::StructureALE(comm));
-
-      const int restart = GLOBAL::Problem::Instance()->Restart();
-      if (restart)
-      {
-        // read the restart information, set vectors and variables
-        fsi->ReadRestart(restart);
-      }
-
-      fsi->Timeloop();
-
-      GLOBAL::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-      GLOBAL::Problem::Instance()->TestAll(comm);
-      break;
-    }
     case fsi_iter_monolithicfluidsplit:
     case fsi_iter_monolithicstructuresplit:
     case fsi_iter_lung_monolithicstructuresplit:
@@ -878,7 +858,6 @@ void xfsi_drt()
 
       break;
     }
-    case fsi_pseudo_structureale:
     case fsi_iter_monolithicfluidsplit:
     case fsi_iter_monolithicstructuresplit:
       dserror("Unreasonable choice");
@@ -1034,7 +1013,6 @@ void xfpsi_drt()
       GLOBAL::Problem::Instance()->TestAll(comm);
       break;
     }
-    case fsi_pseudo_structureale:
     case fsi_iter_monolithicfluidsplit:
     case fsi_iter_monolithicstructuresplit:
       dserror("Unreasonable choice");

@@ -670,9 +670,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
 
       // get correct condition for beam or rigid sphere element
-      if (BEAMINTERACTION::BeamElement(*currneighborele))
+      if (BEAMINTERACTION::UTILS::IsBeamElement(*currneighborele))
         nodes2[0]->GetCondition("BeamPotentialLineCharge", conds2);
-      else if (BEAMINTERACTION::RigidsphereElement(*currneighborele))
+      else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*currneighborele))
         nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
       else
         dserror(
@@ -806,9 +806,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   nodes1[0]->GetCondition("BeamPotentialLineCharge", conditions_element1);
 
   // get correct condition for beam or rigid sphere element
-  if (BEAMINTERACTION::BeamElement(*ele2))
+  if (BEAMINTERACTION::UTILS::IsBeamElement(*ele2))
     nodes2[0]->GetCondition("BeamPotentialLineCharge", conditions_element2);
-  else if (BEAMINTERACTION::RigidsphereElement(*ele2))
+  else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*ele2))
     nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conditions_element2);
   else
     dserror(

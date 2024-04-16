@@ -7,8 +7,8 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_constraint_element2.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
@@ -58,7 +58,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnode = 3;
       const int numdim = 2;
       CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
@@ -78,7 +78,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnode = 3;
       const int numdim = 2;
       CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element

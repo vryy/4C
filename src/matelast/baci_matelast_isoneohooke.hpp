@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_ISONEOHOOKE_HPP
-#define BACI_MATELAST_ISONEOHOOKE_HPP
+#ifndef FOUR_C_MATELAST_ISONEOHOOKE_HPP
+#define FOUR_C_MATELAST_ISONEOHOOKE_HPP
 
 #include "baci_config.hpp"
 
@@ -142,4 +142,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_ISONEOHOOKE_H
+#endif

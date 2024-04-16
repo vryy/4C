@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_3D_ELE_PROPERTIES_HPP
-#define BACI_SOLID_3D_ELE_PROPERTIES_HPP
+#ifndef FOUR_C_SOLID_3D_ELE_PROPERTIES_HPP
+#define FOUR_C_SOLID_3D_ELE_PROPERTIES_HPP
 
 #include "baci_config.hpp"
 
@@ -129,4 +129,4 @@ namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_SOLID_3D_ELE_PROPERTIES_H
+#endif

@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_FLUID_ALE_HPP
-#define BACI_FSI_FLUID_ALE_HPP
+#ifndef FOUR_C_FSI_FLUID_ALE_HPP
+#define FOUR_C_FSI_FLUID_ALE_HPP
 
 #include "baci_config.hpp"
 

@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_LINALG_PROJECTED_OPERATOR_HPP
-#define BACI_LINALG_PROJECTED_OPERATOR_HPP
+#ifndef FOUR_C_LINALG_PROJECTED_OPERATOR_HPP
+#define FOUR_C_LINALG_PROJECTED_OPERATOR_HPP
 
 #include "baci_config.hpp"
 
@@ -174,4 +174,4 @@ namespace CORE::LINALG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LINALG_PROJECTED_OPERATOR_H
+#endif

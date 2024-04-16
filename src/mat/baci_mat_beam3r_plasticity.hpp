@@ -8,8 +8,8 @@ function)
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_BEAM3R_PLASTICITY_HPP
-#define BACI_MAT_BEAM3R_PLASTICITY_HPP
+#ifndef FOUR_C_MAT_BEAM3R_PLASTICITY_HPP
+#define FOUR_C_MAT_BEAM3R_PLASTICITY_HPP
 
 #include "baci_config.hpp"
 

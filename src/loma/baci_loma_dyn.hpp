@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LOMA_DYN_HPP
-#define BACI_LOMA_DYN_HPP
+#ifndef FOUR_C_LOMA_DYN_HPP
+#define FOUR_C_LOMA_DYN_HPP
 
 #include "baci_config.hpp"
 
@@ -23,4 +23,4 @@ void loma_dyn(int restart /* do we have to perform a restart?  */
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LOMA_DYN_H
+#endif

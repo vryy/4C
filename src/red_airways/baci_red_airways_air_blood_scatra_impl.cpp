@@ -13,21 +13,16 @@
 
 #include "baci_red_airways_air_blood_scatra_impl.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "baci_discretization_fem_general_utils_gder2.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_air_0d_O2_saturation.hpp"
 #include "baci_mat_hemoglobin_0d_O2_saturation.hpp"
-#include "baci_mat_list.hpp"
-#include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_red_airways_evaluation_data.hpp"
-#include "baci_utils_function.hpp"
 
 #include <fstream>
-#include <iomanip>
 
 BACI_NAMESPACE_OPEN
 
@@ -181,15 +176,15 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  DRT::UTILS::ExtractMyValues(*scatranp, myscatranp, lm);
+  CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myvolnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*volnp, myvolnp, lm);
+  CORE::FE::ExtractMyValues(*volnp, myvolnp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myareanp(lm.size());
-  DRT::UTILS::ExtractMyValues(*areanp, myareanp, lm);
+  CORE::FE::ExtractMyValues(*areanp, myareanp, lm);
 
   //--------------------------------------------------------------------
   // define the nodes connected to an acinus

@@ -3,8 +3,8 @@
 \brief Solid Tet10 Element
 \level 1
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_TET10_HPP
-#define BACI_SO3_TET10_HPP
+#ifndef FOUR_C_SO3_TET10_HPP
+#define FOUR_C_SO3_TET10_HPP
 
 
 #include "baci_config.hpp"
@@ -331,7 +331,6 @@ namespace DRT
         calc_struct_reset_all,    //!< reset elementwise internal variables
                                   //!< to state in the beginning of the computation
         calc_struct_energy,       // compute energy
-        calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
         prestress_update,
         calc_global_gpstresses_map,
         struct_init_gauss_point_data_output,
@@ -456,4 +455,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_TET10_H
+#endif

@@ -7,8 +7,8 @@
 \level 2
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_LEVELSETINTERSECTION_HPP
-#define BACI_CUT_LEVELSETINTERSECTION_HPP
+#ifndef FOUR_C_CUT_LEVELSETINTERSECTION_HPP
+#define FOUR_C_CUT_LEVELSETINTERSECTION_HPP
 
 #include "baci_config.hpp"
 

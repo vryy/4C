@@ -20,6 +20,22 @@
 
 BACI_NAMESPACE_OPEN
 
+/*
+Functions to catch implementation erros in debug mode
+*/
+namespace
+{
+  [[maybe_unused]] bool IsCutPositionUnchanged(
+      CORE::GEO::CUT::Point::PointPosition cutposition, CORE::GEO::CUT::Point::PointPosition pos)
+  {
+    if ((cutposition == CORE::GEO::CUT::Point::inside and pos == CORE::GEO::CUT::Point::outside) or
+        (cutposition == CORE::GEO::CUT::Point::outside and pos == CORE::GEO::CUT::Point::inside))
+      return false;
+    else
+      return true;
+  }
+}  // namespace
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::Edge::Create(
@@ -499,15 +515,9 @@ void CORE::GEO::CUT::Edge::RectifyCutNumerics()
  *------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Edge::SelfCutPosition(Point::PointPosition pos)
 {
-#ifdef DEBUGCUTLIBRARY
-  if ((selfcutposition_ == Point::inside and pos == Point::outside) or
-      (selfcutposition_ == Point::outside and pos == Point::inside))
-  {
-    dserror(
-        "Are you sure that you want to change the edge-position from inside to outside or vice "
-        "versa?");
-  }
-#endif
+  dsassert(IsCutPositionUnchanged(selfcutposition_, pos),
+      "Are you sure that you want to change the edge-position from inside to outside or vice "
+      "versa?");
 
   if (selfcutposition_ == Point::undecided)
   {

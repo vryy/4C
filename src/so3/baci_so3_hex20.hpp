@@ -4,8 +4,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_HEX20_HPP
-#define BACI_SO3_HEX20_HPP
+#ifndef FOUR_C_SO3_HEX20_HPP
+#define FOUR_C_SO3_HEX20_HPP
 
 #include "baci_config.hpp"
 
@@ -337,10 +337,9 @@ namespace DRT
         calc_struct_reset_istep,  //!< reset elementwise internal variables
                                   //!< during iteration to last converged state
         prestress_update,
-        calc_struct_energy,      //!< compute internal energy
-        calc_struct_errornorms,  //!< compute error norms (L2,H1,energy)
-        multi_readrestart,       //!< multi-scale: read restart on microscale
-        multi_calc_dens          //!< multi-scale: calculate homogenized density
+        calc_struct_energy,  //!< compute internal energy
+        multi_readrestart,   //!< multi-scale: read restart on microscale
+        multi_calc_dens      //!< multi-scale: calculate homogenized density
       };
 
       //! vector of inverses of the jacobian in material frame
@@ -488,4 +487,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_HEX20_H
+#endif

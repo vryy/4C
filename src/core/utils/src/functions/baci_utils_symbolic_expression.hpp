@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_SYMBOLIC_EXPRESSION_HPP
-#define BACI_UTILS_SYMBOLIC_EXPRESSION_HPP
+#ifndef FOUR_C_UTILS_SYMBOLIC_EXPRESSION_HPP
+#define FOUR_C_UTILS_SYMBOLIC_EXPRESSION_HPP
 
 #include "baci_config.hpp"
 

@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_HPP
-#define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_HPP
+#ifndef FOUR_C_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_HPP
+#define FOUR_C_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_HPP
 
 #include "baci_config.hpp"
 
@@ -118,4 +118,4 @@ namespace MIXTURE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MIXTURE_CONSTITUENT_REMODELFIBER_LIB_H
+#endif

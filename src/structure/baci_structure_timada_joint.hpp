@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef BACI_STRUCTURE_TIMADA_JOINT_HPP
-#define BACI_STRUCTURE_TIMADA_JOINT_HPP
+#ifndef FOUR_C_STRUCTURE_TIMADA_JOINT_HPP
+#define FOUR_C_STRUCTURE_TIMADA_JOINT_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -230,4 +230,4 @@ namespace STR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_TIMADA_JOINT_H
+#endif

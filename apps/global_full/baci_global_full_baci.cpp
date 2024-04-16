@@ -236,7 +236,10 @@ int main(int argc, char *argv[])
       printf("\n** Enter a character to continue > \n");
       fflush(stdout);
       char go = ' ';
-      DRT::UTILS::Checkscanf(scanf("%c", &go));
+      if (scanf("%c", &go) == EOF)
+      {
+        dserror("Error while reading input.\n");
+      }
     }
   }
 
@@ -339,7 +342,10 @@ int main(int argc, char *argv[])
     catch (CORE::Exception &err)
     {
       char line[] = "=========================================================================\n";
-      std::cout << "\n\n" << line << err.what() << "\n" << line << "\n" << std::endl;
+      std::cout << "\n\n"
+                << line << err.what_with_stacktrace() << "\n"
+                << line << "\n"
+                << std::endl;
 
       if (ngroups > 1)
       {

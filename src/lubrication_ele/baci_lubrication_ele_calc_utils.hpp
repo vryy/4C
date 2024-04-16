@@ -7,8 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_LUBRICATION_ELE_CALC_UTILS_HPP
-#define BACI_LUBRICATION_ELE_CALC_UTILS_HPP
+#ifndef FOUR_C_LUBRICATION_ELE_CALC_UTILS_HPP
+#define FOUR_C_LUBRICATION_ELE_CALC_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -107,4 +107,4 @@ namespace LUBRICATION
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LUBRICATION_ELE_CALC_UTILS_H
+#endif

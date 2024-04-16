@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_ENGINE_UNIQUE_GLOBAL_ID_HPP
-#define BACI_PARTICLE_ENGINE_UNIQUE_GLOBAL_ID_HPP
+#ifndef FOUR_C_PARTICLE_ENGINE_UNIQUE_GLOBAL_ID_HPP
+#define FOUR_C_PARTICLE_ENGINE_UNIQUE_GLOBAL_ID_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

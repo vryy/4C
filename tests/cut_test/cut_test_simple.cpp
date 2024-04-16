@@ -76,8 +76,6 @@ void test_hex8_simple()
   CORE::GEO::CUT::Element* e = create_hex8(mesh);
   CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
-  mesh.Status();
-
   e->Cut(mesh, *(s));
 
   cutmesh(mesh);
@@ -109,8 +107,6 @@ void test_tet4_simple()
 
   CORE::GEO::CUT::Element* e = create_tet4(mesh, xyze);
   CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
-
-  mesh.Status();
 
   e->Cut(mesh, *(s));
 
@@ -147,8 +143,6 @@ void test_pyramid5_simple()
 
   CORE::GEO::CUT::Element* e = create_pyramid5(mesh, xyze);
   CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
-
-  mesh.Status();
 
   e->Cut(mesh, *(s));
 
@@ -190,8 +184,6 @@ void test_wedge6_simple()
   CORE::GEO::CUT::Element* e = create_wedge6(mesh, xyze);
   CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
-  mesh.Status();
-
   e->Cut(mesh, *(s));
 
   cutmesh(mesh);
@@ -206,8 +198,6 @@ void test_hex8_fullside()
   CORE::GEO::CUT::Element* e = create_hex8(mesh);
   CORE::GEO::CUT::Side* s = create_quad4(mesh, 1, 0, 0);
 
-  mesh.Status();
-
   e->Cut(mesh, *(s));
 
   cutmesh(mesh);
@@ -220,8 +210,6 @@ void test_hex8_diagonal()
   CORE::GEO::CUT::Mesh mesh(options);
   CORE::GEO::CUT::Element* e = create_hex8(mesh);
   CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 1, 0);
-
-  mesh.Status();
 
   e->Cut(mesh, *(s));
 
@@ -258,7 +246,6 @@ void test_hex8_tet4()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -268,7 +255,6 @@ void test_hex8_hex8()
 
   w.CreateHex8();
   w.CreateHex8Sides(0.5, 0.5, 0.5);
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -301,7 +287,6 @@ void test_hex8_touch()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -311,7 +296,6 @@ void test_hex8_touch2()
 
   w.CreateHex8();
   w.CreateHex8Sides(1, 0.5, 0.5);
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -341,7 +325,6 @@ void test_hex8_schraeg()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -371,7 +354,6 @@ void test_hex8_quad4_woelbung()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
   w.AssumeVolumeCells(2);
 }
@@ -422,7 +404,6 @@ void test_hex8_tet4_touch()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut(true, true);  // as cut_sides are just touching!!
 }
 
@@ -452,7 +433,6 @@ void test_hex8_tet4_touch2()
 
   w.CreateTet4Sides(xyze);
 
-  w.Status();
   w.CutTest_Cut(true, true);
 }
 
@@ -465,8 +445,6 @@ void test_hex8_mesh()
   create_hex8_mesh(mesh, 10, 10, 10);
 
   CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.5, 0);
-
-  mesh.Status();
 
   CORE::GEO::CUT::plain_element_set done;
   CORE::GEO::CUT::plain_element_set elements_done;
@@ -483,8 +461,6 @@ void test_hex8_double()
   CORE::GEO::CUT::Element* e = create_hex8(mesh);
   CORE::GEO::CUT::Side* s1 = create_quad4(mesh, 0.4, 0.1, 0);
   CORE::GEO::CUT::Side* s2 = create_quad4(mesh, 0.6, 0.1, 0);
-
-  mesh.Status();
 
   e->Cut(mesh, *(s1));
   e->Cut(mesh, *(s2));
@@ -552,8 +528,6 @@ void test_hex8_bad1()
 
   CORE::GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
 
-  mesh.Status();
-
   e->Cut(mesh, *(quad4));
 
   cutmesh(mesh);
@@ -618,8 +592,6 @@ void test_hex8_bad2()
   xyze(2, 3) = -0.0505;
 
   CORE::GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
-
-  mesh.Status();
 
   e->Cut(mesh, *(quad4));
 
@@ -686,8 +658,6 @@ void test_hex8_bad3()
 
   CORE::GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
 
-  mesh.Status();
-
   e->Cut(mesh, *(quad4));
 
   cutmesh(mesh);
@@ -722,8 +692,6 @@ void test_hex8_bad4()
   std::copy(quad4_xyz, quad4_xyz + 12, &xyze(0, 0));
 
   CORE::GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
-
-  mesh.Status();
 
   e->Cut(mesh, *(quad4));
 
@@ -764,7 +732,6 @@ void test_hex8_wedge6()
 
   w.CreateWedge6Sides(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -794,7 +761,6 @@ void test_hex8_quad4_touch()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut(true, true);
 }
 
@@ -824,7 +790,6 @@ void test_hex8_quad4_touch2()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut(true, true);
 }
 
@@ -854,7 +819,6 @@ void test_hex8_quad4_touch3()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut(true, true);
 }
 
@@ -884,7 +848,6 @@ void test_hex8_quad4_cut()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -896,7 +859,6 @@ void test_hex8_quad4_gedreht()
 
   w.CreateQuad4Mesh(2, 2);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -962,7 +924,6 @@ void test_hex8_hex8_durchstoss()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -1028,7 +989,6 @@ void test_hex8_hex8_onside()
 
 
   w.CreateQuad4(xyze);
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -1106,7 +1066,6 @@ void test_hex8_hex8_internal()
 
   w.CreateHex8Sides(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -1204,7 +1163,6 @@ void test_hex8_hex8_sideintersection()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -1282,7 +1240,6 @@ void test_hex8_hex8_inside()
 
   w.CreateHex8Sides(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -1312,7 +1269,6 @@ void test_hex8_quad4_schnitt()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -1342,7 +1298,6 @@ void test_hex8_quad4_touch4()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -1372,7 +1327,6 @@ void test_hex8_quad4_touch5()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -1422,7 +1376,6 @@ void test_hex8_quad4_touch6()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -1452,7 +1405,6 @@ void test_hex8_quad4_touch7()
 
   w.CreateQuad4(xyze);
 
-  w.Status();
   w.CutTest_Cut();
 }
 
@@ -1466,8 +1418,6 @@ void test_hex8_quad4_mesh()
 
   std::vector<CORE::GEO::CUT::Side*> sides;
   create_quad4_mesh(mesh, 3, 3, sides);
-
-  mesh.Status();
 
   for (std::vector<CORE::GEO::CUT::Side*>::iterator i = sides.begin(); i != sides.end(); ++i)
   {

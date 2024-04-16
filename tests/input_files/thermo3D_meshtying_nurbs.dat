@@ -1177,6 +1177,7 @@ NODE    73   DVOL    1
 NODE    98   DVOL    1
 NODE   123   DVOL    1
 -----------------------------------------------------THERMO KNOTVECTORS
+NURBS_DIMENSION                       3
 BEGIN NURBSPATCH
 ID        1
 NUMKNOTS  7

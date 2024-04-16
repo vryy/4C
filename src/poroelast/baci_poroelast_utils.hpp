@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROELAST_UTILS_HPP
-#define BACI_POROELAST_UTILS_HPP
+#ifndef FOUR_C_POROELAST_UTILS_HPP
+#define FOUR_C_POROELAST_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -145,4 +145,4 @@ namespace POROELAST
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROELAST_UTILS_H
+#endif

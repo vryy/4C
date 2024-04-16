@@ -1,9 +1,7 @@
 Surface areas and surface integrals
 ===================================
 
-This chapter tries to explain the background of the
-``ComputeMetricTensorForSurface`` function that can be found at various
-places in BACI.
+This chapter tries to explain the background of the ``ComputeMetricTensorForSurface`` function that can be found at various places in |FOURC|.
 
 Motivation and definition.
 ''''''''''''''''''''''''''

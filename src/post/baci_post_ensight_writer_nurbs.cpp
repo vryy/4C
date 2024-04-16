@@ -3361,24 +3361,14 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
   // equal to spatial dimension
   int dim = (int)(nurbsdis->Return_nele_x_mele_x_lele(0)).size();
 
-  // the number of vizualisation points
-  int numvispoints = 0;
-
   for (int np = 0; np < npatches; ++np)
   {
-    int numvisp = 1;
-
     // get nurbs dis' knotvector sizes
     std::vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(np));
 
     // get nurbs dis' knotvector sizes
     std::vector<int> degree(nurbsdis->Return_degree(np));
 
-    for (unsigned rr = 0; rr < n_x_m_x_l.size(); ++rr)
-    {
-      numvisp *= 2 * (n_x_m_x_l[rr] - 2 * degree[rr]) - 1;
-    }
-    numvispoints += numvisp;
   }  // end loop over patches
 
   // get the knotvector itself

@@ -8,8 +8,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_TURBULENCE_HPP
-#define BACI_INPAR_TURBULENCE_HPP
+#ifndef FOUR_C_INPAR_TURBULENCE_HPP
+#define FOUR_C_INPAR_TURBULENCE_HPP
 
 #include "baci_config.hpp"
 
@@ -58,4 +58,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_TURBULENCE_H
+#endif

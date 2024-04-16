@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_AMGNXN_OBJECTS_HPP
-#define BACI_LINEAR_SOLVER_AMGNXN_OBJECTS_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_AMGNXN_OBJECTS_HPP
+#define FOUR_C_LINEAR_SOLVER_AMGNXN_OBJECTS_HPP
 
 // Trilinos includes
 #include "baci_config.hpp"
@@ -27,7 +27,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   class BlockedVector
   {
    public:
-    BlockedVector(int size) : vectors_(size, Teuchos::null), size_(size) {}
+    BlockedVector(int size) : vectors_(size, Teuchos::null) {}
 
     bool HasOnlyOneBlock() const { return vectors_.size() == 1; }
 
@@ -57,7 +57,6 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
    private:
     std::vector<Teuchos::RCP<Epetra_MultiVector>> vectors_;
-    int size_;
   };
 
   class BlockedMatrix
@@ -181,4 +180,4 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_AMGNXN_OBJECTS_H
+#endif

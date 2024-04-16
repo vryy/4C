@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_S2I_HPP
-#define BACI_INPAR_S2I_HPP
+#ifndef FOUR_C_INPAR_S2I_HPP
+#define FOUR_C_INPAR_S2I_HPP
 
 #include "baci_config.hpp"
 
@@ -107,4 +107,4 @@ namespace INPAR::S2I
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_INPAR_S2I_H
+#endif

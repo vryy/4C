@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_COUPANISOEXPO_HPP
-#define BACI_MATELAST_COUPANISOEXPO_HPP
+#ifndef FOUR_C_MATELAST_COUPANISOEXPO_HPP
+#define FOUR_C_MATELAST_COUPANISOEXPO_HPP
 
 #include "baci_config.hpp"
 
@@ -194,4 +194,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_COUPANISOEXPO_H
+#endif

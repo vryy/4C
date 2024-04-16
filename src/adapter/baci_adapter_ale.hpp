@@ -8,12 +8,9 @@
  */
 /*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------------*/
-#ifndef BACI_ADAPTER_ALE_HPP
-#define BACI_ADAPTER_ALE_HPP
+#ifndef FOUR_C_ADAPTER_ALE_HPP
+#define FOUR_C_ADAPTER_ALE_HPP
 
-/*----------------------------------------------------------------------------*/
-/* header inclusions */
 #include "baci_config.hpp"
 
 #include "baci_ale_utils_mapextractor.hpp"
@@ -27,8 +24,6 @@
 
 BACI_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------------*/
-/* forward declarations */
 namespace DRT
 {
   class Discretization;
@@ -60,8 +55,7 @@ namespace TIMINT
   class TimIntMStep;
 }
 
-/*----------------------------------------------------------------------------*/
-/* class definitions */
+
 namespace ADAPTER
 {
   /*! \brief General ALE field interface
@@ -222,9 +216,6 @@ namespace ADAPTER
     //! Access to linear solver
     virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
 
-    /// get the linear solver object used for this field
-    virtual Teuchos::RCP<CORE::LINALG::Preconditioner> ConstPreconditioner() = 0;
-
     //@}
 
     //! @name Write access to field solution variables at \f$t^{n+1}\f$
@@ -289,4 +280,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_ALE_H
+#endif

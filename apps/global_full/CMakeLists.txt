@@ -10,6 +10,6 @@ set(OBJS_BACI_MAIN
 # the baci executable
 add_executable(${baciname} ${OBJS_BACI_MAIN})
 set_target_properties(${baciname} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-baci_target_requires_cyclic_legacy_linking(${baciname})
+baci_set_up_executable(${baciname})
 
 add_custom_target(baci DEPENDS ${baciname})

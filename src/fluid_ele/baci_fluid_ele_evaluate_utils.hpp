@@ -9,11 +9,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_ELE_EVALUATE_UTILS_HPP
-#define BACI_FLUID_ELE_EVALUATE_UTILS_HPP
+#ifndef FOUR_C_FLUID_ELE_EVALUATE_UTILS_HPP
+#define FOUR_C_FLUID_ELE_EVALUATE_UTILS_HPP
 
 #include "baci_config.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
@@ -22,7 +23,6 @@
 #include "baci_fluid_ele_parameter_std.hpp"
 #include "baci_inpar_turbulence.hpp"
 #include "baci_lib_element_integration_select.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_sutherland.hpp"
 #include "baci_nurbs_discret.hpp"
@@ -3084,7 +3084,7 @@ namespace FLD
       }
 
       std::vector<double> mydispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+      CORE::FE::ExtractMyValues(*dispnp,mydispnp,lm);
 
       // extract velocity part from "mygridvelaf" and get
       // set element displacements
@@ -3139,7 +3139,7 @@ namespace FLD
       }
 
       std::vector<double> mydispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
 
       // extract velocity part from "mygridvelaf" and get
       // set element displacements

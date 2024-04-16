@@ -4,10 +4,10 @@ Documenting the code with Doxygen
 ---------------------------------
 
 
-BACI uses `Doxygen <http://www.doxygen.nl>`__ to generate documentation from annotated source code.
+|FOURC| uses `Doxygen <http://www.doxygen.nl>`__ to generate documentation from annotated source code.
 You can find a current documentation `here <https://baci.pages.gitlab.lrz.de/baci/doxygen/index.html>`_.
 
-What is Doxygen and why does BACI rely on it?
+What is Doxygen and why does |FOURC| rely on it?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Doxygen is a documentation generator, i.e. a tool for writing software reference documentation.
@@ -15,12 +15,12 @@ The documentation is written within the code, so documentation lives close by to
 This makes it relatively easy to keep up to date.
 Doxygen can cross reference documentation and code, so that the reader of a document can easily refer to the actual code.
 
-BACI's Policy
+|FOURC|'s Policy
 ~~~~~~~~~~~~~~~~
 
-BACI requires a set of minimum Doxygen items for each code entity.
+|FOURC| requires a set of minimum Doxygen items for each code entity.
 
-At a bare minimum, BACI requires that 
+At a bare minimum, |FOURC| requires that
 
 - any source code file has a file header consisting of the tags
     - ``@file``
@@ -46,7 +46,7 @@ Building the Doxygen Documentation
 Local build using CMake
 """""""""""""""""""""""""""
 
-BACI has defined a custom build target ``documentation`` (see also our :ref:`list of custom build targets <buildbaciwithcustomtargets>`.
+|FOURC| has defined a custom build target ``documentation`` (see also our :ref:`list of custom build targets <build4Cwithcustomtargets>`.
 In order to create the Doxygen HTML webpage locally, just issue the command
 
 ::
@@ -477,8 +477,8 @@ When you run Doxygen, for instance,
 
 ::
 
-    cd <path/to/BACI-build/directory>
-    make documentation | tee doxygen.log
+    cd <4C-execdir>
+    ninja doxygen | tee doxygen.log
 
 
 it will warn you about any undocumented entities.

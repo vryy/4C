@@ -19,7 +19,6 @@ Technical Report 034, MEMS, Rice University (2002) 16.
 #include "baci_fluid_implicit_integration.hpp"
 #include "baci_fluid_timint_hdg.hpp"
 #include "baci_global_data.hpp"
-#include "baci_lib_utils.hpp"
 
 #include <cmath>
 #include <complex>
@@ -297,7 +296,7 @@ namespace FLD
               // velocity field in physical space
               if (discret_->Comm().MyPID() == 0)
               {
-                DRT::UTILS::Random* random = GLOBAL::Problem::Instance()->Random();
+                CORE::UTILS::Random* random = GLOBAL::Problem::Instance()->Random();
                 // set range [0;1] (default: [-1;1])
                 //              random->SetRandRange(0.0,1.0);
                 //              random_theta1 = random->Uni();
@@ -984,7 +983,7 @@ namespace FLD
               // velocity field in physical space
               if (discret_->Comm().MyPID() == 0)
               {
-                DRT::UTILS::Random* random = GLOBAL::Problem::Instance()->Random();
+                CORE::UTILS::Random* random = GLOBAL::Problem::Instance()->Random();
                 // set range [0;1] (default: [-1;1])
                 //              random->SetRandRange(0.0,1.0);
                 //              random_theta1 = random->Uni();

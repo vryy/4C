@@ -6,8 +6,8 @@
 \level 3
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_STRUCTPORO_REACTION_ECM_HPP
-#define BACI_MAT_STRUCTPORO_REACTION_ECM_HPP
+#ifndef FOUR_C_MAT_STRUCTPORO_REACTION_ECM_HPP
+#define FOUR_C_MAT_STRUCTPORO_REACTION_ECM_HPP
 
 #include "baci_config.hpp"
 
@@ -174,4 +174,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_STRUCTPORO_REACTION_ECM_H
+#endif

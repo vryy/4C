@@ -11,7 +11,6 @@
 
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_serialdensevector.hpp"

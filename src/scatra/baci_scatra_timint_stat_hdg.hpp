@@ -6,8 +6,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_TIMINT_STAT_HDG_HPP
-#define BACI_SCATRA_TIMINT_STAT_HDG_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_STAT_HDG_HPP
+#define FOUR_C_SCATRA_TIMINT_STAT_HDG_HPP
 
 #include "baci_config.hpp"
 
@@ -80,4 +80,4 @@ namespace SCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_TIMINT_STAT_HDG_H
+#endif

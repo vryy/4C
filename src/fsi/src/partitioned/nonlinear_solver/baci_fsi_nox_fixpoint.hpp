@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_NOX_FIXPOINT_HPP
-#define BACI_FSI_NOX_FIXPOINT_HPP
+#ifndef FOUR_C_FSI_NOX_FIXPOINT_HPP
+#define FOUR_C_FSI_NOX_FIXPOINT_HPP
 
 #include "baci_config.hpp"
 

@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_HPP
 
 #include "baci_config.hpp"
 

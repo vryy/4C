@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_HPP
-#define BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_HPP
+#ifndef FOUR_C_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_HPP
+#define FOUR_C_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_HPP
 
 #include "baci_config.hpp"
 
@@ -17,8 +17,8 @@
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_phasemanager.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.hpp"
+#include "baci_porofluidmultiphase_ele_phasemanager.hpp"
+#include "baci_porofluidmultiphase_ele_variablemanager.hpp"
 
 #include <Epetra_Vector.h>
 #include <Sacado.hpp>
@@ -730,4 +730,4 @@ namespace POROMULTIPHASESCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_H
+#endif

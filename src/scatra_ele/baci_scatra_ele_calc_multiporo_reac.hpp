@@ -7,26 +7,25 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_CALC_MULTIPORO_REAC_HPP
-#define BACI_SCATRA_ELE_CALC_MULTIPORO_REAC_HPP
+#ifndef FOUR_C_SCATRA_ELE_CALC_MULTIPORO_REAC_HPP
+#define FOUR_C_SCATRA_ELE_CALC_MULTIPORO_REAC_HPP
 
 
 #include "baci_config.hpp"
 
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_fluidporo_multiphase.hpp"
 #include "baci_mat_fluidporo_multiphase_reactions.hpp"
 #include "baci_mat_fluidporo_singlephase.hpp"
-#include "baci_mat_scatra_mat_multiporo.hpp"
+#include "baci_mat_scatra_multiporo.hpp"
 #include "baci_porofluidmultiphase_ele_action.hpp"
 #include "baci_porofluidmultiphase_ele_calc.hpp"
 #include "baci_porofluidmultiphase_ele_calc_utils.hpp"
+#include "baci_porofluidmultiphase_ele_evaluator.hpp"
 #include "baci_porofluidmultiphase_ele_parameter.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_evaluator.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_phasemanager.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.hpp"
+#include "baci_porofluidmultiphase_ele_phasemanager.hpp"
+#include "baci_porofluidmultiphase_ele_variablemanager.hpp"
 #include "baci_scatra_ele_calc_poro_reac.hpp"
 #include "baci_utils_function.hpp"
 
@@ -1587,4 +1586,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_ELE_CALC_MULTIPORO_REAC_H
+#endif

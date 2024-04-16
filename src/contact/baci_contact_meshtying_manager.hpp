@@ -6,8 +6,8 @@
 \brief BACI implementation of main class to control all meshtying
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_MESHTYING_MANAGER_HPP
-#define BACI_CONTACT_MESHTYING_MANAGER_HPP
+#ifndef FOUR_C_CONTACT_MESHTYING_MANAGER_HPP
+#define FOUR_C_CONTACT_MESHTYING_MANAGER_HPP
 
 #include "baci_config.hpp"
 
@@ -144,4 +144,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_MESHTYING_MANAGER_H
+#endif

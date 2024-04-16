@@ -9,8 +9,8 @@
  */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_SOLVER_NONLIN_NOX_PARAMS_UTILS_HPP
-#define BACI_SOLVER_NONLIN_NOX_PARAMS_UTILS_HPP
+#ifndef FOUR_C_SOLVER_NONLIN_NOX_PARAMS_UTILS_HPP
+#define FOUR_C_SOLVER_NONLIN_NOX_PARAMS_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -57,4 +57,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_PARAMS_UTILS_H
+#endif

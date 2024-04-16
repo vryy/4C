@@ -3,17 +3,13 @@
 
 \brief ALE time integration
 
-
 \level 1
  */
 /*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------------*/
-#ifndef BACI_ALE_HPP
-#define BACI_ALE_HPP
+#ifndef FOUR_C_ALE_HPP
+#define FOUR_C_ALE_HPP
 
-/*----------------------------------------------------------------------------*/
-/* header inclusions */
 #include "baci_config.hpp"
 
 #include "baci_adapter_ale.hpp"
@@ -27,12 +23,9 @@
 
 BACI_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------------*/
-/* forward declarations */
 namespace CORE::LINALG
 {
   class Solver;
-  class Preconditioner;
   class SparseOperator;
   class SparseMatrix;
   class BlockSparseMatrixBase;
@@ -63,8 +56,7 @@ namespace ALE
   }  // namespace UTILS
 }  // namespace ALE
 
-/*----------------------------------------------------------------------------*/
-/* definition of classes */
+
 namespace ALE
 {
   /*! \class Ale
@@ -180,19 +172,6 @@ namespace ALE
     virtual std::string ElementActionString(
         const enum INPAR::ALE::AleDynamic name  ///< enum to convert
     );
-
-    //! @name Preconditioning
-    //@{
-
-    /// access the preconditioner
-    Teuchos::RCP<CORE::LINALG::Preconditioner> ConstPreconditioner() override;
-
-    /// create the preconditioner
-    virtual void CreatePreconditioner(
-        bool full = true  ///< Sparsematrix (true) or Blocksparsematrix (false)
-    );
-
-    //@}
 
     //! @name Time step helpers
 
@@ -481,9 +460,6 @@ namespace ALE
     /// write output data
     virtual void OutputState(bool& datawritten);
 
-    /// cached preconditioner on constant system matrix
-    Teuchos::RCP<CORE::LINALG::Preconditioner> precond_;
-
     /// ale formulation read from inputfile
     const INPAR::ALE::AleDynamic aletype_;
 
@@ -612,4 +588,4 @@ namespace ALE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ALE_H
+#endif

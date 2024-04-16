@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_POROELAST_SCATRA_BASE_HPP
-#define BACI_POROELAST_SCATRA_BASE_HPP
+#ifndef FOUR_C_POROELAST_SCATRA_BASE_HPP
+#define FOUR_C_POROELAST_SCATRA_BASE_HPP
 
 #include "baci_config.hpp"
 
@@ -147,4 +147,4 @@ namespace POROELASTSCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROELAST_SCATRA_BASE_H
+#endif

@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_ELEMENT_HPP
-#define BACI_LIB_ELEMENT_HPP
+#ifndef FOUR_C_LIB_ELEMENT_HPP
+#define FOUR_C_LIB_ELEMENT_HPP
 
 
 #include "baci_config.hpp"
@@ -37,7 +37,7 @@ namespace MAT
 
 namespace CORE::GEOMETRICSEARCH
 {
-  class BoundingVolume;
+  struct BoundingVolume;
   class GeometricSearchParams;
 }  // namespace CORE::GEOMETRICSEARCH
 
@@ -1503,4 +1503,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_ELEMENT_H
+#endif

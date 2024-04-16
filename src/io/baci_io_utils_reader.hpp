@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_IO_UTILS_READER_HPP
-#define BACI_IO_UTILS_READER_HPP
+#ifndef FOUR_C_IO_UTILS_READER_HPP
+#define FOUR_C_IO_UTILS_READER_HPP
 
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 #include "baci_config.hpp"
@@ -79,4 +79,4 @@ namespace DRT::UTILS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_UTILS_READER_H
+#endif

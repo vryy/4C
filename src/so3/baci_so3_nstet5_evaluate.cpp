@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_densematrix_inverse.hpp"
 #include "baci_mat_aaaneohooke.hpp"
 #include "baci_mat_elasthyper.hpp"
@@ -196,7 +196,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       nstet5nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
       if (act == calc_struct_nlnstifflmass) nstet5lumpmass(&elemat2);
@@ -211,7 +211,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       CORE::LINALG::Matrix<15, 15>* elemat1ptr = nullptr;
       if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
       nstet5nlnstiffmass(lm, mydisp, elemat1ptr, nullptr, &elevec1, nullptr, nullptr,
@@ -227,7 +227,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       // CORE::LINALG::Matrix<15,15> myemat(true);
       // nstet5nlnstiffmass(lm,mydisp,&myemat,nullptr,&elevec1,
       //                  nullptr,nullptr,INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -254,7 +254,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       CORE::LINALG::Matrix<1, 6> stress(true);
       CORE::LINALG::Matrix<1, 6> strain(true);
       CORE::LINALG::Matrix<1, 6> elestress(true);

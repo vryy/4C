@@ -12,18 +12,16 @@
 #include "baci_fsi_utils.hpp"
 
 #include "baci_adapter_ale_fsi.hpp"
-#include "baci_adapter_fld_fluid_ale.hpp"
 #include "baci_adapter_str_fsiwrapper.hpp"
 #include "baci_coupling_adapter.hpp"
 #include "baci_coupling_adapter_mortar.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_searchtree.hpp"
 #include "baci_discretization_geometry_searchtree_service.hpp"
-#include "baci_fsi_debugwriter.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_condition_utils.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
@@ -39,8 +37,6 @@
 #include <NOX.H>
 #include <NOX_Epetra.H>
 
-#include <algorithm>
-#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -514,7 +510,7 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::CurrentStru
         std::vector<double> mydisp(3);
         CORE::LINALG::Matrix<3, 1> currpos;
 
-        DRT::UTILS::ExtractMyValues(*reddisp, mydisp, lm);
+        CORE::FE::ExtractMyValues(*reddisp, mydisp, lm);
 
         for (int a = 0; a < 3; a++)
         {

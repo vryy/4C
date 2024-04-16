@@ -17,7 +17,8 @@
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.hpp"
 #include "baci_beaminteraction_contact_pair.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_beaminteraction_geometry_pair_access_traits.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_factory.hpp"
 #include "baci_geometry_pair_line_to_volume.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
@@ -47,15 +48,19 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Setup()
   // Call setup of base class first.
   base_class::Setup();
 
+  // Get the solid element data container
+  ele2posref_ = GEOMETRYPAIR::InitializeElementData<solid, double>::Initialize(this->Element2());
+  ele2pos_ = GEOMETRYPAIR::InitializeElementData<solid, scalar_type>::Initialize(this->Element2());
+
   // Set reference nodal positions for the solid element
   for (unsigned int n = 0; n < solid::n_nodes_; ++n)
   {
     const DRT::Node* node = this->Element2()->Nodes()[n];
-    for (int d = 0; d < 3; ++d) ele2posref_(3 * n + d) = node->X()[d];
+    for (int d = 0; d < 3; ++d) ele2posref_.element_position_(3 * n + d) = node->X()[d];
   }
 
   // Initialize current nodal positions for the solid element
-  for (unsigned int i = 0; i < solid::n_dof_; i++) ele2pos_(i) = 0.0;
+  for (unsigned int i = 0; i < solid::n_dof_; i++) ele2pos_.element_position_(i) = 0.0;
 }
 
 /**
@@ -80,8 +85,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::PreEvalua
   // Call PreEvaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
   {
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    CORE::LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     CastGeometryPair()->PreEvaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -102,7 +107,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::ResetStat
   // Solid element.
   for (unsigned int i = 0; i < solid::n_dof_; i++)
   {
-    ele2pos_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    ele2pos_.element_position_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + solid::n_dof_, beam::n_dof_ + i, solid_nodal_dofvec[i]);
   }
 }
@@ -181,10 +186,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
       // Add the left and right boundary point of the segment.
       for (const auto& segmentation_point : {segment.GetEtaA(), segment.GetEtaB()})
       {
-        GEOMETRYPAIR::EvaluatePosition<beam>(
-            segmentation_point, this->ele1posref_, X, this->Element1());
-        GEOMETRYPAIR::EvaluatePosition<beam>(
-            segmentation_point, this->ele1pos_, r, this->Element1());
+        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, this->ele1posref_, X);
+        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, this->ele1pos_, r);
         u = r;
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
@@ -237,7 +240,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
         u = r;
         u -= X;
         GEOMETRYPAIR::EvaluatePosition<solid>(projection_point.GetXi(),
-            CORE::FADUTILS::CastToDouble(this->ele2pos_), r_solid, this->Element2());
+            GEOMETRYPAIR::ElementDataToDouble<solid>::ToDouble(this->ele2pos_), r_solid);
         EvaluatePenaltyForceDouble(r, r_solid, force_integration_point);
         for (unsigned int dim = 0; dim < 3; dim++)
         {
@@ -276,14 +279,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluateP
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetCouplingReferencePosition(
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double>& beam_coupling_ref,
-    CORE::LINALG::Matrix<solid::n_dof_, 1, double>& solid_coupling_ref) const
+    GEOMETRYPAIR::ElementData<beam, double>& beam_coupling_ref,
+    GEOMETRYPAIR::ElementData<solid, double>& solid_coupling_ref) const
 {
   // Add the offset to the reference position.
   beam_coupling_ref = this->ele1posref_;
-  beam_coupling_ref += this->ele1posref_offset_;
+  beam_coupling_ref.element_position_ += this->ele1posref_offset_;
   solid_coupling_ref = ele2posref_;
-  solid_coupling_ref += ele2posref_offset_;
+  solid_coupling_ref.element_position_ += ele2posref_offset_;
 }
 
 

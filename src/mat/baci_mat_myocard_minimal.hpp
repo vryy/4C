@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              cbert 08/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MYOCARD_MINIMAL_HPP
-#define BACI_MAT_MYOCARD_MINIMAL_HPP
+#ifndef FOUR_C_MAT_MYOCARD_MINIMAL_HPP
+#define FOUR_C_MAT_MYOCARD_MINIMAL_HPP
 
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |

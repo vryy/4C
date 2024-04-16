@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef BACI_INPAR_MATERIAL_HPP
-#define BACI_INPAR_MATERIAL_HPP
+#ifndef FOUR_C_INPAR_MATERIAL_HPP
+#define FOUR_C_INPAR_MATERIAL_HPP
 
 #include "baci_config.hpp"
 
@@ -42,7 +42,6 @@ namespace INPAR
                              ///< stochastic mat params
       m_aaaraghavanvorp_damage,  ///< quasi Neo-Hooke material for aneurysmatic artery wall with
                                  ///< damage
-      m_activefiber,             ///< active fiber formation for cell modeling
       m_arrhenius_pv,    ///< material with Arrhenius-type chemical kinetics (progress variable)
       m_arrhenius_spec,  ///< material with Arrhenius-type chemical kinetics (species)
       m_arrhenius_temp,  ///< material with Arrhenius-type chemical kinetics (temperature)
@@ -355,4 +354,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_MATERIAL_H
+#endif

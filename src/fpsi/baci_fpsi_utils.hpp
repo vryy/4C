@@ -4,8 +4,8 @@
 \level 3
 
  *-----------------------------------------------------------------------*/
-#ifndef BACI_FPSI_UTILS_HPP
-#define BACI_FPSI_UTILS_HPP
+#ifndef FOUR_C_FPSI_UTILS_HPP
+#define FOUR_C_FPSI_UTILS_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                              |
@@ -140,4 +140,4 @@ namespace FPSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FPSI_UTILS_H
+#endif

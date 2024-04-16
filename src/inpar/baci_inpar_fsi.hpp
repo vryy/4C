@@ -8,8 +8,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_FSI_HPP
-#define BACI_INPAR_FSI_HPP
+#ifndef FOUR_C_INPAR_FSI_HPP
+#define FOUR_C_INPAR_FSI_HPP
 
 #include "baci_config.hpp"
 
@@ -57,7 +57,6 @@ typedef enum _FSI_COUPLING
   fsi_iter_stagg_MFNK_FSI, /*!< matrix free Newton Krylov with FSI specific Jacobian */
   fsi_iter_stagg_MPE,      /*!< minimal polynomial extrapolation */
   fsi_iter_stagg_RRE,      /*!< reduced rank extrapolation */
-  fsi_pseudo_structureale,
   fsi_iter_fluidfluid_monolithicstructuresplit,
   fsi_iter_fluidfluid_monolithicfluidsplit,
   fsi_iter_fluidfluid_monolithicstructuresplit_nonox,
@@ -185,4 +184,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_FSI_H
+#endif

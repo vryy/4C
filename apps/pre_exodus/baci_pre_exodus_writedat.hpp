@@ -9,8 +9,8 @@
 Here is everything related with writing a dat-file
  */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_PRE_EXODUS_WRITEDAT_HPP
-#define BACI_PRE_EXODUS_WRITEDAT_HPP
+#ifndef FOUR_C_PRE_EXODUS_WRITEDAT_HPP
+#define FOUR_C_PRE_EXODUS_WRITEDAT_HPP
 
 #include "baci_config.hpp"
 
@@ -87,4 +87,4 @@ namespace EXODUS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // PRE_EXODUS_WRITEDAT_H
+#endif

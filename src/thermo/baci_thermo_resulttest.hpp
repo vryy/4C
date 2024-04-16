@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 08/09 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_THERMO_RESULTTEST_HPP
-#define BACI_THERMO_RESULTTEST_HPP
+#ifndef FOUR_C_THERMO_RESULTTEST_HPP
+#define FOUR_C_THERMO_RESULTTEST_HPP
 
 
 /*----------------------------------------------------------------------*
@@ -71,4 +71,4 @@ namespace THR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_RESULTTEST_H
+#endif

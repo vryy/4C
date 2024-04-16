@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_COUPLING_ADAPTER_CONVERTER_HPP
-#define BACI_COUPLING_ADAPTER_CONVERTER_HPP
+#ifndef FOUR_C_COUPLING_ADAPTER_CONVERTER_HPP
+#define FOUR_C_COUPLING_ADAPTER_CONVERTER_HPP
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -117,4 +117,4 @@ namespace CORE::ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // COUPLING_ADAPTER_CONVERTER_H
+#endif

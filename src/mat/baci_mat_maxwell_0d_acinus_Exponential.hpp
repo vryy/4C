@@ -11,8 +11,8 @@ exponential pressure-volume relation (derivation: see Ismail Mahmoud's dissertat
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MAXWELL_0D_ACINUS_EXPONENTIAL_HPP
-#define BACI_MAT_MAXWELL_0D_ACINUS_EXPONENTIAL_HPP
+#ifndef FOUR_C_MAT_MAXWELL_0D_ACINUS_EXPONENTIAL_HPP
+#define FOUR_C_MAT_MAXWELL_0D_ACINUS_EXPONENTIAL_HPP
 
 
 #include "baci_config.hpp"

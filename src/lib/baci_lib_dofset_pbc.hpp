@@ -15,8 +15,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DOFSET_PBC_HPP
-#define BACI_LIB_DOFSET_PBC_HPP
+#ifndef FOUR_C_LIB_DOFSET_PBC_HPP
+#define FOUR_C_LIB_DOFSET_PBC_HPP
 
 #include "baci_config.hpp"
 
@@ -81,10 +81,7 @@ namespace DRT
     virtual void SetCoupledNodes(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
 
     /// Get coupled nodes map (corresponding col format)
-    virtual Teuchos::RCP<std::map<int, std::vector<int>>> GetCoupledNodes()
-    {
-      return perbndcouples_;
-    };
+    std::map<int, std::vector<int>>* GetCoupledNodes() { return perbndcouples_.get(); }
 
     /// Get connectivity map between slave node and its master node
     virtual Teuchos::RCP<std::map<int, int>> GetSlaveToMasterNodeConnectivity()
@@ -128,4 +125,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DOFSET_PBC_H
+#endif

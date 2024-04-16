@@ -10,8 +10,8 @@ materials with @MAT::Anisotropy
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_HPP
-#define BACI_MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_HPP
+#ifndef FOUR_C_MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_HPP
+#define FOUR_C_MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_HPP
 
 #include "baci_config.hpp"
 
@@ -110,4 +110,4 @@ namespace MAT
 }  // namespace MAT
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_H
+#endif

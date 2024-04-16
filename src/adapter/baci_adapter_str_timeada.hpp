@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_STR_TIMEADA_HPP
-#define BACI_ADAPTER_STR_TIMEADA_HPP
+#ifndef FOUR_C_ADAPTER_STR_TIMEADA_HPP
+#define FOUR_C_ADAPTER_STR_TIMEADA_HPP
 
 #include "baci_config.hpp"
 

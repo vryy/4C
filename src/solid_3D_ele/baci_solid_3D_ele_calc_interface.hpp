@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_3D_ELE_CALC_INTERFACE_HPP
-#define BACI_SOLID_3D_ELE_CALC_INTERFACE_HPP
+#ifndef FOUR_C_SOLID_3D_ELE_CALC_INTERFACE_HPP
+#define FOUR_C_SOLID_3D_ELE_CALC_INTERFACE_HPP
 
 
 #include "baci_config.hpp"
@@ -33,4 +33,4 @@ namespace DRT::ELEMENTS
 }  // namespace DRT::ELEMENTS
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLID_ELE_CALC_INTERFACE_H
+#endif

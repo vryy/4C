@@ -10,8 +10,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_POINTGRAPH_SIMPLE_HPP
-#define BACI_CUT_POINTGRAPH_SIMPLE_HPP
+#ifndef FOUR_C_CUT_POINTGRAPH_SIMPLE_HPP
+#define FOUR_C_CUT_POINTGRAPH_SIMPLE_HPP
 
 #include "baci_config.hpp"
 
@@ -191,4 +191,4 @@ namespace CORE::GEO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CUT_POINTGRAPH_SIMPLE_H
+#endif

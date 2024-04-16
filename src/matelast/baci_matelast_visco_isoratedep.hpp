@@ -7,8 +7,8 @@ law, modified from Pioletti, 1997
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_VISCO_ISORATEDEP_HPP
-#define BACI_MATELAST_VISCO_ISORATEDEP_HPP
+#ifndef FOUR_C_MATELAST_VISCO_ISORATEDEP_HPP
+#define FOUR_C_MATELAST_VISCO_ISORATEDEP_HPP
 
 #include "baci_config.hpp"
 
@@ -130,4 +130,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_VISCO_ISORATEDEP_H
+#endif

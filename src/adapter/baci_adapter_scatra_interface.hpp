@@ -6,8 +6,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_ADAPTER_SCATRA_INTERFACE_HPP
-#define BACI_ADAPTER_SCATRA_INTERFACE_HPP
+#ifndef FOUR_C_ADAPTER_SCATRA_INTERFACE_HPP
+#define FOUR_C_ADAPTER_SCATRA_INTERFACE_HPP
 
 
 #include "baci_config.hpp"
@@ -74,4 +74,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_SCATRA_INTERFACE_H
+#endif

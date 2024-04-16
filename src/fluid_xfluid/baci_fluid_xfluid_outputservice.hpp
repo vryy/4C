@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_XFLUID_OUTPUTSERVICE_HPP
-#define BACI_FLUID_XFLUID_OUTPUTSERVICE_HPP
+#ifndef FOUR_C_FLUID_XFLUID_OUTPUTSERVICE_HPP
+#define FOUR_C_FLUID_XFLUID_OUTPUTSERVICE_HPP
 
 
 /*! header inclusions */

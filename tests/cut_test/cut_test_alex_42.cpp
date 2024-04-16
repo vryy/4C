@@ -185,7 +185,5 @@ void test_alex42()
 
   intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
 
-
-  intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }

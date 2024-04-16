@@ -6,8 +6,8 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_PRESTRESS_HPP
-#define BACI_SO3_PRESTRESS_HPP
+#ifndef FOUR_C_SO3_PRESTRESS_HPP
+#define FOUR_C_SO3_PRESTRESS_HPP
 
 #include "baci_config.hpp"
 
@@ -138,4 +138,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_PRESTRESS_H
+#endif

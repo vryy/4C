@@ -16,16 +16,15 @@
 #include "baci_comm_exporter.hpp"
 #include "baci_cut_boundingbox.hpp"
 #include "baci_cut_cutwizard.hpp"
-#include "baci_cut_element.hpp"
 #include "baci_cut_elementhandle.hpp"
 #include "baci_cut_point.hpp"
 #include "baci_cut_position.hpp"
 #include "baci_cut_sidehandle.hpp"
 #include "baci_cut_volumecell.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_ele.hpp"
 #include "baci_fluid_ele_factory.hpp"
 #include "baci_fluid_ele_interface.hpp"
-#include "baci_global_data.hpp"
 #include "baci_inpar_xfem.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
@@ -34,11 +33,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element_integration_select.hpp"
 #include "baci_lib_xfem_dofset.hpp"
-#include "baci_linalg_serialdensevector.hpp"
-#include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_xfem_condition_manager.hpp"
-
-#include <Teuchos_TimeMonitor.hpp>
 
 #include <iostream>
 
@@ -1740,19 +1735,10 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
   // check if the node is contained in such space-time surface elements at any time between t^n and
   // t^(n+1)
 
-  int side_count = 0;
-
   // loop sides
   for (std::vector<int>::iterator sides = identified_sides.begin(); sides != identified_sides.end();
        sides++)
   {
-    side_count++;
-
-#ifdef DEBUG_TIMINT
-    IO::cout << "\t CheckChangingSide for node " << n_old->Id() << " w.r.t side " << *sides
-             << IO::endl;
-#endif
-
     const int coup_sid = *sides;  // side id used within the cut
 
     if (condition_manager_->IsMeshCoupling(coup_sid))
@@ -1905,8 +1891,8 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
 
     cutter_dis->Dof(&node, lm);
 
-    DRT::UTILS::ExtractMyValues(*idisp_old, mydisp_old, lm);
-    DRT::UTILS::ExtractMyValues(*idisp_new, mydisp_new, lm);
+    CORE::FE::ExtractMyValues(*idisp_old, mydisp_old, lm);
+    CORE::FE::ExtractMyValues(*idisp_new, mydisp_new, lm);
 
     // add displacements
     x_old(0) += mydisp_old.at(0);

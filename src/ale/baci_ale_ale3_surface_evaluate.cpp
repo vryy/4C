@@ -10,12 +10,12 @@
 
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_ale3.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element_integration_select.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_utils_parameter_list.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -75,7 +75,7 @@ int DRT::ELEMENTS::Ale3Surface::Evaluate(Teuchos::ParameterList& params,
       if (dispnp != Teuchos::null)
       {
         mydispnp.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+        CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
       }
 
       Ale3Surface_Impl_Interface::Impl(this)->ElementNodeNormal(

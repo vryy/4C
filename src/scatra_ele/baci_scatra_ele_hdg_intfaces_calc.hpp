@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_HDG_INTFACES_CALC_HPP
-#define BACI_SCATRA_ELE_HDG_INTFACES_CALC_HPP
+#ifndef FOUR_C_SCATRA_ELE_HDG_INTFACES_CALC_HPP
+#define FOUR_C_SCATRA_ELE_HDG_INTFACES_CALC_HPP
 
 
 #include "baci_config.hpp"

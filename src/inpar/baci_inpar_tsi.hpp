@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              dano 11/09 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_TSI_HPP
-#define BACI_INPAR_TSI_HPP
+#ifndef FOUR_C_INPAR_TSI_HPP
+#define FOUR_C_INPAR_TSI_HPP
 
 #include "baci_config.hpp"
 
@@ -170,4 +170,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_TSI_H
+#endif

@@ -14,6 +14,7 @@
 #include "baci_solid_3D_ele_calc_eas.hpp"
 #include "baci_solid_3D_ele_calc_fbar.hpp"
 #include "baci_solid_3D_ele_calc_mulf.hpp"
+#include "baci_solid_3D_ele_calc_mulf_fbar.hpp"
 #include "baci_solid_3D_ele_properties.hpp"
 #include "baci_utils_exceptions.hpp"
 
@@ -117,13 +118,25 @@ namespace
   };
 
   /*!
+   * @brief Nonlinear formulation with F-Bar and MULF prestressing for hex8 and pyramid5
+   */
+  template <CORE::FE::CellType celltype>
+  struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::nonlinearTotLag,
+      DRT::ELEMENTS::ElementTechnology::fbar, DRT::ELEMENTS::PrestressTechnology::mulf,
+      std::enable_if_t<celltype == CORE::FE::CellType::hex8 ||
+                       celltype == CORE::FE::CellType::pyramid5>>
+  {
+    using type = DRT::ELEMENTS::MulfFBarSolidIntegrator<celltype>;
+  };
+
+  /*!
    * @brief Nonlinear modified updated lagrangian prestressing for all celltypes
    */
   template <CORE::FE::CellType celltype>
   struct SolidCalculationFormulation<celltype, INPAR::STR::KinemType::nonlinearTotLag,
       DRT::ELEMENTS::ElementTechnology::none, DRT::ELEMENTS::PrestressTechnology::mulf>
   {
-    using type = DRT::ELEMENTS::SolidEleCalcMulf<celltype>;
+    using type = DRT::ELEMENTS::SolidEleCalc<celltype, DRT::ELEMENTS::MulfFormulation<celltype>>;
   };
 
   /*!

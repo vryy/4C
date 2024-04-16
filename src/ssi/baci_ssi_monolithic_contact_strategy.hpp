@@ -6,8 +6,8 @@
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SSI_MONOLITHIC_CONTACT_STRATEGY_HPP
-#define BACI_SSI_MONOLITHIC_CONTACT_STRATEGY_HPP
+#ifndef FOUR_C_SSI_MONOLITHIC_CONTACT_STRATEGY_HPP
+#define FOUR_C_SSI_MONOLITHIC_CONTACT_STRATEGY_HPP
 
 #include "baci_config.hpp"
 
@@ -127,4 +127,4 @@ namespace SSI
 }  // namespace SSI
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_MONOLITHIC_CONTACT_STRATEGY_H
+#endif

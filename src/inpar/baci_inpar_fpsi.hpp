@@ -5,8 +5,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_INPAR_FPSI_HPP
-#define BACI_INPAR_FPSI_HPP
+#ifndef FOUR_C_INPAR_FPSI_HPP
+#define FOUR_C_INPAR_FPSI_HPP
 
 #include "baci_config.hpp"
 
@@ -77,4 +77,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_FPSI_H
+#endif

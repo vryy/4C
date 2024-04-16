@@ -13,7 +13,8 @@
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "baci_beaminteraction_beam_to_solid_utils.hpp"
 #include "baci_beaminteraction_calc_utils.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_beaminteraction_geometry_pair_access_traits.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_sparsematrix.hpp"
@@ -86,7 +87,9 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemblePosi
 
   // Initialize variables for evaluation of the positional coupling terms.
   std::array<CORE::LINALG::Matrix<beam::n_dof_, 1, int>, 2> gid_pos;
-  std::array<CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type_pos>, 2> beam_pos;
+  std::array<GEOMETRYPAIR::ElementData<beam, scalar_type_pos>, 2> beam_pos = {
+      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pos>::Initialize(beam_ele[0]),
+      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pos>::Initialize(beam_ele[1])};
   std::array<CORE::LINALG::Matrix<3, 1, scalar_type_pos>, 2> r;
   CORE::LINALG::Matrix<3, 1, scalar_type_pos> force;
   std::array<CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type_pos>, 2> force_element;
@@ -108,12 +111,13 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemblePosi
     BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(
         *discret, beam_ele[i_beam], displacement_vector, element_posdofvec_absolutevalues);
     for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
-      beam_pos[i_beam](i_dof) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_pos>::apply(
-          2 * beam::n_dof_, i_beam * beam::n_dof_ + i_dof, element_posdofvec_absolutevalues[i_dof]);
+      beam_pos[i_beam].element_position_(i_dof) =
+          CORE::FADUTILS::HigherOrderFadValue<scalar_type_pos>::apply(2 * beam::n_dof_,
+              i_beam * beam::n_dof_ + i_dof, element_posdofvec_absolutevalues[i_dof]);
 
     // Evaluate the position of the coupling point.
     GEOMETRYPAIR::EvaluatePosition<beam>(
-        position_in_parameterspace_[i_beam], beam_pos[i_beam], r[i_beam], beam_ele[i_beam]);
+        position_in_parameterspace_[i_beam], beam_pos[i_beam], r[i_beam]);
   }
 
   // Calculate the force between the two beams.

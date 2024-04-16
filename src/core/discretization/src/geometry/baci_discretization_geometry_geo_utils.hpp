@@ -11,8 +11,8 @@ header file
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef BACI_DISCRETIZATION_GEOMETRY_GEO_UTILS_HPP
-#define BACI_DISCRETIZATION_GEOMETRY_GEO_UTILS_HPP
+#ifndef FOUR_C_DISCRETIZATION_GEOMETRY_GEO_UTILS_HPP
+#define FOUR_C_DISCRETIZATION_GEOMETRY_GEO_UTILS_HPP
 
 
 #include "baci_config.hpp"
@@ -45,4 +45,4 @@ namespace CORE::GEO
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // DISCRETIZATION_GEOMETRY_GEO_UTILS_H
+#endif

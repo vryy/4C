@@ -851,7 +851,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
         "function number of function describing concentration dependence of conductivity", 0);
     AddNamedInt(m, "COND_TEMP_SCALE_FUNCT",
         "FUNCT number describing temperature scaling of conductivity", 0);
-    AddNamedReal(m, "SIGMA", "electronic conductivity");
+    AddNamedReal(m, "ELECTRONIC_COND", "electronic conductivity");
+    AddNamedInt(m, "ELECTRONIC_COND_CONC_SCALE_FUNC_NUM",
+        "FUNCT number describing concentration dependence of electronic conductivity", 0);
     AddNamedReal(m, "A_s", "specific micro-scale surface area");
     AddNamedString(m, "MICROFILE", "input file for micro scale", "filename.dat");
     AddNamedInt(m, "MICRODIS_NUM", "number of micro-scale discretization");
@@ -3837,26 +3839,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedReal(m, "CONDUCTIVITY", "electrical conductivity");
     AddNamedReal(m, "PERMITTIVITY", "Permittivity");
     AddNamedReal(m, "PERMEABILITY", "Permeability");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // active fiber formation for the modeling of living cells
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_ACTIVEFIBER",
-        "active fiber formation for the modeling of living cells", INPAR::MAT::m_activefiber));
-
-    AddNamedReal(m, "DENS", "Density");
-    AddNamedReal(m, "DECAY", "decay constant of activation signal");
-    AddNamedInt(
-        m, "IDMATPASSIVE", "number of passive material in input file: MAT IDMATPASSIVE ...");
-    AddNamedReal(m, "KFOR", "formation rate parameter kforwards");
-    AddNamedReal(m, "KBACK", "dissociation parameter kbackwards");
-    AddNamedReal(m, "KVAR", "fiber rate sensitivity");
-    AddNamedReal(m, "SIGMAX", "maximum tension exerted by stress fibres");
-    AddNamedReal(m, "EPSNULL", "reference strain rate of cross-bridge dynamics law");
-
 
     AppendMaterialDefinition(matlist, m);
   }

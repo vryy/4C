@@ -10,15 +10,15 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_XFEM_XFLUID_TIMEINT_BASE_HPP
-#define BACI_XFEM_XFLUID_TIMEINT_BASE_HPP
+#ifndef FOUR_C_XFEM_XFLUID_TIMEINT_BASE_HPP
+#define FOUR_C_XFEM_XFLUID_TIMEINT_BASE_HPP
 
 #include "baci_config.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_inpar_xfem.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_node.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
@@ -713,7 +713,7 @@ namespace XFEM
 
       // extract local values of the global vectors
       std::vector<double> mymatrix(lm.size());
-      DRT::UTILS::ExtractMyValues(*vel_vec, mymatrix, lm);
+      CORE::FE::ExtractMyValues(*vel_vec, mymatrix, lm);
 
       for (int inode = 0; inode < numnode; ++inode)  // number of nodes
       {
@@ -951,4 +951,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_XFLUID_TIMEINT_BASE_H
+#endif

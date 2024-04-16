@@ -9,8 +9,8 @@ projection.
 // End doxygen header.
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_HPP
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_HPP
+#ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_HPP
+#define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_HPP
 
 
 #include "baci_config.hpp"
@@ -108,7 +108,7 @@ namespace BEAMINTERACTION
      */
     void EvaluateRotationalCouplingTerms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-        const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
+        const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&

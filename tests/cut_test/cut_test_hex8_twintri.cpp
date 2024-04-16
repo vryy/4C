@@ -95,8 +95,6 @@ void test_hex8_twintri()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
-
-  intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }
 
@@ -192,8 +190,6 @@ void test_hex8_twinQuad()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
-
-  intersection.Status();
 
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }
@@ -345,8 +341,6 @@ void test_hex8_chairCut()
 
   intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
 
-  intersection.Status();
-
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }
 
@@ -442,7 +436,5 @@ void test_hex8_VCut()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.AddElement(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
-
-  intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }

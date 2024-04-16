@@ -12,8 +12,6 @@
 #include "baci_lib_discret_faces.hpp"
 
 #include "baci_comm_utils_factory.hpp"
-#include "baci_global_data.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 
@@ -240,8 +238,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   std::map<std::vector<int>, Teuchos::RCP<DRT::Element>> faces;
 
   // get pbcs
-  Teuchos::RCP<std::map<int, std::vector<int>>> col_pbcmapmastertoslave =
-      GetAllPBCCoupledColNodes();
+  std::map<int, std::vector<int>>* col_pbcmapmastertoslave = GetAllPBCCoupledColNodes();
 
   std::map<std::vector<int>, InternalFacesData>::iterator face_it;
   for (face_it = surfmapdata.begin(); face_it != surfmapdata.end(); ++face_it)
@@ -254,8 +251,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
     dsassert(slave_peid == -1 || slave_peid == gElement(slave_peid)->Id(), "Internal error");
 
     // check for potential periodic boundary conditions and connect respective faces/elements
-    auto masternodes = col_pbcmapmastertoslave->begin();
-    if (masternodes != col_pbcmapmastertoslave->end())
+    if (col_pbcmapmastertoslave)
     {
       // unconnected face is potential pbc face
       if (slave_peid == -1)

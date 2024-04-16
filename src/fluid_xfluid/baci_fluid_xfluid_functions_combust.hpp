@@ -9,11 +9,11 @@
 
 #include "baci_config.hpp"
 
-#include "baci_io_linedefinition.hpp"
+#include "baci_utils_exceptions.hpp"
 #include "baci_utils_function.hpp"
 
-#ifndef BACI_FLUID_XFLUID_FUNCTIONS_COMBUST_HPP
-#define BACI_FLUID_XFLUID_FUNCTIONS_COMBUST_HPP
+#ifndef FOUR_C_FLUID_XFLUID_FUNCTIONS_COMBUST_HPP
+#define FOUR_C_FLUID_XFLUID_FUNCTIONS_COMBUST_HPP
 
 BACI_NAMESPACE_OPEN
 
@@ -37,16 +37,24 @@ namespace DRT
     class ZalesaksDiskFunction : public CORE::UTILS::FunctionOfSpaceTime
     {
      public:
-      /// evaluate function at given position in space
       double Evaluate(const double* x, double t, std::size_t component) const override;
+
+      [[nodiscard]] std::size_t NumberComponents() const override
+      {
+        dserror("Number of components not defined for ZalesaksDiskFunction.");
+      };
     };
 
     /// special implementation two-phase flow test case
     class CollapsingWaterColumnFunction : public CORE::UTILS::FunctionOfSpaceTime
     {
      public:
-      /// evaluate function at given position in space
       double Evaluate(const double* x, double t, std::size_t component) const override;
+
+      [[nodiscard]] std::size_t NumberComponents() const override
+      {
+        dserror("Number of components not defined for CollapsingWaterColumnFunction.");
+      };
     };
   }  // namespace UTILS
 }  // namespace DRT

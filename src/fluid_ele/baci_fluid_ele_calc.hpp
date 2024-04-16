@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_ELE_CALC_HPP
-#define BACI_FLUID_ELE_CALC_HPP
+#ifndef FOUR_C_FLUID_ELE_CALC_HPP
+#define FOUR_C_FLUID_ELE_CALC_HPP
 
 #include "baci_config.hpp"
 
@@ -1229,7 +1229,7 @@ namespace DRT
       //
       //    // extract local values of the global vectors
       //    std::vector<double> mymatrix(lm.size());
-      //    DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+      //    CORE::FE::ExtractMyValues(*matrix_state,mymatrix,lm);
       //
       //    // rotate the vector field in the case of rotationally symmetric boundary conditions
       //    if(matrixtofill != nullptr)

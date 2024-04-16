@@ -619,7 +619,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
         if (gp == 0)
           printf(
               "Newton method converged after %i iterations; abs(Res)=  %-14.8E\n", itnum, abs(Res));
-#endif  // #ifdef DEBUGMATERIAL
+#endif
         break;
       }
 

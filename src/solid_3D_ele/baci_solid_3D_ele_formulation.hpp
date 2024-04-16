@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_3D_ELE_FORMULATION_HPP
-#define BACI_SOLID_3D_ELE_FORMULATION_HPP
+#ifndef FOUR_C_SOLID_3D_ELE_FORMULATION_HPP
+#define FOUR_C_SOLID_3D_ELE_FORMULATION_HPP
 
 #include "baci_config.hpp"
 
@@ -52,6 +52,22 @@ namespace DRT::ELEMENTS
   template <typename SolidFormulation>
   constexpr bool has_preparation_data = SolidFormulation::has_preparation_data;
 
+  namespace DETAILS
+  {
+    template <typename SolidFormulation, typename = void>
+    struct is_prestress_updatable : std::false_type
+    {
+    };
+
+    template <typename SolidFormulation>
+    struct is_prestress_updatable<SolidFormulation,
+        std::enable_if_t<SolidFormulation::is_prestress_updatable, void>> : std::true_type
+    {
+    };
+  }  // namespace DETAILS
+
+  template <typename SolidFormulation>
+  constexpr bool is_prestress_updatable = DETAILS::is_prestress_updatable<SolidFormulation>::value;
 
   namespace DETAILS
   {
@@ -428,8 +444,57 @@ namespace DRT::ELEMENTS
             std::forward_as_tuple(stiffness_matrix)));
   }
 
+  template <typename SolidFormulation, CORE::FE::CellType celltype>
+  static inline void UpdatePrestress(const DRT::Element& ele,
+      const ElementNodes<celltype>& element_nodes,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data)
+  {
+    if constexpr (is_prestress_updatable<SolidFormulation>)
+    {
+      if constexpr (has_global_history<SolidFormulation>)
+      {
+        std::apply([](auto&&... args)
+            { SolidFormulation::UpdatePrestress(std::forward<decltype(args)>(args)...); },
+            std::tuple_cat(std::forward_as_tuple(ele, element_nodes),
+                DETAILS::GetAdditionalPreparationTuple<SolidFormulation>(preparation_data),
+                DETAILS::GetAdditionalGlobalHistoryTuple<SolidFormulation>(history_data)));
+      }
+    }
+    else
+    {
+      dserror("The solid formulation does not support to update the prestress!");
+    }
+  }
+
+  template <typename SolidFormulation, CORE::FE::CellType celltype>
+  static inline void UpdatePrestress(const DRT::Element& ele,
+      const ElementNodes<celltype>& element_nodes,
+      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+      const JacobianMapping<celltype>& jacobian_mapping,
+      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+          deformation_gradient,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data, [[maybe_unused]] const int gp)
+  {
+    if constexpr (is_prestress_updatable<SolidFormulation>)
+    {
+      std::apply([](auto&&... args)
+          { SolidFormulation::UpdatePrestress(std::forward<decltype(args)>(args)...); },
+          std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
+                             jacobian_mapping, deformation_gradient),
+              DETAILS::GetAdditionalTuple(preparation_data, history_data, gp)));
+    }
+    else
+    {
+      dserror("The solid formulation does not support to update the prestress!");
+    }
+  }
+
+
 }  // namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_SOLID_3D_ELE_FORMULATION_HPP
+#endif

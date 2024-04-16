@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_MESHTYING_NOXINTERFACE_HPP
-#define BACI_CONTACT_MESHTYING_NOXINTERFACE_HPP
+#ifndef FOUR_C_CONTACT_MESHTYING_NOXINTERFACE_HPP
+#define FOUR_C_CONTACT_MESHTYING_NOXINTERFACE_HPP
 
 
 #include "baci_config.hpp"
@@ -98,4 +98,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_MESHTYING_NOXINTERFACE_H
+#endif

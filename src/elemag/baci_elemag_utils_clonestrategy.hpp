@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#ifndef BACI_ELEMAG_UTILS_CLONESTRATEGY_HPP
-#define BACI_ELEMAG_UTILS_CLONESTRATEGY_HPP
+#ifndef FOUR_C_ELEMAG_UTILS_CLONESTRATEGY_HPP
+#define FOUR_C_ELEMAG_UTILS_CLONESTRATEGY_HPP
 
 /*----------------------------------------------------------------------------*/
 /*header inclusions */
@@ -84,4 +84,4 @@ namespace ELEMAG
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELEMAG_UTILS_CLONESTRATEGY_H
+#endif

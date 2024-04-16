@@ -8,11 +8,13 @@
 */
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_UTILS_HPP
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_UTILS_HPP
+#ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_UTILS_HPP
+#define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_UTILS_HPP
 
 
 #include "baci_config.hpp"
+
+#include "baci_geometry_pair_element.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -128,16 +130,15 @@ namespace BEAMINTERACTION
    * @param q_solid (in) Displacement of the solid.
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
-   * @param element (in) Pointer to the solid element.
    */
   template <typename solid, typename scalar_type>
   void GetSolidRotationVector(
       const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
       const CORE::LINALG::Matrix<3, 1, double>& xi,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
       const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
-      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element = nullptr);
+      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
@@ -148,15 +149,14 @@ namespace BEAMINTERACTION
    * @param q_solid (in) Displacement of the solid.
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
-   * @param element (in) Pointer to the solid element.
    */
   template <typename solid, typename scalar_type>
   void GetSolidRotationVectorDeformationGradient3DGeneral(
       const CORE::LINALG::Matrix<3, 1, double>& xi,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
       const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
-      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element = nullptr);
+      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
@@ -167,15 +167,14 @@ namespace BEAMINTERACTION
    * @param q_solid (in) Displacement of the solid.
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
-   * @param element (in) Pointer to the solid element.
    */
   template <typename solid, typename scalar_type>
   void GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane(
       const CORE::LINALG::Matrix<3, 1, double>& xi,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
       const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
-      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element = nullptr);
+      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
@@ -201,15 +200,14 @@ namespace BEAMINTERACTION
    * @param q_solid (in) Displacement of the solid.
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
-   * @param element (in) Pointer to the solid element.
    */
   template <typename solid, typename scalar_type>
   void GetSolidRotationVectorDeformationGradient3DBase1(
       const CORE::LINALG::Matrix<3, 1, double>& xi,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
       const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
-      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element = nullptr);
+      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
@@ -221,16 +219,15 @@ namespace BEAMINTERACTION
    * @param q_solid (in) Displacement of the solid.
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
-   * @param element (in) Pointer to the solid element.
    */
   template <typename solid, typename scalar_type>
   void GetSolidRotationVectorDeformationGradient3D(
       const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
       const CORE::LINALG::Matrix<3, 1, double>& xi,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
       const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
-      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element = nullptr);
+      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid);
 
   /**
    * \brief Perform a 2D polar decomposition of the deformation gradient and return the rotation
@@ -241,14 +238,13 @@ namespace BEAMINTERACTION
    * @param q_solid (in) Displacement of the solid.
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
-   * @param element (in) Pointer to the solid element.
    */
   template <typename solid, typename scalar_type>
   void GetSolidRotationVectorPolarDecomposition2D(const CORE::LINALG::Matrix<3, 1, double>& xi,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
       const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
-      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element = nullptr);
+      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on a 2d deformation gradient and return the rotation
@@ -260,16 +256,15 @@ namespace BEAMINTERACTION
    * @param q_solid (in) Displacement of the solid.
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
-   * @param element (in) Pointer to the solid element.
    */
   template <typename solid, typename scalar_type>
   void GetSolidRotationVectorDeformationGradient2D(
       const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
       const CORE::LINALG::Matrix<3, 1, double>& xi,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
-      const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
       const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
-      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element = nullptr);
+      CORE::LINALG::Matrix<3, 1, scalar_type>& psi_solid);
 
   /**
    * \brief Check if the given solid deformation gradient as well as the given beam cross section

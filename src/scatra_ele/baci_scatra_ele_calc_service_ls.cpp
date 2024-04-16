@@ -8,10 +8,10 @@
 */
 /*--------------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_inpar_levelset.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_ele_calc_ls.hpp"
 
@@ -47,8 +47,8 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
 
       std::vector<CORE::LINALG::Matrix<nen_, 1>> ephizero(my::numscal_);
 
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero, lm);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero, lm);
 
       // check if length suffices
       if (elevec1_epetra.length() < 1) dserror("Result vector too short");
@@ -90,8 +90,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(
       SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const INPAR::SCATRA::CalcError errortype =
-      CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+  const INPAR::SCATRA::CalcErrorLevelSet errortype =
+      CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcErrorLevelSet>(params, "calcerrorflag");
   switch (errortype)
   {
     case INPAR::SCATRA::calcerror_initial_field:

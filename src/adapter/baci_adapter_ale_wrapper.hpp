@@ -8,12 +8,9 @@
  */
 /*----------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------------*/
-#ifndef BACI_ADAPTER_ALE_WRAPPER_HPP
-#define BACI_ADAPTER_ALE_WRAPPER_HPP
+#ifndef FOUR_C_ADAPTER_ALE_WRAPPER_HPP
+#define FOUR_C_ADAPTER_ALE_WRAPPER_HPP
 
-/*----------------------------------------------------------------------------*/
-/* header inclusions */
 #include "baci_config.hpp"
 
 #include "baci_adapter_ale.hpp"
@@ -21,8 +18,6 @@
 
 BACI_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------------*/
-/* class definitions */
 namespace ADAPTER
 {
   /*! \brief Just a wrapper that does nothing, meant to be derived from
@@ -219,12 +214,6 @@ namespace ADAPTER
     //! Access to linear solver of ALE field
     Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return ale_->LinearSolver(); }
 
-    /// get the linear solver object used for this field
-    Teuchos::RCP<CORE::LINALG::Preconditioner> ConstPreconditioner() override
-    {
-      return ale_->ConstPreconditioner();
-    }
-
     //@}
 
     //! @name Write access to field solution variables at \f$t^{n+1}\f$
@@ -306,4 +295,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_ALE_WRAPPER_H
+#endif

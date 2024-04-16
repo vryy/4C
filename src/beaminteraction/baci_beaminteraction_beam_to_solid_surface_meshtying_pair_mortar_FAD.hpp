@@ -9,13 +9,14 @@ evaluated with FAD.
 // End doxygen header.
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_MORTAR_FAD_HPP
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_MORTAR_FAD_HPP
+#ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_MORTAR_FAD_HPP
+#define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_MORTAR_FAD_HPP
 
 
 #include "baci_config.hpp"
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_base.hpp"
+#include "baci_geometry_pair_element.hpp"
 #include "baci_geometry_pair_scalar_types.hpp"
 #include "baci_lib_discret.hpp"
 
@@ -158,16 +159,14 @@ namespace BEAMINTERACTION
      * @param quaternion_beam_ref (in) Reference rotation of the beam.
      * @param surface_triad_type (in) How the surface triad should be constructed.
      * @param psi_solid (out) Rotation vector on solid surface.
-     * @param element (in) Pointer to the face element.
      */
-    template <typename scalar_type_rot>
+    template <typename scalar_type_rot_vec>
     void GetSurfaceRotationVector(const CORE::LINALG::Matrix<3, 1, double>& xi,
-        const CORE::LINALG::Matrix<surface::n_dof_, 1, double>& q_solid_ref,
-        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type_rot>& q_solid,
+        const GEOMETRYPAIR::ElementData<surface, double>& q_solid_ref,
+        const GEOMETRYPAIR::ElementData<surface, scalar_type_rot_vec>& q_solid,
         const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
         const INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling surface_triad_type,
-        CORE::LINALG::Matrix<3, 1, scalar_type_rot>& psi_solid,
-        const DRT::Element* element = nullptr) const;
+        CORE::LINALG::Matrix<3, 1, scalar_type_rot_vec>& psi_solid) const;
 
     /**
      * \brief Get the rotational GIDs for the beam and surface.

@@ -8,7 +8,7 @@
 #include "baci_solid_3D_ele_calc_eas.hpp"
 
 #include "baci_comm_parobject.hpp"
-#include "baci_lib_utils.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_linalg_utils_densematrix_eigen.hpp"
 #include "baci_mat_so3_material.hpp"
 #include "baci_solid_3D_ele.hpp"
@@ -185,7 +185,7 @@ namespace
   {
     auto residual_from_dis = discretization.GetState("residual displacement");
     std::vector<double> residual(lm.size());
-    DRT::UTILS::ExtractMyValues(*residual_from_dis, residual, lm);
+    CORE::FE::ExtractMyValues(*residual_from_dis, residual, lm);
     CORE::LINALG::Matrix<num_dof_per_ele<celltype>, 1> displ_inc(false);
     for (int i = 0; i < num_dof_per_ele<celltype>; ++i) displ_inc(i) = residual[i];
 
@@ -860,12 +860,6 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(const DR
   CentroidTransformation<celltype> centroid_transformation =
       EvaluateCentroidTransformation<celltype>(nodal_coordinates);
 
-  if (!ele.IsParamsInterface())
-  {
-    // Update alpha only in old time integration scheme
-    UpdateAlpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
-  }
-
   EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(nodal_coordinates, params);
 
   ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
@@ -915,12 +909,6 @@ double DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateInternalEnerg
 
   CentroidTransformation<celltype> centroid_transformation =
       EvaluateCentroidTransformation<celltype>(nodal_coordinates);
-
-  if (!ele.IsParamsInterface())
-  {
-    // Update alpha only in old time integration scheme
-    UpdateAlpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
-  }
 
   ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,

@@ -19,24 +19,24 @@
 #include "baci_inpar_validcontactconstitutivelaw.hpp"
 #include "baci_inpar_validmaterials.hpp"
 #include "baci_io.hpp"
+#include "baci_io_elementreader.hpp"
 #include "baci_io_inputreader.hpp"
 #include "baci_io_linedefinition.hpp"
 #include "baci_io_materialdefinition.hpp"
+#include "baci_io_meshreader.hpp"
+#include "baci_io_nodereader.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_lib_discret_hdg.hpp"
 #include "baci_lib_discret_xfem.hpp"
 #include "baci_lib_discret_xwall.hpp"
 #include "baci_lib_dofset_independent.hpp"
-#include "baci_lib_elementreader.hpp"
-#include "baci_lib_meshreader.hpp"
-#include "baci_lib_nodereader.hpp"
 #include "baci_lib_utils_createdis.hpp"
 #include "baci_mat_elchmat.hpp"
 #include "baci_mat_elchphase.hpp"
 #include "baci_mat_micromaterial.hpp"
 #include "baci_mat_newman_multiscale.hpp"
 #include "baci_mat_par_bundle.hpp"
-#include "baci_mat_scatra_mat_multiscale.hpp"
+#include "baci_mat_scatra_multiscale.hpp"
 #include "baci_nurbs_discret.hpp"
 #include "baci_particle_engine_particlereader.hpp"
 #include "baci_rebalance.hpp"
@@ -72,7 +72,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
   auto output_control = problem.OutputControlFile();
 
   // the basic mesh reader. now add desired node and element readers to it!
-  INPUT::MeshReader meshreader(reader, "--NODE COORDS");
+  IO::MeshReader meshreader(reader, "--NODE COORDS");
 
   switch (problem.GetProblemType())
   {
@@ -119,16 +119,16 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       if (xfluiddis != Teuchos::null) problem.AddDis("xfluid", xfluiddis);
       problem.AddDis("ale", aledis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       if (xfluiddis != Teuchos::null)
       {
-        meshreader.AddElementReader(INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS"));
+        meshreader.AddElementReader(IO::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS"));
       }
       else
-        meshreader.AddElementReader(INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+        meshreader.AddElementReader(IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
-      meshreader.AddElementReader(INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -172,12 +172,12 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("scatra1", fluidscatradis);
       problem.AddDis("scatra2", structscatradis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          INPUT::ElementReader(fluidscatradis, reader, "--TRANSPORT ELEMENTS"));
+          IO::ElementReader(fluidscatradis, reader, "--TRANSPORT ELEMENTS"));
       meshreader.AddElementReader(
-          INPUT::ElementReader(structscatradis, reader, "--TRANSPORT2 ELEMENTS"));
+          IO::ElementReader(structscatradis, reader, "--TRANSPORT2 ELEMENTS"));
 
 #ifdef EXTENDEDPARALLELOVERLAP
       structdis->CreateExtendedOverlap(false, false, false);
@@ -220,8 +220,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structale", structaledis);
 
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
 #ifdef EXTENDEDPARALLELOVERLAP
       structdis->CreateExtendedOverlap(false, false, false);
@@ -270,7 +270,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         problem.AddDis("xfluid", xfluiddis);
 
         meshreader.AddElementReader(
-            INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID"));
+            IO::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID"));
       }
       else
       {
@@ -289,7 +289,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       aledis->SetWriter(
           Teuchos::rcp(new IO::DiscretizationWriter(aledis, output_control, distype)));
       problem.AddDis("ale", aledis);
-      meshreader.AddElementReader(INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
       break;
     }
     case GLOBAL::ProblemType::fpsi_xfem:
@@ -314,13 +314,13 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("ale", aledis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
           CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
-      meshreader.AddElementReader(INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -346,7 +346,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       problem.AddDis("ale", aledis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -409,7 +409,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("lubrication", lubricationdis);
 
       meshreader.AddElementReader(
-          INPUT::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS"));
+          IO::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS"));
 
       break;
     }
@@ -448,8 +448,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("scatra", scatradis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -474,7 +474,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("thermo", thermdis);
 
       // add element reader to node reader
-      meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -528,12 +528,12 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       if (xfluiddis != Teuchos::null)
       {
-        meshreader.AddElementReader(INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS"));
+        meshreader.AddElementReader(IO::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS"));
       }
       else
-        meshreader.AddElementReader(INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+        meshreader.AddElementReader(IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
-      meshreader.AddElementReader(INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -597,7 +597,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       problem.AddDis("thermo", thermdis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(thermdis, reader, "--THERMO ELEMENTS"));
 
       break;
     }
@@ -647,9 +647,9 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structure", structdis);
       problem.AddDis("boundingbox", pboxdis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          INPUT::ElementReader(pboxdis, reader, "--PERIODIC BOUNDINGBOX ELEMENTS"));
+          IO::ElementReader(pboxdis, reader, "--PERIODIC BOUNDINGBOX ELEMENTS"));
 
       break;
     }
@@ -669,8 +669,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("scatra", scatradis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -697,13 +697,13 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("scatra", scatradis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
           CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
-      // meshreader.AddElementReader(Teuchos::rcp(new INPUT::ElementReader(fluiddis, reader,
+      // meshreader.AddElementReader(Teuchos::rcp(new IO::ElementReader(fluiddis, reader,
       // "--FLUID ELEMENTS")));
-      meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
 
@@ -746,11 +746,11 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("ale", aledis);
       problem.AddDis("scatra_micro", scatra_micro_dis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
       meshreader.AddElementReader(
-          INPUT::ElementReader(scatra_micro_dis, reader, "--TRANSPORT2 ELEMENTS"));
+          IO::ElementReader(scatra_micro_dis, reader, "--TRANSPORT2 ELEMENTS"));
 
       break;
     }
@@ -783,8 +783,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       scatradis->SetWriter(
           Teuchos::rcp(new IO::DiscretizationWriter(scatradis, output_control, distype)));
 
-      meshreader.AddElementReader(INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -800,7 +800,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("red_airway", airwaydis);
 
       meshreader.AddElementReader(
-          INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
+          IO::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
 
       break;
     }
@@ -819,8 +819,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structure", structdis);
       problem.AddDis("ale", aledis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
@@ -854,8 +854,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
       if (CORE::UTILS::IntegralValue<bool>(
               problem.PoroMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
@@ -864,7 +864,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         arterydis->SetWriter(
             Teuchos::rcp(new IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
-        meshreader.AddElementReader(INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
+        meshreader.AddElementReader(IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       }
 
       break;
@@ -903,9 +903,9 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("porofluid", porofluiddis);
       problem.AddDis("scatra", scatradis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       if (CORE::UTILS::IntegralValue<bool>(
               problem.PoroMultiPhaseScatraDynamicParams(), "ARTERY_COUPLING"))
@@ -914,14 +914,14 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         arterydis->SetWriter(
             Teuchos::rcp(new IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
-        meshreader.AddElementReader(INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
+        meshreader.AddElementReader(IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
 
         artscatradis = Teuchos::rcp(new DRT::Discretization("artery_scatra", reader.Comm()));
         artscatradis->SetWriter(
             Teuchos::rcp(new IO::DiscretizationWriter(artscatradis, output_control, distype)));
         problem.AddDis("artery_scatra", artscatradis);
         meshreader.AddElementReader(
-            INPUT::ElementReader(artscatradis, reader, "--TRANSPORT ELEMENTS"));
+            IO::ElementReader(artscatradis, reader, "--TRANSPORT ELEMENTS"));
       }
 
       break;
@@ -950,7 +950,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       problem.AddDis("porofluid", porofluiddis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
       if (CORE::UTILS::IntegralValue<bool>(
               problem.PoroFluidMultiPhaseDynamicParams(), "ARTERY_COUPLING"))
@@ -959,7 +959,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         arterydis->SetWriter(
             Teuchos::rcp(new IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
-        meshreader.AddElementReader(INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
+        meshreader.AddElementReader(IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       }
       break;
     }
@@ -986,8 +986,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("ale", aledis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       break;
     }
@@ -1006,7 +1006,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
           CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
@@ -1028,8 +1028,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
       break;
     }
@@ -1057,8 +1057,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("ale", aledis);
 
 
-      meshreader.AddElementReader(INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       // fluid scatra field
       fluidscatradis = Teuchos::rcp(new DRT::Discretization("scatra1", reader.Comm()));
@@ -1095,9 +1095,9 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("porofluid", porofluiddis);
       problem.AddDis("scatra", scatradis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
     case GLOBAL::ProblemType::ehl:
@@ -1115,9 +1115,9 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structure", structdis);
       problem.AddDis("lubrication", lubricationdis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          INPUT::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS"));
+          IO::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS"));
 
       break;
     }
@@ -1148,8 +1148,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         problem.AddDis("scatra_manifold", scatra_manifold_dis);
       }
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       if (problem.GetProblemType() == GLOBAL::ProblemType::ssti)
       {
@@ -1157,7 +1157,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         thermdis->SetWriter(
             Teuchos::rcp(new IO::DiscretizationWriter(thermdis, output_control, distype)));
         problem.AddDis("thermo", thermdis);
-        meshreader.AddElementReader(INPUT::ElementReader(thermdis, reader, "--TRANSPORT ELEMENTS"));
+        meshreader.AddElementReader(IO::ElementReader(thermdis, reader, "--TRANSPORT ELEMENTS"));
       }
 
       break;
@@ -1174,7 +1174,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       problem.AddDis("structure", structdis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       break;
     }
@@ -1189,7 +1189,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       problem.AddDis("scatra", scatradis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
     case GLOBAL::ProblemType::np_support:
@@ -1212,8 +1212,8 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       elemagelementtypes.insert("ELECTROMAGNETIC");
       elemagelementtypes.insert("ELECTROMAGNETICDIFF");
 
-      meshreader.AddElementReader(INPUT::ElementReader(
-          elemagdis, reader, "--ELECTROMAGNETIC ELEMENTS", elemagelementtypes));
+      meshreader.AddElementReader(
+          IO::ElementReader(elemagdis, reader, "--ELECTROMAGNETIC ELEMENTS", elemagelementtypes));
 
       break;
     }
@@ -1232,9 +1232,9 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structure", structdis);
       problem.AddDis("red_airway", airwaydis);
 
-      meshreader.AddElementReader(INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
+          IO::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
     }
     break;
     default:
@@ -1258,7 +1258,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         arterydis->SetWriter(
             Teuchos::rcp(new IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
-        meshreader.AddElementReader(INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
+        meshreader.AddElementReader(IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
 
         airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm()));
         // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1266,7 +1266,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
             Teuchos::rcp(new IO::DiscretizationWriter(airwaydis, output_control, distype)));
         problem.AddDis("red_airway", airwaydis);
         meshreader.AddElementReader(
-            INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
+            IO::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
       }
     }
     break;
@@ -1482,9 +1482,9 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
         else
         {
           // access multi-scale scalar transport material
-          MAT::ScatraMultiScale* micromat = nullptr;
+          MAT::ScatraMicroMacroCoupling* micromat = nullptr;
           if (id_scatra != -1)
-            micromat = dynamic_cast<MAT::ScatraMatMultiScale*>(mat.get());
+            micromat = dynamic_cast<MAT::ScatraMultiScale*>(mat.get());
           else if (id_elch != -1)
             micromat = dynamic_cast<MAT::NewmanMultiScale*>(mat.get());
           else
@@ -1555,16 +1555,16 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
 
         ReadMaterials(*micro_problem, micro_reader);
 
-        INPUT::MeshReader micromeshreader(micro_reader, "--NODE COORDS");
+        IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS");
 
         if (micro_dis_name == "structure")
         {
           micromeshreader.AddElementReader(
-              INPUT::ElementReader(dis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
+              IO::ElementReader(dis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
         }
         else
           micromeshreader.AddElementReader(
-              INPUT::ElementReader(dis_micro, micro_reader, "--TRANSPORT ELEMENTS"));
+              IO::ElementReader(dis_micro, micro_reader, "--TRANSPORT ELEMENTS"));
 
         micromeshreader.ReadAndPartition();
 
@@ -1685,9 +1685,9 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
 
     ReadMaterials(*micro_problem, micro_reader);
 
-    INPUT::MeshReader micromeshreader(micro_reader, "--NODE COORDS");
+    IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS");
     micromeshreader.AddElementReader(
-        INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
+        IO::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
     micromeshreader.ReadAndPartition();
 
     // read conditions of microscale
@@ -1857,7 +1857,7 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
   reader.ReadSection("--CARDIAC MONODOMAIN CONTROL", *list);
   reader.ReadSection("--MOR", *list);
   reader.ReadSection("--MESH PARTITIONING", *list);
-
+  reader.ReadSection("--MULTI POINT CONSTRAINTS", *list);
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);
   reader.ReadSection("--STRUCT NOX/Direction/Newton", *list);
@@ -2270,9 +2270,6 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
   // in the nurbs case
   CORE::FE::ShapeFunctionType distype = problem.SpatialApproximationType();
 
-  // get problem dimension
-  int dim = problem.NDim();
-
   // Iterate through all discretizations and sort the appropriate condition
   // into the correct discretization it applies to
 
@@ -2291,7 +2288,7 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
       Teuchos::RCP<DRT::NURBS::Knotvector> disknots = Teuchos::null;
 
       // read the knotvector data from the input
-      reader.ReadKnots(dim, dis->Name(), disknots);
+      reader.ReadKnots(dis->Name(), disknots);
 
       if (disknots == Teuchos::null)
       {

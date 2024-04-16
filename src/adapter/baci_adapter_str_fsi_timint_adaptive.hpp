@@ -10,8 +10,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_STR_FSI_TIMINT_ADAPTIVE_HPP
-#define BACI_ADAPTER_STR_FSI_TIMINT_ADAPTIVE_HPP
+#ifndef FOUR_C_ADAPTER_STR_FSI_TIMINT_ADAPTIVE_HPP
+#define FOUR_C_ADAPTER_STR_FSI_TIMINT_ADAPTIVE_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */

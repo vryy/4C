@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_BEAM3_TRIAD_INTERPOLATION_HPP
-#define BACI_BEAM3_TRIAD_INTERPOLATION_HPP
+#ifndef FOUR_C_BEAM3_TRIAD_INTERPOLATION_HPP
+#define FOUR_C_BEAM3_TRIAD_INTERPOLATION_HPP
 
 #include "baci_config.hpp"
 

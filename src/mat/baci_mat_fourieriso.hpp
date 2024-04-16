@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              dano 09/09 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_FOURIERISO_HPP
-#define BACI_MAT_FOURIERISO_HPP
+#ifndef FOUR_C_MAT_FOURIERISO_HPP
+#define FOUR_C_MAT_FOURIERISO_HPP
 
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 09/09 |
@@ -187,4 +187,4 @@ namespace MAT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_FOURIERISO_H
+#endif

@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_IO_VTU_WRITER_HPP
-#define BACI_IO_VTU_WRITER_HPP
+#ifndef FOUR_C_IO_VTU_WRITER_HPP
+#define FOUR_C_IO_VTU_WRITER_HPP
 
 
 #include "baci_config.hpp"

@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_HPP
-#define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_HPP
+#define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_HPP
 
 #include "baci_config.hpp"
 
@@ -99,4 +99,4 @@ namespace SCATRA
 }  // namespace SCATRA
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_H
+#endif

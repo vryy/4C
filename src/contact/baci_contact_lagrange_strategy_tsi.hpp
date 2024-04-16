@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_LAGRANGE_STRATEGY_TSI_HPP
-#define BACI_CONTACT_LAGRANGE_STRATEGY_TSI_HPP
+#ifndef FOUR_C_CONTACT_LAGRANGE_STRATEGY_TSI_HPP
+#define FOUR_C_CONTACT_LAGRANGE_STRATEGY_TSI_HPP
 
 #include "baci_config.hpp"
 
@@ -228,4 +228,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_CONTACT_LAGRANGE_STRATEGY_TSI_H
+#endif

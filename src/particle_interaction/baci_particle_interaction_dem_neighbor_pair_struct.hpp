@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_HPP
-#define BACI_PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_HPP
+#ifndef FOUR_C_PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_HPP
+#define FOUR_C_PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_HPP
 
 #include "baci_config.hpp"
 

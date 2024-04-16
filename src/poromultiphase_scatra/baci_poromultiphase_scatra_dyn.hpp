@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROMULTIPHASE_SCATRA_DYN_HPP
-#define BACI_POROMULTIPHASE_SCATRA_DYN_HPP
+#ifndef FOUR_C_POROMULTIPHASE_SCATRA_DYN_HPP
+#define FOUR_C_POROMULTIPHASE_SCATRA_DYN_HPP
 
 #include "baci_config.hpp"
 
@@ -21,4 +21,4 @@ void poromultiphasescatra_dyn(int restart /* do we have to perform a restart?  *
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROMULTIPHASE_SCATRA_DYN_H
+#endif

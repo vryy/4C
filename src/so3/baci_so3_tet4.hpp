@@ -3,8 +3,8 @@
 \brief Solid Tet4 Element
 \level 3
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_TET4_HPP
-#define BACI_SO3_TET4_HPP
+#ifndef FOUR_C_SO3_TET4_HPP
+#define FOUR_C_SO3_TET4_HPP
 
 
 #include "baci_config.hpp"
@@ -369,7 +369,6 @@ namespace DRT
                                      //!< during iteration to last converged state
         calc_struct_reset_all,       //!< reset elementwise internal variables
                                      //!< to state in the beginning of the computation
-        calc_struct_errornorms,      //!< compute error norms (L2,H1,energy)
         calc_global_gpstresses_map,  //! basically calc_struct_stress but with assembly of global
                                      //! gpstresses map
         prestress_update,
@@ -489,4 +488,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_TET4_H
+#endif

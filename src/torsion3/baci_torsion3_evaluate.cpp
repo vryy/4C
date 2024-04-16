@@ -8,10 +8,10 @@
 */
 /*----------------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_browniandyn.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_mat_spring.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
@@ -98,7 +98,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       t3_energy(params, mydisp, &elevec1);
     }
@@ -119,12 +119,12 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       // get residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (res == Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
 
       /*first displacement vector is modified for proper element evaluation in case of periodic
        *boundary conditions; in case that no periodic boundary conditions are to be applied the

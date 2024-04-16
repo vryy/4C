@@ -491,8 +491,8 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
         else if (eot == DRT::ELEMENTS::RigidsphereType::Instance())
           (*diameter_)[i] = 2.0 * (dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(element))->Radius();
         // If we have a solid element, we don't need its diameter and can it set to zero:
-        else if (!BEAMINTERACTION::BeamElement(*element) and
-                 !BEAMINTERACTION::RigidsphereElement(*element))
+        else if (!BEAMINTERACTION::UTILS::IsBeamElement(*element) and
+                 !BEAMINTERACTION::UTILS::IsRigidSphereElement(*element))
           (*diameter_)[i] = 0.0;
         // feasibility check
         if ((*diameter_)[i] < 0.0) dserror("ERROR: Did not receive feasible element radius.");
@@ -542,7 +542,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
       // store nodal positions into matrix coords
       CORE::LINALG::SerialDenseMatrix coord(3, 2, true);
 
-      if (BEAMINTERACTION::BeamElement(*element))
+      if (BEAMINTERACTION::UTILS::IsBeamElement(*element))
       {
         for (int i = 0; i < 2; i++)
         {
@@ -551,7 +551,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
           for (int j = 0; j < 3; j++) coord(j, i) = coord_aux(j);
         }
       }
-      else if (BEAMINTERACTION::RigidsphereElement(*element))
+      else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*element))
       {
         int gid = element->Nodes()[0]->Id();
         CORE::LINALG::Matrix<3, 1> coord_aux = currentpositions[gid];
@@ -872,7 +872,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
   DRT::Element* element = searchdis_.lColElement(elecolid);
   double diameter = 0.0;
 
-  if (BEAMINTERACTION::BeamElement(*element))
+  if (BEAMINTERACTION::UTILS::IsBeamElement(*element))
   {
     if (coord.numRows() == 3 and coord.numCols() == 2)
     {
@@ -883,7 +883,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
     else
       dserror("coord matrix of nodal positions has wrong dimensions here!");
   }
-  else if (BEAMINTERACTION::RigidsphereElement(*element))
+  else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*element))
   {
     diameter = (*diameter_)[elecolid];
   }

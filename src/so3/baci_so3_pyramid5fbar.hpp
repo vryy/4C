@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_PYRAMID5FBAR_HPP
-#define BACI_SO3_PYRAMID5FBAR_HPP
+#ifndef FOUR_C_SO3_PYRAMID5FBAR_HPP
+#define FOUR_C_SO3_PYRAMID5FBAR_HPP
 
 #include "baci_config.hpp"
 
@@ -238,4 +238,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_PYRAMID5FBAR_H
+#endif

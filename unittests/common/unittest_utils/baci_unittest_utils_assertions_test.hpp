@@ -3,8 +3,8 @@
 \brief special assertions for BACI code
 \level 1
 *----------------------------------------------------------------------*/
-#ifndef BACI_UNITTEST_UTILS_ASSERTIONS_TEST_HPP
-#define BACI_UNITTEST_UTILS_ASSERTIONS_TEST_HPP
+#ifndef FOUR_C_UNITTEST_UTILS_ASSERTIONS_TEST_HPP
+#define FOUR_C_UNITTEST_UTILS_ASSERTIONS_TEST_HPP
 
 #include <gtest/gtest.h>
 

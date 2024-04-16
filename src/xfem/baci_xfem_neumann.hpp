@@ -12,8 +12,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_XFEM_NEUMANN_HPP
-#define BACI_XFEM_NEUMANN_HPP
+#ifndef FOUR_C_XFEM_NEUMANN_HPP
+#define FOUR_C_XFEM_NEUMANN_HPP
 
 
 #include "baci_config.hpp"
@@ -62,4 +62,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_NEUMANN_H
+#endif

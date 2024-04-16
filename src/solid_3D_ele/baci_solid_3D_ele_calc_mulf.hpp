@@ -1,122 +1,177 @@
 /*! \file
 
-\brief Declaration of routines for calculation of solid element displacement
-based with MULF prestressing
+\brief A displacement based solid element formulation with MULF prestressing
 
 \level 1
 */
 
-#ifndef BACI_SOLID_3D_ELE_CALC_MULF_HPP
-#define BACI_SOLID_3D_ELE_CALC_MULF_HPP
+#ifndef FOUR_C_SOLID_3D_ELE_CALC_MULF_HPP
+#define FOUR_C_SOLID_3D_ELE_CALC_MULF_HPP
 
 #include "baci_config.hpp"
 
-#include "baci_discretization_fem_general_utils_gausspoints.hpp"
-#include "baci_lib_discret.hpp"
+#include "baci_discretization_fem_general_cell_type_traits.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_solid_3D_ele_calc_interface.hpp"
-#include "baci_solid_3D_ele_interface_serializable.hpp"
-#include "baci_utils_demangle.hpp"
-
-#include <memory>
-#include <string>
-#include <unordered_map>
+#include "baci_solid_3D_ele_calc.hpp"
+#include "baci_solid_3D_ele_calc_lib.hpp"
+#include "baci_solid_3D_ele_calc_lib_io.hpp"
+#include "baci_solid_3D_ele_calc_lib_mulf.H"
 
 BACI_NAMESPACE_OPEN
-namespace MAT
-{
-  class So3Material;
-}
-namespace STR::MODELEVALUATOR
-{
-  class GaussPointDataOutputManager;
-}
+
 namespace DRT::ELEMENTS
 {
   template <CORE::FE::CellType celltype>
-  struct MulfHistoryData
+  struct MulfLinearizationContainer
   {
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> inverse_jacobian;
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> deformation_gradient;
-    bool is_setup = false;
+    CORE::LINALG::Matrix<DETAILS::num_str<celltype>,
+        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+        Bop{};
+  };
 
-    MulfHistoryData()
+  /*!
+   * @brief A displacement based solid element formulation with MULF prestressing
+   *
+   * @tparam celltype
+   */
+  template <CORE::FE::CellType celltype>
+  struct MulfFormulation
+  {
+    static constexpr bool has_gauss_point_history = true;
+    static constexpr bool has_global_history = false;
+    static constexpr bool has_preparation_data = false;
+    static constexpr bool is_prestress_updatable = true;
+
+    using LinearizationContainer = MulfLinearizationContainer<celltype>;
+    using GaussPointHistory = MulfHistoryData<celltype>;
+
+    template <typename Evaluator>
+    static auto Evaluate(const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const JacobianMapping<celltype>& jacobian_mapping, MulfHistoryData<celltype>& history_data,
+        Evaluator evaluator)
     {
-      for (int i = 0; i < CORE::FE::dim<celltype>; ++i)
+      if (!history_data.is_setup)
       {
-        for (int j = 0; j < CORE::FE::dim<celltype>; ++j)
-        {
-          inverse_jacobian(i, j) = static_cast<double>(i == j);
-          deformation_gradient(i, j) = static_cast<double>(i == j);
-        }
+        history_data.inverse_jacobian = jacobian_mapping.inverse_jacobian_;
+        history_data.is_setup = true;
       }
+
+      const SpatialMaterialMapping<celltype> spatial_material_mapping =
+          EvaluateMulfSpatialMaterialMapping(
+              jacobian_mapping, shape_functions, element_nodes.displacements_, history_data);
+
+      const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> cauchygreen =
+          EvaluateCauchyGreen<celltype>(spatial_material_mapping);
+
+      const CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> gl_strain =
+          EvaluateGreenLagrangeStrain(cauchygreen);
+
+      CORE::LINALG::Matrix<DETAILS::num_str<celltype>,
+          CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+          Bop = EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
+
+      const MulfLinearizationContainer<celltype> linearization = std::invoke(
+          [&]()
+          {
+            return MulfLinearizationContainer<celltype>{
+                EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping)};
+          });
+
+      return evaluator(spatial_material_mapping.deformation_gradient_, gl_strain, linearization);
+    }
+
+    static inline SolidFormulationLinearization<celltype> EvaluateFullLinearization(
+        const DRT::Element& ele, const ElementNodes<celltype>& nodal_coordinates,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+            deformation_gradient,
+        MulfHistoryData<celltype>& history_data)
+    {
+      dserror(
+          "The full linearization is not yet implemented for the displacement based formulation "
+          "with MULF prestressing.");
+    }
+
+    static CORE::LINALG::Matrix<DETAILS::num_str<celltype>,
+        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+    GetLinearBOperator(const MulfLinearizationContainer<celltype>& linearization)
+    {
+      return linearization.Bop;
+    }
+
+    static void AddInternalForceVector(const MulfLinearizationContainer<celltype>& linearization,
+        const Stress<celltype>& stress, const double integration_factor,
+        MulfHistoryData<celltype>& history_data,
+        CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1>&
+            force_vector)
+    {
+      DRT::ELEMENTS::AddInternalForceVector(
+          linearization.Bop, stress, integration_factor, force_vector);
+    }
+
+    static void AddStiffnessMatrix(const MulfLinearizationContainer<celltype>& linearization,
+        const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
+        const double integration_factor, MulfHistoryData<celltype>& history_data,
+        CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>,
+            CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>& stiffness_matrix)
+    {
+      DRT::ELEMENTS::AddElasticStiffnessMatrix(
+          linearization.Bop, stress, integration_factor, stiffness_matrix);
+      DRT::ELEMENTS::AddGeometricStiffnessMatrix(
+          jacobian_mapping.N_XYZ_, stress, integration_factor, stiffness_matrix);
+    }
+
+    static void Pack(const MulfHistoryData<celltype>& history_data, CORE::COMM::PackBuffer& data)
+    {
+      CORE::COMM::ParObject::AddtoPack(data, history_data.inverse_jacobian);
+      CORE::COMM::ParObject::AddtoPack(data, history_data.deformation_gradient);
+      CORE::COMM::ParObject::AddtoPack(data, history_data.is_setup);
+    }
+
+    static void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data,
+        MulfHistoryData<celltype>& history_data)
+    {
+      CORE::COMM::ParObject::ExtractfromPack(position, data, history_data.inverse_jacobian);
+      CORE::COMM::ParObject::ExtractfromPack(position, data, history_data.deformation_gradient);
+      int is_setup_int;
+      CORE::COMM::ParObject::ExtractfromPack(position, data, is_setup_int);
+      history_data.is_setup = static_cast<bool>(is_setup_int);
+    }
+
+    static inline void UpdatePrestress(const DRT::Element& ele,
+        const ElementNodes<celltype>& element_nodes,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+            deformation_gradient,
+        MulfHistoryData<celltype>& history_data)
+    {
+      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> delta_defgrd =
+          EvaluateMulfDeformationGradientUpdate(
+              shape_functions, element_nodes.displacements_, history_data);
+
+      // update mulf history data only if prestress is active
+      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> inv_delta_defgrd(
+          delta_defgrd);
+      inv_delta_defgrd.Invert();
+
+
+      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> invJ_new;
+
+      invJ_new.MultiplyTN(inv_delta_defgrd, history_data.inverse_jacobian);
+
+      history_data.deformation_gradient = deformation_gradient;
+      history_data.inverse_jacobian = std::move(invJ_new);
     }
   };
 
   template <CORE::FE::CellType celltype>
-  class SolidEleCalcMulf
-  {
-   public:
-    SolidEleCalcMulf();
-
-    void Pack(CORE::COMM::PackBuffer& data) const;
-
-    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
-
-    void Setup(MAT::So3Material& solid_material, INPUT::LineDefinition* linedef);
-
-    void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material);
-
-    void EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
-        MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-        const std::vector<int>& lm, Teuchos::ParameterList& params,
-        CORE::LINALG::SerialDenseVector* force_vector,
-        CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
-        CORE::LINALG::SerialDenseMatrix* mass_matrix);
-
-    void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
-        const std::vector<int>& lm, Teuchos::ParameterList& params);
-
-    void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
-        const StressIO& stressIO, const StrainIO& strainIO,
-        const DRT::Discretization& discretization, const std::vector<int>& lm,
-        Teuchos::ParameterList& params);
-
-    double CalculateInternalEnergy(const DRT::Element& ele, MAT::So3Material& solid_material,
-        const DRT::Discretization& discretization, const std::vector<int>& lm,
-        Teuchos::ParameterList& params);
-
-    void Update(const DRT::Element& ele, MAT::So3Material& solid_material,
-        const DRT::Discretization& discretization, const std::vector<int>& lm,
-        Teuchos::ParameterList& params);
-
-    void UpdatePrestress(const DRT::Element& ele, MAT::So3Material& solid_material,
-        const DRT::Discretization& discretization, const std::vector<int>& lm,
-        Teuchos::ParameterList& params);
-
-    void InitializeGaussPointDataOutput(const DRT::Element& ele,
-        const MAT::So3Material& solid_material,
-        STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
-
-    void EvaluateGaussPointDataOutput(const DRT::Element& ele,
-        const MAT::So3Material& solid_material,
-        STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
-
-    void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material);
-
-   private:
-    /// static values for matrix sizes
-    static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
-    static constexpr int num_dim_ = CORE::FE::dim<celltype>;
-    static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
-    static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
-
-    std::vector<MulfHistoryData<celltype>> history_data_;
-
-    CORE::FE::GaussIntegration stiffness_matrix_integration_;
-    CORE::FE::GaussIntegration mass_matrix_integration_;
-
-  };  // class SolidEleCalc
+  using MulfSolidIntegrator = SolidEleCalc<celltype, MulfFormulation<celltype>>;
 
   template <typename T, typename AlwaysVoid = void>
   constexpr bool IsPrestressUpdateable = false;
@@ -172,4 +227,4 @@ namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_SOLID_3D_ELE_CALC_MULF_H
+#endif

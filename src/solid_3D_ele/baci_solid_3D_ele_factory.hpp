@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_3D_ELE_FACTORY_HPP
-#define BACI_SOLID_3D_ELE_FACTORY_HPP
+#ifndef FOUR_C_SOLID_3D_ELE_FACTORY_HPP
+#define FOUR_C_SOLID_3D_ELE_FACTORY_HPP
 
 #include "baci_config.hpp"
 
@@ -16,6 +16,7 @@
 #include "baci_solid_3D_ele_calc_eas.hpp"
 #include "baci_solid_3D_ele_calc_fbar.hpp"
 #include "baci_solid_3D_ele_calc_mulf.hpp"
+#include "baci_solid_3D_ele_calc_mulf_fbar.hpp"
 #include "baci_solid_3D_ele_factory_lib.hpp"
 #include "baci_solid_3D_ele_properties.hpp"
 
@@ -48,10 +49,13 @@ namespace DRT::ELEMENTS
         SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>,
         SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21>>;
     using MulfEvaluators =
-        CORE::FE::apply_celltype_sequence<SolidEleCalcMulf, ImplementedSolidCellTypes>;
+        CORE::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes>;
+    using FBarMulfEvaluators = CORE::FE::apply_celltype_sequence<MulfFBarSolidIntegrator,
+        CORE::FE::celltype_sequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
 
-    using SolidEvaluators = CORE::FE::Join<DisplacementBasedEvaluators,
-        DisplacementBasedLinearKinematicsEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators>;
+    using SolidEvaluators =
+        CORE::FE::Join<DisplacementBasedEvaluators, DisplacementBasedLinearKinematicsEvaluators,
+            FbarEvaluators, EASEvaluators, MulfEvaluators, FBarMulfEvaluators>;
   }  // namespace DETAILS
 
   using SolidCalcVariant = CreateVariantType<DETAILS::SolidEvaluators>;
@@ -68,4 +72,4 @@ namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLID_ELE_FACTORY_H
+#endif

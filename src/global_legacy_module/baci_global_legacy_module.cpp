@@ -49,7 +49,6 @@
 #include "baci_mat_aaaneohooke.hpp"
 #include "baci_mat_aaaneohooke_stopro.hpp"
 #include "baci_mat_aaaraghavanvorp_damage.hpp"
-#include "baci_mat_activefiber.hpp"
 #include "baci_mat_arrhenius_pv.hpp"
 #include "baci_mat_arrhenius_spec.hpp"
 #include "baci_mat_arrhenius_temp.hpp"
@@ -100,9 +99,9 @@
 #include "baci_mat_plasticlinelast.hpp"
 #include "baci_mat_robinson.hpp"
 #include "baci_mat_scalardepinterp.hpp"
-#include "baci_mat_scatra_mat.hpp"
-#include "baci_mat_scatra_mat_multiporo.hpp"
-#include "baci_mat_scatra_mat_poro_ecm.hpp"
+#include "baci_mat_scatra.hpp"
+#include "baci_mat_scatra_multiporo.hpp"
+#include "baci_mat_scatra_poro_ecm.hpp"
 #include "baci_mat_spring.hpp"
 #include "baci_mat_structporo.hpp"
 #include "baci_mat_structporo_reaction.hpp"
@@ -371,7 +370,6 @@ namespace
       << MORTAR::NodeType::Instance().Name() << " " << MORTAR::ElementType::Instance().Name() << " "
       << CONTACT::NodeType::Instance().Name() << " " << CONTACT::FriNodeType::Instance().Name()
       << " " << CONTACT::ElementType::Instance().Name() << " "
-      << MAT::ActiveFiberType::Instance().Name()
       << BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::Instance().Name() << " "
       << BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::Instance().Name() << " "
       << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " "

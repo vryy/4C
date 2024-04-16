@@ -8,8 +8,8 @@ equations
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_CUT_FACET_INTEGRATION_HPP
-#define BACI_CUT_FACET_INTEGRATION_HPP
+#ifndef FOUR_C_CUT_FACET_INTEGRATION_HPP
+#define FOUR_C_CUT_FACET_INTEGRATION_HPP
 
 #include "baci_config.hpp"
 
@@ -43,7 +43,6 @@ namespace CORE::GEO
             elem1_(element1),         // the element for which the facet is a part of
             position_(posi),          // position
             bcellInt_(bcellInt),      //"true" if it is boundarycell integration
-            global_(global),          //"true" for performing integration in global coordinates
             orderingComputed_(false)  // whether cw or acw ordering of vertices computed
       {
       }
@@ -137,12 +136,6 @@ namespace CORE::GEO
       void TemporaryQuad4(
           const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells);
 
-      /*!
-      \brief Check whether the facet area calculated by splitting and triangulation are the same
-       */
-      void DebugAreaCheck(
-          std::list<Teuchos::RCP<BoundaryCell>> &divCells, std::string alreadyDone, Mesh &mesh);
-
       //! considered facet
       Facet *face1_;
 
@@ -154,9 +147,6 @@ namespace CORE::GEO
 
       //! True for boundarycell integration
       bool bcellInt_;
-
-      //! True if performing integration in global coordinates
-      bool global_;
 
       //! set the base function to be integrated
       int inte_num_;

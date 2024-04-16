@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef BACI_STRUCTURE_NEW_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
-#define BACI_STRUCTURE_NEW_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
+#define FOUR_C_STRUCTURE_NEW_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
 
 
 #include "baci_config.hpp"

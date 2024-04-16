@@ -7,8 +7,8 @@ electrochemistry
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_HPP
-#define BACI_CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_HPP
+#ifndef FOUR_C_CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_HPP
+#define FOUR_C_CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_HPP
 
 #include "baci_config.hpp"
 
@@ -300,4 +300,4 @@ namespace CONTACT
 }  // namespace CONTACT
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_H
+#endif

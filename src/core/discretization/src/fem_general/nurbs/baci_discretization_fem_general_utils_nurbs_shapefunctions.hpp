@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_HPP
 
 #include "baci_config.hpp"
 
@@ -93,40 +93,15 @@ namespace CORE::FE::NURBS
     \param u                  (i)
     \param knots              (i)
     \param weights            (i)
-    \param distype            (i)
 
     \return TRUE if successful
 
   */
 
-  template <class V, class UV, class WG>
+  template <int degree, class V, class UV, class WG>
   bool nurbs_get_1D_funct(V& nurbs_shape_funct, const UV& u,
-      const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const CORE::LINALG::SerialDenseVector& knots, const WG& weights)
   {
-    int degree = 0;
-
-    switch (distype)
-    {
-      case CORE::FE::CellType::nurbs2:
-      {
-        degree = 1;
-
-        break;
-      }
-      case CORE::FE::CellType::nurbs3:
-      {
-        degree = 2;
-
-        break;
-      }
-      default:
-      {
-        dserror("Unknown distype for nurbs line element evaluation\n");
-        break;
-      }
-    }
-
     // size is the number of control points/basis
     // functions of this element
     const int size = (degree + 1);
@@ -281,6 +256,31 @@ namespace CORE::FE::NURBS
     return true;
   }
 
+  /**
+   * @brief Evaluate the 1D NURBS shape functions based on the discretization type of the element.
+   */
+  template <class V, class UV, class WG>
+  bool nurbs_get_1D_funct(V& nurbs_shape_funct, const UV& u,
+      const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
+      const CORE::FE::CellType& distype)
+  {
+    switch (distype)
+    {
+      case CORE::FE::CellType::nurbs2:
+      {
+        return nurbs_get_1D_funct<1>(nurbs_shape_funct, u, knots, weights);
+      }
+      case CORE::FE::CellType::nurbs3:
+      {
+        return nurbs_get_1D_funct<2>(nurbs_shape_funct, u, knots, weights);
+      }
+      default:
+      {
+        dserror("Unknown distype for nurbs line element evaluation\n");
+      }
+    }
+  }
+
 
   /*!
     \brief Evaluate basis functions and derivatives (with
@@ -374,40 +374,14 @@ namespace CORE::FE::NURBS
   \param uv                 (i)
   \param knots              (i)
   \param weights            (i)
-  \param distype            (i)
 
   \return TRUE, if successful
 
   */
-
-  template <class VF, class VD, class UV, class WG>
+  template <int degree, class VF, class VD, class UV, class WG>
   bool nurbs_get_1D_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const UV& u,
-      const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const CORE::LINALG::SerialDenseVector& knots, const WG& weights)
   {
-    int degree = 0;
-
-    switch (distype)
-    {
-      case CORE::FE::CellType::nurbs2:
-      {
-        degree = 1;
-
-        break;
-      }
-      case CORE::FE::CellType::nurbs3:
-      {
-        degree = 2;
-
-        break;
-      }
-      default:
-      {
-        dserror("Unknown distype for nurbs line element evaluation\n");
-        break;
-      }
-    }
-
     // size is the number of control points/basis
     // functions of this element
     const int size = (degree + 1);
@@ -626,34 +600,37 @@ namespace CORE::FE::NURBS
   }
 
 
-  template <class VF, class MD, class MSD, class UV, class WG>
-  bool nurbs_get_1D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
-      MSD& nurbs_shape_deriv2, const UV& u, const CORE::LINALG::SerialDenseVector& knots,
-      const WG& weights, const CORE::FE::CellType& distype)
+  /**
+   * @brief Evaluate the 1D NURBS shape functions and their 1st derivatives based on the
+   * discretization type of the element.
+   */
+  template <class VF, class VD, class UV, class WG>
+  bool nurbs_get_1D_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const UV& u,
+      const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
+      const CORE::FE::CellType& distype)
   {
-    int degree = 1;
-
     switch (distype)
     {
       case CORE::FE::CellType::nurbs2:
       {
-        degree = 1;
-
-        break;
+        return nurbs_get_1D_funct_deriv<1>(nurbs_shape_funct, nurbs_shape_deriv, u, knots, weights);
       }
       case CORE::FE::CellType::nurbs3:
       {
-        degree = 2;
-
-        break;
+        return nurbs_get_1D_funct_deriv<2>(nurbs_shape_funct, nurbs_shape_deriv, u, knots, weights);
       }
       default:
       {
-        dserror("Unknown distype for nurbs element evaluation\n");
-        break;
+        dserror("Unknown distype for nurbs line element evaluation\n");
       }
     }
+  }
 
+  template <int degree, class VF, class MD, class MSD, class UV, class WG>
+  bool nurbs_get_1D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
+      MSD& nurbs_shape_deriv2, const UV& u, const CORE::LINALG::SerialDenseVector& knots,
+      const WG& weights)
+  {
     // size is the number of control points/basis
     // functions of this element
     const int size = (degree + 1);
@@ -760,6 +737,34 @@ namespace CORE::FE::NURBS
     return true;
   }
 
+  /**
+   * @brief Evaluate the 1D NURBS shape functions and their 2nd derivatives based on the
+   * discretization type of the element.
+   */
+  template <class VF, class MD, class MSD, class UV, class WG>
+  bool nurbs_get_1D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
+      MSD& nurbs_shape_deriv2, const UV& u, const CORE::LINALG::SerialDenseVector& knots,
+      const WG& weights, const CORE::FE::CellType& distype)
+  {
+    switch (distype)
+    {
+      case CORE::FE::CellType::nurbs2:
+      {
+        return nurbs_get_1D_funct_deriv_deriv2<1>(
+            nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, u, knots, weights);
+      }
+      case CORE::FE::CellType::nurbs3:
+      {
+        return nurbs_get_1D_funct_deriv_deriv2<2>(
+            nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, u, knots, weights);
+      }
+      default:
+      {
+        dserror("Unknown distype for nurbs line element evaluation\n");
+      }
+    }
+  }
+
 
   /*!
   \brief Evaluate 2d basis functions of nurbs basis functions.
@@ -839,39 +844,14 @@ namespace CORE::FE::NURBS
   \param uv                 (i)
   \param knots              (i)
   \param weights            (i)
-  \param distype            (i)
 
   \return TRUE, if successful
 
   */
-  template <class VF, class UV, class WG, typename scalar_type = double>
+  template <int degree, typename scalar_type = double, class VF, class UV, class WG>
   bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
   {
-    int degree = 1;
-
-    switch (distype)
-    {
-      case CORE::FE::CellType::nurbs4:
-      {
-        degree = 1;
-
-        break;
-      }
-      case CORE::FE::CellType::nurbs9:
-      {
-        degree = 2;
-
-        break;
-      }
-      default:
-      {
-        dserror("Unknown distype for nurbs element evaluation\n");
-        break;
-      }
-    }
-
     // size is the number of control points/basis
     // functions of this element
     const int size = (degree + 1) * (degree + 1);
@@ -1056,6 +1036,32 @@ namespace CORE::FE::NURBS
     return true;
   }
 
+  /**
+   * @brief Evaluate the 2D NURBS shape functions based on the discretization type of the element.
+   */
+  template <typename scalar_type = double, class VF, class UV, class WG>
+  bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
+      const CORE::FE::CellType& distype)
+  {
+    switch (distype)
+    {
+      case CORE::FE::CellType::nurbs4:
+      {
+        return nurbs_get_2D_funct<1, scalar_type>(nurbs_shape_funct, uv, knots, weights);
+      }
+      case CORE::FE::CellType::nurbs9:
+      {
+        return nurbs_get_2D_funct<2, scalar_type>(nurbs_shape_funct, uv, knots, weights);
+      }
+      default:
+      {
+        dserror("Unknown distype for nurbs element evaluation\n");
+      }
+    }
+    return false;
+  }
+
 
   /*!
   \brief Evaluate 2d basis functions and derivatives (with
@@ -1165,39 +1171,14 @@ namespace CORE::FE::NURBS
   \param uv                 (i)
   \param knots              (i)
   \param weights            (i)
-  \param distype            (i)
 
   \return TRUE, if successful
 
   */
-  template <class VF, class MD, class UV, class WG, typename scalar_type = double>
+  template <int degree, typename scalar_type = double, class VF, class MD, class UV, class WG>
   bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
   {
-    int degree = 1;
-
-    switch (distype)
-    {
-      case CORE::FE::CellType::nurbs4:
-      {
-        degree = 1;
-
-        break;
-      }
-      case CORE::FE::CellType::nurbs9:
-      {
-        degree = 2;
-
-        break;
-      }
-      default:
-      {
-        dserror("Unknown distype for nurbs element evaluation\n");
-        break;
-      }
-    }
-
     // size is the number of control points/basis
     // functions of this element
     const int size = (degree + 1) * (degree + 1);
@@ -1464,6 +1445,33 @@ namespace CORE::FE::NURBS
     return true;
   }
 
+  /**
+   * @brief Evaluate the 2D NURBS shape functions and their 1st derivatives based on the
+   * discretization type of the element.
+   */
+  template <typename scalar_type = double, class VF, class MD, class UV, class WG>
+  bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
+      const CORE::FE::CellType& distype)
+  {
+    switch (distype)
+    {
+      case CORE::FE::CellType::nurbs4:
+      {
+        return nurbs_get_2D_funct_deriv<1, scalar_type>(
+            nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
+      }
+      case CORE::FE::CellType::nurbs9:
+      {
+        return nurbs_get_2D_funct_deriv<2, scalar_type>(
+            nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
+      }
+      default:
+      {
+        dserror("Unknown distype for nurbs element evaluation\n");
+      }
+    }
+  }
 
   /*!
 
@@ -1578,41 +1586,16 @@ namespace CORE::FE::NURBS
   \param uv                 (i)
   \param knots              (i)
   \param weights            (i)
-  \param distype            (i)
 
   \return TRUE, if successful
 
   */
 
-  template <class VF, class MD, class MSD, class UV, class WG>
+  template <int degree, class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_2D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
   {
-    int degree = 1;
-
-    switch (distype)
-    {
-      case CORE::FE::CellType::nurbs4:
-      {
-        degree = 1;
-
-        break;
-      }
-      case CORE::FE::CellType::nurbs9:
-      {
-        degree = 2;
-
-        break;
-      }
-      default:
-      {
-        dserror("Unknown distype for nurbs element evaluation\n");
-        break;
-      }
-    }
-
     // size is the number of control points/basis
     // functions of this element
     const int size = (degree + 1) * (degree + 1);
@@ -2060,6 +2043,35 @@ namespace CORE::FE::NURBS
     return true;
   }
 
+  /**
+   * @brief Evaluate the 2D NURBS shape functions and their 2nd derivatives based on the
+   * discretization type of the element.
+   */
+  template <class VF, class MD, class MSD, class UV, class WG>
+  bool nurbs_get_2D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
+      MSD& nurbs_shape_deriv2, const UV& uv,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
+      const CORE::FE::CellType& distype)
+  {
+    switch (distype)
+    {
+      case CORE::FE::CellType::nurbs4:
+      {
+        return nurbs_get_2D_funct_deriv_deriv2<1>(
+            nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
+      }
+      case CORE::FE::CellType::nurbs9:
+      {
+        return nurbs_get_2D_funct_deriv_deriv2<2>(
+            nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
+      }
+      default:
+      {
+        dserror("Unknown distype for nurbs element evaluation\n");
+      }
+    }
+  }
+
 
   /*!
   \brief Evaluate 3d basis functions of nurbs basis functions.
@@ -2163,40 +2175,15 @@ namespace CORE::FE::NURBS
   \param uv                 (i)
   \param knots              (i)
   \param weights            (i)
-  \param distype            (i)
 
   \return TRUE, if successful
 
   */
 
-  template <class V, class UV, class WG>
+  template <int degree, class V, class UV, class WG>
   bool nurbs_get_3D_funct(V& nurbs_shape_funct, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
   {
-    int degree = 1;
-
-    switch (distype)
-    {
-      case CORE::FE::CellType::nurbs8:
-      {
-        degree = 1;
-
-        break;
-      }
-      case CORE::FE::CellType::nurbs27:
-      {
-        degree = 2;
-
-        break;
-      }
-      default:
-      {
-        dserror("Unknown distype for nurbs element evaluation\n");
-        break;
-      }
-    }
-
     // size is the number of control points/basis
     // functions of this element
     const int size = (degree + 1) * (degree + 1) * (degree + 1);
@@ -2427,6 +2414,31 @@ namespace CORE::FE::NURBS
     return true;
   }
 
+  /**
+   * @brief Evaluate the 3D NURBS shape functions based on the discretization type of the element.
+   */
+  template <class V, class UV, class WG>
+  bool nurbs_get_3D_funct(V& nurbs_shape_funct, const UV& uv,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
+      const CORE::FE::CellType& distype)
+  {
+    switch (distype)
+    {
+      case CORE::FE::CellType::nurbs8:
+      {
+        return nurbs_get_3D_funct<1>(nurbs_shape_funct, uv, knots, weights);
+      }
+      case CORE::FE::CellType::nurbs27:
+      {
+        return nurbs_get_3D_funct<2>(nurbs_shape_funct, uv, knots, weights);
+      }
+      default:
+      {
+        dserror("Unknown distype for nurbs element evaluation\n");
+      }
+    }
+  }
+
 
   /*!
   \brief Evaluate 3d basis functions and derivatives (with
@@ -2569,40 +2581,15 @@ namespace CORE::FE::NURBS
   \param uv                 (i)
   \param knots              (i)
   \param weights            (i)
-  \param distype            (i)
 
   \return TRUE, if successful
 
   */
 
-  template <class VF, class UV, class MD, class WG>
+  template <int degree, class VF, class UV, class MD, class WG>
   bool nurbs_get_3D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
   {
-    int degree = 1;
-
-    switch (distype)
-    {
-      case CORE::FE::CellType::nurbs8:
-      {
-        degree = 1;
-
-        break;
-      }
-      case CORE::FE::CellType::nurbs27:
-      {
-        degree = 2;
-
-        break;
-      }
-      default:
-      {
-        dserror("Unknown distype for nurbs element evaluation\n");
-        break;
-      }
-    }
-
     // size is the number of control points/basis
     // functions of this element
     const int size = (degree + 1) * (degree + 1) * (degree + 1);
@@ -2945,6 +2932,34 @@ namespace CORE::FE::NURBS
     return true;
   }
 
+  /**
+   * @brief Evaluate the 3D NURBS shape functions and their 1st derivatives based on the
+   * discretization type of the element.
+   */
+  template <class VF, class UV, class MD, class WG>
+  bool nurbs_get_3D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
+      const CORE::FE::CellType& distype)
+  {
+    switch (distype)
+    {
+      case CORE::FE::CellType::nurbs8:
+      {
+        return nurbs_get_3D_funct_deriv<1>(
+            nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
+      }
+      case CORE::FE::CellType::nurbs27:
+      {
+        return nurbs_get_3D_funct_deriv<2>(
+            nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
+      }
+      default:
+      {
+        dserror("Unknown distype for nurbs element evaluation\n");
+      }
+    }
+  }
+
 
   /*!
 
@@ -3173,41 +3188,16 @@ namespace CORE::FE::NURBS
   \param uv                 (i)
   \param knots              (i)
   \param weights            (i)
-  \param distype            (i)
 
   \return TRUE, if successful
 
   */
 
-  template <class VF, class MD, class MSD, class UV, class WG>
+  template <int degree, class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_3D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
   {
-    int degree = 1;
-
-    switch (distype)
-    {
-      case CORE::FE::CellType::nurbs8:
-      {
-        degree = 1;
-
-        break;
-      }
-      case CORE::FE::CellType::nurbs27:
-      {
-        degree = 2;
-
-        break;
-      }
-      default:
-      {
-        dserror("Unknown distype for nurbs element evaluation\n");
-        break;
-      }
-    }
-
     const int degreep = degree + 1;
 
     // size is the number of control points/basis
@@ -3815,6 +3805,35 @@ namespace CORE::FE::NURBS
     return true;
   }
 
+  /**
+   * @brief Evaluate the 3D NURBS shape functions and their 2nd derivatives based on the
+   * discretization type of the element.
+   */
+  template <class VF, class MD, class MSD, class UV, class WG>
+  bool nurbs_get_3D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
+      MSD& nurbs_shape_deriv2, const UV& uv,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
+      const CORE::FE::CellType& distype)
+  {
+    switch (distype)
+    {
+      case CORE::FE::CellType::nurbs8:
+      {
+        return nurbs_get_3D_funct_deriv_deriv2<1>(
+            nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
+      }
+      case CORE::FE::CellType::nurbs27:
+      {
+        return nurbs_get_3D_funct_deriv_deriv2<2>(
+            nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
+      }
+      default:
+      {
+        dserror("Unknown distype for nurbs element evaluation\n");
+      }
+    }
+  }
+
 
   //! Evaluate basis functions, first and second derivatives of nurbs basis functions.
   template <class VF, class MD, class MSD, class UV, class WG>
@@ -3906,4 +3925,4 @@ namespace CORE::FE::NURBS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_H
+#endif

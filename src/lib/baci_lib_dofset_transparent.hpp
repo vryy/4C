@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DOFSET_TRANSPARENT_HPP
-#define BACI_LIB_DOFSET_TRANSPARENT_HPP
+#ifndef FOUR_C_LIB_DOFSET_TRANSPARENT_HPP
+#define FOUR_C_LIB_DOFSET_TRANSPARENT_HPP
 
 
 #include "baci_config.hpp"
@@ -99,4 +99,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DOFSET_TRANSPARENT_H
+#endif

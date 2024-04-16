@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_EPETRA_EXCEPTIONS_HPP
-#define BACI_UTILS_EPETRA_EXCEPTIONS_HPP
+#ifndef FOUR_C_UTILS_EPETRA_EXCEPTIONS_HPP
+#define FOUR_C_UTILS_EPETRA_EXCEPTIONS_HPP
 
 #include "baci_config.hpp"
 
@@ -48,4 +48,4 @@ void set_trace_back_mode(int tracebackmode);
   }
 
 
-#endif  // BACI_UTILS_EPETRA_EXCEPTIONS_H
+#endif

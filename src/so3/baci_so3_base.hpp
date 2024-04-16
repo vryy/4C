@@ -9,8 +9,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_SO3_BASE_HPP
-#define BACI_SO3_BASE_HPP
+#ifndef FOUR_C_SO3_BASE_HPP
+#define FOUR_C_SO3_BASE_HPP
 
 #include "baci_config.hpp"
 
@@ -338,4 +338,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_BASE_H
+#endif

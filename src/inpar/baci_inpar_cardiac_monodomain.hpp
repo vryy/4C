@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_CARDIAC_MONODOMAIN_HPP
-#define BACI_INPAR_CARDIAC_MONODOMAIN_HPP
+#ifndef FOUR_C_INPAR_CARDIAC_MONODOMAIN_HPP
+#define FOUR_C_INPAR_CARDIAC_MONODOMAIN_HPP
 
 
 #include "baci_config.hpp"
@@ -42,4 +42,4 @@ namespace INPAR
 }  // namespace INPAR
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_CARDIAC_MONODOMAIN_H
+#endif

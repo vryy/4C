@@ -9,8 +9,8 @@ Bauer
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_ION_HPP
-#define BACI_MAT_ION_HPP
+#ifndef FOUR_C_MAT_ION_HPP
+#define FOUR_C_MAT_ION_HPP
 
 #include "baci_config.hpp"
 

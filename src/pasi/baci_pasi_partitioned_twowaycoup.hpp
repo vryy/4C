@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PASI_PARTITIONED_TWOWAYCOUP_HPP
-#define BACI_PASI_PARTITIONED_TWOWAYCOUP_HPP
+#ifndef FOUR_C_PASI_PARTITIONED_TWOWAYCOUP_HPP
+#define FOUR_C_PASI_PARTITIONED_TWOWAYCOUP_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

@@ -12,8 +12,8 @@ chapter 3.4)
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MAXWELL_0D_ACINUS_DOUBLEEXPONENTIAL_HPP
-#define BACI_MAT_MAXWELL_0D_ACINUS_DOUBLEEXPONENTIAL_HPP
+#ifndef FOUR_C_MAT_MAXWELL_0D_ACINUS_DOUBLEEXPONENTIAL_HPP
+#define FOUR_C_MAT_MAXWELL_0D_ACINUS_DOUBLEEXPONENTIAL_HPP
 
 
 #include "baci_config.hpp"

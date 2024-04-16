@@ -10,7 +10,8 @@
 
 #include "baci_scatra_ele_calc_artery.hpp"
 
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
 #include "baci_utils_singleton_owner.hpp"
@@ -146,15 +147,15 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
 
   // values of scatra field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   if (my::scatraparatimint_->IsGenAlpha() and not my::scatraparatimint_->IsIncremental())
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
     if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
 
   //---------------------------------------------------------------------------------------------
@@ -167,7 +168,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
         discretization.GetState(1, "curr_seg_lengths");
     std::vector<double> seglengths(la[1].lm_.size());
 
-    DRT::UTILS::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
+    CORE::FE::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
 
     const double curr_ele_length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
 
@@ -205,7 +206,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
         discretization.GetState(ndsscatra_artery, "one_d_artery_pressure");
     // values of scatra field are always in first dofset
     const std::vector<int>& lm_artery = la[ndsscatra_artery].lm_;
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
         *arterypn, earterypressurenp_, lm_artery);
   }
   else

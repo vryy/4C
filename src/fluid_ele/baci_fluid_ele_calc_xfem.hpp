@@ -9,14 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_ELE_CALC_XFEM_HPP
-#define BACI_FLUID_ELE_CALC_XFEM_HPP
+#ifndef FOUR_C_FLUID_ELE_CALC_XFEM_HPP
+#define FOUR_C_FLUID_ELE_CALC_XFEM_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_fluid_ele_calc.hpp"
 #include "baci_fluid_ele_calc_xfem_coupling.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_utils_singleton_owner.hpp"
 #include "baci_xfem_condition_manager.hpp"
 

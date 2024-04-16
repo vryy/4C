@@ -5,8 +5,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_MODULE_REGISTRY_CALLBACKS_HPP
-#define BACI_MODULE_REGISTRY_CALLBACKS_HPP
+#ifndef FOUR_C_MODULE_REGISTRY_CALLBACKS_HPP
+#define FOUR_C_MODULE_REGISTRY_CALLBACKS_HPP
 
 #include "baci_config.hpp"
 

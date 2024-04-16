@@ -8,8 +8,8 @@ linear spring (Stiffness1) only (Neo Hookean), inherits from Maxwell_0d_acinus
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_HPP
-#define BACI_MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_HPP
+#ifndef FOUR_C_MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_HPP
+#define FOUR_C_MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_HPP
 
 
 #include "baci_config.hpp"

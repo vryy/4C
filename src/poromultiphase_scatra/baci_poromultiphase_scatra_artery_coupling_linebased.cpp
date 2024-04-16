@@ -10,6 +10,7 @@
 
 #include "baci_poromultiphase_scatra_artery_coupling_linebased.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -951,7 +952,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetEleSegmentLength
   Teuchos::RCP<const Epetra_Vector> curr_seg_lengths = arterydis_->GetState(1, "curr_seg_lengths");
 
   std::vector<double> seglengths(maxnumsegperartele_);
-  DRT::UTILS::ExtractMyValues(*curr_seg_lengths, seglengths, seglengthdofs);
+  CORE::FE::ExtractMyValues(*curr_seg_lengths, seglengths, seglengthdofs);
 
   return seglengths;
 }

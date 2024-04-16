@@ -10,8 +10,8 @@ builds the bridge between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_XFEM_CONDITION_MANAGER_HPP
-#define BACI_XFEM_CONDITION_MANAGER_HPP
+#ifndef FOUR_C_XFEM_CONDITION_MANAGER_HPP
+#define FOUR_C_XFEM_CONDITION_MANAGER_HPP
 
 // Might want to forward declare the levelset and mesh coupling and put these functions into
 // the xfem_condition_manager.cpp file in a later stage
@@ -798,4 +798,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_CONDITION_MANAGER_H
+#endif

@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_HPP
-#define BACI_SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_HPP
+#ifndef FOUR_C_SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_HPP
+#define FOUR_C_SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_HPP
 
 #include "baci_config.hpp"
 
@@ -233,4 +233,4 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPostComputeFandJacobian(Epe
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_H
+#endif

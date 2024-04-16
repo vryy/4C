@@ -99,16 +99,6 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           output_file, output_file, output_both, output_both),
       &scontact);
 
-  setStringToIntegralParameter<int>("ERROR_NORMS", "None",
-      "Choice of analytical solution for error norm computation",
-      tuple<std::string>("None", "none", "No", "no", "Zero", "zero", "Bending", "bending", "Sphere",
-          "sphere", "Thick", "thick", "Plate", "plate"),
-      tuple<int>(errornorms_none, errornorms_none, errornorms_none, errornorms_none,
-          errornorms_zero, errornorms_zero, errornorms_bending, errornorms_bending,
-          errornorms_sphere, errornorms_sphere, errornorms_thicksphere, errornorms_thicksphere,
-          errornorms_infiniteplate, errornorms_infiniteplate),
-      &scontact);
-
   CORE::UTILS::BoolParameter(
       "INITCONTACTBYGAP", "No", "Initialize init contact by weighted gap vector", &scontact);
 

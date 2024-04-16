@@ -9,8 +9,8 @@ Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CONSTRAINT_HPP
-#define BACI_CONSTRAINT_HPP
+#ifndef FOUR_C_CONSTRAINT_HPP
+#define FOUR_C_CONSTRAINT_HPP
 
 #include "baci_config.hpp"
 
@@ -166,4 +166,4 @@ namespace CONSTRAINTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONSTRAINT_H
+#endif

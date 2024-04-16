@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_INTEGRATIONCELLCREATOR_HPP
-#define BACI_CUT_INTEGRATIONCELLCREATOR_HPP
+#ifndef FOUR_C_CUT_INTEGRATIONCELLCREATOR_HPP
+#define FOUR_C_CUT_INTEGRATIONCELLCREATOR_HPP
 
 #include "baci_config.hpp"
 

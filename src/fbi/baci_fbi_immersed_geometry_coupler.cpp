@@ -11,6 +11,7 @@ The current implementation does not scale at all!
 
 #include "baci_binstrategy.hpp"
 #include "baci_binstrategy_utils.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_searchtree.hpp"
 #include "baci_discretization_geometry_searchtree_service.hpp"
 #include "baci_global_data.hpp"
@@ -18,7 +19,6 @@ The current implementation does not scale at all!
 #include "baci_lib_discret_faces.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_node.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
@@ -332,7 +332,7 @@ void FBI::FBIGeometryCoupler::ComputeCurrentPositions(DRT::Discretization& dis,
       // get the DOF numbers of the current node
       dis.Dof(node, 0, src_dofs);
       // get the current displacements
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, src_dofs);
+      CORE::FE::ExtractMyValues(*disp, mydisp, src_dofs);
 
       for (int d = 0; d < 3; ++d) (*positions)[node->Id()](d) = node->X()[d] + mydisp.at(d);
     }

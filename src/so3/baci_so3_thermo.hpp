@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 11/12 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_THERMO_HPP
-#define BACI_SO3_THERMO_HPP
+#ifndef FOUR_C_SO3_THERMO_HPP
+#define FOUR_C_SO3_THERMO_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/12 |
@@ -199,7 +199,7 @@ namespace DRT
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
-      virtual void InitJacobianMapping(DRT::Discretization& dis);  // NOLINT(modernize-use-override)
+      void InitJacobianMappingSpecialForNurbs(DRT::Discretization& dis);
 
       //@}
 
@@ -393,4 +393,4 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_THERMO_H
+#endif

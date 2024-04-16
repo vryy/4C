@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_SSI_COUPLING_HPP
-#define BACI_SSI_COUPLING_HPP
+#ifndef FOUR_C_SSI_COUPLING_HPP
+#define FOUR_C_SSI_COUPLING_HPP
 
 #include "baci_config.hpp"
 
@@ -407,4 +407,4 @@ namespace SSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_COUPLING_H
+#endif

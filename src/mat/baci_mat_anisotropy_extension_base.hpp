@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_ANISOTROPY_EXTENSION_BASE_HPP
-#define BACI_MAT_ANISOTROPY_EXTENSION_BASE_HPP
+#ifndef FOUR_C_MAT_ANISOTROPY_EXTENSION_BASE_HPP
+#define FOUR_C_MAT_ANISOTROPY_EXTENSION_BASE_HPP
 
 #include "baci_config.hpp"
 
@@ -112,4 +112,4 @@ namespace MAT
 }  // namespace MAT
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_ANISOTROPY_EXTENSION_BASE_H
+#endif

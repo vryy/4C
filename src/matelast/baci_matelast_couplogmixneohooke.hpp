@@ -8,8 +8,8 @@ Comput. Methods Appl. Mech. Engrg. 260, 2013"
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_COUPLOGMIXNEOHOOKE_HPP
-#define BACI_MATELAST_COUPLOGMIXNEOHOOKE_HPP
+#ifndef FOUR_C_MATELAST_COUPLOGMIXNEOHOOKE_HPP
+#define FOUR_C_MATELAST_COUPLOGMIXNEOHOOKE_HPP
 
 #include "baci_config.hpp"
 
@@ -168,4 +168,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_COUPLOGMIXNEOHOOKE_H
+#endif

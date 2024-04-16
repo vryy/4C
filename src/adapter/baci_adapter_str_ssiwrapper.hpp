@@ -7,8 +7,8 @@
 \level 1
 */
 
-#ifndef BACI_ADAPTER_STR_SSIWRAPPER_HPP
-#define BACI_ADAPTER_STR_SSIWRAPPER_HPP
+#ifndef FOUR_C_ADAPTER_STR_SSIWRAPPER_HPP
+#define FOUR_C_ADAPTER_STR_SSIWRAPPER_HPP
 
 #include "baci_config.hpp"
 
@@ -69,4 +69,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_STR_SSIWRAPPER_H
+#endif

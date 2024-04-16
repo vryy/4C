@@ -23,6 +23,22 @@
 
 BACI_NAMESPACE_OPEN
 
+/*
+Functions to catch implementation erros in debug mode
+*/
+namespace
+{
+  [[maybe_unused]] bool IsCutPositionUnchanged(
+      CORE::GEO::CUT::Point::PointPosition position, CORE::GEO::CUT::Point::PointPosition pos)
+  {
+    if ((position == CORE::GEO::CUT::Point::inside and pos == CORE::GEO::CUT::Point::outside) or
+        (position == CORE::GEO::CUT::Point::outside and pos == CORE::GEO::CUT::Point::inside))
+      return false;
+    else
+      return true;
+  }
+}  // namespace
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::Point* CORE::GEO::CUT::Point::NewPoint(
@@ -525,19 +541,10 @@ void CORE::GEO::CUT::Point::Position(Point::PointPosition pos)
 {
   if (position_ != pos)
   {
-    // #ifdef DEBUGCUTLIBRARY
     //  safety check, if the position of a facet changes from one side to the other
-    if ((position_ == Point::inside and pos == Point::outside) or
-        (position_ == Point::outside and pos == Point::inside))
-    {
-      //      this->Print(std::cout);
-      std::cout << "point with changing position inside->outside or vice versa " << pid_
-                << std::endl;
-      dserror(
-          "Are you sure that you want to change the point-position from inside to outside or vice "
-          "versa?");
-    }
-    // #endif
+    dsassert(IsCutPositionUnchanged(position_, pos),
+        "Are you sure that you want to change the point-position from inside to outside or vice "
+        "versa?");
 
     // do not overwrite oncutsurface points
     if (position_ == Point::oncutsurface) return;

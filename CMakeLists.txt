@@ -18,11 +18,6 @@ endif()
 
 project(baci CXX C)
 
-# Add flags that are vital to BACI's build system and cannot be disabled by users
-
-# Export symbols (necessary for stacktraces)
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
-
 # Print CMake version to screen
 message(STATUS "Using CMake ${CMAKE_VERSION}")
 
@@ -35,47 +30,47 @@ set(CMAKE_CXX_EXTENSIONS Off)
 set(baci_VERSION_MAJOR 1)
 set(baci_VERSION_MINOR 0)
 
+# Assert a valid build configuration
+set(_allowed_build_types "DEBUG" "RELEASE" "RELWITHDEBINFO")
+if(NOT CMAKE_BUILD_TYPE)
+  message(FATAL_ERROR "Choose a build type. Options are: ${_allowed_build_types}.")
+else()
+  string(TOUPPER ${CMAKE_BUILD_TYPE} BACI_BUILD_TYPE_UPPER)
+  if(NOT ${BACI_BUILD_TYPE_UPPER} IN_LIST _allowed_build_types)
+    message(
+      FATAL_ERROR "Invalid build type ${CMAKE_BUILD_TYPE}. Options are: ${_allowed_build_types}."
+      )
+  endif()
+  message(STATUS "Configuring for build type ${CMAKE_BUILD_TYPE}")
+endif()
+
 # specify where our own cmake modules are located
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 # include all external (cmake) macros that we use
-include(CheckCXXSourceRuns)
-include(CheckCXXSourceCompiles)
+include(CheckCXXCompilerFlag)
+include(CheckLinkerFlag)
+
 include(FetchContent)
 
-# include our own functions and macros
+# Include our own functions and macros
 file(GLOB _function_files CONFIGURE_DEPENDS "cmake/functions/*.cmake")
 foreach(_file ${_function_files})
-  message(STATUS "Include ${_file}")
+  message(VERBOSE "Include ${_file}")
   include(${_file})
 endforeach()
 
-# If enabled, build all targets with address sanitizer
-option(BACI_WITH_ADDRESS_SANITIZER "Compile BACI with address sanitizer" OFF)
-if(BACI_WITH_ADDRESS_SANITIZER)
-  add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
-  add_link_options(-fsanitize=address -fno-omit-frame-pointer)
-endif()
+# Perform basic checks
+file(GLOB _checks CONFIGURE_DEPENDS "cmake/checks/*.cmake")
+foreach(_file ${_checks})
+  message(VERBOSE "Include ${_file}")
+  include(${_file})
+endforeach()
 
-#
-### Build in default values
-
-if(NOT CMAKE_BUILD_TYPE)
-  message(FATAL_ERROR "Choose a build type. Options are Debug and Release.")
-endif()
-
-###------------------------------------------------------------------- Default cmake settings
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 ### process global options
 include(cmake/setup_global_options.cmake)
-
-# Run some system checks
-file(GLOB _check_files CONFIGURE_DEPENDS "cmake/checks/*.cmake")
-foreach(_file ${_check_files})
-  message(STATUS "Include ${_file}")
-  include(${_file})
-endforeach()
 
 ###------------------------------------------------------------------ External Libraries
 
@@ -139,6 +134,7 @@ include(cmake/setup_tests.cmake)
 # Create one large library: every module adds itself to this target
 set(BACI_LIBRARY_NAME baci_lib)
 add_library(${BACI_LIBRARY_NAME})
+target_link_libraries(${BACI_LIBRARY_NAME} PRIVATE baci_private_compile_interface)
 
 # Read in the source directory which defines all modules
 add_subdirectory(src)

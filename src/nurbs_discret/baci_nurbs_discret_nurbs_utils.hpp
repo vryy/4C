@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_NURBS_DISCRET_NURBS_UTILS_HPP
-#define BACI_NURBS_DISCRET_NURBS_UTILS_HPP
+#ifndef FOUR_C_NURBS_DISCRET_NURBS_UTILS_HPP
+#define FOUR_C_NURBS_DISCRET_NURBS_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -206,4 +206,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // NURBS_DISCRET_NURBS_UTILS_H
+#endif

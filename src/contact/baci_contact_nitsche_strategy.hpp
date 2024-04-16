@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_NITSCHE_STRATEGY_HPP
-#define BACI_CONTACT_NITSCHE_STRATEGY_HPP
+#ifndef FOUR_C_CONTACT_NITSCHE_STRATEGY_HPP
+#define FOUR_C_CONTACT_NITSCHE_STRATEGY_HPP
 
 #include "baci_config.hpp"
 
@@ -265,4 +265,4 @@ namespace CONTACT
 }  // namespace CONTACT
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_NITSCHE_STRATEGY_H
+#endif

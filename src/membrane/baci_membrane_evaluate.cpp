@@ -8,10 +8,10 @@
 \brief Nonlinear Membrane Finite Element evaluation
 
 *----------------------------------------------------------------------*/
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_linalg_fixedsizematrix_tensor_transformation.hpp"
 #include "baci_linalg_utils_densematrix_eigen.hpp"
@@ -96,7 +96,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       CORE::LINALG::Matrix<numdof_, numdof_>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
@@ -114,7 +114,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       CORE::LINALG::Matrix<numdof_, numdof_>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
@@ -132,7 +132,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       mem_nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       Update_element(mydisp, params, Material());
     }
     break;
@@ -172,7 +172,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
@@ -272,7 +272,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get reference configuration and determine current configuration
       CORE::LINALG::Matrix<numnod_, noddof_> xrefe(true);
@@ -517,7 +517,7 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+  CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
   // get reference configuration and determine current configuration
   CORE::LINALG::Matrix<numnod_, noddof_> xrefe(true);

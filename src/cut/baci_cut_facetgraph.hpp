@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_FACETGRAPH_HPP
-#define BACI_CUT_FACETGRAPH_HPP
+#ifndef FOUR_C_CUT_FACETGRAPH_HPP
+#define FOUR_C_CUT_FACETGRAPH_HPP
 
 #include "baci_config.hpp"
 
@@ -60,12 +60,6 @@ namespace CORE::GEO
 
       virtual void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells);
 
-#ifdef DEBUGCUTLIBRARY
-      bool InCollectedFacets(const plain_facet_set& collected_facets);
-
-      void PrintAllCollected();
-#endif
-
      protected:
       /// empty constructor for derived classes only
       FacetGraph(const unsigned& graph_size = 0)
@@ -86,9 +80,6 @@ namespace CORE::GEO
       COLOREDGRAPH::Graph graph_;
       COLOREDGRAPH::CycleList cycle_list_;
       std::vector<std::pair<Point*, Point*>> all_lines_;
-#ifdef DEBUGCUTLIBRARY
-      std::vector<plain_facet_set> all_collected_facets_;
-#endif
     };  // class FacetGraph
 
   }  // namespace CUT

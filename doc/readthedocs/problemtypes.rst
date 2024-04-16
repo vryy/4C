@@ -5,7 +5,7 @@ Problem types
 
 .. ToDo:
 
-   Here, we have to describe the different types that can be calculated with BACI. It's not complete yet.
+   Here, we have to describe the different types that can be calculated with |FOURC|. It's not complete yet.
 
 .. _singlefieldproblems:
 

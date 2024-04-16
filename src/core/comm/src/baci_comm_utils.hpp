@@ -6,8 +6,8 @@
 */
 
 
-#ifndef BACI_COMM_UTILS_HPP
-#define BACI_COMM_UTILS_HPP
+#ifndef FOUR_C_COMM_UTILS_HPP
+#define FOUR_C_COMM_UTILS_HPP
 
 
 #include "baci_config.hpp"

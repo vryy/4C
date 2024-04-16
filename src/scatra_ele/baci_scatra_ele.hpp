@@ -9,8 +9,8 @@ Pack, Unpack, NumDofPerNode etc.
 \level 1
 
 */
-#ifndef BACI_SCATRA_ELE_HPP
-#define BACI_SCATRA_ELE_HPP
+#ifndef FOUR_C_SCATRA_ELE_HPP
+#define FOUR_C_SCATRA_ELE_HPP
 
 #include "baci_config.hpp"
 
@@ -697,4 +697,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_ELE_H
+#endif

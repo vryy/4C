@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_BASE_HPP
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_BASE_HPP
+#ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_BASE_HPP
+#define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_BASE_HPP
 
 
 #include "baci_config.hpp"
@@ -156,19 +156,18 @@ namespace BEAMINTERACTION
      * @param beam_coupling_ref (out) shifted reference position of the beam.
      * @param solid_coupling_ref (out) shifted reference position of the solid.
      */
-    void GetCouplingReferencePosition(
-        CORE::LINALG::Matrix<beam::n_dof_, 1, double>& beam_coupling_ref,
-        CORE::LINALG::Matrix<solid::n_dof_, 1, double>& solid_coupling_ref) const;
+    void GetCouplingReferencePosition(GEOMETRYPAIR::ElementData<beam, double>& beam_coupling_ref,
+        GEOMETRYPAIR::ElementData<solid, double>& solid_coupling_ref) const;
 
    protected:
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
 
     //! Current nodal positions (and tangents) of the solid.
-    CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type> ele2pos_;
+    GEOMETRYPAIR::ElementData<solid, scalar_type> ele2pos_;
 
     //! Reference nodal positions (and tangents) of the solid.
-    CORE::LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_;
+    GEOMETRYPAIR::ElementData<solid, double> ele2posref_;
 
     //! Offset of solid DOFs for coupling. This will be used when the state that should be coupled
     //! is not the undeformed reference position, i.e. in restart simulations where the restart

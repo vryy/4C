@@ -1270,8 +1270,6 @@ void test_ls_mesh_hex8_simple()
 
   // CUT WITH MESH
   intersection.AddElement(1, nids, GetLocalHex8Coords(), CORE::FE::CellType::hex8);
-
-  intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
 
   std::vector<double> tessVol, dirDivVol;

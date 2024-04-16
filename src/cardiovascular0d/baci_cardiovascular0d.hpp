@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CARDIOVASCULAR0D_HPP
-#define BACI_CARDIOVASCULAR0D_HPP
+#ifndef FOUR_C_CARDIOVASCULAR0D_HPP
+#define FOUR_C_CARDIOVASCULAR0D_HPP
 
 #include "baci_config.hpp"
 
@@ -167,4 +167,4 @@ namespace UTILS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CARDIOVASCULAR0D_H
+#endif

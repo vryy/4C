@@ -9,8 +9,8 @@ Fluid-Poro-Coupling Matrixes!
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FPSI_COUPLING_HPP
-#define BACI_FPSI_COUPLING_HPP
+#ifndef FOUR_C_FPSI_COUPLING_HPP
+#define FOUR_C_FPSI_COUPLING_HPP
 
 // ALE includes
 #include "baci_config.hpp"
@@ -261,4 +261,4 @@ namespace FPSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FPSI_COUPLING_H
+#endif

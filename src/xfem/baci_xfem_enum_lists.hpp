@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------------*/
 
 
-#ifndef BACI_XFEM_ENUM_LISTS_HPP
-#define BACI_XFEM_ENUM_LISTS_HPP
+#ifndef FOUR_C_XFEM_ENUM_LISTS_HPP
+#define FOUR_C_XFEM_ENUM_LISTS_HPP
 
 #include "baci_config.hpp"
 
@@ -88,4 +88,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_ENUM_LISTS_H
+#endif

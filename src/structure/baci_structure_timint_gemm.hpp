@@ -5,8 +5,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_STRUCTURE_TIMINT_GEMM_HPP
-#define BACI_STRUCTURE_TIMINT_GEMM_HPP
+#ifndef FOUR_C_STRUCTURE_TIMINT_GEMM_HPP
+#define FOUR_C_STRUCTURE_TIMINT_GEMM_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -332,4 +332,4 @@ namespace STR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_TIMINT_GEMM_H
+#endif

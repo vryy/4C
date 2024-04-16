@@ -11,7 +11,7 @@
 
 #include "baci_art_net_art_write_gnuplot.hpp"
 
-#include "baci_lib_utils.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -313,7 +313,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(Teuchos::RCP<DRT::Discretization> discre
     // get the degrees of freedom
     Teuchos::RCP<const Epetra_Vector> qanp = discret->GetState("qanp");
     std::vector<double> myqanp(lm.size());
-    DRT::UTILS::ExtractMyValues(*qanp, myqanp, lm);
+    CORE::FE::ExtractMyValues(*qanp, myqanp, lm);
 
     // get the current simulation time
     time = params.get<double>("total time");

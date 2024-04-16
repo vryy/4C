@@ -6,8 +6,8 @@
 \level 2
 */
 
-#ifndef BACI_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_BASE_HPP
-#define BACI_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_BASE_HPP
+#ifndef FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_BASE_HPP
+#define FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_BASE_HPP
 
 #include "baci_config.hpp"
 
@@ -122,12 +122,12 @@ namespace BEAMINTERACTION
         CORE::LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
 
     //! Current nodal velocities of the two elements.
-    CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> ele1vel_;
-    CORE::LINALG::Matrix<fluid::n_dof_, 1, scalar_type> ele2vel_;
+    GEOMETRYPAIR::ElementData<beam, scalar_type> ele1vel_;
+    GEOMETRYPAIR::ElementData<fluid, scalar_type> ele2vel_;
 
     //! Current nodal positions (and tangents) of the two elements.
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double> ele1poscur_;
-    CORE::LINALG::Matrix<fluid::n_dof_, 1, double> ele2poscur_;
+    GEOMETRYPAIR::ElementData<beam, double> ele1poscur_;
+    GEOMETRYPAIR::ElementData<fluid, double> ele2poscur_;
   };
 }  // namespace BEAMINTERACTION
 

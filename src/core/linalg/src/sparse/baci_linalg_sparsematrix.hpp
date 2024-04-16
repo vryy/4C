@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_SPARSEMATRIX_HPP
-#define BACI_LINALG_SPARSEMATRIX_HPP
+#ifndef FOUR_C_LINALG_SPARSEMATRIX_HPP
+#define FOUR_C_LINALG_SPARSEMATRIX_HPP
 
 #include "baci_config.hpp"
 

@@ -8,13 +8,13 @@
 // End doxygen header.
 
 
-#ifndef BACI_GEOMETRY_PAIR_ELEMENT_FACES_HPP
-#define BACI_GEOMETRY_PAIR_ELEMENT_FACES_HPP
+#ifndef FOUR_C_GEOMETRY_PAIR_ELEMENT_FACES_HPP
+#define FOUR_C_GEOMETRY_PAIR_ELEMENT_FACES_HPP
 
 
 #include "baci_config.hpp"
 
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element.hpp"
 #include "baci_lib_element.hpp"
 
 #include <unordered_map>
@@ -210,10 +210,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      */
     FaceElementTemplate(const Teuchos::RCP<const DRT::FaceElement>& face_element)
-        : FaceElement(face_element),
-          face_reference_position_(true),
-          face_position_(true),
-          n_dof_other_element_(0){};
+        : FaceElement(face_element), n_dof_other_element_(0){};
 
 
     /**
@@ -234,20 +231,14 @@ namespace GEOMETRYPAIR
         override;
 
     /**
-     * \brief Return the reference position of this face.
+     * \brief Return the reference element data of this face.
      */
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, double>& GetFaceReferencePosition() const
-    {
-      return face_reference_position_;
-    }
+    const auto& GetFaceReferenceElementData() const { return face_reference_position_; }
 
     /**
-     * \brief Return the current position of this face.
+     * \brief Return the current element data of this face.
      */
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& GetFacePosition() const
-    {
-      return face_position_;
-    }
+    const auto& GetFaceElementData() const { return face_position_; }
 
     /**
      * \brief Return the reference normals on this face.
@@ -306,10 +297,10 @@ namespace GEOMETRYPAIR
 
    protected:
     //! Reference position.
-    CORE::LINALG::Matrix<surface::n_dof_, 1, double> face_reference_position_;
+    ElementData<surface, double> face_reference_position_;
 
     //! Current position.
-    CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type> face_position_;
+    ElementData<surface, scalar_type> face_position_;
 
     //! Number of DOFs used for the element that will be interacting with this face. This is
     //! required to correctly set the FAD types. For now, a single face element can only be used in
@@ -346,12 +337,9 @@ namespace GEOMETRYPAIR
         const bool evaluate_current_normals)
         : base_class(face_element),
           connected_faces_(),
-          evaluate_current_normals_(evaluate_current_normals),
-          reference_normals_(true),
-          current_normals_(true)
+          evaluate_current_normals_(evaluate_current_normals)
     {
     }
-
 
     /**
      * \brief Set the patch information of the patch connected to this face element.
@@ -382,27 +370,6 @@ namespace GEOMETRYPAIR
         override;
 
     /**
-     * \brief Return the reference normals on this face.
-     */
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals()
-        const override
-    {
-      return &reference_normals_;
-    }
-
-    /**
-     * \brief Return the current normals on this face.
-     */
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals()
-        const override
-    {
-      if (evaluate_current_normals_)
-        return &current_normals_;
-      else
-        return nullptr;
-    }
-
-    /**
      * \brief Return a normal on the element. (derived)
      */
     void EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
@@ -429,12 +396,6 @@ namespace GEOMETRYPAIR
     //! If the current normals should be evaluated. If they should not be evaluated, then no
     //! information about the patch is required.
     bool evaluate_current_normals_;
-
-    //! Reference normals.
-    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> reference_normals_;
-
-    //! Current normals.
-    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
   };
 
 
@@ -458,16 +419,10 @@ namespace GEOMETRYPAIR
     FaceElementTemplateExtendedVolume(const Teuchos::RCP<const DRT::FaceElement>& face_element)
         : base_class(face_element),
           surface_dof_lid_map_(true),
-          reference_normals_(true),
-          current_normals_(true),
-          volume_reference_position_(true),
-          volume_position_(true),
           face_to_volume_coordinate_axis_map_(true),
           face_to_volume_coordinate_axis_factor_(true),
           third_direction_(-1),
           third_direction_factor_(0){};
-
-
 
     /**
      * \brief Get the face GIDs and set the reference configuration.
@@ -495,27 +450,9 @@ namespace GEOMETRYPAIR
      */
     template <typename scalar_type_normal>
     void CalculateNormals(
-        const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type_normal>& volume_position,
-        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type_normal>& surface_position,
+        const GEOMETRYPAIR::ElementData<volume, scalar_type_normal>& volume_position,
+        const GEOMETRYPAIR::ElementData<surface, scalar_type_normal>& surface_position,
         CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const;
-
-    /**
-     * \brief Return the reference normals on this face.
-     */
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals()
-        const override
-    {
-      return &reference_normals_;
-    }
-
-    /**
-     * \brief Return the current normals on this face.
-     */
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals()
-        const override
-    {
-      return &current_normals_;
-    }
 
     /**
      * \brief Return a normal on the element. (derived)
@@ -536,17 +473,11 @@ namespace GEOMETRYPAIR
     //! Map between surface DOFs and volume DOFs.
     CORE::LINALG::Matrix<surface::n_dof_, 1, int> surface_dof_lid_map_;
 
-    //! Reference normals.
-    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> reference_normals_;
-
-    //! Current normals.
-    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
-
     //! Reference position.
-    CORE::LINALG::Matrix<volume::n_dof_, 1, double> volume_reference_position_;
+    GEOMETRYPAIR::ElementData<volume, double> volume_reference_position_;
 
     //! Current position.
-    CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type> volume_position_;
+    GEOMETRYPAIR::ElementData<volume, scalar_type> volume_position_;
 
     //! Map the face coordinate axis to the volume coordinate axis.
     CORE::LINALG::Matrix<2, 1, int> face_to_volume_coordinate_axis_map_;

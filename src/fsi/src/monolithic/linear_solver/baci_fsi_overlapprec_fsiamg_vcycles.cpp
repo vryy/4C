@@ -195,9 +195,6 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_V(const int myrank, cons
     initrinf = std::max(initrinf, initfrinf);
   }
   Teuchos::Time timer("RichardsonBGS_V", true);
-  double t1 = 0.0;
-  double t2 = 0.0;
-  double t3 = 0.0;
 
   for (int i = 1; i <= sweeps; ++i)
   {
@@ -212,7 +209,6 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_V(const int myrank, cons
       RichardsonV("(s)", myrank, blocksweeps[0], blockdamps[0], sbest.Sweeps(), sbest.Damp(), Ass,
           sbest.S(), Pss, Rss, 0, sbest.Nlevel(), sz, stmpf, true, false, true);
       sy.Update(damp, sz, 1.0);
-      if (analysis) t1 += timer.totalElapsedTime(true);
     }
     //---------------------- ale block
     {
@@ -228,7 +224,6 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_V(const int myrank, cons
       RichardsonV("(a)", myrank, blocksweeps[2], blockdamps[2], abest.Sweeps(), abest.Damp(), Aaa,
           abest.S(), Paa, Raa, 0, abest.Nlevel(), az, atmpf, true, false, true);
       ay.Update(damp, az, 1.0);
-      if (analysis) t2 += timer.totalElapsedTime(true);
     }
     //------------------------ fluid block
     {
@@ -242,7 +237,6 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_V(const int myrank, cons
       RichardsonV("(f)", myrank, blocksweeps[1], blockdamps[1], fbest.Sweeps(), fbest.Damp(), Aff,
           fbest.S(), Pff, Rff, 0, fbest.Nlevel(), fz, ftmpf, true, false, true);
       fy.Update(damp, fz, 1.0);
-      if (analysis) t3 += timer.totalElapsedTime(true);
     }
   }  // iterations
 

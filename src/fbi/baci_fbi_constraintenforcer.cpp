@@ -29,7 +29,6 @@ interaction.
 #include "baci_lib_discret_faces.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_node.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_blocksparsematrix.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"

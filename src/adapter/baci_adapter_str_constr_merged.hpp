@@ -11,8 +11,8 @@
 /* macros */
 
 
-#ifndef BACI_ADAPTER_STR_CONSTR_MERGED_HPP
-#define BACI_ADAPTER_STR_CONSTR_MERGED_HPP
+#ifndef FOUR_C_ADAPTER_STR_CONSTR_MERGED_HPP
+#define FOUR_C_ADAPTER_STR_CONSTR_MERGED_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */

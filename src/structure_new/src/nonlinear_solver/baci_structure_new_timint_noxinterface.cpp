@@ -654,7 +654,7 @@ void STR::TIMINT::NoxInterface::getDofsFromElements(
     {
       if (nodes[i]->Owner() != gstate_ptr_->GetComm().MyPID()) continue;
 
-      const std::vector<int> ndofs(std::move(discret_ptr->Dof(0, nodes[i])));
+      const std::vector<int> ndofs(discret_ptr->Dof(0, nodes[i]));
       my_ele_dofs.insert(ndofs.begin(), ndofs.end());
     }
   }

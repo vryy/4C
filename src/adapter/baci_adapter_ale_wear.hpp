@@ -10,8 +10,8 @@
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_ALE_WEAR_HPP
-#define BACI_ADAPTER_ALE_WEAR_HPP
+#ifndef FOUR_C_ADAPTER_ALE_WEAR_HPP
+#define FOUR_C_ADAPTER_ALE_WEAR_HPP
 
 
 /*----------------------------------------------------------------------------*/
@@ -64,4 +64,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_ALE_WEAR_H
+#endif

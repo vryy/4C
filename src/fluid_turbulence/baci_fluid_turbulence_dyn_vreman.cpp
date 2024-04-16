@@ -16,7 +16,7 @@
 #include "baci_global_data.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_utils_parameter_list.hpp"
 

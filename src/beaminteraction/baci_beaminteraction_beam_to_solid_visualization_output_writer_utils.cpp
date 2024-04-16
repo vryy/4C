@@ -10,9 +10,9 @@
 
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_utils.hpp"
 
-#include "baci_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 #include "baci_beaminteraction_calc_utils.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "baci_geometry_pair_element_faces.hpp"
 #include "baci_lib_discret.hpp"
@@ -163,8 +163,8 @@ void BEAMINTERACTION::GetGlobalCouplingForceResultants(const DRT::Discretization
     discret.Dof(current_node, gid_node);
 
     // Get the local force and displacement values.
-    DRT::UTILS::ExtractMyValues(force, local_force, gid_node);
-    DRT::UTILS::ExtractMyValues(displacement, local_position, gid_node);
+    CORE::FE::ExtractMyValues(force, local_force, gid_node);
+    CORE::FE::ExtractMyValues(displacement, local_position, gid_node);
     for (unsigned int dim = 0; dim < 3; ++dim) local_position[dim] += current_node->X()[dim];
 
     if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))

@@ -9,12 +9,13 @@
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_boundary_calc.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_fluid_rotsym_periodicbc.hpp"
 #include "baci_global_data.hpp"
 #include "baci_mat_fourieriso.hpp"
 #include "baci_mat_list.hpp"
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_mat_thermostvenantkirchhoff.hpp"
 #include "baci_nurbs_discret_nurbs_utils.hpp"
 #include "baci_scatra_ele_parameter_boundary.hpp"
@@ -187,7 +188,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
         lmdisp[inode * nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     UpdateNodeCoordinates();
@@ -213,7 +214,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
 
     // extract local values of displacement field from global state vector
     CORE::LINALG::Matrix<nsd_, num_node_parent_ele> parentdispnp;
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, num_node_parent_ele>>(
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, num_node_parent_ele>>(
         *dispnp, parentdispnp, parent_lmdisp);
 
     eparentdispnp_.resize(num_node_parent_ele * nsd_);
@@ -296,7 +297,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       // extract local values from global vector
       std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
           numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
       // get condition
       Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -388,7 +389,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       // extract local values from the global vector
       std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
           numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
       // get number of dofset associated with velocity related dofs
       const int ndsvel = scatraparams_->NdsVel();
@@ -411,7 +412,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       CORE::LINALG::Matrix<nsd_, nen_> econvel(true);
 
       // extract local values of convective velocity field from global state vector
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
@@ -633,7 +634,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
   // extract local values from global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
       numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   // get number of dofset associated with velocity related dofs
   const int ndsvel = scatraparams_->NdsVel();
@@ -656,7 +657,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
   CORE::LINALG::Matrix<nsd_, nen_> econvel(true);
 
   // extract local values of convective velocity field from global state vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
@@ -1528,7 +1529,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
     dserror("Cannot extract state vector \"" + statename + "\" from discretization!");
 
   // extract nodal state variables associated with boundary element
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*state, estate, la[nds].lm_);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*state, estate, la[nds].lm_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1640,7 +1641,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
   // extract local nodal state variables from global state vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
       numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   //////////////////////////////////////////////////////////////////////
   //                  build RHS and StiffMat
@@ -1733,7 +1734,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
   // extract local values from global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
       numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   //------------get membrane concentration at the interface (i.e. within the
   // membrane)------------------
@@ -1742,7 +1743,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
   // extract local values from global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephibar(
       numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phibar, ephibar, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phibar, ephibar, lm);
 
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
@@ -1760,7 +1761,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
       lmwss[inode * nsd_ + idim] = la[ndswss].lm_[inode * numwssdofpernode + idim];
 
   CORE::LINALG::Matrix<nsd_, nen_> ewss(true);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   // rotsymmpbc_->RotateMyValuesIfNecessary(ewss);
@@ -1867,7 +1868,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   // extract local values from global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
       numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
 
   //------------get membrane concentration at the interface (i.e. within the
@@ -1877,7 +1878,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   // extract local values from global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephibar(
       numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phibar, ephibar, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phibar, ephibar, lm);
 
 
   //--------get values of pressure at the interface ----------------------
@@ -1895,7 +1896,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
     lmpres[inode] = la[ndspres].lm_[inode * numveldofpernode + nsd_];  // only pressure dofs
 
   CORE::LINALG::Matrix<nen_, 1> epressure(true);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*pressure, epressure, lmpres);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*pressure, epressure, lmpres);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   // rotsymmpbc_->RotateMyValuesIfNecessary(epressure);
@@ -1917,7 +1918,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
       lmwss[inode * nsd_ + idim] = la[ndswss].lm_[inode * numwssdofpernode + idim];
 
   CORE::LINALG::Matrix<nsd_, nen_> ewss(true);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
 
   // ------------get current condition----------------------------------
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -2148,7 +2149,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   CORE::LINALG::Matrix<pnsd, pnen> econvel(true);
 
   // extract local values of convective velocity field from global state vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<pnsd, pnen>>(*convel, econvel, plmvel);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<pnsd, pnen>>(*convel, econvel, plmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   rotsymmpbc_->template RotateMyValuesIfNecessary<pnsd, pnen>(econvel);
@@ -2159,7 +2160,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
 
   // extract local values from global vectors for parent element
   std::vector<CORE::LINALG::Matrix<pnen, 1>> ephinp(numscal_);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<pnen, 1>>(*phinp, ephinp, pla[0].lm_);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<pnen, 1>>(*phinp, ephinp, pla[0].lm_);
 
   //------------------------------------------------------------------------
   // preliminary definitions for integration loop
@@ -2837,8 +2838,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
   // extract local values from global vectors for parent element
   std::vector<CORE::LINALG::Matrix<pnen, 1>> ephinp(numscal_);
   std::vector<CORE::LINALG::Matrix<pnen, 1>> ephin(numscal_);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<pnen, 1>>(*phinp, ephinp, plm);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<pnen, 1>>(*phin, ephin, plm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<pnen, 1>>(*phinp, ephinp, plm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<pnen, 1>>(*phin, ephin, plm);
 
   //------------------------------------------------------------------------
   // preliminary definitions for integration loop

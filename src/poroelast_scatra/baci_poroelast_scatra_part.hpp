@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_POROELAST_SCATRA_PART_HPP
-#define BACI_POROELAST_SCATRA_PART_HPP
+#ifndef FOUR_C_POROELAST_SCATRA_PART_HPP
+#define FOUR_C_POROELAST_SCATRA_PART_HPP
 
 /*----------------------------------------------------------------------*
  | header inclusions                                                     |

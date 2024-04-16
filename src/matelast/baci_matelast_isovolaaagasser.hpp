@@ -7,8 +7,8 @@ corresponding volumetric contribution.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_ISOVOLAAAGASSER_HPP
-#define BACI_MATELAST_ISOVOLAAAGASSER_HPP
+#ifndef FOUR_C_MATELAST_ISOVOLAAAGASSER_HPP
+#define FOUR_C_MATELAST_ISOVOLAAAGASSER_HPP
 
 #include "baci_config.hpp"
 

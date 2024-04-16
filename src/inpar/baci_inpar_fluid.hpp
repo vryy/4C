@@ -8,8 +8,8 @@
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_FLUID_HPP
-#define BACI_INPAR_FLUID_HPP
+#ifndef FOUR_C_INPAR_FLUID_HPP
+#define FOUR_C_INPAR_FLUID_HPP
 
 #include "baci_config.hpp"
 
@@ -416,4 +416,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_FLUID_H
+#endif

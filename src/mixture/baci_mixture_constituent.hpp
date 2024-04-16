@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MIXTURE_CONSTITUENT_HPP
-#define BACI_MIXTURE_CONSTITUENT_HPP
+#ifndef FOUR_C_MIXTURE_CONSTITUENT_HPP
+#define FOUR_C_MIXTURE_CONSTITUENT_HPP
 
 #include "baci_config.hpp"
 
@@ -310,9 +310,6 @@ namespace MIXTURE
     int NumGP() const { return numgp_; }
 
    private:
-    /// my material parameters
-    const MIXTURE::PAR::MixtureConstituent* params_;
-
     ///! Number of Gauss points
     int numgp_;
 
@@ -330,4 +327,4 @@ namespace MIXTURE
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MIXTURE_CONSTITUENT_H
+#endif

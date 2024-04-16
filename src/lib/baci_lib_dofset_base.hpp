@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DOFSET_BASE_HPP
-#define BACI_LIB_DOFSET_BASE_HPP
+#ifndef FOUR_C_LIB_DOFSET_BASE_HPP
+#define FOUR_C_LIB_DOFSET_BASE_HPP
 
 #include "baci_config.hpp"
 
@@ -107,4 +107,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DOFSET_BASE_H
+#endif

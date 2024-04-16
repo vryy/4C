@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_LARGEROTATIONS_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_LARGEROTATIONS_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_LARGEROTATIONS_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_LARGEROTATIONS_HPP
 
 #include "baci_config.hpp"
 

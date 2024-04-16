@@ -14,7 +14,8 @@
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
 #include "baci_beaminteraction_calc_utils.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_beaminteraction_geometry_pair_access_traits.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "baci_geometry_pair_line_to_volume_gauss_point_projection_cross_section.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
@@ -85,10 +86,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
       q_fad(i_dof) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_pair>::apply(
           n_dof_fad_, fad_offset + i_dof, CORE::FADUTILS::CastToDouble(q_original(i_dof)));
   };
-  CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type_pair> q_beam;
-  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_pair> q_solid;
-  set_q_fad(this->ele1pos_, q_beam);
-  set_q_fad(this->ele2pos_, q_solid, beam::n_dof_);
+  auto q_beam =
+      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pair>::Initialize(this->Element1());
+  auto q_solid =
+      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_pair>::Initialize(this->Element2());
+  set_q_fad(this->ele1pos_.element_position_, q_beam.element_position_);
+  set_q_fad(this->ele2pos_.element_position_, q_solid.element_position_, beam::n_dof_);
+
+  // Shape function data for Lagrange functions for rotations
+  auto q_rot =
+      GEOMETRYPAIR::InitializeElementData<GEOMETRYPAIR::t_line3, scalar_type_pair>::Initialize(
+          nullptr);
 
   // Initialize pair wise vectors and matrices.
   CORE::LINALG::Matrix<n_dof_pair_, 1, double> force_pair(true);
@@ -142,14 +150,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
     // beam has changed compared to the last Gauss point.
     if (std::abs(eta - eta_last_gauss_point) > 1e-10)
     {
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          eta, this->ele1posref_, dr_beam_ref, this->Element1());
+      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(eta, this->ele1posref_, dr_beam_ref);
       beam_jacobian = 0.5 * dr_beam_ref.Norm2();
 
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<beam>(eta, H, this->Element1());
-      pos_beam.Multiply(H, q_beam);
+      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<beam>(H, eta, q_beam.shape_function_data_);
+      GEOMETRYPAIR::EvaluatePosition<beam>(eta, q_beam, pos_beam);
 
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<GEOMETRYPAIR::t_line3>(eta, L);
+      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<GEOMETRYPAIR::t_line3>(
+          L, eta, q_rot.shape_function_data_);
 
       triad_interpolation_scheme_.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
           I_tilde_vector, eta);
@@ -169,8 +177,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
 
     // Get the shape function matrices.
     GEOMETRYPAIR::EvaluateShapeFunctionMatrix<solid>(
-        projected_gauss_point.GetXi(), N, this->Element2());
-    pos_solid.Multiply(N, q_solid);
+        N, projected_gauss_point.GetXi(), q_solid.shape_function_data_);
+    GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), q_solid, pos_solid);
 
     // Get the cross section vector.
     cross_section_vector_ref(0) = 0.0;
@@ -217,7 +225,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
     force_pair_local.Scale(integration_factor);
     force_pair += CORE::FADUTILS::CastToDouble(force_pair_local);
 
-    // The rotational stiffness contributions have to be handled separately due to the non-addidive
+    // The rotational stiffness contributions have to be handled separately due to the non-additive
     // nature of the rotational DOFs.
     for (unsigned int i_dof = 0; i_dof < n_dof_pair_; i_dof++)
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)

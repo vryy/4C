@@ -520,7 +520,7 @@ void DRT::Discretization::ReplaceDofSet(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::map<int, std::vector<int>>> DRT::Discretization::GetAllPBCCoupledColNodes()
+std::map<int, std::vector<int>>* DRT::Discretization::GetAllPBCCoupledColNodes()
 {
   // check for pbcs
   for (int nds = 0; nds < NumDofSets(); nds++)
@@ -535,7 +535,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> DRT::Discretization::GetAllPBCCoup
     }
   }
 
-  return Teuchos::rcp(new std::map<int, std::vector<int>>);
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

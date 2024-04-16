@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_UTILS_HPP
-#define BACI_SCATRA_UTILS_HPP
+#ifndef FOUR_C_SCATRA_UTILS_HPP
+#define FOUR_C_SCATRA_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -42,4 +42,4 @@ namespace SCATRA::SCATRAUTILS
 }  // namespace SCATRA::SCATRAUTILS
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_UTILS_H
+#endif

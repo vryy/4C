@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_BEAMCONTACT_BEAM3TOSOLIDCONTACT_HPP
-#define BACI_BEAMCONTACT_BEAM3TOSOLIDCONTACT_HPP
+#ifndef FOUR_C_BEAMCONTACT_BEAM3TOSOLIDCONTACT_HPP
+#define FOUR_C_BEAMCONTACT_BEAM3TOSOLIDCONTACT_HPP
 
 #include "baci_config.hpp"
 
@@ -802,4 +802,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BEAMCONTACT_BEAM3TOSOLIDCONTACT_H
+#endif

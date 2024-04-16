@@ -11,6 +11,7 @@
 
 #include "baci_scatra_ele_boundary_calc_poro.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
@@ -101,7 +102,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
       // extract local values from the global vector
       std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
           my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, la[0].lm_);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, la[0].lm_);
 
       // get number of dofset associated with velocity related dofs
       const int ndsvel = my::scatraparams_->NdsVel();
@@ -124,7 +125,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
       CORE::LINALG::Matrix<nsd_, nen_> econvel(true);
 
       // extract local values of convective velocity field from global state vector
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       my::rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
@@ -135,7 +136,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
         lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_ele_];
 
       // extract local values of pressure field from global state vector
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
 
       // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than
       // dimension. If so, we assume that this is the porosity
@@ -151,7 +152,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
         if (disp != Teuchos::null)
         {
           std::vector<double> mydisp(la[ndsdisp].lm_.size());
-          DRT::UTILS::ExtractMyValues(*disp, mydisp, la[ndsdisp].lm_);
+          CORE::FE::ExtractMyValues(*disp, mydisp, la[ndsdisp].lm_);
 
           for (int inode = 0; inode < nen_; ++inode)  // number of nodes
             eporosity_(inode, 0) = mydisp[nsd_ + (inode * (nsd_ele_ + 2))];

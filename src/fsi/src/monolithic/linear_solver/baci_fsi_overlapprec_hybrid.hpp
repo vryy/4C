@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_OVERLAPPREC_HYBRID_HPP
-#define BACI_FSI_OVERLAPPREC_HYBRID_HPP
+#ifndef FOUR_C_FSI_OVERLAPPREC_HYBRID_HPP
+#define FOUR_C_FSI_OVERLAPPREC_HYBRID_HPP
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -130,4 +130,4 @@ namespace FSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FSI_OVERLAPPREC_HYBRID_H
+#endif

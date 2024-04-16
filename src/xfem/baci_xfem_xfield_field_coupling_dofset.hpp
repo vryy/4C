@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_XFEM_XFIELD_FIELD_COUPLING_DOFSET_HPP
-#define BACI_XFEM_XFIELD_FIELD_COUPLING_DOFSET_HPP
+#ifndef FOUR_C_XFEM_XFIELD_FIELD_COUPLING_DOFSET_HPP
+#define FOUR_C_XFEM_XFIELD_FIELD_COUPLING_DOFSET_HPP
 
 #include "baci_config.hpp"
 
@@ -98,4 +98,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_XFIELD_FIELD_COUPLING_DOFSET_H
+#endif

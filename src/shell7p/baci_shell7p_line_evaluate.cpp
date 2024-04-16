@@ -5,6 +5,7 @@
 \level 3
 */
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_global_data.hpp"
@@ -27,7 +28,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
   std::vector<double> displacements(dof_index_array.size());
-  DRT::UTILS::ExtractMyValues(*disp, displacements, dof_index_array);
+  CORE::FE::ExtractMyValues(*disp, displacements, dof_index_array);
 
   // get values and switches from the condition
   const auto* onoff = condition.Get<std::vector<int>>("onoff");

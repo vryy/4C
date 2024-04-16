@@ -10,10 +10,10 @@
 
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_ale3.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_elasthyper.hpp"
 #include "baci_mat_stvenantkirchhoff.hpp"
 #include "baci_nurbs_discret.hpp"
@@ -137,7 +137,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp;
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       my_dispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3_Impl_Interface::Impl(this)->static_ke_laplace(
           this, discretization, elemat1, elevec1, my_dispnp, mat, false);
@@ -149,7 +149,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp;
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       my_dispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3_Impl_Interface::Impl(this)->static_ke_laplace(
           this, discretization, elemat1, elevec1, my_dispnp, mat, true);
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3_Impl_Interface::Impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, true);
@@ -171,7 +171,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3_Impl_Interface::Impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, false);
@@ -182,7 +182,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3_Impl_Interface::Impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, false);
 
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3_Impl_Interface::Impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, true);
 
@@ -202,7 +202,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3_Impl_Interface::Impl(this)->ElementNodeNormal(this, elevec1, my_dispnp);
 
@@ -1644,8 +1644,6 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
   CORE::LINALG::Matrix<iel, iel> tempmat(true);
   CORE::LINALG::Matrix<3 * iel, 1> tempmat2(true);
 
-  double vol = 0.;
-
   // gaussian points
   const CORE::FE::GaussRule3D gaussrule = getOptimalGaussrule();
   const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
@@ -1688,7 +1686,6 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 
     // calculate element volume
     const double fac = intpoints.qwgt[iquad] * det;
-    vol += fac;
 
     // compute global derivatives
     deriv_xy.Multiply(xji, deriv);

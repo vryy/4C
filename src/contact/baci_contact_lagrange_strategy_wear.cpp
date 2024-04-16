@@ -2880,7 +2880,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
     interface_[i]->FDCheckGapDeriv();
     interface_[i]->FDCheckGapDeriv_W();
   }
-#endif  // #ifdef CONTACTFDGAP
+#endif
 
 #ifdef CONTACTFDSLIPINCR
   // FD check of weighted gap g derivatives (non-penetr. condition)

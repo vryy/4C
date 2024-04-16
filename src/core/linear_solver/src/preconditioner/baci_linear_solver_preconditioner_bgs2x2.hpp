@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_BGS2X2_HPP
-#define BACI_LINEAR_SOLVER_PRECONDITIONER_BGS2X2_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_PRECONDITIONER_BGS2X2_HPP
+#define FOUR_C_LINEAR_SOLVER_PRECONDITIONER_BGS2X2_HPP
 
 #include "baci_config.hpp"
 

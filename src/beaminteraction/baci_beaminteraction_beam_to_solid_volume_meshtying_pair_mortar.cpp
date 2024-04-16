@@ -15,11 +15,11 @@ functions for the traction.
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_volume.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
-#include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_densematrix_inverse.hpp"
 
 #include <unordered_set>
@@ -53,8 +53,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    CORE::LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -107,7 +107,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
-    CORE::LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
+    GEOMETRYPAIR::ElementData<mortar, double> element_data_lambda;
     CORE::LINALG::Matrix<3, 1, scalar_type> X;
     CORE::LINALG::Matrix<3, 1, scalar_type> r;
     CORE::LINALG::Matrix<3, 1, scalar_type> u;
@@ -126,9 +126,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     std::vector<int> lambda_row;
     GetMortarGID(mortar_manager.get(), this, mortar::n_dof_, n_mortar_rot_, &lambda_row, nullptr);
     std::vector<double> lambda_pair;
-    DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
+    CORE::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
-      q_lambda(i_dof) = lambda_pair[i_dof];
+      element_data_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
     // Add the discrete values of the Lagrange multipliers.
     if (visualization_discret != Teuchos::null)
@@ -165,15 +165,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
           xi_mortar_node = CORE::FE::GetNodeCoordinates(i_node, mortar::discretization_);
 
           // Get position and displacement of the mortar node.
-          GEOMETRYPAIR::EvaluatePosition<beam>(
-              xi_mortar_node(0), this->ele1pos_, r, this->Element1());
-          GEOMETRYPAIR::EvaluatePosition<beam>(
-              xi_mortar_node(0), this->ele1posref_, X, this->Element1());
+          GEOMETRYPAIR::EvaluatePosition<beam>(xi_mortar_node(0), this->ele1pos_, r);
+          GEOMETRYPAIR::EvaluatePosition<beam>(xi_mortar_node(0), this->ele1posref_, X);
           u = r;
           u -= X;
 
           // Get the discrete Lagrangian multiplier.
-          GEOMETRYPAIR::EvaluatePosition<mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
+          GEOMETRYPAIR::EvaluatePosition<mortar>(
+              xi_mortar_node(0), element_data_lambda, lambda_discret);
 
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
@@ -232,11 +231,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
           // Get the position, displacement and lambda value at the current point.
           xi = segment.GetEtaA() +
                i_curve_segment * (segment.GetEtaB() - segment.GetEtaA()) / (double)mortar_segments;
-          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1pos_, r, this->Element1());
-          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1posref_, X, this->Element1());
+          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1pos_, r);
+          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1posref_, X);
           u = r;
           u -= X;
-          GEOMETRYPAIR::EvaluatePosition<mortar>(xi, q_lambda, lambda_discret);
+          GEOMETRYPAIR::EvaluatePosition<mortar>(xi, element_data_lambda, lambda_discret);
 
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
@@ -313,7 +312,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
@@ -322,12 +321,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
       N_mortar.Clear();
       N_beam.Clear();
       N_solid.Clear();
-      mortar::EvaluateShapeFunction(
-          N_mortar, projected_gauss_point.GetEta(), std::integral_constant<unsigned int, 1>{});
-      beam::EvaluateShapeFunction(N_beam, projected_gauss_point.GetEta(),
-          std::integral_constant<unsigned int, 1>{}, this->Element1());
-      solid::EvaluateShapeFunction(N_solid, projected_gauss_point.GetXi(),
-          std::integral_constant<unsigned int, 3>{}, this->Element2());
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::Evaluate(
+          N_mortar, projected_gauss_point.GetEta());
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+          N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
+      GEOMETRYPAIR::EvaluateShapeFunction<solid>::Evaluate(
+          N_solid, projected_gauss_point.GetXi(), this->ele2pos_.shape_function_data_);
 
       // Fill in the local templated mortar matrix D.
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
@@ -368,10 +367,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
   {
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
       local_constraint(i_lambda) +=
-          local_D(i_lambda, i_beam) * CORE::FADUTILS::CastToDouble(this->ele1pos_(i_beam));
+          local_D(i_lambda, i_beam) *
+          CORE::FADUTILS::CastToDouble(this->ele1pos_.element_position_(i_beam));
     for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
       local_constraint(i_lambda) -=
-          local_M(i_lambda, i_solid) * CORE::FADUTILS::CastToDouble(this->ele2pos_(i_solid));
+          local_M(i_lambda, i_solid) *
+          CORE::FADUTILS::CastToDouble(this->ele2pos_.element_position_(i_solid));
   }
 }
 

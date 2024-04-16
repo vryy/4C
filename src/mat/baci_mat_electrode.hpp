@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_ELECTRODE_HPP
-#define BACI_MAT_ELECTRODE_HPP
+#ifndef FOUR_C_MAT_ELECTRODE_HPP
+#define FOUR_C_MAT_ELECTRODE_HPP
 
 #include "baci_config.hpp"
 

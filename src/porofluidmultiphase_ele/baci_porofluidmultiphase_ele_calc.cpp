@@ -12,13 +12,12 @@
 #include "baci_discretization_fem_general_utils_gder2.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_fluidporo_multiphase.hpp"
 #include "baci_mat_material.hpp"
+#include "baci_porofluidmultiphase_ele_evaluator.hpp"
 #include "baci_porofluidmultiphase_ele_parameter.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_evaluator.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_phasemanager.hpp"
-#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.hpp"
+#include "baci_porofluidmultiphase_ele_phasemanager.hpp"
+#include "baci_porofluidmultiphase_ele_variablemanager.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN

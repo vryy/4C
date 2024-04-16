@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_METHOD_ITERATIVE_HPP
-#define BACI_LINEAR_SOLVER_METHOD_ITERATIVE_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_METHOD_ITERATIVE_HPP
+#define FOUR_C_LINEAR_SOLVER_METHOD_ITERATIVE_HPP
 
 #include "baci_config.hpp"
 
@@ -144,18 +144,6 @@ namespace CORE::LINEAR_SOLVER
      * \sa CheckReuseStatusOfActiveSet()
      */
     Teuchos::RCP<Epetra_Map> activeDofMap_;
-
-    // Read a parameter value from a parameter list and copy it into a new parameter list (with
-    // another parameter name)
-    template <class varType>
-    void copyParams(const Teuchos::ParameterList& paramList, const std::string& paramStr,
-        varType defaultValue, Teuchos::ParameterList& outParamList, const std::string& outParamStr)
-    {
-      if (paramList.isParameter(paramStr))
-        outParamList.set<varType>(outParamStr, paramList.get<varType>(paramStr));
-      else
-        outParamList.set<varType>(outParamStr, defaultValue);
-    }
 
     //!@}
   };

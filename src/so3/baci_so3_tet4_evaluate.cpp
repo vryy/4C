@@ -3,11 +3,11 @@
 \brief quadratic nonlinear tetrahedron
 \level 1
 *----------------------------------------------------------------------*/
-#include "baci_contact_analytical.hpp"
+
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
@@ -59,7 +59,7 @@ void writeComment(const std::string v)
   std::cerr.write(reinterpret_cast<const char*>(&s), sizeof(unsigned int));
   std::cerr << 'C' << v;
 }
-#endif  // PRINT_DEBUG
+#endif
 
 using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
@@ -120,8 +120,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     act = So_tet4::calc_struct_reset_istep;
   else if (action == "calc_struct_reset_all")
     act = So_tet4::calc_struct_reset_all;
-  else if (action == "calc_struct_errornorms")
-    act = So_tet4::calc_struct_errornorms;
   else if (action == "calc_struct_prestress_update")
     act = So_tet4::prestress_update;
   else if (action == "calc_global_gpstresses_map")
@@ -155,9 +153,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       //      CORE::LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* matptr = nullptr;
       //      if (elemat1.IsInitialized()) matptr = &elemat1;
 
@@ -179,9 +177,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> myemat(true);  // to zero
@@ -209,13 +207,13 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
       if (acc == Teuchos::null) dserror("Cannot get state vectors 'acceleration'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myvel(lm.size());
-      DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
+      CORE::FE::ExtractMyValues(*vel, myvel, lm);
       std::vector<double> myacc(lm.size());
-      DRT::UTILS::ExtractMyValues(*acc, myacc, lm);
+      CORE::FE::ExtractMyValues(*acc, myacc, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
@@ -241,9 +239,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
       if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> stress(true);  // set to zero
       CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> strain(true);
       auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
@@ -281,7 +279,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       switch (pstype_)
       {
@@ -339,7 +337,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       /* ============================================================================*/
       // element geometry
@@ -546,7 +544,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       if (SolidMaterial()->UsesExtendedUpdate())
       {
@@ -578,200 +576,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     {
       // Reset of history (if needed)
       SolidMaterial()->ResetStep();
-    }
-    break;
-
-    //==================================================================================
-    case calc_struct_errornorms:
-    {
-      // IMPORTANT NOTES (popp 10/2010):
-      // - error norms are based on a small deformation assumption (linear elasticity)
-      // - extension to finite deformations would be possible without difficulties,
-      //   however analytical solutions are extremely rare in the nonlinear realm
-      // - 4 Gauss point rule is used for integration of error norms
-      // - only implemented for SVK material (relevant for energy norm only, L2 and
-      //   H1 norms are of course valid for arbitrary materials)
-      // - analytical solutions are currently stored in a repository in the CONTACT
-      //   namespace, however they could (should?) be moved to a more general location
-
-      // check length of elevec1
-      if (elevec1_epetra.length() < 3) dserror("The given result vector is too short.");
-
-      // check material law
-      Teuchos::RCP<MAT::Material> mat = Material();
-
-      //******************************************************************
-      // only for St.Venant Kirchhoff material
-      //******************************************************************
-      if (mat->MaterialType() == INPAR::MAT::m_stvenant)
-      {
-        // declaration of variables
-        double l2norm = 0.0;
-        double h1norm = 0.0;
-        double energynorm = 0.0;
-
-        // use 4 Gauss points for integration, not only 1
-        int ngp = 4;
-
-        // shape functions, derivatives and integration weights
-        const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> vals =
-            so_tet4_4gp_shapefcts();
-        const static std::vector<double> weights = so_tet4_4gp_weights();
-
-        // get displacements and extract values of this element
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-
-        // nodal displacement vector
-        CORE::LINALG::Matrix<NUMDOF_SOTET4, 1> nodaldisp;
-        for (int i = 0; i < NUMDOF_SOTET4; ++i) nodaldisp(i, 0) = mydisp[i];
-
-        // reference geometry (nodal positions)
-        CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;
-        DRT::Node** nodes = Nodes();
-        for (int i = 0; i < NUMNOD_SOTET4; ++i)
-        {
-          xrefe(i, 0) = nodes[i]->X()[0];
-          xrefe(i, 1) = nodes[i]->X()[1];
-          xrefe(i, 2) = nodes[i]->X()[2];
-        }
-
-        // deformation gradient = identity tensor (geometrically linear case!)
-        CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> defgrd(true);
-        for (int i = 0; i < NUMDIM_SOTET4; ++i) defgrd(i, i) = 1.0;
-
-        //----------------------------------------------------------------
-        // loop over all Gauss points
-        //----------------------------------------------------------------
-        for (int gp = 0; gp < ngp; gp++)
-        {
-          // Gauss weights and Jacobian determinant
-          double fac = V_ * weights[gp];
-
-          // Gauss point in reference configuration
-          CORE::LINALG::Matrix<NUMDIM_SOTET4, 1> xgp(true);
-          for (int k = 0; k < NUMDIM_SOTET4; ++k)
-            for (int n = 0; n < NUMNOD_SOTET4; ++n) xgp(k, 0) += (vals[gp])(n)*xrefe(n, k);
-
-          //**************************************************************
-          // get analytical solution
-          CORE::LINALG::Matrix<NUMDIM_SOTET4, 1> uanalyt(true);
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainanalyt(true);
-          CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> derivanalyt(true);
-
-          CONTACT::AnalyticalSolutions3D(xgp, uanalyt, strainanalyt, derivanalyt);
-          //**************************************************************
-
-          //--------------------------------------------------------------
-          // (1) L2 norm
-          //--------------------------------------------------------------
-
-          // compute displacements at GP
-          CORE::LINALG::Matrix<NUMDIM_SOTET4, 1> ugp(true);
-          for (int k = 0; k < NUMDIM_SOTET4; ++k)
-            for (int n = 0; n < NUMNOD_SOTET4; ++n)
-              ugp(k, 0) += (vals[gp])(n)*nodaldisp(NODDOF_SOTET4 * n + k, 0);
-
-          // displacement error
-          CORE::LINALG::Matrix<NUMDIM_SOTET4, 1> uerror(true);
-          for (int k = 0; k < NUMDIM_SOTET4; ++k) uerror(k, 0) = uanalyt(k, 0) - ugp(k, 0);
-
-          // compute GP contribution to L2 error norm
-          l2norm += fac * uerror.Dot(uerror);
-
-          //--------------------------------------------------------------
-          // (2) H1 norm
-          //--------------------------------------------------------------
-
-          // compute derivatives N_XYZ at GP w.r.t. material coordinates
-          // (we have the transposed stored in nxyz_ and then switch indices)
-          CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> tr_N_XYZ(nxyz_);  // copy!
-          CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> N_XYZ(true);
-          for (int k = 0; k < NUMNOD_SOTET4; ++k)
-            for (int m = 0; m < NUMDIM_SOTET4; ++m) N_XYZ(m, k) = tr_N_XYZ(k, m);
-
-          // compute partial derivatives at GP
-          CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> derivgp(true);
-          for (int l = 0; l < NUMDIM_SOTET4; ++l)
-            for (int m = 0; m < NUMDIM_SOTET4; ++m)
-              for (int k = 0; k < NUMNOD_SOTET4; ++k)
-                derivgp(l, m) += N_XYZ(m, k) * nodaldisp(NODDOF_SOTET4 * k + l, 0);
-
-          // derivative error
-          CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> deriverror(true);
-          for (int k = 0; k < NUMDIM_SOTET4; ++k)
-            for (int m = 0; m < NUMDIM_SOTET4; ++m)
-              deriverror(k, m) = derivanalyt(k, m) - derivgp(k, m);
-
-          // compute GP contribution to H1 error norm
-          h1norm += fac * deriverror.Dot(deriverror);
-          h1norm += fac * uerror.Dot(uerror);
-
-          //--------------------------------------------------------------
-          // (3) Energy norm
-          //--------------------------------------------------------------
-
-          // compute linear B-operator
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOTET4> bop;
-          for (int i = 0; i < NUMNOD_SOTET4; ++i)
-          {
-            bop(0, NODDOF_SOTET4 * i + 0) = N_XYZ(0, i);
-            bop(0, NODDOF_SOTET4 * i + 1) = 0.0;
-            bop(0, NODDOF_SOTET4 * i + 2) = 0.0;
-            bop(1, NODDOF_SOTET4 * i + 0) = 0.0;
-            bop(1, NODDOF_SOTET4 * i + 1) = N_XYZ(1, i);
-            bop(1, NODDOF_SOTET4 * i + 2) = 0.0;
-            bop(2, NODDOF_SOTET4 * i + 0) = 0.0;
-            bop(2, NODDOF_SOTET4 * i + 1) = 0.0;
-            bop(2, NODDOF_SOTET4 * i + 2) = N_XYZ(2, i);
-
-            bop(3, NODDOF_SOTET4 * i + 0) = N_XYZ(1, i);
-            bop(3, NODDOF_SOTET4 * i + 1) = N_XYZ(0, i);
-            bop(3, NODDOF_SOTET4 * i + 2) = 0.0;
-            bop(4, NODDOF_SOTET4 * i + 0) = 0.0;
-            bop(4, NODDOF_SOTET4 * i + 1) = N_XYZ(2, i);
-            bop(4, NODDOF_SOTET4 * i + 2) = N_XYZ(1, i);
-            bop(5, NODDOF_SOTET4 * i + 0) = N_XYZ(2, i);
-            bop(5, NODDOF_SOTET4 * i + 1) = 0.0;
-            bop(5, NODDOF_SOTET4 * i + 2) = N_XYZ(0, i);
-          }
-
-          // compute linear strain at GP
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straingp(true);
-          straingp.Multiply(bop, nodaldisp);
-
-          // strain error
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainerror(true);
-          for (int k = 0; k < MAT::NUM_STRESS_3D; ++k)
-            strainerror(k, 0) = strainanalyt(k, 0) - straingp(k, 0);
-
-          // compute stress vector and constitutive matrix
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-
-          SolidMaterial()->Evaluate(&defgrd, &strainerror, params, &stress, &cmat, gp, Id());
-
-          // compute GP contribution to energy error norm
-          energynorm += fac * stress.Dot(strainerror);
-
-          // std::cout << "UAnalytical:      " << ugp << std::endl;
-          // std::cout << "UDiscrete:        " << uanalyt << std::endl;
-          // std::cout << "StrainAnalytical: " << strainanalyt << std::endl;
-          // std::cout << "StrainDiscrete:   " << straingp << std::endl;
-          // std::cout << "DerivAnalytical:  " << derivanalyt << std::endl;
-          // std::cout << "DerivDiscrete:    " << derivgp << std::endl;
-        }
-        //----------------------------------------------------------------
-
-        // return results
-        elevec1_epetra(0) = l2norm;
-        elevec1_epetra(1) = h1norm;
-        elevec1_epetra(2) = energynorm;
-      }
-      else
-        dserror("ERROR: Error norms only implemented for SVK material");
     }
     break;
 
@@ -818,9 +622,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         if (gpstrainmap == Teuchos::null)
           dserror("no gp strain map available for writing gpstrains");
         std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+        CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
-        DRT::UTILS::ExtractMyValues(*res, myres, lm);
+        CORE::FE::ExtractMyValues(*res, myres, lm);
         CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> stress;
         CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> strain;
         auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(

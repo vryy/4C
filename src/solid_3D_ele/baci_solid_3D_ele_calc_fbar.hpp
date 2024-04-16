@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_3D_ELE_CALC_FBAR_HPP
-#define BACI_SOLID_3D_ELE_CALC_FBAR_HPP
+#ifndef FOUR_C_SOLID_3D_ELE_CALC_FBAR_HPP
+#define FOUR_C_SOLID_3D_ELE_CALC_FBAR_HPP
 
 #include "baci_config.hpp"
 
@@ -14,122 +14,12 @@
 #include "baci_lib_element.hpp"
 #include "baci_solid_3D_ele_calc.hpp"
 #include "baci_solid_3D_ele_calc_lib.hpp"
+#include "baci_solid_3D_ele_calc_lib_fbar.H"
 
 BACI_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS
 {
-  namespace DETAILS
-  { /*!
-     * @brief Evaluate the fbar factor \f[ \frac{\mathbf{F}_{\mathrm{centroid}}}{\mathbf{F}}^{1/3}
-     * \f]
-     *
-     * @param defgrd_centroid (in) : Deformation gradient evaluated at the element centroid
-     * @param defgrd_gp (in) : Deformation gradient evaluated at the Gauss point
-     * @return double : Fbar factor
-     */
-    inline double EvaluateFbarFactor(const double& defgrd_centroid, const double& defgrd_gp)
-    {
-      const double fbar_factor = std::pow(defgrd_centroid / defgrd_gp, 1.0 / 3.0);
-      return fbar_factor;
-    }
-
-    /*!
-     * @brief Evaluates the H-Operator used in F-bar of the specified element
-     *
-     * @tparam celltype : Cell type
-     * @param jacobian_mapping (in) : Quantities of the jacobian mapping evaluated at the Gauss
-     * point
-     * @param jacobian_mapping_centroid (in) : Quantities of the jacobian mapping evaluated at the
-     * element centroid
-     * @param spatial_material_mapping (in) :An object holding quantities of the spatial material
-     * mapping (deformation_gradient, inverse_deformation_gradient,
-     * determinant_deformation_gradient) evaluated at the Gauss point
-     * @param spatial_material_mapping_centroid (in) : An object holding quantities of the spatial
-     * material mapping (deformation_gradient, inverse_deformation_gradient,
-     * determinant_deformation_gradient) evaluated at the element centroid
-     * @return CORE::LINALG::Matrix<num_dof_per_ele, 1> : H-Operator
-     */
-    template <CORE::FE::CellType celltype, std::enable_if_t<CORE::FE::dim<celltype> == 3, int> = 0>
-    inline CORE::LINALG::Matrix<CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>, 1>
-    EvaluateFbarHOperator(const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
-        const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping_centroid,
-        const DRT::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping,
-        const DRT::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping_centroid)
-    {
-      // inverse deformation gradient at centroid
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> invdefgrd_centroid;
-      invdefgrd_centroid.Invert(spatial_material_mapping_centroid.deformation_gradient_);
-
-      // inverse deformation gradient at gp
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> invdefgrd;
-      invdefgrd.Invert(spatial_material_mapping.deformation_gradient_);
-
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>, 1> Hop(true);
-      for (int idof = 0; idof < CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>; idof++)
-      {
-        for (int idim = 0; idim < CORE::FE::dim<celltype>; idim++)
-        {
-          Hop(idof) += invdefgrd_centroid(idim, idof % CORE::FE::dim<celltype>) *
-                       jacobian_mapping_centroid.N_XYZ_(idim, idof / CORE::FE::dim<celltype>);
-          Hop(idof) -= invdefgrd(idim, idof % CORE::FE::dim<celltype>) *
-                       jacobian_mapping.N_XYZ_(idim, idof / CORE::FE::dim<celltype>);
-        }
-      }
-
-      return Hop;
-    }
-
-    /*!
-     * @brief Add fbar stiffness matrix contribution of one Gauss point
-     *
-     * @tparam celltype : Cell type
-     * @param Bop (in) : Strain gradient (B-Operator)
-     * @param Hop (in) : H-Operator
-     * @param f_bar_factor (in) : f_bar_factor
-     * @param integration_fac (in) : Integration factor (Gauss point weight times the determinant of
-     * the jacobian)
-     * @param cauchyGreen (in) : An object holding the right Cauchy-Green deformation tensor and
-     * its inverse
-     * @param stress_bar (in) : Deviatoric part of stress measures
-     * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
-     */
-    template <CORE::FE::CellType celltype>
-    inline void AddFbarStiffnessMatrix(
-        const CORE::LINALG::Matrix<num_str<celltype>,
-            CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>>& Bop,
-        const CORE::LINALG::Matrix<CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>, 1>& Hop,
-        const double f_bar_factor, const double integration_fac,
-        const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> cauchyGreen,
-        const DRT::ELEMENTS::Stress<celltype> stress_bar,
-        CORE::LINALG::Matrix<CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>,
-            CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>>& stiffness_matrix)
-    {
-      constexpr int num_dof_per_ele = CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>;
-
-      CORE::LINALG::Matrix<num_str<celltype>, 1> rcg_bar_voigt;
-      CORE::LINALG::VOIGT::Strains::MatrixToVector(cauchyGreen, rcg_bar_voigt);
-
-      CORE::LINALG::Matrix<num_str<celltype>, 1> ccg;
-      ccg.MultiplyNN(stress_bar.cmat_, rcg_bar_voigt);
-
-      // auxiliary integrated stress_bar
-      CORE::LINALG::Matrix<num_dof_per_ele, 1> bopccg(false);
-      bopccg.MultiplyTN(integration_fac * f_bar_factor / 3.0, Bop, ccg);
-
-      CORE::LINALG::Matrix<num_dof_per_ele, 1> bops(false);
-      bops.MultiplyTN(-integration_fac / f_bar_factor / 3.0, Bop, stress_bar.pk2_);
-
-      for (int idof = 0; idof < num_dof_per_ele; idof++)
-      {
-        for (int jdof = 0; jdof < num_dof_per_ele; jdof++)
-        {
-          stiffness_matrix(idof, jdof) += Hop(jdof) * (bops(idof, 0) + bopccg(idof, 0));
-        }
-      }
-    }
-  }  // namespace DETAILS
-
   template <CORE::FE::CellType celltype>
   struct FBarPreparationData
   {
@@ -143,20 +33,6 @@ namespace DRT::ELEMENTS
   struct FBarHistoryData
   {
     // no history data needed
-  };
-
-  template <CORE::FE::CellType celltype>
-  struct FBarLinearizationContainer
-  {
-    CORE::LINALG::Matrix<DETAILS::num_str<celltype>,
-        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
-        Bop{};
-
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1> Hop{};
-
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> cauchygreen{};
-
-    double fbar_factor = 1.0;
   };
 
   /*!
@@ -196,7 +72,7 @@ namespace DRT::ELEMENTS
           EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
       // factor (detF0/detF)^1/3
-      const double fbar_factor = DETAILS::EvaluateFbarFactor(
+      const double fbar_factor = EvaluateFbarFactor(
           preparation_data.spatial_material_mapping_centroid.determinant_deformation_gradient_,
           spatial_material_mapping.determinant_deformation_gradient_);
 
@@ -206,8 +82,8 @@ namespace DRT::ELEMENTS
             FBarLinearizationContainer<celltype> linearization{};
             linearization.Bop = EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
-            linearization.Hop = DETAILS::EvaluateFbarHOperator(jacobian_mapping,
-                preparation_data.jacobian_mapping_centroid, spatial_material_mapping,
+            linearization.Hop = EvaluateFbarHOperator(jacobian_mapping.N_XYZ_,
+                preparation_data.jacobian_mapping_centroid.N_XYZ_, spatial_material_mapping,
                 preparation_data.spatial_material_mapping_centroid);
 
             linearization.fbar_factor = fbar_factor;
@@ -274,9 +150,8 @@ namespace DRT::ELEMENTS
           integration_factor / linearization.fbar_factor, stiffness_matrix);
 
       // additional stiffness matrix needed for fbar method
-      DETAILS::AddFbarStiffnessMatrix(linearization.Bop, linearization.Hop,
-          linearization.fbar_factor, integration_factor, linearization.cauchygreen, stress,
-          stiffness_matrix);
+      AddFbarStiffnessMatrix(linearization.Bop, linearization.Hop, linearization.fbar_factor,
+          integration_factor, linearization.cauchygreen, stress, stiffness_matrix);
     }
   };
 
@@ -287,4 +162,4 @@ namespace DRT::ELEMENTS
 }  // namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
-#endif  // BACI_SOLID_3D_ELE_CALC_FBAR_HPP
+#endif

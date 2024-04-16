@@ -7,8 +7,8 @@ solid mechanics", 2001.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_COUPBLATZKO_HPP
-#define BACI_MATELAST_COUPBLATZKO_HPP
+#ifndef FOUR_C_MATELAST_COUPBLATZKO_HPP
+#define FOUR_C_MATELAST_COUPBLATZKO_HPP
 
 #include "baci_config.hpp"
 
@@ -159,4 +159,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_COUPBLATZKO_H
+#endif

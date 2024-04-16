@@ -12,7 +12,6 @@
 #include "baci_lib_condition_utils.hpp"
 
 #include "baci_global_data.hpp"
-#include "baci_io_control.hpp"
 #include "baci_lib_condition_selector.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
@@ -375,45 +374,6 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
   }
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionElementMap(
-    const DRT::Discretization& dis, const std::string& condname, bool colmap)
-{
-  std::vector<DRT::Condition*> conds;
-  dis.GetCondition(condname, conds);
-  std::set<int> elementset;
-
-  if (colmap)
-  {
-    for (auto& cond : conds)
-    {
-      std::map<int, Teuchos::RCP<DRT::Element>>& geometry = cond->Geometry();
-      std::transform(geometry.begin(), geometry.end(),
-          std::inserter(elementset, elementset.begin()),
-          CORE::LINALG::select1st<std::pair<int, Teuchos::RCP<DRT::Element>>>());
-    }
-  }
-  else
-  {
-    int myrank = dis.Comm().MyPID();
-    for (auto& cond : conds)
-    {
-      for (const auto& [ele_id, ele] : cond->Geometry())
-      {
-        if (ele->Owner() == myrank)
-        {
-          elementset.insert(ele_id);
-        }
-      }
-    }
-  }
-
-  return CORE::LINALG::CreateMap(elementset, dis.Comm());
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::FindElementConditions(
@@ -514,49 +474,6 @@ Teuchos::RCP<std::set<int>> DRT::UTILS::ConditionedElementMap(
   }
 
   return condelementmap;
-}
-
-
-/*-----------------------------------------------------------------------*
- * Writes boundary surfaces of a volumetrically coupled problem to file  *
- * 'boundarysurfaces.log' storing the condition-Id as surface-Id. For    *
- * visualisation in gmsh and checking for tetrahedra whose four surfaces *
- * are wrongly contained in the boundary surface of the volumetric       *
- * coupling this file can be used.                         (croth 01/15) *
- *-----------------------------------------------------------------------*/
-void DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(
-    std::map<std::vector<int>, Teuchos::RCP<DRT::Element>> surfmap, int condID, int numproc,
-    int mypid)
-{
-  if (numproc == 1)
-  {
-    // Get output prefix
-    std::string outputprefix =
-        GLOBAL::Problem::Instance()->OutputControlFile()->NewOutputFileName();
-    // Create boundary surface file
-    std::ostringstream sf;
-    sf << outputprefix << "_boundarysurfaces.log";
-    std::string boundarysurffilename;
-    boundarysurffilename = sf.str();
-
-    std::ofstream myfile;
-    myfile.open(boundarysurffilename.c_str(), std::ios_base::app);
-    myfile << "Surfaces in Surfmap for Coupling Condition No. " << condID + 1 << ":\n";
-    myfile << "Format: [Node1, Node2, Node3, CondID] \n";
-    for (auto& iterat : surfmap)
-    {
-      myfile << iterat.first[0] << " " << iterat.first[1] << " " << iterat.first[2] << " "
-             << condID + 1 << "\n";
-    }
-    myfile << "End \n";
-    myfile.close();
-    std::cout << " Condition " << condID + 1 << " checked and written to file." << std::endl;
-  }
-  else if (mypid == 0)
-  {
-    std::cout << " No 'boundarysurfaces.log' written as number of procs = " << numproc
-              << " is bigger than 1." << std::endl;
-  }
 }
 
 /*----------------------------------------------------------------------*/

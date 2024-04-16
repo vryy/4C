@@ -12,6 +12,7 @@
 
 #include "baci_fluid_ele_boundary_calc.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_fluid_ele.hpp"
 #include "baci_fluid_ele_action.hpp"
@@ -90,7 +91,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
         if (dispnp != Teuchos::null)
         {
           mydispnp.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+          CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
         }
       }
 
@@ -142,7 +143,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
         if (dispnp != Teuchos::null)
         {
           mydispnp.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+          CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
         }
       }
 
@@ -162,7 +163,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
         if (dispnp != Teuchos::null)
         {
           mydispnp.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+          CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
         }
       }
 
@@ -173,7 +174,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
       if (normals != Teuchos::null)
       {
         mynormals.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*normals, mynormals, lm);
+        CORE::FE::ExtractMyValues(*normals, mynormals, lm);
       }
 
       // what happens, if the mynormals vector is empty? (ehrl)
@@ -201,7 +202,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
       if (dispnp != Teuchos::null)
       {
         mydispnp.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+        CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
       }
 
       // mynormals and mycurvature are not used in the function
@@ -279,7 +280,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
 
   // extract local values from global vector
   std::vector<double> myscaaf(lm.size());
-  DRT::UTILS::ExtractMyValues(*scaaf, myscaaf, lm);
+  CORE::FE::ExtractMyValues(*scaaf, myscaaf, lm);
 
   CORE::LINALG::Matrix<bdrynen_, 1> escaaf(true);
 
@@ -305,7 +306,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
 
     // extract local values from global vector
     std::vector<double> myvelaf(lm.size());
-    DRT::UTILS::ExtractMyValues(*velaf, myvelaf, lm);
+    CORE::FE::ExtractMyValues(*velaf, myvelaf, lm);
 
     // insert pressure into element array
     for (int inode = 0; inode < bdrynen_; inode++)
@@ -333,7 +334,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
 
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -581,7 +582,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
 
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -602,8 +603,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
   // extract local values from global vector
   std::vector<double> myvelaf(lm.size());
   std::vector<double> myscaaf(lm.size());
-  DRT::UTILS::ExtractMyValues(*velaf, myvelaf, lm);
-  DRT::UTILS::ExtractMyValues(*scaaf, myscaaf, lm);
+  CORE::FE::ExtractMyValues(*velaf, myvelaf, lm);
+  CORE::FE::ExtractMyValues(*scaaf, myscaaf, lm);
 
   // create Epetra objects for scalar array and velocities
   CORE::LINALG::Matrix<nsd_, bdrynen_> evelaf(true);
@@ -1197,7 +1198,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::F
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -1250,7 +1251,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
   if (velnp == Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   CORE::LINALG::Matrix<1, bdrynen_> eprenp(true);
   for (int inode = 0; inode < bdrynen_; inode++)
@@ -1271,7 +1272,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -1344,7 +1345,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -1430,7 +1431,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
   if (velnp == Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   // allocate velocity vector
   CORE::LINALG::Matrix<nsd_, bdrynen_> evelnp(true);
@@ -1462,7 +1463,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -1555,7 +1556,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
     dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot get state vectors 'dispnp'");
     edispnp.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*dispnp, edispnp, lm);
+    CORE::FE::ExtractMyValues(*dispnp, edispnp, lm);
   }
 
   // get integration rule
@@ -1595,7 +1596,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
 
   // extract local values from the global vectors
   std::vector<double> myconvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*convelnp, myconvelnp, lm);
+  CORE::FE::ExtractMyValues(*convelnp, myconvelnp, lm);
 
   // allocate velocities vector
   CORE::LINALG::Matrix<nsd_, bdrynen_> evelnp(true);
@@ -1844,7 +1845,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -1905,7 +1906,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -2136,7 +2137,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   if (velnp == Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
+  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   // allocate velocity vector
   CORE::LINALG::Matrix<nsd_, bdrynen_> evelnp(true);
@@ -2223,7 +2224,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     dsassert(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)

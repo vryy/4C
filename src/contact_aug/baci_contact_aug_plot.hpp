@@ -8,8 +8,8 @@ MATLAB, PGFPlot or other tools.
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_AUG_PLOT_HPP
-#define BACI_CONTACT_AUG_PLOT_HPP
+#ifndef FOUR_C_CONTACT_AUG_PLOT_HPP
+#define FOUR_C_CONTACT_AUG_PLOT_HPP
 
 #include "baci_config.hpp"
 
@@ -322,4 +322,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_AUG_PLOT_H
+#endif

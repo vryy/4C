@@ -6,8 +6,8 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_UTILS_LOCAL_NEWTON_HPP
-#define BACI_UTILS_LOCAL_NEWTON_HPP
+#ifndef FOUR_C_UTILS_LOCAL_NEWTON_HPP
+#define FOUR_C_UTILS_LOCAL_NEWTON_HPP
 
 #include "baci_config.hpp"
 
@@ -163,7 +163,8 @@ namespace CORE::UTILS
         dserror(
             "The local Newton method did not converge within %d iterations. Residuum is %.3e > "
             "%.3e.",
-            max_iterations, FADUTILS::CastToDouble(L2Norm(residuum)), tolerance);
+            max_iterations, FADUTILS::CastToDouble(L2Norm(residuum)),
+            FADUTILS::CastToDouble(tolerance));
       }
 
       LocalNewtonIteration(x_0, residuum, std::move(jacobian));

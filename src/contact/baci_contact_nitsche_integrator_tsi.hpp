@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_NITSCHE_INTEGRATOR_TSI_HPP
-#define BACI_CONTACT_NITSCHE_INTEGRATOR_TSI_HPP
+#ifndef FOUR_C_CONTACT_NITSCHE_INTEGRATOR_TSI_HPP
+#define FOUR_C_CONTACT_NITSCHE_INTEGRATOR_TSI_HPP
 
 #include "baci_config.hpp"
 
@@ -206,4 +206,4 @@ namespace CONTACT
 }  // namespace CONTACT
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_NITSCHE_INTEGRATOR_TSI_H
+#endif

@@ -16,10 +16,10 @@ interface
 #include "baci_contact_interface.hpp"
 #include "baci_coupling_adapter.hpp"
 #include "baci_coupling_adapter_converter.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_contact.hpp"
 #include "baci_io.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_matrixtransform.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
@@ -1375,7 +1375,7 @@ void CONTACT::LagrangeStrategyPoro::SetState(
               std::vector<int> lm(numdof);
 
               for (int j = 0; j < numdof; ++j) lm[j] = node->Dofs()[j];
-              DRT::UTILS::ExtractMyValues(*global, myvel, lm);
+              CORE::FE::ExtractMyValues(*global, myvel, lm);
 
               // add myvel[2]=0 for 2D problems
               if (myvel.size() < 3) myvel.resize(3);
@@ -1409,7 +1409,7 @@ void CONTACT::LagrangeStrategyPoro::SetState(
 
               for (int j = 0; j < numdof; ++j) lm[j] = node->Dofs()[j];
 
-              DRT::UTILS::ExtractMyValues(*global, mylm, lm);
+              CORE::FE::ExtractMyValues(*global, mylm, lm);
 
               // add myvel[2]=0 for 2D problems
               if (mylm.size() < 3) mylm.resize(3);
@@ -1504,7 +1504,7 @@ void CONTACT::LagrangeStrategyPoro::SetParentState(const std::string& statename,
           ele->ParentElement()->LocationVector(*dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
-          DRT::UTILS::ExtractMyValues(*global, myval, lm);
+          CORE::FE::ExtractMyValues(*global, myval, lm);
 
           ele->MoData().ParentDisp() = myval;
           ele->MoData().ParentDof() = lm;
@@ -1526,7 +1526,7 @@ void CONTACT::LagrangeStrategyPoro::SetParentState(const std::string& statename,
           mele->ParentElement()->LocationVector(*dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
-          DRT::UTILS::ExtractMyValues(*global, myval, lm);
+          CORE::FE::ExtractMyValues(*global, myval, lm);
 
           mele->MoData().ParentDisp() = myval;
           mele->MoData().ParentDof() = lm;

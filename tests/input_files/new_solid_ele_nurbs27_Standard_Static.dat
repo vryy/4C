@@ -25,6 +25,7 @@ MAXTIME                         1
 TOLRES                          1.0E-9
 TOLDISP                         1.0E-9
 -----------------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       3
 BEGIN                           NURBSPATCH
 ID                              1
 NUMKNOTS                        6

@@ -23,8 +23,8 @@ valves with k_p -> 0
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CARDIOVASCULAR0D_ARTERIALPROXDIST_HPP
-#define BACI_CARDIOVASCULAR0D_ARTERIALPROXDIST_HPP
+#ifndef FOUR_C_CARDIOVASCULAR0D_ARTERIALPROXDIST_HPP
+#define FOUR_C_CARDIOVASCULAR0D_ARTERIALPROXDIST_HPP
 
 #include "baci_config.hpp"
 
@@ -112,4 +112,4 @@ namespace UTILS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CARDIOVASCULAR0D_ARTERIALPROXDIST_H
+#endif

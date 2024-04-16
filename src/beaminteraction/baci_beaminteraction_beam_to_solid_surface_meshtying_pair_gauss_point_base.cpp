@@ -11,8 +11,8 @@
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_element_faces.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
 #include "baci_geometry_pair_scalar_types.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -80,7 +80,7 @@ scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scala
 
       // Get the Jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;

@@ -7,14 +7,15 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_IMMERSED_PROBLEM_IMMERSED_BASE_HPP
-#define BACI_IMMERSED_PROBLEM_IMMERSED_BASE_HPP
+#ifndef FOUR_C_IMMERSED_PROBLEM_IMMERSED_BASE_HPP
+#define FOUR_C_IMMERSED_PROBLEM_IMMERSED_BASE_HPP
 
 
 #include "baci_config.hpp"
 
 #include "baci_comm_exporter.hpp"
 #include "baci_cut_boundingbox.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
@@ -532,7 +533,7 @@ namespace IMMERSED
               curr->second->LocationVector(*sourcedis, la, false);
               // extract local values of the global vectors
               myvalues.resize(la[0].lm_.size());
-              DRT::UTILS::ExtractMyValues(*state, myvalues, la[0].lm_);
+              CORE::FE::ExtractMyValues(*state, myvalues, la[0].lm_);
               double sourceeledisp[24];
               for (int node = 0; node < 8; ++node)
                 for (int dof = 0; dof < 3; ++dof)
@@ -1024,7 +1025,7 @@ namespace IMMERSED
             // get parameter space coords xi in source element
             sourceele->LocationVector(*sourcedis, la, false);
             std::vector<double> mysourcedispnp(la[0].lm_.size());
-            DRT::UTILS::ExtractMyValues(*dispnp, mysourcedispnp, la[0].lm_);
+            CORE::FE::ExtractMyValues(*dispnp, mysourcedispnp, la[0].lm_);
 
             // construct bounding box around current source element
             Teuchos::RCP<CORE::GEO::CUT::BoundingBox> bbside =
@@ -1391,9 +1392,9 @@ namespace IMMERSED
                 // get displacements and velocities of structure dis
                 structele->LocationVector(*structdis, la, false);
                 std::vector<double> mydispnp(la[0].lm_.size());
-                DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, la[0].lm_);
+                CORE::FE::ExtractMyValues(*dispnp, mydispnp, la[0].lm_);
                 std::vector<double> myvelnp(la[0].lm_.size());
-                DRT::UTILS::ExtractMyValues(*velnp, myvelnp, la[0].lm_);
+                CORE::FE::ExtractMyValues(*velnp, myvelnp, la[0].lm_);
 
                 // 1.) check if closest point is a node
                 // loop over all nodes of structural surface element

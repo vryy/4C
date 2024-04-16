@@ -8,11 +8,13 @@
 // End doxygen header.
 
 
-#ifndef BACI_GEOMETRY_PAIR_LINE_PROJECTION_HPP
-#define BACI_GEOMETRY_PAIR_LINE_PROJECTION_HPP
+#ifndef FOUR_C_GEOMETRY_PAIR_LINE_PROJECTION_HPP
+#define FOUR_C_GEOMETRY_PAIR_LINE_PROJECTION_HPP
 
 
 #include "baci_config.hpp"
+
+#include "baci_geometry_pair_element.hpp"
 
 #include <set>
 #include <vector>
@@ -73,62 +75,52 @@ namespace GEOMETRYPAIR
     /**
      * \brief Project a point on the line to the other geometry element.
      * @param pair (in) Pointer to the pair object that is being evaluated.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_other (in) Degrees of freedom for the other geometry.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param eta (in) Parameter coordinate on the line.
      * @param xi (in/out) Parameter coordinates in the other geometry. The given values are the
      * start values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the projection.
-     * @param optional_args (in) Optional - Normals on the nodes for surfaces.
-     * @tparam optional_type Parameter packs template type for optional_args.
      */
-    template <typename... optional_type>
     static void ProjectPointOnLineToOther(const pair_type* pair,
-        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other, const scalar_type& eta,
-        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-        optional_type... optional_args);
+        const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<other, scalar_type>& element_data_other, const scalar_type& eta,
+        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result);
 
     /**
      * \brief Project multiple points on the line to the other geometry. The value of eta and xi in
      * the projection points is the start value for the iteration.
      *
      * @param pair (in) Pointer to the pair object that is being evaluated.
-     * @param q_other (in) Degrees of freedom for the other geometry.
+     * @param element_data_line (in) Degrees of freedom for the line geometry.
+     * @param element_data_line (in) Degrees of freedom for the other geometry.
      * @param projection_points (in/out) Vector with projection points. The given values for eta and
      * xi are the start values for the iteration.
      * @param n_projections_valid (out) Number of valid projections.
      * @param n_projections (out) Number of points, where the nonlinear system could be solved.
-     * @param optional_args (in) Optional - Normals on the nodes for surfaces.
-     * @tparam optional_type Parameter packs template type for optional_args.
      */
-    template <typename... optional_type>
     static void ProjectPointsOnLineToOther(const pair_type* pair,
-        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
+        const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<other, scalar_type>& element_data_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
-        unsigned int& n_projections_valid, unsigned int& n_projections,
-        optional_type... optional_args);
+        unsigned int& n_projections_valid, unsigned int& n_projections);
 
     /**
      * \brief Project multiple points on the line to the other geometry. The value of eta and xi in
      * the projection points is the start value for the iteration.
      *
      * @param pair (in) Pointer to the pair object that is being evaluated.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_other (in) Degrees of freedom for the other geometry.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param projection_points (in/out) Vector with projection points. The given values for eta and
      * xi are the start values for the iteration.
      * @param n_projections_valid (out) Number of valid projections.
-     * @param optional_args (in) Optional - Normals on the nodes for surfaces.
-     * @tparam optional_type Parameter packs template type for optional_args.
      */
-    template <typename... optional_type>
     static void ProjectPointsOnLineToOther(const pair_type* pair,
-        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
+        const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<other, scalar_type>& element_data_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
-        unsigned int& n_projections_valid, optional_type... optional_args);
+        unsigned int& n_projections_valid);
 
     /**
      * \brief Project Gauss points on the line segment to the other geometry. If not all points can
@@ -136,35 +128,28 @@ namespace GEOMETRYPAIR
      * valid.
      *
      * @param pair (in) Pointer to the pair object that is being evaluated.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_other (in) Degrees of freedom for the other geometry.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param segment (in/out) Vector with found projection points.
-     * @param optional_args (in) Optional - Normals on the nodes for surfaces.
-     * @tparam optional_type Parameter packs template type for optional_args.
      */
-    template <typename... optional_type>
     static void ProjectGaussPointsOnSegmentToOther(const pair_type* pair,
-        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-        LineSegment<scalar_type>& segment, optional_type... optional_args);
+        const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<other, scalar_type>& element_data_other,
+        LineSegment<scalar_type>& segment);
 
     /**
      * \brief Intersect a line with all surfaces of an other geometry. Use default starting values
      * for eta and xi.
      *
      * @param pair (in) Pointer to the pair object that is being evaluated.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_other (in) Degrees of freedom for the other geometry.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param intersection_points (out) vector with the found surface intersections.
-     * @param optional_args (in) Optional - Normals on the nodes for surfaces.
-     * @tparam optional_type Parameter packs template type for optional_args.
      */
-    template <typename... optional_type>
     static void IntersectLineWithOther(const pair_type* pair,
-        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-        optional_type... optional_args);
+        const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<other, scalar_type>& element_data_other,
+        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points);
   };
 
 
@@ -196,17 +181,14 @@ namespace GEOMETRYPAIR
      * Evaluate method.
      *
      * @param pair (in) Pointer to the pair object that is being evaluated.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_other (in) Degrees of freedom for the geometry.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_other (in) Degrees of freedom for the geometry.
      * @param segments (out) Vector with the segments of this line to xxx pair.
-     * @param optional_args (in) Optional - Normals on the nodes for surfaces.
-     * @tparam optional_type Parameter packs template type for optional_args.
      */
-    template <typename... optional_type>
     static void PreEvaluate(const pair_type* pair,
-        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-        std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args);
+        const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<other, scalar_type>& element_data_other,
+        std::vector<LineSegment<scalar_type>>& segments);
 
     /**
      * \brief Check if a Gauss point projected valid for this pair in PreEvaluate.
@@ -216,17 +198,14 @@ namespace GEOMETRYPAIR
      * segmentation is performed.
      *
      * @param pair (in) Pointer to the pair object that is being evaluated.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_other (in) Degrees of freedom for the other geometry.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param segments (out) Vector with the segments of this line-to-xxx pair.
-     * @param optional_args (in) Optional - Normals on the nodes for surfaces.
-     * @tparam optional_type Parameter packs template type for optional_args.
      */
-    template <typename... optional_type>
     static void Evaluate(const pair_type* pair,
-        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-        std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args);
+        const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<other, scalar_type>& element_data_other,
+        std::vector<LineSegment<scalar_type>>& segments);
 
    private:
     /**
@@ -285,17 +264,14 @@ namespace GEOMETRYPAIR
      * have non-conforming discretization.
      *
      * @param pair (in) Pointer to the pair object that is being evaluated.
-     * @param q_line (in) Degrees of freedom for the line.
-     * @param q_other (in) Degrees of freedom for the other geometry.
+     * @param element_data_line (in) Degrees of freedom for the line.
+     * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param segments (out) Vector with the segments of this line to other geometry pair.
-     * @param optional_args (in) Optional - Normals on the nodes for surfaces.
-     * @tparam optional_type Parameter packs template type for optional_args.
      */
-    template <typename... optional_type>
     static void Evaluate(const pair_type* pair,
-        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
-        std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args);
+        const ElementData<line, scalar_type>& element_data_line,
+        const ElementData<other, scalar_type>& element_data_other,
+        std::vector<LineSegment<scalar_type>>& segments);
 
    private:
     /**

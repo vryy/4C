@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_SSTI_UTILS_HPP
-#define BACI_SSTI_UTILS_HPP
+#ifndef FOUR_C_SSTI_UTILS_HPP
+#define FOUR_C_SSTI_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -276,4 +276,4 @@ namespace SSTI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSTI_UTILS_H
+#endif

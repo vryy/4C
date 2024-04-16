@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef BACI_STRUCTURE_TIMINT_HPP
-#define BACI_STRUCTURE_TIMINT_HPP
+#ifndef FOUR_C_STRUCTURE_TIMINT_HPP
+#define FOUR_C_STRUCTURE_TIMINT_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -470,13 +470,10 @@ namespace STR
     //! Active set, energy and momentum output for contact
     void OutputContact();
 
-    //! Error norm output
-    void OutputErrorNorms();
-
     //! Nodal positions output
     void OutputNodalPositions();
 
-    //! Error norm output
+    //! Output volume mass
     void OutputVolumeMass();
 
     //! Output on the micro-scale (multi-scale analysis)
@@ -1286,4 +1283,4 @@ namespace STR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_TIMINT_H
+#endif

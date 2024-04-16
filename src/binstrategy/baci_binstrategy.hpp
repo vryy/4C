@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              ghamm 09/12 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_BINSTRATEGY_HPP
-#define BACI_BINSTRATEGY_HPP
+#ifndef FOUR_C_BINSTRATEGY_HPP
+#define FOUR_C_BINSTRATEGY_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 09/12 |

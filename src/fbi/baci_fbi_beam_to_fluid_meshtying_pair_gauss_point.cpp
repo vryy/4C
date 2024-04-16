@@ -12,7 +12,8 @@
 #include "baci_beaminteraction_contact_params.hpp"
 #include "baci_fbi_beam_to_fluid_meshtying_pair_base.hpp"
 #include "baci_fbi_beam_to_fluid_meshtying_params.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_to_volume.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
@@ -92,24 +93,22 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Get the current positions on beam and fluid.
-      GEOMETRYPAIR::EvaluatePosition<beam>(
-          projected_gauss_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+      GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
       GEOMETRYPAIR::EvaluatePosition<fluid>(projected_gauss_point.GetXi(), this->ele2pos_, r_fluid);
 
       N_beam.Clear();
       N_fluid.Clear();
 
       // Evaluate the chapefunctions at the current gauss point
-      beam::EvaluateShapeFunction(N_beam, projected_gauss_point.GetEta(),
-          std::integral_constant<unsigned int, 1>{}, this->Element1());
-      fluid::EvaluateShapeFunction(N_fluid, projected_gauss_point.GetXi(),
-          std::integral_constant<unsigned int, 3>{}, this->Element2());
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+          N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
+      GEOMETRYPAIR::EvaluateShapeFunction<fluid>::Evaluate(N_fluid, projected_gauss_point.GetXi());
 
       // assemble fluid mass matrix
       if (stiffmat22 != nullptr)
@@ -178,10 +177,12 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
       {
         for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
           (*forcevec1)(i_dof1) +=
-              (*stiffmat11)(i_dof1, i_dof2) * CORE::FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
+              (*stiffmat11)(i_dof1, i_dof2) *
+              CORE::FADUTILS::CastToDouble(this->ele1vel_.element_position_(i_dof2));
         for (unsigned int i_dof2 = 0; i_dof2 < fluid::n_dof_; i_dof2++)
           (*forcevec1)(i_dof1) -=
-              (*stiffmat12)(i_dof1, i_dof2) * CORE::FADUTILS::CastToDouble(this->ele2vel_(i_dof2));
+              (*stiffmat12)(i_dof1, i_dof2) *
+              CORE::FADUTILS::CastToDouble(this->ele2vel_.element_position_(i_dof2));
       }
     }
 
@@ -195,11 +196,13 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
         for (unsigned int i_dof1 = 0; i_dof1 < fluid::n_dof_; i_dof1++)
         {
           for (unsigned int i_dof2 = 0; i_dof2 < fluid::n_dof_; i_dof2++)
-            (*forcevec2)(i_dof1) += (*stiffmat22)(i_dof1, i_dof2) *
-                                    CORE::FADUTILS::CastToDouble(this->ele2vel_(i_dof2));
+            (*forcevec2)(i_dof1) +=
+                (*stiffmat22)(i_dof1, i_dof2) *
+                CORE::FADUTILS::CastToDouble(this->ele2vel_.element_position_(i_dof2));
           for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
-            (*forcevec2)(i_dof1) -= (*stiffmat21)(i_dof1, i_dof2) *
-                                    CORE::FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
+            (*forcevec2)(i_dof1) -=
+                (*stiffmat21)(i_dof1, i_dof2) *
+                CORE::FADUTILS::CastToDouble(this->ele1vel_.element_position_(i_dof2));
         }
       }
       else
@@ -207,8 +210,9 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
         for (unsigned int i_dof1 = 0; i_dof1 < fluid::n_dof_; i_dof1++)
         {
           for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
-            (*forcevec2)(i_dof1) -= (*stiffmat21)(i_dof1, i_dof2) *
-                                    CORE::FADUTILS::CastToDouble(this->ele1vel_(i_dof2));
+            (*forcevec2)(i_dof1) -=
+                (*stiffmat21)(i_dof1, i_dof2) *
+                CORE::FADUTILS::CastToDouble(this->ele1vel_.element_position_(i_dof2));
         }
     }
   }

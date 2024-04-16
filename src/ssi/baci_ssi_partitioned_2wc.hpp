@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_SSI_PARTITIONED_2WC_HPP
-#define BACI_SSI_PARTITIONED_2WC_HPP
+#ifndef FOUR_C_SSI_PARTITIONED_2WC_HPP
+#define FOUR_C_SSI_PARTITIONED_2WC_HPP
 
 #include "baci_config.hpp"
 
@@ -292,4 +292,4 @@ namespace SSI
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SSI_PARTITIONED_2WC_H
+#endif

@@ -220,11 +220,6 @@ void WEAR::WearInterface::FDCheckGapDeriv()
       if (kcnode->Active())
       {
         // check two versions of weighted gap
-        double defgap = 0.0;
-        double wii = (kcnode->MoData().GetD())[kcnode->Id()];
-
-        for (int j = 0; j < dim; ++j)
-          defgap -= (kcnode->MoData().n()[j]) * wii * (kcnode->xspatial()[j]);
 
         std::map<int, double>& mmap = kcnode->MoData().GetM();
         std::map<int, double>::const_iterator mcurr;
@@ -246,16 +241,10 @@ void WEAR::WearInterface::FDCheckGapDeriv()
             }
 
           double mik = mmap[cmnode->Id()];
-          double* mxi = cmnode->xspatial();
 
           // get out of here, if master node not adjacent or coupling very weak
           if (!hasentry || abs(mik) < 1.0e-12) continue;
-
-          for (int j = 0; j < dim; ++j) defgap += (kcnode->MoData().n()[j]) * mik * mxi[j];
         }
-
-        // std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->Data().Getg << "
-        // DefGap: " << defgap << std::endl; kcnode->Data().Getg = defgap;
       }
 
       // store gap-values into newG

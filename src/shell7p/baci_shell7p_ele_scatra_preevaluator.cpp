@@ -8,10 +8,10 @@
 
 #include "baci_shell7p_ele_scatra_preevaluator.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_shell7p_ele_calc_lib.hpp"
-#include "baci_shell7p_ele_scatra.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -73,7 +73,7 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::Paramet
       Teuchos::RCP<std::vector<double>> myscalar =
           Teuchos::rcp(new std::vector<double>(dof_index_array[1].lm_.size(), 0.0));
 
-      DRT::UTILS::ExtractMyValues(*scalarnp, *myscalar, dof_index_array[1].lm_);
+      CORE::FE::ExtractMyValues(*scalarnp, *myscalar, dof_index_array[1].lm_);
 
       // element vector for k-th scalar
       std::vector<CORE::LINALG::Matrix<SHELL::DETAIL::num_node<distype>, 1>> elescalar(numscal);

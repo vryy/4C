@@ -9,8 +9,8 @@ interaction
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FBI_IMMERSEDCOUPLER_FACTORY_HPP
-#define BACI_FBI_IMMERSEDCOUPLER_FACTORY_HPP
+#ifndef FOUR_C_FBI_IMMERSEDCOUPLER_FACTORY_HPP
+#define FOUR_C_FBI_IMMERSEDCOUPLER_FACTORY_HPP
 
 #include "baci_config.hpp"
 

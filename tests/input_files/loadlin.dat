@@ -22,7 +22,7 @@ NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy
+STRUCT_STRESS                   2PK
 STRUCT_STRAIN                   No
 FLUID_STRESS                    No
 THERM_TEMPERATURE               No

@@ -16,17 +16,13 @@ equations
 #include "baci_cut_side.hpp"
 #include "baci_cut_triangulateFacet.hpp"
 
-#ifdef DEBUGCUTLIBRARY
-#include "baci_cut_output.hpp"
-#endif
-
-
 #include <Teuchos_TimeMonitor.hpp>
 
 BACI_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------------*
-      compute the equation of the plane Ax+By+Cz=D with the local coordinates of corner points
+      compute the equation of the plane Ax+By+Cz=D with the local coordinates of corner
+points
 *------------------------------------------------------------------------------------------------------*/
 std::vector<double> CORE::GEO::CUT::FacetIntegration::equation_plane(
     const std::vector<std::vector<double>> &cornersLocal)
@@ -722,13 +718,6 @@ void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCells(
           dserror("Splitting created neither tri3 or quad4");
         }
       }
-
-#ifdef DEBUGCUTLIBRARY  // check the area of facet computed from splitting and triangulation
-      if (splitMethod == "split")
-      {
-        DebugAreaCheck(divCells, splitMethod, mesh);
-      }
-#endif
     }
   }
 }
@@ -758,146 +747,6 @@ void CORE::GEO::CUT::FacetIntegration::TemporaryQuad4(
   Quad4BoundaryCell *bc = new Quad4BoundaryCell(xyz, face1_, corners);
   divCells.push_back(Teuchos::rcp(bc));
 }
-
-/*----------------------------------------------------------------------------------------------*
-          Check whether the area of the facet computed by the splitting and
-          triangular procedure are the same.                                       sudhakar 05/12
-          This is a check for the adopted splitting procedures
-*-----------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::FacetIntegration::DebugAreaCheck(
-    std::list<Teuchos::RCP<BoundaryCell>> &divCells, std::string alreadyDone, Mesh &mesh)
-{
-  std::cout
-      << "FacetIntegration::DebugAreaCheck --- This Test is broken for facets with wholes inside!!!"
-      << std::endl;
-  // finally we should just have one triangulation/splitting proceducre which handles automatically
-  // holes, not very useful if we have to treat this on every step where we need triangulation ...
-  // Todo ...error is commented out because of that!!!
-
-  double area1 = 0.0;
-  for (std::list<Teuchos::RCP<BoundaryCell>>::iterator i = divCells.begin(); i != divCells.end();
-       ++i)
-  {
-    BoundaryCell *bcell = &**i;
-    area1 += bcell->Area();
-  }
-
-  std::vector<Point *> corners = face1_->CornerPoints();
-
-  std::vector<std::vector<CORE::GEO::CUT::Point *>> split1;
-  if (alreadyDone == "split")
-  {
-    TriangulateFacet tf(corners);
-    std::vector<int> ptconc;
-
-    tf.EarClipping(ptconc, true, true);
-    split1 = tf.GetSplitCells();
-  }
-  else
-  {
-    TriangulateFacet tf(corners);
-    tf.SplitFacet();
-    split1 = tf.GetSplitCells();
-  }
-
-  std::list<Teuchos::RCP<BoundaryCell>> tempCells;
-
-  for (std::vector<std::vector<Point *>>::const_iterator j = split1.begin(); j != split1.end(); ++j)
-  {
-    std::vector<Point *> tri = *j;
-    if (tri.size() == 3)
-      TemporaryTri3(tri, tempCells);
-    else if (tri.size() == 4)
-      TemporaryQuad4(tri, tempCells);
-    else
-    {
-      std::cout << "number of sides = " << tri.size();
-      dserror("Splitting created neither tri3 or quad4");
-    }
-  }
-
-  double area2 = 0.0;
-  for (std::list<Teuchos::RCP<BoundaryCell>>::iterator i = tempCells.begin(); i != tempCells.end();
-       ++i)
-  {
-    BoundaryCell *bcell = &**i;
-    area2 += bcell->Area();
-  }
-
-  // std::cout.precision(15);
-  if (fabs(area1 - area2) > 1e-10)
-  {
-    std::cout << "The coordinates of the facet\n";
-    for (unsigned i = 0; i < corners.size(); i++)
-    {
-      Point *pt = corners[i];
-      double coo[3];
-      pt->Coordinates(coo);
-      std::cout << std::setprecision(20) << coo[0] << "\t" << coo[1] << "\t" << coo[2] << "\n";
-    }
-
-    std::cout << "cells produced by Method 1\n";
-    for (std::list<Teuchos::RCP<BoundaryCell>>::iterator i = divCells.begin(); i != divCells.end();
-         ++i)
-    {
-      BoundaryCell *bcell = &**i;
-      const std::vector<Point *> pts = bcell->Points();
-      std::cout << "cells\n";
-      for (unsigned j = 0; j < pts.size(); j++)
-      {
-        Point *pt1 = pts[j];
-        double coo[3];
-        pt1->Coordinates(coo);
-        std::cout << coo[0] << "\t" << coo[1] << "\t" << coo[2] << "\n";
-      }
-    }
-
-    std::cout << "cells produced by Method 2\n";
-    for (std::list<Teuchos::RCP<BoundaryCell>>::iterator i = tempCells.begin();
-         i != tempCells.end(); ++i)
-    {
-      BoundaryCell *bcell = &**i;
-      const std::vector<Point *> pts = bcell->Points();
-      std::cout << "cells\n";
-      for (unsigned j = 0; j < pts.size(); j++)
-      {
-        Point *pt1 = pts[j];
-        double coo[3];
-        pt1->Coordinates(coo);
-        std::cout << coo[0] << "\t" << coo[1] << "\t" << coo[2] << "\n";
-      }
-    }
-
-    std::cout << "Area1 = " << area1 << "\t"
-              << "Area2 = " << area2 << "\n";
-    std::cout << "!!!WARNING!!! area predicted by splitting and triangulation are not the same\n";
-
-    // dserror( "error: area predicted by splitting and triangulation are not the
-    // same" ); dserror( "error: area predicted by splitting and triangulation are not the same" );
-
-
-    /***************************************************************************************/
-    // change splitting cells into triangulated cells
-    /*divCells.clear();
-
-    for ( std::vector<std::vector<Point*> >::const_iterator j=split1.begin();
-                                                            j!=split1.end(); ++j )
-    {
-      std::vector<Point*> tri = *j;
-      if(tri.size()==3)
-        TemporaryTri3(tri, divCells);
-      else if(tri.size()==4) // split algorithm always gives convex quad
-        TemporaryQuad4(tri, divCells);
-      else
-      {
-        std::cout<<"number of sides = "<<tri.size();
-        dserror("Splitting created neither tri3 or quad4");
-      }
-    }*/
-    /***************************************************************************************/
-  }
-}
-
 
 /*-------------------------------------------------------------------------------------------------*
       Generate integration rule for the facet if the divergence theorem is used      Sudhakar 03/12
@@ -974,36 +823,11 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
   }
 
   // SAFETY-CHECK
-#ifdef DEBUGCUTLIBRARY
   if (eqn_plane_divCell.size() != divCells.size())
-  {
-    std::cout << "FINAL!: " << std::endl;
-    std::vector<std::vector<double>> cornersLocal;
-    face1_->CornerPointsLocal(elem1_, cornersLocal);
-    for (std::vector<std::vector<double>>::const_iterator j = cornersLocal.begin();
-         j != cornersLocal.end(); ++j)
-    {
-      std::cout << "cornerLocalFacet: " << (*j)[0] << ", " << (*j)[1] << ", " << (*j)[2]
-                << std::endl;
-    }
-    std::cout << "eqn_plane_divCell.size(): " << eqn_plane_divCell.size() << std::endl;
-    std::cout << "divCells.size():  " << divCells.size() << std::endl;
-    // dserror("Something wrong with divCell and clockwise assignment");
     dserror("Something wrong with divCell and clockwise assignment.");
-  }
-#endif
 
   double normalX;
 
-#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
-  static int mm = 0;
-  std::stringstream str;
-  str << "divCell" << mm << ".pos";
-  std::ofstream file(str.str().c_str());
-  file << "View \""
-       << "FacetBCellInfo"
-       << "\" {\n";
-#endif
   int zz = 0;
   for (std::list<Teuchos::RCP<BoundaryCell>>::iterator i = divCells.begin(); i != divCells.end();
        ++i)
@@ -1238,13 +1062,6 @@ void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool divergenc
           dserror("Splitting created neither tri3 or quad4");
         }
       }
-
-#ifdef DEBUGCUTLIBRARY  // check the area of facet computed from splitting and triangulation
-      if (splitMethod == "split")
-      {
-        DebugAreaCheck(divCells, splitMethod, mesh);
-      }
-#endif
     }
   }
 }

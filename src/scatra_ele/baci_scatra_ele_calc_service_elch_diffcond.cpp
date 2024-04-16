@@ -7,6 +7,7 @@
 
 */
 /*--------------------------------------------------------------------------*/
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_mat_elchmat.hpp"
@@ -252,8 +253,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ehist(
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, ehist, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, ehist, lm);
 
   // get current condition
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -351,7 +352,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
     if (phidtnp == Teuchos::null) dserror("Cannot get state vector 'ephidtnp'");
     std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(
         my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
 
     if (not is_stationary)
     {

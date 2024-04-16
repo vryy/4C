@@ -10,17 +10,16 @@
 *----------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------*
- | headers                                                 farah 03/16 |
  *---------------------------------------------------------------------*/
 #include "baci_fsi_dirichletneumann_volcoupl.hpp"
 
 #include "baci_adapter_ale_fluid.hpp"
-#include "baci_adapter_fld_fluid.hpp"
 #include "baci_adapter_fld_fluid_xfem.hpp"
 #include "baci_adapter_fld_fluid_xfsi.hpp"
 #include "baci_adapter_str_fsiwrapper.hpp"
 #include "baci_coupling_adapter.hpp"
 #include "baci_coupling_adapter_volmortar.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_searchtree.hpp"
 #include "baci_discretization_geometry_searchtree_service.hpp"
 #include "baci_fsi_debugwriter.hpp"
@@ -353,7 +352,7 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
 
       // extract local values of the global vectors
       std::vector<double> FSIdisp(dofsFSI.size());
-      DRT::UTILS::ExtractMyValues(*DofColMapDummy, FSIdisp, dofsFSI);
+      CORE::FE::ExtractMyValues(*DofColMapDummy, FSIdisp, dofsFSI);
 
       std::vector<int> temp2 = fluidale->FluidField()->Discretization()->Dof(fluidnode);
       std::vector<int> dofs;

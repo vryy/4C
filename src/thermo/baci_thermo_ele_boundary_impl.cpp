@@ -12,6 +12,7 @@
  *----------------------------------------------------------------------*/
 #include "baci_thermo_ele_boundary_impl.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
@@ -252,7 +253,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
         if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
 
-        DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
+        CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
         // build the element temperature
         CORE::LINALG::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
         etemp_.Update(etemp);                                        // copy
@@ -270,7 +271,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         Teuchos::RCP<const Epetra_Vector> tempn = discretization.GetState("old temperature");
         if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
 
-        DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
+        CORE::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
         // build the element temperature
         CORE::LINALG::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
         etemp_.Update(etemp);                                       // copy
@@ -292,7 +293,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
       std::cout << "time curve                  = " << curvenum << std::endl;
       std::cout << "total time                  = " << time << std::endl;
     }
-#endif  // THRASOUTPUT
+#endif
 
     // get kinematic type from parent element
     INPAR::STR::KinemType kintype = parentele->kintype_;
@@ -330,7 +331,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
         if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         // extract the displacements
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
+        CORE::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
 
         // and now check if there is a convection heat transfer boundary condition
         CalculateNlnConvectionFintCond(ele,  // current boundary element
@@ -467,7 +468,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
             Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
             if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
 
-            DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
+            CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
             // build the element temperature
             CORE::LINALG::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
             etemp_.Update(etemp);                                        // copy
@@ -485,7 +486,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
             Teuchos::RCP<const Epetra_Vector> tempn = discretization.GetState("old temperature");
             if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
 
-            DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
+            CORE::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
             // build the element temperature
             CORE::LINALG::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
             etemp_.Update(etemp);                                       // copy
@@ -513,7 +514,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
         if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         // extract the displacements
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
+        CORE::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
 
         // and now check if there is a convection heat transfer boundary condition
         CalculateNlnConvectionFintCond(ele,  // current boundary element

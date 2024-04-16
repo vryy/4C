@@ -7,8 +7,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_IMMERSED_PROBLEM_DYN_HPP
-#define BACI_IMMERSED_PROBLEM_DYN_HPP
+#ifndef FOUR_C_IMMERSED_PROBLEM_DYN_HPP
+#define FOUR_C_IMMERSED_PROBLEM_DYN_HPP
 
 #include "baci_config.hpp"
 
@@ -20,4 +20,4 @@ void immersed_problem_drt();
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // IMMERSED_PROBLEM_DYN_H
+#endif

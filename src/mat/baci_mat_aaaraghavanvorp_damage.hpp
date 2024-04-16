@@ -18,8 +18,8 @@ EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_AAARAGHAVANVORP_DAMAGE_HPP
-#define BACI_MAT_AAARAGHAVANVORP_DAMAGE_HPP
+#ifndef FOUR_C_MAT_AAARAGHAVANVORP_DAMAGE_HPP
+#define FOUR_C_MAT_AAARAGHAVANVORP_DAMAGE_HPP
 
 #include "baci_config.hpp"
 
@@ -217,4 +217,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_AAARAGHAVANVORP_DAMAGE_H
+#endif

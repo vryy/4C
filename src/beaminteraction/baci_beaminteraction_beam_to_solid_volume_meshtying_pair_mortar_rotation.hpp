@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_MORTAR_ROTATION_HPP
-#define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_MORTAR_ROTATION_HPP
+#ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_MORTAR_ROTATION_HPP
+#define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_MORTAR_ROTATION_HPP
 
 
 #include "baci_config.hpp"
@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
      */
     void EvaluateRotationalCouplingTerms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-        const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st>& q_solid,
+        const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_1st>& q_solid,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
@@ -115,7 +115,7 @@ namespace BEAMINTERACTION
      */
     void EvaluateRotationalCouplingStiffTerms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-        const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
+        const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
         CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double>& lambda_rot,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,

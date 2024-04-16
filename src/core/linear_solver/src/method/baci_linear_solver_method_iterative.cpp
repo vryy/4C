@@ -61,38 +61,6 @@ void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Setup(
     preconditioner_ = CreatePreconditioner(belist, A != Teuchos::null, projector);
   }
 
-  // feed preconditioner with more information about linear system using
-  // the "Linear System properties" sublist in the preconditioner's
-  // paramter list
-  {
-    const std::string precondParamListName = Preconditioner().getParameterListName();
-    if (Params().isSublist(precondParamListName))
-    {
-      Teuchos::ParameterList& precondParams = Params().sublist(precondParamListName);
-      Teuchos::ParameterList& linSystemProps = precondParams.sublist("Linear System properties");
-
-      copyParams<Teuchos::RCP<Epetra_Map>>(
-          Params().sublist("Belos Parameters").sublist("Linear System properties"),
-          "contact slaveDofMap", Teuchos::null, linSystemProps, "contact slaveDofMap");
-      copyParams<Teuchos::RCP<Epetra_Map>>(
-          Params().sublist("Belos Parameters").sublist("Linear System properties"),
-          "contact masterDofMap", Teuchos::null, linSystemProps, "contact masterDofMap");
-      copyParams<Teuchos::RCP<Epetra_Map>>(
-          Params().sublist("Belos Parameters").sublist("Linear System properties"),
-          "contact innerDofMap", Teuchos::null, linSystemProps, "contact innerDofMap");
-      copyParams<Teuchos::RCP<Epetra_Map>>(
-          Params().sublist("Belos Parameters").sublist("Linear System properties"),
-          "contact activeDofMap", Teuchos::null, linSystemProps, "contact activeDofMap");
-      copyParams<std::string>(
-          Params().sublist("Belos Parameters").sublist("Linear System properties"),
-          "GLOBAL::ProblemType", "contact", linSystemProps, "GLOBAL::ProblemType");
-      copyParams<int>(Params().sublist("Belos Parameters").sublist("Linear System properties"),
-          "time step", -1, linSystemProps, "time step");
-      copyParams<int>(Params().sublist("Belos Parameters").sublist("Linear System properties"),
-          "iter", -1, linSystemProps, "iter");
-    }
-  }
-
   b_ = b;
   A_ = matrix;  // we cannot use A here, since it could be Teuchos::null (for blocked operators);
   x_ = x;
@@ -192,39 +160,33 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseSta
 {
   bool bAllowReuse = true;  // default: allow reuse of preconditioner
 
-  if (linSysParams.isSublist("Linear System properties"))
+  if (linSysParams.isParameter("contact activeDofMap"))
   {
-    const Teuchos::ParameterList& linSystemProps = linSysParams.sublist("Linear System properties");
+    auto ep_active_dof_map = linSysParams.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
 
-    if (linSystemProps.isParameter("contact activeDofMap"))
+    // Do we have history information available?
+    if (activeDofMap_.is_null())
     {
-      Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
-      epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
-
-      // Do we have history information available?
-      if (activeDofMap_.is_null())
+      /* No history available.
+       * This is the first application of the preconditioner. We cannot reuse it.
+       */
+      bAllowReuse = false;
+    }
+    else
+    {
+      /* History is available. We actually have to check for a change in the active set
+       * by comparing the current map of active DOFs with the stored map of active DOFs
+       * from the previous application of the preconditioner.
+       */
+      if (not ep_active_dof_map->PointSameAs(*activeDofMap_))
       {
-        /* No history available.
-         * This is the first application of the preconditioner. We cannot reuse it.
-         */
+        // Map of active nodes has changed -> force preconditioner to be rebuilt
         bAllowReuse = false;
       }
-      else
-      {
-        /* History is available. We actually have to check for a change in the active set
-         * by comparing the current map of active DOFs with the stored map of active DOFs
-         * from the previous application of the preconditioner.
-         */
-        if (not epActiveDofMap->PointSameAs(*activeDofMap_))
-        {
-          // Map of active nodes has changed -> force preconditioner to be rebuilt
-          bAllowReuse = false;
-        }
-      }
-
-      // Store current map of active slave DOFs for comparison in next preconditioner application
-      activeDofMap_ = epActiveDofMap;
     }
+
+    // Store current map of active slave DOFs for comparison in next preconditioner application
+    activeDofMap_ = ep_active_dof_map;
   }
 
   return bAllowReuse;
@@ -319,8 +281,8 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecondition
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner(
-          Params().sublist("MueLu (Contact) Parameters")));
+      preconditioner =
+          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner(Params()));
     }
     else if (Params().isSublist("MueLu (FSI) Parameters"))
     {

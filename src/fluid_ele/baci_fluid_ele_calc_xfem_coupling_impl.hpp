@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_ELE_CALC_XFEM_COUPLING_IMPL_HPP
-#define BACI_FLUID_ELE_CALC_XFEM_COUPLING_IMPL_HPP
+#ifndef FOUR_C_FLUID_ELE_CALC_XFEM_COUPLING_IMPL_HPP
+#define FOUR_C_FLUID_ELE_CALC_XFEM_COUPLING_IMPL_HPP
 
 #include "baci_config.hpp"
 
@@ -1066,4 +1066,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H
+#endif

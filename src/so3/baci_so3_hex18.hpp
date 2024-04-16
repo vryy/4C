@@ -5,8 +5,8 @@
 
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_HEX18_HPP
-#define BACI_SO3_HEX18_HPP
+#ifndef FOUR_C_SO3_HEX18_HPP
+#define FOUR_C_SO3_HEX18_HPP
 
 #include "baci_config.hpp"
 
@@ -344,7 +344,6 @@ namespace DRT
         calc_struct_reset_all,    //!< reset elementwise internal variables
                                   //!< to state in the beginning of the computation
         calc_struct_energy,       //!< compute internal energy
-        calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
         calc_recover
       };
 
@@ -414,4 +413,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_HEX18_H
+#endif

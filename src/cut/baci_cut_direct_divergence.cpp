@@ -513,7 +513,6 @@ sudhakar 04/12 Then the volume in local coordinates is converted to global coord
 void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     const CORE::FE::GaussIntegration& gpv, bool& isNeg)
 {
-  int numint = 0;
   double TotalInteg = 0.0;
 
   for (CORE::FE::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end(); ++iquad)
@@ -522,7 +521,6 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     const double weiFacet = iquad.Weight();
 
     TotalInteg += weiFacet;
-    numint++;
   }
 
   // set the volume of this volumecell
@@ -609,32 +607,9 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     mesh_.DebugDump(elem1_, __FILE__, __LINE__);
     std::cout << "volume: " << TotalInteg << std::endl;
     dserror("negative volume predicted by the DirectDivergence integration rule;");
-    //    dserror("negative volume predicted by the DirectDivergence integration rule; volume =
-    //    %0.20f",TotalInteg);
   }
-
-#ifdef DEBUGCUTLIBRARY  // check the volume with the moment fitting and check the values
-#ifdef LOCAL
-#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
-  std::cout << "Check volumecell with moment-fitting." << std::endl;
-#endif
-  VolumeIntegration vi(volcell_, elem1_, volcell_->Position(), 1);
-  CORE::LINALG::SerialDenseVector volMom = vi.compute_rhs_moment();
-  volMom(0) = volcell_->Volume();
-
-  if (fabs(volGlobal - volMom(0)) > 1e-6)
-  {
-    std::cout << "comparison of volume prediction\n";
-    std::cout << std::setprecision(15) << volGlobal << "\t" << volMom(0) << "\n";
-    // dserror("volume prediction is wrong");
-    dserror("DirectDiv and Momfitting are not producing same volumes!");
-    // std::cout << "DirectDiv and Momfitting are not producing same volumes!" << std::endl;
-  }
-#endif
-#endif
 
   volcell_->SetVolume(volGlobal);
-  //  volcell_->SetVolume(TotalInteg);
   if (std::isnan(volGlobal))
   {
     std::cout << "-------------------------------------------------------------\n";

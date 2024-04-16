@@ -5,8 +5,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_CONFIG_HPP
-#define BACI_CONFIG_HPP
+#ifndef FOUR_C_CONFIG_HPP
+#define FOUR_C_CONFIG_HPP
 
 // General definitions that are used throughout the project.
 #define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@
@@ -30,9 +30,6 @@
 @BACI_DEFINES_FOR_EXTERNAL_DEPENDENCIES@
 
 // Centrally include MPI which is a core dependency that needs configuration.
-// Disable the (deprecated) C++ bindings of OpenMPI. We are not using them, and they throw warnings
-// that are false positives.
-#define OMPI_SKIP_MPICXX 1
 #include <mpi.h>  // IWYU pragma: export
 
 #endif

@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifndef BACI_MAT_PAR_PARAMETER_HPP
-#define BACI_MAT_PAR_PARAMETER_HPP
+#ifndef FOUR_C_MAT_PAR_PARAMETER_HPP
+#define FOUR_C_MAT_PAR_PARAMETER_HPP
 
 
 /*----------------------------------------------------------------------*/
@@ -140,4 +140,4 @@ namespace MAT::PAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_PAR_PARAMETER_H
+#endif

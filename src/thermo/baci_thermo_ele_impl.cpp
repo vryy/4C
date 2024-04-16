@@ -9,6 +9,7 @@
 
 #include "baci_thermo_ele_impl.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
@@ -157,7 +158,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     std::vector<double> mytempnp((la[0].lm_).size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(0, "temperature");
     if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
-    DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
+    CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
     // build the element temperature
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(mytempnp.data(), true);  // view only!
     etempn_.Update(etempn);                                                        // copy
@@ -168,7 +169,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     std::vector<double> mytempn((la[0].lm_).size());
     Teuchos::RCP<const Epetra_Vector> tempn = discretization.GetState(0, "last temperature");
     if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
-    DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
+    CORE::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
     // build the element temperature
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempn.data(), true);  // view only!
     etemp_.Update(etemp);                                                        // copy
@@ -379,7 +380,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
           if (ratem == Teuchos::null) dserror("Cannot get mid-temprate state vector for fcap");
           std::vector<double> myratem((la[0].lm_).size());
           // fill the vector myratem with the global values of ratem
-          DRT::UTILS::ExtractMyValues(*ratem, myratem, la[0].lm_);
+          CORE::FE::ExtractMyValues(*ratem, myratem, la[0].lm_);
           // build the element mid-temperature rates
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> eratem(
               myratem.data(), true);  // view only!
@@ -615,7 +616,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 
 #ifdef THRASOUTPUT
   std::cout << "etemp_ end of Evaluate thermo_ele_impl\n" << etempn_ << std::endl;
-#endif  // THRASOUTPUT
+#endif
 
   return 0;
 }
@@ -639,7 +640,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     std::vector<double> mytempnp(lm.size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
     if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
-    DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, lm);
+    CORE::FE::ExtractMyValues(*tempnp, mytempnp, lm);
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempnp.data(), true);  // view only!
     etempn_.Update(etemp);                                                        // copy
   }
@@ -1496,26 +1497,27 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
     // update conductivity matrix k_TT (with displacement dependent term)
     if (econd != nullptr)
     {
-      // k^e_TT += ( B_T^T . C_mat . C^{-1} . B_T ) . detJ . w(gp)
-      // 3D:      (8x8)      (8x3)   (3x3)   (3x3)   (3x8)
+      // k^e_TT += ( B_T^T . C^{-1} . C_mat . B_T ) . detJ . w(gp)
+      // 3D:        (8x3)    (3x3)    (3x3)   (3x8)
       // with C_mat = k_0 . I
       // -q = C_mat . C^{-1} . B
       CORE::LINALG::Matrix<nsd_, nen_> aop(false);   // (3x8)
-      aop.MultiplyNN(Cinv, derxy_);                  // (nsd_xnsd_)(nsd_xnen_)
+      aop.MultiplyNN(cmat_, derxy_);                 // (nsd_xnsd_)(nsd_xnen_)
       CORE::LINALG::Matrix<nsd_, nen_> aop1(false);  // (3x8)
-      aop1.MultiplyNN(cmat_, aop);                   // (nsd_xnsd_)(nsd_xnen_)
+      aop1.MultiplyNN(Cinv, aop);                    // (nsd_xnsd_)(nsd_xnen_)
 
-      // k^e_TT += ( B_T^T . C_mat . C^{-1} . B_T ) . detJ . w(gp)
+      // k^e_TT += ( B_T^T . C^{-1} . C_mat . B_T ) . detJ . w(gp)
       econd->MultiplyTN(fac_, derxy_, aop1, 1.0);  //(8x8)=(8x3)(3x8)
 
       // linearization of non-constant conductivity
-      // k^e_TT += ( B_T^T . dC_mat . C^{-1} . B_T . T . N) . detJ . w(gp)
-      CORE::LINALG::Matrix<nsd_, 1> CinvGradT(false);
-      CinvGradT.MultiplyNN(Cinv, gradtemp_);
-      CORE::LINALG::Matrix<nen_, 1> dNCinvGradT(false);
-      dNCinvGradT.MultiplyTN(derxy_, CinvGradT);
-      // only valid for isotropic case
-      econd->MultiplyNT(dercmat_(0, 0) * fac_, dNCinvGradT, funct_, 1.0);
+      // k^e_TT += ( B_T^T . C^{-1} . dC_mat . B_T . T . N) . detJ . w(gp)
+      CORE::LINALG::Matrix<nsd_, 1> dCmatGradT(false);
+      dCmatGradT.MultiplyNN(dercmat_, gradtemp_);
+      CORE::LINALG::Matrix<nsd_, 1> CinvdCmatGradT(false);
+      CinvdCmatGradT.MultiplyNN(Cinv, dCmatGradT);
+      CORE::LINALG::Matrix<nsd_, nen_> CinvdCmatGradTN(false);
+      CinvdCmatGradTN.MultiplyNT(CinvdCmatGradT, funct_);
+      econd->MultiplyTN(fac_, derxy_, CinvdCmatGradTN, 1.0);  //(8x8)=(8x3)(3x8)
 #ifndef TSISLMNOGOUGHJOULE
       // linearization of thermo-mechanical effects
       if (structmat->MaterialType() == INPAR::MAT::m_plelasthyper)
@@ -2631,13 +2633,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtractDispVel(const DRT::Discretizatio
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
     if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
     // extract the displacements
-    DRT::UTILS::ExtractMyValues(*disp, mydisp, la[1].lm_);
+    CORE::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
 
     // get the velocities
     Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1, "velocity");
     if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
     // extract the displacements
-    DRT::UTILS::ExtractMyValues(*vel, myvel, la[1].lm_);
+    CORE::FE::ExtractMyValues(*vel, myvel, la[1].lm_);
   }
 }
 

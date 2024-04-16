@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_BEAMINTERACTION_LINK_RIGIDJOINTED_HPP
-#define BACI_BEAMINTERACTION_LINK_RIGIDJOINTED_HPP
+#ifndef FOUR_C_BEAMINTERACTION_LINK_RIGIDJOINTED_HPP
+#define FOUR_C_BEAMINTERACTION_LINK_RIGIDJOINTED_HPP
 
 #include "baci_config.hpp"
 

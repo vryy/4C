@@ -7,8 +7,8 @@
 
 */
 
-#ifndef BACI_FLUID_DBCHDG_HPP
-#define BACI_FLUID_DBCHDG_HPP
+#ifndef FOUR_C_FLUID_DBCHDG_HPP
+#define FOUR_C_FLUID_DBCHDG_HPP
 
 
 #include "baci_config.hpp"
@@ -81,4 +81,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_FLUID_DBCHDG_H
+#endif

@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 06/09 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_THERMO_TIMINT_STATICS_HPP
-#define BACI_THERMO_TIMINT_STATICS_HPP
+#ifndef FOUR_C_THERMO_TIMINT_STATICS_HPP
+#define FOUR_C_THERMO_TIMINT_STATICS_HPP
 
 
 /*----------------------------------------------------------------------*
@@ -202,4 +202,4 @@ namespace THR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // THERMO_TIMINT_STATICS_H
+#endif

@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_RUNTIME_WRITER_HPP
-#define BACI_PARTICLE_INTERACTION_RUNTIME_WRITER_HPP
+#ifndef FOUR_C_PARTICLE_INTERACTION_RUNTIME_WRITER_HPP
+#define FOUR_C_PARTICLE_INTERACTION_RUNTIME_WRITER_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
@@ -99,9 +99,6 @@ namespace PARTICLEINTERACTION
    private:
     //! communication
     const Epetra_Comm& comm_;
-
-    //! particle simulation parameter list
-    const Teuchos::ParameterList& params_;
 
     //! setup time of runtime output writer
     double setuptime_;

@@ -25,6 +25,7 @@
 #include "baci_ale_utils_clonestrategy.hpp"
 #include "baci_ale_utils_mapextractor.hpp"
 #include "baci_coupling_adapter.hpp"
+#include "baci_discretization_geometry_update_material_config.hpp"
 #include "baci_fluid_utils_mapextractor.hpp"
 #include "baci_fs3i_biofilm_fsi_utils.hpp"
 #include "baci_fsi_monolithicfluidsplit.hpp"
@@ -32,7 +33,6 @@
 #include "baci_io_control.hpp"
 #include "baci_io_gmsh.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_materials.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_structure_aux.hpp"
@@ -758,13 +758,13 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   // change nodes reference position of the fluid field
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField()->WriteAccessDispnp());
   Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->FluidField()->Discretization();
-  DRT::UTILS::UpdateMaterialConfigWithDispVector(fluiddis, fluiddisp);
+  CORE::GEO::UpdateMaterialConfigWithDispVector(fluiddis, fluiddisp);
 
 
 
   // change nodes reference position also for the fluid ale field
   Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField()->WriteAccessDispnp();
-  DRT::UTILS::UpdateMaterialConfigWithDispVector(fluidaledis, fluidaledisp);
+  CORE::GEO::UpdateMaterialConfigWithDispVector(fluidaledis, fluidaledisp);
 
   // change nodes reference position also for scatra fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[0];
@@ -806,11 +806,11 @@ void FS3I::BiofilmFSI::StructAleSolve()
   // change nodes reference position of the structure field
   Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->WriteAccessDispnp());
   Teuchos::RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
-  DRT::UTILS::UpdateMaterialConfigWithDispVector(structdis, structdisp);
+  CORE::GEO::UpdateMaterialConfigWithDispVector(structdis, structdisp);
   structdis->FillComplete(false, true, true);
 
   // change nodes reference position also for the struct ale field
-  DRT::UTILS::UpdateMaterialConfigWithDispVector(structaledis, ale_->WriteAccessDispnp());
+  CORE::GEO::UpdateMaterialConfigWithDispVector(structaledis, ale_->WriteAccessDispnp());
 
   // change nodes reference position also for scatra structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];

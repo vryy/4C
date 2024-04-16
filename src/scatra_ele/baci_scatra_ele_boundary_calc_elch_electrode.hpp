@@ -7,8 +7,8 @@
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_HPP
-#define BACI_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_HPP
+#ifndef FOUR_C_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_HPP
+#define FOUR_C_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_HPP
 
 #include "baci_config.hpp"
 
@@ -265,8 +265,8 @@ namespace DRT
 
       double GetValence(const Teuchos::RCP<const MAT::Material>& material, int k) const override;
 
-      void CalcS2ICouplingFlux(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+      void CalcS2ICouplingFlux(const DRT::FaceElement* ele, const Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::FaceElement::LocationArray& la,
           CORE::LINALG::SerialDenseVector& scalars) override;
 
       //! evaluate factor F/RT

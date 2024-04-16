@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              cbert 08/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MYOCARD_INADA_HPP
-#define BACI_MAT_MYOCARD_INADA_HPP
+#ifndef FOUR_C_MAT_MYOCARD_INADA_HPP
+#define FOUR_C_MAT_MYOCARD_INADA_HPP
 
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |

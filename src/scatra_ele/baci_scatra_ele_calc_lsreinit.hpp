@@ -8,8 +8,8 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_CALC_LSREINIT_HPP
-#define BACI_SCATRA_ELE_CALC_LSREINIT_HPP
+#ifndef FOUR_C_SCATRA_ELE_CALC_LSREINIT_HPP
+#define FOUR_C_SCATRA_ELE_CALC_LSREINIT_HPP
 
 #include "baci_config.hpp"
 

@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_STRUCTURE_AUX_HPP
-#define BACI_STRUCTURE_AUX_HPP
+#ifndef FOUR_C_STRUCTURE_AUX_HPP
+#define FOUR_C_STRUCTURE_AUX_HPP
 
 #include "baci_config.hpp"
 

@@ -7,19 +7,14 @@
 
 */
 /*---------------------------------------------------------------------------*/
-// macros
 
-
-/*----------------------------------------------------------------------*/
-// headers
-#include "baci_contact_analytical.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_contact.hpp"
 #include "baci_inpar_structure.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_lib_utils_elements.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
@@ -91,8 +86,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_calc_reset_istep;
     else if (action == "calc_struct_energy")
       act = ELEMENTS::struct_calc_energy;
-    else if (action == "calc_struct_errornorms")
-      act = ELEMENTS::struct_calc_errornorms;
     else if (action == "calc_struct_mass_volume")
       act = ELEMENTS::struct_calc_mass_volume;
     else
@@ -115,7 +108,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       case ELEMENTS::struct_calc_nlnstiff:
       case ELEMENTS::struct_calc_internalforce:
       case ELEMENTS::struct_calc_stress:
-      case ELEMENTS::struct_calc_errornorms:
       case ELEMENTS::struct_calc_mass_volume:
       {
         DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -171,15 +163,15 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+        CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
       // special case: geometrically linear
@@ -208,15 +200,15 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+        CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
       // special case: geometrically linear
@@ -242,9 +234,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix (initialised to zero)
       // This matrix is not utterly useless. It is used to apply EAS-stuff in a linearised manner
       // onto the internal force vector.
@@ -254,7 +246,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+        CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
       // special case: geometrically linear
@@ -281,11 +273,11 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       if (dispo == Teuchos::null or disp == Teuchos::null or res == Teuchos::null)
         dserror("Cannot get state vectors");
       std::vector<double> mydispo(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispo, mydispo, lm);
+      CORE::FE::ExtractMyValues(*dispo, mydispo, lm);
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       FintStiffMassGEMM(params, lm, mydispo, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr,
           nullptr, actmat, INPAR::STR::stress_none, INPAR::STR::strain_none);
       break;
@@ -301,9 +293,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
             "Cannot get state vectors \"displacement\" "
             "and/or \"residual displacement\"");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       w1_recover(lm, mydisp, myres);
       /* ToDo Probably we have to recover the history information of some special
        * materials as well.                                 hiermeier 04/2016  */
@@ -370,15 +362,15 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
       if (straindata == Teuchos::null) dserror("Cannot get strain 'data'");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+        CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
       const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
       CORE::LINALG::SerialDenseMatrix stress(intpoints.nquad, Wall1::numstr_);
@@ -421,270 +413,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state vectors");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // determine energies
       Energy(params, lm, mydisp, &elevec1, actmat);
-      break;
-    }
-    //==================================================================================
-    case ELEMENTS::struct_calc_errornorms:
-    {
-      // IMPORTANT NOTES (popp 10/2010):
-      // - error norms are based on a small deformation assumption (linear elasticity)
-      // - extension to finite deformations would be possible without difficulties,
-      //   however analytical solutions are extremely rare in the nonlinear realm
-      // - only implemented for SVK material (relevant for energy norm only, L2 and
-      //   H1 norms are of course valid for arbitrary materials)
-      // - analytical solutions are currently stored in a repository in the CONTACT
-      //   namespace, however they could (should?) be moved to a more general location
-
-      // check length of elevec1
-      if (elevec1.length() < 3) dserror("The given result vector is too short.");
-
-      // check material law
-      Teuchos::RCP<MAT::Material> mat = Material();
-
-      //******************************************************************
-      // only for St.Venant Kirchhoff material
-      //******************************************************************
-      if (mat->MaterialType() == INPAR::MAT::m_stvenant)
-      {
-        // declaration of variables
-        double l2norm = 0.0;
-        double h1norm = 0.0;
-        double energynorm = 0.0;
-
-        // some definitions
-        const int numnode = NumNode();
-        const int numdf = 2;
-        const int nd = numnode * numdf;
-        const int numeps = 4;
-        CORE::LINALG::SerialDenseMatrix xjm;
-        xjm.shape(2, 2);
-        double det = 0.0;
-        CORE::LINALG::SerialDenseMatrix boplin;
-        boplin.shape(numeps, nd);
-        CORE::LINALG::SerialDenseVector F;
-        F.size(numeps);
-        CORE::LINALG::SerialDenseVector strain;
-        strain.size(numeps);
-
-        // shape functions, derivatives and integration rule
-        CORE::LINALG::SerialDenseVector funct(numnode);
-        CORE::LINALG::SerialDenseMatrix deriv;
-        deriv.shape(2, numnode);
-        const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
-
-        // get displacements and extract values of this element
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-
-        // reference and current geometry (nodal positions)
-        CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);
-        CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
-        for (int k = 0; k < numnode; ++k)
-        {
-          xrefe(0, k) = Nodes()[k]->X()[0];
-          xrefe(1, k) = Nodes()[k]->X()[1];
-          xcure(0, k) = xrefe(0, k) + mydisp[k * numdf + 0];
-          xcure(1, k) = xrefe(1, k) + mydisp[k * numdf + 1];
-        }
-
-        /*------------------------- get node weights for nurbs elements */
-        const CORE::FE::CellType distype = Shape();
-        CORE::LINALG::SerialDenseVector weights(numnode);
-        if (distype == CORE::FE::CellType::nurbs4 || distype == CORE::FE::CellType::nurbs9)
-        {
-          for (int inode = 0; inode < numnode; ++inode)
-          {
-            DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
-            weights(inode) = cp->W();
-          }
-        }
-
-        //----------------------------------------------------------------
-        // loop over all Gauss points
-        //----------------------------------------------------------------
-        for (int ip = 0; ip < intpoints.nquad; ++ip)
-        {
-          const double e1 = intpoints.qxg[ip][0];
-          const double e2 = intpoints.qxg[ip][1];
-          const double wgt = intpoints.qwgt[ip];
-
-          // get values of shape functions and derivatives in the gausspoint
-          if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
-          {
-            // shape functions and their derivatives for polynomials
-            CORE::FE::shape_function_2D(funct, e1, e2, distype);
-            CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
-          }
-          else
-          {
-            // nurbs version
-            CORE::LINALG::SerialDenseVector gp(2);
-            gp(0) = e1;
-            gp(1) = e2;
-
-            CORE::FE::NURBS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
-          }
-
-          /*--------------------------------------- compute jacobian Matrix */
-          w1_jacobianmatrix(xrefe, deriv, xjm, &det, numnode);
-
-          /*------------------------------------ integration factor  -------*/
-          double fac = wgt * det * thickness_;
-
-          /*----------------------------------- calculate operator Blin  ---*/
-          w1_boplin(boplin, deriv, xjm, det, numnode);
-
-          /*-------------------------deformation gradient and GL strains ---*/
-          w1_defgrad(F, strain, xrefe, xcure, boplin, numnode);
-
-          // Gauss point in reference configuration
-          CORE::LINALG::Matrix<2, 1> xgp(true);
-          for (int k = 0; k < numdf; ++k)
-            for (int n = 0; n < numnode; ++n) xgp(k, 0) += funct[n] * xrefe(k, n);
-
-          //**************************************************************
-          // get analytical solution
-          CORE::LINALG::Matrix<2, 1> uanalyt(true);
-          CORE::LINALG::Matrix<4, 1> strainanalyt(true);
-          CORE::LINALG::Matrix<2, 2> derivanalyt(true);
-
-          // check if we evaluate the error through the contact facilities
-          const Teuchos::ParameterList& listcmt =
-              GLOBAL::Problem::Instance()->ContactDynamicParams();
-          INPAR::CONTACT::ErrorNorms entype =
-              CORE::UTILS::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
-
-          if (entype !=
-              INPAR::CONTACT::errornorms_none)  // evaluate error through the contact facilities
-          {
-            CONTACT::AnalyticalSolutions2D(xgp, uanalyt, strainanalyt, derivanalyt);
-          }
-          else  // evaluate error from given function
-          {
-            // get final time
-            const double finaltime =
-                GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("MAXTIME");
-
-            // get function number
-            const int calcerrfunctno =
-                GLOBAL::Problem::Instance()->StructuralDynamicParams().get<int>("CALCERRORFUNCNO");
-
-            // evaluate displacement error
-            for (unsigned int d = 0; d < 2; ++d)
-              uanalyt(d, 0) =
-                  GLOBAL::Problem::Instance()
-                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
-                      .Evaluate(xgp.A(), finaltime, d);
-
-            // set strains to zero
-            strainanalyt(0, 0) = 0.0;
-            strainanalyt(1, 0) = 0.0;
-            strainanalyt(2, 0) = 0.0;
-            strainanalyt(3, 0) = 0.0;
-
-            // set displacement derivatives to zero
-            derivanalyt(0, 0) = 0.0;
-            derivanalyt(0, 1) = 0.0;
-            derivanalyt(1, 0) = 0.0;
-            derivanalyt(1, 1) = 0.0;
-          }
-          //**************************************************************
-
-          //--------------------------------------------------------------
-          // (1) L2 norm
-          //--------------------------------------------------------------
-
-          // compute displacements at GP
-          CORE::LINALG::Matrix<2, 1> ugp(true);
-          for (int k = 0; k < numdf; ++k)
-            for (int n = 0; n < numnode; ++n) ugp(k, 0) += funct[n] * (xcure(k, n) - xrefe(k, n));
-
-          // displacement error
-          CORE::LINALG::Matrix<2, 1> uerror(true);
-          for (int k = 0; k < numdf; ++k) uerror(k, 0) = uanalyt(k, 0) - ugp(k, 0);
-
-          // compute GP contribution to L2 error norm
-          l2norm += fac * uerror.Dot(uerror);
-
-          //--------------------------------------------------------------
-          // (2) H1 norm
-          //--------------------------------------------------------------
-
-          // compute partial derivatives at GP
-          CORE::LINALG::Matrix<2, 2> derivgp(true);
-          derivgp(0, 0) = F[0] - 1.0;
-          derivgp(0, 1) = F[2];
-          derivgp(1, 0) = F[3];
-          derivgp(1, 1) = F[1] - 1.0;
-
-          // derivative error
-          CORE::LINALG::Matrix<2, 2> deriverror(true);
-          for (int k = 0; k < numdf; ++k)
-            for (int m = 0; m < numdf; ++m) deriverror(k, m) = derivanalyt(k, m) - derivgp(k, m);
-
-          // compute GP contribution to H1 error norm
-          h1norm += fac * deriverror.Dot(deriverror);
-          h1norm += fac * uerror.Dot(uerror);
-
-          //--------------------------------------------------------------
-          // (3) Energy norm
-          //--------------------------------------------------------------
-
-          // compute linear strain at GP
-          CORE::LINALG::Matrix<4, 1> straingp(true);
-          straingp(0, 0) = 0.5 * (F[0] + F[0]) - 1.0;
-          straingp(1, 0) = 0.5 * (F[1] + F[1]) - 1.0;
-          straingp(2, 0) = 0.5 * (F[2] + F[3]);
-          straingp(3, 0) = straingp(2, 0);
-
-          // strain error
-          CORE::LINALG::Matrix<4, 1> strainerror(true);
-          for (int k = 0; k < numeps; ++k) strainerror(k, 0) = strainanalyt(k, 0) - straingp(k, 0);
-
-          // compute stress vector and constitutive matrix
-          CORE::LINALG::SerialDenseMatrix C;
-          C.shape(4, 4);
-          CORE::LINALG::SerialDenseMatrix tempstress;
-          tempstress.shape(4, 4);
-          CORE::LINALG::SerialDenseVector tempstrainerror(4);
-          tempstrainerror[0] = strainerror(0, 0);
-          tempstrainerror[1] = strainerror(1, 0);
-          tempstrainerror[2] = strainerror(2, 0);
-          tempstrainerror[3] = strainerror(3, 0);
-          Teuchos::RCP<const MAT::Material> material = Material();
-          w1_call_matgeononl(tempstrainerror, tempstress, C, numeps, material, params, ip);
-          CORE::LINALG::Matrix<4, 1> stress(true);
-          stress(0, 0) = tempstress(0, 0);
-          stress(1, 0) = tempstress(1, 1);
-          stress(2, 0) = tempstress(0, 2);
-          stress(3, 0) = tempstress(0, 2);
-
-
-          // compute GP contribution to energy error norm
-          energynorm += fac * stress.Dot(strainerror);
-
-          // cout << "UAnalytical:      " << ugp << endl;
-          // cout << "UDiscrete:        " << uanalyt << endl;
-          // cout << "StrainAnalytical: " << strainanalyt << endl;
-          // cout << "StrainDiscrete:   " << straingp << endl;
-          // cout << "DerivAnalytical:  " << derivanalyt << endl;
-          // cout << "DerivDiscrete:    " << derivgp << endl;
-        }
-        //----------------------------------------------------------------
-
-        // return results
-        elevec1[0] = l2norm;
-        elevec1[1] = h1norm;
-        elevec1[2] = energynorm;
-      }
-      else
-        dserror("ERROR: Error norms only implemented for SVK material");
       break;
     }
     //==================================================================================
@@ -725,14 +457,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
+        CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
       // reference and current geometry (nodal positions)
@@ -873,7 +605,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
       // reference and current geometry (nodal positions)

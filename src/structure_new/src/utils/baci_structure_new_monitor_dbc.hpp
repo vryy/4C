@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_MONITOR_DBC_HPP
-#define BACI_STRUCTURE_NEW_MONITOR_DBC_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_MONITOR_DBC_HPP
+#define FOUR_C_STRUCTURE_NEW_MONITOR_DBC_HPP
 
 #include "baci_config.hpp"
 
@@ -142,8 +142,6 @@ namespace STR
 
     /// extract the dofs of the reaction forces which shall be monitored
     std::map<int, std::vector<Teuchos::RCP<Epetra_Map>>> react_maps_;
-    DRT::Condition::GeometryType geo_type_ = DRT::Condition::NoGeom;
-
     unsigned of_precision_ = -1;
     unsigned os_precision_ = -1;
 
@@ -156,4 +154,4 @@ namespace STR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_NEW_MONITOR_DBC_H
+#endif

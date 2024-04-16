@@ -5,15 +5,14 @@
 \level 3
 */
 
-#ifndef BACI_SHELL7P_ELE_SCATRA_HPP
-#define BACI_SHELL7P_ELE_SCATRA_HPP
+#ifndef FOUR_C_SHELL7P_ELE_SCATRA_HPP
+#define FOUR_C_SHELL7P_ELE_SCATRA_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_inpar_scatra.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_elementtype.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_shell7p_ele_calc_interface.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
@@ -214,4 +213,4 @@ namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_SHELL7P_ELE_SCATRA_H
+#endif

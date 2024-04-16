@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MORTAR_BASE_BINARYTREE_HPP
-#define BACI_MORTAR_BASE_BINARYTREE_HPP
+#ifndef FOUR_C_MORTAR_BASE_BINARYTREE_HPP
+#define FOUR_C_MORTAR_BASE_BINARYTREE_HPP
 
 #include "baci_config.hpp"
 
@@ -312,4 +312,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_BASE_BINARYTREE_H
+#endif

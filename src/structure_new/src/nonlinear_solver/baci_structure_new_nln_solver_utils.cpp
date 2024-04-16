@@ -139,7 +139,7 @@ void STR::NLN::SOLVER::ConvertModelType2QuantityType(
     // --- constraint model case -----------------------------------------------
     case INPAR::STR::model_constraints:
     {
-      qt.push_back(NOX::NLN::StatusTest::quantity_constraints);
+      qt.push_back(NOX::NLN::StatusTest::quantity_structure);
       break;
     }
     // --- 0D cardiovascular model case ----------------------------------------

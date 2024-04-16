@@ -19,6 +19,22 @@
 
 BACI_NAMESPACE_OPEN
 
+/*
+Functions to catch implementation erros in debug mode
+*/
+namespace
+{
+  [[maybe_unused]] bool IsCutPositionUnchanged(
+      CORE::GEO::CUT::Point::PointPosition position, CORE::GEO::CUT::Point::PointPosition pos)
+  {
+    if ((position == CORE::GEO::CUT::Point::inside and pos == CORE::GEO::CUT::Point::outside) or
+        (position == CORE::GEO::CUT::Point::outside and pos == CORE::GEO::CUT::Point::inside))
+      return false;
+    else
+      return true;
+  }
+}  // namespace
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::Facet::Facet(
@@ -84,16 +100,6 @@ void CORE::GEO::CUT::Facet::Register(VolumeCell* cell)
   cells_.insert(cell);
   if (cells_.size() > 2)
   {
-#ifdef DEBUGCUTLIBRARY
-    {
-      std::ofstream file("volumecells.plot");
-      for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); ++i)
-      {
-        VolumeCell* vc = *i;
-        vc->Print(file);
-      }
-    }
-#endif
     this->Print();
     for (plain_volumecell_set::const_iterator ic = cells_.begin(); ic != cells_.end(); ++ic)
     {
@@ -513,17 +519,9 @@ bool CORE::GEO::CUT::Facet::IsCutSide(Side* side)
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Facet::Position(Point::PointPosition pos)
 {
-#ifdef DEBUGCUTLIBRARY
-  // safety check, if the position of a facet changes from one side to the other
-  if ((position_ == Point::inside and pos == Point::outside) or
-      (position_ == Point::outside and pos == Point::inside))
-  {
-    // this->Print(std::cout);
-    dserror(
-        "Are you sure that you want to change the facet-position from inside to outside or vice "
-        "versa?");
-  }
-#endif
+  dsassert(IsCutPositionUnchanged(position_, pos),
+      "Are you sure that you want to change the facet-position from inside to outside or vice "
+      "versa?");
 
   if (position_ == Point::undecided)
   {
@@ -903,21 +901,10 @@ bool CORE::GEO::CUT::Facet::HaveConsistantNormal(Facet* f, bool& result)
 
 CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Facet::Neighbor(VolumeCell* cell)
 {
-  if (cells_.size() > 2)
-  {
-#ifdef DEBUGCUTLIBRARY
-    {
-      std::ofstream file("volumes.plot");
-      for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); ++i)
-      {
-        VolumeCell* vc = *i;
-        vc->Print(file);
-      }
-    }
-#endif
-    dserror("can only have two neighbors");
-  }
+  if (cells_.size() > 2) dserror("can only have two neighbors");
+
   if (cells_.count(cell) == 0) dserror("not my neighbor");
+
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
     VolumeCell* vc = *i;
@@ -1182,9 +1169,6 @@ void CORE::GEO::CUT::Facet::TestFacetArea(double tolerance, bool istetmeshinters
       }
 
       std::cout << "WARNING: " << str.str() << "\n";
-#ifdef DEBUGCUTLIBRARY
-      dserror(str.str());
-#endif
     }
   }
 }
@@ -1324,7 +1308,6 @@ void CORE::GEO::CUT::Facet::CornerPointsLocal(
   cornersLocal.clear();
 
   const std::vector<Point*>& corners = CornerPoints();
-  int mm = 0;
 
   for (std::vector<Point*>::const_iterator k = corners.begin(); k != corners.end(); k++)
   {
@@ -1348,7 +1331,6 @@ void CORE::GEO::CUT::Facet::CornerPointsLocal(
     pt_local.push_back(loc(2, 0));
 
     cornersLocal.push_back(pt_local);
-    mm++;
   }
 }
 
@@ -1360,7 +1342,6 @@ std::vector<std::vector<double>> CORE::GEO::CUT::Facet::CornerPointsGlobal(
     Element* elem1, bool shadow)
 {
   const std::vector<Point*>& corners = CornerPoints();
-  int mm = 0;
   std::vector<std::vector<double>> cornersLocal;
   for (std::vector<Point*>::const_iterator k = corners.begin(); k != corners.end(); k++)
   {
@@ -1371,7 +1352,6 @@ std::vector<std::vector<double>> CORE::GEO::CUT::Facet::CornerPointsGlobal(
     for (unsigned dim = 0; dim < 3; dim++) pt_local[dim] = coords[dim];
 
     cornersLocal.push_back(pt_local);
-    mm++;
   }
   return cornersLocal;
 }

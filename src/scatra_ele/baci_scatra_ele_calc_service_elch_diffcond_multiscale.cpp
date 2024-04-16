@@ -8,8 +8,8 @@ multi-scale framework
 
 */
 /*--------------------------------------------------------------------------*/
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_mat_elchmat.hpp"
 #include "baci_mat_elchphase.hpp"
@@ -208,7 +208,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
     case SCATRA::Action::micro_scale_solve:
     {
       // extract state variables at element nodes
-      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
+      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
           *discretization.GetState("phinp"), my::ephinp_, la[0].lm_);
 
       const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(

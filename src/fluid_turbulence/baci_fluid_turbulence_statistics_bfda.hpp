@@ -16,8 +16,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TURBULENCE_STATISTICS_BFDA_HPP
-#define BACI_FLUID_TURBULENCE_STATISTICS_BFDA_HPP
+#ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_BFDA_HPP
+#define FOUR_C_FLUID_TURBULENCE_STATISTICS_BFDA_HPP
 
 #include "baci_config.hpp"
 
@@ -134,4 +134,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_TURBULENCE_STATISTICS_BFDA_H
+#endif

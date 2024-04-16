@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
       libglu1-mesa \ 
       python3 \
       sudo \
+      unzip \
       vim \
       wget
 
@@ -75,13 +76,16 @@ RUN /dependencies/current/cln/install.sh ${INSTALL_DIR}
 # Install Trilinos
 RUN /dependencies/trilinos_develop/trilinos/install.sh ${INSTALL_DIR} ${TRILINOS_VERSION}
 
+# Install (optional) backtrace library
+RUN /dependencies/current/backtrace/install.sh ${INSTALL_DIR}
+
 # Packages for testing
 # Installation directory for dependencies concerning testing
 ENV BACI_TESTING_DEPENDENCIES_DIR="/opt/baci-dependencies-testing/"
 RUN mkdir ${BACI_TESTING_DEPENDENCIES_DIR}
 
-# Install clang-tidy
-RUN /dependencies/testing/clang-tidy/install.sh ${BACI_TESTING_DEPENDENCIES_DIR}
+# Install LLVM (use standard install directory)
+RUN /dependencies/testing/llvm/install.sh /usr/local
 
 # Install Mathjax
 RUN /dependencies/testing/mathjax/install.sh ${BACI_TESTING_DEPENDENCIES_DIR}

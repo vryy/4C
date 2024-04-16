@@ -10,8 +10,8 @@ which govern the actual doings
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_MAT_LIST_CHEMOREAC_HPP
-#define BACI_MAT_LIST_CHEMOREAC_HPP
+#ifndef FOUR_C_MAT_LIST_CHEMOREAC_HPP
+#define FOUR_C_MAT_LIST_CHEMOREAC_HPP
 
 
 
@@ -143,4 +143,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_LIST_CHEMOREAC_H
+#endif

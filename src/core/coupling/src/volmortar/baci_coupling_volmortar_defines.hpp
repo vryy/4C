@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_COUPLING_VOLMORTAR_DEFINES_HPP
-#define BACI_COUPLING_VOLMORTAR_DEFINES_HPP
+#ifndef FOUR_C_COUPLING_VOLMORTAR_DEFINES_HPP
+#define FOUR_C_COUPLING_VOLMORTAR_DEFINES_HPP
 
 #include "baci_config.hpp"
 
@@ -27,4 +27,4 @@ BACI_NAMESPACE_OPEN
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // COUPLING_VOLMORTAR_DEFINES_H
+#endif

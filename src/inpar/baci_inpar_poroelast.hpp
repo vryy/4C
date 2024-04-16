@@ -6,8 +6,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_INPAR_POROELAST_HPP
-#define BACI_INPAR_POROELAST_HPP
+#ifndef FOUR_C_INPAR_POROELAST_HPP
+#define FOUR_C_INPAR_POROELAST_HPP
 
 #include "baci_config.hpp"
 
@@ -125,4 +125,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_POROELAST_H
+#endif

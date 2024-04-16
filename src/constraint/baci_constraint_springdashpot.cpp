@@ -639,7 +639,7 @@ void CONSTRAINTS::SpringDashpot::SetRestartOld(Teuchos::RCP<Epetra_MultiVector> 
       DRT::Node* node = actdisc_->gNode(node_gid);
       if (!node) dserror("Cannot find global node %d", node_gid);
 
-      const int numdof = actdisc_->NumDof(0, node);
+      [[maybe_unused]] const int numdof = actdisc_->NumDof(0, node);
       assert(numdof == 3);
       std::vector<int> dofs = actdisc_->Dof(0, node);
 

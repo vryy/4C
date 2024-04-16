@@ -17,8 +17,8 @@ coexist with this general class.
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_PARAMETER_STD_HPP
-#define BACI_SCATRA_ELE_PARAMETER_STD_HPP
+#ifndef FOUR_C_SCATRA_ELE_PARAMETER_STD_HPP
+#define FOUR_C_SCATRA_ELE_PARAMETER_STD_HPP
 
 #include "baci_config.hpp"
 

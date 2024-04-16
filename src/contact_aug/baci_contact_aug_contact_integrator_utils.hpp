@@ -7,8 +7,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_HPP
-#define BACI_CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_HPP
+#ifndef FOUR_C_CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_HPP
+#define FOUR_C_CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -158,9 +158,6 @@ namespace CONTACT
       { /* empty */
       }
 
-      /// default copy constructor
-      UniqueProjInfo(const UniqueProjInfo& projinfo) = default;
-
       /** \brief Fill the container with new information
        *
        *  \param[in] gp               Gauss point id number
@@ -281,4 +278,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_H
+#endif

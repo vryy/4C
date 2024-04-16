@@ -13,8 +13,8 @@ Pack, Unpack, NumDofPerNode etc.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ELEMAG_DIFF_ELE_HPP
-#define BACI_ELEMAG_DIFF_ELE_HPP
+#ifndef FOUR_C_ELEMAG_DIFF_ELE_HPP
+#define FOUR_C_ELEMAG_DIFF_ELE_HPP
 
 #include "baci_config.hpp"
 
@@ -494,4 +494,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ELEMAG_DIFF_ELE_H
+#endif

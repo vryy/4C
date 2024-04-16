@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_BEAMCONTACT_HPP
-#define BACI_INPAR_BEAMCONTACT_HPP
+#ifndef FOUR_C_INPAR_BEAMCONTACT_HPP
+#define FOUR_C_INPAR_BEAMCONTACT_HPP
 
 #include "baci_config.hpp"
 
@@ -102,4 +102,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_BEAMCONTACT_H
+#endif

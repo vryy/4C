@@ -11,6 +11,8 @@
 
 #include "baci_fluid_utils.hpp"
 
+#include "baci_discretization_fem_general_l2_projection.hpp"
+#include "baci_discretization_fem_general_utils_superconvergent_patch_recovery.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_implicit_integration.hpp"
 #include "baci_global_data.hpp"
@@ -1108,16 +1110,16 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
       switch (dim)
       {
         case 3:
-          projected_velgrad = DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(
-              discret, vel, "vel", numvec, params);
+          projected_velgrad = CORE::FE::ComputeSuperconvergentPatchRecovery<3>(
+              *discret, *vel, "vel", numvec, params);
           break;
         case 2:
-          projected_velgrad = DRT::UTILS::ComputeSuperconvergentPatchRecovery<2>(
-              discret, vel, "vel", numvec, params);
+          projected_velgrad = CORE::FE::ComputeSuperconvergentPatchRecovery<2>(
+              *discret, *vel, "vel", numvec, params);
           break;
         case 1:
-          projected_velgrad = DRT::UTILS::ComputeSuperconvergentPatchRecovery<1>(
-              discret, vel, "vel", numvec, params);
+          projected_velgrad = CORE::FE::ComputeSuperconvergentPatchRecovery<1>(
+              *discret, *vel, "vel", numvec, params);
           break;
         default:
           dserror("only 1/2/3D implementation available for superconvergent patch recovery");
@@ -1130,6 +1132,8 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
       const int solvernumber =
           GLOBAL::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
       if (solvernumber < 1) dserror("you have to specify a VELGRAD_PROJ_SOLVER");
+      const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(solvernumber);
+
       params.set<int>("action", FLD::velgradient_projection);
 
       // set given state for element evaluation
@@ -1138,7 +1142,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 
       // project velocity gradient of fluid to nodal level via L2 projection
       projected_velgrad =
-          DRT::UTILS::ComputeNodalL2Projection(discret, "vel", numvec, params, solvernumber);
+          CORE::FE::compute_nodal_l2_projection(discret, "vel", numvec, params, solverparams);
     }
     break;
     default:

@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_INPAR_PARTICLE_HPP
-#define BACI_INPAR_PARTICLE_HPP
+#ifndef FOUR_C_INPAR_PARTICLE_HPP
+#define FOUR_C_INPAR_PARTICLE_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 03/2018 |

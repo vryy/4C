@@ -8,8 +8,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_XFLUID_RESULTTEST_HPP
-#define BACI_FLUID_XFLUID_RESULTTEST_HPP
+#ifndef FOUR_C_FLUID_XFLUID_RESULTTEST_HPP
+#define FOUR_C_FLUID_XFLUID_RESULTTEST_HPP
 
 
 #include "baci_config.hpp"
@@ -77,4 +77,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_XFLUID_RESULTTEST_H
+#endif

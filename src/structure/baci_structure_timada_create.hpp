@@ -7,8 +7,8 @@
 /*----------------------------------------------------------------------*/
 /* macros */
 
-#ifndef BACI_STRUCTURE_TIMADA_CREATE_HPP
-#define BACI_STRUCTURE_TIMADA_CREATE_HPP
+#ifndef FOUR_C_STRUCTURE_TIMADA_CREATE_HPP
+#define FOUR_C_STRUCTURE_TIMADA_CREATE_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -46,4 +46,4 @@ namespace STR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_TIMADA_CREATE_H
+#endif

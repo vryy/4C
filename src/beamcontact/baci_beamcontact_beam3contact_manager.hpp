@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_BEAMCONTACT_BEAM3CONTACT_MANAGER_HPP
-#define BACI_BEAMCONTACT_BEAM3CONTACT_MANAGER_HPP
+#ifndef FOUR_C_BEAMCONTACT_BEAM3CONTACT_MANAGER_HPP
+#define FOUR_C_BEAMCONTACT_BEAM3CONTACT_MANAGER_HPP
 
 #include "baci_config.hpp"
 
@@ -520,11 +520,6 @@ namespace CONTACT
     bool PairAllreadyExisting(int currid1, int currid2);
 
     /*!
-    \brief Check, if current node is a beam element
-    */
-    bool BeamElement(DRT::Element& element);
-
-    /*!
     \brief Get maximum element length
 
     Finds maximum element radius in the whole discretization for circular cross
@@ -697,4 +692,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BEAMCONTACT_BEAM3CONTACT_MANAGER_H
+#endif

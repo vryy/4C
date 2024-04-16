@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_TETMESHINTERSECTION_HPP
-#define BACI_CUT_TETMESHINTERSECTION_HPP
+#ifndef FOUR_C_CUT_TETMESHINTERSECTION_HPP
+#define FOUR_C_CUT_TETMESHINTERSECTION_HPP
 
 #include "baci_config.hpp"
 
@@ -37,8 +37,6 @@ namespace CORE::GEO
 
       void Cut(Mesh& parent_mesh, Element* element, const plain_volumecell_set& parent_cells,
           int count, bool tetcellsonly = false);
-
-      void Status();
 
       Mesh& NormalMesh() { return mesh_; }
 

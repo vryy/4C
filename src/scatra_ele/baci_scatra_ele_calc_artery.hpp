@@ -8,13 +8,12 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_CALC_ARTERY_HPP
-#define BACI_SCATRA_ELE_CALC_ARTERY_HPP
+#ifndef FOUR_C_SCATRA_ELE_CALC_ARTERY_HPP
+#define FOUR_C_SCATRA_ELE_CALC_ARTERY_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_cnst_1d_art.hpp"
 #include "baci_scatra_ele_calc.hpp"
 
@@ -228,4 +227,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_ELE_CALC_ARTERY_H
+#endif

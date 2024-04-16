@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_PORO_3D_ELE_UTILS_HPP
-#define BACI_SOLID_PORO_3D_ELE_UTILS_HPP
+#ifndef FOUR_C_SOLID_PORO_3D_ELE_UTILS_HPP
+#define FOUR_C_SOLID_PORO_3D_ELE_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -77,4 +77,4 @@ namespace STR::UTILS::READELEMENT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_SOLID_PORO_3D_ELE_UTILS_H
+#endif

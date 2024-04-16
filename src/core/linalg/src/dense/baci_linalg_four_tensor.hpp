@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_FOUR_TENSOR_HPP
-#define BACI_LINALG_FOUR_TENSOR_HPP
+#ifndef FOUR_C_LINALG_FOUR_TENSOR_HPP
+#define FOUR_C_LINALG_FOUR_TENSOR_HPP
 
 #include "baci_config.hpp"
 
@@ -34,7 +34,7 @@ namespace CORE::LINALG
     //! constructor that initializes a 4-tensor object with only zero entries if setZero is true
     explicit FourTensor(const bool setZero = true)
     {
-      if (setZero) fourTensor_ = {{{{0.0}}}};
+      if (setZero) fourTensor_ = {{{{}}}};
     };
 
     //! @name Access methods

@@ -8,8 +8,8 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_HPP
-#define BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_HPP
+#ifndef FOUR_C_FBI_ADAPTER_CONSTRAINTBRIDGE_HPP
+#define FOUR_C_FBI_ADAPTER_CONSTRAINTBRIDGE_HPP
 
 #include "baci_config.hpp"
 
@@ -185,4 +185,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FBI_ADAPTER_CONSTRAINTBRIDGE_H
+#endif

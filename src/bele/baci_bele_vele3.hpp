@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_BELE_VELE3_HPP
-#define BACI_BELE_VELE3_HPP
+#ifndef FOUR_C_BELE_VELE3_HPP
+#define FOUR_C_BELE_VELE3_HPP
 
 
 #include "baci_config.hpp"

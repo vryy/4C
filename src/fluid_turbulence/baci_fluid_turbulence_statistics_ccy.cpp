@@ -12,9 +12,9 @@
 
 #include "baci_fluid_turbulence_statistics_ccy.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_nurbs_discret.hpp"
@@ -663,7 +663,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
     // extract local values from global vector
     std::vector<double> myvelnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*(nurbsdis->GetState("velnp")), myvelnp, lm);
+    CORE::FE::ExtractMyValues(*(nurbsdis->GetState("velnp")), myvelnp, lm);
 
     // create Matrix objects
     CORE::LINALG::Matrix<3, 27> evelnp;
@@ -691,7 +691,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     {
       // extract local values from global vector
       std::vector<double> myscanp(lm.size());
-      DRT::UTILS::ExtractMyValues(*(nurbsdis->GetState("scanp")), myscanp, lm);
+      CORE::FE::ExtractMyValues(*(nurbsdis->GetState("scanp")), myscanp, lm);
 
       // insert data into element array (scalar field is stored at pressure dofs)
       for (int i = 0; i < 27; ++i)
@@ -714,7 +714,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
       Teuchos::RCP<const Epetra_Vector> phinp = scatranurbsdis->GetState("phinp_for_statistics");
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp' for statistics");
       std::vector<double> myphinp(scatralm.size());
-      DRT::UTILS::ExtractMyValues(*phinp, myphinp, scatralm);
+      CORE::FE::ExtractMyValues(*phinp, myphinp, scatralm);
 
       // fill all element arrays
       for (int i = 0; i < nen; ++i)

@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_densematrix_inverse.hpp"
@@ -47,7 +47,7 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
     std::vector<int> lmstride;
     e->LocationVector(dis, lm, lmowner, lmstride);
     std::vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+    CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
     //------------------------------------subelement F
     CORE::LINALG::Matrix<5, 3> subdisp(false);

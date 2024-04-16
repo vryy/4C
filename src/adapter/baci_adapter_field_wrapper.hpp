@@ -10,8 +10,8 @@ use StepIncrements, therefore set NOXCorrection == true!!!
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_FIELD_WRAPPER_HPP
-#define BACI_ADAPTER_FIELD_WRAPPER_HPP
+#ifndef FOUR_C_ADAPTER_FIELD_WRAPPER_HPP
+#define FOUR_C_ADAPTER_FIELD_WRAPPER_HPP
 
 #include "baci_config.hpp"
 

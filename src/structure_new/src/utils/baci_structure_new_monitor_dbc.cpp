@@ -11,6 +11,7 @@
 
 #include "baci_structure_new_monitor_dbc.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_geometry_element_volume.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
@@ -18,7 +19,6 @@
 #include "baci_io_every_iteration_writer.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_structure_new_dbc.hpp"
 #include "baci_structure_new_timint_basedataglobalstate.hpp"
@@ -456,7 +456,7 @@ void STR::MonitorDbc::GetArea(double area[], const DRT::Condition* rcond) const
     for (unsigned i = 0; i < num_fnodes; ++i) discret.Dof(fele, fnodes[i], fele_dofs);
 
     std::vector<double> mydispn;
-    DRT::UTILS::ExtractMyValues(dispn_col, mydispn, fele_dofs);
+    CORE::FE::ExtractMyValues(dispn_col, mydispn, fele_dofs);
 
     xyze_ref.reshape(DIM, num_fnodes);
     xyze_curr.reshape(DIM, num_fnodes);
@@ -554,7 +554,7 @@ double STR::MonitorDbc::GetReactionMoment(CORE::LINALG::Matrix<DIM, 1>& rmoment_
     for (unsigned i = 0; i < DIM; ++i) node_gid[i] = discret_ptr_->Dof(node, i);
 
     std::vector<double> mydisp;
-    DRT::UTILS::ExtractMyValues(*dispn, mydisp, node_gid);
+    CORE::FE::ExtractMyValues(*dispn, mydisp, node_gid);
     for (unsigned i = 0; i < DIM; ++i) node_position(i) = node->X()[i] + mydisp[i];
 
     // Get the reaction force at this node. This force will only contain non-zero values at the DOFs

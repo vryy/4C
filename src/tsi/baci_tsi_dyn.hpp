@@ -5,8 +5,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_TSI_DYN_HPP
-#define BACI_TSI_DYN_HPP
+#ifndef FOUR_C_TSI_DYN_HPP
+#define FOUR_C_TSI_DYN_HPP
 
 #include "baci_config.hpp"
 
@@ -18,4 +18,4 @@ void tsi_dyn_drt();
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // TSI_DYN_H
+#endif

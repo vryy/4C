@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_TIMINT_POROMULTI_HPP
-#define BACI_SCATRA_TIMINT_POROMULTI_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_POROMULTI_HPP
+#define FOUR_C_SCATRA_TIMINT_POROMULTI_HPP
 
 #include "baci_config.hpp"
 
@@ -184,4 +184,4 @@ namespace SCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_TIMINT_POROMULTI_H
+#endif

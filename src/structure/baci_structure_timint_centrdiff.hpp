@@ -5,8 +5,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_STRUCTURE_TIMINT_CENTRDIFF_HPP
-#define BACI_STRUCTURE_TIMINT_CENTRDIFF_HPP
+#ifndef FOUR_C_STRUCTURE_TIMINT_CENTRDIFF_HPP
+#define FOUR_C_STRUCTURE_TIMINT_CENTRDIFF_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -210,4 +210,4 @@ namespace STR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_TIMINT_CENTRDIFF_H
+#endif

@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_AUG_STRATEGY_HPP
-#define BACI_CONTACT_AUG_STRATEGY_HPP
+#ifndef FOUR_C_CONTACT_AUG_STRATEGY_HPP
+#define FOUR_C_CONTACT_AUG_STRATEGY_HPP
 
 #include "baci_config.hpp"
 
@@ -1473,4 +1473,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_AUG_STRATEGY_H
+#endif

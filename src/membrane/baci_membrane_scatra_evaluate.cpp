@@ -8,9 +8,9 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_membrane_scatra.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -44,7 +44,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::PreEvaluate(Teuchos::ParameterList&
       Teuchos::RCP<std::vector<double>> myscalar =
           Teuchos::rcp(new std::vector<double>(la[1].lm_.size(), 0.0));
 
-      DRT::UTILS::ExtractMyValues(*scalarnp, *myscalar, la[1].lm_);
+      CORE::FE::ExtractMyValues(*scalarnp, *myscalar, la[1].lm_);
 
       // element vector for k-th scalar
       std::vector<CORE::LINALG::Matrix<Membrane<distype>::numnod_, 1>> elescalar(numscal);

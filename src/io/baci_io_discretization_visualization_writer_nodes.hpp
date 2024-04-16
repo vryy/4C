@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef BACI_IO_DISCRETIZATION_VISUALIZATION_WRITER_NODES_HPP
-#define BACI_IO_DISCRETIZATION_VISUALIZATION_WRITER_NODES_HPP
+#ifndef FOUR_C_IO_DISCRETIZATION_VISUALIZATION_WRITER_NODES_HPP
+#define FOUR_C_IO_DISCRETIZATION_VISUALIZATION_WRITER_NODES_HPP
 
 
 #include "baci_config.hpp"

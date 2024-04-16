@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              seitz 05/14 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_PLAST_SSN_SOSH8_HPP
-#define BACI_SO3_PLAST_SSN_SOSH8_HPP
+#ifndef FOUR_C_SO3_PLAST_SSN_SOSH8_HPP
+#define FOUR_C_SO3_PLAST_SSN_SOSH8_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                  seitz 05/14 |

@@ -28,8 +28,8 @@ References are
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TURBULENCE_BOXFILTER_HPP
-#define BACI_FLUID_TURBULENCE_BOXFILTER_HPP
+#ifndef FOUR_C_FLUID_TURBULENCE_BOXFILTER_HPP
+#define FOUR_C_FLUID_TURBULENCE_BOXFILTER_HPP
 
 
 #include "baci_config.hpp"
@@ -778,4 +778,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_TURBULENCE_BOXFILTER_H
+#endif

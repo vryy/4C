@@ -29,8 +29,8 @@ output.
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_TURBULENCE_STATISTICS_CCY_HPP
-#define BACI_FLUID_TURBULENCE_STATISTICS_CCY_HPP
+#ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_CCY_HPP
+#define FOUR_C_FLUID_TURBULENCE_STATISTICS_CCY_HPP
 
 
 #include "baci_config.hpp"
@@ -252,4 +252,4 @@ namespace FLD
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_TURBULENCE_STATISTICS_CCY_H
+#endif

@@ -8,8 +8,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_POROELAST_SCATRA_MONOLITHIC_HPP
-#define BACI_POROELAST_SCATRA_MONOLITHIC_HPP
+#ifndef FOUR_C_POROELAST_SCATRA_MONOLITHIC_HPP
+#define FOUR_C_POROELAST_SCATRA_MONOLITHIC_HPP
 
 /*----------------------------------------------------------------------*
  | header inclusions                                                     |
@@ -304,4 +304,4 @@ namespace POROELASTSCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // POROELAST_SCATRA_MONOLITHIC_H
+#endif

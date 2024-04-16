@@ -22,12 +22,10 @@
 #include "baci_contact_meshtying_contact_bridge.hpp"
 #include "baci_contact_nitsche_strategy_tsi.hpp"
 #include "baci_contact_node.hpp"
-#include "baci_contact_tsi_interface.hpp"
-#include "baci_coupling_adapter_volmortar.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_solver.hpp"
 #include "baci_lib_assemblestrategy.hpp"
-#include "baci_lib_discret.hpp"
 #include "baci_lib_elements_paramsminimal.hpp"
 #include "baci_lib_locsys.hpp"
 #include "baci_linalg_blocksparsematrix.hpp"
@@ -159,7 +157,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
         << "\n The body is located between x: [0,6.413mm], y: [0,6.413mm], z: "
            "[-13.3335mm,13.3335mm]\n"
         << std::endl;
-#endif  // TFSI
+#endif
 
   // structural and thermal contact
   GetContactStrategy();
@@ -2654,8 +2652,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   // extract axial displacements (here z-displacements) of top surface
   if (StructureField()->Discretization()->DofRowMap()->MyGID(one_dof_in_dbc_global.at(0)))
   {
-    DRT::UTILS::ExtractMyValues(
-        *(StructureField()->Dispnp()), top_disp_local, one_dof_in_dbc_global);
+    CORE::FE::ExtractMyValues(*(StructureField()->Dispnp()), top_disp_local, one_dof_in_dbc_global);
   }
 
   // initialse the top displacement
@@ -2689,7 +2686,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   necking_radius.at(0) = 0.0;
   if (necking_radius_dof.at(0) != -1)
   {
-    DRT::UTILS::ExtractMyValues(*(StructureField()->Dispnp()), necking_radius, necking_radius_dof);
+    CORE::FE::ExtractMyValues(*(StructureField()->Dispnp()), necking_radius, necking_radius_dof);
   }
 
   // sum necking deformations in the global variable necking_radius_global
@@ -2724,9 +2721,9 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   temperature.at(0) = 0.0;
   if (neck_temperature_dof.at(0) != -1)
   {
-    DRT::UTILS::ExtractMyValues(*(ThermoField()->Tempnp()),  // global (i)
-        temperature,                                         // local (o)
-        neck_temperature_dof                                 // global ids to be extracted
+    CORE::FE::ExtractMyValues(*(ThermoField()->Tempnp()),  // global (i)
+        temperature,                                       // local (o)
+        neck_temperature_dof                               // global ids to be extracted
     );
   }
   // sum necking temperatures in the variable temperature_global
@@ -2759,9 +2756,9 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   top_temperature_local.at(0) = 0.0;
   if (top_temperature_dof.at(0) != -1.)
   {
-    DRT::UTILS::ExtractMyValues(*(ThermoField()->Tempnp()),  // global vector (i)
-        top_temperature_local,                               // local, i.e. at specific position (o)
-        top_temperature_dof                                  // global ids to be extracted
+    CORE::FE::ExtractMyValues(*(ThermoField()->Tempnp()),  // global vector (i)
+        top_temperature_local,                             // local, i.e. at specific position (o)
+        top_temperature_dof                                // global ids to be extracted
     );
   }
 

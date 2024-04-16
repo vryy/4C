@@ -1054,6 +1054,7 @@ NODE    36   DVOL    1
 NODE    45   DVOL    1
 NODE    54   DVOL    1
 -----------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       3
 BEGIN NURBSPATCH
 ID        1
 NUMKNOTS  6

@@ -1190,7 +1190,7 @@ void CONTACT::Node::BuildAveragedNormal()
     Data().teta()[1] = MoData().n()[2] * Data().txi()[0] - MoData().n()[0] * Data().txi()[2];
     Data().teta()[2] = MoData().n()[0] * Data().txi()[1] - MoData().n()[1] * Data().txi()[0];
 
-#endif  // #ifdef CONTACTPSEUDO2D
+#endif
   }
   else
     dserror("Contact problems must be either 2D or 3D");

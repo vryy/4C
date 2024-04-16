@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CONSTRAINT_SPRINGDASHPOT_MANAGER_HPP
-#define BACI_CONSTRAINT_SPRINGDASHPOT_MANAGER_HPP
+#ifndef FOUR_C_CONSTRAINT_SPRINGDASHPOT_MANAGER_HPP
+#define FOUR_C_CONSTRAINT_SPRINGDASHPOT_MANAGER_HPP
 
 #include "baci_config.hpp"
 
@@ -89,4 +89,4 @@ namespace CONSTRAINTS
 }  // namespace CONSTRAINTS
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONSTRAINT_SPRINGDASHPOT_MANAGER_H
+#endif

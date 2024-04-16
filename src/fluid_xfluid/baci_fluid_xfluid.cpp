@@ -709,7 +709,7 @@ void FLD::XFluid::ExtractNodeVectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis,
     std::vector<int> lm;
     dis->InitialDof(node, lm);  // initial dofs!
     std::vector<double> mydisp;
-    DRT::UTILS::ExtractMyValues(*dispnp_col, mydisp, lm);
+    CORE::FE::ExtractMyValues(*dispnp_col, mydisp, lm);
     if (mydisp.size() < 3) dserror("we need at least 3 dofs here");
 
     CORE::LINALG::Matrix<3, 1> currpos;
@@ -2097,8 +2097,8 @@ void FLD::XFluid::CheckXFluidParams() const
 
   Teuchos::ParameterList& params_xfem = params_->sublist("XFEM");
   if (ghost_penalty_add_inner_faces_ &&
-      !CORE::UTILS::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(params_xfem,
-          "NODAL_DOFSET_STRATEGY") == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition)
+      !(CORE::UTILS::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(params_xfem,
+            "NODAL_DOFSET_STRATEGY") == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition))
     dserror(
         "The option GHOST_PENALTY_ADD_INNER_FACES is only availabe if you use max 1 nodal dofset!");
 

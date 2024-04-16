@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BACI_BEAMINTERACTION_STR_MODEL_EVALUATOR_HPP
-#define BACI_BEAMINTERACTION_STR_MODEL_EVALUATOR_HPP
+#ifndef FOUR_C_BEAMINTERACTION_STR_MODEL_EVALUATOR_HPP
+#define FOUR_C_BEAMINTERACTION_STR_MODEL_EVALUATOR_HPP
 
 #include "baci_config.hpp"
 

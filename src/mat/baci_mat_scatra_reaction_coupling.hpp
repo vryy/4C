@@ -6,15 +6,15 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_SCATRA_REACTION_COUPLING_HPP
-#define BACI_MAT_SCATRA_REACTION_COUPLING_HPP
+#ifndef FOUR_C_MAT_SCATRA_REACTION_COUPLING_HPP
+#define FOUR_C_MAT_SCATRA_REACTION_COUPLING_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_comm_parobjectfactory.hpp"
 #include "baci_mat_material.hpp"
 #include "baci_mat_par_parameter.hpp"
-#include "baci_mat_scatra_reaction_mat.hpp"
+#include "baci_mat_scatra_reaction.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -679,4 +679,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_SCATRA_REACTION_COUPLING_H
+#endif

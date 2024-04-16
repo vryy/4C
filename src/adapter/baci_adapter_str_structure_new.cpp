@@ -530,8 +530,15 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // ---------------------------------------------------------------------------
   // check for constraints
   // ---------------------------------------------------------------------------
-  // TODO: insert the conditions related to INPAR::STR::model_constraints:
-  // embedded mesh method and periodic boundary conditions for rves
+  std::vector<Teuchos::RCP<DRT::Condition>> linePeriodicRve, surfPeriodicRve,
+      pointLinearCoupledEquation;
+  actdis_->GetCondition("LinePeriodicRve", linePeriodicRve);
+  actdis_->GetCondition("SurfacePeriodicRve", surfPeriodicRve);
+  actdis_->GetCondition("PointLinearCoupledEquation", pointLinearCoupledEquation);
+
+  if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
+      pointLinearCoupledEquation.size() > 0)
+    modeltypes.insert(INPAR::STR::model_constraints);
 }
 
 

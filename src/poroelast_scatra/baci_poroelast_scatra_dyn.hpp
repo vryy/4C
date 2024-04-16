@@ -8,8 +8,8 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef BACI_POROELAST_SCATRA_DYN_HPP
-#define BACI_POROELAST_SCATRA_DYN_HPP
+#ifndef FOUR_C_POROELAST_SCATRA_DYN_HPP
+#define FOUR_C_POROELAST_SCATRA_DYN_HPP
 
 #include "baci_config.hpp"
 

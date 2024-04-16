@@ -530,7 +530,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 #else
     std::cout << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
               << "is a 2D problem modeled pseudo-3D, switch it on!" << std::endl;
-#endif  // #ifdef CONTACTPSEUDO2D
+#endif
   }
 
   // initialization of meshtying
@@ -2032,9 +2032,6 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
   // output active set, energies and momentum for contact
   OutputContact();
 
-  // print error norms
-  OutputErrorNorms();
-
   OutputVolumeMass();
 
   // output of nodal positions in current configuration
@@ -2753,70 +2750,6 @@ void STR::TimInt::OutputContact()
     //-------------------------- Compute and output interface forces
     cmtbridge_->GetStrategy().InterfaceForces(true);
   }
-}
-
-/*----------------------------------------------------------------------*/
-/* output solution error norms */
-void STR::TimInt::OutputErrorNorms()
-{
-  // get out of here if no output wanted
-  const Teuchos::ParameterList& listcmt = GLOBAL::Problem::Instance()->ContactDynamicParams();
-  INPAR::CONTACT::ErrorNorms entype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
-  if (entype == INPAR::CONTACT::errornorms_none) return;
-
-  // initialize variables
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> norms =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
-  norms->putScalar(0.0);
-
-  // vector for output
-  Teuchos::RCP<Epetra_MultiVector> normvec =
-      Teuchos::rcp(new Epetra_MultiVector(*discret_->ElementRowMap(), 3));
-
-  // call discretization to evaluate error norms
-  Teuchos::ParameterList p;
-  p.set("action", "calc_struct_errornorms");
-  discret_->ClearState();
-  discret_->SetState("displacement", (*dis_)(0));
-  discret_->EvaluateScalars(p, norms);
-  discret_->EvaluateScalars(p, normvec);
-  discret_->ClearState();
-
-  // proc 0 writes output to screen
-  if (!myrank_)
-  {
-    printf("**********************************");
-    printf("\nSOLUTION ERROR NORMS:");
-    printf("\nL_2 norm:     %.10e", sqrt((*norms)(0)));
-    printf("\nH_1 norm:     %.10e", sqrt((*norms)(1)));
-    printf("\nEnergy norm:  %.10e", sqrt((*norms)(2)));
-    printf("\n**********************************\n\n");
-    fflush(stdout);
-  }
-
-  Teuchos::RCP<Epetra_MultiVector> L2_norm =
-      Teuchos::rcp(new Epetra_MultiVector(*discret_->ElementRowMap(), 1));
-  Teuchos::RCP<Epetra_MultiVector> H1_norm =
-      Teuchos::rcp(new Epetra_MultiVector(*discret_->ElementRowMap(), 1));
-  Teuchos::RCP<Epetra_MultiVector> Energy_norm =
-      Teuchos::rcp(new Epetra_MultiVector(*discret_->ElementRowMap(), 1));
-  Epetra_MultiVector& sca = *(normvec.get());
-  Epetra_MultiVector& scaL2 = *(L2_norm.get());
-  Epetra_MultiVector& scaH1 = *(H1_norm.get());
-  Epetra_MultiVector& scaEn = *(Energy_norm.get());
-
-  for (int i = 0; i < discret_->NumMyRowElements(); ++i)
-  {
-    (*scaL2(0))[i] = (*sca(0))[i];
-    (*scaH1(0))[i] = (*sca(1))[i];
-    (*scaEn(0))[i] = (*sca(2))[i];
-  }
-
-  // output to file
-  output_->WriteVector("L2_norm", L2_norm);
-  output_->WriteVector("H1_norm", H1_norm);
-  output_->WriteVector("Energy_norm", Energy_norm);
 }
 
 /*----------------------------------------------------------------------*/

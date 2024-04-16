@@ -6,8 +6,8 @@
 
 */
 
-#ifndef BACI_MAT_MYOCARD_GENERAL_HPP
-#define BACI_MAT_MYOCARD_GENERAL_HPP
+#ifndef FOUR_C_MAT_MYOCARD_GENERAL_HPP
+#define FOUR_C_MAT_MYOCARD_GENERAL_HPP
 
 #include "baci_config.hpp"
 

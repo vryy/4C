@@ -10,8 +10,8 @@ bridge between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_XFEM_COUPLING_LEVELSET_HPP
-#define BACI_XFEM_COUPLING_LEVELSET_HPP
+#ifndef FOUR_C_XFEM_COUPLING_LEVELSET_HPP
+#define FOUR_C_XFEM_COUPLING_LEVELSET_HPP
 
 #include "baci_config.hpp"
 
@@ -650,4 +650,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_COUPLING_LEVELSET_H
+#endif

@@ -10,6 +10,7 @@
 
 #include "baci_scatra_ele_calc_hdg.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "baci_discretization_fem_general_utils_polynomial.hpp"
@@ -20,7 +21,7 @@
 #include "baci_lib_elementtype.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_mat_list.hpp"
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_ele_calc.hpp"
 #include "baci_scatra_ele_parameter_std.hpp"
@@ -470,24 +471,24 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ReadGlobalVectors(
   tracenm_.size(hdgele->onfdofs_);
   Teuchos::RCP<const Epetra_Vector> phiaf = discretization.GetState("phiaf");
   if (phiaf == Teuchos::null) dserror("Cannot get state vector phiaf");
-  DRT::UTILS::ExtractMyValues(*phiaf, tracen_, la[0].lm_);
+  CORE::FE::ExtractMyValues(*phiaf, tracen_, la[0].lm_);
 
 
   if (discretization.HasState("phin"))
   {
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-    DRT::UTILS::ExtractMyValues(*phin, tracenm_, la[0].lm_);
+    CORE::FE::ExtractMyValues(*phin, tracenm_, la[0].lm_);
   }
 
   Teuchos::RCP<const Epetra_Vector> intphinp = discretization.GetState(2, "intphinp");
   if (intphinp == Teuchos::null) dserror("Cannot get state vector intphinp");
   std::vector<int> localDofs = discretization.Dof(2, ele);
-  DRT::UTILS::ExtractMyValues(*intphinp, interiorPhinp_, localDofs);
+  CORE::FE::ExtractMyValues(*intphinp, interiorPhinp_, localDofs);
 
   if (discretization.HasState(2, "intphin"))
   {
     Teuchos::RCP<const Epetra_Vector> intphin = discretization.GetState(2, "intphin");
-    DRT::UTILS::ExtractMyValues(*intphin, interiorPhin_, localDofs);
+    CORE::FE::ExtractMyValues(*intphin, interiorPhin_, localDofs);
   }
 
   return;
@@ -1895,12 +1896,12 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
   Teuchos::RCP<const Epetra_Vector> matrix_state = params.get<Teuchos::RCP<Epetra_Vector>>("phi");
 
   std::vector<double> tracephi;
-  DRT::UTILS::ExtractMyValues(*matrix_state, tracephi, la[nds_var_old].lm_);
+  CORE::FE::ExtractMyValues(*matrix_state, tracephi, la[nds_var_old].lm_);
 
   // get node based values!
   matrix_state = params.get<Teuchos::RCP<Epetra_Vector>>("intphi");
   std::vector<double> intphi;
-  DRT::UTILS::ExtractMyValues(*matrix_state, intphi, la[nds_intvar_old].lm_);
+  CORE::FE::ExtractMyValues(*matrix_state, intphi, la[nds_intvar_old].lm_);
   if (intphi.size() != shapes_old->ndofs_ * (nsd_ + 1))
     dserror("node number not matching: %d vs. %d", intphi.size(), shapes_old->ndofs_ * (nsd_ + 1));
 

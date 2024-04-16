@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_VOLUMECELL_HPP
-#define BACI_CUT_VOLUMECELL_HPP
+#ifndef FOUR_C_CUT_VOLUMECELL_HPP
+#define FOUR_C_CUT_VOLUMECELL_HPP
 
 #include "baci_config.hpp"
 

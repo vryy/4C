@@ -5,8 +5,8 @@
 \level 1
 */
 
-#ifndef BACI_SOLID_3D_ELE_NEUMANN_EVALUATOR_HPP
-#define BACI_SOLID_3D_ELE_NEUMANN_EVALUATOR_HPP
+#ifndef FOUR_C_SOLID_3D_ELE_NEUMANN_EVALUATOR_HPP
+#define FOUR_C_SOLID_3D_ELE_NEUMANN_EVALUATOR_HPP
 #include "baci_config.hpp"
 
 #include "baci_lib_element.hpp"
@@ -97,4 +97,4 @@ namespace DRT::ELEMENTS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLID_ELE_NEUMANN_EVALUATOR_H
+#endif

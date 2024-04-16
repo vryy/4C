@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_BEAMINTERACTION_LINK_TRUSS_HPP
-#define BACI_BEAMINTERACTION_LINK_TRUSS_HPP
+#ifndef FOUR_C_BEAMINTERACTION_LINK_TRUSS_HPP
+#define FOUR_C_BEAMINTERACTION_LINK_TRUSS_HPP
 
 #include "baci_config.hpp"
 

@@ -7,8 +7,8 @@ mesh
 \level 3
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_MESH_HPP
-#define BACI_CUT_MESH_HPP
+#ifndef FOUR_C_CUT_MESH_HPP
+#define FOUR_C_CUT_MESH_HPP
 
 #include "baci_config.hpp"
 
@@ -354,9 +354,6 @@ namespace CORE::GEO
 
       /// ???
       void PrintCellStats();
-
-      /// ???
-      void Status();
 
       /// print all facets
       void PrintFacets();

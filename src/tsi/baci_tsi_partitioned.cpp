@@ -92,7 +92,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   std::cout << "structure dofmap" << std::endl;
   std::cout << *ThermoField()->DofRowMap(1) << std::endl;
 //    exit(0);
-#endif  // TSIPARTITIONEDASOUTPUT
+#endif
 
 }  // cstr
 

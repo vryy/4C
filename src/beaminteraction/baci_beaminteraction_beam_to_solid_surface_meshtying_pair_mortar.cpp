@@ -12,8 +12,9 @@
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"
 #include "baci_beaminteraction_beam_to_solid_utils.hpp"
 #include "baci_beaminteraction_contact_params.hpp"
+#include "baci_geometry_pair_element.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_element_faces.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
 #include "baci_geometry_pair_line_to_surface.hpp"
 
 BACI_NAMESPACE_OPEN
@@ -46,8 +47,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
   if (!this->meshtying_is_evaluated_)
   {
     this->CastGeometryPair()->Evaluate(this->ele1posref_,
-        this->face_element_->GetFaceReferencePosition(), this->line_to_3D_segments_,
-        this->face_element_->GetReferenceNormals());
+        this->face_element_->GetFaceReferenceElementData(), this->line_to_3D_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 
@@ -115,7 +115,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
@@ -124,12 +124,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
       N_mortar.Clear();
       N_beam.Clear();
       N_surface.Clear();
-      mortar::EvaluateShapeFunction(
-          N_mortar, projected_gauss_point.GetEta(), std::integral_constant<unsigned int, 1>{});
-      beam::EvaluateShapeFunction(N_beam, projected_gauss_point.GetEta(),
-          std::integral_constant<unsigned int, 1>{}, this->Element1());
-      surface::EvaluateShapeFunction(N_surface, projected_gauss_point.GetXi(),
-          std::integral_constant<unsigned int, 2>{}, this->GeometryPair()->Element2());
+      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::Evaluate(
+          N_mortar, projected_gauss_point.GetEta());
+      GEOMETRYPAIR::EvaluateShapeFunction<beam>::Evaluate(
+          N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
+      GEOMETRYPAIR::EvaluateShapeFunction<surface>::Evaluate(N_surface,
+          projected_gauss_point.GetXi(),
+          this->face_element_->GetFaceElementData().shape_function_data_);
 
       // Fill in the local templated mortar matrix D.
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
@@ -174,22 +175,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
   {
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     {
-      for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
-        beam_coupling_dof(i_beam) = CORE::FADUTILS::CastToDouble(this->ele1pos_(i_beam));
-      for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
-        surface_coupling_dof(i_surface) =
-            CORE::FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface));
+      beam_coupling_dof = CORE::FADUTILS::CastToDouble(this->ele1pos_.element_position_);
+      surface_coupling_dof =
+          CORE::FADUTILS::CastToDouble(this->face_element_->GetFaceElementData().element_position_);
       break;
     }
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
     {
-      for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
-        beam_coupling_dof(i_beam) =
-            CORE::FADUTILS::CastToDouble(this->ele1pos_(i_beam)) - this->ele1posref_(i_beam);
-      for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
-        surface_coupling_dof(i_surface) =
-            CORE::FADUTILS::CastToDouble(this->face_element_->GetFacePosition()(i_surface)) -
-            this->face_element_->GetFaceReferencePosition()(i_surface);
+      beam_coupling_dof = CORE::FADUTILS::CastToDouble(this->ele1pos_.element_position_);
+      beam_coupling_dof -= this->ele1posref_.element_position_;
+      surface_coupling_dof =
+          CORE::FADUTILS::CastToDouble(this->face_element_->GetFaceElementData().element_position_);
+      surface_coupling_dof -= this->face_element_->GetFaceReferenceElementData().element_position_;
       break;
     }
     default:
@@ -198,11 +195,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
   for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
   {
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
-      local_constraint(i_lambda) +=
-          local_D(i_lambda, i_beam) * CORE::FADUTILS::CastToDouble(beam_coupling_dof(i_beam));
+      local_constraint(i_lambda) += local_D(i_lambda, i_beam) * beam_coupling_dof(i_beam);
     for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
-      local_constraint(i_lambda) -= local_M(i_lambda, i_surface) *
-                                    CORE::FADUTILS::CastToDouble(surface_coupling_dof(i_surface));
+      local_constraint(i_lambda) -= local_M(i_lambda, i_surface) * surface_coupling_dof(i_surface);
   }
 }
 

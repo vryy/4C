@@ -9,7 +9,7 @@
 
 #include "baci_geometry_pair_line_to_surface_gauss_point_projection.hpp"
 
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_line_projection.hpp"
 #include "baci_geometry_pair_line_to_surface_evaluation_data.hpp"
 #include "baci_geometry_pair_scalar_types.hpp"
@@ -47,15 +47,14 @@ GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
-    surface>::PreEvaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    std::vector<LineSegment<scalar_type>>& segments,
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    surface>::PreEvaluate(const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<surface, scalar_type>& element_data_surface,
+    std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Call the PreEvaluate method of the general Gauss point projection class.
   LineTo3DGaussPointProjection<
       GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>>::PreEvaluate(this,
-      q_line, q_surface, segments, nodal_normals);
+      element_data_line, element_data_surface, segments);
 }
 
 /**
@@ -63,15 +62,14 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, li
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
-    surface>::Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    std::vector<LineSegment<scalar_type>>& segments,
-    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    surface>::Evaluate(const ElementData<line, scalar_type>& element_data_line,
+    const ElementData<surface, scalar_type>& element_data_surface,
+    std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Call the PreEvaluate method of the general Gauss point projection class.
   LineTo3DGaussPointProjection<
       GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>>::Evaluate(this,
-      q_line, q_surface, segments, nodal_normals);
+      element_data_line, element_data_surface, segments);
 }
 
 /**

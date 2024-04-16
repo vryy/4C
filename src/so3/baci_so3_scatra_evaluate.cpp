@@ -8,7 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_lib_utils.hpp"
+#include "baci_discretization_fem_general_element_center.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_mat_so3_material.hpp"
 #include "baci_so3_element_service.hpp"
 #include "baci_so3_scatra.hpp"
@@ -56,7 +57,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
       // extract local values of the global vectors
       auto myconc = std::vector<double>(la[1].lm_.size(), 0.0);
 
-      DRT::UTILS::ExtractMyValues(*concnp, myconc, la[1].lm_);
+      CORE::FE::ExtractMyValues(*concnp, myconc, la[1].lm_);
 
       // element vector for k-th scalar
       std::vector<CORE::LINALG::Matrix<numnod_, 1>> econc(numscal);
@@ -134,7 +135,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
         // extract local values of the global vectors
         auto mytemp = std::vector<double>(la[2].lm_.size(), 0.0);
 
-        DRT::UTILS::ExtractMyValues(*tempnp, mytemp, la[2].lm_);
+        CORE::FE::ExtractMyValues(*tempnp, mytemp, la[2].lm_);
 
         // element vector for k-th scalar
         CORE::LINALG::Matrix<numnod_, 1> etemp;
@@ -168,7 +169,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
   // TODO: (thon) actually we do not want this here, since it has nothing to do with scatra specific
   // stuff. But for now we let it be...
-  const CORE::LINALG::Matrix<3, 1> center(DRT::UTILS::ElementCenterRefeCoords(this).data());
+  const CORE::LINALG::Matrix<3, 1> center(CORE::FE::ElementCenterRefeCoords(*this).data());
   params.set("elecenter_coords_ref", center);
 }
 
@@ -211,7 +212,7 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList
 
       // get my displacement vector
       std::vector<double> mydisp((la[0].lm_).size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       // calculate the stiffness matrix
       nln_kdS_ssi(la, mydisp, elemat1_epetra, params);

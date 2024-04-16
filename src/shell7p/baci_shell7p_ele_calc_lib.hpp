@@ -5,13 +5,14 @@
 \level 3
 */
 
-#ifndef BACI_SHELL7P_ELE_CALC_LIB_HPP
-#define BACI_SHELL7P_ELE_CALC_LIB_HPP
+#ifndef FOUR_C_SHELL7P_ELE_CALC_LIB_HPP
+#define FOUR_C_SHELL7P_ELE_CALC_LIB_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_lib_element_integration_select.hpp"
+#include "baci_lib_node.hpp"
 #include "baci_linalg_fixedsizematrix_tensor_transformation.hpp"
 #include "baci_mat_so3_material.hpp"
 #include "baci_shell7p_ele.hpp"

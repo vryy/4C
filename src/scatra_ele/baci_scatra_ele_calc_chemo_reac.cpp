@@ -16,7 +16,7 @@ reactive scalars
 #include "baci_mat_list_chemoreac.hpp"
 #include "baci_mat_list_chemotaxis.hpp"
 #include "baci_mat_list_reactions.hpp"
-#include "baci_mat_scatra_mat.hpp"
+#include "baci_mat_scatra.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN

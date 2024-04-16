@@ -4,8 +4,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_HEX27_HPP
-#define BACI_SO3_HEX27_HPP
+#ifndef FOUR_C_SO3_HEX27_HPP
+#define FOUR_C_SO3_HEX27_HPP
 
 
 #include "baci_config.hpp"
@@ -338,7 +338,6 @@ namespace DRT
         calc_struct_reset_istep,  //!< reset elementwise internal variables
                                   //!< during iteration to last converged state
         calc_struct_energy,       //!< compute internal energy
-        calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
         prestress_update,
         multi_readrestart,  //!< multi-scale: read restart on microscale
         multi_calc_dens     //!< multi-scale: calculate homogenized density
@@ -468,4 +467,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_HEX27_H
+#endif

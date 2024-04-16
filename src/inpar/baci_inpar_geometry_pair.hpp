@@ -8,8 +8,8 @@
 // End doxygen header.
 
 
-#ifndef BACI_INPAR_GEOMETRY_PAIR_HPP
-#define BACI_INPAR_GEOMETRY_PAIR_HPP
+#ifndef FOUR_C_INPAR_GEOMETRY_PAIR_HPP
+#define FOUR_C_INPAR_GEOMETRY_PAIR_HPP
 
 
 #include "baci_config.hpp"

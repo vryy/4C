@@ -9,8 +9,8 @@ properties of e.g. one species in a scalar transport problem, or one phase in a 
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_LIST_HPP
-#define BACI_MAT_LIST_HPP
+#ifndef FOUR_C_MAT_LIST_HPP
+#define FOUR_C_MAT_LIST_HPP
 
 
 

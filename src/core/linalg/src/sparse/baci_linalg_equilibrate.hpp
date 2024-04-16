@@ -7,8 +7,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LINALG_EQUILIBRATE_HPP
-#define BACI_LINALG_EQUILIBRATE_HPP
+#ifndef FOUR_C_LINALG_EQUILIBRATE_HPP
+#define FOUR_C_LINALG_EQUILIBRATE_HPP
 
 #include "baci_config.hpp"
 

@@ -10,8 +10,8 @@ Local electroneutrality is dismissed, which enables formation of Space-Charge-La
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_SCL_HPP
-#define BACI_MAT_SCL_HPP
+#ifndef FOUR_C_MAT_SCL_HPP
+#define FOUR_C_MAT_SCL_HPP
 
 #include "baci_config.hpp"
 

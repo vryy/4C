@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_PERIODICBC_HPP
-#define BACI_LIB_PERIODICBC_HPP
+#ifndef FOUR_C_LIB_PERIODICBC_HPP
+#define FOUR_C_LIB_PERIODICBC_HPP
 
 #include "baci_config.hpp"
 
@@ -370,4 +370,4 @@ class PeriodicBoundaryConditions
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_PERIODICBC_H
+#endif

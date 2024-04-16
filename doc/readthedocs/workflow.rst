@@ -1,12 +1,12 @@
-.. _baciworkflow:
+.. _4Cworkflow:
 
-The BACI Workflow
-===================
+The |FOURC| Workflow
+=====================
 
 .. toctree::
    :maxdepth: 2
 
-   bacisimulation
+   4Csimulation
    preprocessing
    postprocessing
 

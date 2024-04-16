@@ -120,26 +120,8 @@ CORE::GEO::CUT::FacetGraph::FacetGraph(
     }
   }
 
-#ifdef DEBUGCUTLIBRARY
-  {
-    std::ofstream file("lines.py");
-    file << "lines = [\n";
-
-    for (std::vector<std::pair<Point *, Point *>>::iterator i = all_lines_.begin();
-         i != all_lines_.end(); ++i)
-    {
-      Point *p1 = i->first;
-      Point *p2 = i->second;
-      file << "  ((" << p1->X()[0] << "," << p1->X()[1] << "," << p1->X()[2] << ","
-           << "),(" << p2->X()[0] << "," << p2->X()[1] << "," << p2->X()[2] << ","
-           << ")),   # " << p1->Id() << "," << p2->Id() << "\n";
-    }
-    file << "]\n";
-  }
-#endif
-
   // graph is the graph of connected lines and facets,  including internal facets
-  // cycle is the graph of connected line and facets, but only the outer onse, without internals
+  // cycle is the graph of connected line and facets, but only the outer ones, without internals
 
   graph_.TestClosed();
 
@@ -187,11 +169,6 @@ CORE::GEO::CUT::FacetGraph::FacetGraph(
     }
   }
 
-#ifdef DEBUGCUTLIBRARY
-  graph_.DumpGraph("facetgraph.py");
-  cycle.DumpGraph("facetcycle.py");
-#endif
-
   // Free are cut lines and cut facets, that are inside ( e.g. cut_side cut facets inside the
   // element)
   plain_int_set free;
@@ -223,10 +200,6 @@ void CORE::GEO::CUT::FacetGraph::CreateVolumeCells(
   for (COLOREDGRAPH::CycleList::iterator i = cycle_list_.begin(); i != cycle_list_.end(); ++i)
   {
     COLOREDGRAPH::Graph &g = *i;
-
-#ifdef DEBUGCUTLIBRARY
-    g.TestSplit();
-#endif
 
     volumes.push_back(plain_facet_set());
     plain_facet_set &collected_facets = volumes.back();
@@ -290,9 +263,6 @@ void CORE::GEO::CUT::FacetGraph::AddToVolumeCells(Mesh &mesh, Element *element,
     CollectVolumeLines(collected_facets, volume_lines);
 
     cells.insert(mesh.NewVolumeCell(collected_facets, volume_lines, element));
-#ifdef DEBUGCUTLIBRARY
-    all_collected_facets_.push_back(collected_facets);
-#endif
   }
 }
 
@@ -307,39 +277,6 @@ void CORE::GEO::CUT::FacetGraph::CollectVolumeLines(plain_facet_set &collected_f
     f->GetLines(volume_lines);
   }
 }
-
-#ifdef DEBUGCUTLIBRARY
-
-bool CORE::GEO::CUT::FacetGraph::InCollectedFacets(const plain_facet_set &collected_facets)
-{
-  return std::find(all_collected_facets_.begin(), all_collected_facets_.end(), collected_facets) !=
-         all_collected_facets_.end();
-}
-
-void CORE::GEO::CUT::FacetGraph::PrintAllCollected()
-{
-  int count = 0;
-  for (std::vector<plain_facet_set>::iterator i = all_collected_facets_.begin();
-       i != all_collected_facets_.end(); ++i)
-  {
-    plain_facet_set &v = *i;
-
-    count += 1;
-
-    std::stringstream str;
-    str << "gv-" << count << ".plot";
-    std::ofstream file(str.str().c_str());
-
-    for (plain_facet_set::iterator i = v.begin(); i != v.end(); ++i)
-    {
-      Facet *f = *i;
-      f->Print(file);
-    }
-  }
-}
-
-#endif
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

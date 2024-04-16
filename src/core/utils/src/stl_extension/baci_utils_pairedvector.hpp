@@ -10,8 +10,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_PAIREDVECTOR_HPP
-#define BACI_UTILS_PAIREDVECTOR_HPP
+#ifndef FOUR_C_UTILS_PAIREDVECTOR_HPP
+#define FOUR_C_UTILS_PAIREDVECTOR_HPP
 
 #include "baci_config.hpp"
 

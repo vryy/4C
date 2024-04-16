@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_SUTHERLAND_HPP
-#define BACI_MAT_SUTHERLAND_HPP
+#ifndef FOUR_C_MAT_SUTHERLAND_HPP
+#define FOUR_C_MAT_SUTHERLAND_HPP
 
 
 

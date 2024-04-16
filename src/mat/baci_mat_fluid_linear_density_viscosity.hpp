@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_FLUID_LINEAR_DENSITY_VISCOSITY_HPP
-#define BACI_MAT_FLUID_LINEAR_DENSITY_VISCOSITY_HPP
+#ifndef FOUR_C_MAT_FLUID_LINEAR_DENSITY_VISCOSITY_HPP
+#define FOUR_C_MAT_FLUID_LINEAR_DENSITY_VISCOSITY_HPP
 
 
 

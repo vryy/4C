@@ -3701,7 +3701,7 @@ void FLD::FluidImplicitTimeInt::Output()
     // std::endl;
     std::cout << gid << " " << newX << " " << newY << " " << newZ << std::endl;
   }
-#endif  // PRINTALEDEFORMEDNODECOORDS
+#endif
 
   // -------------------------------------------------------------------
   // calculate and write lift'n'drag forces from the residual

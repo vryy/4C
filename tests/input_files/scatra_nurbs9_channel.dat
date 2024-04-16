@@ -104,6 +104,7 @@ E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
 E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 3
 E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 3
 -----------------------------------------------------------FLUID KNOTVECTORS
+NURBS_DIMENSION                       2
 BEGIN                           NURBSPATCH
 ID                              1
 NUMKNOTS                        15

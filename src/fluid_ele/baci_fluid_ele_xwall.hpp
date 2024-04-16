@@ -13,8 +13,8 @@ of errors, turbulence statistics etc.)
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_FLUID_ELE_XWALL_HPP
-#define BACI_FLUID_ELE_XWALL_HPP
+#ifndef FOUR_C_FLUID_ELE_XWALL_HPP
+#define FOUR_C_FLUID_ELE_XWALL_HPP
 
 #include "baci_config.hpp"
 
@@ -285,4 +285,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // FLUID_ELE_XWALL_H
+#endif

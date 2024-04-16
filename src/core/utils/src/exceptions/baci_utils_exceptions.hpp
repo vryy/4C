@@ -9,14 +9,15 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_UTILS_EXCEPTIONS_HPP
-#define BACI_UTILS_EXCEPTIONS_HPP
+#ifndef FOUR_C_UTILS_EXCEPTIONS_HPP
+#define FOUR_C_UTILS_EXCEPTIONS_HPP
 
 #include "baci_config.hpp"
 
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 BACI_NAMESPACE_OPEN
 
@@ -48,9 +49,17 @@ namespace CORE
     ~Exception() override;
 
     /**
-     * Return a message that describes what happened and includes a stack trace.
+     * Return a message that describes what happened.
      */
     [[nodiscard]] const char* what() const noexcept override;
+
+    /**
+     * Return a message that describes what happened and includes a stack trace.
+     *
+     * @note Calling this function can be a lot more expensive than the what() function because the
+     * stacktrace needs to be symbolyzed.
+     */
+    [[nodiscard]] std::string what_with_stacktrace() const noexcept;
 
    private:
     /**
@@ -63,8 +72,8 @@ namespace CORE
   namespace INTERNAL
   {
 
-    [[noreturn]] void ThrowError(const char* file, int line, const char* format, ...);
-    [[noreturn]] void ThrowError(const char* file, int line, const std::string& format, ...);
+    [[noreturn]] void throw_error(const char* file, int line, const char* format, ...);
+    [[noreturn]] void throw_error(const char* file, int line, const std::string& format, ...);
 
     /**
      * A helper struct taking the file name and line number from the error macro.
@@ -77,7 +86,9 @@ namespace CORE
       template <typename StringType, typename... Args>
       [[noreturn]] void operator()(const StringType& format, Args&&... args) const
       {
-        ThrowError(file_name, line_number, format, std::forward<Args>(args)...);
+        static_assert(
+            (... && std::is_trivial_v<std::decay_t<Args>>), "Can only format trivial types.");
+        throw_error(file_name, line_number, format, std::forward<Args>(args)...);
       }
     };
 
@@ -98,11 +109,11 @@ namespace CORE
  *   dsassert(vector.size() == dim, "Vector size does not equal dimension.");
  * @endcode
  */
-#define dsassert(test, msg) \
-  if (!(test))              \
-  {                         \
-    dserror(msg);           \
-  }                         \
+#define dsassert(test, args...) \
+  if (!(test))                  \
+  {                             \
+    dserror(args);              \
+  }                             \
   static_assert(true, "Terminate dsassert with a comma.")
 
 #else
@@ -110,7 +121,7 @@ namespace CORE
 /**
  * This macro would asserts that @p test is true, but only if BACI_DEBUG is set.
  */
-#define dsassert(test, msg) static_assert(true, "Terminate dsassert with a comma.")
+#define dsassert(test, args...) static_assert(true, "Terminate dsassert with a comma.")
 
 #endif
 

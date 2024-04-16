@@ -33,8 +33,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 09/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_DAMAGE_HPP
-#define BACI_MAT_DAMAGE_HPP
+#ifndef FOUR_C_MAT_DAMAGE_HPP
+#define FOUR_C_MAT_DAMAGE_HPP
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 09/13 |
@@ -377,4 +377,4 @@ namespace MAT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_DAMAGE_H
+#endif

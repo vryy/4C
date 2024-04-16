@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*
  | definitions                                              farah 01/14 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MORTAR_CALC_UTILS_HPP
-#define BACI_MORTAR_CALC_UTILS_HPP
+#ifndef FOUR_C_MORTAR_CALC_UTILS_HPP
+#define FOUR_C_MORTAR_CALC_UTILS_HPP
 
 /*----------------------------------------------------------------------*
  | Header                                                   farah 01/14 |
@@ -758,4 +758,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_CALC_UTILS_H
+#endif

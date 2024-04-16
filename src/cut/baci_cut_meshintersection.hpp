@@ -6,8 +6,8 @@
 \level 3
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_MESHINTERSECTION_HPP
-#define BACI_CUT_MESHINTERSECTION_HPP
+#ifndef FOUR_C_CUT_MESHINTERSECTION_HPP
+#define FOUR_C_CUT_MESHINTERSECTION_HPP
 
 #include "baci_config.hpp"
 
@@ -108,14 +108,6 @@ namespace CORE::GEO
 
       /// get the cut mesh based on mesh id
       Mesh& CutMesh(int i = 0) { return cut_mesh_[i]->LinearMesh(); }
-
-      /*========================================================================*/
-      //! @name statistics, output
-      /*========================================================================*/
-
-      /// status
-      void Status(
-          INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation) override;
 
      private:
       /*========================================================================*/

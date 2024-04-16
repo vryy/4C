@@ -99,6 +99,7 @@ DSURF                           1
 //                              Surface
 E 1 -
 ---------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       2
 BEGIN                           NURBSPATCH
 ID                              1
 NUMKNOTS                        15
@@ -139,6 +140,7 @@ TYPE                            Interpolated
 1
 END NURBSPATCH
 -------------------------------------------------FLUID KNOTVECTORS
+NURBS_DIMENSION                       2
 BEGIN                           NURBSPATCH
 ID                              1
 NUMKNOTS                        15

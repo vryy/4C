@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_IO_INPUTREADER_HPP
-#define BACI_IO_INPUTREADER_HPP
+#ifndef FOUR_C_IO_INPUTREADER_HPP
+#define FOUR_C_IO_INPUTREADER_HPP
 
 #include "baci_config.hpp"
 
@@ -117,13 +117,11 @@ namespace INPUT
     /*!
       \brief read the knotvector section (for isogeometric analysis)
 
-      \param  dim            (in ): dimension, i.e. number of knotvectors in one patch
       \param  name           (in ): Name/type of discretisation
       \param  disknots       (out): node vector coordinates
 
     */
-    void ReadKnots(
-        const int dim, const std::string& name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots);
+    void ReadKnots(const std::string& name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots);
 
 
     /// print unknown section names found in the input file

@@ -7,13 +7,13 @@ reactive scalars
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_CALC_CHEMO_REAC_HPP
-#define BACI_SCATRA_ELE_CALC_CHEMO_REAC_HPP
+#ifndef FOUR_C_SCATRA_ELE_CALC_CHEMO_REAC_HPP
+#define FOUR_C_SCATRA_ELE_CALC_CHEMO_REAC_HPP
 
 #include "baci_config.hpp"
 
-#include "baci_mat_scatra_chemotaxis_mat.hpp"
-#include "baci_mat_scatra_reaction_mat.hpp"
+#include "baci_mat_scatra_chemotaxis.hpp"
+#include "baci_mat_scatra_reaction.hpp"
 #include "baci_scatra_ele_calc.hpp"
 #include "baci_scatra_ele_calc_advanced_reaction.hpp"
 #include "baci_scatra_ele_calc_chemo.hpp"
@@ -61,4 +61,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_ELE_CALC_CHEMO_REAC_H
+#endif

@@ -164,8 +164,8 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           // extract local values from the global vectors
           std::vector<double> myvelpre(lm.size());
           std::vector<double> mysca(lm.size());
-          DRT::UTILS::ExtractMyValues(*velnp, myvelpre, lm);
-          DRT::UTILS::ExtractMyValues(*scanp, mysca, lm);
+          CORE::FE::ExtractMyValues(*velnp, myvelpre, lm);
+          CORE::FE::ExtractMyValues(*scanp, mysca, lm);
 
           // integrate mean values
           const CORE::FE::CellType distype = this->Shape();
@@ -220,8 +220,8 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           // extract local values from global vectors
           std::vector<double> myvelpre(lm.size());
           std::vector<double> mysca(lm.size());
-          DRT::UTILS::ExtractMyValues(*velnp, myvelpre, lm);
-          DRT::UTILS::ExtractMyValues(*scanp, mysca, lm);
+          CORE::FE::ExtractMyValues(*velnp, myvelpre, lm);
+          CORE::FE::ExtractMyValues(*scanp, mysca, lm);
 
           // get factor for equation of state
           const double eosfac = params.get<double>("eos factor", 100000.0 / 287.0);
@@ -281,7 +281,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         if (vel == Teuchos::null) dserror("Cannot get state vectors 'vel'");
         // extract local values from the global vectors
         std::vector<double> myvel(lm.size());
-        DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
+        CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
         std::vector<double> tmp_temp(lm.size());
         std::vector<double> mytemp(nen);
@@ -293,7 +293,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> temp = discretization.GetState("T (trial)");
           if (temp == Teuchos::null) dserror("Cannot get state vectors 'temp'");
-          DRT::UTILS::ExtractMyValues(*temp, tmp_temp, lm);
+          CORE::FE::ExtractMyValues(*temp, tmp_temp, lm);
 
           for (int i = 0; i < nen; i++) mytemp[i] = tmp_temp[nsd + (i * (nsd + 1))];
 
@@ -531,9 +531,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
 
         // extract local values from the global vectors
         std::vector<double> myvel(lm.size());
-        DRT::UTILS::ExtractMyValues(*velnp, myvel, lm);
+        CORE::FE::ExtractMyValues(*velnp, myvel, lm);
         std::vector<double> myfsvel(lm.size());
-        DRT::UTILS::ExtractMyValues(*fsvelnp, myfsvel, lm);
+        CORE::FE::ExtractMyValues(*fsvelnp, myfsvel, lm);
 
         // pointer to class FluidEleParameter (access to the general parameter)
         DRT::ELEMENTS::FluidEleParameterStd* fldpara =
@@ -584,10 +584,10 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         }
         // extract local values from the global vectors
         std::vector<double> myvel(lm.size());
-        DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
+        CORE::FE::ExtractMyValues(*vel, myvel, lm);
         std::vector<double> tmp_sca(lm.size());
         std::vector<double> mysca(nen);
-        DRT::UTILS::ExtractMyValues(*sca, tmp_sca, lm);
+        CORE::FE::ExtractMyValues(*sca, tmp_sca, lm);
         for (int i = 0; i < nen; i++) mysca[i] = tmp_sca[nsd + (i * (nsd + 1))];
         // get thermodynamic pressure
         double thermpress = params.get<double>("thermpress at n+alpha_F/n+1", 0.0);

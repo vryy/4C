@@ -6,8 +6,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_COUPLING_VOLMORTAR_HPP
-#define BACI_COUPLING_VOLMORTAR_HPP
+#ifndef FOUR_C_COUPLING_VOLMORTAR_HPP
+#define FOUR_C_COUPLING_VOLMORTAR_HPP
 
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
@@ -483,4 +483,4 @@ namespace CORE::VOLMORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // COUPLING_VOLMORTAR_H
+#endif

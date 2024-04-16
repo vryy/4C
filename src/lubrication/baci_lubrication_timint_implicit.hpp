@@ -10,8 +10,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#ifndef BACI_LUBRICATION_TIMINT_IMPLICIT_HPP
-#define BACI_LUBRICATION_TIMINT_IMPLICIT_HPP
+#ifndef FOUR_C_LUBRICATION_TIMINT_IMPLICIT_HPP
+#define FOUR_C_LUBRICATION_TIMINT_IMPLICIT_HPP
 
 #include "baci_config.hpp"
 
@@ -504,4 +504,4 @@ namespace LUBRICATION
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LUBRICATION_TIMINT_IMPLICIT_H
+#endif

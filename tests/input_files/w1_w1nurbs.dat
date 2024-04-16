@@ -3,12 +3,6 @@ General Data File BACI
 ==================================================================
 ---------------------------------------------------------------------------TITLE
 Test WALL and WALLNURBS in the same input file
---------------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                              4
-NODES                                 16
-DIM                                   2
-MATERIALS                             2
-NUMDF                                 3
 ---------------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                            Structure
 RESTART                               0
@@ -75,6 +69,7 @@ NODE 21 DLINE 6
 NODE 22 DLINE 6
 NODE 25 DLINE 6
 -----------------------------------------------------------STRUCTURE KNOTVECTORS
+NURBS_DIMENSION                       2
 BEGIN                                 NURBSPATCH
 ID                                    1
 NUMKNOTS                              7

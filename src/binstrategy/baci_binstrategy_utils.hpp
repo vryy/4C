@@ -8,8 +8,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_BINSTRATEGY_UTILS_HPP
-#define BACI_BINSTRATEGY_UTILS_HPP
+#ifndef FOUR_C_BINSTRATEGY_UTILS_HPP
+#define FOUR_C_BINSTRATEGY_UTILS_HPP
 
 #include "baci_config.hpp"
 

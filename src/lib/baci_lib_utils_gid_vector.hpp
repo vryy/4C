@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_UTILS_GID_VECTOR_HPP
-#define BACI_LIB_UTILS_GID_VECTOR_HPP
+#ifndef FOUR_C_LIB_UTILS_GID_VECTOR_HPP
+#define FOUR_C_LIB_UTILS_GID_VECTOR_HPP
 
 #include "baci_config.hpp"
 
@@ -192,4 +192,4 @@ std::vector<T> DRT::UTILS::BroadcastVector(const std::vector<T>& vec_in, const E
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_UTILS_GID_VECTOR_H
+#endif

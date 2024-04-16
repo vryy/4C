@@ -1,25 +1,25 @@
-Cloning BACI on a cluster
---------------------------
+Cloning |FOURC| on a cluster
+------------------------------
 
-In general there are several ways to get the Baci source code to a cluster. In the following some possibilities are explained.
+In general there are several ways to get the |FOURC| source code to a cluster. In the following some possibilities are explained.
 
 **Note:**
 
 - Limitations due to firewall settings may emerge.
 - In case you want to commit changes in your repository on a cluster,
-  remember to set up Baci as described in the Baci ``README.md`` or in the :ref:`Setup guide <SetupGuidetoBACI>`.
+  remember to set up |FOURC| as described in the |FOURC| ``README.md`` or in the :ref:`Setup guide <SetupGuideto4C>`.
   However, in general, it is recommended to develop code primarily on your workstation.
 
-Method 1: Clone Baci repository from Gitlab
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Method 1: Clone |FOURC| repository from Gitlab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Clone the Baci repository from Gitlab to a cluster following the procedure as described in ``README.md``.
+Clone the |FOURC| repository from Gitlab to a cluster following the procedure as described in ``README.md``.
 **Note:** This requires that firewall settings allow access from the cluster to the Gitlab repository.
 
-Method 2: Clone Baci from local workstation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Method 2: Clone |FOURC| from local workstation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Clone the Baci repository from your workstation to a cluster using ssh::
+Clone the |FOURC| repository from your workstation to a cluster using ssh::
 
     ssh <coworker>@<cluster>
     cd <clusterworkspace>
@@ -28,8 +28,8 @@ Clone the Baci repository from your workstation to a cluster using ssh::
 
 **Note:** This requires that firewall settings allow access from the cluster to your workstation.
 
-Method 3: Clone Baci from local workstation via reverse ssh tunnel
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Method 3: Clone |FOURC| from local workstation via reverse ssh tunnel
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In the event that firewall settings forbid direct access from the cluster to your workstation,
 open a reverse ssh tunnel from your workstation to the cluster

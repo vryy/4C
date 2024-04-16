@@ -20,8 +20,8 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FLUID_ELE_CALC_INTFACES_STAB_HPP
-#define BACI_FLUID_ELE_CALC_INTFACES_STAB_HPP
+#ifndef FOUR_C_FLUID_ELE_CALC_INTFACES_STAB_HPP
+#define FOUR_C_FLUID_ELE_CALC_INTFACES_STAB_HPP
 
 #include "baci_config.hpp"
 
@@ -30,7 +30,6 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 #include "baci_fluid_ele_parameter_intface.hpp"
 #include "baci_fluid_ele_parameter_std.hpp"
 #include "baci_fluid_ele_parameter_timint.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
 BACI_NAMESPACE_OPEN

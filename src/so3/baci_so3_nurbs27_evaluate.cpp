@@ -6,6 +6,7 @@
 \level 2
 
 *----------------------------------------------------------------------*/
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
@@ -14,7 +15,6 @@
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element_vtk_cell_type_register.hpp"
 #include "baci_lib_elements_paramsinterface.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_mat_so3_material.hpp"
@@ -112,9 +112,9 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       CORE::LINALG::Matrix<81, 81>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
@@ -131,9 +131,9 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       CORE::LINALG::Matrix<81, 81> myemat(true);
       sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, &myemat, nullptr, &elevec1, params);
@@ -150,9 +150,9 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res, myres, lm);
+      CORE::FE::ExtractMyValues(*res, myres, lm);
 
       sonurbs27_nlnstiffmass(
           lm, discretization, mydisp, myres, &elemat1, &elemat2, &elevec1, params);
@@ -215,7 +215,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       elevec1_epetra(0) = CalcIntEnergy(discretization, mydisp, params);
       break;
@@ -1237,109 +1237,6 @@ void EvalNurbs3DInterpolation(CORE::LINALG::Matrix<n_val, 1, double>& r,
       r(i_dim) += N(i_node_nurbs) * q(i_node_nurbs * 3 + i_dim);
     }
   }
-}
-
-/**
- *
- */
-unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
-    const DRT::Discretization& discret, std::vector<uint8_t>& cell_types,
-    std::vector<double>& point_coordinates) const
-{
-  // This NURBS element will be displayed like a hex27 element in the vtk output.
-  const int number_of_output_points = 27;
-  const auto vtk_cell_info =
-      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(CORE::FE::CellType::hex27);
-  const std::vector<int>& numbering = vtk_cell_info.second;
-
-  // Add the cell type to the output.
-  cell_types.push_back(vtk_cell_info.first);
-
-  // Create the "nodes" for the hex27 visualization.
-  {
-    // Get the knots and weights for this element.
-    CORE::LINALG::Matrix<27, 1, double> weights(true);
-    std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
-    const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, this, myknots, weights);
-    if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
-
-    // Get the control points position in the reference configuration.
-    CORE::LINALG::Matrix<27 * 3, 1, double> q;
-    for (unsigned int i_node = 0; i_node < (unsigned int)this->NumNode(); ++i_node)
-    {
-      const DRT::Node* node = this->Nodes()[i_node];
-      for (int i_dim = 0; i_dim < 3; ++i_dim) q(3 * i_node + i_dim) = node->X()[i_dim];
-    }
-
-    // Loop over the "nodes" of the hex27 element.
-    CORE::LINALG::Matrix<3, 1, double> r;
-    CORE::LINALG::Matrix<3, 1, double> xi;
-    for (unsigned int i_node_hex = 0; i_node_hex < number_of_output_points; i_node_hex++)
-    {
-      for (unsigned int i = 0; i < 3; i++)
-        xi(i) = CORE::FE::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_hex]][i];
-
-      // Get the reference position at the parameter coordinate.
-      EvalNurbs3DInterpolation(r, q, xi, weights, myknots, this->Shape());
-
-      for (unsigned int i_dim = 0; i_dim < 3; i_dim++) point_coordinates.push_back(r(i_dim));
-    }
-  }
-
-  return number_of_output_points;
-}
-
-/**
- *
- */
-unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResultDataVector(
-    const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
-    unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
-    std::vector<double>& output_point_result_data) const
-{
-  if (read_result_data_from_dofindex != 0)
-    dserror("Nurbs output is only implemented for read_result_data_from_dofindex == 0");
-
-  if (result_num_dofs_per_node != 3)
-    dserror("The nurbs elements can only output nodal data with dimension 3, e.g., displacements");
-
-  // This NURBS element will be displayed like a hex27 element in the visualization output.
-  const int number_of_ouput_points = 27;
-  const std::vector<int>& numbering =
-      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(CORE::FE::CellType::hex27).second;
-
-  // Add the data at the "nodes" of the hex27 visualization.
-  {
-    // Get the knots and weights for this element.
-    CORE::LINALG::Matrix<27, 1, double> weights(true);
-    std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
-    const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, this, myknots, weights);
-    if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
-
-    // Get the element result vector.
-    CORE::LINALG::Matrix<27 * 3, 1, double> q;
-    std::vector<double> eledisp;
-    std::vector<int> lm, lmowner, lmstride;
-    this->LocationVector(discret, lm, lmowner, lmstride);
-    DRT::UTILS::ExtractMyValues(*result_data_dofbased, eledisp, lm);
-    q.SetView(eledisp.data());
-
-    // Loop over the "nodes" of the hex27 element.
-    CORE::LINALG::Matrix<3, 1, double> r;
-    CORE::LINALG::Matrix<3, 1, double> xi;
-    for (unsigned int i_node_hex = 0; i_node_hex < number_of_ouput_points; i_node_hex++)
-    {
-      for (unsigned int i = 0; i < 3; i++)
-        xi(i) = CORE::FE::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_hex]][i];
-
-      // Get the reference position at the parameter coordinate.
-      EvalNurbs3DInterpolation(r, q, xi, weights, myknots, this->Shape());
-
-      for (unsigned int i_dim = 0; i_dim < 3; i_dim++) output_point_result_data.push_back(r(i_dim));
-    }
-  }
-
-  return number_of_ouput_points;
 }
 
 BACI_NAMESPACE_CLOSE

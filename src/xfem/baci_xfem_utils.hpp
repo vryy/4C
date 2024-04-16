@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_XFEM_UTILS_HPP
-#define BACI_XFEM_UTILS_HPP
+#ifndef FOUR_C_XFEM_UTILS_HPP
+#define FOUR_C_XFEM_UTILS_HPP
 
 #include "baci_config.hpp"
 
@@ -77,4 +77,4 @@ namespace XFEM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // XFEM_UTILS_H
+#endif

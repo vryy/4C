@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_NOX_AITKEN_HPP
-#define BACI_FSI_NOX_AITKEN_HPP
+#ifndef FOUR_C_FSI_NOX_AITKEN_HPP
+#define FOUR_C_FSI_NOX_AITKEN_HPP
 
 #include "baci_config.hpp"
 

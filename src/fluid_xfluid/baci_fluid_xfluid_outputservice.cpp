@@ -15,6 +15,7 @@
 #include "baci_cut_integrationcell.hpp"
 #include "baci_cut_sidehandle.hpp"
 #include "baci_cut_volumecell.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_fluid_xfluid_state.hpp"
 #include "baci_fluid_xfluid_state_creator.hpp"
 #include "baci_global_data.hpp"
@@ -664,12 +665,12 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
   }
 
   std::vector<double> m(la[0].lm_.size());
-  DRT::UTILS::ExtractMyValues(*vel, m, la[0].lm_);
+  CORE::FE::ExtractMyValues(*vel, m, la[0].lm_);
 
   std::vector<double> m_acc(la[0].lm_.size());
   if (acc_output)
   {
-    DRT::UTILS::ExtractMyValues(*acc, m_acc, la[0].lm_);
+    CORE::FE::ExtractMyValues(*acc, m_acc, la[0].lm_);
   }
 
   const bool ale_output(dispnp != Teuchos::null);
@@ -677,7 +678,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
   std::vector<double> m_disp(la[0].lm_.size());
   if (ale_output)
   {
-    DRT::UTILS::ExtractMyValues(*dispnp, m_disp, la[0].lm_);
+    CORE::FE::ExtractMyValues(*dispnp, m_disp, la[0].lm_);
   }
 
   int numnode = 0;
@@ -792,12 +793,12 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
   actele->LocationVector(discret, nds, la, false);
 
   std::vector<double> m(la[0].lm_.size());
-  DRT::UTILS::ExtractMyValues(*velvec, m, la[0].lm_);
+  CORE::FE::ExtractMyValues(*velvec, m, la[0].lm_);
 
   std::vector<double> m_acc(la[0].lm_.size());
   if (acc_output)
   {
-    DRT::UTILS::ExtractMyValues(*accvec, m_acc, la[0].lm_);
+    CORE::FE::ExtractMyValues(*accvec, m_acc, la[0].lm_);
   }
 
   CORE::LINALG::SerialDenseMatrix vel(3, actele->NumNode());

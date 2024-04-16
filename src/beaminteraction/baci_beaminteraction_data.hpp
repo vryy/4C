@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_BEAMINTERACTION_DATA_HPP
-#define BACI_BEAMINTERACTION_DATA_HPP
+#ifndef FOUR_C_BEAMINTERACTION_DATA_HPP
+#define FOUR_C_BEAMINTERACTION_DATA_HPP
 
 #include "baci_config.hpp"
 

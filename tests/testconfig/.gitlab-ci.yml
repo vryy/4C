@@ -46,7 +46,7 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   BACI_DOCKER_BUILD_IMAGES: 'False'
-  BACI_DOCKER_DEPENDENCIES_HASH: 6b550ef9
+  BACI_DOCKER_DEPENDENCIES_HASH: 64f288a5
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies
   BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $BACI_DOCKER_DEPENDENCIES_IMAGE:$BACI_DOCKER_DEPENDENCIES_HASH
 
@@ -223,7 +223,8 @@ before_script:
   - *clean-build-folder
   - mkdir ../baci-build/ && cd ../baci-build/
     # configure to get a compilation database
-  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} -DBACI_BUILD_READTHEDOCS=OFF --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
+  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} -DCMAKE_CXX_COMPILER="clang++" -DBACI_BUILD_READTHEDOCS=OFF
+    --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
     # create  and activate virtual environment
   - python3 -m venv venv
   - . venv/bin/activate
@@ -231,13 +232,10 @@ before_script:
   - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
     # create temporary directory for the yaml files from clang-tidy
   - mkdir clang-tidy-issues
-    # get extra arguments for mpi
-  - get_mpi_extra_args() { OUT="`OMPI_CXX=clang++ mpic++ --showme:compile`"; for i
-    in $OUT; do echo -n "-extra-arg=$i "; done; echo;}
   - ESCAPED_PROJECT_DIR=$(echo "${CI_PROJECT_DIR}" | sed 's/\//\\\//g')
     # run clang tidy and export report
-  - python ${CI_PROJECT_DIR}/utilities/code_climate/run-clang-tidy.py -j `nproc` -use-color
-    -p . `get_mpi_extra_args` -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*"
+  - run-clang-tidy -j `nproc` -config-file ${CI_PROJECT_DIR}/.clang-tidy -use-color
+    -p . -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*"
     "${ESCAPED_PROJECT_DIR}\/.*" 2>&1 | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
     # export clang tidy issues
   - python ${CI_PROJECT_DIR}/utilities/code_climate/export_clang_tidy_issues.py -j
@@ -404,28 +402,6 @@ danger-review:
     BUNDLE_GEMFILE=./utilities/danger/Gemfile bundle exec danger --fail-on-errors=true --verbose --danger_id="${danger_id}" --dangerfile="./utilities/danger/Dangerfile";
 
 
-# IMCS--------------------------------------------------------------------------
-
-imcs-buildtest_daily_ubuntu20:
-  extends: .buildtest_daily
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
-    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
-    CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
-  tags:
-  - imcs-nightly-full-ubuntu20
-  needs: []
-
-imcs-buildtest_daily_debug_ubuntu20:
-  extends: .buildtest_daily_debug
-  variables:
-    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_optimized_debug
-    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
-    CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
-  tags:
-  - imcs-nightly-debug-ubuntu20
-  needs: []
-
 # Docker---------------------------------------------------------------------------
 
 codeclimate:
@@ -448,7 +424,7 @@ buildtest_coverage:
     # increase the global test timeout
     GLOBAL_TEST_TIMEOUT_SCALE: '50'
     # increase the unit test timeout
-    UNITTEST_TIMEOUT: '50'
+    UNITTEST_TIMEOUT: '100'
     # enable coverage option of ctest
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_coverage
     CMAKE_COMMAND: cmake

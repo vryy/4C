@@ -8,8 +8,8 @@
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifndef BACI_MAT_PAR_BUNDLE_HPP
-#define BACI_MAT_PAR_BUNDLE_HPP
+#ifndef FOUR_C_MAT_PAR_BUNDLE_HPP
+#define FOUR_C_MAT_PAR_BUNDLE_HPP
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -131,4 +131,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_PAR_BUNDLE_H
+#endif

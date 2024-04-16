@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ALGORITHM_HPP
-#define BACI_SCATRA_ALGORITHM_HPP
+#ifndef FOUR_C_SCATRA_ALGORITHM_HPP
+#define FOUR_C_SCATRA_ALGORITHM_HPP
 
 #include "baci_config.hpp"
 
@@ -123,4 +123,4 @@ namespace SCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_ALGORITHM_H
+#endif

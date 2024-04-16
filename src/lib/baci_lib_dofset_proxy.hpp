@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DOFSET_PROXY_HPP
-#define BACI_LIB_DOFSET_PROXY_HPP
+#ifndef FOUR_C_LIB_DOFSET_PROXY_HPP
+#define FOUR_C_LIB_DOFSET_PROXY_HPP
 
 #include "baci_config.hpp"
 

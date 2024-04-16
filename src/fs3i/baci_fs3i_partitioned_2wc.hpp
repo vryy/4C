@@ -12,8 +12,8 @@
 *----------------------------------------------------------------------*/
 
 
-#ifndef BACI_FS3I_PARTITIONED_2WC_HPP
-#define BACI_FS3I_PARTITIONED_2WC_HPP
+#ifndef FOUR_C_FS3I_PARTITIONED_2WC_HPP
+#define FOUR_C_FS3I_PARTITIONED_2WC_HPP
 
 
 #include "baci_config.hpp"

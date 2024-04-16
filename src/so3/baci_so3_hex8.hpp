@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SO3_HEX8_HPP
-#define BACI_SO3_HEX8_HPP
+#ifndef FOUR_C_SO3_HEX8_HPP
+#define FOUR_C_SO3_HEX8_HPP
 
 #include "baci_config.hpp"
 
@@ -428,7 +428,6 @@ namespace DRT
         calc_struct_reset_all,      //!< reset elementwise internal variables
                                     //!< to state in the beginning of the computation
         calc_struct_energy,         //!< compute internal energy
-        calc_struct_errornorms,     //!< compute error norms (L2,H1,energy)
         prestress_update,
         multi_readrestart,           //!< multi-scale: read restart on microscale
         multi_eas_init,              //!< multi-scale: initialize EAS parameters on microscale
@@ -808,4 +807,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_HEX8_H
+#endif

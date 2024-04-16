@@ -8,8 +8,8 @@ In this file, the helper defining the mapping from celltype to their properties 
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_DEF_HPP
-#define BACI_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_DEF_HPP
+#ifndef FOUR_C_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_DEF_HPP
+#define FOUR_C_DISCRETIZATION_FEM_GENERAL_CELL_TYPE_TRAITS_DEF_HPP
 
 #include "baci_config.hpp"
 

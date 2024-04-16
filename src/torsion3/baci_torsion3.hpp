@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef BACI_TORSION3_HPP
-#define BACI_TORSION3_HPP
+#ifndef FOUR_C_TORSION3_HPP
+#define FOUR_C_TORSION3_HPP
 
 
 #include "baci_config.hpp"
@@ -346,4 +346,4 @@ namespace DRT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // TORSION3_H
+#endif

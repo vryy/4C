@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_CREATE_RTDFILES_UTILS_HPP
-#define BACI_CREATE_RTDFILES_UTILS_HPP
+#ifndef FOUR_C_CREATE_RTDFILES_UTILS_HPP
+#define FOUR_C_CREATE_RTDFILES_UTILS_HPP
 #include "baci_config.hpp"
 
 #include "baci_contact_constitutivelaw_constitutivelaw_definition.hpp"
@@ -256,4 +256,4 @@ std::ostream& operator<<(std::ostream& os, const RTD::Table& table);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CREATE_RTDFILES_UTILS_H
+#endif

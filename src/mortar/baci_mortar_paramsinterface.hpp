@@ -7,8 +7,8 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#ifndef BACI_MORTAR_PARAMSINTERFACE_HPP
-#define BACI_MORTAR_PARAMSINTERFACE_HPP
+#ifndef FOUR_C_MORTAR_PARAMSINTERFACE_HPP
+#define FOUR_C_MORTAR_PARAMSINTERFACE_HPP
 
 #include "baci_config.hpp"
 
@@ -129,4 +129,4 @@ namespace MORTAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MORTAR_PARAMSINTERFACE_H
+#endif

@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  |  definitions                                              cbert 09/13 |
  *----------------------------------------------------------------------*/
-#ifndef BACI_MAT_MYOCARD_FITZHUGH_NAGUMO_HPP
-#define BACI_MAT_MYOCARD_FITZHUGH_NAGUMO_HPP
+#ifndef FOUR_C_MAT_MYOCARD_FITZHUGH_NAGUMO_HPP
+#define FOUR_C_MAT_MYOCARD_FITZHUGH_NAGUMO_HPP
 
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 09/13 |

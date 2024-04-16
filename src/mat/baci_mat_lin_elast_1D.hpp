@@ -8,8 +8,8 @@ quantity (e.g. concentration)
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_LIN_ELAST_1D_HPP
-#define BACI_MAT_LIN_ELAST_1D_HPP
+#ifndef FOUR_C_MAT_LIN_ELAST_1D_HPP
+#define FOUR_C_MAT_LIN_ELAST_1D_HPP
 
 
 #include "baci_config.hpp"
@@ -188,4 +188,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_LIN_ELAST_1D_H
+#endif

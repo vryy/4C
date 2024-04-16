@@ -9,8 +9,8 @@
 
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_INPAR_VOLMORTAR_HPP
-#define BACI_INPAR_VOLMORTAR_HPP
+#ifndef FOUR_C_INPAR_VOLMORTAR_HPP
+#define FOUR_C_INPAR_VOLMORTAR_HPP
 
 
 /*----------------------------------------------------------------------*/
@@ -69,4 +69,4 @@ namespace INPAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_VOLMORTAR_H
+#endif

@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MAT_ELASTHYPER_SERVICE_HPP
-#define BACI_MAT_ELASTHYPER_SERVICE_HPP
+#ifndef FOUR_C_MAT_ELASTHYPER_SERVICE_HPP
+#define FOUR_C_MAT_ELASTHYPER_SERVICE_HPP
 
 #include "baci_config.hpp"
 
@@ -474,4 +474,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MAT_ELASTHYPER_SERVICE_H
+#endif

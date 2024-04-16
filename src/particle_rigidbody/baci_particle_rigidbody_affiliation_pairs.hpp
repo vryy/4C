@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_RIGIDBODY_AFFILIATION_PAIRS_HPP
-#define BACI_PARTICLE_RIGIDBODY_AFFILIATION_PAIRS_HPP
+#ifndef FOUR_C_PARTICLE_RIGIDBODY_AFFILIATION_PAIRS_HPP
+#define FOUR_C_PARTICLE_RIGIDBODY_AFFILIATION_PAIRS_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

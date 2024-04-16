@@ -17,8 +17,8 @@
  * For 2D rotations, multiplicative and additive increments are identical and
  * rotations can be prescribed without problems. */
 
-#ifndef BACI_BEAM3_REISSNER_HPP
-#define BACI_BEAM3_REISSNER_HPP
+#ifndef FOUR_C_BEAM3_REISSNER_HPP
+#define FOUR_C_BEAM3_REISSNER_HPP
 
 
 #include "baci_config.hpp"

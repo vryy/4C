@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_MATELAST_COUPLOGNEOHOOKE_HPP
-#define BACI_MATELAST_COUPLOGNEOHOOKE_HPP
+#ifndef FOUR_C_MATELAST_COUPLOGNEOHOOKE_HPP
+#define FOUR_C_MATELAST_COUPLOGNEOHOOKE_HPP
 
 #include "baci_config.hpp"
 
@@ -208,4 +208,4 @@ namespace MAT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // MATELAST_COUPLOGNEOHOOKE_H
+#endif

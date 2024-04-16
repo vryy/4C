@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_COMM_PAROBJECT_HPP
-#define BACI_COMM_PAROBJECT_HPP
+#ifndef FOUR_C_COMM_PAROBJECT_HPP
+#define FOUR_C_COMM_PAROBJECT_HPP
 
 #include "baci_config.hpp"
 
@@ -964,4 +964,4 @@ namespace CORE::COMM
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_PAROBJECT_H
+#endif

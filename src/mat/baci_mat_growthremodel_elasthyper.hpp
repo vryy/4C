@@ -6,8 +6,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_GROWTHREMODEL_ELASTHYPER_HPP
-#define BACI_MAT_GROWTHREMODEL_ELASTHYPER_HPP
+#ifndef FOUR_C_MAT_GROWTHREMODEL_ELASTHYPER_HPP
+#define FOUR_C_MAT_GROWTHREMODEL_ELASTHYPER_HPP
 
 
 #include "baci_config.hpp"

@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef BACI_PARTICLE_INTERACTION_SPH_OPEN_BOUNDARY_HPP
-#define BACI_PARTICLE_INTERACTION_SPH_OPEN_BOUNDARY_HPP
+#ifndef FOUR_C_PARTICLE_INTERACTION_SPH_OPEN_BOUNDARY_HPP
+#define FOUR_C_PARTICLE_INTERACTION_SPH_OPEN_BOUNDARY_HPP
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |

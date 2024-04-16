@@ -7,8 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_INPAR_POROSCATRA_HPP
-#define BACI_INPAR_POROSCATRA_HPP
+#ifndef FOUR_C_INPAR_POROSCATRA_HPP
+#define FOUR_C_INPAR_POROSCATRA_HPP
 
 #include "baci_config.hpp"
 
@@ -46,4 +46,4 @@ namespace INPAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_POROSCATRA_H
+#endif

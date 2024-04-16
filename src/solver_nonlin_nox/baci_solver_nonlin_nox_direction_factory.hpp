@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_SOLVER_NONLIN_NOX_DIRECTION_FACTORY_HPP
-#define BACI_SOLVER_NONLIN_NOX_DIRECTION_FACTORY_HPP
+#ifndef FOUR_C_SOLVER_NONLIN_NOX_DIRECTION_FACTORY_HPP
+#define FOUR_C_SOLVER_NONLIN_NOX_DIRECTION_FACTORY_HPP
 
 #include "baci_config.hpp"
 
@@ -72,4 +72,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_NONLIN_NOX_DIRECTION_FACTORY_H
+#endif

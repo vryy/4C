@@ -11,8 +11,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_KERNEL_HPP
-#define BACI_CUT_KERNEL_HPP
+#ifndef FOUR_C_CUT_KERNEL_HPP
+#define FOUR_C_CUT_KERNEL_HPP
 
 #include "baci_config.hpp"
 

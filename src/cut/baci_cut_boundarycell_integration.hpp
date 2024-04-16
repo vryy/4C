@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_BOUNDARYCELL_INTEGRATION_HPP
-#define BACI_CUT_BOUNDARYCELL_INTEGRATION_HPP
+#ifndef FOUR_C_CUT_BOUNDARYCELL_INTEGRATION_HPP
+#define FOUR_C_CUT_BOUNDARYCELL_INTEGRATION_HPP
 
 #include "baci_config.hpp"
 

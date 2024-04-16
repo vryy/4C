@@ -8,8 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_FSI_STATUSTEST_HPP
-#define BACI_FSI_STATUSTEST_HPP
+#ifndef FOUR_C_FSI_STATUSTEST_HPP
+#define FOUR_C_FSI_STATUSTEST_HPP
 
 #include "baci_config.hpp"
 

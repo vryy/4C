@@ -6,8 +6,8 @@
 */
 
 /*----------------------------------------------------------------------------*/
-#ifndef BACI_STRUCTURE_TIMINT_NOXGROUP_HPP
-#define BACI_STRUCTURE_TIMINT_NOXGROUP_HPP
+#ifndef FOUR_C_STRUCTURE_TIMINT_NOXGROUP_HPP
+#define FOUR_C_STRUCTURE_TIMINT_NOXGROUP_HPP
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -74,4 +74,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // STRUCTURE_TIMINT_NOXGROUP_H
+#endif

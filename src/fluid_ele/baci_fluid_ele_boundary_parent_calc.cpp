@@ -11,14 +11,13 @@
 
 #include "baci_fluid_ele_boundary_parent_calc.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_boundary_integration.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_fluid_ele.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_element_integration_select.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_densematrix_eigen.hpp"
 #include "baci_mat_arrhenius_pv.hpp"
 #include "baci_mat_carreauyasuda.hpp"
@@ -32,7 +31,6 @@
 #include "baci_mat_sutherland.hpp"
 #include "baci_mat_tempdepwater.hpp"
 #include "baci_nurbs_discret.hpp"
-#include "baci_nurbs_discret_nurbs_utils.hpp"
 #include "baci_utils_function.hpp"
 #include "baci_utils_function_of_time.hpp"
 
@@ -686,8 +684,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
     std::vector<double> mypvelaf(plm.size());
     std::vector<double> mypscaaf(plm.size());
-    DRT::UTILS::ExtractMyValues(*velaf, mypvelaf, plm);
-    DRT::UTILS::ExtractMyValues(*scaaf, mypscaaf, plm);
+    CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
+    CORE::FE::ExtractMyValues(*scaaf, mypscaaf, plm);
 
     CORE::LINALG::Matrix<nsd, piel> pevelaf(true);
     CORE::LINALG::Matrix<piel, 1> pescaaf(true);
@@ -708,8 +706,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
-      DRT::UTILS::ExtractMyValues(*dispnp, mypedispnp, plm);
-      DRT::UTILS::ExtractMyValues(*dispnp, mybedispnp, blm);
+      CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
+      CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
 
       // add parent and boundary displacement at n+1
       for (int idim = 0; idim < nsd; ++idim)
@@ -1342,7 +1340,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   if (velaf == Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
-  DRT::UTILS::ExtractMyValues(*velaf, mypvelaf, plm);
+  CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
 
   CORE::LINALG::Matrix<nsd, piel> pevelaf(true);
   for (int inode = 0; inode < piel; ++inode)
@@ -1355,7 +1353,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
 
   // boundary pressure
   std::vector<double> mybvelaf(blm.size());
-  DRT::UTILS::ExtractMyValues(*velaf, mybvelaf, blm);
+  CORE::FE::ExtractMyValues(*velaf, mybvelaf, blm);
 
   CORE::LINALG::Matrix<1, biel> epressnp(true);
 
@@ -1372,8 +1370,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
-    DRT::UTILS::ExtractMyValues(*dispnp, mypedispnp, plm);
-    DRT::UTILS::ExtractMyValues(*dispnp, mybedispnp, blm);
+    CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
+    CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
 
     // add parent and boundary displacement at n+1
     for (int idim = 0; idim < nsd; ++idim)
@@ -1676,7 +1674,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   if (velaf == Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
-  DRT::UTILS::ExtractMyValues(*velaf, mypvelaf, plm);
+  CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
 
   CORE::LINALG::Matrix<nsd, piel> pevelaf(true);
   for (int inode = 0; inode < piel; ++inode)
@@ -1695,8 +1693,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
-    DRT::UTILS::ExtractMyValues(*dispnp, mypedispnp, plm);
-    DRT::UTILS::ExtractMyValues(*dispnp, mybedispnp, blm);
+    CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
+    CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
 
     // add parent and boundary displacement at n+1
     for (int idim = 0; idim < nsd; ++idim)
@@ -2011,7 +2009,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   if (velaf == Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
-  DRT::UTILS::ExtractMyValues(*velaf, mypvelaf, plm);
+  CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
 
   CORE::LINALG::Matrix<nsd, piel> pevelaf(true);
   for (int inode = 0; inode < piel; ++inode)
@@ -2030,10 +2028,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
-    DRT::UTILS::ExtractMyValues(*velnp, mypvelnp, plm);
+    CORE::FE::ExtractMyValues(*velnp, mypvelnp, plm);
   }
   else
-    DRT::UTILS::ExtractMyValues(*velaf, mypvelnp, plm);
+    CORE::FE::ExtractMyValues(*velaf, mypvelnp, plm);
 
   CORE::LINALG::Matrix<nsd, piel> pevelnp(true);
   CORE::LINALG::Matrix<piel, 1> peprenp(true);
@@ -2054,8 +2052,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
-    DRT::UTILS::ExtractMyValues(*dispnp, mypedispnp, plm);
-    DRT::UTILS::ExtractMyValues(*dispnp, mybedispnp, blm);
+    CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
+    CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
 
     // add parent and boundary displacement at n+1
     for (int idim = 0; idim < nsd; ++idim)
@@ -3822,8 +3820,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
-      DRT::UTILS::ExtractMyValues(*dispnp, mypedispnp, plm);
-      DRT::UTILS::ExtractMyValues(*dispnp, mybedispnp, blm);
+      CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
+      CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
 
       // add parent and boundary displacement at n+1
       for (int idim = 0; idim < nsd; ++idim)
@@ -4454,8 +4452,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     std::vector<double> mypvelaf((plm).size());
     std::vector<double> mypvelnp((plm).size());
 
-    DRT::UTILS::ExtractMyValues(*vel, mypvelaf, plm);
-    DRT::UTILS::ExtractMyValues(*velnp, mypvelnp, plm);
+    CORE::FE::ExtractMyValues(*vel, mypvelaf, plm);
+    CORE::FE::ExtractMyValues(*velnp, mypvelnp, plm);
 
     for (int inode = 0; inode < piel; ++inode)
     {
@@ -4487,7 +4485,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   {
     std::vector<double> mypvel((plm).size());
 
-    DRT::UTILS::ExtractMyValues(*vel, mypvel, plm);
+    CORE::FE::ExtractMyValues(*vel, mypvel, plm);
 
 
     for (int inode = 0; inode < piel; ++inode)

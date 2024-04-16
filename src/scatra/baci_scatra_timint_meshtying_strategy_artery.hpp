@@ -7,8 +7,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_HPP
-#define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_HPP
+#ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_HPP
+#define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_HPP
 
 #include "baci_config.hpp"
 
@@ -191,4 +191,4 @@ namespace SCATRA
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H
+#endif

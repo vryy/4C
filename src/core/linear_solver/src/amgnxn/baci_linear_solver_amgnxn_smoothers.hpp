@@ -6,8 +6,8 @@
 Created on: Feb 27, 2014
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_AMGNXN_SMOOTHERS_HPP
-#define BACI_LINEAR_SOLVER_AMGNXN_SMOOTHERS_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_AMGNXN_SMOOTHERS_HPP
+#define FOUR_C_LINEAR_SOLVER_AMGNXN_SMOOTHERS_HPP
 
 // Trilinos includes
 #include "baci_config.hpp"
@@ -506,4 +506,4 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // SOLVER_AMGNXN_SMOOTHERS_H
+#endif

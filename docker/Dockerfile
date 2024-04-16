@@ -82,8 +82,8 @@ RUN /dependencies/current/backtrace/install.sh ${INSTALL_DIR}
 ENV BACI_TESTING_DEPENDENCIES_DIR="/opt/baci-dependencies-testing/"
 RUN mkdir ${BACI_TESTING_DEPENDENCIES_DIR}
 
-# Install clang-tidy
-RUN /dependencies/testing/clang-tidy/install.sh ${BACI_TESTING_DEPENDENCIES_DIR}
+# Install LLVM (use standard install directory)
+RUN /dependencies/testing/llvm/install.sh /usr/local
 
 # Install Mathjax
 RUN /dependencies/testing/mathjax/install.sh ${BACI_TESTING_DEPENDENCIES_DIR}

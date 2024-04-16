@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_POINTGRAPH_HPP
-#define BACI_CUT_POINTGRAPH_HPP
+#ifndef FOUR_C_CUT_POINTGRAPH_HPP
+#define FOUR_C_CUT_POINTGRAPH_HPP
 
 // necessary due to usage of graph_t, vertex_t etc.
 #include "baci_config.hpp"

@@ -13574,8 +13574,6 @@ void test_bacigenerated_7019()
     intersection.AddElement(7029, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
-  intersection.Status();
-
 
   intersection.CutTest_Cut(
       true, INPAR::CUT::VCellGaussPts_DirectDivergence, INPAR::CUT::BCellGaussPts_Tessellation);

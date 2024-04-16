@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_POINT_HPP
-#define BACI_LINEAR_SOLVER_PRECONDITIONER_POINT_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_PRECONDITIONER_POINT_HPP
+#define FOUR_C_LINEAR_SOLVER_PRECONDITIONER_POINT_HPP
 
 #include "baci_config.hpp"
 

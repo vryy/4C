@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINALG_UTILS_DENSEMATRIX_DETERMINANT_HPP
-#define BACI_LINALG_UTILS_DENSEMATRIX_DETERMINANT_HPP
+#ifndef FOUR_C_LINALG_UTILS_DENSEMATRIX_DETERMINANT_HPP
+#define FOUR_C_LINALG_UTILS_DENSEMATRIX_DETERMINANT_HPP
 
 #include "baci_config.hpp"
 

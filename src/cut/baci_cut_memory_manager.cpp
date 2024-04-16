@@ -271,7 +271,7 @@ CORE::GEO::CUT::GenericMemoryPool::GenericMemoryPool(
     size_t most_frequent_size = 0;
     int frequency = 0;
     size_t total_size = 0;
-    size_t total_byte_size = 0;
+    [[maybe_unused]] size_t total_byte_size = 0;
     for (const auto& it : mem_pattern)
     {
       size_t const_size = it.first;
@@ -365,8 +365,6 @@ void CORE::GEO::CUT::GenericMemoryPool::AllInOneAllocation(
   main_ptr_ = (char*)malloc(total_size);
   if (!main_ptr_) dserror("Allocation failed!");
 
-  size_t wasted_size = 0;
-
   char* const_container_pointer = main_ptr_;
 
   size_t most_frequent_size = 0;
@@ -393,8 +391,6 @@ void CORE::GEO::CUT::GenericMemoryPool::AllInOneAllocation(
     const_memory_map_[it->first] = new ConstMemoryPool(start, it->first, it->second);
     memory_map_[it->first] = std::make_pair(
         reinterpret_cast<size_t>(start), reinterpret_cast<size_t>(const_container_pointer));
-
-    wasted_size += offset;
 
     if (it->second > frequency)
     {

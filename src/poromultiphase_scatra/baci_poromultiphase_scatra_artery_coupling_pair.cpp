@@ -9,6 +9,7 @@
 
 #include "baci_poromultiphase_scatra_artery_coupling_pair.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_discretization_geometry_coordinate_system_utils.hpp"
@@ -16,7 +17,6 @@
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element_integration_select.hpp"
 #include "baci_lib_elementtype.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_mat_cnst_1d_art.hpp"
 #include "baci_mat_fluidporo_multiphase.hpp"
 #include "baci_porofluidmultiphase_ele_parameter.hpp"
@@ -798,8 +798,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       variablemanager_->ExtractElementAndNodeValues(*element2_, *contdis, la_cont, ele2pos_, 0);
 
       // get contelephinp_ and artelephinp_
-      DRT::UTILS::ExtractMyValues(*contdis->GetState("phinp_fluid"), contelephinp_, la_cont[0].lm_);
-      DRT::UTILS::ExtractMyValues(
+      CORE::FE::ExtractMyValues(*contdis->GetState("phinp_fluid"), contelephinp_, la_cont[0].lm_);
+      CORE::FE::ExtractMyValues(
           *artdis->GetState("one_d_artery_pressure"), artelephinp_, la_art[0].lm_);
 
       // extract velocity of solid phase
@@ -818,7 +818,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           eartscalarnp_.clear();
           eartscalarnp_.resize(numscalart_, CORE::LINALG::Matrix<numnodesart_, 1>(true));
           // extract local values of artery-scatra field from global state vector
-          DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<numnodesart_, 1>>(
+          CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<numnodesart_, 1>>(
               *artscalarnp, eartscalarnp_, la[ndsartery_scatra_].lm_);
         }
         else
@@ -837,7 +837,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           econtscalarnp_.clear();
           econtscalarnp_.resize(numscalcont_, CORE::LINALG::Matrix<numnodescont_, 1>(true));
           // extract local values of continuous-scatra field from global state vector
-          DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<numnodescont_, 1>>(
+          CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<numnodescont_, 1>>(
               *contscalarnp, econtscalarnp_, la[3].lm_);
         }
         else
@@ -851,8 +851,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       variablemanager_->ExtractElementAndNodeValues(*element2_, *contdis, la_cont, ele2pos_, 2);
 
       // get contelephinp_ and artelephinp_
-      DRT::UTILS::ExtractMyValues(*contdis->GetState("phinp"), contelephinp_, la_cont[0].lm_);
-      DRT::UTILS::ExtractMyValues(
+      CORE::FE::ExtractMyValues(*contdis->GetState("phinp"), contelephinp_, la_cont[0].lm_);
+      CORE::FE::ExtractMyValues(
           *artdis->GetState("one_d_artery_phinp"), artelephinp_, la_art[0].lm_);
 
       // extract artery pressure
@@ -862,7 +862,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       {
         DRT::Element::LocationArray la(artdis->NumDofSets());
         element1_->LocationVector(*artdis, la, false);
-        DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<numnodesart_, 1>>(
+        CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<numnodesart_, 1>>(
             *artpressnp, earterypressurenp_, la[ndsscatra_artery_].lm_);
       }
       else
@@ -1098,7 +1098,7 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
         lmdisp[inode * numdim_ + idim] = la[1].lm_[inode * numdim_ + idim];
 
     // extract local values of displacement field from global state vector
-    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<numdim_, numnodescont_>>(
+    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<numdim_, numnodescont_>>(
         *dispnp, edispnp, lmdisp);
   }
   else
@@ -2088,7 +2088,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       lmdisp[inode * numdim_ + idim] = la[1].lm_[inode * numdim_ + idim];
 
   // extract local values of displacement field from global state vector
-  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<numdim_, numnodescont_>>(
+  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<numdim_, numnodescont_>>(
       *velocity, ele2vel_, lmdisp);
 }
 

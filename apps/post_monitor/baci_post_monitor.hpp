@@ -13,8 +13,8 @@
 \addtogroup Monitoring
 *//*! @{ (documentation module open)*/
 
-#ifndef BACI_POST_MONITOR_HPP
-#define BACI_POST_MONITOR_HPP
+#ifndef FOUR_C_POST_MONITOR_HPP
+#define FOUR_C_POST_MONITOR_HPP
 
 #include "baci_config.hpp"
 
@@ -583,7 +583,7 @@ class PoroMultiElastScatraArteryScatraMonWriter : public ScatraMonWriter
 };  // end of class PoroMultiElastScatraArteryScatraMonWriter
 
 
-#endif  // POST_MONITOR_H
+#endif
 /*! @} (documentation module close)*/
 
 BACI_NAMESPACE_CLOSE

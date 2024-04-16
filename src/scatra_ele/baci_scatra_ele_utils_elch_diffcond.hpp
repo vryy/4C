@@ -7,8 +7,8 @@
 
  */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_SCATRA_ELE_UTILS_ELCH_DIFFCOND_HPP
-#define BACI_SCATRA_ELE_UTILS_ELCH_DIFFCOND_HPP
+#ifndef FOUR_C_SCATRA_ELE_UTILS_ELCH_DIFFCOND_HPP
+#define FOUR_C_SCATRA_ELE_UTILS_ELCH_DIFFCOND_HPP
 
 #include "baci_config.hpp"
 
@@ -42,8 +42,6 @@ namespace DRT
           const std::string& disname  ///< name of discretization
       );
 
-
-
       //! evaluate electrolyte material
       void MatElchMat(Teuchos::RCP<const MAT::Material> material,  //!< electrolyte material
           const std::vector<double>& concentrations,               //!< local concentration values
@@ -68,14 +66,6 @@ namespace DRT
       void MatNewman(Teuchos::RCP<const MAT::Material> material,      //!< Newman material
           double concentration,                                       //!< local concentration value
           double temperature,                                         //!< temperature
-          Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager  //!< diffusion manager
-      );
-
-      //! evaluate multi-scale Newman material
-      void MatNewmanMultiScale(
-          Teuchos::RCP<const MAT::Material> material,  //!< Newman Multi-Scale material
-          double concentration,                        //!< local concentration value
-          double temperature,                          //!< temperature
           Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager  //!< diffusion manager
       );
 

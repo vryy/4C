@@ -14,7 +14,8 @@
 #include "baci_beam3_reissner.hpp"
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
 #include "baci_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
-#include "baci_geometry_pair_element_functions.hpp"
+#include "baci_beaminteraction_geometry_pair_access_traits.hpp"
+#include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_geometry_pair_scalar_types.hpp"
 
 #include <Sacado.hpp>
@@ -44,11 +45,16 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
   // Call setup of base class first.
   BeamContactPair::Setup();
 
+  // Get the beam element data container
+  ele1posref_ = GEOMETRYPAIR::InitializeElementData<beam, double>::Initialize(Element1());
+  ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::Initialize(Element1());
+
   // Set reference nodal positions (and tangents) for beam element
   for (unsigned int n = 0; n < beam::n_nodes_; ++n)
   {
     const DRT::Node* node = Element1()->Nodes()[n];
-    for (int d = 0; d < 3; ++d) ele1posref_(3 * beam::n_val_ * n + d) = node->X()[d];
+    for (int d = 0; d < 3; ++d)
+      ele1posref_.element_position_(3 * beam::n_val_ * n + d) = node->X()[d];
 
     // tangents
     if (beam::n_val_ == 2)
@@ -81,12 +87,13 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
         dserror("ERROR: Beam3tosolidmeshtying: Invalid beam element type");
       }
 
-      for (int d = 0; d < 3; ++d) ele1posref_(3 * beam::n_val_ * n + d + 3) = tan(d, 0);
+      for (int d = 0; d < 3; ++d)
+        ele1posref_.element_position_(3 * beam::n_val_ * n + d + 3) = tan(d, 0);
     }
   }
 
   // Initialize current nodal positions (and tangents) for beam element
-  for (unsigned int i = 0; i < beam::n_dof_; i++) ele1pos_(i) = 0.0;
+  for (unsigned int i = 0; i < beam::n_dof_; i++) ele1pos_.element_position_(i) = 0.0;
 
   issetup_ = true;
 }
@@ -99,9 +106,10 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
     solid>::ResetState(const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
-  // Beam element.
+  // Set the current configuration of the beam element
+  ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::Initialize(Element1());
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-    ele1pos_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    ele1pos_.element_position_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);
 }
 
@@ -130,7 +138,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
   out << "\nInstance of BeamToSolidPairBase"
       << "\nBeam EleGID:  " << Element1()->Id() << "\nSolid EleGID: " << Element2()->Id();
 
-  out << "\n\nbeam dofvec: " << ele1pos_;
+  out << "\n\nbeam dofvec: " << ele1pos_.element_position_;
   out << "\nn_segments: " << line_to_3D_segments_.size();
   out << "\n";
   out << "------------------------------------------------------------------------\n";
@@ -174,11 +182,10 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
     CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   if (reference)
-    GEOMETRYPAIR::EvaluatePosition<beam>(
-        integration_point.GetEta(), ele1posref_, r_beam, this->Element1());
+    GEOMETRYPAIR::EvaluatePosition<beam>(integration_point.GetEta(), ele1posref_, r_beam);
   else
     GEOMETRYPAIR::EvaluatePosition<beam>(integration_point.GetEta(),
-        CORE::FADUTILS::CastToDouble(ele1pos_), r_beam, this->Element1());
+        GEOMETRYPAIR::ElementDataToDouble<beam>::ToDouble(ele1pos_), r_beam);
 }
 
 

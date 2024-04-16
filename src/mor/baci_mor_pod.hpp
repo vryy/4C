@@ -8,8 +8,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef BACI_MOR_POD_HPP
-#define BACI_MOR_POD_HPP
+#ifndef FOUR_C_MOR_POD_HPP
+#define FOUR_C_MOR_POD_HPP
 
 #include "baci_config.hpp"
 

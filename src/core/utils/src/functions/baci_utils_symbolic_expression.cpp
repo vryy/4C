@@ -753,13 +753,11 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
 
     lhs = ParseExpr(lexer);
 
-    // check for invalid tokens at the beginning of a parse entities
-    if (lexer.tok_ == Lexer::tok_comma or lexer.tok_ == Lexer::tok_rpar)
+    // check if parsing ended before processing the entire string
+    if (lexer.tok_ != Lexer::tok_done)
     {
-      dserror(
-          "unexpected token %d. Invalid syntax. Missing brackets or comma instead of decimal "
-          "point?",
-          lexer.tok_);
+      dserror("Invalid syntax: The remaining string '%s' is not parsed.",
+          lexer.funct_.c_str() + lexer.pos_);
     }
 
     return lhs;

@@ -316,7 +316,7 @@ namespace RTD
 
     for (auto &parameterterm : material->Inputline())
     {
-      if (auto *separator = dynamic_cast<BACI::INPUT::SeparatorComponent *>(parameterterm.get()))
+      if (auto *separator = dynamic_cast<INPUT::SeparatorComponent *>(parameterterm.get()))
       {
         parametertable.AddRow(separator->WriteReadTheDocsTableRow());
 
@@ -529,15 +529,13 @@ namespace RTD
       }
       conditioncodeline += " " + condparameter->WriteReadTheDocs();
       isNewlinePossible = (conditioncodeline.length() > 60);
-      if (auto *previousparameter =
-              dynamic_cast<BACI::INPUT::SeparatorComponent *>(condparameter.get()))
+      if (auto *previousparameter = dynamic_cast<INPUT::SeparatorComponent *>(condparameter.get()))
       {
         previousparameter->GetOptions();  // just needed to prevent an unusedVariable warning
         isNewlinePossible = false;
       }
       // If the component is a string component, store the admissible parameters in the table:
-      if (auto *stringComponent =
-              dynamic_cast<BACI::INPUT::SelectionComponent *>(condparameter.get()))
+      if (auto *stringComponent = dynamic_cast<INPUT::SelectionComponent *>(condparameter.get()))
       {
         tablerow[0] = stringComponent->Name();
         std::ostringstream parametercell;
@@ -548,8 +546,7 @@ namespace RTD
         parametertable.AddRow(tablerow);
       }
       // if the component is a bundleselector (bundle of variables following a string keyword):
-      if (auto *compBundleSelector =
-              dynamic_cast<BACI::INPUT::SwitchComponent *>(condparameter.get()))
+      if (auto *compBundleSelector = dynamic_cast<INPUT::SwitchComponent *>(condparameter.get()))
       {
         condCompName = compBundleSelector->Name();
         std::vector<std::string> bundle = compBundleSelector->WriteReadTheDocsLines();
@@ -650,7 +647,7 @@ namespace RTD
 
     for (auto &parameterterm : contactlaw->Inputline())
     {
-      if (auto *separator = dynamic_cast<BACI::INPUT::SeparatorComponent *>(parameterterm.get()))
+      if (auto *separator = dynamic_cast<INPUT::SeparatorComponent *>(parameterterm.get()))
       {
         parametertable.AddRow(separator->WriteReadTheDocsTableRow());
 

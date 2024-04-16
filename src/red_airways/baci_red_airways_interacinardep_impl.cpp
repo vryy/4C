@@ -15,19 +15,16 @@
 
 #include "baci_red_airways_interacinardep_impl.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
-#include "baci_mat_maxwell_0d_acinus.hpp"
 #include "baci_mat_newtonianfluid.hpp"
-#include "baci_red_airways_acinus_impl.hpp"
 #include "baci_red_airways_evaluation_data.hpp"
 #include "baci_utils_function.hpp"
 #include "baci_utils_function_of_time.hpp"
 
 #include <fstream>
-#include <iomanip>
 
 BACI_NAMESPACE_OPEN
 
@@ -83,7 +80,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
 
   // Extract local values from the global vectors
   std::vector<double> myial(lm.size());
-  DRT::UTILS::ExtractMyValues(*ial, myial, lm);
+  CORE::FE::ExtractMyValues(*ial, myial, lm);
 
   // Calculate the system matrix for inter-acinar linkers
   Sysmat(myial, elemat1_epetra, elevec1_epetra);
@@ -174,7 +171,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
+  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // Create objects for element arrays
   CORE::LINALG::SerialDenseVector epnp(numnode);

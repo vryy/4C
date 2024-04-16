@@ -8,8 +8,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_UTILS_ELCH_SCL_HPP
-#define BACI_SCATRA_ELE_UTILS_ELCH_SCL_HPP
+#ifndef FOUR_C_SCATRA_ELE_UTILS_ELCH_SCL_HPP
+#define FOUR_C_SCATRA_ELE_UTILS_ELCH_SCL_HPP
 #include "baci_config.hpp"
 
 #include "baci_inpar_elch.hpp"

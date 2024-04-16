@@ -8,8 +8,8 @@ to disk
 
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef BACI_IO_DISCRETIZATION_VISUALIZATION_WRITER_MESH_HPP
-#define BACI_IO_DISCRETIZATION_VISUALIZATION_WRITER_MESH_HPP
+#ifndef FOUR_C_IO_DISCRETIZATION_VISUALIZATION_WRITER_MESH_HPP
+#define FOUR_C_IO_DISCRETIZATION_VISUALIZATION_WRITER_MESH_HPP
 
 #include "baci_config.hpp"
 

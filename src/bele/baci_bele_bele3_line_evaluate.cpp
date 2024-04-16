@@ -9,10 +9,10 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_bele_bele3.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_utils_exceptions.hpp"
@@ -53,7 +53,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
         if (dispnp != Teuchos::null)
         {
           mydispnp.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*dispnp, mydispnp, lm);
+          CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
         }
         else
         {

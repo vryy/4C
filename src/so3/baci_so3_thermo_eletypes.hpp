@@ -4,8 +4,8 @@
 \level 1
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_SO3_THERMO_ELETYPES_HPP
-#define BACI_SO3_THERMO_ELETYPES_HPP
+#ifndef FOUR_C_SO3_THERMO_ELETYPES_HPP
+#define FOUR_C_SO3_THERMO_ELETYPES_HPP
 
 #include "baci_config.hpp"
 
@@ -239,4 +239,4 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // SO3_THERMO_ELETYPES_H
+#endif

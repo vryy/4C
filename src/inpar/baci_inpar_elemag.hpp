@@ -7,8 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_INPAR_ELEMAG_HPP
-#define BACI_INPAR_ELEMAG_HPP
+#ifndef FOUR_C_INPAR_ELEMAG_HPP
+#define FOUR_C_INPAR_ELEMAG_HPP
 
 #include "baci_config.hpp"
 
@@ -73,4 +73,4 @@ namespace INPAR
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_ELEMAG_H
+#endif

@@ -10,8 +10,8 @@ Here everything related with the exodus format and the accessible data
 is handed to a c++ object mesh.
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_PRE_EXODUS_READER_HPP
-#define BACI_PRE_EXODUS_READER_HPP
+#ifndef FOUR_C_PRE_EXODUS_READER_HPP
+#define FOUR_C_PRE_EXODUS_READER_HPP
 
 #include "baci_config.hpp"
 
@@ -539,4 +539,4 @@ namespace EXODUS
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // PRE_EXODUS_READER_H
+#endif

@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_DISCRET_HPP
-#define BACI_LIB_DISCRET_HPP
+#ifndef FOUR_C_LIB_DISCRET_HPP
+#define FOUR_C_LIB_DISCRET_HPP
 
 #include "baci_config.hpp"
 
@@ -319,7 +319,7 @@ namespace DRT
     /*!
     \brief Get master to slave coupling in case of periodic boundary conditions
     */
-    virtual Teuchos::RCP<std::map<int, std::vector<int>>> GetAllPBCCoupledColNodes();
+    std::map<int, std::vector<int>>* GetAllPBCCoupledColNodes();
 
     /*!
     \brief Get slave to master connectivity in case of periodic boundary conditions
@@ -2259,4 +2259,4 @@ std::ostream& operator<<(std::ostream& os, const DRT::Discretization& dis);
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // LIB_DISCRET_H
+#endif

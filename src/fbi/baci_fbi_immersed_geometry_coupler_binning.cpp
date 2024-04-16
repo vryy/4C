@@ -12,11 +12,10 @@ performed afterwards
 
 #include "baci_binstrategy.hpp"
 #include "baci_binstrategy_utils.hpp"
-#include "baci_inpar_fluid.hpp"
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret_faces.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_node.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -170,7 +169,7 @@ void FBI::FBIBinningGeometryCoupler::ComputeCurrentPositions(DRT::Discretization
         // get the DOF numbers of the current node
         dis.Dof(node, 0, src_dofs);
         // get the current displacements
-        DRT::UTILS::ExtractMyValues(*disp, mydisp, src_dofs);
+        CORE::FE::ExtractMyValues(*disp, mydisp, src_dofs);
 
         for (int d = 0; d < 3; ++d) (*positions)[node->Id()](d) = node->X()[d] + mydisp.at(d);
       }

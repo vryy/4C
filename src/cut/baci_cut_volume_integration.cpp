@@ -196,9 +196,6 @@ bool CORE::GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
       wei = false;
     else
       wei = true;
-#ifdef DEBUGCUTLIBRARY
-    std::cout << "number of Gauss points " << gaus_pts_.size() << std::endl;
-#endif
     return wei;
   }
 
@@ -247,9 +244,6 @@ bool CORE::GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
     }
   }
 
-#ifdef DEBUGCUTLIBRARY
-  std::cout << "number of Gauss points" << gaus_pts_.size() << std::endl;
-#endif
   return wei;
 }
 
@@ -387,10 +381,7 @@ bool CORE::GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, do
   }
   else
   {
-// map is useful since we need to arrange the elements from minimum x-cut value
-#ifdef DEBUGCUTLIBRARY
-    std::cout << "in more than two cuts" << std::endl;
-#endif
+    // map is useful since we need to arrange the elements from minimum x-cut value
     std::map<std::vector<double>, int> interPoints;
     for (std::vector<int>::iterator i = InterFaces.begin(); i != InterFaces.end(); i++)
     {
@@ -436,9 +427,7 @@ bool CORE::GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, do
       }
       else
       {
-#ifdef DEBUGCUTLIBRARY
         std::cout << "The assumption that one must be a cut surface is false" << std::endl;
-#endif
       }
 
       if (ptsInside)
@@ -836,24 +825,13 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weigh
     }
 
     const double maxError = err.normInf();
-#ifdef DEBUGCUTLIBRARY
-    std::cout << "max error = " << maxError << "\n";
-#endif
+
     if (maxError < 1e-10 || numeach == 13)
       break;
     else
       numeach++;
     break;
   }
-
-#ifdef DEBUGCUTLIBRARY
-  std::cout << "volume = " << rhs_moment(0) << "\t" << rhs_moment(1) << "\t" << rhs_moment(4)
-            << std::endl;
-#endif
-
-#ifdef DEBUGCUTLIBRARY
-  GaussPointGmsh();
-#endif
 
   return weights;
 }

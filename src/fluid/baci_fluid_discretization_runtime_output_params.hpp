@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef BACI_FLUID_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
-#define BACI_FLUID_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
+#ifndef FOUR_C_FLUID_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
+#define FOUR_C_FLUID_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
 
 #include "baci_config.hpp"
 

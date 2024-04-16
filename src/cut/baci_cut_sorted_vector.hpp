@@ -30,8 +30,8 @@
 
  */
 
-#ifndef BACI_CUT_SORTED_VECTOR_HPP
-#define BACI_CUT_SORTED_VECTOR_HPP
+#ifndef FOUR_C_CUT_SORTED_VECTOR_HPP
+#define FOUR_C_CUT_SORTED_VECTOR_HPP
 
 #include "baci_config.hpp"
 
@@ -306,12 +306,6 @@ namespace CORE::GEO
       iterator InsertImpl_(iterator p, const value_type& x)
       {
         iterator i = vec_.insert(p, x);
-#ifdef DEBUGCUTLIBRARY
-        std::set<K, key_compare> testset(less_);
-        testset.insert(begin(), end());
-        if (testset.size() != vec_.size() or not std::equal(begin(), end(), testset.begin()))
-          dserror("set invariance failed");
-#endif
         return i;
       }
 

@@ -105,7 +105,8 @@ int DRT::ELEMENTS::So_hex8ThermoType::Initialize(DRT::Discretization& dis)
     // initialise all quantities
     actele->So_hex8::InitJacobianMapping();
     // as an alternative we can call: So_hex8Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>::InitJacobianMapping(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex8,
+        CORE::FE::CellType::hex8>::InitJacobianMappingSpecialForNurbs(dis);
   }
 
   return 0;
@@ -214,8 +215,8 @@ int DRT::ELEMENTS::So_hex8fbarThermoType::Initialize(DRT::Discretization& dis)
     // initialise all quantities
     actele->So_hex8fbar::InitJacobianMapping();
     // as an alternative we can call: So_hex8fbarType::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>::InitJacobianMapping(
-        dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+        CORE::FE::CellType::hex8>::InitJacobianMappingSpecialForNurbs(dis);
   }
 
   return 0;
@@ -312,7 +313,8 @@ int DRT::ELEMENTS::So_tet4ThermoType::Initialize(DRT::Discretization& dis)
 
     actele->So_tet4::InitJacobianMapping();
     // as an alternative we can call: So_tet4Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>::InitJacobianMapping(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_tet4,
+        CORE::FE::CellType::tet4>::InitJacobianMappingSpecialForNurbs(dis);
   }
 
   return 0;
@@ -413,8 +415,8 @@ int DRT::ELEMENTS::So_tet10ThermoType::Initialize(DRT::Discretization& dis)
 
     actele->So_tet10::InitJacobianMapping();
     // as an alternative we can call: So_tet4Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>::InitJacobianMapping(
-        dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_tet10,
+        CORE::FE::CellType::tet10>::InitJacobianMappingSpecialForNurbs(dis);
   }
 
   return 0;
@@ -515,8 +517,8 @@ int DRT::ELEMENTS::So_hex27ThermoType::Initialize(DRT::Discretization& dis)
 
     actele->So_hex27::InitJacobianMapping();
     // as an alternative we can call: So_hex27Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>::InitJacobianMapping(
-        dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex27,
+        CORE::FE::CellType::hex27>::InitJacobianMappingSpecialForNurbs(dis);
   }
 
   return 0;
@@ -617,8 +619,8 @@ int DRT::ELEMENTS::So_hex20ThermoType::Initialize(DRT::Discretization& dis)
 
     actele->So_hex20::InitJacobianMapping();
     // as an alternative we can call: So_hex27Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex20, CORE::FE::CellType::hex20>::InitJacobianMapping(
-        dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex20,
+        CORE::FE::CellType::hex20>::InitJacobianMappingSpecialForNurbs(dis);
   }
 
   return 0;
@@ -723,7 +725,7 @@ int DRT::ELEMENTS::So_nurbs27ThermoType::Initialize(DRT::Discretization& dis)
     actele->So_nurbs27::InitJacobianMapping(dis);
     // as an alternative we can call: So_hex27Type::Initialize(dis);
     actele->So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27,
-        CORE::FE::CellType::nurbs27>::InitJacobianMapping(dis);
+        CORE::FE::CellType::nurbs27>::InitJacobianMappingSpecialForNurbs(dis);
   }
 
   return 0;

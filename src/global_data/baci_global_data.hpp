@@ -10,16 +10,17 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef BACI_GLOBAL_DATA_HPP
-#define BACI_GLOBAL_DATA_HPP
+#ifndef FOUR_C_GLOBAL_DATA_HPP
+#define FOUR_C_GLOBAL_DATA_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_discretization_fem_general_shape_function_type.hpp"
 #include "baci_global_data_enums.hpp"
 #include "baci_lib_resulttest.hpp"
-#include "baci_lib_utils.hpp"
+#include "baci_lib_utils_restart_manager.hpp"
 #include "baci_utils_function_manager.hpp"
+#include "baci_utils_random.hpp"
 #include "baci_utils_std_cxx20_ranges.hpp"
 
 #include <Epetra_Comm.h>
@@ -303,6 +304,10 @@ namespace GLOBAL
     {
       return parameters_->sublist("BEAM INTERACTION");
     }
+    const Teuchos::ParameterList& RveMultiPointConstraintParams() const
+    {
+      return getParameterList()->sublist("MULTI POINT CONSTRAINTS");
+    }
     const Teuchos::ParameterList& BrownianDynamicsParams() const
     {
       return parameters_->sublist("BROWNIAN DYNAMICS");
@@ -572,7 +577,7 @@ namespace GLOBAL
     //@}
 
     /// Return the class that handles random numbers globally
-    DRT::UTILS::Random* Random() { return &random_; }
+    CORE::UTILS::Random* Random() { return &random_; }
 
     /// Return the class that handles restart initiating -> to be extended
     DRT::UTILS::RestartManager* RestartManager() { return &restartmanager_; }
@@ -634,7 +639,7 @@ namespace GLOBAL
     //@}
 
     /// handles all sorts of random numbers
-    DRT::UTILS::Random random_;
+    CORE::UTILS::Random random_;
 
     /// handles restart
     DRT::UTILS::RestartManager restartmanager_;

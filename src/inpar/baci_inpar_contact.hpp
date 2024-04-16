@@ -8,8 +8,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_INPAR_CONTACT_HPP
-#define BACI_INPAR_CONTACT_HPP
+#ifndef FOUR_C_INPAR_CONTACT_HPP
+#define FOUR_C_INPAR_CONTACT_HPP
 
 #include "baci_config.hpp"
 
@@ -115,19 +115,6 @@ namespace INPAR
       output_screen,  ///< print to screen
       output_file,    ///< print to file
       output_both     ///< print to screen and file
-    };
-
-    /// Type of analytical solution for error norm computation
-    /// (this enum represents the input file parameter ERROR_NORMS)
-    /// (more details on analytical solutions, see contact/contact_analytical.cpp)
-    enum ErrorNorms
-    {
-      errornorms_none,          ///< no error norm computation
-      errornorms_zero,          ///< error norms for zero analytical solution
-      errornorms_bending,       ///< error norms for beam bending problem
-      errornorms_sphere,        ///< error norms for pressurized sphere problem
-      errornorms_thicksphere,   ///< error norms for thick pressurized sphere problem
-      errornorms_infiniteplate  ///< error norms for infinite plate with a circular hole
     };
 
     /// Type of formulation of constraint equations
@@ -407,4 +394,4 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_CONTACT_H
+#endif

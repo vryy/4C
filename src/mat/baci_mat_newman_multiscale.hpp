@@ -6,13 +6,13 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_MAT_NEWMAN_MULTISCALE_HPP
-#define BACI_MAT_NEWMAN_MULTISCALE_HPP
+#ifndef FOUR_C_MAT_NEWMAN_MULTISCALE_HPP
+#define FOUR_C_MAT_NEWMAN_MULTISCALE_HPP
 
 #include "baci_config.hpp"
 
 #include "baci_mat_newman.hpp"
-#include "baci_mat_scatra_multiscale.hpp"
+#include "baci_mat_scatra_micro_macro_coupling.hpp"
 
 BACI_NAMESPACE_OPEN
 
@@ -21,7 +21,7 @@ namespace MAT
   namespace PAR
   {
     //! material parameters
-    class NewmanMultiScale : public Newman, public ScatraMultiScale
+    class NewmanMultiScale : public Newman, public ScatraMicroMacroCoupling
     {
      public:
       //! constructor
@@ -31,14 +31,22 @@ namespace MAT
       //! create instance of Newman multi-scale material
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
-      //! return electronic conductivity
-      double Sigma() const { return sigma_; };
+      //! electronic conductivity
+      double electronic_cond() const { return electronic_cond_; }
+
+      //! function number to scale electronic conductivity with. The argument for the function is
+      //! the concentration
+      int conc_dep_scale_func_num() const { return conc_dep_scale_func_num_; }
 
      private:
       //! @name parameters for Newman multi-scale material
       //@{
       //! electronic conductivity
-      const double sigma_;
+      const double electronic_cond_;
+
+      //! function number to scale electronic conductivity with. The argument for the function is
+      //! the concentration
+      const int conc_dep_scale_func_num_;
       //@}
     };  // class MAT::PAR::NewmanMultiScale
   }     // namespace PAR
@@ -61,7 +69,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   //! wrapper for Newman multi-scale material
-  class NewmanMultiScale : public Newman, public ScatraMultiScale
+  class NewmanMultiScale : public Newman, public ScatraMicroMacroCoupling
   {
    public:
     //! construct empty Newman multi-scale material
@@ -120,12 +128,12 @@ namespace MAT
       return Teuchos::rcp(new NewmanMultiScale(*this));
     };
 
-    //! return electronic conductivity
-    double Sigma() const { return params_->Sigma(); };
+    //! compute electronic conductivity and scale by function evaluated at @p gp
+    double electronic_cond(int gp) const;
 
    private:
     //! return material parameters
-    const MAT::PAR::ScatraMultiScale* Params() const override { return params_; };
+    const MAT::PAR::ScatraMicroMacroCoupling* Params() const override { return params_; };
 
     //! material parameters
     MAT::PAR::NewmanMultiScale* params_;

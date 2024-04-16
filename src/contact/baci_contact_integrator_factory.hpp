@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_CONTACT_INTEGRATOR_FACTORY_HPP
-#define BACI_CONTACT_INTEGRATOR_FACTORY_HPP
+#ifndef FOUR_C_CONTACT_INTEGRATOR_FACTORY_HPP
+#define FOUR_C_CONTACT_INTEGRATOR_FACTORY_HPP
 
 #include "baci_config.hpp"
 
@@ -52,4 +52,4 @@ namespace CONTACT
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_INTEGRATOR_FACTORY_H
+#endif

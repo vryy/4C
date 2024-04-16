@@ -14,8 +14,8 @@
 #include "baci_mat_stvenantkirchhoff.hpp"
 #include "baci_utils_function.hpp"
 
-#ifndef BACI_STRUCTURE_NEW_FUNCTIONS_HPP
-#define BACI_STRUCTURE_NEW_FUNCTIONS_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_FUNCTIONS_HPP
+#define FOUR_C_STRUCTURE_NEW_FUNCTIONS_HPP
 
 BACI_NAMESPACE_OPEN
 
@@ -45,10 +45,7 @@ namespace STR
     std::vector<double> EvaluateTimeDerivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (2); };
-
-   private:
-    double poissonratio_;
+    [[nodiscard]] std::size_t NumberComponents() const override { return (2); };
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (force)
@@ -62,7 +59,7 @@ namespace STR
     std::vector<double> EvaluateTimeDerivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (2); };
+    [[nodiscard]] std::size_t NumberComponents() const override { return (2); };
 
    private:
     double youngmodulus_;

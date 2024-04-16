@@ -6,8 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_ADAPTER_COUPLING_EHL_MORTAR_HPP
-#define BACI_ADAPTER_COUPLING_EHL_MORTAR_HPP
+#ifndef FOUR_C_ADAPTER_COUPLING_EHL_MORTAR_HPP
+#define FOUR_C_ADAPTER_COUPLING_EHL_MORTAR_HPP
 
 /*---------------------------------------------------------------------*
  | headers                                                             |
@@ -237,4 +237,4 @@ namespace ADAPTER
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ADAPTER_COUPLING_EHL_MORTAR_H
+#endif

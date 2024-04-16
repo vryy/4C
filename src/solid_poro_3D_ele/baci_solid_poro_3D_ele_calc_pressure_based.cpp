@@ -7,8 +7,8 @@ implementation
 */
 #include "baci_solid_poro_3D_ele_calc_pressure_based.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils.hpp"
 #include "baci_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "baci_solid_3D_ele_calc_lib.hpp"
 #include "baci_solid_3D_ele_calc_lib_integration.hpp"
@@ -49,7 +49,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::EvaluateNonlinearFo
   // get primary variables of multiphase porous medium flow
   std::vector<double> fluidmultiphase_ephi(la[1].Size());
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
-  DRT::UTILS::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
+  CORE::FE::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
 
   // Initialize variables of multiphase porous medium flow
   const int nummultifluiddofpernode = porofluidmat.NumMat();
@@ -162,7 +162,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingPoroelast(
   // get primary variables of multiphase porous medium flow
   std::vector<double> fluidmultiphase_ephi(la[1].Size());
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
-  DRT::UTILS::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
+  CORE::FE::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
 
   // Initialize variables of multiphase porous medium flow
   const int nummultifluiddofpernode = porofluidmat.NumMat();

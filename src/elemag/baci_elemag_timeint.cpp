@@ -10,6 +10,7 @@
 
 #include "baci_elemag_timeint.hpp"
 
+#include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_elemag_ele_action.hpp"
 #include "baci_elemag_resulttest.hpp"
 #include "baci_global_data.hpp"
@@ -392,7 +393,7 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
     if (ishdg)
     {
       std::vector<int> localDofs = scatradis->Dof(2, scatraele);
-      DRT::UTILS::ExtractMyValues(*phicol, (*nodevals_phi), localDofs);
+      CORE::FE::ExtractMyValues(*phicol, (*nodevals_phi), localDofs);
       // Obtain scatra ndofs knowing that the vector contains the values of the transported scalar
       // plus numdim_ components of its gradient
       initParams.set<unsigned int>("ndofs", localDofs.size() / (numdim_ + 1));

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_FLUID_UTILS_MAPEXTRACTOR_HPP
-#define BACI_FLUID_UTILS_MAPEXTRACTOR_HPP
+#ifndef FOUR_C_FLUID_UTILS_MAPEXTRACTOR_HPP
+#define FOUR_C_FLUID_UTILS_MAPEXTRACTOR_HPP
 
 
 #include "baci_config.hpp"

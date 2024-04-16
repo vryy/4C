@@ -8,8 +8,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_NLN_SOLVER_SINGLESTEP_HPP
-#define BACI_STRUCTURE_NEW_NLN_SOLVER_SINGLESTEP_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_NLN_SOLVER_SINGLESTEP_HPP
+#define FOUR_C_STRUCTURE_NEW_NLN_SOLVER_SINGLESTEP_HPP
 
 #include "baci_config.hpp"
 

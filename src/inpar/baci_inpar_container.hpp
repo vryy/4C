@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_INPAR_CONTAINER_HPP
-#define BACI_INPAR_CONTAINER_HPP
+#ifndef FOUR_C_INPAR_CONTAINER_HPP
+#define FOUR_C_INPAR_CONTAINER_HPP
 
 
 #include "baci_config.hpp"
@@ -234,4 +234,4 @@ std::ostream& operator<<(std::ostream& os, const INPAR::InputParameterContainer&
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // INPAR_CONTAINER_H
+#endif

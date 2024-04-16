@@ -11,8 +11,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_FS3I_HPP
-#define BACI_FS3I_HPP
+#ifndef FOUR_C_FS3I_HPP
+#define FOUR_C_FS3I_HPP
 
 
 #include "baci_config.hpp"

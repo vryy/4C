@@ -6,8 +6,8 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifndef BACI_FBI_IMMERSED_GEOMETRY_COUPLER_HPP
-#define BACI_FBI_IMMERSED_GEOMETRY_COUPLER_HPP
+#ifndef FOUR_C_FBI_IMMERSED_GEOMETRY_COUPLER_HPP
+#define FOUR_C_FBI_IMMERSED_GEOMETRY_COUPLER_HPP
 
 #include "baci_config.hpp"
 

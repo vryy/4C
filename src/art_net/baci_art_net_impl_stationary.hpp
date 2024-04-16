@@ -7,8 +7,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef BACI_ART_NET_IMPL_STATIONARY_HPP
-#define BACI_ART_NET_IMPL_STATIONARY_HPP
+#ifndef FOUR_C_ART_NET_IMPL_STATIONARY_HPP
+#define FOUR_C_ART_NET_IMPL_STATIONARY_HPP
 
 #include "baci_config.hpp"
 
@@ -154,4 +154,4 @@ namespace ART
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // ART_NET_IMPL_STATIONARY_H
+#endif

@@ -8,8 +8,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef BACI_SCATRA_ELE_BOUNDARY_CALC_HPP
-#define BACI_SCATRA_ELE_BOUNDARY_CALC_HPP
+#ifndef FOUR_C_SCATRA_ELE_BOUNDARY_CALC_HPP
+#define FOUR_C_SCATRA_ELE_BOUNDARY_CALC_HPP
 
 #include "baci_config.hpp"
 
@@ -530,9 +530,9 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra, const double scalar);
 
       //! evaluate integral of all positive fluxes on s2i condition
-      virtual void CalcS2ICouplingFlux(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseVector& scalars)
+      virtual void CalcS2ICouplingFlux(const DRT::FaceElement* ele,
+          const Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& scalars)
       {
         dserror("Evaluation of coupling flux not implemented in base class.");
       }

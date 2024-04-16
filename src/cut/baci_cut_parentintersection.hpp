@@ -8,8 +8,8 @@
 */
 /*------------------------------------------------------------------------------------------------*/
 
-#ifndef BACI_CUT_PARENTINTERSECTION_HPP
-#define BACI_CUT_PARENTINTERSECTION_HPP
+#ifndef FOUR_C_CUT_PARENTINTERSECTION_HPP
+#define FOUR_C_CUT_PARENTINTERSECTION_HPP
 
 #include "baci_config.hpp"
 
@@ -265,18 +265,9 @@ namespace CORE::GEO
       /// print cell statistics
       void PrintCellStats();
 
-      /// status
-      virtual void Status(
-          INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation);
-
      protected:
-      /*!
-      \brief Compares Tesselation and DirectDivergence Cut.
-       */
-      void DebugCut(Mesh& m);
-
       /*========================================================================*/
-      //! @name private class variables
+      //! @name protected class variables
       /*========================================================================*/
 
       Teuchos::RCP<PointPool> pp_;  ///< pointpool (octTree) whose nodes consist of bounding boxes,

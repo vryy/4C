@@ -7,8 +7,8 @@
 
 */
 /*---------------------------------------------------------------------*/
-#ifndef BACI_CONTACT_MESHTYING_ABSTRACT_STRATEGY_HPP
-#define BACI_CONTACT_MESHTYING_ABSTRACT_STRATEGY_HPP
+#ifndef FOUR_C_CONTACT_MESHTYING_ABSTRACT_STRATEGY_HPP
+#define FOUR_C_CONTACT_MESHTYING_ABSTRACT_STRATEGY_HPP
 
 #include "baci_config.hpp"
 
@@ -799,4 +799,4 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& st
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // CONTACT_MESHTYING_ABSTRACT_STRATEGY_H
+#endif

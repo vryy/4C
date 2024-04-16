@@ -18,6 +18,8 @@ formulation
 #include "baci_solid_3D_ele_calc_lib_integration.hpp"
 #include "baci_solid_3D_ele_calc_lib_io.hpp"
 #include "baci_solid_3D_ele_calc_lib_nitsche.hpp"
+#include "baci_solid_3D_ele_calc_mulf.hpp"
+#include "baci_solid_3D_ele_calc_mulf_fbar.hpp"
 #include "baci_solid_3D_ele_formulation.hpp"
 #include "baci_solid_3D_ele_interface_serializable.hpp"
 #include "baci_utils_demangle.hpp"
@@ -313,6 +315,40 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::CalculateStress(
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
+void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::UpdatePrestress(
+    const DRT::Element& ele, MAT::So3Material& solid_material,
+    const DRT::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params)
+{
+  const ElementNodes<celltype> nodal_coordinates =
+      EvaluateElementNodes<celltype>(ele, discretization, lm);
+
+  const PreparationData<ElementFormulation> preparation_data =
+      Prepare(ele, nodal_coordinates, history_data_);
+
+  DRT::ELEMENTS::UpdatePrestress<ElementFormulation, celltype>(
+      ele, nodal_coordinates, preparation_data, history_data_);
+
+  DRT::ELEMENTS::ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+          const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
+      {
+        EvaluateGPCoordinatesAndAddToParameterList(nodal_coordinates, shape_functions, params);
+        Evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
+            history_data_, gp,
+            [&](const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>&
+                    deformation_gradient,
+                const CORE::LINALG::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
+            {
+              DRT::ELEMENTS::UpdatePrestress<ElementFormulation, celltype>(ele, nodal_coordinates,
+                  xi, shape_functions, jacobian_mapping, deformation_gradient, preparation_data,
+                  history_data_, gp);
+            });
+      });
+}
+
+template <CORE::FE::CellType celltype, typename ElementFormulation>
 void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Setup(
     MAT::So3Material& solid_material, INPUT::LineDefinition* linedef)
 {
@@ -479,5 +515,31 @@ template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex8,
     DRT::ELEMENTS::FBarFormulation<CORE::FE::CellType::hex8>>;
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5,
     DRT::ELEMENTS::FBarFormulation<CORE::FE::CellType::pyramid5>>;
+
+// explicit instantiations for MULF
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex8,
+    DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::hex8>>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex18,
+    DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::hex18>>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex20,
+    DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::hex20>>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex27,
+    DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::hex27>>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::nurbs27,
+    DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::nurbs27>>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::tet4,
+    DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::tet4>>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::tet10,
+    DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::tet10>>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5,
+    DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::pyramid5>>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::wedge6,
+    DRT::ELEMENTS::MulfFormulation<CORE::FE::CellType::wedge6>>;
+
+// explicit instaniations for FBAR+MULF
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex8,
+    DRT::ELEMENTS::MulfFBarFormulation<CORE::FE::CellType::hex8>>;
+template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5,
+    DRT::ELEMENTS::MulfFBarFormulation<CORE::FE::CellType::pyramid5>>;
 
 BACI_NAMESPACE_CLOSE

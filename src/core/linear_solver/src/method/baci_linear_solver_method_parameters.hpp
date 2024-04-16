@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef BACI_LINEAR_SOLVER_METHOD_PARAMETERS_HPP
-#define BACI_LINEAR_SOLVER_METHOD_PARAMETERS_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_METHOD_PARAMETERS_HPP
+#define FOUR_C_LINEAR_SOLVER_METHOD_PARAMETERS_HPP
 
 #include "baci_config.hpp"
 

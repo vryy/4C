@@ -16,7 +16,7 @@
 matrixToBaci[var_,name_]:=Module[{allStringsWithZeros, stringList},  
   allStringsWithZeros = Table[
     If[var[[i,j]]==0, 0,
-        ToString[StringForm["``(``,``)=``;",name,i-1,j-1,NumberForm[N[var[[i,j]]],16]]]
+        ToString[StringForm["``(``,``)=``;",name,i-1,j-1,NumberForm[N[var[[i,j]]],16,ScientificNotationThreshold->{-20,20}]]]
     ],
     {i,Dimensions[var][[1]]},{j,Dimensions[var][[2]]}];
   
@@ -26,7 +26,7 @@ matrixToBaci[var_,name_]:=Module[{allStringsWithZeros, stringList},
 vectorToBaci[var_,name_]:=Module[{allStringsWithZeros, stringList},  
   allStringsWithZeros = Table[
     If[var[[i]]==0, 0,
-        ToString[StringForm["``(``)=``;",name,i-1,NumberForm[N[var[[i]]],16]]]
+        ToString[StringForm["``(``)=``;",name,i-1,NumberForm[N[var[[i]]],16,ScientificNotationThreshold->{-20,20}]]]
     ],
     {i,Length[var]}];
   
@@ -172,7 +172,7 @@ kappa=DeleteCases[Flatten[Transpose[D[int\[Lambda],{qLambda}]]],0];
 (*Output the results.*)
 StringRiffle[{
   "// Positional DOFs of the solid.",
-  vectorToBaci[replaceSolidRef[[All,2]],"q_solid"],
+  vectorToBaci[replaceSolidRef[[All,2]],"q_solid.element_position_"],
   "\n// Results for D.",
   matrixToBaci[DD,"result_local_D"],
   "\n// Results for M.",
@@ -202,9 +202,9 @@ functionStringPre="  /**
             lambda_type>();
 
     // Definition of variables for this test case.
-    CORE::LINALG::Matrix<beam_type::n_dof_, 1> q_beam;
+    GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
+    GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
     CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::Matrix<solid_type::n_dof_, 1> q_solid;
     CORE::LINALG::SerialDenseMatrix local_D;
     CORE::LINALG::SerialDenseMatrix local_M;
     CORE::LINALG::SerialDenseVector local_kappa;
@@ -215,18 +215,19 @@ functionStringPre="  /**
     CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
-    q_beam(0) = 0.15;
-    q_beam(1) = 0.2;
-    q_beam(2) = 0.3;
-    q_beam(3) = 0.5773502691896255;
-    q_beam(4) = 0.5773502691896258;
-    q_beam(5) = 0.577350269189626;
-    q_beam(6) = 0.65;
-    q_beam(7) = 0.1;
-    q_beam(8) = 0.1;
-    q_beam(9) = 0.8017837257372733;
-    q_beam(10) = -0.5345224838248488;
-    q_beam(11) = 0.2672612419124244;
+    q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
+    q_beam.element_position_(0) = 0.15;
+    q_beam.element_position_(1) = 0.2;
+    q_beam.element_position_(2) = 0.3;
+    q_beam.element_position_(3) = 0.5773502691896255;
+    q_beam.element_position_(4) = 0.5773502691896258;
+    q_beam.element_position_(5) = 0.577350269189626;
+    q_beam.element_position_(6) = 0.65;
+    q_beam.element_position_(7) = 0.1;
+    q_beam.element_position_(8) = 0.1;
+    q_beam.element_position_(9) = 0.8017837257372733;
+    q_beam.element_position_(10) = -0.5345224838248488;
+    q_beam.element_position_(11) = 0.2672612419124244;
 
     q_beam_rot(0) = 1.674352746442651;
     q_beam_rot(1) = 0.1425949677148126;

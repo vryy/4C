@@ -106,7 +106,6 @@ void STR::AddValidStructureFunctions(CORE::UTILS::FunctionManager& function_mana
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSIStructureFunction(
     const MAT::PAR::StVenantKirchhoff& fparams)
-    : poissonratio_(fparams.poissonratio_)
 {
 }
 

@@ -9,8 +9,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BACI_STRUCTURE_NEW_EXPL_GENERIC_HPP
-#define BACI_STRUCTURE_NEW_EXPL_GENERIC_HPP
+#ifndef FOUR_C_STRUCTURE_NEW_EXPL_GENERIC_HPP
+#define FOUR_C_STRUCTURE_NEW_EXPL_GENERIC_HPP
 
 #include "baci_config.hpp"
 
@@ -140,8 +140,7 @@ namespace NOX
         {
          public:
           //! constructor
-          Generic(const STR::EXPLICIT::Generic& expl)
-              : expl_(expl), default_step_(expl.GetDefaultStepLength())
+          Generic(const STR::EXPLICIT::Generic& expl) : default_step_(expl.GetDefaultStepLength())
           {
           }
 
@@ -161,9 +160,6 @@ namespace NOX
               const double& step, const NOX::NLN::Group& curr_grp) override;
 
          private:
-          //! reference to the STR::IMPLICIT::Generic object (read-only)
-          const STR::EXPLICIT::Generic& expl_;
-
           //! default step length
           const double default_step_;
         };  // class Generic
@@ -174,4 +170,4 @@ namespace NOX
 
 BACI_NAMESPACE_CLOSE
 
-#endif  // BACI_STRUCTURE_NEW_EXPL_GENERIC_H
+#endif
