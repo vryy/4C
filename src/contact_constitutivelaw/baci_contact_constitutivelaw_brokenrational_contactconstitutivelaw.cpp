@@ -47,7 +47,7 @@ CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::BrokenRationalConstitut
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::Evaluate(
-    double gap, CONTACT::RoughNode* cnode)
+    double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0)
   {
@@ -67,7 +67,7 @@ double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::Evaluate(
  |  Calculate the derivative of the contact constitutive law|
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::EvaluateDeriv(
-    double gap, CONTACT::RoughNode* cnode)
+    double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0)
   {

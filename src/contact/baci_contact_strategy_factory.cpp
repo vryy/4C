@@ -748,6 +748,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     int randomgeneratorseed = 0;
     int hurstexponentfunction = 0;
     int initialtopologystddeviationfunction = 0;
+    bool mircolaw = false;
 
     if (contactconstitutivelaw_id != 0)
     {
@@ -757,6 +758,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           contactconstitutivelaw_id);
       if (coconstlaw->Name() == "CoConstLaw_mirco")
       {
+        mircolaw = true;
         resolution = *coconstlaw->Get<int>("Resolution");
         randomtopologyflag = *coconstlaw->Get<bool>("RandomTopologyFlag");
         randomseedflag = *coconstlaw->Get<bool>("RandomSeedFlag");
@@ -1007,7 +1009,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         else
         {
           Teuchos::RCP<CONTACT::Node> cnode;
-          if (contactconstitutivelaw_id != 0)
+          if (mircolaw == true)
           {
             cnode = Teuchos::rcp(new CONTACT::RoughNode(node->Id(), node->X(), node->Owner(),
                 Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive,

@@ -49,8 +49,7 @@ CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::PowerConstitutiveLaw(
 /*----------------------------------------------------------------------*
  |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Evaluate(
-    double gap, CONTACT::RoughNode* cnode)
+double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Evaluate(double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0)
   {
@@ -70,7 +69,7 @@ double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Evaluate(
  |  Calculate the derivative of the contact constitutive law|
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::EvaluateDeriv(
-    double gap, CONTACT::RoughNode* cnode)
+    double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0.0)
   {

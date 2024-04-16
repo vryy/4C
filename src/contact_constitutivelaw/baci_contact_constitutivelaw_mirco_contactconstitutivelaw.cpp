@@ -125,8 +125,7 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(
-    double gap, CONTACT::RoughNode* cnode)
+double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0.0)
   {
@@ -137,19 +136,22 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(
     return 0.0;
   }
 
+  RoughNode* roughNode = dynamic_cast<RoughNode*>(cnode);
+
   double pressure = 0.0;
   MIRCO::Evaluate(pressure, -(gap + params_->GetOffset()), params_->GetLateralLength(),
       params_->GetGridSize(), params_->GetTolerance(), params_->GetMaxIteration(),
       params_->GetCompositeYoungs(), params_->GetCompositePoissonsRatio(),
-      params_->GetWarmStartingFlag(), params_->GetComplianceCorrection(), *cnode->GetTopology(),
-      cnode->GetMaxTopologyHeight(), *params_->GetMeshGrid(), params_->GetPressureGreenFunFlag());
+      params_->GetWarmStartingFlag(), params_->GetComplianceCorrection(), *roughNode->GetTopology(),
+      roughNode->GetMaxTopologyHeight(), *params_->GetMeshGrid(),
+      params_->GetPressureGreenFunFlag());
 
   return (-1 * pressure);
 }  // end of mirco_coconstlaw evaluate
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(
-    double gap, CONTACT::RoughNode* cnode)
+    double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0.0)
   {
@@ -160,21 +162,25 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(
     return 0.0;
   }
 
+  RoughNode* roughNode = dynamic_cast<RoughNode*>(cnode);
+
   double pressure1 = 0.0;
   double pressure2 = 0.0;
   // using backward difference approach
   MIRCO::Evaluate(pressure1, -1.0 * (gap + params_->GetOffset()), params_->GetLateralLength(),
       params_->GetGridSize(), params_->GetTolerance(), params_->GetMaxIteration(),
       params_->GetCompositeYoungs(), params_->GetCompositePoissonsRatio(),
-      params_->GetWarmStartingFlag(), params_->GetComplianceCorrection(), *cnode->GetTopology(),
-      cnode->GetMaxTopologyHeight(), *params_->GetMeshGrid(), params_->GetPressureGreenFunFlag());
+      params_->GetWarmStartingFlag(), params_->GetComplianceCorrection(), *roughNode->GetTopology(),
+      roughNode->GetMaxTopologyHeight(), *params_->GetMeshGrid(),
+      params_->GetPressureGreenFunFlag());
   MIRCO::Evaluate(pressure2,
       -(1 - params_->GetFiniteDifferenceFraction()) * (gap + params_->GetOffset()),
       params_->GetLateralLength(), params_->GetGridSize(), params_->GetTolerance(),
       params_->GetMaxIteration(), params_->GetCompositeYoungs(),
       params_->GetCompositePoissonsRatio(), params_->GetWarmStartingFlag(),
-      params_->GetComplianceCorrection(), *cnode->GetTopology(), cnode->GetMaxTopologyHeight(),
-      *params_->GetMeshGrid(), params_->GetPressureGreenFunFlag());
+      params_->GetComplianceCorrection(), *roughNode->GetTopology(),
+      roughNode->GetMaxTopologyHeight(), *params_->GetMeshGrid(),
+      params_->GetPressureGreenFunFlag());
   return ((pressure1 - pressure2) /
           (-(params_->GetFiniteDifferenceFraction()) * (gap + params_->GetOffset())));
 }

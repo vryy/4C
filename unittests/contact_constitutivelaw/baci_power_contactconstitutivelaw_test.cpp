@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 
 #include "baci_contact_constitutivelaw_power_contactconstitutivelaw.hpp"
-#include "baci_contact_rough_node.hpp"
+#include "baci_contact_node.hpp"
 
 namespace
 {
@@ -39,7 +39,7 @@ namespace
 
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
 
-    Teuchos::RCP<CONTACT::RoughNode> cnode;
+    Teuchos::RCP<CONTACT::Node> cnode;
   };
 
   //! test member function Evaluate

@@ -114,7 +114,7 @@ namespace CONTACT
        * \param gap contact gap at the mortar node
        * \return The pressure response from MIRCO
        */
-      double Evaluate(double gap, CONTACT::RoughNode* cnode) override;
+      double Evaluate(double gap, CONTACT::Node* cnode) override;
 
       /** \brief Evaluate derivative of the constitutive law
        *
@@ -125,7 +125,7 @@ namespace CONTACT
        * \param gap contact gap at the mortar node
        * \return Derivative of the pressure responses from MIRCO
        */
-      double EvaluateDeriv(double gap, CONTACT::RoughNode* cnode) override;
+      double EvaluateDeriv(double gap, CONTACT::Node* cnode) override;
       //@}
 
      private:

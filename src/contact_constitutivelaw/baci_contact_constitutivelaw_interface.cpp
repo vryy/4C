@@ -52,7 +52,7 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("Cannot find node with gid %", gid);
-    RoughNode* cnode = dynamic_cast<RoughNode*>(node);
+    Node* cnode = dynamic_cast<Node*>(node);
 
     int dim = cnode->NumDof();
     double gap = cnode->Data().Getg();

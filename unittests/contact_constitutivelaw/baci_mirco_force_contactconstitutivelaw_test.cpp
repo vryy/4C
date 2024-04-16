@@ -97,7 +97,7 @@ namespace
     }
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
 
-    Teuchos::RCP<CONTACT::RoughNode> cnode;
+    Teuchos::RCP<CONTACT::Node> cnode;
   };  // namespace
 
 
