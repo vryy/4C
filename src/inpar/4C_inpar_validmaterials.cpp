@@ -3403,6 +3403,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     Mat::AppendMaterialDefinition(matlist, matdef);
   }
 
+  /*----------------------------------------------------------------------*/
+  // material for an elastic Kirchhoff-Love shell
+  {
+    auto matdef = Teuchos::rcp(new Mat::MaterialDefinition("MAT_Kirchhoff_Love_shell",
+        "Material for an elastic Kichhhoff-Love shell ", Core::Materials::m_shell_kirchhoff_love));
+
+    add_named_real(matdef, "YOUNG_MODULUS", "Young's modulus");
+    add_named_real(matdef, "POISSON_RATIO", "Poisson's ratio");
+    add_named_real(matdef, "THICKNESS", "Thickness of the shell");
+
+    AppendMaterialDefinition(matlist, matdef);
+  }
+
   /*--------------------------------------------------------------------*/
   // material for a crosslinker in a biopolymer simulation
   {

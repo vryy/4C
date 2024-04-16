@@ -94,6 +94,7 @@
 #include "4C_mat_scatra.hpp"
 #include "4C_mat_scatra_multiporo.hpp"
 #include "4C_mat_scatra_poro_ecm.hpp"
+#include "4C_mat_shell_kl.hpp"
 #include "4C_mat_spring.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_mat_structporo_reaction.hpp"
@@ -341,6 +342,7 @@ namespace
       << Mat::ViscoNeoHookeType::instance().name() << " " << Mat::SpringType::instance().name()
       << " " << Mat::BeamElastHyperMaterialType<double>::instance().name() << " "
       << Mat::BeamElastHyperMaterialType<Sacado::Fad::DFad<double>>::instance().name() << " "
+      << Discret::ELEMENTS::KirchhoffLoveShellNurbsType::instance().name() << " "
       << Mat::PlasticLinElastType::instance().name() << " " << Mat::RobinsonType::instance().name()
       << " " << Mat::DamageType::instance().name() << " "
       << Mat::ElectromagneticMatType::instance().name() << " "

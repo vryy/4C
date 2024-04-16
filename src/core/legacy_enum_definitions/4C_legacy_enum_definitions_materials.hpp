@@ -49,6 +49,7 @@ namespace Core::Materials
                                                        ///< beam: hyperelastic stored energy
                                                        ///< function, specified for indivual
                                                        ///< deformation modes
+    m_shell_kirchhoff_love,                            ///< material for a Kirchhoff-Love shell
     m_carreauyasuda,       ///< fluid with nonlinear viscosity according to Carreau-Yasuda
     m_cnst_art,            ///< 1D_Artery constant material properties
     m_constraintmixture,   ///< growth and remodeling of arteries
