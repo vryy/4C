@@ -45,6 +45,7 @@ void Core::Elements::ElementDefinition::print_element_dat_header_to_stream(std::
   print_element_lines(stream, "NSTET5");
   print_element_lines(stream, "SHELL7P");
   print_element_lines(stream, "SHELL7PSCATRA");
+  print_element_lines(stream, "SHELL_KIRCHHOFF_LOVE_NURBS");
   print_element_lines(stream, "SOLID");
   print_element_lines(stream, "SOLIDPORO");
   print_element_lines(stream, "SOLIDSCATRA");
