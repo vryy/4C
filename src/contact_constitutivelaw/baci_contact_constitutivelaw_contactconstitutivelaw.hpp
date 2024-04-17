@@ -17,7 +17,7 @@ contact pressure based on micro interactions
 #include "baci_config.hpp"
 
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
-#include "baci_contact_rough_node.hpp"
+#include "baci_contact_node.hpp"
 
 #include <Teuchos_RCP.hpp>
 

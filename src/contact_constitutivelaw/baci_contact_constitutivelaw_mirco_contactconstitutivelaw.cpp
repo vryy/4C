@@ -8,6 +8,7 @@
 
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"
 
+#include "baci_contact_rough_node.hpp"
 #include "baci_global_data.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"

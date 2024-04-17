@@ -12,6 +12,7 @@ function
 #include <gtest/gtest.h>
 
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"
+#include "baci_contact_rough_node.hpp"
 #include "baci_global_data.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_utils_function.hpp"

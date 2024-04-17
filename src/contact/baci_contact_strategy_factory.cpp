@@ -742,13 +742,16 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
     int contactconstitutivelaw_id = *currentgroup[0]->Get<int>("ConstitutiveLawID");
 
+    bool mircolaw = false;
+
+#ifdef BACI_WITH_MIRCO
+
     int resolution = 0;
     bool randomtopologyflag = false;
     bool randomseedflag = false;
     int randomgeneratorseed = 0;
     int hurstexponentfunction = 0;
     int initialtopologystddeviationfunction = 0;
-    bool mircolaw = false;
 
     if (contactconstitutivelaw_id != 0)
     {
@@ -768,6 +771,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
             *coconstlaw->Get<int>("InitialTopologyStdDeviationFunct");
       }
     }
+
+#endif
 
     // find out which sides are Master and Slave
     std::vector<bool> isslave(0);
@@ -1011,10 +1016,12 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           Teuchos::RCP<CONTACT::Node> cnode;
           if (mircolaw == true)
           {
+#ifdef BACI_WITH_MIRCO
             cnode = Teuchos::rcp(new CONTACT::RoughNode(node->Id(), node->X(), node->Owner(),
                 Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive,
                 hurstexponentfunction, initialtopologystddeviationfunction, resolution,
                 randomtopologyflag, randomseedflag, randomgeneratorseed));
+#endif
           }
           else
           {
