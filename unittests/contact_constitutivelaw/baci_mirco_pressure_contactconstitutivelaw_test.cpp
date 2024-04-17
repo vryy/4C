@@ -19,7 +19,7 @@ function
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class MircoConstitutiveLawPressureTest : public ::testing::Test
   {

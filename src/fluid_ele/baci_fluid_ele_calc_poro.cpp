@@ -27,7 +27,7 @@
 #include "baci_nurbs_discret_nurbs_utils.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 #define STAB
 
@@ -6873,4 +6873,4 @@ template class DRT::ELEMENTS::FluidEleCalcPoro<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

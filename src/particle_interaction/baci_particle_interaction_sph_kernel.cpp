@@ -13,7 +13,7 @@
 #include "baci_particle_interaction_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -256,4 +256,4 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::d2Wdrij2(
     return 0.0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

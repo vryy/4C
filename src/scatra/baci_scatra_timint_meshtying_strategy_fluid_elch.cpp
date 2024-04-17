@@ -12,7 +12,7 @@
 
 #include "baci_fluid_meshtying.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
@@ -72,4 +72,4 @@ void SCATRA::MeshtyingStrategyFluidElch::InitConvCheckStrategy()
   return;
 }  // SCATRA::MeshtyingStrategyFluidElch::InitConvCheckStrategy
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

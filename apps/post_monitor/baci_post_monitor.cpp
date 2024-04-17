@@ -27,7 +27,7 @@
 #include <fstream>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
     int node)
     : myrank_(problem.comm()->MyPID())  // get my processor id
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // determine the owner of the node
   nodeowner_ = false;
@@ -76,7 +76,7 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int node)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // create my output file
   std::string filename = problem.outname() + ".mon";
@@ -242,7 +242,7 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
     std::string& infieldtype, const std::string strname, const std::string strtype,
     std::vector<std::string> groupnames, int node)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // create my output file
   std::ofstream outfile;
@@ -386,7 +386,7 @@ void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& proble
     std::string& infieldtype, const std::string thrname, const std::string thrtype,
     std::vector<std::string> groupnames, int node)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // create my output file
   std::ofstream outfile;
@@ -867,7 +867,7 @@ void StructMonWriter::WriteStrResults(std::ofstream& outfile, PostProblem& probl
 void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, PostResult& result,
     const std::string groupname, const std::string name, const int numdf, const int node) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // get stresses/strains at Gauss points
   const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
@@ -1523,7 +1523,7 @@ void ThermoMonWriter::WriteThrResults(std::ofstream& outfile, PostProblem& probl
 void ThermoMonWriter::WriteThrResult(std::ofstream& outfile, PostField*& field, PostResult& result,
     const std::string groupname, const std::string name, const int dim, const int node) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // get heatfluxes/temperature gradients at Gauss points
   const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
@@ -1779,7 +1779,7 @@ void PoroMultiElastScatraArteryScatraMonWriter::WriteHeader(std::ofstream& outfi
   outfile << "# PoroMultiElastScatra problem, writing nodal data of artery_scatra node ";
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 /*!
  * \brief filter main routine for monitoring filter
@@ -1793,7 +1793,7 @@ BACI_NAMESPACE_CLOSE
  */
 int main(int argc, char** argv)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // command line processor to deal with arguments
   Teuchos::CommandLineProcessor my_comlinproc;

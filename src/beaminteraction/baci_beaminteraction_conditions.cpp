@@ -25,7 +25,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_so3_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -358,4 +358,4 @@ void BEAMINTERACTION::ConditionToElementIds(
     dserror("Could not find the IDs of all elements!");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

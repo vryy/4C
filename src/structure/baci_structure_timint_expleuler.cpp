@@ -18,7 +18,7 @@
 #include "baci_mortar_manager_base.hpp"
 #include "baci_mortar_strategy_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -294,4 +294,4 @@ void STR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWrit
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -49,7 +49,7 @@ table. This table can be queried for those values quite easily.
 #include <cstring>
 #include <string_view>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -1593,4 +1593,4 @@ void parse_control_file(MAP* map, const char* filename, MPI_Comm comm)
   destroy_parser_data(&data);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

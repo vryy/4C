@@ -32,7 +32,7 @@ namespace NOX
   }
 }  // namespace NOX
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -171,6 +171,6 @@ namespace STR
 }  // namespace STR
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

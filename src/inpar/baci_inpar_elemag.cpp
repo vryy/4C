@@ -14,7 +14,7 @@
 #include "baci_linalg_equilibrate.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -161,4 +161,4 @@ void INPAR::ELEMAG::SetValidConditions(
   condlist.push_back(silvermueller_surface);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

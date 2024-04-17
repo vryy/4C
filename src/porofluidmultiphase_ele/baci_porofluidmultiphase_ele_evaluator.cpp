@@ -15,7 +15,7 @@
 #include "baci_porofluidmultiphase_ele_variablemanager.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |
@@ -5608,4 +5608,4 @@ template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<3, 10>;
 // pyramid5
 template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<3, 5>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

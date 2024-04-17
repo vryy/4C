@@ -14,7 +14,7 @@
 
 #include "baci_linalg_sparsematrix.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -678,6 +678,6 @@ inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

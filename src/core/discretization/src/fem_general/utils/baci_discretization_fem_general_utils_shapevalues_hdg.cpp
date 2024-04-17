@@ -12,7 +12,7 @@
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -677,4 +677,4 @@ template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::tri6>;
 template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::nurbs9>;
 template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

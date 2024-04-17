@@ -18,7 +18,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
@@ -534,4 +534,4 @@ void Myocard_Minimal::ResizeInternalStateVariables(int gp)
  *----------------------------------------------------------------------*/
 int Myocard_Minimal::GetNumberOfGP() const { return v_.size(); };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

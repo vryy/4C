@@ -15,7 +15,7 @@
 #include "baci_cut_output.hpp"
 #include "baci_cut_side.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -308,4 +308,4 @@ Teuchos::RCP<CORE::GEO::CUT::FacetGraph> CORE::GEO::CUT::FacetGraph::Create(
   return fg;
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

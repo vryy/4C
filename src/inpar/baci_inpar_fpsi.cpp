@@ -12,7 +12,7 @@
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -175,4 +175,4 @@ void INPAR::FPSI::SetValidConditions(
   condlist.push_back(neumannintegration_line);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

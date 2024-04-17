@@ -25,7 +25,7 @@
 
 #include <Epetra_Vector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/12 |
@@ -192,6 +192,6 @@ namespace TSI
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

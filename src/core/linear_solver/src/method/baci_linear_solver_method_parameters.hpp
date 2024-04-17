@@ -15,7 +15,7 @@
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterListAcceptor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -53,6 +53,6 @@ namespace CORE::LINEAR_SOLVER
   };
 }  // namespace CORE::LINEAR_SOLVER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

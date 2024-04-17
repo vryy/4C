@@ -17,7 +17,7 @@
 #include "baci_mat_material.hpp"
 #include "baci_matelast_summand.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 MAT::PAR::Bundle::Bundle() : materialreadfromproblem_(0) {}
@@ -103,4 +103,4 @@ int MAT::PAR::Bundle::FirstIdByType(const INPAR::MAT::MaterialType type) const
   return id;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

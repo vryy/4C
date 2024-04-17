@@ -35,7 +35,7 @@
 #include "baci_nurbs_discret_control_point.hpp"
 #include "baci_nurbs_discret_knotvector.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -499,4 +499,4 @@ void WEAR::Algorithm::CreateMaterialInterface()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

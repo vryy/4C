@@ -39,7 +39,7 @@
 #include "baci_inpar_xfem.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 void INPUT::PrintEmptyConditionDefinitions(
@@ -1108,4 +1108,4 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> INPUT::Valid
   return vc;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

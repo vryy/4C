@@ -22,7 +22,7 @@
 #include "baci_so3_plast_ssn_eletypes.hpp"
 #include "baci_thermo_ele_impl_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 07/13 |
@@ -1178,6 +1178,6 @@ namespace DRT
 }  // namespace DRT
 
 /*----------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

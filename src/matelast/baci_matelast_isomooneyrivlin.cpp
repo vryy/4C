@@ -10,7 +10,7 @@
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::IsoMooneyRivlin::IsoMooneyRivlin(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -45,4 +45,4 @@ void MAT::ELASTIC::IsoMooneyRivlin::AddDerivativesModified(CORE::LINALG::Matrix<
   dPmodI(0) += c1;
   dPmodI(1) += c2;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

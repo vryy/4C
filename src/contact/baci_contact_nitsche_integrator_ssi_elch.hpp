@@ -14,7 +14,7 @@ electrochemistry
 
 #include "baci_contact_nitsche_integrator_ssi.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
@@ -298,6 +298,6 @@ namespace CONTACT
     static constexpr int numdofpernode_ = 2;
   };
 }  // namespace CONTACT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

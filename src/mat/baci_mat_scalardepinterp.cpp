@@ -24,7 +24,7 @@ MAT 1 MAT_ScalarDepInterp IDMATZEROSC 2 IDMATUNITSC 3
 #include "baci_global_data.hpp"
 #include "baci_mat_par_bundle.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -380,4 +380,4 @@ void MAT::ScalarDepInterp::StrainEnergy(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

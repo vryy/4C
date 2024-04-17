@@ -18,7 +18,7 @@
 #include "baci_lib_condition.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
@@ -201,6 +201,6 @@ namespace INPAR
   }  // namespace BEAMTOSOLID
 }  // namespace INPAR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

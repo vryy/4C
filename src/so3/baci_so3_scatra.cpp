@@ -16,7 +16,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_lib_element_integration_select.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 03/12|
@@ -252,4 +252,4 @@ template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellT
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, CORE::FE::CellType::wedge6>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

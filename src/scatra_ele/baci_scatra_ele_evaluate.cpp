@@ -22,7 +22,7 @@
 #include "baci_scatra_ele_parameter_timint.hpp"
 #include "baci_scatra_ele_parameter_turbulence.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -326,4 +326,4 @@ int DRT::ELEMENTS::Transport::EvaluateNeumann(Teuchos::ParameterList& params,
   return 0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

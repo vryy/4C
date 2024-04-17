@@ -19,7 +19,7 @@
 #include <Epetra_Map.h>
 #include <NOX_Solver_Generic.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -126,4 +126,4 @@ std::ostream& NOX::NLN::StatusTest::ActiveSet::print(std::ostream& stream, int i
   return stream;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

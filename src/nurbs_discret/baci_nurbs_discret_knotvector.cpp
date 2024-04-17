@@ -10,7 +10,7 @@
 
 #include "baci_nurbs_discret_knotvector.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::NURBS::KnotvectorObjectType DRT::NURBS::KnotvectorObjectType::instance_;
@@ -1088,4 +1088,4 @@ void DRT::NURBS::Knotvector::Print(std::ostream& os) const
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

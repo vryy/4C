@@ -18,7 +18,7 @@
 #include <stack>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*
 Functions to catch implementation erros in debug mode
@@ -931,4 +931,4 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
 template class CORE::GEO::CUT::ConcreteEdge<2, CORE::FE::CellType::line2>;
 template class CORE::GEO::CUT::ConcreteEdge<3, CORE::FE::CellType::line2>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

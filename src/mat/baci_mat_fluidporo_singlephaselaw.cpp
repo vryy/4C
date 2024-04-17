@@ -14,7 +14,7 @@
 #include "baci_mat_par_bundle.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -510,4 +510,4 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressureInternal(double
       .Evaluate(S_, {}, 0);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

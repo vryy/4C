@@ -40,7 +40,7 @@ namespace Teuchos
   class RCP;
 }  // namespace Teuchos
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 class PostProblem;
 
@@ -2257,6 +2257,6 @@ std::ostream& operator<<(std::ostream& os, const DRT::Discretization& dis);
 
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -19,7 +19,7 @@
 
 #include <sstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -190,4 +190,4 @@ void FSI::UTILS::MonolithicDebugWriter::WriteVector(
   ale_writer_->WriteVector(name, a);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

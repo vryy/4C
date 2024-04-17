@@ -18,7 +18,7 @@
 #include "baci_geometry_pair_element_shape_functions.hpp"
 #include "baci_geometry_pair_utility_functions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -418,6 +418,6 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

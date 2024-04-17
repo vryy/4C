@@ -21,7 +21,7 @@ mixture fibers
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   TEST(TimestepAdaptivityTest, EmplaceBack)
   {

@@ -17,7 +17,7 @@ volumetric contribution.
 #include "baci_mat_par_material.hpp"
 #include "baci_mat_service.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -213,4 +213,4 @@ bool MAT::ELASTIC::IsoVolAAAGasser::VisData(
   return true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

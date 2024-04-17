@@ -14,7 +14,7 @@
 #include "baci_global_data.hpp"
 #include "baci_mat_par_bundle.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
@@ -114,4 +114,4 @@ double MAT::PAR::FluidPoroViscosityLawCellAdherence::GetDerivOfViscosityWrtAbsPr
            ((xi_ - 1.0) * psi_ + abspressgrad);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

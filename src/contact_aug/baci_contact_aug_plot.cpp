@@ -32,7 +32,7 @@ MATLAB, PGFPlot or other tools.
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1409,7 +1409,7 @@ void CONTACT::AUG::WriteMatrixToFile(std::ofstream& outputfile, const T& mat, co
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Solver::PrePostOp::CONTACT::Plot::Plot(
-    const Teuchos::RCP<BACI::CONTACT::AUG::Plot>& plot_ptr)
+    const Teuchos::RCP<FourC::CONTACT::AUG::Plot>& plot_ptr)
     : plot_ptr_(plot_ptr), plot_(*plot_ptr_)
 { /* empty */
 }
@@ -1435,4 +1435,4 @@ template void CONTACT::AUG::WriteColumnDataToFile<CORE::LINALG::SerialDenseMatri
     std::ofstream& outputfile, const std::vector<const CORE::LINALG::SerialDenseMatrix*>& mat,
     const unsigned precision);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@
 #include "baci_inpar_scatra.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -113,4 +113,4 @@ void INPAR::PORO_SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   CORE::UTILS::BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &poroscatradyn);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

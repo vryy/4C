@@ -27,7 +27,7 @@
 #include "baci_linalg_utils_sparse_algebra_print.hpp"
 #include "baci_rebalance.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1602,4 +1602,4 @@ void PeriodicBoundaryConditions::BalanceLoad()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

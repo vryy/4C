@@ -12,7 +12,7 @@
 
 #include "baci_particle_engine_object.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -55,4 +55,4 @@ void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<d
       std::make_shared<PARTICLEENGINE::ParticleObject>(particletype, -1, particlestates));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

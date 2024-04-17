@@ -26,7 +26,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 
@@ -375,6 +375,6 @@ namespace STRUMULTI
     MicroStaticData microstatic_data_{};
   };
 }  // namespace STRUMULTI
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

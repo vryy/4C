@@ -12,7 +12,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------*
  * add this background element if it falls within the bounding box of cut mesh
@@ -360,4 +360,4 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::GetCutSide(int sid
   return cut_mesh_[mi]->GetSide(sid);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

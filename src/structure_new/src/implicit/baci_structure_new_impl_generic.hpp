@@ -19,7 +19,7 @@
 // required because of used enums
 #include <NOX_Abstract_Vector.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
 namespace CORE::LINALG
@@ -329,6 +329,6 @@ namespace NOX
 }  // namespace NOX
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -15,7 +15,7 @@ c++20 ranges::views
 
 #include <iterator>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace std_20  // NOLINT
 {
@@ -51,6 +51,6 @@ namespace std_20  // NOLINT
   }  // namespace ranges::views
 }  // namespace std_20
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

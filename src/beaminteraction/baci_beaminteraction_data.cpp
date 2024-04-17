@@ -16,7 +16,7 @@
 #include "baci_global_data.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -297,4 +297,4 @@ bool BEAMINTERACTION::DATA::BspotLinkerData::SameAs(BspotLinkerData bspotlinker)
   return false;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

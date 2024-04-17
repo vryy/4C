@@ -20,7 +20,7 @@
 
 #include "baci_thermo_timint_impl.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -301,6 +301,6 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

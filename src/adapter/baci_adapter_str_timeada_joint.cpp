@@ -28,7 +28,7 @@
 
 #include <tuple>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -244,4 +244,4 @@ void ADAPTER::StructureTimeAdaJoint::ResetStep()
   sta_->ResetStep();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -10,7 +10,7 @@
 
 #include "baci_mixture_growth_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::IsotropicGrowthStrategy::IsotropicGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -46,4 +46,4 @@ void MIXTURE::IsotropicGrowthStrategy::EvaluateGrowthStressCmat(
   S_stress.Clear();
   cmat.Clear();
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

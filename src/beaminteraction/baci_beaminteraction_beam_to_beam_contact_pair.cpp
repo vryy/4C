@@ -35,7 +35,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // TODO: Abfangen, dass Kontaktpunkte am Elementuebergang zweimal ausgewertet werden!!!
 
@@ -5448,4 +5448,4 @@ template class BEAMINTERACTION::BeamToBeamContactPair<4, 1>;
 template class BEAMINTERACTION::BeamToBeamContactPair<5, 1>;
 template class BEAMINTERACTION::BeamToBeamContactPair<2, 2>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

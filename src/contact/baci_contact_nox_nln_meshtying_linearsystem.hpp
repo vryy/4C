@@ -17,7 +17,7 @@
 #include "baci_solver_nonlin_nox_constraint_interface_required.hpp"
 #include "baci_solver_nonlin_nox_linearsystem.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace MORTAR
@@ -86,6 +86,6 @@ namespace NOX
 }  // namespace NOX
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

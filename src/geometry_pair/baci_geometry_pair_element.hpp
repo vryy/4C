@@ -27,7 +27,7 @@ and other data are evaluated
 
 #include <type_traits>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -589,6 +589,6 @@ namespace GEOMETRYPAIR
   };
 }  // namespace GEOMETRYPAIR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

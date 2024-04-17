@@ -18,7 +18,7 @@
 #include "baci_contact_integrator.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MORTAR
 {
@@ -525,6 +525,6 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

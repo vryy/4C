@@ -30,7 +30,7 @@
 class Epetra_Vector;
 class Epetra_MultiVector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 class PostField;
 class PostResult;
 
@@ -205,6 +205,6 @@ class PostVtkWriter : public PostWriterBase
   bool write_binary_output_;
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

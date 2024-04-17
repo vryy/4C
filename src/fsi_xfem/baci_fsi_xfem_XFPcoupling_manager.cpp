@@ -17,7 +17,7 @@
 #include "baci_poroelast_base.hpp"
 #include "baci_xfem_condition_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 XFEM::XFPCoupling_Manager::XFPCoupling_Manager(Teuchos::RCP<XFEM::ConditionManager> condmanager,
     Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)
@@ -396,4 +396,4 @@ double XFEM::XFPCoupling_Manager::GetInterfaceTimefac()
     return 1. / dt;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

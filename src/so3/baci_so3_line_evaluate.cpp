@@ -19,7 +19,7 @@
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*-----------------------------------------------------------------------*
@@ -173,4 +173,4 @@ void DRT::ELEMENTS::StructuralLine::LineIntegration(double& dL,
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

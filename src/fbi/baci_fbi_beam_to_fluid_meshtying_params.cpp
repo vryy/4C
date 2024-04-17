@@ -15,7 +15,7 @@
 #include "baci_inpar_geometry_pair.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /**
  *
@@ -91,4 +91,4 @@ void FBI::BeamToFluidMeshtyingParams::Setup()
   issetup_ = true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

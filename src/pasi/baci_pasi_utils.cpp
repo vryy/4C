@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "baci_pasi_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -96,4 +96,4 @@ void PASI::UTILS::Logo()
             << std::endl;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

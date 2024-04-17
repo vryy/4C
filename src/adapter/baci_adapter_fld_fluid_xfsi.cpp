@@ -27,7 +27,7 @@
 #include <set>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
@@ -244,4 +244,4 @@ void ADAPTER::XFluidFSI::GmshOutput(const std::string& name,  ///< name for outp
   dserror("Gmsh output for XFSI during Newton currently not available.");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

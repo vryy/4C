@@ -13,7 +13,7 @@
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void CORE::REBALANCE::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
 {
@@ -68,4 +68,4 @@ void CORE::REBALANCE::UTILS::PrintParallelDistribution(const DRT::Discretization
     }
   }
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

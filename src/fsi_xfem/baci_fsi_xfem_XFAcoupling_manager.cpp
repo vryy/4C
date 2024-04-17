@@ -14,7 +14,7 @@
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_xfem_condition_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |
@@ -155,4 +155,4 @@ void XFEM::XFACoupling_Manager::AddCouplingRHS(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

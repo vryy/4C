@@ -16,7 +16,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace RTD
 {
@@ -74,6 +74,6 @@ namespace RTD
 
 }  // namespace RTD
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

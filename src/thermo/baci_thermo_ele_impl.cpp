@@ -31,7 +31,7 @@
 
 #include <algorithm>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)
 {
@@ -3645,4 +3645,4 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateReactiveTerm(
 }
 #endif  // CALCSTABILOFREACTTERM
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

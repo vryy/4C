@@ -22,7 +22,7 @@
 #include <fstream>
 #include <iomanip>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -273,4 +273,4 @@ double DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::CalculateEleLength(
 // 1D elements
 template class DRT::ELEMENTS::ArteryEleCalcPresBased<CORE::FE::CellType::line2>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

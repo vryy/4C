@@ -34,7 +34,7 @@
 
 #include <typeinfo>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -290,4 +290,4 @@ void FSI::MonolithicLinearSystem::softreset(Teuchos::ParameterList& linearSolver
 #endif
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@
 #include "baci_lib_condition.hpp"
 #include "baci_scatra_ele_boundary_calc_elch_electrode_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 // forward declaration
@@ -141,6 +141,6 @@ namespace DRT::ELEMENTS
 
 }  // namespace DRT::ELEMENTS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

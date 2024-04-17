@@ -37,7 +37,7 @@ interaction.
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,
@@ -323,4 +323,4 @@ void ADAPTER::FBIConstraintenforcer::SetBinning(Teuchos::RCP<BINSTRATEGY::Binnin
   geometrycoupler_->SetBinning(binning);
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

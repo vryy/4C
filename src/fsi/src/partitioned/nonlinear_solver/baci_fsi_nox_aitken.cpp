@@ -24,7 +24,7 @@
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 NOX::FSI::AitkenRelaxation::AitkenRelaxation(
     const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params)
@@ -153,4 +153,4 @@ bool NOX::FSI::AitkenRelaxation::compute(::NOX::Abstract::Group& grp, double& st
 
 double NOX::FSI::AitkenRelaxation::GetOmega() { return 1. - nu_; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

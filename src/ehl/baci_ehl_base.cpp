@@ -30,7 +30,7 @@ algorithms
 
 #include <Epetra_MultiVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                     (public) wirtz 12/15 |
@@ -832,4 +832,4 @@ void EHL::Base::Output(bool forced_writerestart)
   lubrication_->LubricationField()->Discretization()->ClearState(true);
 }  // Output()
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

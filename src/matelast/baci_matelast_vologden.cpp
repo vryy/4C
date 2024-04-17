@@ -12,7 +12,7 @@ Mechanics, 2000"
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::VolOgden::VolOgden(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -72,4 +72,4 @@ void MAT::ELASTIC::VolOgden::Add3rdVolDeriv(
   else
     d3PsiVolDJ3 += kappa * (-3. + 2. * std::log(modinv(2))) / (modinv(2) * modinv(2) * modinv(2));
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

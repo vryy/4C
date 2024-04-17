@@ -17,7 +17,7 @@
 
 #include <cmath>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MIXTURE
 {
@@ -75,6 +75,6 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

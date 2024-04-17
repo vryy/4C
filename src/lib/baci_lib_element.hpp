@@ -27,7 +27,7 @@
 #include <memory>
 #include <variant>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace MAT
@@ -1501,6 +1501,6 @@ std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);
 
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

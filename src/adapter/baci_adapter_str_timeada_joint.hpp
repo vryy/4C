@@ -16,7 +16,7 @@
 
 #include "baci_adapter_str_timeada.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace STR::TIMINT
@@ -98,6 +98,6 @@ namespace ADAPTER
 
 }  // namespace ADAPTER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

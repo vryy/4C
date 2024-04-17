@@ -20,7 +20,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -250,4 +250,4 @@ bool DRT::ELEMENTS::So_tet4av::VisData(const std::string& name, std::vector<doub
   return SolidMaterial()->VisData(name, data, NUMGPT_SOTET4av, this->Id());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -15,7 +15,7 @@
 #include "baci_mortar_element.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -403,4 +403,4 @@ template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::
 template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
     CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs4>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

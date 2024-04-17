@@ -16,7 +16,7 @@ within isothermal electrodes
 #include "baci_scatra_ele_utils_elch_electrode.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -310,4 +310,4 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tet
 template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tet10, 3>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::pyramid5, 3>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@
 
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace BEAMINTERACTION
 {
@@ -66,6 +66,6 @@ namespace BEAMINTERACTION
 
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

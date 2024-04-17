@@ -18,7 +18,7 @@
 #include "baci_mat_structporo.hpp"
 #include "baci_poroelast_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
@@ -307,4 +307,4 @@ template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad9>;
 template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs4>;
 template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs9>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

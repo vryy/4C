@@ -19,7 +19,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -117,4 +117,4 @@ NOX::NLN::SolutionType NOX::NLN::STR::LinearSystem::GetActiveLinSolver(
   return NOX::NLN::sol_structure;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

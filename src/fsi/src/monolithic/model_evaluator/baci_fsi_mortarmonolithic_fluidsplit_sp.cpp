@@ -40,7 +40,7 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 #include <Epetra_Comm.h>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -1371,4 +1371,4 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::CreateNodeOwnerRelationship(
   dserror("Not implemented, yet.");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

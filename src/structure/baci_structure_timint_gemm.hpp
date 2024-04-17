@@ -14,7 +14,7 @@
 
 #include "baci_structure_timint_impl.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
@@ -330,6 +330,6 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

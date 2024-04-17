@@ -25,7 +25,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1391,4 +1391,4 @@ SSI::UTILS::SSIMeshTyingHandler::SSIMeshTyingHandler(
       Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*slave_master_coupling_));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

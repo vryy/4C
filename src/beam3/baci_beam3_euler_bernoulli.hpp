@@ -95,7 +95,7 @@ dserror(
 dserror(Flag INEXTENSIBLE only possible in combination with flag ANS_BEAM3EB !);
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS
 {
@@ -608,6 +608,6 @@ namespace DRT::ELEMENTS
 
 }  // namespace DRT::ELEMENTS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

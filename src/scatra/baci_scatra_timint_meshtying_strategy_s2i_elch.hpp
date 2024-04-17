@@ -16,7 +16,7 @@
 #include "baci_scatra_timint_elch.hpp"
 #include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace SCATRA
 {
@@ -344,6 +344,6 @@ namespace SCATRA
     std::vector<CORE::LINALG::Matrix<nen_master_, 1>> eelchnp_master_;
   };  // class MortarCellCalcSTIElch
 }  // namespace SCATRA
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

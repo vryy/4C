@@ -27,7 +27,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -2255,4 +2255,4 @@ CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapperFactory::Create()
   return S;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

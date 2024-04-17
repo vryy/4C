@@ -14,11 +14,11 @@
 #include "baci_fsi_monolithicinterface.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::FSI::Group::Group(BACI::FSI::MonolithicInterface& mfsi, Teuchos::ParameterList& printParams,
+NOX::FSI::Group::Group(FourC::FSI::MonolithicInterface& mfsi, Teuchos::ParameterList& printParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
     const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys)
     : ::NOX::Epetra::Group(printParams, i, x, linSys), mfsi_(mfsi)
@@ -91,4 +91,4 @@ void NOX::FSI::Group::CaptureSystemState()
   return status;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

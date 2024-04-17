@@ -17,7 +17,7 @@
 
 #include <Epetra_MpiComm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -103,4 +103,4 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discre
   discret->Comm().Barrier();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

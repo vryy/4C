@@ -10,7 +10,7 @@
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::PAR::Material::Material(
@@ -37,4 +37,4 @@ void MAT::PAR::Material::Print(std::ostream& os) const
   INPAR::InputParameterContainer::Print(os);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

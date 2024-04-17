@@ -16,7 +16,7 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -366,4 +366,4 @@ DRT::ELEMENTS::So_sh8::sosh8_derivs_sdc()
   return derivs;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

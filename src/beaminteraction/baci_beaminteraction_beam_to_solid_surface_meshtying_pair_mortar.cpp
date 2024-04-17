@@ -17,7 +17,7 @@
 #include "baci_geometry_pair_element_faces.hpp"
 #include "baci_geometry_pair_line_to_surface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -302,4 +302,4 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
   return Teuchos::null;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

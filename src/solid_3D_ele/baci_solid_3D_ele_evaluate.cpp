@@ -23,7 +23,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "baci_structure_new_elements_paramsinterface.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -293,4 +293,4 @@ DRT::ELEMENTS::Solid::GetCauchyNDirAndDerivativesAtXi<2>(const std::vector<doubl
     const CORE::LINALG::Matrix<2, 1>& xi, const CORE::LINALG::Matrix<2, 1>& n,
     const CORE::LINALG::Matrix<2, 1>& dir);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

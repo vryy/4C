@@ -21,7 +21,7 @@
 #include "baci_solver_nonlin_nox_group.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace STR
@@ -144,6 +144,6 @@ namespace NOX
   }       // namespace NLN
 }  // end namespace  NOX
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

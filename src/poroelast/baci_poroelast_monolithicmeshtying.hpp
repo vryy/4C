@@ -19,7 +19,7 @@
 
 #include "baci_poroelast_monolithic.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ADAPTER
 {
@@ -89,6 +89,6 @@ namespace POROELAST
   };
 }  // namespace POROELAST
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

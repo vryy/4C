@@ -15,7 +15,7 @@
 #include "baci_lib_elementtype.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -160,4 +160,4 @@ void CORE::LINEAR_SOLVER::Parameters::FixNullSpace(std::string field, const Epet
   params.set("null space: vectors", nullspaceNew->Values());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

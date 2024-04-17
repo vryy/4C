@@ -14,7 +14,7 @@
 #include "baci_io_inputreader.hpp"
 #include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void MAT::ReadAnisotropyFiber(
     INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& fiber_vector)
@@ -190,4 +190,4 @@ template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<6, 1>, 2>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
     std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 2>>& vct);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -18,7 +18,7 @@
 #include "baci_mat_par_parameter.hpp"
 #include "baci_mixture_prestress_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace MAT
@@ -88,6 +88,6 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

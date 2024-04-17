@@ -18,7 +18,7 @@
 #include "baci_structure_new_model_evaluator.hpp"
 #include "baci_structure_new_timint_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -234,4 +234,4 @@ bool STR::PREDICT::Generic::PreApplyForceExternal(Epetra_Vector& fextnp) const
   return false;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

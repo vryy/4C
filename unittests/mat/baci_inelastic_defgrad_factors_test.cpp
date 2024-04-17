@@ -18,7 +18,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class InelasticDefgradFactorsTest : public ::testing::Test
   {

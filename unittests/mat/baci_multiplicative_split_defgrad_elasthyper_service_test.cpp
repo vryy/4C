@@ -16,7 +16,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class MultiplicativeSplitDefgradElastHyperServiceTest : public ::testing::Test
   {

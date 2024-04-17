@@ -13,7 +13,7 @@
 #include "baci_comm_parobjectfactory.hpp"
 #include "baci_lib_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -163,6 +163,6 @@ namespace DRT
 
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

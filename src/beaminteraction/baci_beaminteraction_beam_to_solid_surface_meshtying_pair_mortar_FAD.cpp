@@ -26,7 +26,7 @@ evaluated with FAD.
 
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /**
  *
@@ -1132,4 +1132,4 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
   return Teuchos::null;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

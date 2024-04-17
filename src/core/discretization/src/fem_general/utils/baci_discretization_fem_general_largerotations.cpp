@@ -11,7 +11,7 @@
 
 #include "baci_discretization_fem_general_largerotations.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*/
@@ -44,4 +44,4 @@ unsigned int CORE::LARGEROTATIONS::NumberingTrafo(const unsigned int j, const un
   return i;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

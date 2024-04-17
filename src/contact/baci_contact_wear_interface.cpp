@@ -29,7 +29,7 @@
 
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 09/13|
@@ -4229,4 +4229,4 @@ void WEAR::WearInterface::UpdateWSets(int offset_if, int maxdofwear, bool bothdi
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

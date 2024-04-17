@@ -25,7 +25,7 @@
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -807,4 +807,4 @@ template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellTy
 // template class
 // DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -24,7 +24,7 @@
 
 #include <Epetra_Comm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -187,4 +187,4 @@ const STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::PartitionedFSI::GetInOutput(
   return GInOutput();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

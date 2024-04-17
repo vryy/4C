@@ -11,10 +11,10 @@
 
 #include "baci_lib_elementtype.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ElementType::ElementType() : ParObjectType() {}
 
 int DRT::ElementType::Initialize(DRT::Discretization& dis) { return 0; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

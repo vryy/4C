@@ -11,7 +11,7 @@
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::GeneralizedGenMax::GeneralizedGenMax(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -93,4 +93,4 @@ MAT::ELASTIC::ViscoPart::ViscoPart(MAT::ELASTIC::PAR::ViscoPart* params) : param
 
 void MAT::ELASTIC::ViscoPart::ReadMaterialParameters(double& tau) { tau = params_->tau_; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

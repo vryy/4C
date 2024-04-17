@@ -22,7 +22,7 @@
 #include "baci_utils_exceptions.hpp"
 
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /*======================================================================*/
@@ -161,4 +161,4 @@ void CONTACT::CONSTITUTIVELAW::AppendCoConstLawComponentDefinition(
     dserror("Trouble in determining coincidences of contact constitutive definitions");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

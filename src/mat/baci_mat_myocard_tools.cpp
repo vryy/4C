@@ -13,7 +13,7 @@
 
 #include <math.h> /* tanh, log */
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
@@ -42,4 +42,4 @@ double Myocard_Tools::GatingVarCalc(
   return y_1;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

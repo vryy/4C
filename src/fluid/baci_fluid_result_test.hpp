@@ -19,7 +19,7 @@
 
 #include <Epetra_Vector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -72,6 +72,6 @@ namespace FLD
 }  // namespace FLD
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

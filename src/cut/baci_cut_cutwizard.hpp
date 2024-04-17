@@ -20,7 +20,7 @@ surface meshes
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -390,6 +390,6 @@ namespace CORE::GEO
   };  // class CutWizard
 }  // namespace CORE::GEO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -14,7 +14,7 @@
 #include "baci_fluid_impedancecondition.hpp"
 #include "baci_fluid_implicit_integration.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
@@ -39,4 +39,4 @@ std::vector<double> ADAPTER::FluidACFSI::GetWindkesselErrors()
   return fluidimpl_->ImpedanceBC_()->getWKrelerrors();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -34,7 +34,7 @@
 
 #include <Epetra_Vector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -411,4 +411,4 @@ void STR::ComputeGeneralizedAlphaParameters(STR::IMPLICIT::GenAlpha::Coefficient
   };
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -14,7 +14,7 @@
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -566,4 +566,4 @@ void INPAR::FSI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   condlist.push_back(volsfv);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

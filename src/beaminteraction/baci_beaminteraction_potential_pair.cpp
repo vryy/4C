@@ -20,7 +20,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -245,4 +245,4 @@ CORE::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
   return CORE::FE::GaussRule1D::undefined;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

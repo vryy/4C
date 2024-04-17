@@ -18,7 +18,7 @@
 #include <MLAPI_Workspace.h>
 #include <Teuchos_Time.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
 A Richardson iteration wrapper of a single field V-cycle
@@ -287,4 +287,4 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_V(const int myrank, cons
     return 0.0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

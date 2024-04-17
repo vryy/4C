@@ -19,7 +19,7 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -835,4 +835,4 @@ int DRT::ELEMENTS::NStet5::EvaluateNeumann(Teuchos::ParameterList& params,
   return -1;
 }  // DRT::ELEMENTS::NStet5::EvaluateNeumann
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

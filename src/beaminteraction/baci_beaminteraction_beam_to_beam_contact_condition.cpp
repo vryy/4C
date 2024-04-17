@@ -16,7 +16,7 @@
 #include "baci_lib_condition.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -157,4 +157,4 @@ BEAMINTERACTION::BeamToBeamContactCondition::CreateContactPair(
   return Teuchos::null;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

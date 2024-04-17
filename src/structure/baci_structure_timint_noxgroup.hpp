@@ -17,7 +17,7 @@
 
 #include <NOX_Epetra_Group.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -45,7 +45,7 @@ namespace NOX
     {
      public:
       //! Constructor
-      Group(BACI::STR::TimIntImpl& sti,         //!< time integrator
+      Group(FourC::STR::TimIntImpl& sti,        //!< time integrator
           Teuchos::ParameterList& printParams,  //!< printing parameters
           const Teuchos::RCP<::NOX::Epetra::Interface::Required>&
               i,                           //!< basically the NOXified time integrator
@@ -72,6 +72,6 @@ namespace NOX
 
 /*----------------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

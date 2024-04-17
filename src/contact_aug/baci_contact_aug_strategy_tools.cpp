@@ -17,7 +17,7 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // #define CONTACTFD_DLMGAPLINMATRIX      /* flag for global FD-check of the weighted gap gradient
 //  w.r.t. displ. */ #define CONTACTFD_DGLMLINMATRIX        /* flag for global FD-check of the
@@ -455,4 +455,4 @@ void CONTACT::AUG::RedistributeRowMap(const Epetra_Map& ref_map, Epetra_Map& red
   red_map = Epetra_Map(gCount, count, myGids.data(), 0, comm);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

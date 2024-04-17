@@ -21,7 +21,7 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -552,4 +552,4 @@ template void CORE::FE::ExtrapolateGPQuantityToNURBSKnotsAndAssemble<CORE::FE::C
     const LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data, bool nodal_average,
     const CORE::FE::IntegrationPoints3D& integration);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

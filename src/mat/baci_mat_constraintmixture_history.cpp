@@ -12,7 +12,7 @@
 
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MAT::ConstraintMixtureHistoryType MAT::ConstraintMixtureHistoryType::instance_;
 
@@ -336,4 +336,4 @@ void MAT::ConstraintMixtureHistory::GetVarDegrad(int gp, int idfiber, double* va
     dserror("gp out of range in GetVarDegrad");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

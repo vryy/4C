@@ -14,7 +14,7 @@
 #include "baci_mat_service.hpp"
 #include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::IsoAnisoExpo::IsoAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -196,4 +196,4 @@ void MAT::ELASTIC::IsoAnisoExpo::SetFiberVecs(const double newgamma,
 
   params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

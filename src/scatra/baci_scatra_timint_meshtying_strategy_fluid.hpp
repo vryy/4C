@@ -15,7 +15,7 @@
 #include "baci_inpar_fluid.hpp"
 #include "baci_scatra_timint_meshtying_strategy_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace FLD
@@ -97,6 +97,6 @@ namespace SCATRA
     MeshtyingStrategyFluid(const MeshtyingStrategyFluid& old);
   };  // class MeshtyingStrategyFluid
 }  // namespace SCATRA
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

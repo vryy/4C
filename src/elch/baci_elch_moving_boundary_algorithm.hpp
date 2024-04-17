@@ -15,7 +15,7 @@
 
 #include "baci_adapter_scatra_fluid_ale_coupling_algo.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ELCH
 {
@@ -108,6 +108,6 @@ namespace ELCH
 
 }  // namespace ELCH
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

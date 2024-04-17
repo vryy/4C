@@ -12,7 +12,7 @@
 #include "baci_so3_sh8p8.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -440,4 +440,4 @@ void DRT::ELEMENTS::So_hex8::soh8_easrestore()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

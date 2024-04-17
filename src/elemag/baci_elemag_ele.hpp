@@ -26,7 +26,7 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 const bool trac_with_pml_elemag = false;
 
@@ -976,6 +976,6 @@ namespace DRT
 }  // namespace DRT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

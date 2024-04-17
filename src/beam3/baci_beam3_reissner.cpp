@@ -24,7 +24,7 @@
 #include "baci_so3_nullspace.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
@@ -2096,4 +2096,4 @@ DRT::ELEMENTS::Beam3r::ComputeGeneralizedNodalRotationInterpolationMatrixFromNod
     const std::vector<CORE::LINALG::Matrix<4, 1, double>>&, const double,
     std::vector<CORE::LINALG::Matrix<3, 3, double>>&) const;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

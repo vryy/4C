@@ -13,7 +13,7 @@
 #ifndef FOUR_C_MAT_TRAIT_THERMO_SOLID_HPP
 #define FOUR_C_MAT_TRAIT_THERMO_SOLID_HPP
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 namespace MAT
 {
   namespace TRAIT
@@ -56,6 +56,6 @@ namespace MAT
   }  // namespace TRAIT
 }  // namespace MAT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

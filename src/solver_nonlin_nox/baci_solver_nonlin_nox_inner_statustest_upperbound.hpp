@@ -20,7 +20,7 @@
 #include <NOX_Abstract_Vector.H>
 #include <NOX_StatusTest_Generic.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
@@ -87,6 +87,6 @@ namespace NOX
   }      // namespace NLN
 }  // namespace NOX
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

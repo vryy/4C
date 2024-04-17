@@ -25,7 +25,7 @@
 #include "baci_mat_myocard_tools.hpp"
 #include "baci_mat_par_parameter.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /// Myocard material according to [1]
@@ -94,6 +94,6 @@ class Myocard_Inada : public Myocard_General
 };  // Myocard_Inada
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

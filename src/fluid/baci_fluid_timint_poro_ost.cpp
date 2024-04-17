@@ -13,7 +13,7 @@
 
 #include "baci_io.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 FLD::TimIntPoroOst::TimIntPoroOst(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
@@ -39,4 +39,4 @@ void FLD::TimIntPoroOst::ReadRestart(int step)
   TimIntOneStepTheta::ReadRestart(step);
   TimIntPoro::ReadRestart(step);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

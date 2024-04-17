@@ -18,7 +18,7 @@
 #include <Intrepid_Types.hpp>
 #include <Shards_CellTopology.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -761,4 +761,4 @@ namespace CORE::FE
   template class PolynomialSpaceCache<3>;
 }  // namespace CORE::FE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -19,7 +19,7 @@
 #include "baci_linear_solver_method_parameters.hpp"
 #include "baci_linear_solver_preconditioner_linalg.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -160,4 +160,4 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(
 {
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

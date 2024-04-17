@@ -16,7 +16,7 @@
 #include "baci_lib_utils_createdis.hpp"
 #include "baci_lubrication_timint_implicit.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -87,4 +87,4 @@ void lubrication_dyn(int restart)
 
 }  // end of lubrication_dyn()
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@
 #include "baci_discretization_geometry_searchtree_nearestobject.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -735,4 +735,4 @@ void CORE::GEO::checkRoughGeoType(const Teuchos::RCP<DRT::Element> element,
   // by checking if the higher order node is on the line
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

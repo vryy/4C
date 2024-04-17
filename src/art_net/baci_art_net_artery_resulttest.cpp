@@ -15,7 +15,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -150,4 +150,4 @@ void ART::ArteryResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, i
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

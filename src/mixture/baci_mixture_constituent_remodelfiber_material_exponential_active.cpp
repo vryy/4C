@@ -15,7 +15,7 @@
 
 #include <memory>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <typename T>
 MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(
@@ -73,4 +73,4 @@ template class MIXTURE::PAR::RemodelFiberMaterialExponentialActive<double>;
 template class MIXTURE::PAR::RemodelFiberMaterialExponentialActive<Sacado::Fad::DFad<double>>;
 template class MIXTURE::RemodelFiberMaterialExponentialActive<double>;
 template class MIXTURE::RemodelFiberMaterialExponentialActive<Sacado::Fad::DFad<double>>;
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

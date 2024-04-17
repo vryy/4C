@@ -11,7 +11,7 @@ and the Jacobi determinant
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::Coup13aPow::Coup13aPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
@@ -83,4 +83,4 @@ void MAT::ELASTIC::Coup13aPow::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1
         a * c * d * (d - 1.) * prinv(0) * pow(prinv(2), (-2. * a - 1.)) * pow(I1I3a3, d - 2.);
   }
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

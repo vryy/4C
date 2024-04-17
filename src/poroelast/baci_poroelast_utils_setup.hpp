@@ -21,7 +21,7 @@
 #include "baci_poroelast_utils.hpp"
 #include "baci_poroelast_utils_setup.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace POROELAST
 {
@@ -153,6 +153,6 @@ namespace POROELAST
   }  // namespace UTILS
 }  // namespace POROELAST
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

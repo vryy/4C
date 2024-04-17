@@ -21,7 +21,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 ALE::Meshsliding::Meshsliding(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::Solver& solver,
     int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
@@ -418,4 +418,4 @@ int ALE::Meshsliding::SolveMeshtying(CORE::LINALG::Solver& solver,
   return errorcode;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

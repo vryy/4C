@@ -21,7 +21,7 @@
 class Epetra_Vector;
 class Epetra_MultiVector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -110,6 +110,6 @@ namespace IO
     Teuchos::RCP<VisualizationManager> visualization_manager_;
   };
 }  // namespace IO
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

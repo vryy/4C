@@ -14,7 +14,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -37,4 +37,4 @@ CORE::GEOMETRICSEARCH::GeometricSearchParams::GeometricSearchParams(
   write_visualization_ = CORE::UTILS::IntegralValue<int>(
       geometric_search_params, "WRITE_GEOMETRIC_SEARCH_VISUALIZATION");
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

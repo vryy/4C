@@ -24,7 +24,7 @@
 
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -195,4 +195,4 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::CheckInit() const
   if (!isinit_) dserror("Init() has not been called, yet!");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -14,7 +14,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /************************************************************************/
 /* Projection                                                           */
@@ -41,6 +41,6 @@ default: 1.0e-9  --> segments (in parameter space) cannot be smaller than this *
                      */
 #define MESHMOVEMENTMAXITER 10 /* max number of steps for local Newton (mesh movement) */
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -20,7 +20,7 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -368,6 +368,6 @@ class PeriodicBoundaryConditions
   Teuchos::RCP<Teuchos::TimeMonitor> tm8_ref_;
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

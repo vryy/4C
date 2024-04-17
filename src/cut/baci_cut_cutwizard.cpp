@@ -24,7 +24,7 @@ surface meshes
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -954,4 +954,4 @@ int CORE::GEO::CutWizard::Get_BC_Cubaturedegree() const
   return -1;  // dummy to make compiler happy :)
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

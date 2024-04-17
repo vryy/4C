@@ -21,7 +21,7 @@
 #include "baci_so3_base.hpp"
 #include "baci_solid_3D_ele.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace BINSTRATEGY
 {
@@ -349,4 +349,4 @@ namespace BINSTRATEGY
   }  // namespace UTILS
 }  // namespace BINSTRATEGY
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

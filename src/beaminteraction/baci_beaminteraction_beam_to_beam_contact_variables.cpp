@@ -16,7 +16,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/14|
@@ -53,4 +53,4 @@ template class BEAMINTERACTION::BeamToBeamContactVariables<4, 1>;
 template class BEAMINTERACTION::BeamToBeamContactVariables<5, 1>;
 template class BEAMINTERACTION::BeamToBeamContactVariables<2, 2>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

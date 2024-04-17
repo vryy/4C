@@ -13,7 +13,7 @@
 #include "baci_comm_utils_factory.hpp"
 #include "baci_w1_poro_p1_eletypes.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::Wall1_PoroP1<distype>::Wall1_PoroP1(int id, int owner)
@@ -124,4 +124,4 @@ template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad4>;
 template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad9>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

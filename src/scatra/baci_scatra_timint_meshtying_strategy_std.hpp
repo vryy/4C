@@ -15,7 +15,7 @@
 
 #include "baci_scatra_timint_meshtying_strategy_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -114,6 +114,6 @@ namespace SCATRA
     MeshtyingStrategyStd(const MeshtyingStrategyStd& old);
   };  // class MeshtyingStrategyStd
 }  // namespace SCATRA
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

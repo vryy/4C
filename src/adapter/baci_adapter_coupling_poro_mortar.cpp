@@ -31,7 +31,7 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
 #include "baci_nurbs_discret_control_point.hpp"
 #include "baci_nurbs_discret_knotvector.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor                                                      ager 10/15|
@@ -473,4 +473,4 @@ void ADAPTER::CouplingPoroMortar::RecoverFluidLMPoroMt(
   return;
 }  // ADAPTER::CouplingNonLinMortar::RecoverFluidLMPoroMt
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

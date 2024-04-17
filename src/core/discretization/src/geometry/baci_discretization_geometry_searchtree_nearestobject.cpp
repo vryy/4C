@@ -9,7 +9,7 @@
 
 #include "baci_discretization_geometry_searchtree_nearestobject.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 CORE::GEO::NearestObject::NearestObject()
@@ -97,4 +97,4 @@ void CORE::GEO::NearestObject::setSurfaceObjectType(
   lineId_ = -1;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

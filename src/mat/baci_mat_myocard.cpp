@@ -25,7 +25,7 @@
 #include <fstream>  // For plotting ion concentrations
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -591,4 +591,4 @@ void MAT::Myocard::Update(const double phi, const double dt)
  *----------------------------------------------------------------------*/
 int MAT::Myocard::GetNumberOfGP() const { return myocard_mat_->GetNumberOfGP(); };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

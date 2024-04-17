@@ -28,7 +28,7 @@
 #include "baci_linalg_utils_densematrix_inverse.hpp"
 #include "baci_mortar_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
@@ -1988,6 +1988,6 @@ namespace CORE::VOLMORTAR
   }  // namespace UTILS
 }  // namespace CORE::VOLMORTAR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

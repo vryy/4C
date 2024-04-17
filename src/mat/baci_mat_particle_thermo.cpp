@@ -15,7 +15,7 @@
 
 #include "baci_mat_par_bundle.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 06/2018 |
@@ -31,4 +31,4 @@ MAT::PAR::ParticleMaterialThermo::ParticleMaterialThermo(Teuchos::RCP<MAT::PAR::
   // empty constructor
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

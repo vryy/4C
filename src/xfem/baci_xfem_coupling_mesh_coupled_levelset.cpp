@@ -12,7 +12,7 @@
 
 #include "baci_xfem_coupling_mesh.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -41,4 +41,4 @@ void XFEM::MeshCouplingNavierSlipTwoPhase::SetConditionSpecificParameters()
   cutter_dis_->GetCondition(cond_name_, conditions_NS);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

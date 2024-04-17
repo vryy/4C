@@ -20,7 +20,7 @@
 
 typedef Sacado::Fad::DFad<double> FAD;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -115,6 +115,6 @@ inline void FirstDerivToMatrix(FAD const& r_fad,  ///< FAD function
   out(2, 0) = r_fad.dx(8);
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

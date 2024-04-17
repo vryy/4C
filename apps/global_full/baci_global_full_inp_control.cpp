@@ -27,7 +27,7 @@ void SetupParallelOutput(
 void ntainp_ccadiscret(
     std::string& inputfile_name, std::string& outputfile_kenner, std::string& restartfile_kenner)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
@@ -102,7 +102,7 @@ void ntainp_ccadiscret(
  *----------------------------------------------------------------------*/
 void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // configure the parallel output environment
   const Teuchos::ParameterList& io = GLOBAL::Problem::Instance()->IOParams();

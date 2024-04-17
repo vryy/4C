@@ -17,7 +17,7 @@ constraint discretization approach
 #include "baci_inpar_fbi.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
@@ -51,4 +51,4 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::CreateAssemblyManager(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

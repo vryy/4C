@@ -29,7 +29,7 @@
 #include "baci_utils_parameter_list.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
@@ -1267,4 +1267,4 @@ template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::tri3, CORE::FE:
 template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
 template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

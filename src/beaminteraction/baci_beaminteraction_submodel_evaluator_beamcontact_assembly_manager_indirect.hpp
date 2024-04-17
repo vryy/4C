@@ -20,7 +20,7 @@ coupling matrices M and D first.
 
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
@@ -85,6 +85,6 @@ namespace BEAMINTERACTION
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

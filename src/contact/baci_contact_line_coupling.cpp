@@ -28,7 +28,7 @@
 #include "baci_mortar_defines.hpp"
 #include "baci_mortar_projector.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -3492,4 +3492,4 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
   return angleRad;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

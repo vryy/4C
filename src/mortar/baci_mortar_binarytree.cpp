@@ -14,7 +14,7 @@
 #include "baci_mortar_element.hpp"
 #include "baci_mortar_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -802,4 +802,4 @@ void MORTAR::BinaryTree::EvaluateSearch(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

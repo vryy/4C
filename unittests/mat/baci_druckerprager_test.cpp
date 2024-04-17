@@ -19,7 +19,7 @@
 #include "baci_unittest_utils_assertions_test.hpp"
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class DruckerPragerTest : public ::testing::Test
   {

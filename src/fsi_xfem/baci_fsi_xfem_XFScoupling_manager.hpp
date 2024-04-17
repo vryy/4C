@@ -15,7 +15,7 @@
 #include "baci_fsi_xfem_coupling_comm_manager.hpp"
 #include "baci_fsi_xfem_coupling_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace FLD
 {
@@ -104,6 +104,6 @@ namespace XFEM
     Teuchos::RCP<Epetra_Vector> lambda_;
   };
 }  // namespace XFEM
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

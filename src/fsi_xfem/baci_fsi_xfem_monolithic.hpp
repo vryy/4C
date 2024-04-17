@@ -18,7 +18,7 @@
 #include "baci_inpar_xfem.hpp"
 #include "baci_linalg_mapextractor.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -524,6 +524,6 @@ namespace FSI
   };
 }  // namespace FSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

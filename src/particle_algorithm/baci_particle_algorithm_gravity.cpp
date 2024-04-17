@@ -13,7 +13,7 @@
 #include "baci_global_data.hpp"
 #include "baci_utils_function_of_time.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -56,4 +56,4 @@ void PARTICLEALGORITHM::GravityHandler::GetGravityAcceleration(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

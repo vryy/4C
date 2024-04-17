@@ -26,7 +26,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -1246,4 +1246,4 @@ void CORE::LINEAR_SOLVER::PrintMap(const Epetra_Map& Map, std::string prefix)
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

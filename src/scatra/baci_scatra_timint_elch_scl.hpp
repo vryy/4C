@@ -17,7 +17,7 @@
 #include "baci_io_runtime_csv_writer.hpp"
 #include "baci_scatra_timint_elch.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*==========================================================================*/
 // forward declarations
@@ -155,6 +155,6 @@ namespace SCATRA
     Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix_elch_scl_;
   };
 }  // namespace SCATRA
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

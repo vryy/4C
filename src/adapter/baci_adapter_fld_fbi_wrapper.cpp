@@ -15,7 +15,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
@@ -56,4 +56,4 @@ Teuchos::RCP<const FLD::Meshtying> ADAPTER::FluidFBI::GetMeshtying()
   return Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->GetMeshtying();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -13,7 +13,7 @@
 
 #include <limits>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupNeoHooke::CoupNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -112,4 +112,4 @@ void MAT::ELASTIC::CoupNeoHooke::AddCoupDerivVol(
              44. * c * pow(J * J, -beta) * beta * pow(J, -4.) +
              12. * c * pow(J * J, -beta) * pow(J, -4.);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

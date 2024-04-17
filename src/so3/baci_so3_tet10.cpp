@@ -29,7 +29,7 @@
 #include "baci_so3_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 // remove later
 
 
@@ -403,4 +403,4 @@ void DRT::ELEMENTS::So_tet10::MaterialPostSetup(Teuchos::ParameterList& params)
   // params.remove("gpfiber2", false);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

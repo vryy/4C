@@ -20,7 +20,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -895,4 +895,4 @@ template class DRT::ELEMENTS::Shell7pEleCalcEas<CORE::FE::CellType::quad9>;
 template class DRT::ELEMENTS::Shell7pEleCalcEas<CORE::FE::CellType::tri3>;
 template class DRT::ELEMENTS::Shell7pEleCalcEas<CORE::FE::CellType::tri6>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

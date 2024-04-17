@@ -18,7 +18,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -520,4 +520,4 @@ void MAT::ScatraReactionMat::CalcPermInfluenceDeriv(const int k,  //!< current s
   CalcReaBodyForceDeriv(k, derivs, phinp, constants, Stoich()->at(k), scale);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

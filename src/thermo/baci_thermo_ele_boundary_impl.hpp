@@ -22,7 +22,7 @@
 #include "baci_thermo_ele_impl_utils.hpp"
 #include "baci_thermo_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -243,6 +243,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

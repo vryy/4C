@@ -14,7 +14,7 @@
 
 #include <functional>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /**
  * This struct holds callback functions that are populated by modules. The callbacks are invoked
@@ -41,6 +41,6 @@ struct ModuleCallbacks
   std::function<void(CORE::UTILS::FunctionManager& function_manager)> AttachFunctionDefinitions;
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -20,7 +20,7 @@ multiplicatively into elastic and inelastic parts
 #include "baci_mat_service.hpp"
 #include "baci_structure_new_enum_lists.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -915,4 +915,4 @@ void MAT::InelasticFactorsHandler::EvaluateInverseInelasticDefGrad(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

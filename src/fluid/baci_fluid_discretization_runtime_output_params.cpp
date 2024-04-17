@@ -14,7 +14,7 @@
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -59,4 +59,4 @@ void DRT::ELEMENTS::FluidRuntimeOutputParams::CheckInitSetup() const
   if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

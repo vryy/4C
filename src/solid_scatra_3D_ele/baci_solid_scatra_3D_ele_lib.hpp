@@ -14,7 +14,7 @@
 #include "baci_io_linedefinition.hpp"
 
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS
 {
@@ -27,6 +27,6 @@ namespace DRT::ELEMENTS
   INPAR::SCATRA::ImplType ReadScatraImplType(const INPUT::LineDefinition& line_definition);
 }  // namespace DRT::ELEMENTS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

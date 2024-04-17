@@ -28,7 +28,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
@@ -2752,4 +2752,4 @@ template void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetapar_s_moment<2>(
     const CORE::LINALG::Matrix<3, 1, double>& r_s, const CORE::LINALG::Matrix<3, 1, double>& r_ss,
     double abs_r_s, const CORE::LINALG::Matrix<3, 1, double>& moment) const;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

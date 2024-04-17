@@ -14,7 +14,7 @@
 #include "baci_fluid_ele_parameter_std.hpp"
 #include "baci_lib_elementtype.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
@@ -55,4 +55,4 @@ template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs3
 template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs4>;
 template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs9>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

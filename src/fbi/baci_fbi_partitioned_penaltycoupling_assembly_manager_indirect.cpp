@@ -27,7 +27,7 @@ coupling matrices M and D first.
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /**
  *
@@ -80,4 +80,4 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(cff, true), cfb, beam_vel, fluid_vel);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

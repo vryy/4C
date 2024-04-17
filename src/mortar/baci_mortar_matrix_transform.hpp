@@ -22,7 +22,7 @@ distributions
 class Epetra_Map;
 class Epetra_Export;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -105,6 +105,6 @@ namespace MORTAR
 
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

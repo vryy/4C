@@ -26,7 +26,7 @@
 #include <string>
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -1039,4 +1039,4 @@ CORE::UTILS::SymbolicExpression<Number>::~SymbolicExpression() = default;
 // explicit instantiations
 template class CORE::UTILS::SymbolicExpression<double>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

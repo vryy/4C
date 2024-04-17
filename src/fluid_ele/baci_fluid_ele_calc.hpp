@@ -18,7 +18,7 @@
 #include "baci_fluid_ele_interface.hpp"
 #include "baci_inpar_fluid.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace FLD
@@ -1625,6 +1625,6 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -16,7 +16,7 @@
 
 #include "baci_fluid_ele_calc_poro.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -405,6 +405,6 @@ namespace DRT
 }  // namespace DRT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

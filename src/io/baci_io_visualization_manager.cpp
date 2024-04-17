@@ -16,7 +16,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /**
  *
@@ -122,4 +122,4 @@ std::string IO::VisualizationManager::GetVisualizationDataNameForOutputFiles(
     return base_output_name_ + "_" + visualization_data_name;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

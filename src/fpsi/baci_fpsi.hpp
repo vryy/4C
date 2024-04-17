@@ -14,7 +14,7 @@
 
 #include <Epetra_Comm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace FPSI
 {
@@ -44,6 +44,6 @@ namespace FPSI
   };
 }  // namespace FPSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

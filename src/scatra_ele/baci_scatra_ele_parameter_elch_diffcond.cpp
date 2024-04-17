@@ -26,7 +26,7 @@ additional static parameters required for scalar transport element evaluation.
 
 #include <map>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
@@ -95,4 +95,4 @@ void DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::SetParameters(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

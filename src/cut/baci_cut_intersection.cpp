@@ -16,7 +16,7 @@
 #include "baci_cut_utils.hpp"
 #include "baci_global_data.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // whether to perform triangulation during intersection
 #define TRIANGULATED_INTERSECTION true
@@ -1516,4 +1516,4 @@ template class CORE::GEO::CUT::Intersection<3, CORE::FE::CellType::line2,
 // CORE::GEO::CUT::Intersection<2,CORE::FE::CellType::line2,CORE::FE::CellType::tri3>;
 template class CORE::GEO::CUT::Intersection<3, CORE::FE::CellType::line2, CORE::FE::CellType::tri3>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -26,7 +26,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -400,4 +400,4 @@ void printheartlogo()
   std::cout << "                                                         " << std::endl;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

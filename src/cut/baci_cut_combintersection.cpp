@@ -17,7 +17,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------*
  * constructur for Combined Intersection class (Levelset and Mesh intersection in one class)
@@ -139,4 +139,4 @@ void CORE::GEO::CUT::CombIntersection::AddMeshCuttingSide(int sid, const std::ve
   MeshIntersection::AddCutSide(sid, nids, xyz, distype, mi);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -30,7 +30,7 @@
 // and use the fluid solver to solve for it
 // #define BLOCKMATRIXMERGE
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -549,7 +549,7 @@ namespace NOX
     class GroupFS : public ::NOX::Epetra::Group
     {
      public:
-      GroupFS(BACI::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
+      GroupFS(FourC::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
           const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
           const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys);
 
@@ -563,13 +563,13 @@ namespace NOX
       ::NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p) override;
 
      private:
-      BACI::FSI::MonolithicMainFS& mfsi_;
+      FourC::FSI::MonolithicMainFS& mfsi_;
     };
   }  // namespace FSI
 }  // namespace NOX
 
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

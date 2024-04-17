@@ -21,7 +21,7 @@
 #include "baci_cut_clnwrapper.hpp"
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*
 Functions to catch implementation erros in debug mode
@@ -1120,4 +1120,4 @@ void CORE::GEO::CUT::ConcretePoint<probDim>::MovePoint(const double* new_coord)
   std::copy(new_coord, new_coord + probDim, this->x_);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

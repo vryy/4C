@@ -14,7 +14,7 @@ set all general porofluid parameter once for all elements.
 
 #include "baci_fluid_ele_parameter_poro.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidEleParameterPoro* DRT::ELEMENTS::FluidEleParameterPoro::Instance(
     CORE::UTILS::SingletonAction action)
@@ -111,4 +111,4 @@ void DRT::ELEMENTS::FluidEleParameterPoro::PrintFluidParameterPoro() const
             << std::endl;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

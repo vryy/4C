@@ -15,7 +15,7 @@
 #include "baci_coupling_adapter.hpp"
 #include "baci_poromultiphase_scatra_artery_coupling_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ADAPTER
 {
@@ -163,6 +163,6 @@ namespace POROMULTIPHASESCATRA
 }  // namespace POROMULTIPHASESCATRA
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

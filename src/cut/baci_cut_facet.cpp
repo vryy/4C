@@ -17,7 +17,7 @@
 #include "baci_cut_volumecell.hpp"
 #include "baci_linalg_gauss.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*
 Functions to catch implementation erros in debug mode
@@ -1445,4 +1445,4 @@ std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Facet& f)
   return stream;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

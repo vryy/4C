@@ -20,7 +20,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   /**
    * Setup the surface geometry for the tri3 tests.

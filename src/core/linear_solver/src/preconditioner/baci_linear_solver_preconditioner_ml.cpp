@@ -22,7 +22,7 @@
 #include <ml_include.h>
 #include <ml_MultiLevelPreconditioner.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -57,4 +57,4 @@ void CORE::LINEAR_SOLVER::MLPreconditioner::Setup(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

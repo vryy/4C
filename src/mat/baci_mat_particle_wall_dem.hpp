@@ -23,7 +23,7 @@
 #include "baci_mat_material.hpp"
 #include "baci_mat_par_parameter.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 08/2019 |
@@ -161,6 +161,6 @@ namespace MAT
 }  // namespace MAT
 
 /*---------------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

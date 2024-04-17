@@ -21,7 +21,7 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -2177,4 +2177,4 @@ template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcHDGWeakComp<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

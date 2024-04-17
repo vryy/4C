@@ -16,7 +16,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_lib_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -120,4 +120,4 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
   }    // end loop periodic boundary conditions
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

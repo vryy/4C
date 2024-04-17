@@ -28,7 +28,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -1786,4 +1786,4 @@ void FPSI::Monolithic::SetConductivity(double conduct)
   conductivity_ = conduct;  // remove me...
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -14,7 +14,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /// Myocard math tools general to all materials
@@ -41,6 +41,6 @@ class Myocard_Tools
 
 };  // Myocard_Tools
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

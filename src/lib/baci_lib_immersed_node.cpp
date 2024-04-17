@@ -9,7 +9,7 @@
 
 #include "baci_lib_immersed_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ImmersedNodeType DRT::ImmersedNodeType::instance_;
@@ -171,4 +171,4 @@ bool DRT::ImmersedNode::VisData(const std::string& name, std::vector<double>& da
   return false;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

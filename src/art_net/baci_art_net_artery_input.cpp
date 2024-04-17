@@ -11,7 +11,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_mat_cnst_1d_art.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -103,4 +103,4 @@ void DRT::ELEMENTS::Artery::SetDiamInMaterial(const double diam)
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

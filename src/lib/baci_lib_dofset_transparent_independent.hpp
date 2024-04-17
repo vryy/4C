@@ -18,7 +18,7 @@
 #include "baci_lib_dofset_independent.hpp"
 #include "baci_lib_dofset_transparent.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -66,6 +66,6 @@ namespace DRT
   };  // class TransparentDofSet
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

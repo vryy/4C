@@ -19,7 +19,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   TEST(ParseTests, ParseInt) { EXPECT_EQ(IO::StringConverter<int>::Parse("5"), 5); }
 

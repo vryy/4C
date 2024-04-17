@@ -12,7 +12,7 @@
 #include "baci_inpar_validparameters.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 // set the mpc specific parameters
 void INPAR::RVE_MPC::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -110,4 +110,4 @@ void INPAR::RVE_MPC::SetValidConditions(
   condlist.push_back(linear_ce);
   /*--------------------------------------------------------------------*/
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

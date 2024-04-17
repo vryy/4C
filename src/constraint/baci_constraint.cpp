@@ -20,7 +20,7 @@ Thomas Kloeppel
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -441,4 +441,4 @@ std::vector<int> CONSTRAINTS::Constraint::GetActiveCondID()
   return condID;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

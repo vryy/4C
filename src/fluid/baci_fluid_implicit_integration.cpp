@@ -73,7 +73,7 @@
 #include <iostream>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     gammi 04/07|
@@ -6825,4 +6825,4 @@ void FLD::FluidImplicitTimeInt::ResetExternalForces()
   external_loads_->PutScalar(0);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

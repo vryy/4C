@@ -30,7 +30,7 @@
 #include <ctime>
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -214,4 +214,4 @@ void redairway_tissue_dyn()
   GLOBAL::Problem::Instance()->TestAll(actdis->Comm());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

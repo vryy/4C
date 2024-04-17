@@ -9,7 +9,7 @@
 
 #include "baci_linalg_serialdensevector.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Compute vector 2-norm                                               |
@@ -28,4 +28,4 @@ void CORE::LINALG::Update(double alpha, const CORE::LINALG::SerialDenseVector& a
   b += acopy;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

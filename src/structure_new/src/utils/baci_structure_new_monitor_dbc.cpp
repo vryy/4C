@@ -25,7 +25,7 @@
 #include "baci_structure_new_timint_basedataio.hpp"
 #include "baci_structure_new_timint_basedataio_monitor_dbc.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -581,4 +581,4 @@ double STR::MonitorDbc::GetReactionMoment(CORE::LINALG::Matrix<DIM, 1>& rmoment_
   return rmoment_xyz.Norm2();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

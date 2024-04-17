@@ -20,7 +20,7 @@ to be called!
 
 #include <Epetra_SerialComm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 02/15|
@@ -476,4 +476,4 @@ void CONTACT::MonoCoupledLagrangeStrategy::SaveCouplingMatrices(
   invda_ = Teuchos::rcp<CORE::LINALG::SparseMatrix>(new CORE::LINALG::SparseMatrix(*invda));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

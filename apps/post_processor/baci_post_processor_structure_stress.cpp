@@ -20,7 +20,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
-    using namespace BACI;
+    using namespace FourC;
 
     dsassert(name.size() == 1, "Unexpected number of names");
 
@@ -148,7 +148,7 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
-    using namespace BACI;
+    using namespace FourC;
 
     dsassert(name.size() == 1, "Unexpected number of names");
     const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
@@ -184,7 +184,7 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
-    using namespace BACI;
+    using namespace FourC;
 
     dsassert(name.size() == 1, "Unexpected number of names");
     const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
@@ -227,7 +227,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
-    using namespace BACI;
+    using namespace FourC;
 
     dsassert(name.size() == 1, "Unexpected number of names");
 
@@ -392,7 +392,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
-    using namespace BACI;
+    using namespace FourC;
 
     dsassert(name.size() == 6, "Unexpected number of names");
 
@@ -510,7 +510,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
-    using namespace BACI;
+    using namespace FourC;
 
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
@@ -728,4 +728,4 @@ void StructureFilter::WriteEigenStress(
 }
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

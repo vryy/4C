@@ -12,7 +12,7 @@ interactions
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class SPHEquationOfStateGenTaitTest : public ::testing::Test
   {

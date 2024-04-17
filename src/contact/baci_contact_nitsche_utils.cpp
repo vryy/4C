@@ -12,7 +12,7 @@
 #include <Epetra_FECrsMatrix.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -166,4 +166,4 @@ template class MORTAR::ElementNitscheData<CORE::FE::CellType::tet4>;
 template class MORTAR::ElementNitscheData<CORE::FE::CellType::hex27>;
 template class MORTAR::ElementNitscheData<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

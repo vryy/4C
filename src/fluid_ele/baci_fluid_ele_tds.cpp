@@ -12,7 +12,7 @@
 
 #include "baci_fluid_ele_tds.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 FLD::TDSEleDataType FLD::TDSEleDataType::instance_;
@@ -215,4 +215,4 @@ void FLD::TDSEleData::Update(const double dt, const double gamma)
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

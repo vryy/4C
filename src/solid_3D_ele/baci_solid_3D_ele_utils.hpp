@@ -14,7 +14,7 @@
 #include "baci_lib_element.hpp"
 #include "baci_solid_3D_ele_properties.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace STR::UTILS
 {
@@ -63,6 +63,6 @@ namespace STR::UTILS
 
 }  // namespace STR::UTILS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

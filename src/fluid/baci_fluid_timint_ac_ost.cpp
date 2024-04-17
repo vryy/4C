@@ -12,7 +12,7 @@
 
 #include "baci_fluid_timint_ac_ost.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 12/14 |
@@ -40,4 +40,4 @@ void FLD::TimIntACOst::ReadRestart(int step)
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

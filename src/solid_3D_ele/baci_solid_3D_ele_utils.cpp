@@ -13,7 +13,7 @@
 #include "baci_linalg_utils_densematrix_eigen.hpp"
 #include "baci_solid_3D_ele_properties.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 void STR::UTILS::Pk2ToCauchy(const CORE::LINALG::Matrix<6, 1>& pk2,
@@ -151,4 +151,4 @@ void STR::UTILS::NodalBlockInformationSolid(
   nv = 3;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

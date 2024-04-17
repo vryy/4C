@@ -20,7 +20,7 @@
 
 int main(int argc, char *argv[])
 {
-  using namespace BACI;
+  using namespace FourC;
 
   MPI_Init(&argc, &argv);
 

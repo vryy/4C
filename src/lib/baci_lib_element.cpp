@@ -26,7 +26,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1179,4 +1179,4 @@ void DRT::FaceElement::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void DRT::FaceElement::SetLocalTrafoMap(const std::vector<int>& trafo) { localtrafomap_ = trafo; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

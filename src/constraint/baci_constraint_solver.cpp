@@ -19,7 +19,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -401,4 +401,4 @@ void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::Spars
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

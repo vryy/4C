@@ -18,7 +18,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace IO
@@ -135,4 +135,4 @@ namespace IO
     visualization_manager_->WriteToDisk(visualization_time, visualization_step);
   }
 }  // namespace IO
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

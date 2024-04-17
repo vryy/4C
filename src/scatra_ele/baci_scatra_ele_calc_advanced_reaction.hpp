@@ -14,7 +14,7 @@
 
 #include "baci_scatra_ele_calc.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace MAT
@@ -250,6 +250,6 @@ namespace DRT
 }  // namespace DRT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

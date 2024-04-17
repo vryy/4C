@@ -21,7 +21,7 @@
 #include "baci_inpar_fluid.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -447,6 +447,6 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

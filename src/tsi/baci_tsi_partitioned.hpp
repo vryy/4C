@@ -24,7 +24,7 @@
 #include "baci_inpar_tsi.hpp"
 #include "baci_tsi_algorithm.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                           dano 12/09 |
@@ -155,6 +155,6 @@ namespace TSI
 
 
 /*----------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

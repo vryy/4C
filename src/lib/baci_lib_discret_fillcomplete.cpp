@@ -15,7 +15,7 @@
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -326,4 +326,4 @@ int DRT::Discretization::AssignDegreesOfFreedom(int start)
   return start;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

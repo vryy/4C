@@ -22,7 +22,7 @@ John Wiley & Sons, Ltd, 2008
 #include "baci_mat_stvenantkirchhoff.hpp"
 #include "baci_utils_local_newton.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::PAR::PlasticDruckerPrager::PlasticDruckerPrager(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -453,4 +453,4 @@ template std::pair<double, double> MAT::PlasticDruckerPrager::ReturnToApexFunctA
 template std::pair<FAD, FAD> MAT::PlasticDruckerPrager::ReturnToApexFunctAndDeriv<FAD>(
     FAD dstrainv, FAD p, FAD kappa, FAD strainbar_p);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

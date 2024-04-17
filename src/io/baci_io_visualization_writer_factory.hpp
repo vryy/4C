@@ -21,7 +21,7 @@
 
 #include <memory>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -33,6 +33,6 @@ namespace IO
       const std::string& visualization_data_name);
 }  // namespace IO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

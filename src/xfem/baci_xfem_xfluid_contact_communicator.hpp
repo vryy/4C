@@ -24,7 +24,7 @@
 #include <set>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // #define WRITE_GMSH
 
@@ -379,6 +379,6 @@ namespace XFEM
   };  // class XFluid_Contact_Comm
 }  // namespace XFEM
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

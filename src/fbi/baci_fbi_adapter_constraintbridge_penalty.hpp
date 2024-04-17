@@ -18,7 +18,7 @@ approach for Fluid-beam interaction.
 #include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace BEAMINTERACTION
 {
@@ -152,6 +152,6 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

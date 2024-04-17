@@ -16,7 +16,7 @@
 
 #include <algorithm>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<double>& disp,
@@ -363,4 +363,4 @@ template void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian<CORE::FE::CellType::
     const CORE::LINALG::Matrix<4, 3>& xrefe, const CORE::LINALG::Matrix<3, 4>& derivs,
     CORE::LINALG::Matrix<3, 3>& inverseJacobian);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

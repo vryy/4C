@@ -25,7 +25,7 @@ parameter cn
 
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -544,4 +544,4 @@ double CONTACT::AUG::PenaltyUpdate_SufficientAngle::BetaAngle() const
   return Data().SaData().GetPenaltyCorrectionParameter();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

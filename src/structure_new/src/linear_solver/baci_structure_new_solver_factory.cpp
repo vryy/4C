@@ -27,7 +27,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -484,4 +484,4 @@ STR::SOLVER::BuildLinSolvers(const std::set<enum INPAR::STR::ModelType>& modelty
   return factory.BuildLinSolvers(modeltypes, sdyn, actdis);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

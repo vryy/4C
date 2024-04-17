@@ -29,7 +29,7 @@
 
 #include <Epetra_MpiComm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |
@@ -369,4 +369,4 @@ void TSI::printlogo()
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

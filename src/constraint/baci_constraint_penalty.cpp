@@ -18,7 +18,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -378,4 +378,4 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateError(
   systemvector->Import(*acterrdist, *errorimport_, Insert);
 }  // end of EvaluateError
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -21,7 +21,7 @@
 // due to enum use ...
 #include "baci_xfem_multi_field_mapextractor.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace XFEM
 {
@@ -242,6 +242,6 @@ namespace XFEM
 
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

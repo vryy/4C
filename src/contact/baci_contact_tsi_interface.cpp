@@ -24,7 +24,7 @@
 #include "baci_mortar_element.hpp"
 #include "baci_mortar_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            seitz 08/15|
@@ -840,4 +840,4 @@ void CONTACT::TSIInterface::Initialize()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

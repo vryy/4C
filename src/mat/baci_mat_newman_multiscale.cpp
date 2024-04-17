@@ -12,7 +12,7 @@
 #include "baci_mat_par_bundle.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  | constructor                                             fang 07/17 |
@@ -141,4 +141,4 @@ double MAT::NewmanMultiScale::electronic_cond(const int gp) const
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

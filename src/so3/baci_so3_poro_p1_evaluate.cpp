@@ -13,7 +13,7 @@
 #include "baci_so3_poro_p1.hpp"
 #include "baci_so3_poro_p1_eletypes.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <class so3_ele, CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::ComputePorosityAndLinearization(
@@ -895,6 +895,6 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1OD(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #include "baci_so3_poro_p1_fwd.hpp"

@@ -17,7 +17,7 @@
 #include "baci_rigidsphere.hpp"
 #include "baci_utils_fad.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Check, if current element is a solid contact element      popp 05/16|
@@ -320,4 +320,4 @@ double BEAMINTERACTION::DetermineSearchboxInc(Teuchos::ParameterList& beamcontac
   return searchboxinc;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

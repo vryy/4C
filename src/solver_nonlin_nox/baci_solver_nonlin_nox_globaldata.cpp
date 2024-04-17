@@ -33,7 +33,7 @@
 
 #include <stdexcept>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -441,4 +441,4 @@ const Teuchos::RCP<::NOX::Epetra::Scaling>& NOX::NLN::GlobalData::GetScalingObje
   return iScale_;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

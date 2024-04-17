@@ -13,7 +13,7 @@
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_ssi_str_model_evaluator_partitioned.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -70,4 +70,4 @@ void SSI::SSIPart::SetupModelEvaluator()
   if (IsS2IKineticsWithPseudoContact()) SetModelevaluatorBaseSSI(ssi_model_ptr);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

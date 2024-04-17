@@ -12,7 +12,7 @@
 #include "baci_mat_elasthyper.hpp"
 #include "baci_so3_nstet5.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -50,4 +50,4 @@ bool DRT::ELEMENTS::NStet5::ReadElement(
   return true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

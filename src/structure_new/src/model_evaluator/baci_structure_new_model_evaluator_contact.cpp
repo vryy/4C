@@ -29,7 +29,7 @@
 #include "baci_structure_new_timint_base.hpp"
 #include "baci_structure_new_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1044,4 +1044,4 @@ void STR::MODELEVALUATOR::Contact::RemoveCondensedContributionsFromRhs(Epetra_Ve
   Strategy().Evaluate(EvalContact(), nullptr, &mutable_vec);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

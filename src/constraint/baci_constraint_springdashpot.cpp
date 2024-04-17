@@ -25,7 +25,7 @@
 #include <iostream>
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                         pfaller Apr15|
@@ -988,4 +988,4 @@ void CONSTRAINTS::SpringDashpot::Update()
 
 void CONSTRAINTS::SpringDashpot::ResetStepState() { gap_ = gapn_; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

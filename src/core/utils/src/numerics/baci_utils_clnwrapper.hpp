@@ -36,7 +36,7 @@
 // maximum achievable CLN precison value, error is computed with respect to it
 #define CLN_REFERENCE_PREC (CLN_START_PRECISION + CLN_LIMIT_ITER * CLN_INCREMENT_STEP)
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::CLN
 {
@@ -258,6 +258,6 @@ namespace CORE::CLN
 
 }  // namespace CORE::CLN
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

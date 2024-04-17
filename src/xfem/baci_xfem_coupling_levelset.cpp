@@ -29,7 +29,7 @@ bridge between the xfluid class and the cut-library
 #include "baci_utils_function.hpp"
 #include "baci_xfem_interface_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // TODO: CouplingBase should become abstract class
 
@@ -1511,4 +1511,4 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

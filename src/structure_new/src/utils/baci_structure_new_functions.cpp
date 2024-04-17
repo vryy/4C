@@ -16,7 +16,7 @@
 #include "baci_mat_stvenantkirchhoff.hpp"
 #include "baci_utils_function_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -282,4 +282,4 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Eva
   return res;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

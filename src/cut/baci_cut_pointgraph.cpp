@@ -29,7 +29,7 @@
 #include "baci_cut_clnwrapper.hpp"
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  * Constructor for the selfcut                                     wirtz 05/13
@@ -1163,4 +1163,4 @@ Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph> CORE::GEO::CUT::IMPL::Poin
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -14,7 +14,7 @@
 #include "baci_ssi_monolithic.hpp"
 #include "baci_ssi_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*-------------------------------------------------------------------------*
@@ -188,4 +188,4 @@ Teuchos::RCP<SSI::ContactStrategyBase> SSI::BuildContactStrategy(
 
   return contact_strategy;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

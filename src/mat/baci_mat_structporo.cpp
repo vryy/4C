@@ -16,7 +16,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
@@ -417,4 +417,4 @@ bool MAT::StructPoro::VisData(
   return false;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

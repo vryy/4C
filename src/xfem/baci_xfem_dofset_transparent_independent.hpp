@@ -15,7 +15,7 @@
 
 #include "baci_lib_dofset_transparent_independent.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -60,6 +60,6 @@ namespace XFEM
   };
 }  // namespace XFEM
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

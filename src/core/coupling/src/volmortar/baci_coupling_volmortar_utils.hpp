@@ -17,7 +17,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    vuong 09/14 |
@@ -74,6 +74,6 @@ namespace CORE::VOLMORTAR
 }  // namespace CORE::VOLMORTAR
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

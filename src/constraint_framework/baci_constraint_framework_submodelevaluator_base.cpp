@@ -14,7 +14,7 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_structure_new_timint_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::EvaluateForceStiff(
@@ -79,4 +79,4 @@ void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::EvaluateCouplingTerms(
   Q_Ld_->Complete(stiff_ptr_->DomainMap(), *n_condition_map_);
   Q_dL_->Complete(*n_condition_map_, stiff_ptr_->DomainMap());
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

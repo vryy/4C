@@ -12,7 +12,7 @@
 
 #include <NOX_Utils.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // tolerated unconverged states
 const std::set<NOX::NLN::INNER::StatusTest::StatusType>
@@ -212,4 +212,4 @@ std::ostream& NOX::NLN::INNER::StatusTest::Combo::Print(std::ostream& stream, in
   return stream;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

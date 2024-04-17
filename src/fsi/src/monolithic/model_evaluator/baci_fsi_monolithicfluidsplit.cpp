@@ -40,7 +40,7 @@ with condensed fluid interface velocities
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1601,4 +1601,4 @@ bool FSI::MonolithicFluidSplit::SetAccepted() const
   return accepted;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

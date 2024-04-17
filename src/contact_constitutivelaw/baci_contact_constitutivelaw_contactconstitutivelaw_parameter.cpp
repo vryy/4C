@@ -13,7 +13,7 @@ file as well as a quick access wrapper for those parameters
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
@@ -37,4 +37,4 @@ void CONTACT::CONSTITUTIVELAW::Container::Print(std::ostream& os) const
   INPAR::InputParameterContainer::Print(os);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

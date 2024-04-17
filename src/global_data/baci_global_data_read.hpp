@@ -15,7 +15,7 @@
 #include "baci_global_data.hpp"
 #include "baci_io_inputreader.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace GLOBAL
 {
@@ -53,6 +53,6 @@ namespace GLOBAL
   void ReadParticles(GLOBAL::Problem& problem, INPUT::DatFileReader& reader);
 }  // namespace GLOBAL
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

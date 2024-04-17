@@ -16,7 +16,7 @@
 #include "baci_geometry_pair_element_evaluation_functions.hpp"
 #include "baci_inpar_fbi.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /**
  *
@@ -167,4 +167,4 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
   return Teuchos::null;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

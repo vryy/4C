@@ -17,7 +17,7 @@
 #include "baci_so3_plast_ssn_eletypes.hpp"
 #include "baci_so3_sh18.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -207,6 +207,6 @@ namespace DRT
 
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

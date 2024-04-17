@@ -11,7 +11,7 @@
 
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /**
  *
@@ -79,4 +79,4 @@ void GEOMETRYPAIR::LineTo3DEvaluationData::ResetTracker()
   for (auto& data : segment_tracker_) data.second.clear();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

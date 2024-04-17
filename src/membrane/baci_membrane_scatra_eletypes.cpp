@@ -13,7 +13,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_membrane_scatra.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          sfuchs 05/18 |
@@ -225,4 +225,4 @@ void DRT::ELEMENTS::MembraneScatra_quad9Type::SetupElementDefinition(
       INPUT::LineDefinition::Builder(defs_membrane["QUAD9"]).AddNamedString("TYPE").Build();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

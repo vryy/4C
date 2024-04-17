@@ -14,7 +14,7 @@
 #include "baci_shell7p_line.hpp"
 #include "baci_shell7p_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::Shell7pType DRT::ELEMENTS::Shell7pType::instance_;
@@ -366,4 +366,4 @@ bool DRT::ELEMENTS::Shell7p::ReadElement(
   }
   return true;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

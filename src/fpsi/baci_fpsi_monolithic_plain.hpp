@@ -18,7 +18,7 @@
 #include "baci_fpsi_monolithic.hpp"
 #include "baci_inpar_fpsi.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace ADAPTER
@@ -238,6 +238,6 @@ namespace FPSI
   };  // class monolithic_plain
 }  // namespace FPSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

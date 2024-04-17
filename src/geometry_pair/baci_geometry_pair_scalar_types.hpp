@@ -16,7 +16,7 @@
 
 #include "baci_utils_fad.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -54,6 +54,6 @@ namespace GEOMETRYPAIR
           Sacado::ELRFad::SLFad<double, line::n_dof_ + surface::n_dof_>>::type;
 }  // namespace GEOMETRYPAIR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

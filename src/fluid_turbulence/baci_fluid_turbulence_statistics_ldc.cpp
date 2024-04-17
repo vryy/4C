@@ -16,7 +16,7 @@ lid-driven cavity.
 
 #include <fstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -1743,4 +1743,4 @@ void FLD::TurbulenceStatisticsLdc::WriteRestart(IO::DiscretizationWriter& writer
   //  writer.WriteRedundantDoubleVector("x3sumwT", x3sumwT_);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

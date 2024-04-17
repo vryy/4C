@@ -11,7 +11,7 @@
 
 #include "baci_art_net_artery_ele_calc.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -52,4 +52,4 @@ double DRT::ELEMENTS::ArteryEleCalc<distype>::CalculateEleLength(Artery* ele)
 // 1D elements
 template class DRT::ELEMENTS::ArteryEleCalc<CORE::FE::CellType::line2>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

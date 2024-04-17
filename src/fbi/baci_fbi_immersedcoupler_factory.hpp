@@ -21,7 +21,7 @@ namespace Teuchos
   class ParameterList;
 }
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace FBI
 {
@@ -55,6 +55,6 @@ namespace FBI
   };
 }  // namespace FBI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -24,7 +24,7 @@ functions for the traction.
 
 #include <unordered_set>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -418,4 +418,4 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPairMortar<t_hermite, t_nurbs27, t_line4>;
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

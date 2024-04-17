@@ -27,7 +27,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   /**
    * Class to test the local coupling matrices calculated by the beam to fluid meshtying gpts pair.

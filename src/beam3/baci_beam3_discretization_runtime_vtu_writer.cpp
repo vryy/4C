@@ -27,7 +27,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -1793,4 +1793,4 @@ void BeamDiscretizationRuntimeOutputWriter::AppendContinuousStressStrainResultan
     visualization_data.SetPointDataVector(field_names[i], stress_strain_vector[i], 1);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

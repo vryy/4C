@@ -13,7 +13,7 @@
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::EvaluateEquation(
@@ -62,7 +62,7 @@ CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::LinearCoupledEquation(
     int id, const std::vector<int>& dofs, std::vector<double> coefficients)
 {
   IO::cout(IO::debug) << "\nLinear coupled equation saved (ID: " << id << ")\n ";
-  IO::cout(IO::debug) << " 0 = ";  //#Todo
+  IO::cout(IO::debug) << " 0 = ";  // #Todo
 
   SetFirstRowId(id);
 
@@ -77,4 +77,4 @@ CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::LinearCoupledEquation(
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

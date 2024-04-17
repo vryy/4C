@@ -17,7 +17,7 @@
 #include "baci_mat_material.hpp"
 #include "baci_so3_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /// Several parameters which are fixed for Solid Pyramid5
 const int NUMNOD_SOP5 = 5;   ///< number of nodes
@@ -472,6 +472,6 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

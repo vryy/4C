@@ -21,7 +21,7 @@ the Baci guide in the Convention chapter.
 
 #define PY5TOL 1.0e-14
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::FE
 {
@@ -3194,6 +3194,6 @@ namespace CORE::FE
       const CORE::LINALG::Matrix<probdim, 1>& normal);
 }  // namespace CORE::FE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

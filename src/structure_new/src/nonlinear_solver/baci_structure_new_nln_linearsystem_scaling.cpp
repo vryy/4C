@@ -24,7 +24,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -120,4 +120,4 @@ void STR::NLN::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem& 
   disi->Update(1.0, *disisdc, 0.0);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

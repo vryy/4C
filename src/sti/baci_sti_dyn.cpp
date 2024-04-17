@@ -21,7 +21,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------------*
  | entry point for simulations of scalar-thermo interaction problems   fang 04/15 |
@@ -188,4 +188,4 @@ void sti_dyn(const int& restartstep  //! time step for restart
   return;
 }  // sti_dyn()
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

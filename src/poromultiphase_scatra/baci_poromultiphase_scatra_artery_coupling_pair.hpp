@@ -30,7 +30,7 @@ typedef Sacado::Fad::DFad<double> FAD;
 // forward declaration
 class Epetra_MultiVector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -728,6 +728,6 @@ namespace POROMULTIPHASESCATRA
 }  // namespace POROMULTIPHASESCATRA
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

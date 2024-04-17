@@ -33,7 +33,7 @@ namespace NOX
   }  // namespace Solver
 }  // namespace NOX
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -304,14 +304,14 @@ namespace NOX
           class Plot : public ::NOX::Observer
           {
            public:
-            Plot(const Teuchos::RCP<BACI::CONTACT::AUG::Plot>& plot_ptr);
+            Plot(const Teuchos::RCP<FourC::CONTACT::AUG::Plot>& plot_ptr);
 
             void runPreIterate(const ::NOX::Solver::Generic& solver) override;
             void runPostIterate(const ::NOX::Solver::Generic& solver) override;
 
            private:
-            Teuchos::RCP<BACI::CONTACT::AUG::Plot> plot_ptr_;
-            BACI::CONTACT::AUG::Plot& plot_;
+            Teuchos::RCP<FourC::CONTACT::AUG::Plot> plot_ptr_;
+            FourC::CONTACT::AUG::Plot& plot_;
           };  // class Plot
         }     // namespace CONTACT
       }       // namespace PrePostOp
@@ -320,6 +320,6 @@ namespace NOX
 }  // namespace NOX
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

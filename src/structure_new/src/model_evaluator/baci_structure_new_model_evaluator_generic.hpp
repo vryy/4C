@@ -32,7 +32,7 @@ namespace Teuchos
   class ParameterList;
 }  // namespace Teuchos
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
@@ -544,6 +544,6 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

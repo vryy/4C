@@ -11,7 +11,7 @@ continuum mechanics for finite element analysis", Cambridge, 1997.
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -88,4 +88,4 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddDerivativesPrincipal(CORE::LINALG::Matrix
   ddPII(2) += lambda / (4. * prinv(2) * prinv(2)) + mue / (2. * prinv(2) * prinv(2)) -
               (lambda * logdetf) / (2. * prinv(2) * prinv(2));
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

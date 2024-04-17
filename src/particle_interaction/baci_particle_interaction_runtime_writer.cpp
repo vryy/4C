@@ -17,7 +17,7 @@
 #include "baci_io_runtime_csv_writer.hpp"
 #include "baci_io_visualization_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -106,4 +106,4 @@ void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutp
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

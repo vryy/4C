@@ -12,7 +12,7 @@
 
 #include "baci_io_linedefinition.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             dano 08/12 |
@@ -275,7 +275,7 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::VisData(
 
 }  // VisData()
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*/
 // include the file at the end of so3_thermo.cpp

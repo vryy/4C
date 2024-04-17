@@ -19,7 +19,7 @@
 #include "baci_particle_engine_enums.hpp"
 #include "baci_particle_engine_typedefs.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -448,6 +448,6 @@ namespace PARTICLEENGINE
 }  // namespace PARTICLEENGINE
 
 /*---------------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

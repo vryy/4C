@@ -18,7 +18,7 @@
 
 #include <Epetra_Map.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -192,6 +192,6 @@ namespace IO
   };
 }  // namespace IO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

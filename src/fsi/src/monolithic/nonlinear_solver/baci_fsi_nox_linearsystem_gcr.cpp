@@ -22,7 +22,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
@@ -514,4 +514,4 @@ NOX::FSI::LinearSystemGCR::OperatorType NOX::FSI::LinearSystemGCR::getOperatorTy
   return EpetraOperator;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

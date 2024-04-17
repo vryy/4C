@@ -19,7 +19,7 @@
 
 #include <Sacado.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::FADUTILS
 {
@@ -281,6 +281,6 @@ namespace CORE::FADUTILS
 
 }  // namespace CORE::FADUTILS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

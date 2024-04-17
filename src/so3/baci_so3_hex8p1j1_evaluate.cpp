@@ -18,7 +18,7 @@
 
 #include <Epetra_SerialComm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -979,4 +979,4 @@ void DRT::ELEMENTS::So_Hex8P1J1::soh8P1J1_recover(const std::vector<double>& res
   p_ += dp_;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

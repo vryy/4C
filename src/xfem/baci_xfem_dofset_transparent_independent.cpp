@@ -13,7 +13,7 @@
 #include "baci_cut_cutwizard.hpp"
 #include "baci_cut_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
@@ -38,4 +38,4 @@ int XFEM::XFEMTransparentIndependentDofSet::NumDofPerNode(const DRT::Node &node)
   return DRT::DofSet::NumDofPerNode(node);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

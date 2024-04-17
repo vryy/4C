@@ -15,7 +15,7 @@ RedAirBloodScatraLine3 elements
 #include "baci_mat_maxwell_0d_acinus.hpp"
 #include "baci_red_airways_elementbase.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 using namespace DRT::UTILS;
 
@@ -235,4 +235,4 @@ bool DRT::ELEMENTS::RedAirBloodScatraLine3::ReadElement(
   return true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

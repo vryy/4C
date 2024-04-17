@@ -27,7 +27,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest
       : public ::testing::TestWithParam<std::tuple<int, int>>

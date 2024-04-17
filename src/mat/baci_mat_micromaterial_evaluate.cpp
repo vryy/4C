@@ -18,7 +18,7 @@
 #include "baci_mat_par_bundle.hpp"
 #include "baci_stru_multi_microstatic.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -304,4 +304,4 @@ void MAT::MicroMaterial::ReadRestart(
   actmicromatgp->ReadRestart();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

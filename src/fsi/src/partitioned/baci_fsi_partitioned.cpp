@@ -43,7 +43,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1012,4 +1012,4 @@ void FSI::Partitioned::ReadRestart(int step)
   }  // switch-case to be extended for other solver variants if necessary
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

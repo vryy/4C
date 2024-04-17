@@ -18,7 +18,7 @@
 
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -680,4 +680,4 @@ void STR::NLN::SOLVER::SetActiveSetParams(
   qlist.set<int>("Max Cycle Size", 3);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

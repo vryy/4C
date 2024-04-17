@@ -18,7 +18,7 @@
 
 #include <NOX_Solver_LineSearchBased.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -325,4 +325,4 @@ void NOX::NLN::StatusTest::NormUpdate::throwError(
   return ::NOX::StatusTest::Converged;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

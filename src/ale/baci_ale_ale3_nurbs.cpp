@@ -13,7 +13,7 @@
 
 #include "baci_so3_nullspace.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::NURBS::Ale3_NurbsType DRT::ELEMENTS::NURBS::Ale3_NurbsType::instance_;
 
@@ -112,4 +112,4 @@ CORE::FE::CellType DRT::ELEMENTS::NURBS::Ale3Nurbs::Shape() const
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

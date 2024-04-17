@@ -26,7 +26,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -806,4 +806,4 @@ double FSI::Monolithic::DtPast(const int step) const { return (*dt_)[step]; }
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::UpdateDtPast(const double dtnew) { dt_->UpdateSteps(dtnew); }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

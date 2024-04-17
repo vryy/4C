@@ -17,7 +17,7 @@
 #include "baci_contact_meshtying_lagrange_strategy.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
@@ -58,6 +58,6 @@ namespace CONTACT
 
   };  // class POROLagrangeStrategy
 }  // namespace CONTACT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

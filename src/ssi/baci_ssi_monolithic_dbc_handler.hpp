@@ -15,7 +15,7 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ADAPTER
 {
@@ -189,6 +189,6 @@ namespace SSI
       Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
       Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure);
 }  // namespace SSI
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

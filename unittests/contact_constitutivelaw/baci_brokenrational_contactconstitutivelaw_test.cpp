@@ -14,7 +14,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class BrokenrationalConstitutiveLawTest : public ::testing::Test
   {

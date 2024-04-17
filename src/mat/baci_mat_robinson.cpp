@@ -61,7 +61,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 11/11 |
@@ -1555,4 +1555,4 @@ void MAT::Robinson::IterativeUpdateOfInternalVariables(const int gp,
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

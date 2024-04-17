@@ -17,7 +17,7 @@
 
 #include "baci_utils_pairedvector.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEN
 {
@@ -498,6 +498,6 @@ namespace CORE::GEN
 }  // namespace CORE::GEN
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

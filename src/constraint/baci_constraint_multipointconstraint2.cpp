@@ -20,7 +20,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -383,4 +383,4 @@ void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
   }
 }  // end of EvaluateCondition
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

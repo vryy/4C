@@ -19,7 +19,7 @@
 #include "baci_so3_utils.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1410,4 +1410,4 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<CORE::FE::CellT
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<CORE::FE::CellType::nurbs3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<CORE::FE::CellType::nurbs9, 3>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

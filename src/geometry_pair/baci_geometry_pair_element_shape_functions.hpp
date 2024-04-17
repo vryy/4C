@@ -19,7 +19,7 @@ baci_geometry_pair_element.H
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_geometry_pair_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
@@ -254,6 +254,6 @@ namespace GEOMETRYPAIR
 
 }  // namespace GEOMETRYPAIR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -24,7 +24,7 @@
 
 #include <sstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 //! Number of linear subsegments used for visualization of beam centerline.
 #define BEAMSVTUVISUALSUBSEGMENTS 5
@@ -81,7 +81,7 @@ const std::string& PostVtuWriter::WriterPSuffix() const
 
 void PostVtuWriter::WriteGeo()
 {
-  using namespace BACI;
+  using namespace FourC;
 
   Teuchos::RCP<DRT::Discretization> dis = this->GetField()->discretization();
 
@@ -240,7 +240,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
@@ -358,7 +358,7 @@ void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
@@ -451,7 +451,7 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   if (myrank_ == 0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
@@ -522,7 +522,7 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
 void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
     int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   switch (ele->Shape())
   {
@@ -576,7 +576,7 @@ template <CORE::FE::CellType nurbs_type>
 void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
     int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   const unsigned NUMNODES = CORE::FE::num_nodes<nurbs_type>;
   const unsigned DIM = CORE::FE::dim<nurbs_type>;
@@ -635,7 +635,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 CORE::FE::CellType PostVtuWriter::MapNurbsDisTypeToLagrangeDisType(
     const CORE::FE::CellType nurbs_dis_type) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   switch (nurbs_dis_type)
   {
@@ -661,7 +661,7 @@ void PostVtuWriter::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   /* visualize the beam centerline as a sequence of straight line segments (POLY_LINE)
    * which is supported as vtkCellType number 4 (see also list in GetVtkElementType) */
@@ -690,7 +690,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   switch (ele->Shape())
   {
@@ -745,7 +745,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   const unsigned NUMNODES = CORE::FE::num_nodes<nurbs_type>;
   const unsigned DIM = CORE::FE::dim<nurbs_type>;
@@ -819,7 +819,7 @@ void PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* be
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   if (numdf != ncomponents or numdf != 3)
   {
@@ -879,7 +879,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
     const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   switch (ele->Shape())
   {
@@ -933,7 +933,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
     const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   const unsigned NUMNODES = CORE::FE::num_nodes<nurbs_type>;
   const unsigned DIM = CORE::FE::dim<nurbs_type>;
@@ -1057,4 +1057,4 @@ template void PostVtuWriter::WriteNodalResultStepNurbsEle<CORE::FE::CellType::nu
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

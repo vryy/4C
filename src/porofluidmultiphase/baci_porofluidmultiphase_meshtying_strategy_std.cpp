@@ -11,7 +11,7 @@
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_porofluidmultiphase_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                (public) kremheller 04/18 |
@@ -150,4 +150,4 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Setup() { return; }
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::ApplyMeshMovement() const { return; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

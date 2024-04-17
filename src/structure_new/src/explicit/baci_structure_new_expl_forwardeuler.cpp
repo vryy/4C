@@ -18,7 +18,7 @@
 #include "baci_structure_new_timint_base.hpp"
 #include "baci_structure_new_timint_basedataglobalstate.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -171,4 +171,4 @@ void STR::EXPLICIT::ForwardEuler::UpdateStepState()
   ModelEval().UpdateStepState(0.0);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

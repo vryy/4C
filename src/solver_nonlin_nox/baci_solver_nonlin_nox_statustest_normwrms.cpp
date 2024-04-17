@@ -20,7 +20,7 @@
 #include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -245,4 +245,4 @@ std::ostream& NOX::NLN::StatusTest::NormWRMS::print(std::ostream& stream, int in
   return stream;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

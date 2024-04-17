@@ -13,7 +13,7 @@
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_sti_monolithic.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/17 |
@@ -100,4 +100,4 @@ const STI::Monolithic& STI::STIResultTest::STIMonolithic() const
   return *sti_monolithic;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -34,7 +34,7 @@
 
 #include <cstddef>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
@@ -632,4 +632,4 @@ POROELAST::NoPenetrationConditionHandle::StructVelConstraintMatrix(POROELAST::co
   return Teuchos::null;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

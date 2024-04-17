@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace CONTACT
@@ -383,6 +383,6 @@ namespace CORE::GEN
 }  // namespace CORE::GEN
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

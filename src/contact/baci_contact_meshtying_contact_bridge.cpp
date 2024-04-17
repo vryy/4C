@@ -18,7 +18,7 @@
 #include "baci_mortar_manager_base.hpp"
 #include "baci_mortar_strategy_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 06/14|
@@ -239,4 +239,4 @@ Teuchos::RCP<MORTAR::ManagerBase> CONTACT::MeshtyingContactBridge::MtManager() c
   return mtman_;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

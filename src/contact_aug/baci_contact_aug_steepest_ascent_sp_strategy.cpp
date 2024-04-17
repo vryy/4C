@@ -19,7 +19,7 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_utils_epetra_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -214,4 +214,4 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::STEEPESTASCENT_SP::Strategy::GetKzzDia
   return active_mod_vec;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

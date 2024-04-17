@@ -20,7 +20,7 @@ elements
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -311,4 +311,4 @@ double BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::GetKineticEnergy() cons
   return linkele_->GetKineticEnergy();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

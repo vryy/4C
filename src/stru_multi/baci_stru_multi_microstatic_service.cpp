@@ -16,7 +16,7 @@
 #include "baci_stru_multi_microstatic.hpp"
 #include "baci_structure_aux.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 //-----------------------------------------------------------------------
@@ -362,4 +362,4 @@ void STRUMULTI::MicroStatic::PrintPredictor()
   fflush(stdout);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

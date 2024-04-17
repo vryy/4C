@@ -18,7 +18,7 @@
 #include <Epetra_CrsMatrix.h>
 #include <EpetraExt_Reindex_LinearProblem2.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINEAR_SOLVER
 {
@@ -78,6 +78,6 @@ namespace CORE::LINEAR_SOLVER
   };
 }  // namespace CORE::LINEAR_SOLVER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

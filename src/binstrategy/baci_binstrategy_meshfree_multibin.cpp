@@ -12,7 +12,7 @@
 
 #include "baci_binstrategy_meshfree_multibin.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /// class MeshfreeMultiBinType
 DRT::MESHFREE::MeshfreeMultiBinType DRT::MESHFREE::MeshfreeMultiBinType::instance_;
@@ -250,4 +250,4 @@ void DRT::MESHFREE::MeshfreeMultiBin::Unpack(const std::vector<char>& data)
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

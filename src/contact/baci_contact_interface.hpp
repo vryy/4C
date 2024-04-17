@@ -21,7 +21,7 @@
 // forward declarations
 class Epetra_FEVector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -1689,6 +1689,6 @@ namespace CONTACT
 std::ostream& operator<<(std::ostream& os, const CONTACT::Interface& interface);
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

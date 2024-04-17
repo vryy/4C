@@ -31,7 +31,7 @@
 #include "baci_w1_poro_eletypes.hpp"
 #include "baci_w1_poro_p1_eletypes.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
 {
@@ -477,4 +477,4 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

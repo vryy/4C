@@ -12,7 +12,7 @@
 
 #include "baci_stru_multi_microstatic.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void STRUMULTI::MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
     const CORE::LINALG::Matrix<3, 3>& F_inv, const CORE::LINALG::Matrix<6, 1>& S,
@@ -143,4 +143,4 @@ void STRUMULTI::MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

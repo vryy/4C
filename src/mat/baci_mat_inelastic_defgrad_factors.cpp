@@ -19,7 +19,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -1141,4 +1141,4 @@ void MAT::InelasticDefgradTimeFunct::PreEvaluate(Teuchos::ParameterList& params,
   const double time = params.get<double>("total time");
   funct_value_ = funct.Evaluate(time);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

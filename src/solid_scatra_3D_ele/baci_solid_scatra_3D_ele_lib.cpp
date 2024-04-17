@@ -8,7 +8,7 @@
 
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 INPAR::SCATRA::ImplType DRT::ELEMENTS::ReadScatraImplType(
     const INPUT::LineDefinition& line_definition)
@@ -40,4 +40,4 @@ INPAR::SCATRA::ImplType DRT::ELEMENTS::ReadScatraImplType(
   dserror("The input type %s is not valud for SOLIDSCATRA elements!", impltype.c_str());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

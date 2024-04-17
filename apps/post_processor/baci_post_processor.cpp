@@ -18,7 +18,7 @@
 #include <Epetra_MpiComm.h>
 
 
-using namespace BACI;
+using namespace FourC;
 namespace
 {
 

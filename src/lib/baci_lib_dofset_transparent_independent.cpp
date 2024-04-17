@@ -15,7 +15,7 @@
 #include "baci_lib_dofset.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -52,4 +52,4 @@ int DRT::TransparentIndependentDofSet::NumDofPerNode(const DRT::Node& node) cons
   return DRT::DofSet::NumDofPerNode(node);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

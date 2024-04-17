@@ -19,7 +19,7 @@
 
 #include <Epetra_Vector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -96,4 +96,4 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
   if (not ok) tangdis_ptr_->Compute(grp);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -28,7 +28,7 @@
 
 #include <Teuchos_Time.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
@@ -410,6 +410,6 @@ namespace FPSI
 
 }  // namespace FPSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

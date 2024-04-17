@@ -13,7 +13,7 @@
 
 #include <Teuchos_ScalarTraits.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void CORE::LINALG::SVD(const CORE::LINALG::SerialDenseMatrix::Base& A,
     CORE::LINALG::SerialDenseMatrix& Q, CORE::LINALG::SerialDenseMatrix& S,
@@ -44,4 +44,4 @@ void CORE::LINALG::SVD(const CORE::LINALG::SerialDenseMatrix::Base& A,
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

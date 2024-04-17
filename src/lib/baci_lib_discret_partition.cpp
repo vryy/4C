@@ -17,7 +17,7 @@
 
 #include <Epetra_FECrsGraph.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -890,4 +890,4 @@ void DRT::Discretization::SetupGhosting(
       *noderowmap, *nodecolmap, assigndegreesoffreedom, initelements, doboundaryconditions);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

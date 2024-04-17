@@ -31,7 +31,7 @@
 #include "baci_utils_function.hpp"
 #include "baci_utils_local_newton.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -743,4 +743,4 @@ bool MAT::PlasticNlnLogNeoHooke::EvaluateOutputData(
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

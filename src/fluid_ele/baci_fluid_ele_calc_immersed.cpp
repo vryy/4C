@@ -16,7 +16,7 @@
 #include "baci_fluid_ele_tds.hpp"
 #include "baci_global_data.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>*
@@ -509,4 +509,4 @@ template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

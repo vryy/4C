@@ -21,7 +21,7 @@ approach)
 #include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 #include "baci_utils_local_newton.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -851,4 +851,4 @@ bool MAT::Muscle_Giantesio::IsActive(const double& currentTime)
 
   return isActive;
 };
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

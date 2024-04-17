@@ -19,7 +19,7 @@
 #include <string>
 #include <type_traits>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE
 {
@@ -136,8 +136,8 @@ namespace CORE
  * @endcode
  */
 #define dserror \
-  BACI::CORE::INTERNAL::ErrorHelper { __FILE__, __LINE__ }
+  FourC::CORE::INTERNAL::ErrorHelper { __FILE__, __LINE__ }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

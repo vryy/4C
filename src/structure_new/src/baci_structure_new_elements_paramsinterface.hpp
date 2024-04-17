@@ -26,7 +26,7 @@
 
 #include <unordered_map>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace CORE::GEO
@@ -247,6 +247,6 @@ namespace BROWNIANDYN
 }  // namespace BROWNIANDYN
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

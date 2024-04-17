@@ -17,7 +17,7 @@
 
 #include <cmath>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -434,4 +434,4 @@ double MAT::UTILS::MUSCLE::ContractionVelocityBWEuler(
   double dotLambdaM = (lambdaM - lambdaMOld) / timeStepSize;
   return dotLambdaM;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

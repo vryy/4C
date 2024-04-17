@@ -14,7 +14,7 @@
 #include "baci_particle_wall_datastate.hpp"
 #include "baci_particle_wall_interface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -93,4 +93,4 @@ void PASI::PASI_PartOneWayCoup::Output()
   ParticleOutput();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

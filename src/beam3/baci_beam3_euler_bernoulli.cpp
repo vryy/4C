@@ -17,7 +17,7 @@
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -572,4 +572,4 @@ void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(
       "a full triad; think about replacing it by GetTangentAtXi or another solution.");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

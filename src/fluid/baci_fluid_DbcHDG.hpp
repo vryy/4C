@@ -17,7 +17,7 @@
 #include "baci_lib_utils_discret.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT::UTILS
 {
@@ -79,6 +79,6 @@ namespace FLD
 
 }  // namespace FLD
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

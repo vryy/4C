@@ -34,7 +34,7 @@
 #include "baci_mat_par_bundle.hpp"
 #include "baci_tsi_defines.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 04/11 |
@@ -1141,4 +1141,4 @@ bool MAT::PlasticLinElast::VisData(
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

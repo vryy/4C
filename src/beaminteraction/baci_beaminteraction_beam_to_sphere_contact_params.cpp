@@ -12,7 +12,7 @@
 
 #include "baci_global_data.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*-----------------------------------------------------------------------------------------------*
@@ -52,4 +52,4 @@ void BEAMINTERACTION::BeamToSphereContactParams::Setup()
   issetup_ = true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

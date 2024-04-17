@@ -14,7 +14,7 @@
 
 #include "baci_lib_resulttest.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace DRT
@@ -68,6 +68,6 @@ namespace SSI
     const Teuchos::RCP<const SSI::SSIBase> ssi_base_;
   };
 }  // namespace SSI
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

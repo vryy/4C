@@ -17,7 +17,7 @@ function)
 
 #include <cmath>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -613,4 +613,4 @@ template class MAT::BeamPlasticMaterial<double>;
 
 template class MAT::BeamElastPlasticMaterialType<double>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

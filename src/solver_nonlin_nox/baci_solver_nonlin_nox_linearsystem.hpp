@@ -22,7 +22,7 @@
 #include <NOX_Epetra_LinearSystem.H>
 #include <Teuchos_Time.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // Forward declaration
 namespace CORE::LINALG
@@ -387,6 +387,6 @@ namespace NOX
   }  // namespace NLN
 }  // namespace NOX
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

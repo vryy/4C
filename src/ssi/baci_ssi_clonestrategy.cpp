@@ -18,7 +18,7 @@
 #include "baci_mat_par_material.hpp"
 #include "baci_scatra_ele.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -164,4 +164,4 @@ bool SSI::ScatraStructureCloneStrategy::DetermineEleType(
   return true;  // yes, we copy EVERY element (no submeshes)
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

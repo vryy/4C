@@ -16,7 +16,7 @@
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | set the particle parameters                                sfuchs 03/2018 |
@@ -547,4 +547,4 @@ void INPAR::PARTICLE::SetValidConditions(
   condlist.push_back(surfpartwall);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

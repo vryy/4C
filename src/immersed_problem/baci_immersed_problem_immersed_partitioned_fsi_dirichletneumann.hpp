@@ -21,7 +21,7 @@ namespace Teuchos
   class Time;
 }
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace FLD
 {
@@ -239,6 +239,6 @@ namespace IMMERSED
   };  // class ImmersedFSI
 }  // namespace IMMERSED
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

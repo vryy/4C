@@ -17,7 +17,7 @@
 #include "baci_bele_bele3.hpp"
 #include "baci_fluid_ele_calc_xfem_coupling_impl.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 using namespace DRT::ELEMENTS::XFLUID;
 
@@ -697,4 +697,4 @@ template class DRT::ELEMENTS::XFLUID::HybridLMInterface<CORE::FE::CellType::wedg
 // template class
 // DRT::ELEMENTS::XFLUID::HybridLMInterface<CORE::FE::CellType::pyramid5>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

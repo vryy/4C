@@ -28,7 +28,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 NOX::FSI::MinimalPolynomial::MinimalPolynomial(
     const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params)
@@ -230,4 +230,4 @@ void NOX::FSI::MinimalPolynomial::throwError(
   throw "NOX Error";
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

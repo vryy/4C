@@ -29,7 +29,7 @@ namespace Teuchos
   class RCP;
 }
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace INPUT
 {
@@ -152,6 +152,6 @@ const T& CORE::UTILS::FunctionManager::FunctionById(int num) const
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

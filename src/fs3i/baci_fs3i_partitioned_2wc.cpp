@@ -22,7 +22,7 @@
 #include "baci_scatra_algorithm.hpp"
 #include "baci_scatra_timint_loma.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -434,4 +434,4 @@ void FS3I::PartFS3I_2WC::TimeUpdateAndOutput()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

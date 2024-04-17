@@ -23,7 +23,7 @@
 #include "baci_mat_material.hpp"
 #include "baci_so3_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace STR
 {
@@ -805,6 +805,6 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -14,7 +14,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_w1_poro_p1_scatra.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                        schmidt 09/17 |
@@ -208,4 +208,4 @@ void DRT::ELEMENTS::WallTri3PoroP1ScatraType::SetupElementDefinition(
       INPUT::LineDefinition::Builder(defs_wallporo["TRI3"]).AddNamedString("TYPE").Build();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

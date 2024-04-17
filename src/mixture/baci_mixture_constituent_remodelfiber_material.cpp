@@ -10,7 +10,7 @@
 
 #include <Sacado.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <typename T>
 MIXTURE::PAR::RemodelFiberMaterial<T>::RemodelFiberMaterial(
@@ -21,4 +21,4 @@ MIXTURE::PAR::RemodelFiberMaterial<T>::RemodelFiberMaterial(
 
 template class MIXTURE::PAR::RemodelFiberMaterial<double>;
 template class MIXTURE::PAR::RemodelFiberMaterial<Sacado::Fad::DFad<double>>;
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -20,7 +20,7 @@
 #include "baci_scatra_ele_boundary_interface.hpp"
 #include "baci_scatra_ele_calc_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace FLD
 {
@@ -591,6 +591,6 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

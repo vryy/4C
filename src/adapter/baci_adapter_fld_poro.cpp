@@ -23,7 +23,7 @@
 #include "baci_lib_condition_utils.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
@@ -195,4 +195,4 @@ void ADAPTER::FluidPoro::Output(const int step, const double time)
   }  // write extra output
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -25,7 +25,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   /**
    * \brief Fill a discretization with the geometry for the unit test.
@@ -34,7 +34,7 @@ namespace
   void XtestSurfacePatchQuad4(const Teuchos::RCP<DRT::Discretization>& discret,
       std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements_map)
   {
-    using namespace BACI;
+    using namespace FourC;
 
     // The order here is the following: First all x-values, then y-values and then z-values.
     std::vector<double> points = {1, 0.914608710081328, 0.613445400072412, 0.666666666666667, 1,

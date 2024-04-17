@@ -17,7 +17,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 CORE::UTILS::FunctionVariable::FunctionVariable(std::string name) : name_(std::move(name)) {}
@@ -592,4 +592,4 @@ std::vector<double> CORE::UTILS::INTERNAL::ExtractTimeVector(const INPUT::LineDe
   return times;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

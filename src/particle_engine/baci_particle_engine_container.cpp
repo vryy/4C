@@ -12,7 +12,7 @@
 
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -258,4 +258,4 @@ double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(ParticleState state
   return max;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -21,7 +21,7 @@
 
 namespace ArborX
 {
-  using namespace BACI;
+  using namespace FourC;
 
   template <>
   struct AccessTraits<std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>,
@@ -67,7 +67,7 @@ namespace ArborX
 
 #endif
 
-BACI_NAMESPACE_OPEN
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -29,7 +29,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -690,6 +690,6 @@ namespace CONTACT
   };  // class Beam3cmanager
 }  // namespace CONTACT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

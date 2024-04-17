@@ -18,7 +18,7 @@
 
 #include <sstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                              bborn 08/09 |
@@ -1209,4 +1209,4 @@ void THR::TimIntImpl::FDCheck()
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

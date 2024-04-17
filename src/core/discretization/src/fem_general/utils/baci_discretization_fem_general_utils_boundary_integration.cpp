@@ -11,7 +11,7 @@
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /* compute kovariant metric tensor G for surface element     gammi 04/07
@@ -620,4 +620,4 @@ void CORE::FE::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
 template CORE::LINALG::Matrix<3, 1> CORE::FE::CalculateParentGPFromFaceElementData<3>(
     const double* faceele_xi, const DRT::FaceElement* faceele);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

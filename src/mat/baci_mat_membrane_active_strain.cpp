@@ -22,7 +22,7 @@
 #include "baci_mat_membrane_elasthyper.hpp"
 #include "baci_mat_par_bundle.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                     brandstaeter 05/2018 |
@@ -597,4 +597,4 @@ void MAT::Membrane_ActiveStrain::Voigt3Index(int i, int j, int* p)
     *p = 2;
 }  // MAT::Membrane_ActiveStrain::Voigt3Index
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

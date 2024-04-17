@@ -25,7 +25,7 @@ problem
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace FLD
@@ -317,6 +317,6 @@ namespace FLD
   }  // namespace UTILS
 }  // namespace FLD
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

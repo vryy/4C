@@ -14,7 +14,7 @@
 
 #include "baci_ssi_partitioned.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace SSI
 {
@@ -128,6 +128,6 @@ namespace SSI
 
 }  // namespace SSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

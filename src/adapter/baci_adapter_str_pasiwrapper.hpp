@@ -23,7 +23,7 @@
 #include "baci_adapter_str_wrapper.hpp"
 #include "baci_pasi_str_model_evaluator_partitioned.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                 |
@@ -83,6 +83,6 @@ namespace ADAPTER
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

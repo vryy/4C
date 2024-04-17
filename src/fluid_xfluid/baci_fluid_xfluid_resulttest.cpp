@@ -18,7 +18,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluid& xfluid)
@@ -118,4 +118,4 @@ void FLD::XFluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int&
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

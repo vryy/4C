@@ -19,7 +19,7 @@
 #include <iostream>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*!
 \brief Returns the base function when the boundaycell is projected in y-z plane
@@ -1714,6 +1714,6 @@ double base_func_surfZ(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
   return 0.0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

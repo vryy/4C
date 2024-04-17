@@ -14,7 +14,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCPDecl.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
@@ -125,6 +125,6 @@ namespace SSI
       Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
       Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, CORE::LINALG::MatrixType matrixtype_scatra);
 }  // namespace SSI
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

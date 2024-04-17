@@ -20,7 +20,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -64,4 +64,4 @@ void STR::TimAdaZienXie::IntegrateStepAuxiliar()
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

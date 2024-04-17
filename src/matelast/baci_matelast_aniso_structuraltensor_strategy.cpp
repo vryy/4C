@@ -15,7 +15,7 @@ materials
 #include "baci_mat_par_material.hpp"
 #include "baci_mat_service.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(
@@ -325,4 +325,4 @@ double MAT::ELASTIC::StructuralTensorStrategyBase::GetResidualTol()
 
   return restol;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

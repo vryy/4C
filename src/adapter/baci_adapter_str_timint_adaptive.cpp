@@ -16,7 +16,7 @@
 #include "baci_structure_timint.hpp"
 #include "baci_structure_timint_create.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*======================================================================*/
@@ -49,4 +49,4 @@ void ADAPTER::StructureTimIntAda::Output() { sta_->OutputPeriod(); }
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

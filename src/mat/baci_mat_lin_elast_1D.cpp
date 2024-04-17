@@ -15,7 +15,7 @@ quantity (e.g. concentration)
 #include "baci_mat_par_bundle.hpp"
 #include "baci_utils_function_library.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -276,4 +276,4 @@ double MAT::LinElast1DGrowth::GetGrowthFactorAoSPropDeriv(
   return first_deriv * conc;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

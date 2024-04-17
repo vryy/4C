@@ -119,7 +119,7 @@
 #include "baci_mat_viscoplastic_no_yield_surface.hpp"
 #include "baci_mat_yoghurt.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -1145,4 +1145,4 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   return Teuchos::null;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -28,7 +28,7 @@
 
 using FAD = Sacado::Fad::DFad<double>;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <typename T>
 void MAT::AddtoCmatHolzapfelProduct(
@@ -1248,4 +1248,4 @@ template void MAT::Setup6x6VoigtMatrix<3>(
 
 template void MAT::TransposeFourTensor12<3>(
     CORE::LINALG::FourTensor<3>& resultTensor, const CORE::LINALG::FourTensor<3>& inputTensor);
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

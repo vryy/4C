@@ -28,7 +28,7 @@
 
 #include <Sacado.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
 namespace CORE::LINALG
@@ -633,6 +633,6 @@ namespace BEAMINTERACTION
   };
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

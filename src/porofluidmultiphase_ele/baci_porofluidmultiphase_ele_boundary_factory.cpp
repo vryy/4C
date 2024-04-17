@@ -15,7 +15,7 @@
 #include "baci_porofluidmultiphase_ele_boundary_calc.hpp"
 #include "baci_porofluidmultiphase_ele_interface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*--------------------------------------------------------------------------*
@@ -79,4 +79,4 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::DefineProblemType(
       numdofpernode, disname);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

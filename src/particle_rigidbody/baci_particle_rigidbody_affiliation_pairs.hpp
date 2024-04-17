@@ -22,7 +22,7 @@
 #include <unordered_map>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
@@ -170,6 +170,6 @@ namespace PARTICLERIGIDBODY
 }  // namespace PARTICLERIGIDBODY
 
 /*---------------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

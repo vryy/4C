@@ -21,7 +21,7 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -1320,4 +1320,4 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
       (*eas_inc)[0], (*alpha)[0], step_length, Owner());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -19,7 +19,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
   using namespace DRT::UTILS;
 
   TEST(UtilsReaderTests, SplitStringSeparatorInString)

@@ -13,7 +13,7 @@ Iterate the symbol table and visit all entries.
 
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -145,4 +145,4 @@ int next_map_node(MAP_ITERATOR* iterator)
 /*----------------------------------------------------------------------*/
 MAP_NODE* iterator_get_node(MAP_ITERATOR* iterator) { return iterator->stack.head.snext->map_node; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

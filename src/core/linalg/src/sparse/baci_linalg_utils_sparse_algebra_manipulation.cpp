@@ -14,7 +14,7 @@
 
 #include <Epetra_IntVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  export a Epetra_Vector                                   mwgee 12/06|
@@ -647,4 +647,4 @@ void CORE::LINALG::EpetraMultiVectorToStdVector(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

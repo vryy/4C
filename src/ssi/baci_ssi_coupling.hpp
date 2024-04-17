@@ -18,7 +18,7 @@
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_ssi_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace ADAPTER
@@ -405,6 +405,6 @@ namespace SSI
 }  // namespace SSI
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

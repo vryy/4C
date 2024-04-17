@@ -11,7 +11,7 @@
 
 #include "baci_mortar_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  |  ctor                                               (public) ghamm 11/12 |
@@ -59,4 +59,4 @@ template class DRT::MESHFREE::MeshfreeBin<DRT::Element>;
 template class DRT::MESHFREE::MeshfreeBin<DRT::FaceElement>;
 template class DRT::MESHFREE::MeshfreeBin<MORTAR::Element>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

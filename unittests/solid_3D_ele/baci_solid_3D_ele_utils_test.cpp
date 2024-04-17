@@ -14,7 +14,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   CORE::LINALG::Matrix<3, 3> GetF()
   {

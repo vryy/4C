@@ -15,7 +15,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::Vele3Type DRT::ELEMENTS::Vele3Type::instance_;
 
@@ -230,4 +230,4 @@ bool DRT::ELEMENTS::Vele3::ReadElement(
   return true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -20,7 +20,7 @@ to be called!
 #include "baci_contact_lagrange_strategy.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ADAPTER
 {
@@ -142,6 +142,6 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

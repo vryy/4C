@@ -26,7 +26,7 @@
 
 #include <sstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 PostVtuWriterNode::PostVtuWriterNode(PostField* field, const std::string& filename)
     : PostVtuWriter(field, filename)
@@ -84,7 +84,7 @@ const std::string& PostVtuWriterNode::WriterPSuffix() const
 
 void PostVtuWriterNode::WriteGeo()
 {
-  using namespace BACI;
+  using namespace FourC;
 
   Teuchos::RCP<DRT::Discretization> dis = this->GetField()->discretization();
 
@@ -254,7 +254,7 @@ void PostVtuWriterNode::WriteDofResultStep(std::ofstream& file,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
@@ -351,7 +351,7 @@ void PostVtuWriterNode::WriteNodalResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
@@ -464,4 +464,4 @@ void PostVtuWriterNode::WriteNodalResultStepNurbsEle(const DRT::Element* ele, in
   dserror("VTU node based filter cannot handle NURBS elements");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -18,7 +18,7 @@
 #include <stdexcept>  // for std_runtime_error
 #include <unordered_map>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 #define DEBUG_MEMORY false
@@ -648,4 +648,4 @@ void CORE::GEO::CUT::CustomMemoryManager::Delete()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

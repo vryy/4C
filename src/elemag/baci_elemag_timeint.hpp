@@ -30,7 +30,7 @@
 
 #include <fstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | forward declarations                                gravemeier 06/17 |
@@ -368,6 +368,6 @@ namespace ELEMAG
 
 }  // namespace ELEMAG
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

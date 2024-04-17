@@ -29,7 +29,7 @@
 #include "baci_lib_xfem_dofset.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // #define DEBUG_TIMINT_STD
 
@@ -3421,4 +3421,4 @@ void XFEM::XFLUID_STD::exportFinalData()
   }  // end loop over processors
 }  // end exportfinalData
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

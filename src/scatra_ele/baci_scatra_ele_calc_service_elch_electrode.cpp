@@ -15,7 +15,7 @@ within electrodes
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
@@ -362,4 +362,4 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::pyr
 // template class
 // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

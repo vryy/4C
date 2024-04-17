@@ -20,7 +20,7 @@
 #include <map>
 #include <set>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
@@ -536,6 +536,6 @@ namespace BEAMINTERACTION
   }  // namespace DATA
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

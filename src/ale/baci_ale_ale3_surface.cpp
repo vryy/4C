@@ -12,7 +12,7 @@
 #include "baci_ale_ale3.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::Ale3SurfaceType DRT::ELEMENTS::Ale3SurfaceType::instance_;
@@ -89,4 +89,4 @@ void DRT::ELEMENTS::Ale3Surface::Print(std::ostream& os) const
   Element::Print(os);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

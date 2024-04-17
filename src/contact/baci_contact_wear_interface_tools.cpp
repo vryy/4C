@@ -23,7 +23,7 @@
 #include "baci_mortar_element.hpp"
 #include "baci_mortar_integrator.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -3794,4 +3794,4 @@ void WEAR::WearInterface::FDCheckWearDeriv()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

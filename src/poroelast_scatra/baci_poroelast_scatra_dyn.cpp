@@ -17,7 +17,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 void poro_scatra_drt()
@@ -57,4 +57,4 @@ void poro_scatra_drt()
   poro_scatra->TestResults(comm);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -22,7 +22,7 @@
 #include <Shards_BasicTopologies.hpp>
 #include <Shards_CellTopologyTraits.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /* Initialize a Mesh within an element. This is done if a TetMesh is created but can't be filled in
    FillFacetMesh(). Basically this constructor converts the data structure used for TetMesh into the
@@ -1311,4 +1311,4 @@ void CORE::GEO::CUT::TetMeshIntersection::CopyCutSide(Side* s, Facet* f)
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

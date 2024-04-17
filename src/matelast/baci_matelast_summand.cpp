@@ -56,7 +56,7 @@
 #include "baci_matelast_volpow.hpp"
 #include "baci_matelast_volsussmanbathe.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
 {
@@ -503,4 +503,4 @@ void MAT::ELASTIC::Summand::EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<
         "function with respect to the anisotropic invariants. You need to implement them.");
   }
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

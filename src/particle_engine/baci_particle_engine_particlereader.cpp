@@ -23,7 +23,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*---------------------------------------------------------------------------*
@@ -202,4 +202,4 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

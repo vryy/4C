@@ -29,7 +29,7 @@
 #include <NOX_Epetra_Vector.H>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -148,4 +148,4 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::BuildLinearSystem
       linsystype, noxNlnGlobalData, jac, cloneVector, precMat, scalingObject);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

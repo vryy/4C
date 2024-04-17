@@ -13,7 +13,7 @@
 #include "baci_mortar_node.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor BaseBinaryTree (public)                           schmidt 01/19|
@@ -566,4 +566,4 @@ void MORTAR::BaseBinaryTreeNode::PlotGmshTriangle(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

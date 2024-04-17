@@ -34,7 +34,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_fixedsizeblockmatrix.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -519,6 +519,6 @@ namespace DRT
   }    // end namespace ELEMENTS
 }  // end namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

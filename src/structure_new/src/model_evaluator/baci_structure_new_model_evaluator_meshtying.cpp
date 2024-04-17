@@ -39,7 +39,7 @@
 #include "baci_structure_new_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -528,4 +528,4 @@ void STR::MODELEVALUATOR::Meshtying::SetTimeIntegrationInfo(
   strategy.SetTimeIntegrationInfo(time_fac, dyntype);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

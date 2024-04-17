@@ -16,7 +16,7 @@ distributions
 #include <Epetra_Distributor.h>
 #include <Epetra_Export.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -175,4 +175,4 @@ void MORTAR::MatrixRowColTransformer::ResetExporter(Teuchos::RCP<Epetra_Export>&
   exporter = Teuchos::rcp(new Epetra_Export(*exporter));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

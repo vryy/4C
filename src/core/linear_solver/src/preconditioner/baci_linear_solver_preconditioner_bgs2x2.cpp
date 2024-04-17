@@ -15,7 +15,7 @@
 
 #include <ml_MultiLevelPreconditioner.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -197,4 +197,4 @@ void CORE::LINALG::BGS2x2_Operator::LocalBlockRichardson(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

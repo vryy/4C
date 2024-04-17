@@ -19,7 +19,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class GeometricSearch : public ::testing::Test
   {

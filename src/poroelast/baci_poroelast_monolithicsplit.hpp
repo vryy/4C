@@ -17,7 +17,7 @@
 #include "baci_coupling_adapter.hpp"
 #include "baci_poroelast_monolithic.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace POROELAST
 {
@@ -130,6 +130,6 @@ namespace POROELAST
   };
 }  // namespace POROELAST
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -19,7 +19,7 @@ is just a "control instance".
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -201,4 +201,4 @@ int MAT::MatListChemotaxis::PairID(const unsigned index) const
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

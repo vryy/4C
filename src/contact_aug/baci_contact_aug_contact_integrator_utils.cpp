@@ -20,7 +20,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // #define DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
 
@@ -851,4 +851,4 @@ template void CONTACT::INTEGRATOR::GetElementNodalDofs(
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
     const MORTAR::Element& ele, CORE::LINALG::Matrix<3, 9, int>& nodal_dofs);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

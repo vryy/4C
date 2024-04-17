@@ -26,7 +26,7 @@
 #include <iostream>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -210,4 +210,4 @@ void loma_dyn(int restart)
 
 }  // loma_dyn()
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

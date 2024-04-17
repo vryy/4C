@@ -14,7 +14,7 @@
 #include "baci_fluid_utils_mapextractor.hpp"
 #include "baci_fpsi_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /* constructor */
@@ -71,4 +71,4 @@ void ADAPTER::FluidFPSI::UseBlockMatrix(bool splitmatrix)
       *Interface(), splitmatrix);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

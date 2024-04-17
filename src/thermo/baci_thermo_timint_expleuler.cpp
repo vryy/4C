@@ -15,7 +15,7 @@
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_thermo_ele_action.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -191,4 +191,4 @@ void THR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWrit
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

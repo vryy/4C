@@ -15,7 +15,7 @@ multi-scale framework
 
 #include "baci_scatra_ele_calc_elch_diffcond.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -117,6 +117,6 @@ namespace DRT
     };
   }  // namespace ELEMENTS
 }  // namespace DRT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

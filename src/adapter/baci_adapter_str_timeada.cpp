@@ -22,7 +22,7 @@
 #include "baci_structure_new_dbc.hpp"
 #include "baci_structure_new_timint_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -614,4 +614,4 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
   return INPAR::STR::conv_success;  // make compiler happy
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

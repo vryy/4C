@@ -14,7 +14,7 @@
 #include "baci_red_airways_elementbase.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 using namespace CORE::FE;
 
@@ -263,4 +263,4 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::RedInterAcinarDep::Lines(
   return {Teuchos::rcpFromRef(*this)};
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
