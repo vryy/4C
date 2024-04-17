@@ -742,10 +742,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
     int contactconstitutivelaw_id = *currentgroup[0]->Get<int>("ConstitutiveLawID");
 
+    // Initialize a flag to check for MIRCO contact consitutive law
     bool mircolaw = false;
 
-#ifdef BACI_WITH_MIRCO
-
+    // Initialize the variables to create a RoughNode for MIRCO
     int resolution = 0;
     bool randomtopologyflag = false;
     bool randomseedflag = false;
@@ -759,6 +759,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           GLOBAL::Problem::Instance()->ContactConstitutiveLaws()->GetReadFromProblem();
       auto coconstlaw = GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws()->ById(
           contactconstitutivelaw_id);
+      // Set the variables if MIRCO contact constitutive law is found
       if (coconstlaw->Name() == "CoConstLaw_mirco")
       {
         mircolaw = true;
@@ -771,8 +772,6 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
             *coconstlaw->Get<int>("InitialTopologyStdDeviationFunct");
       }
     }
-
-#endif
 
     // find out which sides are Master and Slave
     std::vector<bool> isslave(0);
@@ -1016,12 +1015,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           Teuchos::RCP<CONTACT::Node> cnode;
           if (mircolaw == true)
           {
-#ifdef BACI_WITH_MIRCO
             cnode = Teuchos::rcp(new CONTACT::RoughNode(node->Id(), node->X(), node->Owner(),
                 Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive,
                 hurstexponentfunction, initialtopologystddeviationfunction, resolution,
                 randomtopologyflag, randomseedflag, randomgeneratorseed));
-#endif
           }
           else
           {
