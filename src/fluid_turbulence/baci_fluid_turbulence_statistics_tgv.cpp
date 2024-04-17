@@ -17,7 +17,7 @@
 
 #include <fstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------
                   Standard Constructor (public)
@@ -1011,4 +1011,4 @@ void FLD::TurbulenceStatisticsTgv::ClearStatistics()
   return;
 }  // TurbulenceStatisticsTvg::ClearStatistics
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -15,7 +15,7 @@ growth, e.g., lithium plating
 
 #include "baci_scatra_ele_boundary_calc_elch_electrode.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -150,6 +150,6 @@ namespace DRT
     };  // class ScaTraEleBoundaryCalcElchElectrodeGrowth
   }     // namespace ELEMENTS
 }  // namespace DRT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

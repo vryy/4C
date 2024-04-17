@@ -12,7 +12,7 @@
 
 #include "baci_linalg_serialdensematrix.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*
  * \note The values for the matrix used in tests below are generated with Mathematica:
@@ -346,4 +346,4 @@ namespace
   }
 }  // namespace
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -18,7 +18,7 @@
 #include "baci_beaminteraction_str_model_evaluator_datastate.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -324,4 +324,4 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor() const
   return *eletypeextractor_;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

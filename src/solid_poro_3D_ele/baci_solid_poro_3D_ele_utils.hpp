@@ -15,7 +15,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace STR::UTILS::READELEMENT
 {
@@ -75,6 +75,6 @@ namespace STR::UTILS::READELEMENT
 
 }  // namespace STR::UTILS::READELEMENT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

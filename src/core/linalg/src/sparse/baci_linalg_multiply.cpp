@@ -17,7 +17,7 @@
 #include <MLAPI_Operator_Utils.h>
 #include <MLAPI_Workspace.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 02/08|
@@ -202,4 +202,4 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(const Epetra_C
   return Teuchos::rcp(new SparseMatrix(result, View, explicitdirichlet, savegraph));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

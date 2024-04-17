@@ -21,7 +21,7 @@ transport problems
 
 #include <filesystem>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // instantiate static maps
 std::map<int, Teuchos::RCP<SCATRA::TimIntOneStepTheta>>
@@ -584,4 +584,4 @@ void MAT::ScatraMultiScaleGP::SetTimeStepping(const double dt, const double time
   microtimint->SetDt(dt);
   microtimint->SetTimeStep(time, step);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

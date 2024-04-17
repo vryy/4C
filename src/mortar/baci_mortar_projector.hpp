@@ -17,7 +17,7 @@
 #include "baci_utils_pairedvector.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MORTAR
 {
@@ -469,6 +469,6 @@ namespace MORTAR
 }  // namespace MORTAR
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

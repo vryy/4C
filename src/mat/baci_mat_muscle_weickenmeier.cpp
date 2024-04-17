@@ -19,7 +19,7 @@ approach)
 #include "baci_mat_service.hpp"
 #include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::PAR::Muscle_Weickenmeier::Muscle_Weickenmeier(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -464,4 +464,4 @@ void MAT::Muscle_Weickenmeier::EvaluateActivationLevel(const double lambdaM, con
                 2.0 * W0 / (alpha * lambdaM * lambdaM * lambdaM) - derivderivIp / (2.0 * lambdaM) +
                 derivIp / (2.0 * lambdaM * lambdaM);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

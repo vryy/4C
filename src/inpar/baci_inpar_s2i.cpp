@@ -12,7 +12,7 @@
 #include "baci_lib_conditiondefinition.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-scatra interface coupling   fang 01/16 |
@@ -679,4 +679,4 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

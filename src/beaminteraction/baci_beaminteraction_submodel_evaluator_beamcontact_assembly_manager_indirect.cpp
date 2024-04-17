@@ -22,7 +22,7 @@ coupling matrices M and D first.
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -70,4 +70,4 @@ double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::G
   return mortar_manager_->GetEnergy();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

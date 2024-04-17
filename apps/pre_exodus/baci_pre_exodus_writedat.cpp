@@ -17,7 +17,7 @@ Here is everything related with writing a dat-file
 #include "baci_pre_exodus_reader.hpp"
 #include "baci_pre_exodus_soshextrusion.hpp"  // to calculate normal
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -140,7 +140,7 @@ void EXODUS::RemoveDatSection(const std::string& secname, std::string& headstrin
 void EXODUS::WriteDatConditions(
     const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> condlist =
       INPUT::ValidConditions();
@@ -310,7 +310,7 @@ std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::
 void EXODUS::WriteDatDesignTopology(
     const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // sort baciconds w.r.t. underlying topology
   std::map<int, EXODUS::cond_def> dpoints;
@@ -599,4 +599,4 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

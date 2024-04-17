@@ -16,7 +16,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -138,4 +138,4 @@ void PARTICLEWALL::WallDataState::UpdateMapsOfStateVectors()
   curr_dof_row_map_ = Teuchos::rcp(new Epetra_Map(*walldiscretization_->DofRowMap()));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -154,6 +154,6 @@ namespace CORE::COMM
 
 }  // namespace CORE::COMM
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

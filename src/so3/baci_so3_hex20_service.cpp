@@ -8,7 +8,7 @@
 #include "baci_lib_node.hpp"
 #include "baci_so3_hex20.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -40,4 +40,4 @@ std::vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
   return centercoords;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

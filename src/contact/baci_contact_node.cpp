@@ -15,7 +15,7 @@
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 CONTACT::NodeType CONTACT::NodeType::instance_;
 
@@ -1497,4 +1497,4 @@ void CONTACT::Node::StoreOldNormal()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

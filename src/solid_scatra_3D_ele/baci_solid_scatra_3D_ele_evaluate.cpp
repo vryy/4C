@@ -12,7 +12,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "baci_solid_3D_ele_neumann_evaluator.hpp"
 #include "baci_solid_scatra_3D_ele.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -143,4 +143,4 @@ int DRT::ELEMENTS::SolidScatra::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::ELEMENTS::EvaluateNeumannByElement(*this, discretization, condition, lm, elevec1, time);
   return 0;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

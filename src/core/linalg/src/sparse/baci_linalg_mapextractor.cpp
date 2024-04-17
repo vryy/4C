@@ -17,7 +17,7 @@
 #include <cmath>
 #include <numeric>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -399,4 +399,4 @@ void CORE::LINALG::MapExtractor::Setup(
     Setup(fullmap, othermap, partialmap);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

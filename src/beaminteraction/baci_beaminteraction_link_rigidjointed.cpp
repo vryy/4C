@@ -19,7 +19,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 BEAMINTERACTION::BeamLinkRigidJointedType BEAMINTERACTION::BeamLinkRigidJointedType::instance_;
 
@@ -306,4 +306,4 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Print(std::ostream& out) const
   out << "\n";
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

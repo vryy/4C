@@ -22,7 +22,7 @@
 
 #include <memory>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -68,4 +68,4 @@ void MIXTURE::ConstantPrestressStrategy::Update(
     CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

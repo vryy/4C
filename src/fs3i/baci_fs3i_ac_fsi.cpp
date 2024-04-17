@@ -33,7 +33,7 @@ structures.
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_structure_aux.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |
@@ -1235,4 +1235,4 @@ void FS3I::ACFSI::CheckIfTimesAndStepsAndDtsMatch()
     dserror("Your structure-scalar dt %f does not match the fs3i time %f!", structurescatradt, dt_);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

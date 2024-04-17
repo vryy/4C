@@ -20,7 +20,7 @@
 #include <NOX_StatusTest_Generic.H>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -86,4 +86,4 @@ Teuchos::RCP<::NOX::LineSearch::Generic> NOX::NLN::LineSearch::BuildLineSearch(
   return factory.BuildLineSearch(gd, outerTests, innerTests, lsparams);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

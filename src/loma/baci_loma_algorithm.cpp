@@ -24,7 +24,7 @@
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_scatra_timint_loma.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -895,4 +895,4 @@ void LOMA::Algorithm::ReadInflowRestart(int restart)
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

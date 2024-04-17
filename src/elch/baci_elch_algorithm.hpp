@@ -16,7 +16,7 @@
 
 #include "baci_scatra_algorithm.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ELCH
 {
@@ -52,6 +52,6 @@ namespace ELCH
   };
 }  // namespace ELCH
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

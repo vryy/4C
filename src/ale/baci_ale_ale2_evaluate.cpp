@@ -20,7 +20,7 @@
 #include "baci_nurbs_discret.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -1365,4 +1365,4 @@ void DRT::ELEMENTS::Ale2::EvaluateOddy(
   qm = d;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

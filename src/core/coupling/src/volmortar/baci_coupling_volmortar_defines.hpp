@@ -11,7 +11,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /************************************************************************/
 /* Mortar algorithm parameters                                          */
@@ -25,6 +25,6 @@ BACI_NAMESPACE_OPEN
 #define VOLMORTARCUTTOL 1.0e-12
 #define VOLMORTARCUT2TOL -1.0e-12
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

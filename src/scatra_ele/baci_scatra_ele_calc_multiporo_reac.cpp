@@ -22,7 +22,7 @@
 #include "baci_scatra_ele_parameter_timint.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1786,4 +1786,4 @@ template class DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<CORE::FE::CellType::nur
 // template class
 // DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@
 #include <filesystem>
 #include <iomanip>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // deactivate for ascii output. Only do this for debugging.
 // #define BIN_VTK_OUT
@@ -193,7 +193,7 @@ void PostVtkWriter::WriteSpecialField(SpecialFieldInterface &special,
 void PostVtkWriter::WriteSolutionVector(const std::vector<double> &solution, const int ncomponents,
     const std::string &name, std::ofstream &file) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   file << "    <DataArray type=\"Float64\" Name=\"" << name << "\"";
   if (ncomponents > 1) file << " NumberOfComponents=\"" << ncomponents << "\"";
@@ -231,7 +231,7 @@ void PostVtkWriter::WriteSolutionVector(const std::vector<double> &solution, con
 void PostVtkWriter::WriteResult(const std::string groupname, const std::string name,
     const ResultType restype, const int numdf, const int from, const bool fillzeros)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   Teuchos::RCP<PostResult> result = Teuchos::rcp(new PostResult(field_));
   // only write results which exist in the first result step
@@ -304,7 +304,7 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
 
 void PostVtkWriter::WriteFiles(PostFilterBase &filter)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   PostResult result = PostResult(field_);
 
@@ -393,4 +393,4 @@ void PostVtkWriter::WriteVtkMasterFile(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

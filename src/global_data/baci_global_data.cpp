@@ -32,7 +32,7 @@
 
 #include <chrono>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -337,4 +337,4 @@ void GLOBAL::Problem::SetSpatialApproximationType(CORE::FE::ShapeFunctionType sh
   shapefuntype_ = shape_function_type;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

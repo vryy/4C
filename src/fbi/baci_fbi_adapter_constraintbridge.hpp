@@ -23,7 +23,7 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 class Epetra_Vector;
 class Epetra_FEVector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // Forward declaration
 
@@ -183,6 +183,6 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

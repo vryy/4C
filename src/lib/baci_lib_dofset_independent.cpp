@@ -13,7 +13,7 @@
 
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -59,4 +59,4 @@ int DRT::IndependentDofSet::GetMinimalNodeGIDIfRelevant(const Discretization& di
   return ignoreminnodegid_ ? 0 : dis.NodeRowMap()->MinAllGID();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

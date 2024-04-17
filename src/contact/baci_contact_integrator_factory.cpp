@@ -20,7 +20,7 @@
 #include "baci_contact_nitsche_integrator_ssi_elch.hpp"
 #include "baci_contact_nitsche_integrator_tsi.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -124,4 +124,4 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::BuildIntegrator(
   return factory.BuildIntegrator(sol_type, mortar_params, slave_type, comm);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

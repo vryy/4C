@@ -11,7 +11,7 @@
 
 #include "baci_fluid_ele.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidBoundaryType DRT::ELEMENTS::FluidBoundaryType::instance_;
 
@@ -155,4 +155,4 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidBoundary::Surfaces()
   return {Teuchos::rcpFromRef(*this)};
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

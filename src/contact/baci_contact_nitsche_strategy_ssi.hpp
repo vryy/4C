@@ -15,7 +15,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
@@ -116,6 +116,6 @@ namespace CONTACT
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kds_;
   };
 }  // namespace CONTACT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

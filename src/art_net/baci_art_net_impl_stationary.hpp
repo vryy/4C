@@ -14,7 +14,7 @@
 
 #include "baci_art_net_timint.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ADAPTER
 {
@@ -152,6 +152,6 @@ namespace ART
 }  // namespace ART
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

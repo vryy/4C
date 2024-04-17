@@ -18,7 +18,7 @@
 #include "baci_so3_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::So_sh8Type DRT::ELEMENTS::So_sh8Type::instance_;
@@ -197,4 +197,4 @@ void DRT::ELEMENTS::So_sh8::Print(std::ostream& os) const
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -24,7 +24,7 @@ class for handling of micro-macro transitions
 
 #include <filesystem>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 std::map<int, Teuchos::RCP<STRUMULTI::MicroStatic>> MAT::MicroMaterialGP::microstaticmap_;
@@ -356,4 +356,4 @@ void MAT::MicroMaterialGP::Output()
   plstrain_ = Teuchos::null;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

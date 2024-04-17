@@ -33,7 +33,7 @@
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_service.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 03/13 |
@@ -1416,4 +1416,4 @@ void MAT::ThermoPlasticHyperElast::FDCheck(
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

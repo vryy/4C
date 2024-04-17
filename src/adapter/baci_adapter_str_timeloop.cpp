@@ -15,7 +15,7 @@
 #include "baci_global_data.hpp"
 #include "baci_inpar_structure.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -80,4 +80,4 @@ int ADAPTER::StructureTimeLoop::Integrate()
   return convergencestatus;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

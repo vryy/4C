@@ -20,7 +20,7 @@ namespace DEMANGLE_TEST
 namespace
 {
 
-  using namespace BACI;
+  using namespace FourC;
 
   TEST(DemangleTest, Struct)
   {

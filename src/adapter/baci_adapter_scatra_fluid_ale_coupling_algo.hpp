@@ -19,7 +19,7 @@
 #include "baci_adapter_scatra_fluid_coupling_algorithm.hpp"
 #include "baci_coupling_adapter.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace ADAPTER
@@ -104,6 +104,6 @@ namespace ADAPTER
 
 }  // namespace ADAPTER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

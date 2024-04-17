@@ -13,7 +13,7 @@
 #include "baci_cut_edge.hpp"
 #include "baci_cut_output.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 bool CORE::GEO::CUT::Cycle::IsValid() const
 {
@@ -219,4 +219,4 @@ void CORE::GEO::CUT::Cycle::Print() const
   std::cout << std::endl;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

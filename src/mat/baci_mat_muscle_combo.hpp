@@ -26,7 +26,7 @@ active strain approach) with variable time-dependent activation
 #include <unordered_map>
 #include <variant>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -228,6 +228,6 @@ namespace MAT
 
 }  // end namespace MAT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

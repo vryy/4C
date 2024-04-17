@@ -26,7 +26,7 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | Constructor (public)                                     meier 01/14 |
@@ -3738,4 +3738,4 @@ template class CONTACT::Beam3tosolidcontact<8, 2,
 // template class CONTACT::Beam3tosolidcontact<9,5,1>;
 // template class CONTACT::Beam3tosolidcontact<9,2,2>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

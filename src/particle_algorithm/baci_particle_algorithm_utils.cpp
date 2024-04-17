@@ -12,7 +12,7 @@
 
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -78,4 +78,4 @@ template void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues<double>(
     const Teuchos::ParameterList& params, const std::string& name,
     std::map<PARTICLEENGINE::TypeEnum, double>& typetovalmap);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

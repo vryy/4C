@@ -19,7 +19,7 @@ with condensed structure interface displacements
 #include "baci_fsi_monolithic.hpp"
 #include "baci_inpar_fsi.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace ADAPTER
@@ -365,6 +365,6 @@ namespace FSI
   };
 }  // namespace FSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

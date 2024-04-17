@@ -22,7 +22,7 @@
 
 #include <NOX_Epetra_Interface_Preconditioner.H>  // (3) base class: preconditioner stuff
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 // forward declaration ...
 namespace NOX
 {
@@ -203,6 +203,6 @@ namespace STR
 }  // namespace STR
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -13,7 +13,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -28,6 +28,6 @@ namespace CORE::REBALANCE::UTILS
 
 }  // namespace CORE::REBALANCE::UTILS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

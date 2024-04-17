@@ -16,7 +16,7 @@
 #include "baci_linalg_utils_densematrix_eigen.hpp"
 #include "baci_so3_plast_ssn.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -414,4 +414,4 @@ template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>;
 template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>;
 template class DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

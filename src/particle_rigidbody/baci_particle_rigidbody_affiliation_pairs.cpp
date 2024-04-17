@@ -16,7 +16,7 @@
 #include "baci_particle_engine_communication_utils.hpp"
 #include "baci_particle_engine_interface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -181,4 +181,4 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::AddAffiliationPairToBuffer(
   buffer.insert(buffer.end(), data().begin(), data().end());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

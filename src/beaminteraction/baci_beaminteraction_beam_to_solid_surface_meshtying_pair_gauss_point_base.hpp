@@ -16,7 +16,7 @@
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace BEAMINTERACTION
@@ -56,6 +56,6 @@ namespace BEAMINTERACTION
   };
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

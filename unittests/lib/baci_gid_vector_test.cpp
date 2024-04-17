@@ -13,7 +13,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   TEST(BroadcastMapVector, Vector)
   {

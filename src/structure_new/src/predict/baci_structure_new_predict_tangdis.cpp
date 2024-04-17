@@ -28,7 +28,7 @@
 
 #include <NOX_Epetra_Vector.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -213,4 +213,4 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
   CORE::LINALG::AssembleMyVector(1.0, F, 1.0, *freact_ptr);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

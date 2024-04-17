@@ -39,7 +39,7 @@
 #include "baci_global_data.hpp"
 #include "baci_mat_par_bundle.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 04/11 |
@@ -3084,4 +3084,4 @@ bool MAT::Damage::VisData(const std::string& name, std::vector<double>& data, in
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

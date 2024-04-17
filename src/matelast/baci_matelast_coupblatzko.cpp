@@ -11,7 +11,7 @@ mechanics", 2001.
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupBlatzKo::CoupBlatzKo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -150,4 +150,4 @@ void MAT::ELASTIC::CoupBlatzKo::AddCoupDerivVol(
                 12. * pow(J * J, beta) * pow(J, -4.)) /
             2.;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

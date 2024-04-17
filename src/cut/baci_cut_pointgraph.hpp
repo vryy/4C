@@ -16,7 +16,7 @@
 
 #include "baci_cut_find_cycles.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::GEO
@@ -182,6 +182,6 @@ namespace CORE::GEO
 }  // namespace CORE::GEO
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

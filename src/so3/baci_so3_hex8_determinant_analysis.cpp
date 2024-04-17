@@ -12,7 +12,7 @@
 
 #include <Teuchos_LAPACK.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 const double DRT::ELEMENTS::So_Hex8_Determinant_Analysis::bezier_points_[27][3] = {
     {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 1.0, 0.0}, {0.0, 1.0, 0.0},  // 1 to 4
@@ -577,4 +577,4 @@ void DRT::ELEMENTS::So_Hex8_Determinant_Analysis::BezierCube::print(std::ostream
   os << std::string(20, '*') << "\n";
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

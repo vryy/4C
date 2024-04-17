@@ -12,7 +12,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_so3_poro_scatra.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                         schmidt 09/17 |
@@ -295,4 +295,4 @@ void DRT::ELEMENTS::So_nurbs27PoroScatraType::SetupElementDefinition(
       INPUT::LineDefinition::Builder(defs_nurbs27["NURBS27"]).AddNamedString("TYPE").Build();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

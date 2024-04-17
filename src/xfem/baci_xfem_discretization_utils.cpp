@@ -20,7 +20,7 @@
 #include "baci_rebalance.hpp"
 #include "baci_rebalance_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -550,4 +550,4 @@ Teuchos::RCP<DRT::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::SplitCondit
   return Teuchos::rcp(new DRT::Condition(*src_cond));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

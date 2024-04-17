@@ -15,7 +15,7 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_mortar_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
@@ -269,4 +269,4 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategySsi::GetMatrixB
       return CONTACT::NitscheStrategy::GetMatrixBlockPtr(bp, nullptr);
   }
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

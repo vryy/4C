@@ -20,7 +20,7 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_solid_scatra_3D_ele_factory.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -156,6 +156,6 @@ namespace DRT::ELEMENTS
 }  // namespace DRT::ELEMENTS
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -19,7 +19,7 @@
 #include "baci_solver_nonlin_nox_floating_point_exception.hpp"
 #include "baci_solver_nonlin_nox_forward_decl.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
@@ -185,6 +185,6 @@ namespace NOX
   }    // namespace NLN
 }  // namespace NOX
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

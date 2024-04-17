@@ -11,12 +11,12 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*! entry point for the solution of scalar transport problems */
 void scatra_dyn(int restart /* do we have to perform a restart?  */
 );
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

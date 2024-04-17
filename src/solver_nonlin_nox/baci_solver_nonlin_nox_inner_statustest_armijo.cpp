@@ -19,7 +19,7 @@
 #include <NOX_MeritFunction_Generic.H>
 #include <NOX_Utils.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -177,4 +177,4 @@ void NOX::NLN::INNER::StatusTest::Armijo::throwError(
   dserror(msg.str());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

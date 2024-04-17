@@ -17,7 +17,7 @@
 #include "baci_so3_nullspace.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::Ale3Type DRT::ELEMENTS::Ale3Type::instance_;
 
@@ -206,4 +206,4 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Ale3::Surfaces()
   return CORE::COMM::ElementBoundaryFactory<Ale3Surface, Ale3>(CORE::COMM::buildSurfaces, *this);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

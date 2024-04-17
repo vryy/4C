@@ -19,7 +19,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace STR::ELEMENTS
 {
@@ -164,6 +164,6 @@ namespace STR::UTILS::SHELL
 
 }  // namespace STR::UTILS::SHELL
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

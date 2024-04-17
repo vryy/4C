@@ -15,7 +15,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -132,4 +132,4 @@ double MAT::PermeableFluid::SetViscosity() const
   return viscosity;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -21,7 +21,7 @@
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -89,4 +89,4 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::NLN::Solver::BuildSolver(
   return factory.BuildSolver(grp, outerTests, innerTests, nlnGlobalData);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

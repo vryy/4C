@@ -20,7 +20,7 @@
 #include "baci_structure_new_enum_lists.hpp"
 #include "baci_structure_new_model_evaluator_generic.hpp"  // base class
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
 namespace ADAPTER
@@ -314,6 +314,6 @@ namespace STR
 }  // namespace STR
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

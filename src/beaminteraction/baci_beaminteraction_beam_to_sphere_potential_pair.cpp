@@ -27,7 +27,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -601,4 +601,4 @@ template class BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>;
 template class BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>;
 template class BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

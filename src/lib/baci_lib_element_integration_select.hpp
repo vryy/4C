@@ -18,7 +18,7 @@
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_lib_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace DRT
@@ -635,6 +635,6 @@ namespace DRT
 
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -21,7 +21,7 @@
 // and use the fluid solver to solve for it
 // #define BLOCKMATRIXMERGE
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace ADAPTER
@@ -144,6 +144,6 @@ namespace FSI
   };
 }  // namespace FSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

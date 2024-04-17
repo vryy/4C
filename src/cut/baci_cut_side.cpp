@@ -21,7 +21,7 @@
 #include <stack>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // #define DEBUG_PARALLEL_CUT_SURFACE
 
@@ -1931,4 +1931,4 @@ template class CORE::GEO::CUT::ConcreteSide<3, CORE::FE::CellType::line2>;
 template class CORE::GEO::CUT::ConcreteSide<3, CORE::FE::CellType::quad4>;
 template class CORE::GEO::CUT::ConcreteSide<3, CORE::FE::CellType::tri3>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

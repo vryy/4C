@@ -12,7 +12,7 @@
 #include "baci_mat_par_material.hpp"
 #include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::CoupAnisoExpoShearAnisotropyExtension(
@@ -223,4 +223,4 @@ void MAT::ELASTIC::CoupAnisoExpoShear::SetFiberVecs(const double newgamma,
   dserror("This function is not implemented for this summand!");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

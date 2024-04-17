@@ -22,7 +22,7 @@ void ntacal();
  *----------------------------------------------------------------------*/
 void ntam(int argc, char *argv[])
 {
-  using namespace BACI;
+  using namespace FourC;
 
   Teuchos::RCP<Epetra_Comm> gcomm = GLOBAL::Problem::Instance()->GetCommunicators()->GlobalComm();
 

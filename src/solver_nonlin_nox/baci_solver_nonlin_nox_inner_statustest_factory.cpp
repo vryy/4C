@@ -25,7 +25,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -343,4 +343,4 @@ NOX::NLN::INNER::StatusTest::Factory::BuildVolumeChangeTest(
   return Teuchos::rcp(new VolumeChange(vcparams, u));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

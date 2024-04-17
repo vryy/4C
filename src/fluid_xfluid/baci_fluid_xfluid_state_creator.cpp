@@ -28,7 +28,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Perform the cut and fill state container               schott 01/15 |
@@ -214,4 +214,4 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   xdiscret->ComputeNullSpaceIfNecessary(solver_params, true);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

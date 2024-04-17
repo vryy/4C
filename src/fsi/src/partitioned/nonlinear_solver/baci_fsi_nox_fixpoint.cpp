@@ -13,7 +13,7 @@
 #include <NOX_Abstract_Group.H>
 #include <NOX_GlobalData.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 NOX::FSI::FixPoint::FixPoint(
     const Teuchos::RCP<::NOX::Utils>& utils, Teuchos::ParameterList& params)
@@ -61,4 +61,4 @@ void NOX::FSI::FixPoint::throwError(const std::string& functionName, const std::
   throw "NOX Error";
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -27,7 +27,7 @@
 #include <string>
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -242,4 +242,4 @@ void IO::MeshReader::CreateInlineMesh(int& max_node_id)
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

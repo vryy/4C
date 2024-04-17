@@ -11,7 +11,7 @@
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::IsoVarga::IsoVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), mue_(*matdata->Get<double>("MUE")), beta_(*matdata->Get<double>("BETA"))
@@ -59,4 +59,4 @@ void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(CORE::LINALG::Matr
   moddelta(5) += 0.0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

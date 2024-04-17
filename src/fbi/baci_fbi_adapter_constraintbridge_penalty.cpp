@@ -20,7 +20,7 @@ approach for Fluid-beam interaction.
 
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void ADAPTER::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,
     const Epetra_Map* fluid_map, Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix,
@@ -99,4 +99,4 @@ void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyFluidContributions()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

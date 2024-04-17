@@ -24,7 +24,7 @@
 void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
     std::string& outputfile_kenner, std::string& restartfile_kenner)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();

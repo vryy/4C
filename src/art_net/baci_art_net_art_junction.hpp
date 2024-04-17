@@ -21,7 +21,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -235,6 +235,6 @@ namespace ART
   }  // namespace UTILS
 }  // namespace ART
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

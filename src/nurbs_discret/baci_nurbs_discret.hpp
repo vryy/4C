@@ -19,7 +19,7 @@
 #include "baci_nurbs_discret_control_point.hpp"
 #include "baci_nurbs_discret_knotvector.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -249,6 +249,6 @@ namespace DRT
   }     // namespace UTILS
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

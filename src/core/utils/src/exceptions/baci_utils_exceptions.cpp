@@ -23,7 +23,7 @@
 #include <iostream>
 #include <sstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE
 {
@@ -112,4 +112,4 @@ namespace CORE
   Exception::~Exception() = default;
 }  // namespace CORE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

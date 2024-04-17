@@ -25,7 +25,7 @@
 #include "baci_utils_function.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -1474,4 +1474,4 @@ template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::quad8, 3>;
 template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::quad9, 2>;
 template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::quad9, 3>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

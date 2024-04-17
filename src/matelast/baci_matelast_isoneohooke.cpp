@@ -10,7 +10,7 @@
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::IsoNeoHooke::IsoNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -176,4 +176,4 @@ void MAT::ELASTIC::IsoNeoHooke::AddDerivativesModified(CORE::LINALG::Matrix<3, 1
 //   delta(5)  // ,20
 //     += 0.0;
 // }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

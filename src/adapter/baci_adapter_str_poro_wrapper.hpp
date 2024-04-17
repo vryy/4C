@@ -18,7 +18,7 @@
 #include "baci_adapter_str_fsiwrapper.hpp"
 #include "baci_structure_aux.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace GLOBAL
 {
@@ -138,6 +138,6 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

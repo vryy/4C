@@ -16,7 +16,7 @@
 
 #include <stdexcept>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -213,4 +213,4 @@ void CORE::UTILS::FunctionManager::ReadInput(INPUT::DatFileReader& reader)
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

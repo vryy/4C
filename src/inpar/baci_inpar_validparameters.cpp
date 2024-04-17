@@ -77,7 +77,7 @@
 #include <Teuchos_Array.hpp>
 #include <Teuchos_StrUtils.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 //! Print function
@@ -433,4 +433,4 @@ bool INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
         return value_has_space || string_has_space(name);
       });
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

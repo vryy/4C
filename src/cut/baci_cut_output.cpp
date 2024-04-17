@@ -24,7 +24,7 @@
 #include <iosfwd>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1512,4 +1512,4 @@ void CORE::GEO::CUT::OUTPUT::DebugDump_MultipleCutPointsSpecial(Side* first, Sid
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

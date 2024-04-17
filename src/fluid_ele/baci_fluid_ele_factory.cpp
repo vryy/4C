@@ -24,7 +24,7 @@
 #include "baci_fluid_ele_calc_xwall.hpp"
 #include "baci_fluid_ele_interface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
@@ -212,4 +212,4 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
   return nullptr;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

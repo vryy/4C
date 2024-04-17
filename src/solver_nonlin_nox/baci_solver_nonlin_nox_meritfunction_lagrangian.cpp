@@ -19,7 +19,7 @@
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Utils.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -218,4 +218,4 @@ void NOX::NLN::MeritFunction::Lagrangian::throwError(
   throw "NOX Error";
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

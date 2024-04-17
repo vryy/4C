@@ -29,7 +29,7 @@
 #include <vector>
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointConstraintManager(
     Teuchos::RCP<const DRT::Discretization> disc_ptr, CORE::LINALG::SparseMatrix* st_ptr)
 {
@@ -813,4 +813,4 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::Reset() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -28,7 +28,7 @@ formulation
 
 #include <optional>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -542,4 +542,4 @@ template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::hex8,
 template class DRT::ELEMENTS::SolidEleCalc<CORE::FE::CellType::pyramid5,
     DRT::ELEMENTS::MulfFBarFormulation<CORE::FE::CellType::pyramid5>>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

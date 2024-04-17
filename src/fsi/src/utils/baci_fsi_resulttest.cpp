@@ -27,7 +27,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -314,4 +314,4 @@ void FSI::FSIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int&
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -9,7 +9,7 @@
 
 #include "baci_io_utils_reader.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace DRT::UTILS
@@ -103,4 +103,4 @@ namespace DRT::UTILS
 }  // namespace DRT::UTILS
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

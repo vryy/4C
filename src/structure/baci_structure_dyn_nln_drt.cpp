@@ -31,7 +31,7 @@
 #include <iostream>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -167,4 +167,4 @@ void dyn_nlnstructural_drt()
 
 }  // end of dyn_nlnstructural_drt()
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

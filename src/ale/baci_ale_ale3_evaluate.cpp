@@ -19,7 +19,7 @@
 #include "baci_nurbs_discret.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -1750,4 +1750,4 @@ inline CORE::FE::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussr
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

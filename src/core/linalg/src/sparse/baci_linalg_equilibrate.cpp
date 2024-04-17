@@ -13,7 +13,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
@@ -496,4 +496,4 @@ Teuchos::RCP<CORE::LINALG::Equilibration> CORE::LINALG::BuildEquilibration(Matri
   return equilibration;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

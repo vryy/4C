@@ -20,7 +20,7 @@
 
 #include <sstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 #ifdef TOL_N
 #undef TOL_N
@@ -135,7 +135,7 @@ void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
@@ -230,7 +230,7 @@ void PostVtiWriter::WriteNodalResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
@@ -314,7 +314,7 @@ void PostVtiWriter::WriteElementResultStep(std::ofstream& file,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   if (myrank_ == 0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
@@ -387,7 +387,7 @@ void PostVtiWriter::WriteElementResultStep(std::ofstream& file,
 
 void PostVtiWriter::WriterPrepTimestep()
 {
-  using namespace BACI;
+  using namespace FourC;
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   // collect all possible values of the x-, y- and z-coordinate
@@ -471,4 +471,4 @@ void PostVtiWriter::WriterPrepTimestep()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -11,7 +11,7 @@
 
 #include "baci_thermo_ele_action.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | calc coefficients for given rho_inf                      seitz 03/16 |
@@ -535,4 +535,4 @@ void THR::TimIntGenAlpha::ApplyForceExternalConv(const double time,  //!< evalua
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

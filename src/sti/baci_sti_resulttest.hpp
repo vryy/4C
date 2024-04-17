@@ -14,7 +14,7 @@
 
 #include "baci_lib_resulttest.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace STI
 {
@@ -61,6 +61,6 @@ namespace STI
     const Teuchos::RCP<const STI::Algorithm> sti_algorithm_;
   };
 }  // namespace STI
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

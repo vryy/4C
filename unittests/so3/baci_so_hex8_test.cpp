@@ -19,7 +19,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class SoHex8Test : public ::testing::Test
   {

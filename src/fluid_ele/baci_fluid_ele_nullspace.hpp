@@ -10,7 +10,7 @@
 
 #include "baci_linalg_serialdensematrix.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -30,6 +30,6 @@ namespace FLD
       const DRT::Node& node, const int numdof, const int dimnsp);
 }  // namespace FLD
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

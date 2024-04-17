@@ -22,7 +22,7 @@
 #include <utility>
 #include <variant>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // Note on the namespace: while implementation details can often be put into an anonymous namespace,
 // this is trickier when these details are part of a forward declared implementation class (in this
@@ -983,4 +983,4 @@ namespace INPUT
   }
 }  // namespace INPUT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

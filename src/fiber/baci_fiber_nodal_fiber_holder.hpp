@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::COMM
 {
@@ -187,6 +187,6 @@ namespace DRT
     };
   }  // namespace FIBER
 }  // namespace DRT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

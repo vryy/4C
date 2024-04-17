@@ -14,7 +14,7 @@
 #include "baci_so3_hex8.hpp"
 #include "baci_so3_surface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -135,4 +135,4 @@ void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

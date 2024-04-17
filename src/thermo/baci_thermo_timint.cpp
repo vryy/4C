@@ -23,7 +23,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | print thermal time logo                                   dano 08/09 |
@@ -1051,4 +1051,4 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::EvaluateErrorComparedToAnalytical
 }  // end EvaluateErrorComparedToAnalyticalSol
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

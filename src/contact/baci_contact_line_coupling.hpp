@@ -17,7 +17,7 @@
 
 #include "baci_mortar_coupling3d_classes.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MORTAR
 {
@@ -502,6 +502,6 @@ namespace CONTACT
 
 }  // namespace CONTACT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

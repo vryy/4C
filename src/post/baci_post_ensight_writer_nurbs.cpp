@@ -19,7 +19,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*
@@ -33,7 +33,7 @@ BACI_NAMESPACE_OPEN
 void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofile,
     const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // refcountpointer to vector of all coordinates
   // distributed among all procs
@@ -1409,7 +1409,7 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
     std::ofstream& geofile, std::vector<int>& nodevector,
     const Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // cast dis to NurbsDiscretisation
   DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -1717,7 +1717,7 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
 void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int numdf,
     const Teuchos::RCP<Epetra_Vector> data, const std::string name, const int offset) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // a multivector for the interpolated data
   Teuchos::RCP<Epetra_MultiVector> idata;
@@ -2165,7 +2165,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
     const CORE::LINALG::SerialDenseVector& weights, const int numdf,
     const std::vector<double>& my_data) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // number of all control points of the element
   const int numnp = actele->NumNode();
@@ -3340,7 +3340,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
 void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int numdf,
     const Teuchos::RCP<Epetra_MultiVector> data, const std::string name, const int offset) const
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // a multivector for the interpolated data
   Teuchos::RCP<Epetra_MultiVector> idata;
@@ -3545,4 +3545,4 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
 }  // EnsightWriter::WriteNodalResultStepForNurbs
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

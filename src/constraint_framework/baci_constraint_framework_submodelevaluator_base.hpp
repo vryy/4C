@@ -14,7 +14,7 @@
 #include "baci_constraint_framework_equation_mpc.hpp"
 #include "baci_structure_new_model_evaluator_generic.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CONSTRAINTS::SUBMODELEVALUATOR
 {
@@ -91,5 +91,5 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
 }  // namespace CONSTRAINTS::SUBMODELEVALUATOR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 #endif

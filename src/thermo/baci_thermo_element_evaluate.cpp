@@ -12,7 +12,7 @@
 #include "baci_thermo_ele_impl.hpp"
 #include "baci_thermo_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -49,4 +49,4 @@ int DRT::ELEMENTS::Thermo::EvaluateNeumann(Teuchos::ParameterList& params,
       this, params, discretization, lm, elevec1, elemat1);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

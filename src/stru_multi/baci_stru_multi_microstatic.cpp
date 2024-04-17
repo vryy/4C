@@ -32,7 +32,7 @@
 
 #include <Epetra_LinearProblem.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -1175,4 +1175,4 @@ CORE::COMM::ParObject* STRUMULTI::MicroStaticParObjectType::Create(const std::ve
   return micro;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

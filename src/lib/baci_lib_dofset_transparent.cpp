@@ -13,7 +13,7 @@
 
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::TransparentDofSet::TransparentDofSet(
     Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel)
@@ -521,4 +521,4 @@ void DRT::TransparentDofSet::SendBlock(int numproc, int myrank, std::vector<char
   return;
 }  // SendBlock
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

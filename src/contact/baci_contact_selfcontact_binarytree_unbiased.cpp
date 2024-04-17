@@ -15,7 +15,7 @@
 #include "baci_lib_utils_reference_configuration.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor UnbiasedSelfBinaryTree (public)                   schmidt 01/19|
@@ -546,4 +546,4 @@ void CONTACT::UnbiasedSelfBinaryTree::CommunicateSearchElementsAllProcs()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

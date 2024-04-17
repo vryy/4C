@@ -14,7 +14,7 @@
 
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | singleton access method                                gebauer 06/19 |
@@ -46,7 +46,7 @@ DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::ScaTraEleCalcNoPhysics(
 {
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 // include forward declaration of template classes
 #include "baci_scatra_ele_calc_no_physics_fwd.hpp"

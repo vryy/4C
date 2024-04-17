@@ -20,7 +20,7 @@
 #include "baci_post_vtk_vtu_writer_node_based.hpp"
 #include "baci_post_writer_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 PostFilterBase::PostFilterBase(PostField* field, const std::string& name)
 {
@@ -86,4 +86,4 @@ void PostFilterBase::WriteAnyResults(PostField* field, const char* type, const R
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_ssi_monolithic.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -94,4 +94,4 @@ void SSI::SSIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int&
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

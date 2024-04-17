@@ -18,7 +18,7 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -1279,4 +1279,4 @@ int CORE::GEO::CUT::Parallel::getDofSetVecIndex(int nid, int eid)
   return -1;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

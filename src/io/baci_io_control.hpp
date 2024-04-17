@@ -20,7 +20,7 @@
 #include <string>
 
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -184,6 +184,6 @@ namespace IO
   int GetLastPossibleRestartStep(IO::InputControl& inputcontrol);
 }  // namespace IO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -14,7 +14,7 @@
 #include "baci_io_control.hpp"
 #include "baci_io_visualization_data.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -98,4 +98,4 @@ void IO::VisualizationWriterVtuPerRank::FinalizeTimeStep()
   vtu_writer_.WriteVtkCollectionFileForAllWrittenMasterFiles(
       parameters_.file_name_prefix_ + "-" + visualization_data_name_);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

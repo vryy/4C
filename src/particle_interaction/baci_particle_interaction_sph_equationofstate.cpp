@@ -12,7 +12,7 @@
 
 #include "baci_particle_interaction_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -120,4 +120,4 @@ double PARTICLEINTERACTION::SPHEquationOfStateIdealGas::DensityToEnergy(
          std::log(UTILS::Pow<2>(mass) / (density0 * density));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

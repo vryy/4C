@@ -25,7 +25,7 @@
 #include <set>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace CORE::COMM
@@ -848,6 +848,6 @@ void CORE::COMM::Exporter::Export(std::map<int, std::map<T, U>>& data)
   GenericExport(helper);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

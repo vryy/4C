@@ -46,7 +46,7 @@
  *----------------------------------------------------------------------*/
 void ntacal()
 {
-  using namespace BACI;
+  using namespace FourC;
 
   int restart = GLOBAL::Problem::Instance()->Restart();
 

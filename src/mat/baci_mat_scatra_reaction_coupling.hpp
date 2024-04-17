@@ -16,7 +16,7 @@
 #include "baci_mat_par_parameter.hpp"
 #include "baci_mat_scatra_reaction.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -677,6 +677,6 @@ namespace MAT
 }  // namespace MAT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

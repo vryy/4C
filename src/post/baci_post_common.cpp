@@ -30,7 +30,7 @@
 
 #include <stack>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  * The main part of this file. All the functions of the three classes
@@ -43,7 +43,7 @@ BACI_NAMESPACE_OPEN
 PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** argv)
     : start_(0), end_(-1), step_(1), mortar_(false)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   MPI_Init(&argc, &argv);
 
@@ -414,7 +414,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
  *----------------------------------------------------------------------*/
 void PostProblem::read_meshes()
 {
-  using namespace BACI;
+  using namespace FourC;
 
   SYMBOL* mesh = map_find_symbol(&control_table_, "field");
   if (mesh == nullptr) dserror("No field found.");
@@ -616,7 +616,7 @@ void PostProblem::read_meshes()
  *----------------------------------------------------------------------*/
 PostField PostProblem::getfield(MAP* field_info)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   const char* field_name = map_read_string(field_info, "field");
   const int numnd = map_read_int(field_info, "num_nd");
@@ -894,7 +894,7 @@ Teuchos::RCP<Epetra_Vector> PostResult::read_result(const std::string name)
 Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
 PostResult::read_result_serialdensematrix(const std::string name)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   Teuchos::RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
@@ -961,4 +961,4 @@ int PostResult::step() const { return map_read_int(group_, "step"); }
 //! returns the number of global Dof-Ids
 int PostField::global_id_num() const { return dis_->DofRowMap()->NumGlobalElements(); }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -19,7 +19,7 @@
 #include "baci_comm_parobjectfactory.hpp"
 #include "baci_lib_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
 namespace MAT
@@ -298,6 +298,6 @@ namespace CROSSLINKING
 // << operator
 std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker_node);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -18,7 +18,7 @@
 
 #include <Epetra_SerialComm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                      h.Willmann    2015|
@@ -189,4 +189,4 @@ void CONTACT::PoroMtLagrangeStrategy::RecoverCouplingMatrixPartofLMP(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

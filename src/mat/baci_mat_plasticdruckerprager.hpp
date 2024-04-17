@@ -21,7 +21,7 @@ John Wiley & Sons, Ltd, 2008
 #include "baci_mat_so3_material.hpp"
 #include "baci_utils_local_newton.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -198,6 +198,6 @@ namespace MAT
     bool isinit_;
   };
 }  // namespace MAT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -11,7 +11,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /* ***********************************************************************/
 /* Debugging options                                                     */
@@ -26,6 +26,6 @@ BACI_NAMESPACE_OPEN
 // #define THRASOUTPUT      /* flag for detailed active set output */
 // #define POROFDCHECK /* flag for finite differences check of tangent stiffness matrix */
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

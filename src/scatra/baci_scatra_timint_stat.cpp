@@ -18,7 +18,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
@@ -231,4 +231,4 @@ void SCATRA::TimIntStationary::WriteRestart() const
   output_->WriteVector("phidtn", zeros_);  // for OST
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

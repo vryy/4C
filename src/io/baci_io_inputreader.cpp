@@ -31,7 +31,7 @@
 #endif /* BACI_TRAP_FE */
 
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -1211,4 +1211,4 @@ namespace INPUT
   }
 }  // namespace INPUT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

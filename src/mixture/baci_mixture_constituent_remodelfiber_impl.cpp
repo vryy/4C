@@ -22,7 +22,7 @@ equations
 #include <cstdlib>
 #include <memory>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // anonymous namespace for helper classes and functions
 namespace
@@ -359,4 +359,4 @@ double MIXTURE::MixtureConstituent_RemodelFiberImpl::EvaluateLambdaf(
 {
   return std::sqrt(C.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

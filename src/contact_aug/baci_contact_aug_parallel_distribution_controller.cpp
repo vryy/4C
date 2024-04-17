@@ -13,7 +13,7 @@
 #include "baci_contact_paramsinterface.hpp"
 #include "baci_io_pstream.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -97,4 +97,4 @@ bool CONTACT::AUG::ParallelDistributionController::redistribute(
   return false;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

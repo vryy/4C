@@ -21,7 +21,7 @@
 #include "baci_scatra_timint_ost.hpp"
 #include "baci_scatra_timint_stat.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace SCATRA
 {
@@ -194,6 +194,6 @@ namespace SCATRA
   };
 }  // namespace SCATRA
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -11,7 +11,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_truss3.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -44,4 +44,4 @@ bool DRT::ELEMENTS::Truss3::ReadElement(
  *------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::SetCrossSec(const double& crosssec) { crosssec_ = crosssec; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

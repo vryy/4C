@@ -11,7 +11,7 @@
 
 */
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcNoPhysics<CORE::FE::CellType::line2, 1>;
@@ -39,6 +39,6 @@ template class DRT::ELEMENTS::ScaTraEleCalcNoPhysics<CORE::FE::CellType::tet10, 
 template class DRT::ELEMENTS::ScaTraEleCalcNoPhysics<CORE::FE::CellType::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcNoPhysics<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

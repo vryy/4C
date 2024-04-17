@@ -22,7 +22,7 @@
   0.85                     ///< emphasis on strength instead of speed on a 0...1 scale in analysis
 #define FSIAMG_ANALYSIS 0  ///< level 0(off),1,2,3,4 switch on live analysis during actual run
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace FSI
 {
@@ -334,6 +334,6 @@ namespace FSI
 
 }  // namespace FSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

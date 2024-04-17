@@ -22,7 +22,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   /**
    * \brief Class to test the surface patch functionality of the geometry pairs.
@@ -67,7 +67,7 @@ namespace
    */
   TEST_F(GeometryPairLineToSurfacePatchTest, TestSurfacePatchAveragedNormalsQuad4)
   {
-    using namespace BACI;
+    using namespace FourC;
 
     // Define the type of the face elements.
     using surface = GEOMETRYPAIR::t_quad4;

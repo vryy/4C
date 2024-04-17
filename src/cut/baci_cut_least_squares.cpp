@@ -13,7 +13,7 @@
 #include <cmath>
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // solve the rectangular system with linear least squares
 CORE::LINALG::SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_square()
@@ -66,4 +66,4 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::CUT::LeastSquares::get_square_matrix(
   return sqr;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

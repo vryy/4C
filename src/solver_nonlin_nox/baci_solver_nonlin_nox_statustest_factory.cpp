@@ -23,7 +23,7 @@
 #include <NOX_StatusTest_Factory.H>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -529,4 +529,4 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::NLN::StatusTest::BuildOuterStatusT
   return factory.BuildOuterStatusTests(p, u, tagged_tests);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

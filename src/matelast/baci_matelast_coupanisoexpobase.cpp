@@ -10,7 +10,7 @@
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase(
@@ -202,4 +202,4 @@ template void MAT::ELASTIC::CoupAnisoExpoBase::EvaluateFunc<double>(
 template void MAT::ELASTIC::CoupAnisoExpoBase::EvaluateFunc<FAD>(
     FAD&, CORE::LINALG::Matrix<3, 3, FAD> const&, int, int) const;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

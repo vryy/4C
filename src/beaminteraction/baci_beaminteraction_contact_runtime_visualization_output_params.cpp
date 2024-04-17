@@ -13,7 +13,7 @@
 #include "baci_global_data.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -88,4 +88,4 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::ThrowErrorIfN
   if (!IsInit()) dserror("Init() has not been called, yet!");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

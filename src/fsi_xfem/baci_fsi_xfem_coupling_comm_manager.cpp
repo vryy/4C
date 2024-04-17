@@ -22,7 +22,7 @@ transform matrixes, vectors, ...
 #include <iostream>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*-----------------------------------------------------------------------------------------*
@@ -465,4 +465,4 @@ void XFEM::Coupling_Comm_Manager::DebugOut(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

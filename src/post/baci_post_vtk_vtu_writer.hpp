@@ -21,7 +21,7 @@
 #include <vector>
 
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 class PostField;
@@ -149,6 +149,6 @@ class PostVtuWriter : public PostVtkWriter
   const int proc_file_padding_;
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

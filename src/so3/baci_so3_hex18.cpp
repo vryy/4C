@@ -22,7 +22,7 @@
 #include "baci_structure_new_elements_paramsinterface.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_hex18Type DRT::ELEMENTS::So_hex18Type::instance_;
 
@@ -955,4 +955,4 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::So_hex18::NodeParamCoord(const int nod
   return coord;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

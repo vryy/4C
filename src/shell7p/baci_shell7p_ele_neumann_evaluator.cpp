@@ -14,7 +14,7 @@
 #include "baci_shell7p_ele_calc_lib.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
     const DRT::Discretization& discretization, DRT::Condition& condition,
@@ -345,4 +345,4 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
     }
   }
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

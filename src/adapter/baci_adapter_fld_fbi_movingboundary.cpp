@@ -17,7 +17,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -174,4 +174,4 @@ Teuchos::RCP<const FLD::Meshtying> ADAPTER::FBIFluidMB::GetMeshtying()
   return Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)->GetMeshtying();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

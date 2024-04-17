@@ -14,7 +14,7 @@
 #include "baci_cut_least_squares.hpp"
 #include "baci_io_pstream.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------------------------*
   Generate quadrature rule for boundarycells
@@ -370,4 +370,4 @@ void CORE::GEO::CUT::BoundarycellIntegration::momentFittingMatrix(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

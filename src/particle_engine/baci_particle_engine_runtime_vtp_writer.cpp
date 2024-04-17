@@ -15,7 +15,7 @@
 #include "baci_io_visualization_manager.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -201,4 +201,4 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteToDisk(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

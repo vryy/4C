@@ -10,6 +10,6 @@ problems.
 
 #include "baci_geometry_pair.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

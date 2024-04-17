@@ -13,7 +13,7 @@
 
 #include "baci_solver_nonlin_nox_group_prepostoperator.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -93,4 +93,4 @@ void NOX::NLN::SINGLESTEP::Group::throwError(
   dserror(msg.str());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

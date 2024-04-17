@@ -22,7 +22,7 @@
 #include <NOX_Epetra_Vector.H>
 #include <Teuchos_Time.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -154,4 +154,4 @@ void STR::TIMINT::ImplicitBase::PrintStep()
   fflush(stdout);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

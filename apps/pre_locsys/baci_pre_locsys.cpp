@@ -17,7 +17,7 @@
 /*======================================================================*/
 int main(int argc, char** argv)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // base vectors
   CORE::LINALG::Matrix<3, 1> vector1;

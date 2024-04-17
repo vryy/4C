@@ -33,7 +33,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 BINSTRATEGY::BinningStrategy::BinningStrategy()
@@ -2063,4 +2063,4 @@ void BINSTRATEGY::BinningStrategy::TransferNodesAndElements(
       discret, toranktosendbinids, bintorowelemap);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

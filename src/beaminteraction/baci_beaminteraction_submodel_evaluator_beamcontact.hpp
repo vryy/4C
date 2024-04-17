@@ -20,7 +20,7 @@
 #include "baci_binstrategy_utils.hpp"
 #include "baci_io_visualization_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -295,6 +295,6 @@ namespace BEAMINTERACTION
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

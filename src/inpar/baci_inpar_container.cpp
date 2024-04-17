@@ -12,7 +12,7 @@
 
 #include <Epetra_Vector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 std::ostream& operator<<(std::ostream& os, const INPAR::InputParameterContainer& cont)
@@ -77,4 +77,4 @@ void INPAR::InputParameterContainer::Print(std::ostream& os) const
 }
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -11,7 +11,7 @@
 #include "baci_lib_node.hpp"
 #include "baci_so3_hex8.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 void DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords(
@@ -38,4 +38,4 @@ void DRT::ELEMENTS::So_hex8::soh8_GaussPointRefeCoords(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

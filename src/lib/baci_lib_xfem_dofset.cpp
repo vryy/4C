@@ -15,7 +15,7 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 #include "baci_cut_cutwizard.hpp"
 #include "baci_cut_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -50,4 +50,4 @@ int XFEM::XFEMDofSet::NumDofPerNode(const DRT::Node& node) const
   return DRT::DofSet::NumDofPerNode(node);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

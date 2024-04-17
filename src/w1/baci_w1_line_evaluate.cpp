@@ -24,7 +24,7 @@
 #include "baci_utils_function.hpp"
 #include "baci_w1.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)      popp 06/13|
@@ -859,4 +859,4 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -29,7 +29,7 @@
 #include "baci_scatra_ele_parameter_turbulence.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -2118,7 +2118,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetInternalVariablesForMatA
       funct_, derxy_, ephinp_, ephin_, econvelnp_, ehist_, eforcevelocity_);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

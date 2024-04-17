@@ -20,7 +20,7 @@
 #include <utility>
 #include <variant>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace INPUT
 {
@@ -635,6 +635,6 @@ namespace INPUT
   }
 }  // namespace INPUT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

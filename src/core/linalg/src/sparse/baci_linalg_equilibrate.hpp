@@ -15,7 +15,7 @@
 #include <Epetra_CrsMatrix.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -254,6 +254,6 @@ namespace CORE::LINALG
   Teuchos::RCP<CORE::LINALG::Equilibration> BuildEquilibration(MatrixType type,
       const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap);
 }  // namespace CORE::LINALG
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -14,11 +14,11 @@
 
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-NOX::STR::Group::Group(BACI::STR::TimIntImpl& sti, Teuchos::ParameterList& printParams,
+NOX::STR::Group::Group(FourC::STR::TimIntImpl& sti, Teuchos::ParameterList& printParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
     const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys)
     : ::NOX::Epetra::Group(printParams, i, x, linSys)
@@ -55,4 +55,4 @@ NOX::STR::Group::Group(BACI::STR::TimIntImpl& sti, Teuchos::ParameterList& print
   return ret;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

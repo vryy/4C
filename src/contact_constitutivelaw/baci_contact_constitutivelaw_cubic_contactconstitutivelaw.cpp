@@ -16,7 +16,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -80,4 +80,4 @@ double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::EvaluateDeriv(
          2 * params_->GetB() * (gap - params_->GetOffset()) + params_->GetC();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

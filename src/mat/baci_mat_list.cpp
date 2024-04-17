@@ -16,7 +16,7 @@ properties of e.g. one species in a scalar transport problem, or one phase in a 
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -254,4 +254,4 @@ Teuchos::RCP<MAT::Material> MAT::MatList::MaterialById(const int id) const
     return params_->MaterialById(id);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

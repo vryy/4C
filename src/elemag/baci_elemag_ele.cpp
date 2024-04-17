@@ -20,7 +20,7 @@
 #include "baci_lib_discret_faces.hpp"
 #include "baci_so3_nullspace.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::ElemagType DRT::ELEMENTS::ElemagType::instance_;
@@ -817,4 +817,4 @@ int DRT::ELEMENTS::ElemagIntFace::EvaluateNeumann(Teuchos::ParameterList& params
   return 0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

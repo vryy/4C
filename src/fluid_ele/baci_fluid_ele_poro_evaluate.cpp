@@ -17,7 +17,7 @@
 #include "baci_fluid_ele_poro.hpp"
 #include "baci_global_data.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::FluidPoroEleType::PreEvaluate(DRT::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
@@ -130,4 +130,4 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
   return 0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

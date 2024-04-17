@@ -21,7 +21,7 @@
 class Epetra_Vector;
 class Epetra_FEVector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -410,6 +410,6 @@ namespace BEAMINTERACTION
   };
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

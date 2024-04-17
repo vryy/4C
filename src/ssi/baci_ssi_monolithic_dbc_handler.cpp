@@ -18,7 +18,7 @@
 #include "baci_ssi_monolithic.hpp"
 #include "baci_ssi_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
@@ -215,4 +215,4 @@ Teuchos::RCP<SSI::DBCHandlerBase> SSI::BuildDBCHandler(const bool is_scatra_mani
 
   return dbc_handler;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -29,7 +29,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -794,4 +794,4 @@ rand_data_.seedvariable ) ); GLOBAL::Problem::Instance()->Random()->SetRandRange
 
 }*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@
 #include "baci_linalg_utils_sparse_algebra_print.hpp"
 #include "baci_scatra_timint_meshtying_strategy_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace DRT
@@ -189,6 +189,6 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

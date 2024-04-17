@@ -31,7 +31,7 @@
 #include <utility>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEN
 {
@@ -1038,6 +1038,6 @@ size_t CORE::GEN::insert_and_sort_policy<Key, T>::_max_capacity = 0;
 
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

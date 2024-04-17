@@ -25,7 +25,7 @@
 #include <fstream>
 #include <iomanip>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -1957,4 +1957,4 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveScatraAnalytically(Artery
 // 1D elements
 template class DRT::ELEMENTS::ArteryEleCalcLinExp<CORE::FE::CellType::line2>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -20,7 +20,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 BEAMINTERACTION::BeamLinkTrussType BEAMINTERACTION::BeamLinkTrussType::instance_;
@@ -346,4 +346,4 @@ double BEAMINTERACTION::BeamLinkTruss::GetInternalEnergy() const
  *----------------------------------------------------------------------------*/
 double BEAMINTERACTION::BeamLinkTruss::GetKineticEnergy() const { return 0.0; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

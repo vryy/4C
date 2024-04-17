@@ -34,7 +34,7 @@
 
 #include <memory>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -757,4 +757,4 @@ void PARTICLEWALL::WallHandlerBoundingBox::SetupWallDiscretization() const
   // nothing to do
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

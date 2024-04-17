@@ -12,7 +12,7 @@
 
 #include "baci_comm_parobject.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::AddToPack(
     CORE::COMM::PackBuffer& data, const DRT::ELEMENTS::SolidElementProperties& properties)
@@ -33,4 +33,4 @@ void DRT::ELEMENTS::ExtractFromPack(std::size_t& position, const std::vector<cha
       static_cast<PrestressTechnology>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

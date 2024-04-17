@@ -12,7 +12,7 @@
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_scatra_timint_elch.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -193,4 +193,4 @@ bool ELCH::Algorithm::ConvergenceCheck(
   return stopnonliniter;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

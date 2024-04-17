@@ -15,7 +15,7 @@
 #include "baci_shell7p_line.hpp"
 #include "baci_shell7p_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -423,4 +423,4 @@ bool DRT::ELEMENTS::Shell7pScatra::ReadElement(
   return true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -18,7 +18,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidType DRT::ELEMENTS::FluidType::instance_;
 
@@ -361,4 +361,4 @@ void DRT::ELEMENTS::Fluid::ActivateTDS(
   tds_->ActivateTDS(nquad, nsd, saccn, sveln, svelnp);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

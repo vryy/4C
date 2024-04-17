@@ -16,7 +16,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 namespace DRT::ELEMENTS
 {
   /*!
@@ -86,6 +86,6 @@ namespace DRT::ELEMENTS
   }
   /// @}
 }  // namespace DRT::ELEMENTS
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

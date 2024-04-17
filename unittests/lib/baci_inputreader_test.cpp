@@ -10,7 +10,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   TEST(ReadKeyValue, WithWhitespace)
   {

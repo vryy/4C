@@ -17,7 +17,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -1473,4 +1473,4 @@ template class POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<1>;
 template class POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<2>;
 template class POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<3>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -13,7 +13,7 @@
 #include "baci_utils_exceptions.hpp"
 #include "baci_w1.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::Wall1LineType DRT::ELEMENTS::Wall1LineType::instance_;
@@ -136,4 +136,4 @@ void DRT::ELEMENTS::Wall1Line::Print(std::ostream& os) const
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

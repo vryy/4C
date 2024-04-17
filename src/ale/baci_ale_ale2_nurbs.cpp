@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_ale2_nurbs.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::NURBS::Ale2_NurbsType DRT::ELEMENTS::NURBS::Ale2_NurbsType::instance_;
 
@@ -92,4 +92,4 @@ CORE::FE::CellType DRT::ELEMENTS::NURBS::Ale2Nurbs::Shape() const
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

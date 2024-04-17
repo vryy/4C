@@ -20,7 +20,7 @@
 
 class Epetra_Vector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace IO
@@ -295,6 +295,6 @@ namespace CORE::GEO
   }  // namespace MESHFREE
 }  // namespace CORE::GEO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

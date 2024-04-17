@@ -23,7 +23,7 @@
 #include <Epetra_MultiVector.h>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
@@ -502,6 +502,6 @@ namespace LUBRICATION
 }  // namespace LUBRICATION
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

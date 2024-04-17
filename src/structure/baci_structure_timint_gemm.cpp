@@ -17,7 +17,7 @@
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_structure_aux.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -606,4 +606,4 @@ void STR::TimIntGEMM::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> o
   output->WriteVector("fexternal", fext_);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

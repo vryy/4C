@@ -22,7 +22,7 @@
 
 #include <Epetra_Map.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
@@ -458,4 +458,4 @@ Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::BuildMeshtyingStrategy(const bool 
 
   return meshtying_strategy;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

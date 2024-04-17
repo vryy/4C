@@ -14,7 +14,7 @@
 #include "baci_mat_service.hpp"
 #include "baci_mixture_growth_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -79,4 +79,4 @@ void MIXTURE::StiffnessGrowthStrategy::EvaluateGrowthStressCmat(
 
   cmat.MultiplyNN(dgamma2DGrowthScalar, iC_stress, dCurrentReferenceGrowthScalarDC, 1.0);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -12,7 +12,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -41,4 +41,4 @@ int DRT::ELEMENTS::Vele3Surface::EvaluateNeumann(Teuchos::ParameterList& params,
   return 0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

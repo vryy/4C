@@ -15,7 +15,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -196,4 +196,4 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
   }  // if (params_ != nullptr)
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

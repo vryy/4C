@@ -28,7 +28,7 @@ namespace Teuchos
   class ParameterList;
 }
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace MAT::PAR
@@ -95,6 +95,6 @@ namespace MIXTURE
   };
 }  // namespace MIXTURE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

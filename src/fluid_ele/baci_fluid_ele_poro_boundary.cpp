@@ -12,7 +12,7 @@
 
 #include "baci_fluid_ele_poro.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidPoroBoundaryType DRT::ELEMENTS::FluidPoroBoundaryType::instance_;
 
@@ -50,4 +50,4 @@ void DRT::ELEMENTS::FluidPoroBoundary::Print(std::ostream& os) const
   Element::Print(os);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -12,7 +12,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_utils_function_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -169,4 +169,4 @@ double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(
   return distance;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

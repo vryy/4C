@@ -26,7 +26,7 @@
 
 #include <Epetra_Comm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -769,4 +769,4 @@ std::string STR::MODELEVALUATOR::ContactData::GetOutputFilePath() const
  *----------------------------------------------------------------------------*/
 int STR::MODELEVALUATOR::Data::GetRestartStep() const { return GState().GetRestartStep(); }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

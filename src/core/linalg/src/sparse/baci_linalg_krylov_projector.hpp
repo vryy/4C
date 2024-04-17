@@ -25,7 +25,7 @@ class Epetra_MultiVector;
 class Epetra_Operator;
 class Epetra_BlockMap;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -238,6 +238,6 @@ namespace CORE::LINALG
 
 }  // namespace CORE::LINALG
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -16,7 +16,7 @@
 
 #include <Epetra_Vector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace ADAPTER
@@ -178,6 +178,6 @@ namespace SSTI
   Teuchos::RCP<SSTI::SSTIAlgorithm> BuildSSTI(INPAR::SSTI::SolutionScheme coupling,
       const Epetra_Comm& comm, const Teuchos::ParameterList& sstiparams);
 }  // namespace SSTI
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

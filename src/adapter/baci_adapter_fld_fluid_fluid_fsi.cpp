@@ -14,7 +14,7 @@
 #include "baci_fluid_utils_mapextractor.hpp"
 #include "baci_fluid_xfluid_fluid.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -291,4 +291,4 @@ void ADAPTER::FluidFluidFSI::PrepareShapeDerivatives()
   xfluidfluid_->PrepareShapeDerivatives(mergedfluidinterface_, condelements);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -11,7 +11,7 @@
 #include "baci_mat_par_material.hpp"
 #include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::CoupAnisoExpoAnisotropyExtension(
@@ -100,4 +100,4 @@ void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(const CORE::LINALG::Matrix<3, 1>&
   anisotropyExtension_.SetFiberVecs(fibervec);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

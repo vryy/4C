@@ -19,7 +19,7 @@
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_porofluidmultiphase_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16  |
@@ -371,4 +371,4 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrintStructureDisabledInfo()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

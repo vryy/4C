@@ -21,7 +21,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -150,4 +150,4 @@ void NOX::NLN::LAGPENCONSTRAINT::LinearSystem::throwError(
   throw "NOX Error";
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

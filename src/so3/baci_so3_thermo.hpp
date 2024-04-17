@@ -23,7 +23,7 @@
 #include "baci_discretization_fem_general_utils_gausspoints.hpp"
 #include "baci_thermo_ele_impl_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/12 |
@@ -391,6 +391,6 @@ namespace DRT
 
 
 /*----------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

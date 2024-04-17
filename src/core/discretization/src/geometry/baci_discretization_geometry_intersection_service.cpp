@@ -16,7 +16,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_lib_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -170,4 +170,4 @@ bool CORE::GEO::overlap(double smin, double smax, double omin, double omax)
           (smax > omin - CORE::GEO::TOL7 and smin < omax + CORE::GEO::TOL7));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

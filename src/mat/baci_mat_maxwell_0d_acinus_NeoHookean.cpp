@@ -27,7 +27,7 @@ MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 32
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -167,4 +167,4 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Evaluate(CORE::LINALG::SerialDenseVector
   rhs(1) = 1.0 * (Kp_n * (p1n - p2n)) * NumOfAcini;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

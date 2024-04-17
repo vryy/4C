@@ -39,7 +39,7 @@
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_structure_aux.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | timeloop for small time scales                            Thon 07/15 |
@@ -1015,4 +1015,4 @@ void FS3I::MeanManager::ReadRestart(IO::DiscretizationReader& fluidreader)
   SumDtPres_ = SumDtWss_;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

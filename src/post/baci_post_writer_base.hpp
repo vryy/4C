@@ -20,7 +20,7 @@
 
 class Epetra_MultiVector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 class PostField;
 
@@ -138,6 +138,6 @@ class PostWriterBase
   unsigned int numproc_;  ///< number of processors
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

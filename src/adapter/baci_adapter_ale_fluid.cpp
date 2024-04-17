@@ -16,7 +16,7 @@
 
 #include "baci_ale_utils_mapextractor.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -74,4 +74,4 @@ void ADAPTER::AleFluidWrapper::ApplyInterfaceDisplacements(Teuchos::RCP<const Ep
   interface_->InsertFSICondVector(idisp, WriteAccessDispnp());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

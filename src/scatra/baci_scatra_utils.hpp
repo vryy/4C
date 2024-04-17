@@ -16,7 +16,7 @@
 
 #include <Epetra_MultiVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace SCATRA::SCATRAUTILS
 {
@@ -40,6 +40,6 @@ namespace SCATRA::SCATRAUTILS
       Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid);
 
 }  // namespace SCATRA::SCATRAUTILS
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

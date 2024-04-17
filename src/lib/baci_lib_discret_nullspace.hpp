@@ -11,7 +11,7 @@
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCPDecl.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -35,6 +35,6 @@ namespace DRT
       const int dimns, const Teuchos::RCP<Epetra_Map> dofmap);
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

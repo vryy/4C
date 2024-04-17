@@ -16,7 +16,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -157,4 +157,4 @@ double MAT::ArrheniusTemp::ComputeReactionRHS(const double spmf, const double te
   return rearhs;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -28,7 +28,7 @@ interface
 
 #include <Epetra_SerialComm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 08/14|
@@ -1676,4 +1676,4 @@ void CONTACT::LagrangeStrategyPoro::PoroMtUpdate()
   return;
 }  // CONTACT::LagrangeStrategyPoro::PoroMtUpdate()
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

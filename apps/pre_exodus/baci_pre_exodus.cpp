@@ -42,14 +42,14 @@ its parameters and conditions.
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* create default bc file                                               */
 /*----------------------------------------------------------------------*/
 int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   std::string defaultbcfilename = "default.bc";
   std::cout << "found no BC specification file --> creating " << defaultbcfilename << std::endl;
@@ -155,13 +155,13 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   return 0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // communication
   MPI_Init(&argc, &argv);

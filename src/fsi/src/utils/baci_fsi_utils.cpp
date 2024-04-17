@@ -42,7 +42,7 @@
 #include <string>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -887,4 +887,4 @@ void FSI::UTILS::SlideAleUtils::ReadRestart(IO::DiscretizationReader& reader)
   reader.ReadVector(iprojhist_, "projhist");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@
 #include "baci_so3_poro_eletypes.hpp"
 #include "baci_so3_surface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <class so3_ele, CORE::FE::CellType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(int id, int owner)
@@ -306,6 +306,6 @@ inline int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Id() const
   return so3_ele::Id();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #include "baci_so3_poro_fwd.hpp"

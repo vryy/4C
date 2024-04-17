@@ -11,7 +11,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_so3_scatra.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                       |
@@ -441,4 +441,4 @@ int DRT::ELEMENTS::So_weg6ScatraType::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@ implementation
 #include "baci_inpar_structure.hpp"
 #include "baci_lib_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -67,6 +67,6 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

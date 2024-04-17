@@ -17,7 +17,7 @@
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.hpp"
 #include "baci_structure_new_integrator.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace STR
 {
@@ -168,6 +168,6 @@ namespace NOX
   }         // namespace NLN
 }  // namespace NOX
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

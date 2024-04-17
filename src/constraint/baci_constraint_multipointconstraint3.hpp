@@ -13,7 +13,7 @@
 
 #include "baci_constraint_multipointconstraint.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -121,6 +121,6 @@ namespace CONSTRAINTS
 
   };  // class
 }  // namespace CONSTRAINTS
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

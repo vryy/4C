@@ -14,7 +14,7 @@
 #include "baci_elemag_ele_calc.hpp"
 #include "baci_elemag_ele_interface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  |                                                (public) berardocco 02/18 |
@@ -113,4 +113,4 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::DefineProblemTy
   return nullptr;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -13,7 +13,7 @@ transport within electrochemical substances
 #include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------------------------------------------------------------------*
  | element matrix and right-hand side vector contributions arising from thermal source terms in
@@ -129,4 +129,4 @@ template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::pyramid5>;
 // template class DRT::ELEMENTS::ScaTraEleSTIElch<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

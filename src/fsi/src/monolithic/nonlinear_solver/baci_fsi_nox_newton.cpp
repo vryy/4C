@@ -14,7 +14,7 @@
 #include <NOX_Utils.H>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -123,4 +123,4 @@ void NOX::FSI::Newton::Residual(double current, double desired)
   dresiduals_.push_back(desired);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

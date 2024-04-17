@@ -15,7 +15,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_matrixtransform.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -372,4 +372,4 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PrintOutCoupli
   std::cout << "<   Coupling-Method : Nodebased                    >" << std::endl;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

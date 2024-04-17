@@ -21,7 +21,7 @@
 #include <Epetra_Operator.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace NOX::NLN
@@ -2310,6 +2310,6 @@ namespace CONTACT
 //! << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::AbstractStrategy& strategy);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

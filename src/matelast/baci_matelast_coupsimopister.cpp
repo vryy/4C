@@ -11,7 +11,7 @@
 
 #include <limits>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupSimoPister::CoupSimoPister(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -47,4 +47,4 @@ void MAT::ELASTIC::CoupSimoPister::AddDerivativesPrincipal(CORE::LINALG::Matrix<
 
   ddPII(2) += 0.5 * mue / (prinv(2) * prinv(2));
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

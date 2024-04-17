@@ -18,7 +18,7 @@
 #include "baci_scatra_ele_calc_advanced_reaction.hpp"
 #include "baci_scatra_ele_calc_poro.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -83,6 +83,6 @@ namespace DRT
 }  // namespace DRT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -18,7 +18,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_lib_discret_faces.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 // initialize static variable
@@ -321,4 +321,4 @@ void DRT::ELEMENTS::FluidHDG::Print(std::ostream& os) const
   Element::Print(os);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

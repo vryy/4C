@@ -22,7 +22,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
@@ -190,4 +190,4 @@ void NOX::FSI::FSIMatrixFree::setGroupForComputeF(const ::NOX::Abstract::Group& 
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

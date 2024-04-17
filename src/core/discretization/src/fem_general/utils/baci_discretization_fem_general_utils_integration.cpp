@@ -14,7 +14,7 @@
 #include <cmath>
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace internal
@@ -7578,4 +7578,4 @@ CORE::FE::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D intrule) : 
   dsassert(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

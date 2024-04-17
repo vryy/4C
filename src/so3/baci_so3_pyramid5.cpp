@@ -25,7 +25,7 @@
 #include "baci_so3_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_pyramid5Type DRT::ELEMENTS::So_pyramid5Type::instance_;
 
@@ -329,4 +329,4 @@ bool DRT::ELEMENTS::So_pyramid5::VisData(const std::string& name, std::vector<do
   return SolidMaterial()->VisData(name, data, NUMGPT_SOP5, this->Id());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

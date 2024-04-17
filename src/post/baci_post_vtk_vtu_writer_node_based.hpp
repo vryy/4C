@@ -22,7 +22,7 @@
 
 
 // forward declarations
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 class PostField;
 class PostResult;
 
@@ -113,6 +113,6 @@ class PostVtuWriterNode : public PostVtuWriter
       const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData);
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -23,7 +23,7 @@ spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 #include "baci_mat_par_parameter.hpp"
 #include "baci_red_airways_elem_params.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -199,6 +199,6 @@ namespace MAT
 
 }  // namespace MAT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -15,7 +15,7 @@
 
 #include "baci_contact_abstract_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace CONTACT
@@ -354,6 +354,6 @@ namespace CONTACT
   };  // class PenaltyStrategy
 }  // namespace CONTACT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

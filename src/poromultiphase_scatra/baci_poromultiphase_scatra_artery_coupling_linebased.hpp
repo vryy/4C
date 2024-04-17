@@ -19,7 +19,7 @@
 // forward declaration
 class Epetra_IntVector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace POROMULTIPHASESCATRA
 {
@@ -202,6 +202,6 @@ namespace POROMULTIPHASESCATRA
   };
 }  // namespace POROMULTIPHASESCATRA
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

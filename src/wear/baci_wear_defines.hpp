@@ -16,7 +16,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /************************************************************************/
 /* Wear tolerances                                                      */
@@ -31,6 +31,6 @@ BACI_NAMESPACE_OPEN
 // convergence check
 #define WEARCONV 1.0e-12 /* tolerance for convergence check*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

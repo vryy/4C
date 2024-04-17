@@ -17,7 +17,7 @@ use StepIncrements, therefore set NOXCorrection == true!!!
 
 #include "baci_adapter_field.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ADAPTER
 {
@@ -133,6 +133,6 @@ namespace ADAPTER
   };
 }  // namespace ADAPTER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

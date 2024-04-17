@@ -22,7 +22,7 @@
 #include "baci_solver_nonlin_nox_constraint_interface_required.hpp"
 #include "baci_structure_new_timint_basedataglobalstate.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace LAGPENCONSTRAINT
@@ -155,6 +155,6 @@ namespace LAGPENCONSTRAINT
 }  // namespace LAGPENCONSTRAINT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

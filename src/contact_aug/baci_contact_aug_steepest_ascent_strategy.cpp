@@ -23,7 +23,7 @@
 #include "baci_mortar_utils.hpp"
 #include "baci_utils_epetra_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // #define LAGRANGE_FUNC
 
@@ -348,4 +348,4 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::RemoveCondensedContributionsFromRhs
   CATCH_EPETRA_ERROR(str_rhs.Update(-1.0, regforce_exp, 1.0));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -24,7 +24,7 @@
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor                                                     farah 10/13|
@@ -420,4 +420,4 @@ Teuchos::RCP<const Epetra_Map> CORE::ADAPTER::MortarVolCoupl::SlaveDofMap() cons
   return Teuchos::rcpFromRef(P21_->RowMap());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -20,7 +20,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
@@ -341,4 +341,4 @@ void POROELAST::MonolithicStructureSplit::RecoverLagrangeMultiplierAfterTimeStep
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

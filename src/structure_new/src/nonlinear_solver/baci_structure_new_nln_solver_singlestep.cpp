@@ -18,7 +18,7 @@
 
 #include <NOX_Solver_Generic.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -129,4 +129,4 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::SingleStep::Solve()
   return ConvertFinalStatus(stepstatus);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

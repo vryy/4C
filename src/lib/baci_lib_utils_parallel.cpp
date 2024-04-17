@@ -25,7 +25,7 @@
 
 #include <Epetra_IntVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Redistribute using BinningStrategy                      rauch 08/16 |
@@ -817,4 +817,4 @@ void DRT::UTILS::RedistributeInAccordanceWithReference(
 
   //  red_map->Print( std::cout );
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

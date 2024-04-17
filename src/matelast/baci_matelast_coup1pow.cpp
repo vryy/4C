@@ -11,7 +11,7 @@ invariant
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::Coup1Pow::Coup1Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(*matdata->Get<double>("C")), d_(*matdata->Get<int>("D"))
@@ -53,4 +53,4 @@ void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>&
   else
     ddPII(0) += (c * d * d - c * d) * pow((prinv(0) - 3.), d - 2.);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

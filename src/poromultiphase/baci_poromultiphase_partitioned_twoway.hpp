@@ -15,7 +15,7 @@
 #include "baci_inpar_poromultiphase.hpp"
 #include "baci_poromultiphase_partitioned.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace POROMULTIPHASE
 {
@@ -122,6 +122,6 @@ namespace POROMULTIPHASE
 
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

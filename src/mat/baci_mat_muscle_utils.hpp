@@ -19,7 +19,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT::UTILS::MUSCLE
 {
@@ -327,6 +327,6 @@ namespace MAT::UTILS::MUSCLE
       const double lambdaM, const double lambdaMOld, const double timeStepSize);
 }  // namespace MAT::UTILS::MUSCLE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

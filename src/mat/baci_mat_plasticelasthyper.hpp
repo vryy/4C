@@ -30,7 +30,7 @@ rY_13 0.7
 
 #define AS_CONVERGENCE_TOL 1.e-12
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration due to avoid header definition
 namespace MAT
@@ -633,6 +633,6 @@ namespace MAT
 
 }  // namespace MAT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -16,7 +16,7 @@
 #include "baci_lib_dofset_transparent_independent.hpp"
 #include "baci_lib_utils_parallel.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -286,4 +286,4 @@ void DRT::UTILS::PrintCloningMaterialMapDatHeader()
   lines.Print(std::cout);
 }  // DRT::UTILS::PrintCloningMaterialMapDatHeader
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

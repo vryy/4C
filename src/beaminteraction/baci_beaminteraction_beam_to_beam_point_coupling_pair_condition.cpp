@@ -14,7 +14,7 @@
 #include "baci_lib_condition.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -93,4 +93,4 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
   local_parameter_coordinates_ = {position_in_parameter_space[0], position_in_parameter_space[1]};
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

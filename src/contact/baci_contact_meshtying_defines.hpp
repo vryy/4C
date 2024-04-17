@@ -11,7 +11,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /************************************************************************/
 /* Meshtying algorithm options                                          */
@@ -22,8 +22,8 @@ BACI_NAMESPACE_OPEN
 /************************************************************************/
 
 // GENERAL DEBUGGING OPTIONS
-//#define MESHTYINGASOUTPUT    /* flag for detailed active set output */
+// #define MESHTYINGASOUTPUT    /* flag for detailed active set output */
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

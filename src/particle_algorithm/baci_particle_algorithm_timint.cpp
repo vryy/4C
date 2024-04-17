@@ -23,7 +23,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -475,4 +475,4 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
     dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, false, true, false);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

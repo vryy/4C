@@ -20,7 +20,7 @@
 #include "baci_nurbs_discret.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -1645,4 +1645,4 @@ const DRT::Discretization& IO::DiscretizationWriter::GetDiscret() const
   return *dis_;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@
 #include <Epetra_CrsMatrix.h>
 #include <Teuchos_RCPDecl.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 namespace CONSTRAINTS::SUBMODELEVALUATOR
 {
   /*! \brief The MultiPointConstraintEquationBase class serves as a base interface
@@ -103,5 +103,5 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
   };
 }  // namespace CONSTRAINTS::SUBMODELEVALUATOR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 #endif

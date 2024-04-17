@@ -12,7 +12,7 @@
 
 #include <NOX_Utils.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -110,4 +110,4 @@ NOX::NLN::StatusTest::Combo::GetTestVector() const
   return tests_;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

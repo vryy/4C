@@ -11,7 +11,7 @@
 
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -78,4 +78,4 @@ template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::tet10, 3>;
 template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

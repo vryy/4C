@@ -20,7 +20,7 @@
 #include "baci_nurbs_discret.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -552,4 +552,4 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

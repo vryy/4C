@@ -14,7 +14,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_so3_nullspace.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
 
@@ -171,4 +171,4 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfac
   return {Teuchos::rcpFromRef(*this)};
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

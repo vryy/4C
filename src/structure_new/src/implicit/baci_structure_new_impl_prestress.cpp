@@ -17,7 +17,7 @@
 #include "baci_structure_new_timint_basedataglobalstate.hpp"
 #include "baci_structure_new_timint_basedatasdyn.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -159,4 +159,4 @@ void STR::IMPLICIT::PreStress::PostTimeLoop()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -31,7 +31,7 @@ class Epetra_MultiVector;
 class Epetra_Map;
 class Epetra_BlockMap;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace LINALG
 {
@@ -464,6 +464,6 @@ namespace IO
 
 }  // namespace IO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

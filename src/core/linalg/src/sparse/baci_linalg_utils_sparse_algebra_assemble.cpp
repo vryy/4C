@@ -11,7 +11,7 @@
 
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  assemble a matrix                                         popp 01/08|
@@ -312,4 +312,4 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> CORE::LINALG::ConvertDirichletToggleVec
   return Teuchos::rcp(new CORE::LINALG::MapExtractor(fullmap, dbcmap, freemap));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

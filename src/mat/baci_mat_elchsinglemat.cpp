@@ -13,7 +13,7 @@ electric potential as degrees of freedom
 #include "baci_mat_par_bundle.hpp"
 #include "baci_utils_function_of_time.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -819,4 +819,4 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
   return firstderivfunctval;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

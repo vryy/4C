@@ -17,7 +17,7 @@
 
 #include <Epetra_Vector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void MAT::ElastHyperEvaluate(const CORE::LINALG::Matrix<3, 3>& defgrd,
     const CORE::LINALG::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
@@ -570,4 +570,4 @@ void MAT::ElastHyperCheckPolyconvexity(const CORE::LINALG::Matrix<3, 3>& defgrd,
         }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

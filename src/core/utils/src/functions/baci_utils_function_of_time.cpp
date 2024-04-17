@@ -9,7 +9,7 @@
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_symbolic_expression.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 CORE::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
@@ -263,4 +263,4 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
   return Teuchos::rcp(new SymbolicFunctionOfTime(functstring, functvarvector));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -21,7 +21,7 @@
 #include "baci_mortar_interface.hpp"
 #include "baci_mortar_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  impl. for aux.-plane based projection                    farah 01/14|
@@ -2965,4 +2965,4 @@ bool MORTAR::ProjectorCalc<distype>::EvaluateGradFGaussPointAuxn3D(
   return true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

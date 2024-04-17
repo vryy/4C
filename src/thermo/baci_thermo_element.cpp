@@ -19,7 +19,7 @@
 #include "baci_mat_thermostvenantkirchhoff.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::ThermoType DRT::ELEMENTS::ThermoType::instance_;
 
@@ -447,4 +447,4 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ThermoBoundary::Surfaces(
   dserror("Surfaces of ThermoBoundary not implemented");
 }  // Surfaces()
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

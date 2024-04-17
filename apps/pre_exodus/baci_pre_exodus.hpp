@@ -19,7 +19,7 @@ or the well-known .dat file is created.
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace EXODUS
 {
@@ -31,6 +31,6 @@ namespace EXODUS
 
 }  // namespace EXODUS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

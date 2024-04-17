@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace INPUT
@@ -41,6 +41,6 @@ namespace INPUT
 /// print empty condition sections
 void PrintConditionDatHeader();
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

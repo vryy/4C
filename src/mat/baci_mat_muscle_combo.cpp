@@ -22,7 +22,7 @@ activations
 
 #include <variant>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -477,4 +477,4 @@ void MAT::Muscle_Combo::EvaluateActivationLevel(const double lambdaM, const doub
                      std::pow(dPhi, 2) / (phi * phi * alpha * std::pow(lambdaM, 2)) +
                      ddPhi / (phi * alpha * std::pow(lambdaM, 2));
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@
 
 #include "baci_ssi_str_model_evaluator_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ADAPTER
 {
@@ -69,6 +69,6 @@ namespace STR
 }  // namespace STR
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

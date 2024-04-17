@@ -12,7 +12,7 @@
 #include "baci_mat_elasthyper.hpp"
 #include "baci_w1.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -228,4 +228,4 @@ CORE::FE::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
   return rule;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

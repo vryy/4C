@@ -12,7 +12,7 @@
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -34,4 +34,4 @@ void ADAPTER::AdapterScatraWrapper::EvaluateAdditionalSolutionDependingModels(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

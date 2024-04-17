@@ -13,7 +13,7 @@
 #include "baci_global_data.hpp"
 #include "baci_inpar_geometry_pair.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -86,4 +86,4 @@ int BEAMINTERACTION::BeamToSolidSurfaceContactParams::GetFADOrder() const
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

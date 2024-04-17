@@ -11,7 +11,7 @@
 
 #include "baci_utils_random.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /// get a random number
 double CORE::UTILS::Random::Uni() { return uni_dist_(rand_engine_); }
@@ -61,4 +61,4 @@ void CORE::UTILS::Random::SetMeanVariance(const double mean, const double var)
 }
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

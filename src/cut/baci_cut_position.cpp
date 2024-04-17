@@ -15,7 +15,7 @@
 #include "baci_cut_boundingbox.hpp"
 #include "baci_global_data.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -736,4 +736,4 @@ template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge15,
     CORE::FE::num_nodes<CORE::FE::CellType::wedge15>, CORE::FE::dim<CORE::FE::CellType::wedge15>,
     INPAR::CUT::floattype_cln>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

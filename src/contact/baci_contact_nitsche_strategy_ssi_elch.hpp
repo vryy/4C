@@ -13,7 +13,7 @@
 
 #include "baci_contact_nitsche_strategy_ssi.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
@@ -53,6 +53,6 @@ namespace CONTACT
     NitscheStrategySsiElch(const NitscheStrategySsiElch& old) = delete;
   };
 }  // namespace CONTACT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

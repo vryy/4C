@@ -28,7 +28,7 @@
 
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -981,4 +981,4 @@ namespace BEAMINTERACTION
   initialize_template_assemble_local_mortar_contributions(t_hermite, t_nurbs9, t_line4);
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

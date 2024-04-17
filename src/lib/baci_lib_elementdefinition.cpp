@@ -15,7 +15,7 @@
 
 #include "baci_comm_parobjectfactory.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -200,4 +200,4 @@ INPUT::LineDefinition* INPUT::ElementDefinition::ElementLines(std::string name, 
   return nullptr;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -367,7 +367,7 @@ void LubricationFilter::WriteAllResults(PostField* field)
 \*----------------------------------------------------------------------*/
 void PoroFluidMultiPhaseFilter::WriteAllResults(PostField* field)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // compute maximum number of dofs per node on poro fluid discretization
   const DRT::Discretization& discret = *field->discretization();
@@ -416,7 +416,7 @@ void PoroFluidMultiPhaseFilter::WriteAllResults(PostField* field)
 \*----------------------------------------------------------------------*/
 void ScaTraFilter::WriteAllResults(PostField* field)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // compute maximum number of dofs per node on scatra discretization
   const DRT::Discretization& discret = *field->discretization();
@@ -658,4 +658,4 @@ void AnyFilter::WriteAllResults(PostField* field)
   WriteElementResults(field);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

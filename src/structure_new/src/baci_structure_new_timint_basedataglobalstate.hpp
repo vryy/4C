@@ -39,7 +39,7 @@ namespace NOX
   }  // namespace Epetra
 }  // namespace NOX
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace DRT
@@ -1125,7 +1125,7 @@ namespace NOX
            public:
             //! constructor
             RotVecUpdater(
-                const Teuchos::RCP<const BACI::STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
+                const Teuchos::RCP<const FourC::STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
 
             /*! \brief Derived function, which is called before a call to
              * NOX::NLN::Group::computeX()
@@ -1135,8 +1135,8 @@ namespace NOX
                 const double& step, const NOX::NLN::Group& curr_grp) override;
 
            private:
-            //! pointer to the BACI::STR::TIMINT::BaseDataGlobalState object (read-only)
-            Teuchos::RCP<const BACI::STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+            //! pointer to the FourC::STR::TIMINT::BaseDataGlobalState object (read-only)
+            Teuchos::RCP<const FourC::STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 
           };  // class RotVecUpdater
         }     // namespace TIMINT
@@ -1145,6 +1145,6 @@ namespace NOX
   }           // namespace NLN
 }  // namespace NOX
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

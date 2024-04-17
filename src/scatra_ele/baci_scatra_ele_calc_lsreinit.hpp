@@ -17,7 +17,7 @@
 #include "baci_discretization_geometry_integrationcell.hpp"
 #include "baci_scatra_ele_calc.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -475,6 +475,6 @@ namespace SCATRA
   };
 }  // namespace SCATRA
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

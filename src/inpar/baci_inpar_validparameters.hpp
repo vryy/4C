@@ -21,7 +21,7 @@
 #include <iostream>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -62,6 +62,6 @@ void PrintHelpMessage();
 void PrintDefaultDatHeader();
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

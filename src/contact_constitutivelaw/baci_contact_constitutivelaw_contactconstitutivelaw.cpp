@@ -24,7 +24,7 @@
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -105,4 +105,4 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
   return Teuchos::null;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

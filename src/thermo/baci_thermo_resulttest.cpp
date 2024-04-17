@@ -19,7 +19,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
@@ -116,4 +116,4 @@ void THR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
   }
 }  // TestNode
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

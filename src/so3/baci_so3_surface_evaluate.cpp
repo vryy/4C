@@ -32,7 +32,7 @@
 
 #include <Sacado.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
@@ -2536,4 +2536,4 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

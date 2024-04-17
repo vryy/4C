@@ -18,7 +18,7 @@
 #include "baci_so3_surface.hpp"
 #include "baci_so3_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_sh18Type DRT::ELEMENTS::So_sh18Type::instance_;
 
@@ -199,4 +199,4 @@ void DRT::ELEMENTS::So_sh18::Print(std::ostream& os) const
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

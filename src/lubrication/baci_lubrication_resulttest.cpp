@@ -15,7 +15,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_lubrication_timint_implicit.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -146,4 +146,4 @@ double LUBRICATION::ResultTest::ResultSpecial(
   return result;
 }  // LUBRICATION::ResultTest::ResultSpecial
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

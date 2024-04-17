@@ -18,7 +18,7 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_SolidMaterial::MixtureConstituent_SolidMaterial(
@@ -161,4 +161,4 @@ bool MIXTURE::MixtureConstituent_SolidMaterial::EvaluateOutputData(
 {
   return material_->EvaluateOutputData(name, data);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

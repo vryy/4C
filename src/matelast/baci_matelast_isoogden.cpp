@@ -10,7 +10,7 @@
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::IsoOgden::IsoOgden(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -41,4 +41,4 @@ void MAT::ELASTIC::IsoOgden::AddCoefficientsStretchesModified(CORE::LINALG::Matr
   moddelta(5) += 0;                                                               // ,20
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

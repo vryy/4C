@@ -26,7 +26,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /* ====================================================================
     public
@@ -589,4 +589,4 @@ CORE::LINALG::KrylovProjector::MultiplyMultiVecterMultiVector(
   return mat;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

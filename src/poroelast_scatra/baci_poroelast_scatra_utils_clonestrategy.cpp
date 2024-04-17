@@ -25,7 +25,7 @@
 #include "baci_w1_poro_p1_scatra.hpp"
 #include "baci_w1_poro_scatra.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImplType(
@@ -249,4 +249,4 @@ bool POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements::DetermineE
 
   return false;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

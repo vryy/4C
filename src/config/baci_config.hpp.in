@@ -19,10 +19,10 @@
 
 #cmakedefine BACI_TRAP_FE
 
-// The BACI namespace is added via the follwing two macros. This design allows
-// to treat the namespace as invisible within the BACI project.
-#define BACI_NAMESPACE_OPEN namespace BACI {
-#define BACI_NAMESPACE_CLOSE }
+// The project namespace is added via the following two macros. This design allows
+// to treat the namespace as invisible within the project.
+#define FOUR_C_NAMESPACE_OPEN namespace FourC {
+#define FOUR_C_NAMESPACE_CLOSE }
 
 /// Dependencies
 /// The following flags are set when configuring the project with CMake.

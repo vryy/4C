@@ -15,7 +15,7 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <unsigned int numfib>
 MAT::FiberAnisotropyExtension<numfib>::FiberAnisotropyExtension(
@@ -219,4 +219,4 @@ int MAT::FiberAnisotropyExtension<numfib>::GetFibersPerElement() const
 // explicit instatiations of template classes
 template class MAT::FiberAnisotropyExtension<1u>;
 template class MAT::FiberAnisotropyExtension<2u>;
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

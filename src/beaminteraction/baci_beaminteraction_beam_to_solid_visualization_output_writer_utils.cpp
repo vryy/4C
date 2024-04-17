@@ -18,7 +18,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -203,4 +203,4 @@ void BEAMINTERACTION::GetNodeCouplingForceResultants(const std::vector<double>& 
   for (unsigned int dim = 0; dim < 3; ++dim) resultant(dim, 1) += node_moment(dim);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

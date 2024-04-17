@@ -24,7 +24,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -346,6 +346,6 @@ namespace DRT
 std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationFaces& dis);
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

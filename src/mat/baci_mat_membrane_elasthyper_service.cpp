@@ -13,7 +13,7 @@
 
 #include "baci_mat_elasthyper_service.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -209,4 +209,4 @@ void MAT::MembraneElastHyperInvariantsPrincipal(
                                            std::pow(rcg33, 2.0) + 2.0 * std::pow(rcg(2), 2.0)));
   prinv(2) = 1.0;  // incompressibility condition
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

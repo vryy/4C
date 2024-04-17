@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <fstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*/
 std::vector<std::vector<double>> IO::ReadCsvAsColumns(
@@ -70,4 +70,4 @@ std::vector<std::vector<double>> IO::ReadCsvAsColumns(
   return ReadCsvAsColumns(number_of_columns, csv_file_stream);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

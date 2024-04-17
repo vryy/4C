@@ -22,7 +22,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_lib_discret_xfem.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -238,4 +238,4 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::ReadRestart(int step)
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@ function)
 
 #include <Sacado.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*-----------------------------------------------------------------------------------------------*
@@ -269,4 +269,4 @@ template class MAT::BeamElastHyperMaterial<Sacado::Fad::DFad<double>>;
 template class MAT::BeamElastHyperMaterialType<double>;
 template class MAT::BeamElastHyperMaterialType<Sacado::Fad::DFad<double>>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

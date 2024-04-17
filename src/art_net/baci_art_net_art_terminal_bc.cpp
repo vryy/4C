@@ -17,7 +17,7 @@
 
 #include <stdio.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1025,4 +1025,4 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
 
 }  // void ART::UTILS::SolveExplWindkesselBC
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

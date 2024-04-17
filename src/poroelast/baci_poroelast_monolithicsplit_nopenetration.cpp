@@ -31,7 +31,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epetra_Comm& comm,
@@ -710,4 +710,4 @@ void POROELAST::MonolithicSplitNoPenetration::BuildConvergenceNorms()
   normrhs_nopenetration_ = UTILS::CalculateVectorNorm(vectornormfres_, nopenetration_rhs_);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

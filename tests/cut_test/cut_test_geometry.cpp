@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-using namespace BACI;
+using namespace FourC;
 
 void test_geometry_schleifend1()
 {

@@ -14,7 +14,7 @@
 #include "baci_inpar_particle.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -118,4 +118,4 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::Adhesio
   AdjustSurfaceEnergyToAllowedBounds(mean_surface_energy, surface_energy);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

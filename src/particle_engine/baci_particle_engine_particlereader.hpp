@@ -17,7 +17,7 @@
 #include "baci_io_inputreader.hpp"
 #include "baci_particle_engine_typedefs.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace INPUT
 {
@@ -43,6 +43,6 @@ namespace INPUT
 
 }  // namespace INPUT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -18,7 +18,7 @@
 #include "baci_so3_nullspace.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::Ale2Type DRT::ELEMENTS::Ale2Type::instance_;
 
@@ -229,4 +229,4 @@ CORE::FE::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const CORE::FE::C
   return rule;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

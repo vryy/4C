@@ -36,7 +36,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -987,4 +987,4 @@ bool STR::TIMINT::Base::HasFinalStateBeenWritten() const
   return dataio_->GetLastWrittenResults() == dataglobalstate_->GetStepN();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

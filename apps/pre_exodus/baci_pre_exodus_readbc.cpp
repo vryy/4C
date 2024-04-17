@@ -15,14 +15,14 @@ Here is everything related with reading a bc file
 
 #include <fstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>& eledefs,
     std::vector<EXODUS::cond_def>& condefs)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // first we read the whole file into one stream/std::string
   std::stringstream bcstream;
@@ -313,7 +313,7 @@ EXODUS::elem_def EXODUS::ReadEdef(
 EXODUS::cond_def EXODUS::ReadCdef(
     const std::string& mesh_entity, const int id, const std::string& actcond)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   EXODUS::cond_def cdef;
   cdef.id = id;
@@ -847,4 +847,4 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

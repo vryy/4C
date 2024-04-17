@@ -13,7 +13,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCPDecl.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT::REDAIRWAYS
 {
@@ -106,6 +106,6 @@ namespace DRT::REDAIRWAYS
   };
 }  // namespace DRT::REDAIRWAYS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

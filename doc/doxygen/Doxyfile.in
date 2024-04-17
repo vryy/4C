@@ -153,8 +153,8 @@ EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
 INCLUDE_PATH           = 
 INCLUDE_FILE_PATTERNS  =
-PREDEFINED             = BACI_NAMESPACE_OPEN= \
-                         BACI_NAMESPACE_CLOSE=
+PREDEFINED             = FOUR_C_NAMESPACE_OPEN= \
+                         FOUR_C_NAMESPACE_CLOSE=
 
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool

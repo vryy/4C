@@ -12,7 +12,7 @@
 
 #include "baci_structure_new_model_evaluator_multiphysics.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -120,4 +120,4 @@ void STR::MODELEVALUATOR::Multiphysics::UpdateStepState(const double& timefac_n)
   GetModelEvaluatorFromMap(active_mt_)->UpdateStepState(timefac_n);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

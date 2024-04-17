@@ -13,7 +13,7 @@
 
 #include <cmath>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -93,4 +93,4 @@ double CORE::UTILS::SecondDerivativeCentralDifferences(
   return ddfddx;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

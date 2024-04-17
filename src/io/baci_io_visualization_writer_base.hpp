@@ -19,7 +19,7 @@
 
 #include <Epetra_Comm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -152,6 +152,6 @@ namespace IO
   };
 }  // namespace IO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -13,7 +13,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -86,4 +86,4 @@ namespace
       EXPECT_NEAR(cubic_spline_->EvaluateDerivative(x_test[i], 2), reference_solution[i], 1.0e-12);
   }
 }  // namespace
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

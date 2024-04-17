@@ -17,7 +17,7 @@
 #include "baci_comm_parobjectfactory.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
@@ -183,6 +183,6 @@ namespace BEAMINTERACTION
 
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -16,7 +16,7 @@
 #include "baci_scatra_ele_parameter_timint.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -285,4 +285,4 @@ template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tet10, 3>;
 template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::nurbs27>;s
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

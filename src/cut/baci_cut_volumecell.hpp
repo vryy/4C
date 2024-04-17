@@ -17,7 +17,7 @@
 #include "baci_discretization_fem_general_utils_gausspoints.hpp"
 #include "baci_inpar_cut.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -412,6 +412,6 @@ namespace CORE::GEO
   }  // namespace CUT
 }  // namespace CORE::GEO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

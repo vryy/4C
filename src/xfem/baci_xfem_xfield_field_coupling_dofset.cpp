@@ -12,7 +12,7 @@
 
 #include "baci_xfem_xfield_field_coupling_dofset.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -64,4 +64,4 @@ int XFEM::XFieldField::CouplingDofSet::NumStandardDofPerNode() const
   return g_num_std_dof_per_node_;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

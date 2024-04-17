@@ -13,7 +13,7 @@
 
 #include "baci_unittest_utils_assertions_test.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -61,4 +61,4 @@ namespace
     EXPECT_NEAR(ddfddx, ref_ddfddx, std::pow(h, 2.0));
   }
 }  // namespace
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

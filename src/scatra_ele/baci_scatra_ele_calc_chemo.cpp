@@ -18,7 +18,7 @@
 #include "baci_scatra_ele_parameter_timint.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 //! note for chemotaxis in BACI:
 //! assume the following situation: scalar A does follow the gradient of scalar B (i.e. B is the
@@ -388,4 +388,4 @@ template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::tet10, 3>;
 template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcChemo<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

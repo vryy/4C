@@ -18,7 +18,7 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -204,6 +204,6 @@ namespace CONTACT
     double gamma_master_;
   };
 }  // namespace CONTACT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

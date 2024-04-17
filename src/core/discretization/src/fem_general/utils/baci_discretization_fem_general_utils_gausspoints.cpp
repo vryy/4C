@@ -19,7 +19,7 @@
 
 #include <stdexcept>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::FE
 {
@@ -314,4 +314,4 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::FE::GaussPointCache::Create(
   return gp;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

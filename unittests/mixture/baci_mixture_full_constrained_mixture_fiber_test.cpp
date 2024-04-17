@@ -21,7 +21,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
   using FADdouble = Sacado::Fad::DFad<double>;
 
   class FullConstrainedMixtureFiberTest : public ::testing::Test

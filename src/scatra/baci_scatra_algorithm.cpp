@@ -16,7 +16,7 @@
 #include "baci_global_data.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -609,4 +609,4 @@ void SCATRA::ScaTraAlgorithm::TestResults()
   GLOBAL::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
   GLOBAL::Problem::Instance()->TestAll(Comm());
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

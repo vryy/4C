@@ -20,7 +20,7 @@ type, or Sacado FAD type.
 #include <cmath>
 #include <cstdlib>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 namespace CORE
 {
   /**
@@ -86,6 +86,6 @@ namespace CORE
     }
   };
 }  // namespace CORE
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

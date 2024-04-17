@@ -19,7 +19,7 @@ namespace TESTING::INTERNAL
 {
   namespace
   {
-    using namespace BACI;
+    using namespace FourC;
 
     //! Determine a number of decimal digits for printing to a given tolerance.
     template <typename T>

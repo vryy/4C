@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 class PostField;
 class PostResult;
@@ -439,6 +439,6 @@ class EnsightWriter : public PostWriterBase
   // static constexpr unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... useful for debugging ;-)
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

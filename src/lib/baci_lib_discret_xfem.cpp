@@ -17,7 +17,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ager 11/14|
@@ -254,4 +254,4 @@ bool DRT::DiscretizationXFEM::IsEqualXDofSet(int nds, const XFEM::XFEMDofSet& xd
   return ((*xdofset_old) == xdofset_new);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

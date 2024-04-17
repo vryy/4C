@@ -19,7 +19,7 @@
 #include "baci_mixture_constituent_elasthyper.hpp"
 #include "baci_mixture_rule.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -97,4 +97,4 @@ void MIXTURE::IterativePrestressStrategy::Update(
   VS.MultiplyTN(VT, S);
   G.MultiplyNN(VS, VT);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

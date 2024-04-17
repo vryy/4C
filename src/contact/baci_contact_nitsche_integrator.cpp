@@ -22,7 +22,7 @@
 
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1009,4 +1009,4 @@ template void CONTACT::UTILS::MapGPtoParent<2>(MORTAR::Element&, double*, const 
 template void CONTACT::UTILS::MapGPtoParent<3>(MORTAR::Element&, double*, const double,
     CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

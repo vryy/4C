@@ -27,7 +27,7 @@ EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 #include "baci_mat_par_parameter.hpp"
 #include "baci_mat_so3_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -215,6 +215,6 @@ namespace MAT
   };
 }  // namespace MAT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

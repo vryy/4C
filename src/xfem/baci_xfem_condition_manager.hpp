@@ -24,7 +24,7 @@ builds the bridge between the xfluid class and the cut-library
 
 #include <Epetra_IntVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -796,6 +796,6 @@ namespace XFEM
 
 }  // namespace XFEM
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

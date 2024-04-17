@@ -10,7 +10,7 @@
 #include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -2890,4 +2890,4 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDerivWeightedDistance(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

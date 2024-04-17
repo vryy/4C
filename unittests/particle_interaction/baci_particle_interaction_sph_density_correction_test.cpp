@@ -11,7 +11,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class SPHDensityCorrectionInteriorTest : public ::testing::Test
   {

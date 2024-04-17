@@ -18,7 +18,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -68,6 +68,6 @@ namespace FLD
   }  // namespace UTILS
 }  // namespace FLD
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

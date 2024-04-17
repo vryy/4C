@@ -37,7 +37,7 @@
 #include "baci_cut_output.hpp"
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEO::CUT::KERNEL
 {
@@ -4866,6 +4866,6 @@ size_t CORE::GEO::CUT::KERNEL::ComputeIntersectionAdaptivePrecision<Strategy, pr
 
 #endif
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

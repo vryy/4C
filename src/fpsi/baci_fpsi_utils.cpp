@@ -30,7 +30,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance_;
 
@@ -692,4 +692,4 @@ Teuchos::RCP<std::set<int>> FPSI::UTILS::MapExtractor::ConditionedElementMap(
   return condelements;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

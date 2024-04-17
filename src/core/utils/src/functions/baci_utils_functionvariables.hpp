@@ -19,7 +19,7 @@
 
 #include <Sacado.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // define periodicstruct
 struct periodicstruct
@@ -231,6 +231,6 @@ namespace CORE::UTILS
   }  // namespace INTERNAL
 }  // namespace CORE::UTILS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

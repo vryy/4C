@@ -14,7 +14,7 @@
 
 #include <array>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 CONTACT::ElementType CONTACT::ElementType::instance_;
 
 CONTACT::ElementType& CONTACT::ElementType::Instance() { return instance_; }
@@ -464,4 +464,4 @@ void CONTACT::Element::AssembleMderivToNodes(MORTAR::Element& mele)
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

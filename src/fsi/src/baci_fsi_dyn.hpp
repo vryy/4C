@@ -13,7 +13,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void fluid_ale_drt();
 void fluid_xfem_drt();
@@ -35,6 +35,6 @@ void xfpsi_drt();
 
 void fsi_immersed_drt();
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

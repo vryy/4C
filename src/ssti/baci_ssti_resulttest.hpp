@@ -14,7 +14,7 @@
 
 #include "baci_lib_resulttest.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace SSTI
 {
@@ -50,6 +50,6 @@ namespace SSTI
     const SSTI::SSTIAlgorithm& ssti_algorithm_;
   };
 }  // namespace SSTI
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

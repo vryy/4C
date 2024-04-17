@@ -16,7 +16,7 @@
 #include "baci_global_data.hpp"
 #include "baci_io_linedefinition.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
 
@@ -171,4 +171,4 @@ void DRT::ELEMENTS::FluidPoro::Print(std::ostream& os) const
   Element::Print(os);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

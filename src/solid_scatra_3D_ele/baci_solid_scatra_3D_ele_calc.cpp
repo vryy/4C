@@ -24,7 +24,7 @@ solid formulation
 
 #include <optional>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -574,4 +574,4 @@ template class DRT::ELEMENTS::SolidScatraEleCalc<CORE::FE::CellType::tet4,
 template class DRT::ELEMENTS::SolidScatraEleCalc<CORE::FE::CellType::tet10,
     DRT::ELEMENTS::DisplacementBasedFormulation<CORE::FE::CellType::tet10>>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

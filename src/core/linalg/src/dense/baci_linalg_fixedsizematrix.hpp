@@ -24,7 +24,7 @@
 #include <ostream>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // Attention: In the case a CORE::LINALG::Matrix is created with float_type ClnWrapper,
 // include the header "/cut/cut_clnwrapper.H" before this header is processed.
@@ -5130,6 +5130,6 @@ namespace CORE::LINALG
 
 }  // namespace CORE::LINALG
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

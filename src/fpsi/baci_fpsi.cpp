@@ -15,7 +15,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_poroelast_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 FPSI::FPSI_Base::FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams)
     : AlgorithmBase(comm, fpsidynparams)
@@ -58,4 +58,4 @@ void FPSI::FPSI_Base::RedistributeInterface()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

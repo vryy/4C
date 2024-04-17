@@ -14,7 +14,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  store the required ghosting within a round              farah 10/13 |
@@ -520,4 +520,4 @@ void CONTACT::Interface::RoundRobinDetectGhosting()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

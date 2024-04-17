@@ -20,7 +20,7 @@
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Solver_Generic.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -480,4 +480,4 @@ int NOX::FSI::MinIters::getMinIters() const { return miniters; }
 /*----------------------------------------------------------------------*/
 int NOX::FSI::MinIters::getNumIters() const { return niters; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

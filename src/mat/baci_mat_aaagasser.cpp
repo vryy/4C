@@ -25,7 +25,7 @@ CABLUM 1.98e-3
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_service.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -283,4 +283,4 @@ void MAT::AAAgasser::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

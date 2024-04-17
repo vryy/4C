@@ -14,7 +14,7 @@
 #include "baci_so3_utils.hpp"
 #include "baci_so3_weg6.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
@@ -193,4 +193,4 @@ void DRT::ELEMENTS::So_shw6::Print(std::ostream& os) const
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -14,7 +14,7 @@
 #include "baci_mat_par_material.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
@@ -222,4 +222,4 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::SetFiberVecs(const double newgam
   anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

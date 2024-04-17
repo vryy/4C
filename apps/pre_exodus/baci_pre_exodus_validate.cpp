@@ -23,13 +23,13 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_pre_exodus_soshextrusion.hpp"  //just temporarly for gmsh-plot
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // read and check the provided header file
   // std::cout << "checking BACI input file       --> "<<datfile<< std::endl;
@@ -111,7 +111,7 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 void EXODUS::ValidateElementJacobian(
     Mesh& mymesh, const CORE::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   // use one point gauss rule to calculate jacobian at element center
   CORE::FE::GaussRule3D integrationrule_1point = CORE::FE::GaussRule3D::undefined;
@@ -194,7 +194,7 @@ void EXODUS::ValidateElementJacobian(
 int EXODUS::ValidateElementJacobian_fullgp(
     Mesh& mymesh, const CORE::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   CORE::FE::GaussRule3D integrationrule = CORE::FE::GaussRule3D::undefined;
   switch (distype)
@@ -266,7 +266,7 @@ int EXODUS::ValidateElementJacobian_fullgp(
 bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const Mesh& mymesh,
     const CORE::LINALG::SerialDenseMatrix& deriv)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   const int iel = deriv.numCols();
   const int NSD = deriv.numRows();
@@ -302,7 +302,7 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
 int EXODUS::EleSaneSign(
     const std::vector<int>& nodes, const std::map<int, std::vector<double>>& nodecoords)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   const int iel = nodes.size();
   // to be even stricter we test the Jacobian at every Node, not just at the gausspoints
@@ -411,7 +411,7 @@ int EXODUS::EleSaneSign(
 /*----------------------------------------------------------------------*/
 std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE::CellType distype)
 {
-  using namespace BACI;
+  using namespace FourC;
 
   std::vector<int> new_nodeids(old_nodeids.size());
   // rewinding of nodes to arrive at mathematically positive element
@@ -496,4 +496,4 @@ std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE:
   return new_nodeids;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

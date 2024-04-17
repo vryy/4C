@@ -18,7 +18,7 @@
 #include "baci_lib_periodicbc.hpp"
 #include "baci_rebalance.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -545,4 +545,4 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

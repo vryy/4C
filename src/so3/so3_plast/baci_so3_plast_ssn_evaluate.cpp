@@ -27,7 +27,7 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
@@ -3398,4 +3398,4 @@ template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>::HeatFlux(
     CORE::LINALG::Matrix<nsd_, 1>*, CORE::LINALG::SerialDenseMatrix*,
     CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::SerialDenseMatrix*);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -19,7 +19,7 @@ levelset
 // Use derivatives of LevelSet field to determine the Cut configuration
 #define USE_PHIDERIV_FOR_CUT_DETERMINATION
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -179,6 +179,6 @@ namespace CORE::GEO
   }  // namespace CUT
 }  // namespace CORE::GEO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

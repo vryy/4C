@@ -36,7 +36,7 @@
 
 #include <unordered_map>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -2191,4 +2191,4 @@ void CONTACT::AUG::Strategy::EvaluateReferenceState()
   // do nothing for the augmented strategy
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

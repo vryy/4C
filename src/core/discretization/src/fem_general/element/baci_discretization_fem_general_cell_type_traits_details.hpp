@@ -20,7 +20,7 @@ In this file, the helper for defining type trait functionality is defined
 #include <array>
 #include <tuple>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::FE::DETAILS
 {
@@ -154,6 +154,6 @@ namespace CORE::FE::DETAILS
   /// @}
 }  // namespace CORE::FE::DETAILS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

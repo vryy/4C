@@ -19,7 +19,7 @@
 #include <NOX_Solver_Generic.H>
 #include <NOX_Utils.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -142,4 +142,4 @@ int NOX::NLN::INNER::StatusTest::VolumeChange::NumberOfBadElements()
   return gbadfailcount[0];
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

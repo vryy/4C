@@ -18,7 +18,7 @@
 #include "baci_mixture_constituent_elasthyperbase.hpp"
 #include "baci_mixture_elastin_membrane_prestress_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -330,6 +330,6 @@ namespace MIXTURE
 
 }  // namespace MIXTURE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

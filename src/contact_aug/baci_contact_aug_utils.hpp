@@ -20,7 +20,7 @@
 // #define INSERT_AND_SORT
 #define QUICK_INSERT
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -39,7 +39,7 @@ namespace CONTACT
     typedef std::vector<Teuchos::RCP<CONTACT::Interface>> plain_interface_set;
     typedef std::vector<Teuchos::RCP<CORE::LINALG::Solver>> plain_lin_solver_set;
     typedef std::vector<plain_interface_set> plain_interface_sets;
-    typedef std::vector<BACI::INPAR::CONTACT::SolvingStrategy> plain_strattype_set;
+    typedef std::vector<FourC::INPAR::CONTACT::SolvingStrategy> plain_strattype_set;
 
 #if defined(INSERT_AND_SORT)
     typedef CORE::GEN::pairedvector<int, double, GEN::insert_and_sort_policy<int, double>>
@@ -78,6 +78,6 @@ namespace CONTACT
   }  // namespace AUG
 }  // namespace CONTACT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

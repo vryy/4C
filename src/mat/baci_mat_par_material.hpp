@@ -19,7 +19,7 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace MAT::PAR
@@ -107,6 +107,6 @@ namespace MAT::PAR
 std::ostream& operator<<(std::ostream& os, const MAT::PAR::Material& cond);
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -19,7 +19,7 @@ sparse matrices and parallel distributed vectors
 
 #include <Epetra_Export.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -673,4 +673,4 @@ template class CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrateg
 template class CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
     CONTACT::AUG::INTERFACE::CompleteAssemblePolicy>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

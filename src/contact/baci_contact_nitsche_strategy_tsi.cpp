@@ -23,7 +23,7 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_Operator.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void CONTACT::NitscheStrategyTsi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
@@ -231,4 +231,4 @@ void CONTACT::NitscheStrategyTsi::Integrate(const CONTACT::ParamsInterface& cpar
   kdt_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_temp);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

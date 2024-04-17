@@ -13,7 +13,7 @@
 
 #include "baci_lib_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const DRT::Element* const ele)
 {
@@ -90,4 +90,4 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
   return xyze;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

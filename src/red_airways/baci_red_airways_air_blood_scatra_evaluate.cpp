@@ -22,7 +22,7 @@ routines called during the possible actions is contained in red_air_blood_scatra
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*---------------------------------------------------------------------*
@@ -229,4 +229,4 @@ bool DRT::ELEMENTS::RedAirBloodScatra::isHigherOrderElement(const CORE::FE::Cell
   return hoel;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

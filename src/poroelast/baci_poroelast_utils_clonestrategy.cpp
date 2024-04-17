@@ -21,7 +21,7 @@
 #include "baci_solid_poro_3D_ele.hpp"
 #include "baci_w1_poro.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::ConditionsToCopy()
     const
@@ -191,4 +191,4 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
   return false;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

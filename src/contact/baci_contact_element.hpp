@@ -13,7 +13,7 @@
 
 #include "baci_mortar_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 
@@ -274,6 +274,6 @@ namespace CONTACT
 // << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::Element& ele);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

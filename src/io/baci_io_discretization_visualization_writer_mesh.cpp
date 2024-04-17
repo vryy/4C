@@ -25,7 +25,7 @@ to disk
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace IO
@@ -493,4 +493,4 @@ namespace IO
         "element_ghosting", ghosted_elements, n_proc);
   }
 }  // namespace IO
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

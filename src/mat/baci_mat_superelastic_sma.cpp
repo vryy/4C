@@ -42,7 +42,7 @@
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_service.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
@@ -1229,4 +1229,4 @@ void MAT::SuperElasticSMA::Pullback4thTensorVoigt(const double jacobian,
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

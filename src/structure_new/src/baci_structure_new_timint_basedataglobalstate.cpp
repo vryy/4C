@@ -33,7 +33,7 @@
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -1253,4 +1253,4 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   curr_grp_mutable.setSkipUpdateX(true);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

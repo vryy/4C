@@ -14,7 +14,7 @@
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------------*
  | constructor                                                         fang 09/17 |
@@ -481,4 +481,4 @@ void STI::Partitioned::SolveTwoWay()
   return;
 }  // STI::Partitioned::SolveTwoWay()
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

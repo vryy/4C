@@ -16,7 +16,7 @@
 #include "baci_linalg_fixedsizematrix_generators.hpp"
 #include "baci_solid_3D_ele_calc_lib.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS
 {
@@ -85,5 +85,5 @@ namespace DRT::ELEMENTS
   }
 }  // namespace DRT::ELEMENTS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 #endif

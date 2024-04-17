@@ -13,7 +13,7 @@
 
 #include "baci_lib_condition_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace SCATRA
 {
@@ -226,4 +226,4 @@ namespace SCATRA
   }
 }  // namespace SCATRA
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

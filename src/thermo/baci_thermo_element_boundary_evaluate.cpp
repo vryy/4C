@@ -13,7 +13,7 @@ Evaluate boundary conditions for thermo problems
  *----------------------------------------------------------------------*/
 #include "baci_thermo_ele_boundary_impl.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -53,4 +53,4 @@ int DRT::ELEMENTS::ThermoBoundary::EvaluateNeumann(Teuchos::ParameterList& param
       this, params, discretization, condition, lm, elevec1);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

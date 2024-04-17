@@ -22,7 +22,7 @@ of errors, turbulence statistics etc.)
 #include "baci_io_linedefinition.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidXWallType DRT::ELEMENTS::FluidXWallType::instance_;
 
@@ -135,4 +135,4 @@ void DRT::ELEMENTS::FluidXWall::Print(std::ostream& os) const
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

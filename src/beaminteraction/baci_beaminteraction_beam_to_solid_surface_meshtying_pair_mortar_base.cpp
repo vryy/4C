@@ -20,7 +20,7 @@
 
 #include <unordered_set>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -397,4 +397,4 @@ namespace BEAMINTERACTION
       t_line4>;
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

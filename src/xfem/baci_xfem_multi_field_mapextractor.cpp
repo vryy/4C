@@ -24,7 +24,7 @@
 #include "baci_xfem_xfield_field_coupling.hpp"
 #include "baci_xfem_xfield_field_coupling_dofset.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1203,4 +1203,4 @@ const Epetra_Map& XFEM::MultiFieldMapExtractor::SlaveNodeRowMap(
   return *(SlMapExtractor(dis_id, map_nodes).Map(btype));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

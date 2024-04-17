@@ -13,7 +13,7 @@
 
 #include <Teuchos_oblackholestream.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -247,4 +247,4 @@ IO::Pstream& IO::operator<<(IO::Pstream& out, IO::Pstream& (*pf)(IO::Pstream&)) 
  *----------------------------------------------------------------------*/
 IO::Level& IO::operator<<(IO::Level& out, IO::Level& (*pf)(IO::Level&)) { return pf(out); }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

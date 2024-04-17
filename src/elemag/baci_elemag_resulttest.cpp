@@ -15,7 +15,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                     berardocco 10/18 |
@@ -147,4 +147,4 @@ void ELEMAG::ElemagResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, i
   }
   return;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

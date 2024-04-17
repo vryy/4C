@@ -14,7 +14,7 @@
 #include "baci_geometry_pair_line_to_volume_gauss_point_projection_cross_section.hpp"
 #include "baci_geometry_pair_utility_classes.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -89,4 +89,4 @@ namespace BEAMINTERACTION
   template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_tet10>;
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

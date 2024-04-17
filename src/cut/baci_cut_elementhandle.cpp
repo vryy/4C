@@ -26,7 +26,7 @@
 
 #include <fstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -1610,4 +1610,4 @@ void CORE::GEO::CUT::Wedge15ElementHandle::LocalCoordinates(
   pos->LocalCoordinates(rst);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

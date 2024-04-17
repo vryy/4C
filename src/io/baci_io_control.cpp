@@ -25,7 +25,7 @@
 #include <utility>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -423,4 +423,4 @@ int IO::GetLastPossibleRestartStep(IO::InputControl& inputcontrol)
   return 0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
