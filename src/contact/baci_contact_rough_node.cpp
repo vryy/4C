@@ -19,7 +19,7 @@
 
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 CONTACT::RoughNodeType CONTACT::RoughNodeType::instance_;
 
@@ -144,4 +144,4 @@ void CONTACT::RoughNode::Unpack(const std::vector<char>& data)
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
