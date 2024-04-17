@@ -41,22 +41,34 @@ namespace
   inline static constexpr int num_dof_per_ele = num_nodes<celltype>* num_dim<celltype>;
 
   /*!
+   * @brief Solve for the inverse of a matrix and ignore any errors
+   *
+   * @tparam dim : matrix dimensions
+   * @param matrix(in/out) : matrix to be inverted
+   */
+  template <unsigned int dim>
+  void SolveForInverseIgnoringErrors(CORE::LINALG::Matrix<dim, dim>& matrix)
+  {
+    CORE::LINALG::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
+    solve_for_inverse.SetMatrix(matrix);
+
+    solve_for_inverse.Invert();
+  }
+
+  /*!
    * @brief Solve for the inverse of a matrix and throw errors if unsuccessful
    *
    * @tparam dim : matrix dimensions
    * @param matrix(in/out) : matrix to be inverted
    */
-  template <int dim>
+  template <unsigned int dim>
   void SolveForInverse(CORE::LINALG::Matrix<dim, dim>& matrix)
   {
     CORE::LINALG::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
     solve_for_inverse.SetMatrix(matrix);
 
-    int err_fac = solve_for_inverse.Factor();
-    if (err_fac != 0) dserror("Factorization of matrix during inversion failed");
-
     int err_inv = solve_for_inverse.Invert();
-    if (err_inv != 0) dserror("Inversion of matrix failed");
+    if (err_inv != 0) dserror("Inversion of matrix failed with LAPACK error code %d", err_inv);
   }
 
   template <CORE::FE::CellType celltype>
@@ -139,7 +151,7 @@ namespace
                    jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(0, 2);
 
     // evaluate the inverse T0^{-T} with solver
-    SolveForInverse<num_str<celltype>>(T0invT);
+    SolveForInverse(T0invT);
 
     return T0invT;
   }
@@ -737,7 +749,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceSt
       });
 
   // invert Kaa with solver. eas_iteration_data_.invKaa_ then is Kaa^{-1}
-  SolveForInverse<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(eas_iteration_data_.invKaa_);
+  SolveForInverseIgnoringErrors(eas_iteration_data_.invKaa_);
 
   // compute the product (- Kda Kaa^{-1}) which is later needed for force and stiffness update
   CORE::LINALG::Matrix<num_dof_per_ele_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
