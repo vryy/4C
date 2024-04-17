@@ -47,7 +47,7 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
       randomgeneratorseed_(randomgeneratorseed)
 {
 #ifdef BACI_WITH_MIRCO
-  if (isslave && hurstexponentfunction_ != 0)
+  if (isslave)
   {
     hurstExponent_ =
         GLOBAL::Problem::Instance()

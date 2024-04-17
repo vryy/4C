@@ -14,7 +14,6 @@
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "baci_contact_defines.hpp"
 #include "baci_contact_element.hpp"
-#include "baci_contact_rough_node.hpp"
 #include "baci_inpar_contact.hpp"
 #include "baci_inpar_mortar.hpp"
 #include "baci_lib_discret.hpp"
