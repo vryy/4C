@@ -18,6 +18,8 @@
 #include "baci_inpar_xfem.hpp"
 #include "baci_linalg_mapextractor.hpp"
 
+#include <limits>
+
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -410,8 +412,8 @@ namespace FSI
 
     // L2-NORMS (full)
     //--------------------------------------------------------------------------//
-    double normrhs_;  //!< L2-norm of full residual
-    double norminc_;  //!< L2-norm of full increment
+    double normrhs_ = std::numeric_limits<double>::max();  //!< L2-norm of full residual
+    double norminc_ = std::numeric_limits<double>::max();  //!< L2-norm of full increment
 
     // L2-NORMS (split)
     //--------------------------------------------------------------------------//
