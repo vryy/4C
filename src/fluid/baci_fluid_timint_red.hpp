@@ -18,7 +18,7 @@
 
 #include "baci_fluid_implicit_integration.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ADAPTER
 {
@@ -174,6 +174,6 @@ namespace FLD
 }  // namespace FLD
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

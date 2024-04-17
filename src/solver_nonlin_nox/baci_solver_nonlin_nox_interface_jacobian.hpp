@@ -23,7 +23,7 @@
 #include <NOX_Epetra_Interface_Required.H>
 #include <Teuchos_RCPDecl.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace CORE::LINALG
@@ -66,6 +66,6 @@ namespace NOX
   }    // end namespace NLN
 }  // end namespace NOX
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

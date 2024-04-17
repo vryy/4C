@@ -13,7 +13,7 @@
 
 #include "baci_lib_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::Condition::Condition(
@@ -655,4 +655,4 @@ void DRT::Condition::AdjustId(const int shift)
   swap(*geometry_, geometry);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

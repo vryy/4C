@@ -22,7 +22,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                            pfaller Oct17 |
@@ -399,4 +399,4 @@ bool MOR::ProperOrthogonalDecomposition::IsOrthogonal(Teuchos::RCP<Epetra_MultiV
   return true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

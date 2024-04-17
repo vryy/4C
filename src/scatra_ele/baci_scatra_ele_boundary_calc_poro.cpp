@@ -25,7 +25,7 @@
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Singleton access method                               hemmler 07/14 |
@@ -267,4 +267,4 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::line
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::nurbs3, 2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<CORE::FE::CellType::nurbs9, 3>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

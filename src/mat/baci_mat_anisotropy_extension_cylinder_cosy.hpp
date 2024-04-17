@@ -19,7 +19,7 @@ materials with @MAT::Anisotropy
 
 #include <Teuchos_RCPDecl.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::COMM
@@ -108,6 +108,6 @@ namespace MAT
     CosyLocation cosyLocation_;
   };
 }  // namespace MAT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

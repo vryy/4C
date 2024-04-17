@@ -22,7 +22,7 @@ relate the contact gap to the contact pressure based on micro interactions
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */
@@ -156,6 +156,6 @@ namespace CONTACT::CONSTITUTIVELAW
   };
 }  // namespace CONTACT::CONSTITUTIVELAW
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

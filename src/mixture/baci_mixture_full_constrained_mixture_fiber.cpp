@@ -24,7 +24,7 @@
 #include <numeric>
 #include <type_traits>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -953,4 +953,4 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::EvaluateDCurrentFiberPK2Str
 
 template class MIXTURE::FullConstrainedMixtureFiber<double>;
 template class MIXTURE::FullConstrainedMixtureFiber<Sacado::Fad::DFad<double>>;
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

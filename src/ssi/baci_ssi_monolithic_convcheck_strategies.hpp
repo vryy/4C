@@ -22,7 +22,7 @@ derived from an abstract, purely virtual interface class.
 
 #include "baci_ssi_monolithic.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace SSI
 {
@@ -211,6 +211,6 @@ namespace SSI
         const bool exit, const std::map<L2norm, double>& norms) const override;
   };
 }  // namespace SSI
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

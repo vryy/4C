@@ -29,7 +29,7 @@ namespace NOX
   }  // namespace Solver
 }  // namespace NOX
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace IO
 {
@@ -532,6 +532,6 @@ namespace STR
 }  // namespace STR
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

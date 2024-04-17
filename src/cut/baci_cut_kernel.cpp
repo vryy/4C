@@ -23,7 +23,7 @@
 #include <iostream>
 #include <unordered_map>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -906,4 +906,4 @@ std::map<size_t, int>
 
 #endif
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -12,7 +12,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class ParticleContainerBundleTest : public ::testing::Test
   {

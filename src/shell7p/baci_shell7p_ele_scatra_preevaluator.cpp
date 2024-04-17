@@ -13,7 +13,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_shell7p_ele_calc_lib.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
@@ -123,4 +123,4 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::Paramet
   params.set("elecenter_coords_ref", center);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -23,7 +23,7 @@ const double testTolerance = 1e-14;
 namespace
 {
 
-  using namespace BACI;
+  using namespace FourC;
   class Beam3eb : public ::testing::Test
   {
    public:
@@ -69,7 +69,7 @@ namespace
    */
   TEST_F(Beam3eb, ComputeNullSpace)
   {
-    using namespace BACI;
+    using namespace FourC;
 
     // nodal nullspace calculation for reference center of discretization at {0.0, 0.0, 0.0}
     // at node {-0.05, 0.05, 0.3}

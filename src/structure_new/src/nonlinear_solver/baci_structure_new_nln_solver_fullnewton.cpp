@@ -13,7 +13,7 @@
 #include "baci_structure_new_nln_solver_utils.hpp"
 #include "baci_structure_new_timint_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -97,4 +97,4 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

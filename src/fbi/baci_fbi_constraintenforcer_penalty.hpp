@@ -17,7 +17,7 @@ fluid-beam interaction).
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace ADAPTER
 {
@@ -120,6 +120,6 @@ namespace ADAPTER
     FBIPenaltyConstraintenforcer() = delete;
   };
 }  // namespace ADAPTER
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

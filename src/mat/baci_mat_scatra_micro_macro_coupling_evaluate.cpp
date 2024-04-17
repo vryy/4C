@@ -27,7 +27,7 @@ the file filter_commmon/filter_evaluation.cpp needs to be adapted accordingly.
 #include "baci_mat_scatra_micro_macro_coupling.hpp"
 #include "baci_mat_scatra_multiscale_gp.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -135,4 +135,4 @@ void MAT::ScatraMicroMacroCoupling::SetTimeStepping(
   matgp_.at(gp_id)->SetTimeStepping(dt, time, step);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

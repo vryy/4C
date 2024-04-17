@@ -14,7 +14,7 @@
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -73,6 +73,6 @@ namespace DRT::ELEMENTS::SHELL
 
 }  // namespace DRT::ELEMENTS::SHELL
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

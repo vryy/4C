@@ -18,7 +18,7 @@
 #include "baci_mat_structporo.hpp"
 #include "baci_nurbs_discret_nurbs_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 template <CORE::FE::CellType distype>
@@ -1231,4 +1231,4 @@ template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

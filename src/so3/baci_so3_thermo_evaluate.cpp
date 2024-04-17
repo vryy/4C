@@ -22,7 +22,7 @@
 #include "baci_so3_thermo.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | pre-evaluate the element (public)                         dano 08/12 |
@@ -2535,7 +2535,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::MapMyGpToSoHex8(int myGp)
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 // --- explicit instantiations --- //
 #include "baci_so3_thermo_fwd.hpp"

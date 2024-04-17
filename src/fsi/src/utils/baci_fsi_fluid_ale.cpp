@@ -14,7 +14,7 @@
 #include "baci_inpar_validparameters.hpp"
 #include "baci_io_pstream.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -88,4 +88,4 @@ void FSI::FluidAleAlgorithm::Update() { MBFluidField()->Update(); }
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Output() { MBFluidField()->Output(); }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

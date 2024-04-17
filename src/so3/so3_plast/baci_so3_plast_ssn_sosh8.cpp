@@ -32,7 +32,7 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 05/14 |
@@ -1445,4 +1445,4 @@ void DRT::ELEMENTS::So_sh8Plast::AnsStrains(const int gp,
   CalcConsistentDefgrd();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

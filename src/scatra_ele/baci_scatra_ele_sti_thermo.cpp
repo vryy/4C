@@ -14,7 +14,7 @@ transport
 #include "baci_lib_discret.hpp"
 #include "baci_mat_soret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | extract quantities for element evaluation                 fang 11/15 |
@@ -237,4 +237,4 @@ template class DRT::ELEMENTS::ScaTraEleSTIThermo<CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::ScaTraEleSTIThermo<CORE::FE::CellType::pyramid5>;
 // template class DRT::ELEMENTS::ScaTraEleSTIThermo<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -14,7 +14,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -79,4 +79,4 @@ NOX::NLN::GROUP::PrePostOperator::Map& NOX::NLN::GROUP::PrePostOp::GetMap(
   return *mapptr;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

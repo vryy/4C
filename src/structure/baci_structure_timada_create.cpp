@@ -23,7 +23,7 @@
 #include <ctime>
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* create auxiliary time integration scheme */
@@ -78,4 +78,4 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate(
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -20,7 +20,7 @@
 #include <algorithm>
 #include <numeric>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -979,4 +979,4 @@ const Epetra_Export& CORE::ADAPTER::Coupling::SlExporter() const
   return *slaveexport_;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

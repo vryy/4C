@@ -98,7 +98,7 @@ dserror(
     "before using other values than 3!");
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // #define CONSISTENTSPINSK        //Apply variationally consistent variant of first spin vector
 //  component as test function for strong Kirchhoff
@@ -1725,6 +1725,6 @@ namespace DRT
 
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

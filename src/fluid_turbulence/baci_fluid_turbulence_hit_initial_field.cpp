@@ -26,7 +26,7 @@ Technical Report 034, MEMS, Rice University (2002) 16.
 #ifdef BACI_WITH_FFTW
 #include <fftw3.h>
 #endif
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace FLD
 {
@@ -1306,4 +1306,4 @@ namespace FLD
 
 };  // namespace FLD
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

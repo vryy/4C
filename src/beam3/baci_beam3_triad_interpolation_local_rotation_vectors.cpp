@@ -19,7 +19,7 @@
 
 #include <Sacado.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -653,4 +653,4 @@ template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, Sacado:
 template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4, Sacado::Fad::DFad<double>>;
 template class LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5, Sacado::Fad::DFad<double>>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

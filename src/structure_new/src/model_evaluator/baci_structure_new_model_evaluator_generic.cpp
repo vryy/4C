@@ -20,7 +20,7 @@
 
 #include <Epetra_Comm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -253,4 +253,4 @@ bool STR::MODELEVALUATOR::Generic::EvalErrorCheck() const
   return (gerr == 0);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

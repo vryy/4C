@@ -14,7 +14,7 @@
 #include "baci_scatra_ele_parameter_std.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -409,4 +409,4 @@ double DRT::ELEMENTS::GetRegularizationFactorDerivative(const double thickness, 
   return regfacderiv;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

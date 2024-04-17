@@ -19,7 +19,7 @@ transport problems
 // forward declarations
 class Epetra_Vector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace SCATRA
 {
@@ -155,6 +155,6 @@ namespace MAT
     const bool is_ale_;
   };  // class MAT::ScatraMultiScaleGP
 }  // namespace MAT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

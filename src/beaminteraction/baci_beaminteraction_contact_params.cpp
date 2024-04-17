@@ -18,7 +18,7 @@
 #include "baci_beaminteraction_beam_to_sphere_contact_params.hpp"
 #include "baci_beaminteraction_contact_runtime_visualization_output_params.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -96,4 +96,4 @@ void BEAMINTERACTION::BeamContactParams::BuildBeamToSolidSurfaceContactParams()
   beam_to_solid_surface_contact_params_->Setup();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

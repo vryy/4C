@@ -26,7 +26,7 @@
 #include "baci_tsi_defines.hpp"
 #include "baci_tsi_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 //! Note: The order of calling the two BasePartitioned-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -1299,4 +1299,4 @@ void TSI::Partitioned::PrepareOutput()
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

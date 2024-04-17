@@ -13,7 +13,7 @@
 #include "baci_linalg_utils_densematrix_multiply.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
@@ -296,4 +296,4 @@ double CORE::LINALG::GeneralizedEigen(
   return maxlambda;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

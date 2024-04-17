@@ -39,7 +39,7 @@
 
 #include <sstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -1941,4 +1941,4 @@ void POROELAST::Monolithic::ReadRestart(const int step)
   if (no_penetration_) SetPoroContactStates();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

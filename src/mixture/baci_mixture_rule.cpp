@@ -28,7 +28,7 @@ namespace Teuchos
   class ParameterList;
 }
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::COMM
@@ -140,4 +140,4 @@ void MIXTURE::MixtureRule::Setup(Teuchos::ParameterList& params, const int eleGI
   if (is_setup_) dserror("Setup() is called multiple times. Just once allowed.");
   is_setup_ = true;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

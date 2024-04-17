@@ -14,7 +14,7 @@
 #include "baci_contact_interface.hpp"
 #include "baci_contact_nitsche_strategy_fsi.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 void CONTACT::NitscheStrategyFpi::SetState(
@@ -49,4 +49,4 @@ bool CONTACT::NitscheStrategyFpi::CheckNitscheContactState(
       *ContactInterfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

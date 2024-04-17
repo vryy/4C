@@ -18,7 +18,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | BACI Logo for  EHL problems                             Faraji 05/19 |
@@ -134,4 +134,4 @@ void ehl_dyn()
   ehl->TestResults(comm);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

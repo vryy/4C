@@ -17,7 +17,7 @@
 #include <fenv.h>
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -93,4 +93,4 @@ int NOX::NLN::FloatingPointException::postcompute(std::ostream& os) const
   return err;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

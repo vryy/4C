@@ -18,7 +18,7 @@
 
 #include <fstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 CORE::GEO::SearchTree::SearchTree(const int max_depth) : max_depth_(max_depth), treeRoot_(nullptr)
@@ -1341,4 +1341,4 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

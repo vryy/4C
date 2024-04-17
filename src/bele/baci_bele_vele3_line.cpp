@@ -13,7 +13,7 @@
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -108,4 +108,4 @@ void DRT::ELEMENTS::Vele3Line::Print(std::ostream& os) const
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

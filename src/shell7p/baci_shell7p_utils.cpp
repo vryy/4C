@@ -13,7 +13,7 @@
 #include "baci_shell7p_ele.hpp"
 #include "baci_shell7p_ele_scatra.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -729,4 +729,4 @@ int STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(const CORE::FE::CellType& d
       dserror("ANS is not supported with %s", distype);
   }
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

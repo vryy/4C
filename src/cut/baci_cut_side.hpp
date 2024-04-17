@@ -20,7 +20,7 @@
 #include <Shards_BasicTopologies.hpp>
 #include <Shards_CellTopologyTraits.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -1070,6 +1070,6 @@ namespace CORE::GEO
 
 std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Side& s);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

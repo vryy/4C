@@ -17,7 +17,7 @@
 #include "baci_poroelast_monolithic.hpp"
 #include "baci_structure_aux.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /// constructor
 ADAPTER::StructurePoroWrapper::StructurePoroWrapper(
@@ -139,4 +139,4 @@ void ADAPTER::StructurePoroWrapper::RecoverLagrangeMultiplierAfterNewtonStep(
     poro_->RecoverLagrangeMultiplierAfterNewtonStep(iterinc);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

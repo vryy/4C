@@ -16,7 +16,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class SoTet4Test : public ::testing::Test
   {

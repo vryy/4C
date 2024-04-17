@@ -20,7 +20,7 @@
 #include "baci_nurbs_discret.hpp"
 #include "baci_nurbs_discret_control_point.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------
 
@@ -1533,4 +1533,4 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
   return;
 }  // FLD::TurbulenceStatisticsCcy::AddScaTraResults
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

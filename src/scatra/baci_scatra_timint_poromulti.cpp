@@ -13,7 +13,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_poromultiphase_scatra_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                             vuong  08/16 |
@@ -407,4 +407,4 @@ void SCATRA::ScaTraTimIntPoroMultiStationary::Update()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

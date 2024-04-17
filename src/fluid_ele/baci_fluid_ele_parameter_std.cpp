@@ -11,7 +11,7 @@
 
 #include "baci_fluid_ele_parameter_std.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidEleParameterStd* DRT::ELEMENTS::FluidEleParameterStd::Instance(
     CORE::UTILS::SingletonAction action)
@@ -34,4 +34,4 @@ DRT::ELEMENTS::FluidEleParameterStd::FluidEleParameterStd()
 {
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

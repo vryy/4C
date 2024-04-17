@@ -20,7 +20,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
@@ -226,6 +226,6 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostApplyJacobianInverse(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

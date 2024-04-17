@@ -19,7 +19,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -211,4 +211,4 @@ int DRT::ELEMENTS::Shell7pScatra::EvaluateNeumann(Teuchos::ParameterList& params
   return 0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

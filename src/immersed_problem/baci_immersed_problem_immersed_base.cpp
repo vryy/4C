@@ -15,7 +15,7 @@
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_utils_function_of_time.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 IMMERSED::ImmersedBase::ImmersedBase() : issetup_(false), isinit_(false)
@@ -667,4 +667,4 @@ std::vector<double> IMMERSED::ImmersedBase::CalcGlobalResultantfromEpetraVector(
   return result;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

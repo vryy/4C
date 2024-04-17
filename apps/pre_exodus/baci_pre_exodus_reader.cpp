@@ -22,7 +22,7 @@ is handed to a c++ object mesh.
 
 #include <fstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 12/07|
@@ -1856,4 +1856,4 @@ int EXODUS::PyrSideNumberExoToBaci(const int exoface)
   return map[exoface];
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

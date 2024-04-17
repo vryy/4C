@@ -20,7 +20,7 @@
 #include <istream>
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -309,4 +309,4 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

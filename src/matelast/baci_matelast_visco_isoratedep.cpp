@@ -11,7 +11,7 @@ modified from Pioletti, 1997
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::IsoRateDep::IsoRateDep(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -37,4 +37,4 @@ void MAT::ELASTIC::IsoRateDep::AddCoefficientsViscoModified(
   modxi(1) += (4. * n) / dt;
   modxi(2) += (4. * n * (modinv(0) - 3.)) / (dt * dt);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

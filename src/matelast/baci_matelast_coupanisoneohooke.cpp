@@ -12,7 +12,7 @@
 #include "baci_mat_par_material.hpp"
 #include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
@@ -142,4 +142,4 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::SetFiberVecs(const double newgamma,
 
   params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

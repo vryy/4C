@@ -22,7 +22,7 @@
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -246,4 +246,4 @@ bool LAGPENCONSTRAINT::NoxInterfacePrec::computePreconditioner(
   return false;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

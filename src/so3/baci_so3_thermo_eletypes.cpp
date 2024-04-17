@@ -10,7 +10,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_so3_thermo.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *  HEX8 element
@@ -736,4 +736,4 @@ int DRT::ELEMENTS::So_nurbs27ThermoType::Initialize(DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -13,7 +13,7 @@
 
 #include "baci_io.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 FLD::TimIntPoroGenAlpha::TimIntPoroGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
@@ -71,4 +71,4 @@ void FLD::TimIntPoroGenAlpha::ReadRestart(int step)
   TimIntPoro::ReadRestart(step);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -10,7 +10,7 @@
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_mortar_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 08/08|
@@ -83,4 +83,4 @@ MORTAR::ElementIntegrator::ElementIntegrator(CORE::FE::CellType eletype)
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

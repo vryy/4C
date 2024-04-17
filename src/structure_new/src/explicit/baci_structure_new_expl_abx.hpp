@@ -32,7 +32,7 @@ the first p-1 steps. For a restart analysis, those values are restored from the 
 
 #include <array>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace STR
 {
@@ -157,6 +157,6 @@ namespace STR
   }  // namespace EXPLICIT
 }  // namespace STR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

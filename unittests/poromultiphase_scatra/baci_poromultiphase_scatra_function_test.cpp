@@ -17,7 +17,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class LungOxygenExchangeLawTest : public ::testing::Test
   {

@@ -15,7 +15,7 @@
 #include "baci_lib_element.hpp"
 #include "baci_lib_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -154,6 +154,6 @@ namespace DRT
   }  // namespace MESHFREE
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

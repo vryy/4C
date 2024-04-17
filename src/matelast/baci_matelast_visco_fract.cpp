@@ -10,7 +10,7 @@
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::Fract::Fract(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
@@ -29,4 +29,4 @@ void MAT::ELASTIC::Fract::ReadMaterialParametersVisco(
   alpha = params_->alpha_;
   beta = params_->beta_;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

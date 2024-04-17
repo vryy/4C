@@ -22,7 +22,7 @@
 
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace WEAR
 {
@@ -441,6 +441,6 @@ namespace WEAR
 
 }  // namespace WEAR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

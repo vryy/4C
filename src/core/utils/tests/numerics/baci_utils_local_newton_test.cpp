@@ -11,7 +11,7 @@
 
 #include "baci_utils_local_newton.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -127,4 +127,4 @@ namespace
     EXPECT_NEAR(x.value_, -0.271887376775884, 1e-8);
   }
 }  // namespace
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

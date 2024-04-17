@@ -22,7 +22,7 @@
 #include "baci_linalg_utils_densematrix_eigen.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*-----------------------------------------------------------------------------*
@@ -1496,4 +1496,4 @@ template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::tet4,
 template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::hex8,
     DRT::ELEMENTS::Fluid::xwall>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -466,4 +466,4 @@ void IO::HDFReader::CalculateRange(int new_proc_num, int my_id, int& start, int&
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

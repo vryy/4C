@@ -23,7 +23,7 @@
 #include <list>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace UTILS
 {
@@ -95,6 +95,6 @@ namespace UTILS
 std::ostream& operator<<(std::ostream& os, const UTILS::Cardiovascular0DDofSet& dofset);
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

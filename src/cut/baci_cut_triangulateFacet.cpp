@@ -19,7 +19,7 @@
 
 #include <math.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------------------*
               Split the facet into appropriate number of tri and quad Sudhakar 04/12 Work well
@@ -1154,4 +1154,4 @@ bool CORE::GEO::CUT::TriangulateFacet::Hasequal_ptlist_inlist(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

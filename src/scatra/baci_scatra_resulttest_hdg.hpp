@@ -16,7 +16,7 @@
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_scatra_resulttest.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace SCATRA
 {
@@ -43,6 +43,6 @@ namespace SCATRA
 
   };  // class HDGResultTest : public ScaTraResultTest
 }  // namespace SCATRA
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

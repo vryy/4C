@@ -14,7 +14,7 @@
 
 #include "baci_io_legacy_table.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -70,6 +70,6 @@ int next_map_node(MAP_ITERATOR* iterator);
 
 MAP_NODE* iterator_get_node(MAP_ITERATOR* iterator);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -15,7 +15,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class SPHMomentumFormulationMonaghanTest : public ::testing::Test
   {

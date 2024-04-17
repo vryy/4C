@@ -21,7 +21,7 @@ namespace Teuchos
   class ParameterList;
 }
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace STR::NLN::SOLVER
 {
@@ -51,6 +51,6 @@ namespace STR::NLN::SOLVER
 }  // namespace STR::NLN::SOLVER
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif /* BACI_STRUCTURE_NEW_NLN_SOLVER_SINGLESTEP_H */

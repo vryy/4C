@@ -13,7 +13,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*! entry point for the solution of electrochemistry problems */
 void scatra_cardiac_monodomain_dyn(int restart /* do we have to perform a restart?  */
@@ -23,6 +23,6 @@ void scatra_cardiac_monodomain_dyn(int restart /* do we have to perform a restar
 void printheartlogo();
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

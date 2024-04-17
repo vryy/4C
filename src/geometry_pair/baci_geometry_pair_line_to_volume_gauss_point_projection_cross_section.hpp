@@ -17,7 +17,7 @@ line.
 
 #include "baci_geometry_pair_line_to_volume.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // Forward declaration.
 namespace GEOMETRYPAIR
@@ -88,6 +88,6 @@ namespace GEOMETRYPAIR
   };
 }  // namespace GEOMETRYPAIR
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

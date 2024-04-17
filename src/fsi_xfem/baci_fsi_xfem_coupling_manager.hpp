@@ -16,7 +16,7 @@ managers
 #ifndef FOUR_C_FSI_XFEM_COUPLING_MANAGER_HPP
 #define FOUR_C_FSI_XFEM_COUPLING_MANAGER_HPP
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -76,6 +76,6 @@ namespace XFEM
   };
 }  // namespace XFEM
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

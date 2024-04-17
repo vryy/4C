@@ -26,7 +26,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::So_weg6Type DRT::ELEMENTS::So_weg6Type::instance_;
 
@@ -315,4 +315,4 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_weg6::Lines()
       CORE::COMM::buildLines, *this);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

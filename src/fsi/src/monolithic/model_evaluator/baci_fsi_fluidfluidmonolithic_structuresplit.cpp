@@ -24,7 +24,7 @@
 #include "baci_io_pstream.hpp"
 #include "baci_structure_aux.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -113,4 +113,4 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupDBCMapExtractor()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

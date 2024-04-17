@@ -14,7 +14,7 @@
 #include "baci_utils_function.hpp"
 #include "baci_utils_function_of_time.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition,
@@ -132,4 +132,4 @@ void DRT::ELEMENTS::Shell7pLine::LineIntegration(double& dL,
 
   dL = sqrt(dL);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

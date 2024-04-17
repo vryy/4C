@@ -19,7 +19,7 @@ equations
 #include <cmath>
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------------------------------------------------*
  *      Compute normal vector for the line. if normal(0)==0, the line need not be integrated
@@ -108,4 +108,4 @@ void LineIntegration::Transform(const CORE::LINALG::Matrix<2, 2> &xyze, const do
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

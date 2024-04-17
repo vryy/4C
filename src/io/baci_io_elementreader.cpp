@@ -16,7 +16,7 @@
 #include "baci_lib_utils_parallel.hpp"
 #include "baci_rebalance_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -280,4 +280,4 @@ void IO::ElementReader::GetAndDistributeElements(const int nblock, const int bsi
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

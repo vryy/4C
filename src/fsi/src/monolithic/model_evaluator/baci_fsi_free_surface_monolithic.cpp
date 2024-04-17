@@ -31,7 +31,7 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -941,7 +941,7 @@ void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::FSI::GroupFS::GroupFS(BACI::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
+NOX::FSI::GroupFS::GroupFS(FourC::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
     const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys)
     : ::NOX::Epetra::Group(printParams, i, x, linSys), mfsi_(mfsi)
@@ -1283,4 +1283,4 @@ void FSI::OverlappingBlockMatrixFS::SGS(const Epetra_MultiVector& X, Epetra_Mult
  *----------------------------------------------------------------------*/
 const char* FSI::OverlappingBlockMatrixFS::Label() const { return "FSI::OverlappingBlockMatrixFS"; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

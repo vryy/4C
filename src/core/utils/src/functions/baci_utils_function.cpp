@@ -21,7 +21,7 @@
 #include <stdexcept>
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -660,4 +660,4 @@ template Teuchos::RCP<CORE::UTILS::FunctionOfAnything>
 CORE::UTILS::TryCreateSymbolicFunctionOfAnything<3>(
     const std::vector<INPUT::LineDefinition>& function_line_defs);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

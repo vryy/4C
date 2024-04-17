@@ -20,7 +20,7 @@
 #include "baci_discretization_geometry_intersection_math.hpp"
 #include "baci_lib_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace CORE::GEO
@@ -101,6 +101,6 @@ namespace CORE::GEO
 }  // namespace CORE::GEO
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

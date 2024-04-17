@@ -13,7 +13,7 @@
 #include "baci_art_net_artery_ele_calc_pres_based.hpp"
 #include "baci_art_net_artery_ele_interface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  | (public) kremheller                                                03/18 |
@@ -75,4 +75,4 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::DefineProblemTy
   return nullptr;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

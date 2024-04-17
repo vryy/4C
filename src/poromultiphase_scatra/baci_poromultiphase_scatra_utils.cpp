@@ -24,7 +24,7 @@
 #include "baci_poromultiphase_utils.hpp"
 #include "baci_scatra_ele.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -325,4 +325,4 @@ void POROMULTIPHASESCATRA::PrintLogo()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

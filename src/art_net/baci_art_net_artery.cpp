@@ -13,7 +13,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::ArteryType DRT::ELEMENTS::ArteryType::instance_;
@@ -175,4 +175,4 @@ void DRT::ELEMENTS::Artery::Print(std::ostream& os) const
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

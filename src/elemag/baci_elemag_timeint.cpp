@@ -27,7 +27,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               gravemeier 06/17 |
@@ -1132,4 +1132,4 @@ Teuchos::RCP<DRT::ResultTest> ELEMAG::ElemagTimeInt::CreateFieldTest()
   return Teuchos::rcp(new ElemagResultTest(*this));
 }  // CreateFieldTest
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

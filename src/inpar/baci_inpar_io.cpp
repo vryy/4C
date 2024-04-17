@@ -16,7 +16,7 @@
 #include "baci_io_pstream.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -125,8 +125,8 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("VERBOSITY", "verbose", "",
       tuple<std::string>(
           "minimal", "Minimal", "standard", "Standard", "verbose", "Verbose", "debug", "Debug"),
-      tuple<int>(BACI::IO::minimal, BACI::IO::minimal, BACI::IO::standard, BACI::IO::standard,
-          BACI::IO::verbose, BACI::IO::verbose, BACI::IO::debug, BACI::IO::debug),
+      tuple<int>(FourC::IO::minimal, FourC::IO::minimal, FourC::IO::standard, FourC::IO::standard,
+          FourC::IO::verbose, FourC::IO::verbose, FourC::IO::debug, FourC::IO::debug),
       &io);
 
   CORE::UTILS::DoubleParameter("RESTARTWALLTIMEINTERVAL", -1.0,
@@ -158,4 +158,4 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &io_every_iter);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

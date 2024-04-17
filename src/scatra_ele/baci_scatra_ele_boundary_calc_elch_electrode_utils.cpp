@@ -13,7 +13,7 @@
 #include "baci_inpar_s2i.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -270,4 +270,4 @@ bool DRT::ELEMENTS::IsReducedButlerVolmer(const int kineticmodel)
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance or
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

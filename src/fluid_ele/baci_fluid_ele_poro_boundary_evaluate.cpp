@@ -15,7 +15,7 @@
 #include "baci_fluid_ele_poro.hpp"
 #include "baci_inpar_fluid.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -113,4 +113,4 @@ void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(const Discretization& dis,
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@ adapts assembly automatically according to the thereby changed number of nodal d
 #include "baci_structure_new_elements_paramsinterface.hpp"
 #include "baci_truss3.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 08/08|
@@ -589,4 +589,4 @@ void DRT::ELEMENTS::Truss3::ExtractElementalVariables(LocationArray& la,
   else
     ele_state["disp"] = disp_ele;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

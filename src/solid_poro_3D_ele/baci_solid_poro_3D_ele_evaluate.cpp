@@ -13,7 +13,7 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "baci_solid_3D_ele_calc_lib_io.hpp"
 #include "baci_solid_poro_3D_ele.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
@@ -239,4 +239,4 @@ int DRT::ELEMENTS::SolidPoro::EvaluateNeumann(Teuchos::ParameterList& params,
   dserror("not implemented");
   return 1;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

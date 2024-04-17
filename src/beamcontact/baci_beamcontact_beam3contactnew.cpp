@@ -26,7 +26,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/14|
@@ -3992,4 +3992,4 @@ template class CONTACT::Beam3contactnew<4, 1>;
 template class CONTACT::Beam3contactnew<5, 1>;
 template class CONTACT::Beam3contactnew<2, 2>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

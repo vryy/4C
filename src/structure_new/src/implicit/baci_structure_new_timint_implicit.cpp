@@ -29,7 +29,7 @@
 
 #include <NOX_Abstract_Group.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -657,4 +657,4 @@ double STR::TIMINT::Implicit::MethodLinErrCoeffVel() const
   return implint_ptr_->MethodLinErrCoeffVel();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

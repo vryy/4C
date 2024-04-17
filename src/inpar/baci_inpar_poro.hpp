@@ -11,7 +11,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace INPAR::PORO
 {
@@ -25,6 +25,6 @@ namespace INPAR::PORO
 
 }  // namespace INPAR::PORO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

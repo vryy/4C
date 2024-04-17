@@ -14,7 +14,7 @@
 #include "baci_mat_par_bundle.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 // Be careful when adding new member functions of MicroMaterial that
@@ -105,4 +105,4 @@ void MAT::MicroMaterial::Unpack(const std::vector<char>& data)
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

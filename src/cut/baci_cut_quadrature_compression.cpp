@@ -19,7 +19,7 @@
 #include <Teuchos_SerialQRDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // Use Chebyshev polynomials to form Vandermonde matrix.
 // if commented use regular monomial basis for which the conditioning of the matrix may not be good
@@ -858,4 +858,4 @@ void CORE::GEO::CUT::QuadratureCompression::IntegratePredefinedPolynomials(
   for (int ii = 0; ii < 6; ii++) std::cout << err[ii] << "\n";
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

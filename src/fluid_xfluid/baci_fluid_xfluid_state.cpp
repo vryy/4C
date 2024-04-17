@@ -23,7 +23,7 @@
 #include "baci_xfem_condition_manager.hpp"
 #include "baci_xfem_xfield_state_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor  Initialize coupling matrices                     schott 01/15 |
@@ -452,4 +452,4 @@ void FLD::XFluidState::UpdateBoundaryCellCoords()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

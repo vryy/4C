@@ -20,7 +20,7 @@ Fluid-Poro-Coupling Matrixes!
 #include "baci_fluid_utils_mapextractor.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::LINALG
@@ -259,6 +259,6 @@ namespace FPSI
   };  // FPSICoupling
 }  // namespace FPSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

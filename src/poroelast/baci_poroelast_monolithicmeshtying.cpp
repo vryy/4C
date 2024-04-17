@@ -20,7 +20,7 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_structure_aux.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
@@ -415,4 +415,4 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstrea
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

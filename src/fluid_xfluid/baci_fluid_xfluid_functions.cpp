@@ -15,7 +15,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -1730,4 +1730,4 @@ double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(
   return 0.0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

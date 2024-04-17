@@ -25,7 +25,7 @@
 #include "baci_mortar_calc_utils.hpp"
 #include "baci_mortar_coupling3d_classes.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -2253,4 +2253,4 @@ bool CORE::VOLMORTAR::ConsInterpolatorEval(DRT::Node* node, DRT::Element* ele,
 // template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::tet4>;
 // template class CORE::VOLMORTAR::ConsInterpolator<CORE::FE::CellType::tet10>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@
 
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -597,4 +597,4 @@ template Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchR
     DRT::Discretization&, const Epetra_Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

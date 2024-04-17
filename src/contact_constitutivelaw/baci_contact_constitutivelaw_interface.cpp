@@ -24,7 +24,7 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
@@ -149,4 +149,4 @@ void CONTACT::ConstitutivelawInterface::AssembleRegTangentForcesPenalty()
   dserror("Frictional contact not yet implemented for rough surfaces\n");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

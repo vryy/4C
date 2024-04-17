@@ -11,7 +11,7 @@
 
 #include "baci_adapter_field_wrapper.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------/
 | start new time step                                                    |
@@ -90,4 +90,4 @@ void ADAPTER::FieldWrapper::GetIterinc(Teuchos::RCP<const Epetra_Vector>& stepin
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

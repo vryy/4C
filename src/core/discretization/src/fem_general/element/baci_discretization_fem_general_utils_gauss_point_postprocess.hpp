@@ -18,7 +18,7 @@
 
 #include <Epetra_MultiVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -91,6 +91,6 @@ namespace CORE::FE
 
 }  // namespace CORE::FE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -17,7 +17,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEOMETRICSEARCH
 {
@@ -57,6 +57,6 @@ namespace CORE::GEOMETRICSEARCH
   };
 }  // namespace CORE::GEOMETRICSEARCH
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

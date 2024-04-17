@@ -19,7 +19,7 @@
 #include "baci_fluid_volumetric_surfaceFlow_condition.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
@@ -254,4 +254,4 @@ void FLD::TimIntStationary::TreatTurbulenceModels(Teuchos::ParameterList& elepar
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

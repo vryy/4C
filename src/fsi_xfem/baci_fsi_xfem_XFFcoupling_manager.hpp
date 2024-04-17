@@ -15,7 +15,7 @@
 #include "baci_fsi_xfem_coupling_comm_manager.hpp"
 #include "baci_fsi_xfem_coupling_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // #define FREESURFFLOW
 
@@ -103,6 +103,6 @@ namespace XFEM
     std::vector<int> idx_;
   };
 }  // namespace XFEM
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

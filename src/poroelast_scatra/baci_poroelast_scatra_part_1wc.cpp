@@ -18,7 +18,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
@@ -257,4 +257,4 @@ void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::ReadRestart(int restart)
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

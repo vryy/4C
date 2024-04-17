@@ -22,7 +22,7 @@ passive-scalar transport
 #include <fftw3.h>
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 #define USE_TRAGET_SPECTRUM
 // #define TIME_UPDATE_FORCING_SPECTRUM
@@ -844,4 +844,4 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

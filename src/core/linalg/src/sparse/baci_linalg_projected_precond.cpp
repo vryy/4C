@@ -14,7 +14,7 @@
 
 #include <Epetra_MultiVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /* --------------------------------------------------------------------
                           Constructor
@@ -51,4 +51,4 @@ int CORE::LINALG::LinalgPrecondOperator::ApplyInverse(
   return (ierr);
 }  // CORE::LINALG::LinalgPrecondOperator::ApplyInverse
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

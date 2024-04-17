@@ -18,7 +18,7 @@
 #include "baci_cut_position.hpp"
 #include "baci_cut_side.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1326,4 +1326,4 @@ template bool CORE::GEO::CUT::IntegrationCellCreator::Create2DCell<CORE::FE::Cel
 template bool CORE::GEO::CUT::IntegrationCellCreator::Create2DCell<CORE::FE::CellType::quad4>(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -3535,4 +3535,4 @@ template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge6
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<CORE::FE::CellType::wedge15,
     CORE::FE::CellType::dis_none, 4>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

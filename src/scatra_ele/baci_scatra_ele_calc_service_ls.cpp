@@ -15,7 +15,7 @@
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_ele_calc_ls.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -172,4 +172,4 @@ template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tet10>;
 template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::pyramid5>;
 // template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

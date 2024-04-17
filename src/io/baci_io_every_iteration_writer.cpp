@@ -19,7 +19,7 @@
 #include <filesystem>
 #include <iterator>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -296,4 +296,4 @@ int IO::CountLinesInFile(const std::string& filepath)
   return line_count;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -18,7 +18,7 @@ species
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // TODO: math.H was included automatically
 
@@ -199,4 +199,4 @@ double MAT::Newman::ComputeFirstDerivThermFac(const double cint) const
   return firstderiv;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

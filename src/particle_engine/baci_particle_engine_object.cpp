@@ -10,7 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_engine_object.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -92,4 +92,4 @@ void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

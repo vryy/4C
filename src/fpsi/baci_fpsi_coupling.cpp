@@ -35,7 +35,7 @@ Fluid-Poro-Coupling Matrixes!
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -749,4 +749,4 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
 /----------------------------------------------------------------------*/
 void FPSI::FPSICoupling::SetConductivity(double conduct) { conductivity_ = conduct; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

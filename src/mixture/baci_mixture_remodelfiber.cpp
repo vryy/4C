@@ -19,7 +19,7 @@
 #include <memory>
 #include <type_traits>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // anonymous namespace for helper functions and classes
 namespace
@@ -769,4 +769,4 @@ template class MIXTURE::RemodelFiber<2>;
 template class MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, Sacado::Fad::DFad<double>>;
 template class MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

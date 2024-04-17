@@ -14,7 +14,7 @@
 
 #include "baci_thermo_timint.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* belongs to thermal dynamics namespace */
@@ -213,6 +213,6 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

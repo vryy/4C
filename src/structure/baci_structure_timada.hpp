@@ -22,7 +22,7 @@
 
 class Epetra_Vector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -402,6 +402,6 @@ std::ostream& operator<<(std::ostream& str, const STR::TimAda& ta);
 
 
 /*----------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

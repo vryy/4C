@@ -19,7 +19,7 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 #include "baci_inpar_fbi.hpp"
 #include "baci_linalg_sparseoperator.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 ADAPTER::FBIConstraintBridge::FBIConstraintBridge()
     : beam_interaction_params_(Teuchos::null),
@@ -98,4 +98,4 @@ void ADAPTER::FBIConstraintBridge::Clear()
   geometry_evaluation_data_->Clear();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

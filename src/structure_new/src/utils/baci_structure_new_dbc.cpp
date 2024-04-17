@@ -23,7 +23,7 @@
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -506,4 +506,4 @@ void NOX::NLN::LinSystem::PrePostOp::Dbc::runPreApplyJacobianInverse(::NOX::Abst
   dbc_ptr_->ApplyDirichletToLocalSystem(jac_ptr, rhs_ptr);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

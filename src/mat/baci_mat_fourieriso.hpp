@@ -19,7 +19,7 @@
 #include "baci_mat_par_parameter.hpp"
 #include "baci_mat_thermo.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -185,6 +185,6 @@ namespace MAT
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

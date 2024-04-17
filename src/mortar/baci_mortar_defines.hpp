@@ -11,7 +11,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /************************************************************************/
 /* Mortar algorithm parameters                                          */
@@ -44,6 +44,6 @@ BACI_NAMESPACE_OPEN
 //#define MORTARGMSHTN         /* gmsh output of all treenodes */
 //#define MORTARGMSHCTN        /* gmsh output of coupling treenodes */
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

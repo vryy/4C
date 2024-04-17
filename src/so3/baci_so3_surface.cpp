@@ -14,7 +14,7 @@
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_so3_line.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::StructuralSurfaceType DRT::ELEMENTS::StructuralSurfaceType::instance_;
 
@@ -262,4 +262,4 @@ void DRT::ELEMENTS::StructuralSurface::SetGaussrule()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

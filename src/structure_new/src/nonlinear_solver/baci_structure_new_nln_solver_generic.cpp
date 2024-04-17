@@ -17,7 +17,7 @@
 
 #include <NOX_Abstract_Group.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -87,4 +87,4 @@ const ::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::GetSolutionGroup() cons
   return *group_ptr_;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

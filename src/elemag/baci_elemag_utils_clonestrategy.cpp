@@ -19,7 +19,7 @@
 #include "baci_scatra_ele.hpp"
 #include "baci_scatra_ele_hdg.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -89,4 +89,4 @@ bool ELEMAG::UTILS::ScatraCloneStrategy<sft>::DetermineEleType(
 // template classes
 template class ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::polynomial>;
 template class ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::hdg>;
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

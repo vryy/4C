@@ -18,7 +18,7 @@
 
 #include <unordered_map>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MORTAR
 {
@@ -276,6 +276,6 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

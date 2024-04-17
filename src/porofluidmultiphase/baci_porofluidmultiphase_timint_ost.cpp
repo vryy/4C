@@ -13,7 +13,7 @@
 #include "baci_io.hpp"
 #include "baci_porofluidmultiphase_ele_action.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                   vuong  08/16 |
@@ -215,4 +215,4 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::CalcInitialTimeDerivative()
   SetElementTimeStepParameter();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

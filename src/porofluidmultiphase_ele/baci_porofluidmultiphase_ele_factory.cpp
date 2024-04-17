@@ -14,7 +14,7 @@
 #include "baci_global_data.hpp"
 #include "baci_porofluidmultiphase_ele_calc.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  | provide the implementation of evaluation class      (public) vuong 08/16 |
@@ -138,4 +138,4 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::DefineProblemType(
   return DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(numdofpernode, disname);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

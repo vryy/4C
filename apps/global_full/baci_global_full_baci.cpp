@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
   Kokkos::ScopeGuard kokkos_guard(argc, argv);
 
-  using namespace BACI;
+  using namespace FourC;
 
   Teuchos::RCP<CORE::COMM::Communicators> communicators =
       CORE::COMM::CreateComm(std::vector<std::string>(argv, argv + argc));

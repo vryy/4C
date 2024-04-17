@@ -18,7 +18,7 @@
 #include "baci_structure_new_timint_base.hpp"
 #include "baci_structure_new_timint_basedataglobalstate.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -191,4 +191,4 @@ double STR::EXPLICIT::AdamsBashforth2::MethodLinErrCoeffDis() const
   return (2. * dt + 3. * dto) / (12. * dt);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

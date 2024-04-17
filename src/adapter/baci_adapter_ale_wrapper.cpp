@@ -12,7 +12,7 @@
 /* header inclusions */
 #include "baci_adapter_ale_wrapper.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -57,4 +57,4 @@ void ADAPTER::AleNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -23,7 +23,7 @@
 #include "baci_scatra_ele_parameter_turbulence.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
@@ -1949,7 +1949,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalDetFAtIntPoint(
   return det_dxds / dXds.Determinant();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 // template classes
 

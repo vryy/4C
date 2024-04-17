@@ -17,7 +17,7 @@ computations
 #include "baci_matelast_aniso_structuraltensor_strategy.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
@@ -341,4 +341,4 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::ErrorHandling(
 
   dserror("Uncaught error detected:\n%s", msg.str().c_str());
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

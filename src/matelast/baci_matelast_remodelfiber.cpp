@@ -16,7 +16,7 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -1613,4 +1613,4 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   return false;
 }  // VisData()
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

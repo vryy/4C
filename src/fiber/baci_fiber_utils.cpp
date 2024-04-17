@@ -14,7 +14,7 @@
 
 #include <cmath>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
 void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(const DRT::Node* const* nodes,
@@ -361,4 +361,4 @@ template void DRT::FIBER::UTILS::SetupCardiacFibers<3>(
 template void DRT::FIBER::UTILS::SetupCardiacFibers<2>(
     const NodalFiberHolder& fibers, std::vector<CORE::LINALG::Matrix<2, 1>>& f);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

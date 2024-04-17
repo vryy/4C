@@ -16,7 +16,7 @@
 #include "baci_geometry_pair_utility_classes.hpp"
 #include "baci_lib_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /**
  *
@@ -92,4 +92,4 @@ template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double
 template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

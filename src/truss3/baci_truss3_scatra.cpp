@@ -15,7 +15,7 @@
 #include "baci_mat_lin_elast_1D.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -455,4 +455,4 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

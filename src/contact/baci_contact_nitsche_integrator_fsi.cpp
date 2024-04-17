@@ -17,7 +17,7 @@
 #include "baci_so3_poro.hpp"
 #include "baci_xfem_xfluid_contact_communicator.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -311,4 +311,4 @@ void inline CONTACT::UTILS::SoEleGP(MORTAR::Element& sele, const double wgt, con
   for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@
 #include "baci_mat_crosslinkermat.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 CROSSLINKING::CrosslinkerNodeType CROSSLINKING::CrosslinkerNodeType::instance_;
 
@@ -235,4 +235,4 @@ void CROSSLINKING::CrosslinkerNode::SetMaterial(Teuchos::RCP<MAT::Material> mate
 //  return;
 //}
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

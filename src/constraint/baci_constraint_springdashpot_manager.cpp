@@ -19,7 +19,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discretization> dis)
     : actdisc_(dis), havespringdashpot_(false)
@@ -183,4 +183,4 @@ void CONSTRAINTS::SpringDashpotManager::ReadRestart(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

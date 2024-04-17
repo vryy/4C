@@ -16,7 +16,7 @@
 
 #include <Sacado.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -834,4 +834,4 @@ template void BEAMINTERACTION::GEO::CalcEnclosedAngle<Sacado::Fad::DFad<double>>
     const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

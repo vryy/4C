@@ -42,7 +42,7 @@ table. This table can be queried for those values quite easily.
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*!
   \brief Types of the symbols we store in a map.
@@ -136,6 +136,6 @@ struct MAP
   int count{};
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

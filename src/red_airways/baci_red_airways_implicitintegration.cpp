@@ -30,7 +30,7 @@
 
 #include <stdio.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    ismail 01/10|
@@ -2524,4 +2524,4 @@ bool AIRWAY::RedAirwayImplicitTimeInt::SumAllColElemVal(
   return false;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

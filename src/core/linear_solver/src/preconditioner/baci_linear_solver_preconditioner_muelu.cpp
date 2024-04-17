@@ -42,7 +42,7 @@
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_StridedMap.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // define some trillinos shortcuts
 using SC = Scalar;
@@ -1064,4 +1064,4 @@ CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
   return nullspace;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

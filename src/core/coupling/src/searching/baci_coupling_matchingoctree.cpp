@@ -15,7 +15,7 @@
 #include "baci_comm_exporter.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -1371,4 +1371,4 @@ void CORE::COUPLING::OctreeElement::Print(std::ostream& os) const
   os << '\n';
 }  // OctreeElement::Print(ostream& os)
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

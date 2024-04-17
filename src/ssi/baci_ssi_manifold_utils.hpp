@@ -24,7 +24,7 @@
 #include <optional>
 #include <set>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::ADAPTER
 {
@@ -464,6 +464,6 @@ namespace SSI
 
 }  // namespace SSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

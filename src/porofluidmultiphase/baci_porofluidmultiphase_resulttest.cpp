@@ -15,7 +15,7 @@
 #include "baci_porofluidmultiphase_meshtying_strategy_base.hpp"
 #include "baci_porofluidmultiphase_timint_implicit.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -322,4 +322,4 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
   return result;
 }  // POROFLUIDMULTIPHASE::ResultTest::ResultSpecial
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

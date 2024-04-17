@@ -22,7 +22,7 @@
 #include "baci_solid_3D_ele_utils.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -277,4 +277,4 @@ bool DRT::ELEMENTS::Solid::VisData(const std::string& name, std::vector<double>&
   return SolidMaterial()->VisData(name, data, Id());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

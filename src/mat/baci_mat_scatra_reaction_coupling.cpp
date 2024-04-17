@@ -11,7 +11,7 @@
 #include "baci_global_data.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  * factory method                                            vuong 09/16
@@ -877,4 +877,4 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::BuildPhiVectorForFunction(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

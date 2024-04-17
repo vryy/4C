@@ -18,7 +18,7 @@
 #include "baci_fsi_constr_overlapprec.hpp"
 #include "baci_fsi_monolithic.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CONSTRAINTS
@@ -232,6 +232,6 @@ namespace FSI
   };
 }  // namespace FSI
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

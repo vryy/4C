@@ -19,7 +19,7 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_lib_element.hpp"
 #include "baci_lib_elementtype.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -695,6 +695,6 @@ namespace DRT
 }  // namespace DRT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

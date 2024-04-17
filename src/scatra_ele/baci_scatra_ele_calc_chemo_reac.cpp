@@ -19,7 +19,7 @@ reactive scalars
 #include "baci_mat_scatra.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -187,4 +187,4 @@ template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::pyramid
 template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::nurbs9>;
 // template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

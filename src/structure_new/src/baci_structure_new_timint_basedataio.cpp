@@ -24,7 +24,7 @@
 
 #include <NOX_Solver_Generic.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -319,4 +319,4 @@ void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreModif
   every_iter_writer_.AddLineSearchIteration(newton_iteration, ls_iteration);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

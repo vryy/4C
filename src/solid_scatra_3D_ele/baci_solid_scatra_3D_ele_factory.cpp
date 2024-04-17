@@ -10,7 +10,7 @@
 
 #include "baci_discretization_fem_general_cell_type_traits.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::SolidScatraCalcVariant DRT::ELEMENTS::CreateSolidScatraCalculationInterface(
     CORE::FE::CellType celltype)
@@ -25,4 +25,4 @@ DRT::ELEMENTS::SolidScatraCalcVariant DRT::ELEMENTS::CreateSolidScatraCalculatio
   return DETAILS::DisplacementBasedSolidScatraIntegrator<celltype>();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -25,7 +25,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |
@@ -1438,4 +1438,4 @@ Teuchos::RCP<DRT::ResultTest> SCATRA::TimIntHDG::CreateScaTraFieldTest()
   return Teuchos::rcp(new SCATRA::HDGResultTest(Teuchos::rcp(this, false)));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

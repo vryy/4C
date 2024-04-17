@@ -20,7 +20,7 @@ means are computed as time averages
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------
 //
@@ -1336,4 +1336,4 @@ void FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

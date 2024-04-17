@@ -11,7 +11,7 @@
 #include "baci_contact_constitutivelaw_constitutivelaw_definition.hpp"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -143,4 +143,4 @@ INPUT::ValidContactConstitutiveLaws()
   return vm;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

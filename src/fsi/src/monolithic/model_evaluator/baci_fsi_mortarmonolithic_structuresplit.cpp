@@ -39,7 +39,7 @@ with condensed structure interface displacements
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -2010,4 +2010,4 @@ void FSI::MortarMonolithicStructureSplit::CreateNodeOwnerRelationship(std::map<i
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

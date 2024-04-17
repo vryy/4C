@@ -27,7 +27,7 @@
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  * Constructor
@@ -2503,4 +2503,4 @@ template class DRT::ELEMENTS::ElemagDiffEleCalc<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::ElemagDiffEleCalc<CORE::FE::CellType::nurbs9>;
 template class DRT::ELEMENTS::ElemagDiffEleCalc<CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

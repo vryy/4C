@@ -27,7 +27,7 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include <utility>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -128,4 +128,4 @@ double CORE::UTILS::CubicSplineFromCSV::EvaluateDerivative(
   return cubic_spline_->EvaluateDerivative(scalar, deriv_order);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

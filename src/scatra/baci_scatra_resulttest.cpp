@@ -16,7 +16,7 @@
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -474,4 +474,4 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
   return result;
 }  // SCATRA::ScaTraResultTest::ResultSpecial
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

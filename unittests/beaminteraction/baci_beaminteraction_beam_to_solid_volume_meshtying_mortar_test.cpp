@@ -22,7 +22,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   /**
    * Class to test the local mortar matrices calculated by the beam to volume mesh tying mortar

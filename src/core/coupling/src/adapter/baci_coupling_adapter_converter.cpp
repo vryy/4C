@@ -18,7 +18,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 
@@ -97,4 +97,4 @@ void CORE::ADAPTER::CouplingSlaveConverter::FillSrcToDstMap(std::map<int, int>& 
   coup_.FillSlaveToMasterMap(rowmap);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

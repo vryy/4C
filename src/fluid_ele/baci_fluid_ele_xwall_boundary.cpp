@@ -15,7 +15,7 @@
 #include "baci_lib_discret.hpp"
 
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidXWallBoundaryType DRT::ELEMENTS::FluidXWallBoundaryType::instance_;
 
@@ -231,4 +231,4 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

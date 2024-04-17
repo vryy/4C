@@ -14,7 +14,7 @@
 #include <EpetraExt_MatrixMatrix.h>
 #include <EpetraExt_Transpose_RowMatrix.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG
 {
@@ -306,4 +306,4 @@ void CORE::LINALG::SymmetriseMatrix(CORE::LINALG::SerialDenseMatrix& A)
     }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

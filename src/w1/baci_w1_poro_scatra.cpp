@@ -13,7 +13,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_w1_poro_scatra_eletypes.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         schmidt 09/17 |
@@ -159,4 +159,4 @@ template class DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::quad9>;
 template class DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::nurbs4>;
 template class DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::nurbs9>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

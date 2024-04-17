@@ -16,7 +16,7 @@ problems. This material handles the communication between micro and macro materi
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -163,6 +163,6 @@ namespace MAT
     std::map<int, Teuchos::RCP<ScatraMultiScaleGP>> matgp_;
   };  // material wrapper
 }  // namespace MAT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

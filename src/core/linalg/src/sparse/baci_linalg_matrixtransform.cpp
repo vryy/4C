@@ -19,7 +19,7 @@
 #include <iterator>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -331,4 +331,4 @@ bool CORE::LINALG::MatrixRowColTransform::operator()(const CORE::LINALG::SparseM
       exactmatch, addmatrix);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

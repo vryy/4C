@@ -19,7 +19,7 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace PASI
 {
@@ -45,6 +45,6 @@ namespace PASI
 }  // namespace PASI
 
 /*---------------------------------------------------------------------------*/
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

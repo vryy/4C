@@ -17,7 +17,7 @@
 
 #include "baci_linalg_mapextractor.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -112,6 +112,6 @@ namespace ALE
   }  // namespace UTILS
 }  // namespace ALE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

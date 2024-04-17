@@ -18,7 +18,7 @@
 #include "baci_poroelast_base.hpp"
 #include "baci_scatra_algorithm.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
@@ -145,6 +145,6 @@ namespace POROELASTSCATRA
 }  // namespace POROELASTSCATRA
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

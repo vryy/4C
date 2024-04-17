@@ -15,7 +15,7 @@
 #include "baci_particle_rigidbody_interface.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -123,4 +123,4 @@ void PARTICLERIGIDBODY::RigidBodyResultTest::TestSpecial(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

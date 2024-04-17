@@ -8,7 +8,7 @@
 *----------------------------------------------------------------------*/
 #include "baci_linear_solver_preconditioner_linalg_ana.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
   implicit operator product Operator*Operator
@@ -381,4 +381,4 @@ double CORE::LINALG::ANA::norminf(const CORE::LINALG::ANA::LCBase& lc)
   return norminf(tmp);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

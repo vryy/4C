@@ -18,7 +18,7 @@ is just a "control instance".
 
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | standard constructor                                     thon 11/14 |
@@ -410,4 +410,4 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrixAddVariables(const int k,
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

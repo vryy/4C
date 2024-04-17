@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*
  \brief class for VTU output generation
@@ -74,6 +74,6 @@ class VtuWriter : public VtkWriterBase
   const std::string& WriterSuffix() const override;
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -19,7 +19,7 @@
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "baci_xfem_condition_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 //
 
 /*----------------------------------------------------------------------*
@@ -1155,4 +1155,4 @@ template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::wedge15>(D
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::wedge15>>,
     DRT::Element *);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

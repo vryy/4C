@@ -22,7 +22,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -219,4 +219,4 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(
   return coupsf_->SlaveToMaster(iv);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

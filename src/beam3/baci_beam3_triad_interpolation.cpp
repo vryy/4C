@@ -16,7 +16,7 @@
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -67,4 +67,4 @@ Teuchos::RCP<LARGEROTATIONS::TriadInterpolation<T>> LARGEROTATIONS::TriadInterpo
 template class LARGEROTATIONS::TriadInterpolation<double>;
 template class LARGEROTATIONS::TriadInterpolation<Sacado::Fad::DFad<double>>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

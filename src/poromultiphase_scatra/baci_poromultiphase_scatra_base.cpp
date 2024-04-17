@@ -23,7 +23,7 @@
 #include "baci_scatra_timint_meshtying_strategy_artery.hpp"
 #include "baci_scatra_timint_poromulti.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -466,4 +466,4 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::HandleDivergence() const
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

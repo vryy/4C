@@ -28,7 +28,7 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "baci_sti_monolithic_evaluate_OffDiag.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
@@ -1783,4 +1783,4 @@ void STI::Monolithic::AssembleDomainInterfaceOffDiag(
   }
 }  // AssembleDomainInterfaceOD
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

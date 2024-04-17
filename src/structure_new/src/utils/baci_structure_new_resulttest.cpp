@@ -25,7 +25,7 @@
 #include <optional>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -572,4 +572,4 @@ int STR::GetIntegerNumberAtLastPositionOfName(const std::string& quantity)
   exit(EXIT_FAILURE);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

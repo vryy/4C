@@ -16,7 +16,7 @@
 #include "baci_mat_par_bundle.hpp"
 #include "baci_scatra_ele.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
@@ -167,4 +167,4 @@ std::map<std::string, std::string> ART::ArteryScatraCloneStrategy::ConditionsToC
       {"ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"}};
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

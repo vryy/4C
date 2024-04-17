@@ -25,7 +25,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                               dano 11/09 |
@@ -102,7 +102,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
-    using namespace BACI;
+    using namespace FourC;
 
     dsassert(name.size() == 1, "Unexpected number of names");
 
@@ -222,7 +222,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
-    using namespace BACI;
+    using namespace FourC;
 
     dsassert(name.size() == 1, "Unexpected number of names");
 
@@ -312,6 +312,6 @@ void ThermoFilter::WriteHeatflux(
     dserror("Unknown heatflux type");
 }  // ThermoFilter::WriteNodalHeatflux
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*/

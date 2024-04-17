@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -808,4 +808,4 @@ void DRT::Discretization::RedistributeState(const unsigned nds, const std::strin
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

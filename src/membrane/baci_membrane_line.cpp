@@ -10,7 +10,7 @@
 *----------------------------------------------------------------------*/
 #include "baci_membrane.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -143,4 +143,4 @@ template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad4>;
 template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad9>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

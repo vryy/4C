@@ -17,7 +17,7 @@ literature see Froehlich Mellen Rodi Temmerman Leschziner (2004) and Rapp Breuer
 
 #include <fstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 #define SAMP_ALL
 
@@ -948,4 +948,4 @@ void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
 
 }  // TurbulenceStatisticsPh::DumpStatistics
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

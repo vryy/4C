@@ -16,7 +16,7 @@
 #include "baci_contact_abstract_strategy.hpp"
 #include "baci_contact_aug_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // #define DEBUG_COMBO_STRATEGY
 
@@ -596,6 +596,6 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

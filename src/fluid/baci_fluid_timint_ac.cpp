@@ -14,7 +14,7 @@
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -61,4 +61,4 @@ void FLD::TimIntAC::Output()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

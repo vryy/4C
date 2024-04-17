@@ -16,7 +16,7 @@
 #include "baci_contact_aug_timemonitor.hpp"
 #include "baci_lib_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
@@ -524,6 +524,6 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

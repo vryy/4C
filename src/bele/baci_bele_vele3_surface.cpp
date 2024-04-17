@@ -13,7 +13,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::Vele3SurfaceType DRT::ELEMENTS::Vele3SurfaceType::instance_;
@@ -151,4 +151,4 @@ CORE::FE::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
   return rule;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_red_airways_implicitintegration.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -167,4 +167,4 @@ void AIRWAY::RedAirwayResultTest::TestElement(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -28,7 +28,7 @@
 class Epetra_MultiVector;
 class Epetra_Vector;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace INPAR
 {
@@ -232,6 +232,6 @@ namespace INPAR
 std::ostream& operator<<(std::ostream& os, const INPAR::InputParameterContainer& cont);
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

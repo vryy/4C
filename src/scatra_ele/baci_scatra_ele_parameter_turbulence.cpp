@@ -20,7 +20,7 @@ general static parameters required for scalar transport element evaluation.
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 08/15 |
@@ -216,4 +216,4 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

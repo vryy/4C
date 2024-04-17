@@ -19,7 +19,7 @@
 #include "baci_mortar_manager_base.hpp"
 #include "baci_mortar_strategy_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -305,4 +305,4 @@ void STR::TimIntAB2::ReadRestartForce()
 /* write internal and external forces for restart */
 void STR::TimIntAB2::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) { return; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

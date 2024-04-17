@@ -21,7 +21,7 @@ extern "C"
 #include <libqhull/qhull_a.h>
 }
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -879,4 +879,4 @@ void CORE::GEO::CUT::TetMesh::CollectCoordinates(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

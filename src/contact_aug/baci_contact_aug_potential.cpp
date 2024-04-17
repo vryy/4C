@@ -15,7 +15,7 @@
 #include "baci_io_pstream.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -661,4 +661,4 @@ void CONTACT::AUG::Potential::LinData::print(std::ostream& os, const Potential& 
   os << "[INACTIVE] D_{z_N}( 1/cn^2 * < z_N, z_N>_{A^2} ) = " << inf_zn_dzn_ << "\n";
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

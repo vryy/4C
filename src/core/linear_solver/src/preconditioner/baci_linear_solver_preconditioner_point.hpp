@@ -15,7 +15,7 @@
 #include "baci_linalg_downwindmatrix.hpp"
 #include "baci_linear_solver_preconditioner_type.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINEAR_SOLVER
 {
@@ -86,6 +86,6 @@ namespace CORE::LINEAR_SOLVER
   };
 }  // namespace CORE::LINEAR_SOLVER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

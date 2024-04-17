@@ -25,7 +25,7 @@
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -340,4 +340,4 @@ double STR::IMPLICIT::Statics::GetModelValue(const Epetra_Vector& x)
   return total;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

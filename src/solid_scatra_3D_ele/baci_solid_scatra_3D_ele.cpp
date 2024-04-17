@@ -15,7 +15,7 @@
 #include "baci_so3_surface.hpp"
 #include "baci_solid_scatra_3D_ele_lib.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -219,4 +219,4 @@ MAT::So3Material& DRT::ELEMENTS::SolidScatra::SolidMaterial(int nummat) const
   return *Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

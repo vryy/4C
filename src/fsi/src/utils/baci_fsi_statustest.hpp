@@ -20,7 +20,7 @@
 #include <NOX_StatusTest_Generic.H>
 #include <NOX_Utils.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace CORE::ADAPTER
@@ -367,6 +367,6 @@ namespace NOX
   }  // namespace FSI
 }  // namespace NOX
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

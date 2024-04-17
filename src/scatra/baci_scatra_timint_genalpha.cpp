@@ -19,7 +19,7 @@
 #include "baci_scatra_turbulence_hit_scalar_forcing.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       vg 11/08 |
@@ -471,4 +471,4 @@ void SCATRA::TimIntGenAlpha::PostCalcInitialTimeDerivative()
   SetElementTurbulenceParameters();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

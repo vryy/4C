@@ -11,7 +11,7 @@
 
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::PreStressType DRT::ELEMENTS::PreStressType::instance_;
@@ -111,4 +111,4 @@ int DRT::ELEMENTS::PreStress::UniqueParObjectId() const
   return PreStressType::Instance().UniqueParObjectId();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

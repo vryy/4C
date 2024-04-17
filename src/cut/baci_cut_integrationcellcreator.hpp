@@ -15,7 +15,7 @@
 
 #include "baci_cut_volumecell.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEO
 {
@@ -165,6 +165,6 @@ namespace CORE::GEO
   }  // namespace CUT
 }  // namespace CORE::GEO
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

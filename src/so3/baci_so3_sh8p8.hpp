@@ -14,7 +14,7 @@
 
 #include "baci_so3_sh8.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 struct _SOH8_DATA;
@@ -904,7 +904,7 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 /*----------------------------------------------------------------------*/
 /* definitions of above declared template functions */

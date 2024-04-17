@@ -38,7 +38,7 @@
 #include "baci_nurbs_discret_nurbs_utils.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -2309,4 +2309,4 @@ template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs3>;
 template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs4>;
 template class DRT::ELEMENTS::FluidBoundaryImpl<CORE::FE::CellType::nurbs9>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

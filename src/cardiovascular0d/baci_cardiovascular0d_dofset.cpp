@@ -16,7 +16,7 @@
 #include <iostream>
 #include <numeric>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -86,4 +86,4 @@ int UTILS::Cardiovascular0DDofSet::AssignDegreesOfFreedom(
   return count;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

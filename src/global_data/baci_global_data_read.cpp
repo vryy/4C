@@ -42,7 +42,7 @@
 #include "baci_rebalance.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, const bool readmesh)
 {
@@ -2333,4 +2333,4 @@ void GLOBAL::ReadParticles(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
 }
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

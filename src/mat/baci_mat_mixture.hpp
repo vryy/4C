@@ -21,7 +21,7 @@
 #include "baci_mixture_constituent.hpp"
 #include "baci_mixture_rule.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -236,6 +236,6 @@ namespace MAT
 
 }  // namespace MAT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

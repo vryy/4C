@@ -24,7 +24,7 @@
 #include <stack>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  * struct for comparison of position of sides using ray-tracing techniques
@@ -1377,4 +1377,4 @@ template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::hex8>;
 template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::pyramid5>;
 template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::wedge6>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

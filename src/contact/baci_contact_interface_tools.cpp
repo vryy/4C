@@ -23,7 +23,7 @@
 #include "baci_mortar_element.hpp"
 #include "baci_mortar_integrator.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Visualize contact stuff with gmsh                         popp 08/08|
@@ -7101,4 +7101,4 @@ void CONTACT::Interface::WriteNodalCoordinatesToFile(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

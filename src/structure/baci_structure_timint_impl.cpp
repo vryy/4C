@@ -57,7 +57,7 @@
 #include <cfenv>
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -4667,4 +4667,4 @@ void STR::TimIntImpl::CheckFor3D0DPTCReset(INPAR::STR::ConvergenceStatus& status
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

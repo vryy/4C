@@ -18,7 +18,7 @@ boundary of the actual domain
 #include "baci_lib_discret.hpp"
 #include "baci_utils_function_of_time.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -1060,4 +1060,4 @@ void FLD::TransferTurbulentInflowConditionNodal::SetValuesAvailableOnThisProc(
   return;
 }  // SetValuesAvailableOnThisProc (Nodal)
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@
 #include "baci_scatra_ele_calc_elch_diffcond.hpp"
 #include "baci_scatra_ele_sti_thermo.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -177,6 +177,6 @@ namespace DRT
     };  // class ScaTraEleInternalVariableManagerElchDiffCondSTIThermo
   }     // namespace ELEMENTS
 }  // namespace DRT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -18,7 +18,7 @@
 
 #include <Epetra_Vector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace DRT
@@ -57,6 +57,6 @@ namespace ELEMAG
 
 }  // namespace ELEMAG
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

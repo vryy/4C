@@ -15,7 +15,7 @@
 #include "baci_lubrication_ele_parameter.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           wirtz 10/15 |
@@ -115,4 +115,4 @@ void DRT::ELEMENTS::LubricationType::PreEvaluate(DRT::Discretization& dis,
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

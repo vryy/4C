@@ -14,7 +14,7 @@ subsides
 #include "baci_cut_mesh.hpp"
 #include "baci_cut_position.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -389,4 +389,4 @@ void CORE::GEO::CUT::Quad9SideHandle::LocalCoordinates(
   pos->LocalCoordinates(rst);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

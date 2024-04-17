@@ -19,7 +19,7 @@
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -294,4 +294,4 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
   return nodevec;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

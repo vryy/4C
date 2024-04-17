@@ -14,7 +14,7 @@
 #include "baci_mat_scatra.hpp"
 #include "baci_mat_scatra_micro_macro_coupling.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
@@ -143,6 +143,6 @@ namespace MAT
     MAT::PAR::ScatraMultiScale* params_;
   };
 }  // namespace MAT
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

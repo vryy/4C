@@ -20,7 +20,7 @@ evaluated with FAD.
 #include "baci_geometry_pair_scalar_types.hpp"
 #include "baci_lib_discret.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
@@ -192,6 +192,6 @@ namespace BEAMINTERACTION
       const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

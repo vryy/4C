@@ -11,7 +11,7 @@
 #include "baci_io_linedefinition.hpp"
 #include "baci_torsion3.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -41,4 +41,4 @@ bool DRT::ELEMENTS::Torsion3::ReadElement(
   return true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

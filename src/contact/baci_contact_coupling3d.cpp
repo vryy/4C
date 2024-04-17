@@ -27,7 +27,7 @@
 #include "baci_mortar_defines.hpp"
 #include "baci_mortar_projector.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
@@ -1985,4 +1985,4 @@ void CONTACT::Coupling3dManager::FindFeasibleMasterElements(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

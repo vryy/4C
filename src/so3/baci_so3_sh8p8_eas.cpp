@@ -11,7 +11,7 @@
 /* headers */
 #include "baci_so3_sh8p8.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -28,4 +28,4 @@ void DRT::ELEMENTS::So_sh8p8::EasInit()
 
 /*----------------------------------------------------------------------*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

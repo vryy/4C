@@ -12,7 +12,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_mortar_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
@@ -104,4 +104,4 @@ int MORTAR::DofSet::AssignDegreesOfFreedom(
   return count;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

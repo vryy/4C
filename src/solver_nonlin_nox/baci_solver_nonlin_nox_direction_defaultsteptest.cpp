@@ -19,7 +19,7 @@
 #include <Epetra_Vector.h>
 #include <NOX_Utils.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -247,4 +247,4 @@ bool NOX::NLN::Direction::Test::VolumeChange::isPositiveDefinite() const
   return (isposdef);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -13,7 +13,7 @@ the Baci guide in the Convention chapter.
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -106,4 +106,4 @@ template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE
 template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::tri6,
     3>(CORE::LINALG::Matrix<3, 6>& deriv_xyz, const CORE::LINALG::Matrix<2, 6>& deriv,
     const CORE::LINALG::Matrix<6, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

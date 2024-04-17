@@ -14,7 +14,7 @@
 #include "baci_mixture_growth_strategy_isotropic.hpp"
 #include "baci_mixture_growth_strategy_stiffness.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::MixtureGrowthStrategy::MixtureGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -62,4 +62,4 @@ MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::Factor
   }
   return nullptr;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

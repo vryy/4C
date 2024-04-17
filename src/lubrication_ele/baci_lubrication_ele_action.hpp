@@ -17,7 +17,7 @@ comparison instead of a cumbersome std::string compare.
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace LUBRICATION
 {
@@ -50,6 +50,6 @@ namespace LUBRICATION
   };                         // enum LUBRICATION::BoundaryAction
 }  // namespace LUBRICATION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

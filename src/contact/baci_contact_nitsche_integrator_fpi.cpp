@@ -15,7 +15,7 @@
 #include "baci_contact_node.hpp"
 #include "baci_xfem_xfluid_contact_communicator.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::IntegratorNitscheFpi::IntegratorNitscheFpi(
@@ -305,4 +305,4 @@ double CONTACT::IntegratorNitscheFpi::GetNormalContactTransition(MORTAR::Element
         normal, FSI_integrated, gp_on_this_proc);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

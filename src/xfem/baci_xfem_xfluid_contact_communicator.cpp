@@ -30,7 +30,7 @@
 #include "baci_so3_surface.hpp"
 #include "baci_xfem_condition_manager.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,
@@ -1507,4 +1507,4 @@ void XFEM::XFluid_Contact_Comm::Gmsh_Write(CORE::LINALG::Matrix<3, 1> x, double 
 #endif
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

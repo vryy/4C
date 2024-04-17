@@ -10,7 +10,7 @@
 
 #include "baci_linalg_fixedsizematrix.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINALG::TENSOR
 {
@@ -123,6 +123,6 @@ namespace CORE::LINALG::TENSOR
 }  // namespace CORE::LINALG::TENSOR
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

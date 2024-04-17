@@ -29,7 +29,7 @@
 
 #include <Epetra_SerialComm.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             seitz 08/15|
@@ -1044,4 +1044,4 @@ void CONTACT::LagrangeStrategyTsi::DoReadRestart(IO::DiscretizationReader& reade
   ftcn_ = tmp;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

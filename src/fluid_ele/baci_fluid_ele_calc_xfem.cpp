@@ -27,7 +27,7 @@
 
 #include <fstream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
 DRT::ELEMENTS::FluidEleCalcXFEM<distype>* DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(
@@ -4611,4 +4611,4 @@ template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::wedge6>;
 template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::wedge15>;
 // template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::pyramid5>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

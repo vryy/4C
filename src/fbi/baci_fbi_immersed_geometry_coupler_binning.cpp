@@ -20,7 +20,7 @@ performed afterwards
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 
 FBI::FBIBinningGeometryCoupler::FBIBinningGeometryCoupler()
@@ -186,4 +186,4 @@ void FBI::FBIBinningGeometryCoupler::SetBinning(Teuchos::RCP<BINSTRATEGY::Binnin
   binrowmap_ = Teuchos::rcp(new Epetra_Map(*(binstrategy_->BinDiscret()->ElementRowMap())));
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

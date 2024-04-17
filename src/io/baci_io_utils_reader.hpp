@@ -24,7 +24,7 @@
 #include <cstring>
 #endif
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace DRT::UTILS
@@ -77,6 +77,6 @@ namespace DRT::UTILS
   std::vector<std::string> SplitStringList(const std::string& str, const char separator);
 }  // namespace DRT::UTILS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

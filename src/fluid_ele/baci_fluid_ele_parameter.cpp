@@ -21,7 +21,7 @@ be set in problem specific parameter lists derived from this class.
 #include <iostream>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 //----------------------------------------------------------------------*/
@@ -665,4 +665,4 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
   }  // end if(Classical LES)
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

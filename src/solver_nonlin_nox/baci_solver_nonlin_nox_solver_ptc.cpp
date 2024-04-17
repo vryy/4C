@@ -35,7 +35,7 @@
 #include <NOX_Solver_SolverUtils.H>
 #include <NOX_StatusTest_Generic.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -1004,4 +1004,4 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPreComputeF(
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

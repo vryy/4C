@@ -11,7 +11,7 @@
  *
  */
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // template classes
 template class DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>;
@@ -23,6 +23,6 @@ template class DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet10, CORE::FE::Cell
 template class DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27,
     CORE::FE::CellType::nurbs27>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

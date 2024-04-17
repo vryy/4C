@@ -18,7 +18,7 @@
 
 #include <Epetra_Export.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -383,4 +383,4 @@ void XFEM::XFieldField::Coupling::BuildMaxDofMaps(const DRT::Discretization& max
   max_exporter = Teuchos::rcp<Epetra_Export>(new Epetra_Export(*max_permdofmap, *max_dofmap));
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

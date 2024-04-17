@@ -21,7 +21,7 @@ const double testTolerance = 1e-14;
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class Beam3r : public ::testing::Test
   {

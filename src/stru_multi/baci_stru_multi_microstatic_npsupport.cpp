@@ -20,7 +20,7 @@ analysis for supporting processors
 
 #include <hdf5.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -174,4 +174,4 @@ void STRUMULTI::np_support_drt()
   }  // end while(true) loop
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -14,7 +14,7 @@
 #include "baci_io_visualization_writer_vtu_per_rank.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -34,4 +34,4 @@ std::unique_ptr<IO::VisualizationWriterBase> IO::VisualizationWriterFactory(
     dserror("You have to select a valid visualization writer in the input file");
   }
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

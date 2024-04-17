@@ -18,7 +18,7 @@
 #include "baci_linalg_sparseoperator.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::AssembleStrategy::AssembleStrategy(int firstdofset, int seconddofset,
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
@@ -163,4 +163,4 @@ void DRT::AssembleStrategy::Assemble(Epetra_MultiVector& V, const int n,
   CORE::LINALG::Assemble(V, n, Vele, lm, lmowner);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

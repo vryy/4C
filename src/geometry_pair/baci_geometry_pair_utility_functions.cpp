@@ -11,7 +11,7 @@
 
 #include "baci_geometry_pair_utility_functions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /**
  *
@@ -40,4 +40,4 @@ std::string GEOMETRYPAIR::DiscretizationTypeGeometryToString(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -21,7 +21,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 namespace CORE::COMM
@@ -116,6 +116,6 @@ namespace MAT
       std::vector<std::array<T, numfib>>& vct);
 }  // namespace MAT
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

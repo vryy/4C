@@ -23,7 +23,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
@@ -90,4 +90,4 @@ void FLD::TimInt::IncrementTimeAndStep()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

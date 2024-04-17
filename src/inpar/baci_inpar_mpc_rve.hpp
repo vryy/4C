@@ -13,7 +13,7 @@
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_lib_conditiondefinition.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace INPAR::RVE_MPC
 {
@@ -71,5 +71,5 @@ namespace INPAR::RVE_MPC
   void SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>& condlist);
 }  // namespace INPAR::RVE_MPC
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 #endif

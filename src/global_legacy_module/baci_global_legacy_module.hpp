@@ -13,7 +13,7 @@
 
 #include "baci_module_registry_callbacks.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /**
  * Expose callbacks for the global legacy module.
@@ -23,6 +23,6 @@ BACI_NAMESPACE_OPEN
  */
 [[nodiscard]] ModuleCallbacks GlobalLegacyModuleCallbacks();
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

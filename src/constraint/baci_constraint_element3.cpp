@@ -8,7 +8,7 @@
 
 #include "baci_constraint_element3.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ELEMENTS::ConstraintElement3Type DRT::ELEMENTS::ConstraintElement3Type::instance_;
@@ -120,4 +120,4 @@ void DRT::ELEMENTS::ConstraintElement3::Unpack(const std::vector<char>& data)
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

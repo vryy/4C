@@ -16,7 +16,7 @@
 #include "baci_structure_new_timint_basedataio.hpp"
 #include "baci_structure_new_timint_basedataio_runtime_vtk_output.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -122,4 +122,4 @@ Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> ADAPTER::FBIStructureWrappe
   return FSIModelEvaluator()->GetInOutput().GetRuntimeOutputParams();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -18,7 +18,7 @@ In this file, the helper defining the mapping from celltype to their properties 
 #include <tuple>
 #include <type_traits>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::FE::DETAILS
 {
@@ -345,6 +345,6 @@ namespace CORE::FE::DETAILS
   /// @}
 }  // namespace CORE::FE::DETAILS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

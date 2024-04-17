@@ -13,7 +13,7 @@
 
 #include <algorithm>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /**
@@ -205,4 +205,4 @@ std::string IO::VisualizationData::GetDataType(
   dserror("Could not determine the data type");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

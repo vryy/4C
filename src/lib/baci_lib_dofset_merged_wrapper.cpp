@@ -19,7 +19,7 @@
 
 #include <Epetra_Export.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -224,4 +224,4 @@ void DRT::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
   Reset();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -40,7 +40,7 @@ specific output operations can be done by the elements themselves.
 
 class Epetra_Comm;
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 class PostField;
 
@@ -496,6 +496,6 @@ class PostResult
   IO::HDFReader file_;
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

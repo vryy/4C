@@ -13,7 +13,7 @@
 #include "baci_so3_hex8.hpp"
 #include "baci_so3_tet10.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void DRT::ELEMENTS::AssembleGaussPointValues(
     std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
@@ -84,4 +84,4 @@ template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::C
 template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::wedge6>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -12,7 +12,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class SoHex8DetermAnalys : public ::testing::Test
   {

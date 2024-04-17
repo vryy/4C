@@ -14,7 +14,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_lib_dofset_proxy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -98,4 +98,4 @@ void DRT::DofSetGIDBasedWrapper::CheckIsAssigned() const
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

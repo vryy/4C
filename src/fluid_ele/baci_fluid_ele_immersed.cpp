@@ -13,7 +13,7 @@
 
 #include "baci_io_linedefinition.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 DRT::ELEMENTS::FluidTypeImmersed DRT::ELEMENTS::FluidTypeImmersed::instance_;
 
@@ -136,4 +136,4 @@ void DRT::ELEMENTS::FluidImmersed::Unpack(const std::vector<char>& data)
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

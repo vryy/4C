@@ -13,7 +13,7 @@
 #include "baci_mortar_element.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MORTAR::NodeType MORTAR::NodeType::instance_;
@@ -548,4 +548,4 @@ bool MORTAR::Node::CheckMeshDistortion(double& relocation, const double& limit)
   return ok;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

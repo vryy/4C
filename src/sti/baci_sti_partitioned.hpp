@@ -15,7 +15,7 @@
 #include "baci_inpar_sti.hpp"
 #include "baci_sti_algorithm.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace STI
 {
@@ -54,6 +54,6 @@ namespace STI
     const double omegamax_;
   };  // class Partitioned : public Algorithm
 }  // namespace STI
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -20,7 +20,7 @@ parameters required for Lubrication element evaluation.
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | singleton access method                                  wirtz 10/15 |
@@ -77,4 +77,4 @@ void DRT::ELEMENTS::LubricationEleParameter::SetGeneralParameters(
   roughness_deviation_ = parameters.get<double>("roughnessdeviation");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

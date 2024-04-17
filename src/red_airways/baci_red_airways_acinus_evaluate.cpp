@@ -22,7 +22,7 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------*
  |evaluate the element (public)                            ismail 09/12|
@@ -259,4 +259,4 @@ bool DRT::ELEMENTS::RedAcinus::isHigherOrderElement(const CORE::FE::CellType dis
   return hoel;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -23,7 +23,7 @@
 #include <NOX.H>
 #include <NOX_Epetra.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace ADAPTER
@@ -1298,6 +1298,6 @@ namespace FSI
 }  // namespace FSI
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

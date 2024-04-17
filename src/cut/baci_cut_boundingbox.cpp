@@ -15,7 +15,7 @@
 #include "baci_cut_volumecell.hpp"
 #include "baci_global_data.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -315,4 +315,4 @@ bool CORE::GEO::CUT::ConcreteBoundingBox<probdim>::Within(double norm, const dou
 template class CORE::GEO::CUT::ConcreteBoundingBox<2>;
 template class CORE::GEO::CUT::ConcreteBoundingBox<3>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

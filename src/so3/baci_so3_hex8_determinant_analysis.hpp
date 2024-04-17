@@ -18,7 +18,7 @@
 #include <functional>
 #include <list>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // #define DEBUG_SO_HEX8_DET_ANALYSIS
 namespace DRT
@@ -331,6 +331,6 @@ namespace DRT
 
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

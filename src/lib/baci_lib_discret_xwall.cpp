@@ -12,7 +12,7 @@ of dofs per node on a fluid discretization for xwall
 
 #include "baci_lib_discret_xwall.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -23,4 +23,4 @@ DRT::DiscretizationXWall::DiscretizationXWall(
     : DiscretizationFaces(name, comm)  // use base class constructor
       {};
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

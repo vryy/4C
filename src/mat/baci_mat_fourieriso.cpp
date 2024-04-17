@@ -17,7 +17,7 @@ the input line should read
 #include "baci_global_data.hpp"
 #include "baci_mat_par_bundle.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -146,4 +146,4 @@ void MAT::FourierIso::Evaluate(const CORE::LINALG::Matrix<3, 1>& gradtemp,
   heatflux.MultiplyNN(cmat, gradtemp);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

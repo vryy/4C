@@ -11,7 +11,7 @@
 
 #include "baci_levelset_timint_stat.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                rasthofer 09/13 |
@@ -79,4 +79,4 @@ void SCATRA::LevelSetTimIntStationary::Setup()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

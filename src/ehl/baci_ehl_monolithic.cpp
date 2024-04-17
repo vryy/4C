@@ -45,7 +45,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
@@ -2158,4 +2158,4 @@ void EHL::Monolithic::ApplyDBC()
         rhs_->ReplaceGlobalValue(inf_gap_toggle_lub_->Map().GID(i), 0, 0.);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

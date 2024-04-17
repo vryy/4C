@@ -26,7 +26,7 @@ namespace Teuchos
   class RCP;
 }
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -115,6 +115,6 @@ namespace CORE::ADAPTER
 
 }  // namespace CORE::ADAPTER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

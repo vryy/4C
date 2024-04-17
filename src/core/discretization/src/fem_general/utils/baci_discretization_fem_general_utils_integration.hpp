@@ -21,7 +21,7 @@
 #include <sstream>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::FE
 {
@@ -808,6 +808,6 @@ namespace CORE::FE
 
 }  // namespace CORE::FE
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

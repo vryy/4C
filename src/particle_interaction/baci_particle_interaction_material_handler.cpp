@@ -15,7 +15,7 @@
 #include "baci_particle_algorithm_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -69,4 +69,4 @@ void PARTICLEINTERACTION::MaterialHandler::Setup()
   // nothing to do
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

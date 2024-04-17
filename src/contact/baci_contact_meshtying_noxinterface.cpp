@@ -17,7 +17,7 @@
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -149,4 +149,4 @@ double CONTACT::MtNoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_
   return lagoldnorm;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

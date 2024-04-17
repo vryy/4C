@@ -17,7 +17,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class SPHKernelCubicSplineTest : public ::testing::Test
   {

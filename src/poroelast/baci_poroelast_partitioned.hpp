@@ -16,7 +16,7 @@
 #include "baci_inpar_structure.hpp"
 #include "baci_poroelast_base.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace POROELAST
 {
@@ -74,6 +74,6 @@ namespace POROELAST
 
 }  // namespace POROELAST
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

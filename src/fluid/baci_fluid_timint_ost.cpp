@@ -17,7 +17,7 @@
 #include "baci_io.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -348,4 +348,4 @@ double FLD::TimIntOneStepTheta::MethodLinErrCoeffVel() const
   return fac;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -10,7 +10,7 @@
 
 #include "baci_contact_aug_lagrange_interface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -30,4 +30,4 @@ CONTACT::AUG::LAGRANGE::Interface::Interface(
     : CONTACT::AUG::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
 {
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

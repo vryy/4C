@@ -26,7 +26,7 @@
 
 #include <Epetra_MultiVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -3723,4 +3723,4 @@ template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
 template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
     CORE::FE::CellType::line2, CORE::FE::CellType::tet10, 3>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

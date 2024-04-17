@@ -20,7 +20,7 @@
 #include "baci_solver_nonlin_nox_interface_jacobian.hpp"
 #include "baci_solver_nonlin_nox_interface_required.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -443,4 +443,4 @@ void NOX::NLN::CONTACT::LinearSystem::throwError(
   throw "NOX Error";
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

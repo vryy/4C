@@ -18,7 +18,7 @@
 
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 DRT::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
@@ -573,4 +573,4 @@ void PrintResultDescrDatHeader()
   lines.Print(std::cout);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

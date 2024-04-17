@@ -17,7 +17,7 @@
 #include "baci_lib_element.hpp"
 #include "baci_lib_node.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::FE
 {
@@ -202,6 +202,6 @@ namespace CORE::FE
 }  // namespace CORE::FE
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

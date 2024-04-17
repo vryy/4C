@@ -19,7 +19,7 @@
 #include "baci_mat_par_bundle.hpp"
 #include "baci_mat_sutherland.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -326,4 +326,4 @@ void FLD::TimIntLoma::AVM3Preparation()
   return;
 }  // TimIntLoma::AVM3Preparation
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

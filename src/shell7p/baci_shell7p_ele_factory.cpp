@@ -14,7 +14,7 @@
 
 #include <memory>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 std::unique_ptr<DRT::ELEMENTS::Shell7pEleCalcInterface>
 DRT::ELEMENTS::Shell7pFactory::ProvideShell7pCalculationInterface(
@@ -82,4 +82,4 @@ DRT::ELEMENTS::Shell7pFactory::DefineCalculationInterfaceType(
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -11,7 +11,7 @@ terms of the first Cauchy-Green invariant
 
 #include "baci_mat_par_material.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::Iso1Pow::Iso1Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -57,4 +57,4 @@ void MAT::ELASTIC::Iso1Pow::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& d
   else
     ddPmodII(0) += c * d * (d - 1.) * pow(modinv(0) - 3., d - 2.);
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

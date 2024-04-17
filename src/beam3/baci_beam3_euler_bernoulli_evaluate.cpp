@@ -24,7 +24,7 @@
 
 #include <Sacado.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 using FAD = Sacado::Fad::DFad<double>;
 
@@ -2274,4 +2274,4 @@ template void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff<2, 2, 3>(Teucho
 template void DRT::ELEMENTS::Beam3eb::UpdateDispTotlag<2, 6>(
     const std::vector<double>&, CORE::LINALG::Matrix<12, 1>&) const;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

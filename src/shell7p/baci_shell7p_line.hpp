@@ -16,7 +16,7 @@
 #include "baci_lib_node.hpp"
 #include "baci_shell7p_ele.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT::ELEMENTS
 {
@@ -165,6 +165,6 @@ namespace DRT::ELEMENTS
 
 }  // namespace DRT::ELEMENTS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

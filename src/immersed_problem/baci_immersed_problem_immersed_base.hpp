@@ -29,7 +29,7 @@
 #include "baci_mortar_calc_utils.hpp"
 #include "baci_mortar_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
 {
@@ -1616,6 +1616,6 @@ namespace IMMERSED
 
 }  // namespace IMMERSED
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -13,7 +13,7 @@
 #include "baci_io_pstream.hpp"
 #include "baci_mortar_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------------*
@@ -2208,4 +2208,4 @@ template class CONTACT::AUG::CompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
 template class CONTACT::AUG::CompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
     CORE::FE::CellType::nurbs4>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

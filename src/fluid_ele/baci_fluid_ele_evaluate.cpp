@@ -25,7 +25,7 @@
 #include "baci_fluid_ele_xwall.hpp"
 #include "baci_lib_condition_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*
@@ -783,4 +783,4 @@ void DRT::ELEMENTS::FluidIntFaceType::PreEvaluate(DRT::Discretization& dis,
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

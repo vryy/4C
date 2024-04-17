@@ -14,7 +14,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -160,4 +160,4 @@ void CONSTRAINTS::Monitor::SetState(const std::string& state,  ///< name of stat
   actdisc_->SetState(state, V);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

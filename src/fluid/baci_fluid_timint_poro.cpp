@@ -18,7 +18,7 @@
 #include "baci_poroelast_utils.hpp"
 #include "baci_utils_function.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<CORE::LINALG::Solver>& solver,
@@ -257,4 +257,4 @@ void FLD::TimIntPoro::TimIntCalculateAcceleration()
   CalculateAcceleration(velnp_, veln_, velnm_, accn_, accnp_);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -177,7 +177,7 @@
 #include <iostream>
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -398,4 +398,4 @@ ModuleCallbacks GlobalLegacyModuleCallbacks()
   return callbacks;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

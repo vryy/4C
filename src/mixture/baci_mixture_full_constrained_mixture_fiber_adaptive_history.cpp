@@ -17,7 +17,7 @@
 #include <array>
 #include <optional>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 void MIXTURE::DETAILS::AdaptTimestepAdaptivityInfo(
     MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info, unsigned int level,
@@ -221,4 +221,4 @@ double MIXTURE::TimestepAdaptivityInfo::GetIndexTime(
 {
   return base_time + GetBaseIndex(index) * base_dt;
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

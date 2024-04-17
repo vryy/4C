@@ -14,7 +14,7 @@
 #include "baci_membrane.hpp"
 #include "baci_so3_nullspace.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          fbraeu 06/16 |
@@ -294,4 +294,4 @@ void DRT::ELEMENTS::Membrane_quad9Type::SetupElementDefinition(
                       .Build();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

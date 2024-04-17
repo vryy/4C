@@ -38,7 +38,7 @@
 #include <optional>
 #include <set>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
@@ -1884,6 +1884,6 @@ namespace SCATRA
   };
 
 }  // namespace SCATRA
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

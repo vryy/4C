@@ -12,7 +12,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_utils_exceptions.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix                                mwgee 12/06|
@@ -232,4 +232,4 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretizatio
   extractor.Setup(*dis.DofRowMap(), maps);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

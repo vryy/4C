@@ -14,7 +14,7 @@
 
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
  | set valid parameters for pasi                                             |
@@ -73,4 +73,4 @@ void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "MINOMEGA", 0.1, "smallest omega allowed for Aitken relaxation", &pasidyn);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

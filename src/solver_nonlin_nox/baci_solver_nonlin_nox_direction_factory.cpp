@@ -12,7 +12,7 @@
 
 #include "baci_solver_nonlin_nox_direction_modified_newton.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -56,4 +56,4 @@ Teuchos::RCP<::NOX::Direction::Generic> NOX::NLN::Direction::BuildDirection(
   return factory.buildDirection(gd, params);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

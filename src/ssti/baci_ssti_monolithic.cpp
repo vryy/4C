@@ -26,7 +26,7 @@
 #include "baci_ssti_utils.hpp"
 #include "baci_sti_monolithic_evaluate_OffDiag.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -758,4 +758,4 @@ std::vector<CORE::LINALG::EquilibrationMethod> SSTI::SSTIMono::GetBlockEquilibra
   return equilibration_method_vector;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

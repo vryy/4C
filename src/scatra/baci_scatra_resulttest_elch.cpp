@@ -12,7 +12,7 @@
 
 #include "baci_scatra_timint_elch.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 03/15 |
@@ -72,4 +72,4 @@ double SCATRA::ElchResultTest::ResultSpecial(const std::string quantity) const
   return result;
 }  // SCATRA::ElchResultTest::ResultSpecial
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

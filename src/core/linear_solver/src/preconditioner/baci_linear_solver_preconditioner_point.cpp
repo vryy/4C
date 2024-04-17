@@ -14,7 +14,7 @@
 
 #include <Epetra_CrsMatrix.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -106,4 +106,4 @@ void CORE::LINEAR_SOLVER::SymDiagPreconditioner::Finish(
   diag_ = Teuchos::null;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

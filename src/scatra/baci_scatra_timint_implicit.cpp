@@ -58,7 +58,7 @@
 #include <unordered_set>
 #include <utility>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -3818,4 +3818,4 @@ void SCATRA::ScaTraTimIntImpl::TestResults()
   GLOBAL::Problem::Instance()->TestAll(discret_->Comm());
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

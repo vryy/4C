@@ -18,7 +18,7 @@
 #include "baci_inpar_scatra.hpp"
 #include "baci_lib_element.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace SCATRA
@@ -1175,6 +1175,6 @@ namespace SCATRA
   std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype);
 }  // namespace SCATRA
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

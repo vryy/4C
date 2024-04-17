@@ -18,7 +18,7 @@
 #include "baci_utils_parameter_list.hpp"
 #include "baci_utils_singleton_owner.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |
@@ -282,4 +282,4 @@ template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellT
 template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::line2>;
 template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::line3>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

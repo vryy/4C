@@ -23,7 +23,7 @@
 
 #include <Epetra_FEVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -651,4 +651,4 @@ namespace BEAMINTERACTION
   initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(t_line4, t_line4);
 }  // namespace BEAMINTERACTION
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

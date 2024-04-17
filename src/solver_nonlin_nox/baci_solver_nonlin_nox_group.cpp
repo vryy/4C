@@ -22,7 +22,7 @@
 
 #include <NOX_StatusTest_NormF.H>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -859,4 +859,4 @@ void NOX::NLN::Group::getDofsFromElements(
   GetNlnReqInterfacePtr()->getDofsFromElements(my_ele_gids, my_ele_dofs);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

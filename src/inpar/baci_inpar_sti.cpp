@@ -14,7 +14,7 @@
 #include "baci_linalg_sparseoperator.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-thermo interaction          fang 10/16 |
@@ -114,4 +114,4 @@ void INPAR::STI::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

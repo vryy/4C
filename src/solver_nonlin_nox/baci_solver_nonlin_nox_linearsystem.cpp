@@ -33,7 +33,7 @@
 
 #include <unordered_map>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -991,4 +991,4 @@ void NOX::NLN::LinearSystem::callGEEV(CORE::LINALG::SerialDenseMatrix& mat,
   if (info) dserror("GEEV failed!");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

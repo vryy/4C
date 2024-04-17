@@ -21,7 +21,7 @@
 #include "baci_poromultiphase_partitioned_twoway.hpp"
 #include "baci_poromultiphase_utils_clonestrategy.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |
@@ -266,4 +266,4 @@ void POROMULTIPHASE::PrintLogo()
   return;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

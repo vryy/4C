@@ -17,7 +17,7 @@
 
 namespace
 {
-  using namespace BACI;
+  using namespace FourC;
 
   class IsoOgdenTest : public ::testing::Test
   {

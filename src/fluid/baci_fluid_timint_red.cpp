@@ -20,7 +20,7 @@
 #include "baci_lib_locsys.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -500,4 +500,4 @@ void FLD::TimIntRedModels::ApplyDirichletToSystem()
   }
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

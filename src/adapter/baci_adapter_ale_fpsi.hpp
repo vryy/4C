@@ -20,7 +20,7 @@
 
 #include "baci_adapter_ale_wrapper.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* class definitions */
@@ -54,6 +54,6 @@ namespace ADAPTER
   };  // class AleFpsiWrapper
 }  // namespace ADAPTER
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

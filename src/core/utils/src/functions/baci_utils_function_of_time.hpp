@@ -23,7 +23,7 @@
 #include <iostream>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::UTILS
 {
@@ -93,6 +93,6 @@ namespace CORE::UTILS
 
 }  // namespace CORE::UTILS
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

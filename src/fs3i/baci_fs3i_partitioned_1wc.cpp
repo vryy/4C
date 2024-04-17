@@ -22,7 +22,7 @@
 #include "baci_scatra_algorithm.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -245,4 +245,4 @@ bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
   return false;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

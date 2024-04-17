@@ -18,7 +18,7 @@
 
 #include <Epetra_Vector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace ADAPTER
@@ -420,6 +420,6 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> zeros_structure_;
   };  // SSI_Base
 }  // namespace SSI
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

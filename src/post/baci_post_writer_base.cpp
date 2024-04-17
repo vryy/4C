@@ -13,7 +13,7 @@
 
 #include "baci_post_common.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 PostWriterBase::PostWriterBase(PostField* field, const std::string& filename)
     : field_(field),
@@ -23,4 +23,4 @@ PostWriterBase::PostWriterBase(PostField* field, const std::string& filename)
 {
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -14,7 +14,7 @@
 #include "baci_mat_so3_material.hpp"
 #include "baci_structure_new_elements_paramsinterface.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_line2Type::Create(const int id, const int owner)
@@ -252,4 +252,4 @@ template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>;
 template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>;
 template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

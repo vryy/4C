@@ -12,7 +12,7 @@
 
 #include <iomanip>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 std::ostream& NOX::NLN::INNER::StatusTest::operator<<(std::ostream& os, StatusType type)
 {
@@ -39,4 +39,4 @@ std::ostream& NOX::NLN::INNER::StatusTest::operator<<(std::ostream& os, StatusTy
   return os;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

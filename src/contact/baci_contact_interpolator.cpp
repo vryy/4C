@@ -23,7 +23,7 @@
 #include "baci_mortar_projector.hpp"
 #include "baci_mortar_shape_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 09/14|
@@ -2072,4 +2072,4 @@ template class NTS::MTInterpolatorCalc<CORE::FE::CellType::quad9>;
 template class NTS::MTInterpolatorCalc<CORE::FE::CellType::tri3>;
 template class NTS::MTInterpolatorCalc<CORE::FE::CellType::tri6>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

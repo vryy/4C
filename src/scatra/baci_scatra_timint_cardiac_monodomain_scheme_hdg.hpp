@@ -16,7 +16,7 @@
 #include "baci_scatra_timint_cardiac_monodomain.hpp"
 #include "baci_scatra_timint_hdg.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 namespace SCATRA
@@ -74,6 +74,6 @@ namespace SCATRA
 
 }  // namespace SCATRA
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -43,7 +43,7 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.hpp"
 #include "baci_utils_parameter_list.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -4917,4 +4917,4 @@ template class SCATRA::MortarCellCalc<CORE::FE::CellType::tri3, CORE::FE::CellTy
 template class SCATRA::MortarCellCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
 template class SCATRA::MortarCellCalc<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

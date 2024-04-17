@@ -25,7 +25,7 @@
 #include <ml_MultiLevelPreconditioner.h>
 #include <Teuchos_TimeMonitor.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 
@@ -220,4 +220,4 @@ const Epetra_Map& CORE::LINALG::Preconditioner::OperatorRangeMap() const
   return prec_->OperatorRangeMap();
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

@@ -10,7 +10,7 @@
 #include "baci_mat_so3_material.hpp"
 #include "baci_so3_hex8fbar.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -47,4 +47,4 @@ bool DRT::ELEMENTS::So_hex8fbar::ReadElement(
   return true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

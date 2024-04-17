@@ -14,7 +14,7 @@ created
 #include "baci_cut_output.hpp"
 #include "baci_global_data.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*-----------------------------------------------------------------------------------------*
@@ -649,4 +649,4 @@ CORE::GEO::CUT::OctTreeNode* CORE::GEO::CUT::OctTreeNode::FindNode(const double*
   return nullptr;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

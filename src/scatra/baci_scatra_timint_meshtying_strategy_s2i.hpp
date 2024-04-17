@@ -24,7 +24,7 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 namespace ADAPTER
@@ -1293,6 +1293,6 @@ namespace SCATRA
     const int nds_cols_;
   };  // class MortarCellAssembleStrategy
 }  // namespace SCATRA
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

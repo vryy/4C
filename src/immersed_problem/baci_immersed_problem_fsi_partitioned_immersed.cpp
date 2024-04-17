@@ -13,7 +13,7 @@
 #include "baci_fsi_debugwriter.hpp"
 #include "baci_global_data.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 FSI::PartitionedImmersed::PartitionedImmersed(const Epetra_Comm& comm) : Partitioned(comm)
@@ -51,4 +51,4 @@ void FSI::PartitionedImmersed::ExtractPreviousInterfaceSolution()
   // overrides version in fsi_paritioned with "do nothing".
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

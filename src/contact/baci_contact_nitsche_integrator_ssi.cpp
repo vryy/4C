@@ -15,7 +15,7 @@
 #include "baci_so3_base.hpp"
 #include "baci_so3_scatra.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -517,4 +517,4 @@ template void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct<3>(MORTAR::Elemen
     double& cauchy_nt_wgt, CORE::GEN::pairedvector<int, double>& d_cauchy_nt_dd,
     CORE::LINALG::SerialDenseMatrix* d_sigma_nt_ds);
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

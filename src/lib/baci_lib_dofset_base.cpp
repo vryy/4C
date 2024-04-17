@@ -18,7 +18,7 @@
 #include <algorithm>
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 // list of all dof sets
@@ -211,4 +211,4 @@ void DRT::DofSetBase::Print(std::ostream& os) const
   dserror("Print() is not implemented in base class. Override Print() in subclass");
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

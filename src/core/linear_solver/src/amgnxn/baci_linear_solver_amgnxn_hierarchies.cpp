@@ -26,7 +26,7 @@
 
 #include <iostream>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*------------------------------------------------------------------------------*/
@@ -826,4 +826,4 @@ CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::BuildVCycle()
   return V;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

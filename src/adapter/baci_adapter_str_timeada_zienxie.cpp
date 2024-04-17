@@ -15,7 +15,7 @@
 #include "baci_structure_new_timint_base.hpp"
 #include "baci_structure_new_timint_basedataglobalstate.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
@@ -43,4 +43,4 @@ void ADAPTER::StructureTimeAdaZienXie::UpdateAuxiliar()
 {
   // NOTHING TO UPDATE
 }
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

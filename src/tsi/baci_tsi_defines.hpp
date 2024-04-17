@@ -12,7 +12,7 @@
 
 #include "baci_config.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /************************************************************************/
 /* Debugging options for TSI algorithm                                  */
@@ -54,6 +54,6 @@ BACI_NAMESPACE_OPEN
 //#define TSISLMFDCHECK         /* flag for enabling FDChecks*/
 //#define TSISLMFDCHECKDEBUG    /* prints element matrices in FDcheck to a file "FDCheck_capa.txt"*/
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

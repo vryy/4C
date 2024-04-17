@@ -16,7 +16,7 @@
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
@@ -333,4 +333,4 @@ bool POROELASTSCATRA::PoroScatraPart2WC::ConvergenceCheck(int itnum)
   return stopnonliniter;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

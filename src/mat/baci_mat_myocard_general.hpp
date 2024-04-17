@@ -15,7 +15,7 @@
 
 #include <string>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 class Myocard_General
 
@@ -122,6 +122,6 @@ class Myocard_General
 };  // Myocard_general
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -13,7 +13,7 @@
 #include "baci_cut_position.hpp"
 #include "baci_global_data.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)
 void CORE::GEO::CUT::Options::Init_by_Paramlist()
@@ -60,4 +60,4 @@ void CORE::GEO::CUT::Options::Init_for_Cuttests()
   bc_cubaturedegree_ = 20;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

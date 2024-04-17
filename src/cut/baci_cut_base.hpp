@@ -19,7 +19,7 @@
 #include <iostream>
 #include <vector>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*!
 \brief Returns the function that is to be integrated along the bounding lines of the irregular
@@ -814,6 +814,6 @@ double base_func_line_int(CORE::LINALG::Matrix<2, 1> pt, int inte_num, std::vect
   return 0.0;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -29,7 +29,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -218,4 +218,4 @@ template ::NOX::StatusTest::Generic*
 NOX::NLN::Solver::LineSearchBased::GetOuterStatusTestWithQuantity<NOX::NLN::StatusTest::NormF>(
     const NOX::NLN::StatusTest::QuantityType qtype) const;
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

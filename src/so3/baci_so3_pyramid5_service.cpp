@@ -10,7 +10,7 @@
 #include "baci_lib_node.hpp"
 #include "baci_so3_pyramid5.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
@@ -42,4 +42,4 @@ std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_ElementCenterRefeCoords()
   return centercoords;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

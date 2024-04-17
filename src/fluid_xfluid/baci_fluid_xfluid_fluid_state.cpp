@@ -21,7 +21,7 @@ fluid meshes
 #include "baci_xfem_condition_manager.hpp"
 #include "baci_xfem_xfield_state_utils.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  |  Constructor for XFluidFluidState                         kruse 01/15 |
@@ -176,4 +176,4 @@ bool FLD::XFluidFluidState::Destroy()
   return true;
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

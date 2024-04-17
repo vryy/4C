@@ -21,7 +21,7 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 using namespace CONTACT;
 
@@ -295,6 +295,6 @@ class Beam3ContactOctTree
   int numcrit2_;
 };
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -22,7 +22,7 @@
 #include "baci_structure_new_timint_base.hpp"
 #include "baci_structure_new_timint_implicit.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -288,4 +288,4 @@ void ADAPTER::FSIStructureWrapperImmersed::SetState(const Teuchos::RCP<Epetra_Ve
   return Teuchos::rcp_dynamic_cast<STR::TIMINT::Implicit>(structure_, true)->SetState(x);
 }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE

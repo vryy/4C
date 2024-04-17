@@ -15,7 +15,7 @@
 #include "baci_mat_material.hpp"
 #include "baci_mat_par_parameter.hpp"
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -84,4 +84,4 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3r::SetCenterlineHermite(const bool yesno) { centerline_hermite_ = yesno; }
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
