@@ -44,11 +44,9 @@ namespace CONTACT
       int GetSecondMatID() const { return secondmatid_; };
       double GetLateralLength() const { return lateralLength_; };
       bool GetPressureGreenFunFlag() const { return pressureGreenFunFlag_; };
-      double GetMaxTopologyHeight() { return maxTopologyHeight_; };
       double GetTolerance() const { return tolerance_; };
       double GetMaxIteration() const { return maxIteration_; };
       bool GetWarmStartingFlag() const { return warmStartingFlag_; };
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> GetTopology() const { return topology_; };
       double GetCompositeYoungs() const { return compositeYoungs_; };
       double GetCompositePoissonsRatio() const { return compositePoissonsRatio_; };
       double GetGridSize() const { return gridSize_; };
@@ -68,16 +66,12 @@ namespace CONTACT
       double lateralLength_;
       int resolution_;
       bool pressureGreenFunFlag_;
-      double maxTopologyHeight_;
-      double initialTopologyStdDeviation_;
-      double hurstExponent_;
       bool randomTopologyFlag_;
       bool randomSeedFlag_;
       int randomGeneratorSeed_;
       double tolerance_;
       int maxIteration_;
       bool warmStartingFlag_;
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> topology_;
       double compositeYoungs_;
       double compositePoissonsRatio_;
       double gridSize_;
@@ -120,7 +114,7 @@ namespace CONTACT
        * \param gap contact gap at the mortar node
        * \return The pressure response from MIRCO
        */
-      double Evaluate(double gap) override;
+      double Evaluate(double gap, CONTACT::Node* cnode) override;
 
       /** \brief Evaluate derivative of the constitutive law
        *
@@ -131,7 +125,7 @@ namespace CONTACT
        * \param gap contact gap at the mortar node
        * \return Derivative of the pressure responses from MIRCO
        */
-      double EvaluateDeriv(double gap) override;
+      double EvaluateDeriv(double gap, CONTACT::Node* cnode) override;
       //@}
 
      private:

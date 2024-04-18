@@ -1377,6 +1377,7 @@ baci_test(rve3d_periodic_bcs 1 "")
 
 if(BACI_WITH_MIRCO)
     baci_omp_test(roughcontact2d_mirco_patchtest 2 2 "")
+    baci_omp_test(roughcontact2d_mirco_varying_roughness 2 2 "")
 endif(BACI_WITH_MIRCO)
 
 baci_test(scatra_1D_line2_diffnumdof 2 150)

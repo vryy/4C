@@ -80,14 +80,18 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
           new CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams(contactconstitutivelawdata);
       return params->CreateConstitutiveLaw();
     }
-#ifdef BACI_WITH_MIRCO
     case INPAR::CONTACT::ConstitutiveLawType::colaw_mirco:
     {
+#ifdef BACI_WITH_MIRCO
       CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams* params =
           new CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams(contactconstitutivelawdata);
       return params->CreateConstitutiveLaw();
-    }
+#else
+      dserror(
+          "You are trying to use MIRCO contact consitutive law with BACI_WITH_MIRCO flag turned "
+          "off. Please enable this flag and build BACI again");
 #endif
+    }
     case INPAR::CONTACT::ConstitutiveLawType::colaw_none:
     {
       dserror("No contact constitutive law found\n");

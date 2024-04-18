@@ -84,6 +84,12 @@ namespace CORE::UTILS
     template <typename T>
     const T& FunctionById(int num) const;
 
+    template <typename T>
+    void SetFunctions(const std::vector<T>& functions)
+    {
+      functions_ = functions;
+    };
+
    private:
     /// Internal storage for all functions. We use type erasure via std::any to store various
     /// Function objects belonging to distinct interfaces.

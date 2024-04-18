@@ -17,6 +17,7 @@ contact pressure based on micro interactions
 #include "baci_config.hpp"
 
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
+#include "baci_contact_node.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -41,8 +42,8 @@ namespace CONTACT
       /// Return quick accessible Contact Constitutive Law parameter data
       virtual CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const = 0;
 
-      virtual double Evaluate(double gap) = 0;
-      virtual double EvaluateDeriv(double gap) = 0;
+      virtual double Evaluate(double gap, CONTACT::Node* cnode) = 0;
+      virtual double EvaluateDeriv(double gap, CONTACT::Node* cnode) = 0;
 
       /* \brief create Contact ConstitutiveLaw object given the id of the constitutive law in the
        * input file

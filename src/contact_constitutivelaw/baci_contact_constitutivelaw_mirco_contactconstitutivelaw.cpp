@@ -8,6 +8,7 @@
 
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"
 
+#include "baci_contact_rough_node.hpp"
 #include "baci_global_data.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 #include "baci_linalg_serialdensevector.hpp"
@@ -33,8 +34,6 @@ CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams
       lateralLength_(*container->Get<double>("LateralLength")),
       resolution_(*container->Get<int>("Resolution")),
       pressureGreenFunFlag_(*container->Get<bool>("PressureGreenFunFlag")),
-      initialTopologyStdDeviation_(*container->Get<double>("InitialTopologyStdDeviation")),
-      hurstExponent_(*container->Get<double>("HurstExponent")),
       randomTopologyFlag_(*container->Get<bool>("RandomTopologyFlag")),
       randomSeedFlag_(*container->Get<bool>("RandomSeedFlag")),
       randomGeneratorSeed_(*container->Get<int>("RandomGeneratorSeed")),
@@ -124,24 +123,10 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
   const int iter = int(ceil((lateralLength_ - (gridSize_ / 2)) / gridSize_));
   meshgrid_ = Teuchos::Ptr(new std::vector<double>(iter));
   MIRCO::CreateMeshgrid(*meshgrid_, iter, gridSize_);
-
-  // Setup Topology
-  const int N = pow(2, resolution_);
-  topology_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(N + 1, N + 1));
-
-  Teuchos::RCP<MIRCO::TopologyGeneration> surfacegenerator;
-  // creating the correct surface object
-  MIRCO::CreateSurfaceObject(resolution_, initialTopologyStdDeviation_, hurstExponent_,
-      randomSeedFlag_, topologyFilePath_, randomTopologyFlag_, randomGeneratorSeed_,
-      surfacegenerator);
-  surfacegenerator->GetSurface(*topology_);
-
-  auto max_and_mean = MIRCO::ComputeMaxAndMean(*topology_);
-  maxTopologyHeight_ = max_and_mean.max_;
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(double gap)
+double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0.0)
   {
@@ -152,18 +137,22 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(double gap)
     return 0.0;
   }
 
+  RoughNode* roughNode = dynamic_cast<RoughNode*>(cnode);
+
   double pressure = 0.0;
   MIRCO::Evaluate(pressure, -(gap + params_->GetOffset()), params_->GetLateralLength(),
       params_->GetGridSize(), params_->GetTolerance(), params_->GetMaxIteration(),
       params_->GetCompositeYoungs(), params_->GetCompositePoissonsRatio(),
-      params_->GetWarmStartingFlag(), params_->GetComplianceCorrection(), *params_->GetTopology(),
-      params_->GetMaxTopologyHeight(), *params_->GetMeshGrid(), params_->GetPressureGreenFunFlag());
+      params_->GetWarmStartingFlag(), params_->GetComplianceCorrection(), *roughNode->GetTopology(),
+      roughNode->GetMaxTopologyHeight(), *params_->GetMeshGrid(),
+      params_->GetPressureGreenFunFlag());
 
   return (-1 * pressure);
 }  // end of mirco_coconstlaw evaluate
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(double gap)
+double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(
+    double gap, CONTACT::Node* cnode)
 {
   if (gap + params_->GetOffset() > 0.0)
   {
@@ -174,21 +163,25 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(double gap)
     return 0.0;
   }
 
+  RoughNode* roughNode = dynamic_cast<RoughNode*>(cnode);
+
   double pressure1 = 0.0;
   double pressure2 = 0.0;
   // using backward difference approach
   MIRCO::Evaluate(pressure1, -1.0 * (gap + params_->GetOffset()), params_->GetLateralLength(),
       params_->GetGridSize(), params_->GetTolerance(), params_->GetMaxIteration(),
       params_->GetCompositeYoungs(), params_->GetCompositePoissonsRatio(),
-      params_->GetWarmStartingFlag(), params_->GetComplianceCorrection(), *params_->GetTopology(),
-      params_->GetMaxTopologyHeight(), *params_->GetMeshGrid(), params_->GetPressureGreenFunFlag());
+      params_->GetWarmStartingFlag(), params_->GetComplianceCorrection(), *roughNode->GetTopology(),
+      roughNode->GetMaxTopologyHeight(), *params_->GetMeshGrid(),
+      params_->GetPressureGreenFunFlag());
   MIRCO::Evaluate(pressure2,
       -(1 - params_->GetFiniteDifferenceFraction()) * (gap + params_->GetOffset()),
       params_->GetLateralLength(), params_->GetGridSize(), params_->GetTolerance(),
       params_->GetMaxIteration(), params_->GetCompositeYoungs(),
       params_->GetCompositePoissonsRatio(), params_->GetWarmStartingFlag(),
-      params_->GetComplianceCorrection(), *params_->GetTopology(), params_->GetMaxTopologyHeight(),
-      *params_->GetMeshGrid(), params_->GetPressureGreenFunFlag());
+      params_->GetComplianceCorrection(), *roughNode->GetTopology(),
+      roughNode->GetMaxTopologyHeight(), *params_->GetMeshGrid(),
+      params_->GetPressureGreenFunFlag());
   return ((pressure1 - pressure2) /
           (-(params_->GetFiniteDifferenceFraction()) * (gap + params_->GetOffset())));
 }

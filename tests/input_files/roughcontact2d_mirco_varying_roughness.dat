@@ -63,14 +63,14 @@ STRESS_STRAIN                         yes
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 1 VALUES 0 -10
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  0.7
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  x/20000+0.5
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  20
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  30-x/2000
 -------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 -------------------------------------------------------------CONTACT CONSTITUTIVE LAWS
-LAW 1 CoConstLaw_mirco Offset 0.0 FirstMatID 1 SecondMatID 2 LateralLength 1000 Resolution 6 PressureGreenFunFlag false Tolerance 0.01 InitialTopologyStdDeviationFunct 3 HurstExponentFunct 2 RandomTopologyFlag true RandomSeedFlag false RandomGeneratorSeed 71 MaxIteration 100 WarmStartingFlag true FiniteDifferenceFraction 0.001
+LAW 1 CoConstLaw_mirco Offset 0.0 FirstMatID 1 SecondMatID 2 LateralLength 1000 Resolution 6 PressureGreenFunFlag true Tolerance 0.01 InitialTopologyStdDeviationFunct 3 HurstExponentFunct 2 RandomTopologyFlag true RandomSeedFlag false RandomGeneratorSeed 71 MaxIteration 100 WarmStartingFlag true FiniteDifferenceFraction 0.001
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // ground
@@ -516,9 +516,9 @@ NODE       202 COORD -5.0000000000000000e+03  5.0000000000000000e+03  0.00000000
    163 WALL QUAD4  189 190 201 200    MAT 2 KINEM linear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    164 WALL QUAD4  190 191 202 201    MAT 2 KINEM linear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE 5.009386743427247e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -2.337713813598917 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 197 QUANTITY dispx VALUE 5.009386743427e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 197 QUANTITY dispy VALUE -7.662286186400395 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE 4.705186113408478e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -1.569500261196927 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 197 QUANTITY dispx VALUE 4.707762321339245e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 197 QUANTITY dispy VALUE -8.430035567025934 TOLERANCE 1e-09
 ---------------------------------------------------------------END
 // END

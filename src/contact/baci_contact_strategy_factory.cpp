@@ -16,6 +16,8 @@
 #include "baci_contact_aug_lagrange_strategy.hpp"
 #include "baci_contact_aug_steepest_ascent_interface.hpp"
 #include "baci_contact_aug_steepest_ascent_strategy.hpp"
+#include "baci_contact_constitutivelaw_bundle.hpp"
+#include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "baci_contact_constitutivelaw_interface.hpp"
 #include "baci_contact_element.hpp"
 #include "baci_contact_friction_node.hpp"
@@ -28,6 +30,7 @@
 #include "baci_contact_nitsche_strategy_tsi.hpp"
 #include "baci_contact_paramsinterface.hpp"
 #include "baci_contact_penalty_strategy.hpp"
+#include "baci_contact_rough_node.hpp"
 #include "baci_contact_tsi_interface.hpp"
 #include "baci_contact_utils.hpp"
 #include "baci_contact_wear_interface.hpp"
@@ -739,6 +742,37 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
     int contactconstitutivelaw_id = *currentgroup[0]->Get<int>("ConstitutiveLawID");
 
+    // Initialize a flag to check for MIRCO contact consitutive law
+    bool mircolaw = false;
+
+    // Initialize the variables to create a RoughNode for MIRCO
+    int resolution = 0;
+    bool randomtopologyflag = false;
+    bool randomseedflag = false;
+    int randomgeneratorseed = 0;
+    int hurstexponentfunction = 0;
+    int initialtopologystddeviationfunction = 0;
+
+    if (contactconstitutivelaw_id != 0)
+    {
+      const int probinst =
+          GLOBAL::Problem::Instance()->ContactConstitutiveLaws()->GetReadFromProblem();
+      auto coconstlaw = GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws()->ById(
+          contactconstitutivelaw_id);
+      // Set the variables if MIRCO contact constitutive law is found
+      if (coconstlaw->Name() == "CoConstLaw_mirco")
+      {
+        mircolaw = true;
+        resolution = *coconstlaw->Get<int>("Resolution");
+        randomtopologyflag = *coconstlaw->Get<bool>("RandomTopologyFlag");
+        randomseedflag = *coconstlaw->Get<bool>("RandomSeedFlag");
+        randomgeneratorseed = *coconstlaw->Get<int>("RandomGeneratorSeed");
+        hurstexponentfunction = *coconstlaw->Get<int>("HurstExponentFunct");
+        initialtopologystddeviationfunction =
+            *coconstlaw->Get<int>("InitialTopologyStdDeviationFunct");
+      }
+    }
+
     // find out which sides are Master and Slave
     std::vector<bool> isslave(0);
     std::vector<bool> isself(0);
@@ -978,8 +1012,20 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         }
         else
         {
-          Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(new CONTACT::Node(node->Id(), node->X(),
-              node->Owner(), Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
+          Teuchos::RCP<CONTACT::Node> cnode;
+          if (mircolaw == true)
+          {
+            cnode = Teuchos::rcp(new CONTACT::RoughNode(node->Id(), node->X(), node->Owner(),
+                Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive,
+                hurstexponentfunction, initialtopologystddeviationfunction, resolution,
+                randomtopologyflag, randomseedflag, randomgeneratorseed));
+          }
+          else
+          {
+            cnode = Teuchos::rcp(new CONTACT::Node(node->Id(), node->X(), node->Owner(),
+                Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
+          }
+
           //-------------------
           // get nurbs weight!
           if (nurbs)
