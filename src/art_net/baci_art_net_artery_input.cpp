@@ -94,7 +94,7 @@ void DRT::ELEMENTS::Artery::SetDiamInMaterial(const double diam)
   Teuchos::RCP<MAT::Material> mat = Material();
   if (mat->MaterialType() == INPAR::MAT::m_cnst_art)
   {
-    MAT::Cnst_1d_art* arterymat = dynamic_cast<MAT::Cnst_1d_art*>(mat.get());
+    MAT::Cnst1dArt* arterymat = dynamic_cast<MAT::Cnst1dArt*>(mat.get());
     arterymat->SetDiam(diam);
     arterymat->SetDiamInitial(diam);
   }

@@ -30,10 +30,10 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureConstituent_FullConstrainedMixtureFiber : public MIXTURE::PAR::MixtureConstituent
+    class MixtureConstituentFullConstrainedMixtureFiber : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituent_FullConstrainedMixtureFiber(
+      explicit MixtureConstituentFullConstrainedMixtureFiber(
           const Teuchos::RCP<MAT::PAR::Material>& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
@@ -59,11 +59,11 @@ namespace MIXTURE
   /*!
    * \brief Full constrained mixture fiber constituent
    */
-  class MixtureConstituent_FullConstrainedMixtureFiber : public MIXTURE::MixtureConstituent
+  class MixtureConstituentFullConstrainedMixtureFiber : public MIXTURE::MixtureConstituent
   {
    public:
-    MixtureConstituent_FullConstrainedMixtureFiber(
-        MIXTURE::PAR::MixtureConstituent_FullConstrainedMixtureFiber* params, int id);
+    MixtureConstituentFullConstrainedMixtureFiber(
+        MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber* params, int id);
 
     [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override;
 
@@ -111,7 +111,7 @@ namespace MIXTURE
     void Initialize();
 
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituent_FullConstrainedMixtureFiber* params_;
+    MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber* params_;
 
     /// An instance of the full constrained mixture fiber for each Gauss point
     std::vector<FullConstrainedMixtureFiber<double>> full_constrained_mixture_fiber_;

@@ -33,7 +33,7 @@ namespace MAT
       class ReactionInterface;
     }
 
-    enum reaction_coupling
+    enum ReactionCoupling
     {
       reac_coup_none,                   ///< no coupling, initialization value
       reac_coup_simple_multiplicative,  ///< coupling of type A*B
@@ -242,7 +242,7 @@ namespace MAT
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// returns the enum of the current coupling type
-      MAT::PAR::reaction_coupling SetCouplingType(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MAT::PAR::ReactionCoupling SetCouplingType(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// Initialize
       void Initialize();
@@ -260,7 +260,7 @@ namespace MAT
       const int distrfunctreaccoeffid_;
 
       /// type of coupling
-      const MAT::PAR::reaction_coupling coupling_;
+      const MAT::PAR::ReactionCoupling coupling_;
 
       /// specifies scalar type in reaction
       const std::vector<double>* couprole_;
@@ -404,7 +404,7 @@ namespace MAT
     const std::vector<int>* Stoich() const { return params_->stoich_; }
 
     /// return type of coupling
-    MAT::PAR::reaction_coupling Coupling() const { return params_->coupling_; }
+    MAT::PAR::ReactionCoupling Coupling() const { return params_->coupling_; }
 
     /// return role in coupling
     const std::vector<double>* Couprole() const { return params_->couprole_; }

@@ -24,14 +24,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /// \date 08/13
 
-class Myocard_Tools
+class MyocardTools
 {
  public:
   /// construct empty material object
-  Myocard_Tools();
+  MyocardTools();
 
   /// destructor
-  virtual ~Myocard_Tools() = default;
+  virtual ~MyocardTools() = default;
   /// compute Heaviside step function
   double GatingFunction(const double Gate1, const double Gate2, const double p, const double var,
       const double thresh) const;

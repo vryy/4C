@@ -201,13 +201,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_TenTusscher::Myocard_TenTusscher() {}
+MyocardTenTusscher::MyocardTenTusscher() {}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_TenTusscher::Myocard_TenTusscher(const double eps_deriv_myocard, const std::string tissue)
+MyocardTenTusscher::MyocardTenTusscher(const double eps_deriv_myocard, const std::string tissue)
     : tools_(), s0_(29, 0.0), s_(29, 0.0), r_(29, 0.0), a_(82, 0.0), c_(63, 0.0)
 
 {
@@ -453,7 +453,7 @@ Myocard_TenTusscher::Myocard_TenTusscher(const double eps_deriv_myocard, const s
 }
 
 
-double Myocard_TenTusscher::ReaCoeff(const double phi, const double dt)
+double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
 {
   s0_[0] = phi;
   s_[0] = phi;
@@ -671,12 +671,12 @@ double Myocard_TenTusscher::ReaCoeff(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int Myocard_TenTusscher::GetNumberOfInternalStateVariables() const { return 19; }
+int MyocardTenTusscher::GetNumberOfInternalStateVariables() const { return 19; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Myocard_TenTusscher::GetInternalState(const int k) const
+double MyocardTenTusscher::GetInternalState(const int k) const
 {
   double val = 0.0;
   if (k == -1)
@@ -693,7 +693,7 @@ double Myocard_TenTusscher::GetInternalState(const int k) const
 /*----------------------------------------------------------------------*
  |  set  internal state of the material                     cbert 08/13 |
  *----------------------------------------------------------------------*/
-void Myocard_TenTusscher::SetInternalState(const int k, const double val)
+void MyocardTenTusscher::SetInternalState(const int k, const double val)
 {
   if (k == -1)
   {
@@ -711,12 +711,12 @@ void Myocard_TenTusscher::SetInternalState(const int k, const double val)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int Myocard_TenTusscher::GetNumberOfIonicCurrents() const { return 15; }
+int MyocardTenTusscher::GetNumberOfIonicCurrents() const { return 15; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Myocard_TenTusscher::GetIonicCurrents(const int k) const
+double MyocardTenTusscher::GetIonicCurrents(const int k) const
 {
   double val = 0.0;
   val = a_[47 + k];
@@ -726,7 +726,7 @@ double Myocard_TenTusscher::GetIonicCurrents(const int k) const
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void Myocard_TenTusscher::Update(const double phi, const double dt)
+void MyocardTenTusscher::Update(const double phi, const double dt)
 {
   // update initial values for next time step
   for (int i = 0; i < 19; i++) s0_[i] = s_[i];

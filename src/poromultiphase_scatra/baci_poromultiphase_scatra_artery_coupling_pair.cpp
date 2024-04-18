@@ -349,7 +349,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           dserror("Only MAT_matlist and MAT_scatra are valid for artery-scatra material");
       }
 
-      arterymat_ = Teuchos::rcp_static_cast<MAT::Cnst_1d_art>(element1_->Material(0));
+      arterymat_ = Teuchos::rcp_static_cast<MAT::Cnst1dArt>(element1_->Material(0));
       if (arterymat_ == Teuchos::null)
         dserror("cast to artery material failed for porofluid-artery coupling!");
       arterydiamAtGP_ = arterymat_->Diam();
@@ -407,7 +407,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       else
         dserror("Only MAT_matlist and MAT_scatra are valid for artery-scatra material");
       numscalcont_ = numdof_cont_;
-      arterymat_ = Teuchos::rcp_static_cast<MAT::Cnst_1d_art>(element1_->Material(1));
+      arterymat_ = Teuchos::rcp_static_cast<MAT::Cnst1dArt>(element1_->Material(1));
       if (arterymat_ == Teuchos::null)
         dserror("cast to artery material failed for arteryscatra-scatra coupling!");
       arterydiamAtGP_ = arterymat_->Diam();
@@ -538,8 +538,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
   // get radius
   const int artelematerial = coupltype_ == type_scatra ? 1 : 0;
-  Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
-      Teuchos::rcp_static_cast<MAT::Cnst_1d_art>(element1_->Material(artelematerial));
+  Teuchos::RCP<MAT::Cnst1dArt> arterymat =
+      Teuchos::rcp_static_cast<MAT::Cnst1dArt>(element1_->Material(artelematerial));
   if (arterymat == Teuchos::null)
     dserror("cast to artery material failed for porofluid-artery coupling!");
   double radius = arterymat->Diam() / 2.0;

@@ -195,7 +195,7 @@ namespace DRT::ELEMENTS
       std::vector<double>& point_coordinates)
   {
     using implemented_celltypes =
-        CORE::FE::celltype_sequence<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs27>;
+        CORE::FE::CelltypeSequence<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs27>;
     return CORE::FE::CellTypeSwitch<implemented_celltypes>(ele.Shape(),
         [&](auto celltype_t)
         {
@@ -351,7 +351,7 @@ namespace DRT::ELEMENTS
       std::vector<double>& vtu_point_result_data)
   {
     using implemented_celltypes =
-        CORE::FE::celltype_sequence<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs27>;
+        CORE::FE::CelltypeSequence<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs27>;
     return CORE::FE::CellTypeSwitch<implemented_celltypes>(ele.Shape(),
         [&](auto celltype_t)
         {

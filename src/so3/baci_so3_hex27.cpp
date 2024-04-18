@@ -27,38 +27,38 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::So_hex27Type DRT::ELEMENTS::So_hex27Type::instance_;
+DRT::ELEMENTS::SoHex27Type DRT::ELEMENTS::SoHex27Type::instance_;
 
-DRT::ELEMENTS::So_hex27Type& DRT::ELEMENTS::So_hex27Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoHex27Type& DRT::ELEMENTS::SoHex27Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_hex27Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoHex27Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_hex27(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoHex27(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex27(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex27(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex27(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex27(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_hex27Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoHex27Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -66,13 +66,13 @@ void DRT::ELEMENTS::So_hex27Type::NodalBlockInformation(
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_hex27Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoHex27Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex27Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -97,8 +97,8 @@ void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition(
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner)
-    : So_base(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
+DRT::ELEMENTS::SoHex27::SoHex27(int id, int owner)
+    : SoBase(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
   invJ_.resize(NUMGPT_SOH27, CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27>(true));
   detJ_.resize(NUMGPT_SOH27, 0.0);
@@ -122,8 +122,8 @@ DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner)
  |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex27::So_hex27(const DRT::ELEMENTS::So_hex27& old)
-    : So_base(old), detJ_(old.detJ_), pstype_(old.pstype_), pstime_(old.pstime_), time_(old.time_)
+DRT::ELEMENTS::SoHex27::SoHex27(const DRT::ELEMENTS::SoHex27& old)
+    : SoBase(old), detJ_(old.detJ_), pstype_(old.pstype_), pstime_(old.pstime_), time_(old.time_)
 {
   invJ_.resize(old.invJ_.size());
   for (int i = 0; i < (int)invJ_.size(); ++i)
@@ -141,21 +141,21 @@ DRT::ELEMENTS::So_hex27::So_hex27(const DRT::ELEMENTS::So_hex27& old)
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_hex27::Clone() const
+DRT::Element* DRT::ELEMENTS::SoHex27::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_hex27(*this);
+  auto* newelement = new DRT::ELEMENTS::SoHex27(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::So_hex27::Shape() const { return CORE::FE::CellType::hex27; }
+CORE::FE::CellType DRT::ELEMENTS::SoHex27::Shape() const { return CORE::FE::CellType::hex27; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoHex27::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -164,7 +164,7 @@ void DRT::ELEMENTS::So_hex27::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  So_base::Pack(data);
+  SoBase::Pack(data);
 
   // detJ_
   AddtoPack(data, detJ_);
@@ -190,7 +190,7 @@ void DRT::ELEMENTS::So_hex27::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoHex27::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -199,7 +199,7 @@ void DRT::ELEMENTS::So_hex27::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  So_base::Unpack(basedata);
+  SoBase::Unpack(basedata);
 
   // detJ_
   ExtractfromPack(position, data, detJ_);
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::So_hex27::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoHex27::Print(std::ostream& os) const
 {
   os << "So_hex27 ";
   Element::Print(os);
@@ -244,7 +244,7 @@ void DRT::ELEMENTS::So_hex27::Print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex27::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoHex27::Surfaces()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
       CORE::COMM::buildSurfaces, *this);
@@ -253,7 +253,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex27::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex27::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoHex27::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
       CORE::COMM::buildLines, *this);
@@ -262,7 +262,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_hex27::Lines()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::VisNames(std::map<std::string, int>& names)
+void DRT::ELEMENTS::SoHex27::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
   return;
@@ -271,7 +271,7 @@ void DRT::ELEMENTS::So_hex27::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                                  |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_hex27::VisData(const std::string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::SoHex27::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name, data)) return true;

@@ -100,12 +100,12 @@ namespace DRT
     /*----------------------------------------------------------------------------*/
     /*----------------------------------------------------------------------------*/
     class Ale3Surface;
-    class Ale3_Impl_Interface;
+    class Ale3ImplInterface;
     template <CORE::FE::CellType distype>
-    class Ale3_Impl;
-    class Ale3Surface_Impl_Interface;
+    class Ale3Impl;
+    class Ale3SurfaceImplInterface;
     template <CORE::FE::CellType distype>
-    class Ale3Surface_Impl;
+    class Ale3SurfaceImpl;
 
 
     class Ale3Type : public DRT::ElementType
@@ -146,8 +146,8 @@ namespace DRT
      public:
       //! @name Friends
       friend class Ale3Surface;
-      // friend class Ale3_Impl_Interface;
-      // friend class Ale3_Impl<
+      // friend class Ale3ImplInterface;
+      // friend class Ale3Impl<
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -385,13 +385,13 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
-    class Ale3_Impl_Interface
+    class Ale3ImplInterface
     {
      public:
-      virtual ~Ale3_Impl_Interface() = default;
+      virtual ~Ale3ImplInterface() = default;
 
       /// Internal implementation class for fluid element
-      static Ale3_Impl_Interface* Impl(DRT::ELEMENTS::Ale3* ele);
+      static Ale3ImplInterface* Impl(DRT::ELEMENTS::Ale3* ele);
 
       virtual void static_ke_spring(Ale3* ele,        ///< pointer to element
           CORE::LINALG::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
@@ -427,11 +427,11 @@ namespace DRT
     };
 
     template <CORE::FE::CellType distype>
-    class Ale3_Impl : public Ale3_Impl_Interface
+    class Ale3Impl : public Ale3ImplInterface
     {
      public:
       /// Singleton access method
-      static Ale3_Impl<distype>* Instance(
+      static Ale3Impl<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       void static_ke_laplace(Ale3* ele,               ///< pointer to element
@@ -476,7 +476,7 @@ namespace DRT
       );
 
      private:
-      Ale3_Impl() = default;
+      Ale3Impl() = default;
       static constexpr int iel = CORE::FE::num_nodes<distype>;
       static constexpr int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 
@@ -534,7 +534,7 @@ namespace DRT
 
       inline CORE::FE::GaussRule3D getOptimalGaussrule();
 
-      Ale3_Impl<distype> operator=(const Ale3_Impl<distype> other);
+      Ale3Impl<distype> operator=(const Ale3Impl<distype> other);
     };
 
 
@@ -751,15 +751,15 @@ namespace DRT
 
     };  // class Ale3Surface
 
-    class Ale3Surface_Impl_Interface
+    class Ale3SurfaceImplInterface
     {
      public:
       /// Empty constructor
-      Ale3Surface_Impl_Interface() {}
+      Ale3SurfaceImplInterface() {}
 
-      virtual ~Ale3Surface_Impl_Interface() = default;
+      virtual ~Ale3SurfaceImplInterface() = default;
       /// Internal implementation class for ale surface element
-      static Ale3Surface_Impl_Interface* Impl(DRT::ELEMENTS::Ale3Surface* ele);
+      static Ale3SurfaceImplInterface* Impl(DRT::ELEMENTS::Ale3Surface* ele);
 
       virtual void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
@@ -767,13 +767,13 @@ namespace DRT
     };
 
     template <CORE::FE::CellType distype>
-    class Ale3Surface_Impl : public Ale3Surface_Impl_Interface
+    class Ale3SurfaceImpl : public Ale3SurfaceImplInterface
     {
-      Ale3Surface_Impl() {}
+      Ale3SurfaceImpl() {}
 
      public:
       /// Singleton access method
-      static Ale3Surface_Impl<distype>* Instance(
+      static Ale3SurfaceImpl<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       //! number of element nodes
@@ -858,7 +858,7 @@ namespace DRT
       //
       //  inline CORE::FE::GaussRule3D getOptimalGaussrule();
 
-      // Ale3Surface_Impl<distype> operator=(const Ale3Surface_Impl<distype> other);
+      // Ale3SurfaceImpl<distype> operator=(const Ale3SurfaceImpl<distype> other);
 
 
      protected:

@@ -34,17 +34,17 @@ FOUR_C_NAMESPACE_OPEN
 namespace MAT
 {
   // forward declaration
-  class Membrane_ActiveStrain;
+  class MembraneActiveStrain;
 
   namespace PAR
   {
-    class Membrane_ActiveStrain : public Parameter
+    class MembraneActiveStrain : public Parameter
     {
-      friend class MAT::Membrane_ActiveStrain;
+      friend class MAT::MembraneActiveStrain;
 
      public:
       /// standard constructor
-      Membrane_ActiveStrain(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MembraneActiveStrain(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -78,21 +78,21 @@ namespace MAT
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
     };
-    // class Membrane_ActiveStrain
+    // class MembraneActiveStrain
 
   }  // namespace PAR
 
-  class Membrane_ActiveStrainType : public CORE::COMM::ParObjectType
+  class MembraneActiveStrainType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "Membrane_ActiveStrainType"; }
 
-    static Membrane_ActiveStrainType& Instance() { return instance_; };
+    static MembraneActiveStrainType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Membrane_ActiveStrainType instance_;
+    static MembraneActiveStrainType instance_;
   };
   // class Membrane_ActiveStrainType
 
@@ -102,14 +102,14 @@ namespace MAT
   // forward declaration
   class Material;
 
-  class Membrane_ActiveStrain : public So3Material, public MAT::MembraneMaterialLocalCoordinates
+  class MembraneActiveStrain : public So3Material, public MAT::MembraneMaterialLocalCoordinates
   {
    public:
     /// construct empty material object
-    Membrane_ActiveStrain();
+    MembraneActiveStrain();
 
     /// construct the material object given material parameters
-    explicit Membrane_ActiveStrain(MAT::PAR::Membrane_ActiveStrain* params);
+    explicit MembraneActiveStrain(MAT::PAR::MembraneActiveStrain* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -120,7 +120,7 @@ namespace MAT
     /// top of parobject.H (this file) and should return it in this method.
     int UniqueParObjectId() const override
     {
-      return Membrane_ActiveStrainType::Instance().UniqueParObjectId();
+      return MembraneActiveStrainType::Instance().UniqueParObjectId();
     }
 
     /// \brief Pack this class so it can be communicated
@@ -163,7 +163,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new Membrane_ActiveStrain(*this));
+      return Teuchos::rcp(new MembraneActiveStrain(*this));
     }
 
     /// material mass density
@@ -212,7 +212,7 @@ namespace MAT
 
    private:
     /// My material parameters
-    MAT::PAR::Membrane_ActiveStrain* params_;
+    MAT::PAR::MembraneActiveStrain* params_;
 
     /// passive material
     Teuchos::RCP<MAT::So3Material> matpassive_;
@@ -250,7 +250,7 @@ namespace MAT
    protected:
     /// vector of fiber vectors
     std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs_;
-  };  // class Membrane_ActiveStrain
+  };  // class MembraneActiveStrain
 
 }  // namespace MAT
 // namespace MAT

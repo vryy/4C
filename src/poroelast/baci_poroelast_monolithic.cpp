@@ -1089,7 +1089,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<CORE::LINALG::Spa
     params.set<int>("action", FLD::poro_boundary);
     params.set("total time", Time());
     params.set("delta time", Dt());
-    params.set<POROELAST::coupltype>("coupling", POROELAST::fluidstructure);
+    params.set<POROELAST::Coupltype>("coupling", POROELAST::fluidstructure);
     params.set("timescale", FluidField()->ResidualScaling());
     params.set<int>("Physical Type", FluidField()->PhysicalType());
 
@@ -1109,7 +1109,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<CORE::LINALG::Spa
     Teuchos::ParameterList params;
     // action for elements
     params.set<int>("action", FLD::poro_prescoupl);
-    params.set<POROELAST::coupltype>("coupling", POROELAST::fluidstructure);
+    params.set<POROELAST::Coupltype>("coupling", POROELAST::fluidstructure);
     params.set<int>("Physical Type", FluidField()->PhysicalType());
 
     FluidField()->Discretization()->ClearState();
@@ -1384,7 +1384,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<CORE::LINALG::Spa
 }
 
 void POROELAST::Monolithic::EvaluateCondition(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> Sysmat, POROELAST::coupltype coupltype)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> Sysmat, POROELAST::Coupltype coupltype)
 {
   nopen_handle_->Clear(coupltype);
   Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix =

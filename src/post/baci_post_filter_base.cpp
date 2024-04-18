@@ -59,7 +59,7 @@ void PostFilterBase::WriteAnyResults(PostField* field, const char* type, const R
     // We do not support multiple definitions of the same name here. We just
     // use the map node to obtain the key string. Afterward we can use normal
     // map functions to find out if this key names an element vector group.
-    MAP_NODE* node = iterator_get_node(&iter);
+    MapNode* node = iterator_get_node(&iter);
     char* key = node->key;
     if (map_has_map(result.group(), key))
     {

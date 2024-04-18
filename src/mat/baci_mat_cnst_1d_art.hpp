@@ -41,11 +41,11 @@ namespace MAT
     /// material parameters for constant 1D_Artery
     ///
     // This object exists only once for each read Newton fluid. ???
-    class Cnst_1d_art : public Parameter
+    class Cnst1dArt : public Parameter
     {
      public:
       /// standard constructor
-      Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Cnst1dArt(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -84,31 +84,31 @@ namespace MAT
 
   }  // namespace PAR
 
-  class Cnst_1d_artType : public CORE::COMM::ParObjectType
+  class Cnst1dArtType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "Cnst_1d_artType"; }
 
-    static Cnst_1d_artType& Instance() { return instance_; };
+    static Cnst1dArtType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Cnst_1d_artType instance_;
+    static Cnst1dArtType instance_;
   };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for constant 1D_Artery material
   ///
   /// This object exists (several times) at every element
-  class Cnst_1d_art : public Material
+  class Cnst1dArt : public Material
   {
    public:
     /// construct empty material object
-    Cnst_1d_art();
+    Cnst1dArt();
 
     /// construct the material object given material parameters
-    explicit Cnst_1d_art(MAT::PAR::Cnst_1d_art* params);
+    explicit Cnst1dArt(MAT::PAR::Cnst1dArt* params);
 
     //! @name Packing and Unpacking
 
@@ -118,10 +118,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
-    {
-      return Cnst_1d_artType::Instance().UniqueParObjectId();
-    }
+    int UniqueParObjectId() const override { return Cnst1dArtType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -155,7 +152,7 @@ namespace MAT
     INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_cnst_art; }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Cnst_1d_art(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Cnst1dArt(*this)); }
 
     /// return viscosity
     double Viscosity() const;
@@ -245,7 +242,7 @@ namespace MAT
     double CalculateBloodViscosity(const double diam, const double plasmavisc) const;
 
     /// my material parameters
-    MAT::PAR::Cnst_1d_art* params_;
+    MAT::PAR::Cnst1dArt* params_;
     /// Artery initial diameter
     double diam_init_;
     /// Artery current diameter

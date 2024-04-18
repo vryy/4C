@@ -77,10 +77,7 @@ void STR::TIMINT::ImplicitBase::UseBlockMatrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::STR::STC_Scale STR::TIMINT::ImplicitBase::GetSTCAlgo()
-{
-  return DataSDyn().GetSTCAlgoType();
-}
+INPAR::STR::StcScale STR::TIMINT::ImplicitBase::GetSTCAlgo() { return DataSDyn().GetSTCAlgoType(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -34,7 +34,7 @@ namespace IO
   class Level;
 
   /// enum for verbosity level
-  enum verbositylevel
+  enum Verbositylevel
   {
     undef = -1,  ///< do not use!
     minimal,     ///< one line per time step should be enough
@@ -72,7 +72,7 @@ namespace IO
     void setup(const bool writetoscreen,  ///< bool whether output is written to screen
         const bool writetofile,           ///< bool whether output is written to file
         const bool prefixgroupID,         ///< bool whether group ID is prefixed in each line
-        const IO::verbositylevel level,   ///< verbosity level
+        const IO::Verbositylevel level,   ///< verbosity level
         Teuchos::RCP<Epetra_Comm> comm,   ///< MPI communicator
         const int targetpid,              ///< target processor ID from which to print
         const int groupID,                ///< the ID
@@ -148,7 +148,7 @@ namespace IO
     std::stringstream& cout_replacement() { return fmt_tmp_; }
 
     /// Set verbosity level
-    Level& operator()(const verbositylevel level);
+    Level& operator()(const Verbositylevel level);
 
     /// \brief Return a pure screen ostream (a.k.a. std::cout)
     /** \note This is mainly a workaround to use the verbosity levels as well
@@ -156,10 +156,10 @@ namespace IO
      *  typically expect a std::ostream object as input argument.
      *
      *  \author hiermeier 12/17 */
-    std::ostream& os(const verbositylevel level = undef) const;
+    std::ostream& os(const Verbositylevel level = undef) const;
 
     /// Return verbosity level
-    inline verbositylevel RequestedOutputLevel() const { return requestedoutputlevel_; }
+    inline Verbositylevel RequestedOutputLevel() const { return requestedoutputlevel_; }
 
    private:
     /// Return whether this is a target processor for output
@@ -198,7 +198,7 @@ namespace IO
     /// format containing temporary buffer
     std::stringstream fmt_tmp_;
 
-    verbositylevel requestedoutputlevel_;
+    Verbositylevel requestedoutputlevel_;
 
     // internal variable of Pstream
     Level* level_;
@@ -234,7 +234,7 @@ namespace IO
     Level(Pstream* pstream) : pstream_(pstream), level_(undef) {}
 
     /// set verbosity level for data to be written
-    Level& SetLevel(const verbositylevel level)
+    Level& SetLevel(const Verbositylevel level)
     {
       level_ = level;
       return *this;
@@ -259,7 +259,7 @@ namespace IO
     Pstream* pstream_;
 
     /// current verbosity level of data to be printed
-    verbositylevel level_;
+    Verbositylevel level_;
   };
 
   /// Imitate the std::endl behavior w/out the flush

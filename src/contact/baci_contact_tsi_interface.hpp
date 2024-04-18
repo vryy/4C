@@ -30,7 +30,7 @@ namespace CONTACT
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact);
 
-    enum LinDM_X_mode
+    enum LinDmXMode
     {
       LinDM_Diss,
       LinDM_ThermoLM,
@@ -94,7 +94,7 @@ namespace CONTACT
       where X_j is some (scalar) nodal value determined by "mode"
       */
     virtual void AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
-        CORE::LINALG::SparseMatrix* linM_X, const double fac, const LinDM_X_mode mode,
+        CORE::LINALG::SparseMatrix* linM_X, const double fac, const LinDmXMode mode,
         const Teuchos::RCP<Epetra_Map> node_rowmap);
 
     /*!

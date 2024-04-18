@@ -208,7 +208,7 @@ namespace
   }
 }  // namespace
 
-MAT::PAR::Muscle_Giantesio::Muscle_Giantesio(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::MuscleGiantesio::MuscleGiantesio(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       alpha_(*matdata->Get<double>("ALPHA")),
       beta_(*matdata->Get<double>("BETA")),
@@ -283,21 +283,21 @@ MAT::PAR::Muscle_Giantesio::Muscle_Giantesio(Teuchos::RCP<MAT::PAR::Material> ma
   if (density_ < 0.0) dserror("DENS should be positive");
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Muscle_Giantesio::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::MuscleGiantesio::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::Muscle_Giantesio(this));
+  return Teuchos::rcp(new MAT::MuscleGiantesio(this));
 }
 
-MAT::Muscle_GiantesioType MAT::Muscle_GiantesioType::instance_;
+MAT::MuscleGiantesioType MAT::MuscleGiantesioType::instance_;
 
-CORE::COMM::ParObject* MAT::Muscle_GiantesioType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MuscleGiantesioType::Create(const std::vector<char>& data)
 {
-  auto* muscle_giantesio = new MAT::Muscle_Giantesio();
+  auto* muscle_giantesio = new MAT::MuscleGiantesio();
   muscle_giantesio->Unpack(data);
   return muscle_giantesio;
 }
 
-MAT::Muscle_Giantesio::Muscle_Giantesio()
+MAT::MuscleGiantesio::MuscleGiantesio()
     : params_(nullptr),
       lambdaMOld_(1.0),
       omegaaOld_(-1.0),
@@ -309,7 +309,7 @@ MAT::Muscle_Giantesio::Muscle_Giantesio()
 {
 }
 
-MAT::Muscle_Giantesio::Muscle_Giantesio(MAT::PAR::Muscle_Giantesio* params)
+MAT::MuscleGiantesio::MuscleGiantesio(MAT::PAR::MuscleGiantesio* params)
     : params_(params),
       lambdaMOld_(1.0),
       omegaaOld_(-1.0),
@@ -331,7 +331,7 @@ MAT::Muscle_Giantesio::Muscle_Giantesio(MAT::PAR::Muscle_Giantesio* params)
                                              MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MAT::Muscle_Giantesio::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::MuscleGiantesio::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -351,7 +351,7 @@ void MAT::Muscle_Giantesio::Pack(CORE::COMM::PackBuffer& data) const
   anisotropyExtension_.PackAnisotropy(data);
 }
 
-void MAT::Muscle_Giantesio::Unpack(const std::vector<char>& data)
+void MAT::MuscleGiantesio::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -372,7 +372,7 @@ void MAT::Muscle_Giantesio::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Muscle_Giantesio*>(mat);
+        params_ = static_cast<MAT::PAR::MuscleGiantesio*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -387,14 +387,14 @@ void MAT::Muscle_Giantesio::Unpack(const std::vector<char>& data)
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void MAT::Muscle_Giantesio::Setup(int numgp, INPUT::LineDefinition* linedef)
+void MAT::MuscleGiantesio::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);
   anisotropy_.ReadAnisotropyFromElement(linedef);
 }
 
-void MAT::Muscle_Giantesio::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
+void MAT::MuscleGiantesio::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
     Teuchos::ParameterList& params, int const eleGID)
 {
   // compute the current fibre stretch using the deformation gradient and the structural tensor
@@ -409,7 +409,7 @@ void MAT::Muscle_Giantesio::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int
   lambdaMOld_ = MAT::UTILS::MUSCLE::FiberStretch(C, M);
 }
 
-void MAT::Muscle_Giantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -609,7 +609,7 @@ void MAT::Muscle_Giantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   cmat->Update(1.0, cmatvolv, 1.0);
 }
 
-CORE::UTILS::ValuesFunctAndFunctDerivs MAT::Muscle_Giantesio::EvaluateActivationLevelAndDerivatives(
+CORE::UTILS::ValuesFunctAndFunctDerivs MAT::MuscleGiantesio::EvaluateActivationLevelAndDerivatives(
     const double& lambdaM, const double& dotLambdaM, const double& currentTime)
 {
   // setup function
@@ -630,7 +630,7 @@ CORE::UTILS::ValuesFunctAndFunctDerivs MAT::Muscle_Giantesio::EvaluateActivation
   return omegaaAndDerivs;
 }
 
-double MAT::Muscle_Giantesio::SolveActivationLevelEquation(
+double MAT::MuscleGiantesio::SolveActivationLevelEquation(
     const double& lambdaM, const double& dotLambdaM, const double& currentTime)
 {
   // compute right hand side of equation
@@ -672,7 +672,7 @@ double MAT::Muscle_Giantesio::SolveActivationLevelEquation(
   return omegaa;
 }
 
-std::tuple<double, double> MAT::Muscle_Giantesio::EvaluateActivationLevelEquationAndDeriv(
+std::tuple<double, double> MAT::MuscleGiantesio::EvaluateActivationLevelEquationAndDeriv(
     double omegaa, const double& lambdaM, const double& rhs)
 {
   // get active microstructural parameters from params_
@@ -702,7 +702,7 @@ std::tuple<double, double> MAT::Muscle_Giantesio::EvaluateActivationLevelEquatio
   return {lhs - rhs, derivlhs};
 }
 
-double MAT::Muscle_Giantesio::EvaluateRhsActivationLevelEquation(
+double MAT::MuscleGiantesio::EvaluateRhsActivationLevelEquation(
     const double& lambdaM, const double& dotLambdaM, const double& currentTime)
 {
   // get active microstructural parameters from params_
@@ -725,7 +725,7 @@ double MAT::Muscle_Giantesio::EvaluateRhsActivationLevelEquation(
   return rhs;
 }
 
-double MAT::Muscle_Giantesio::EvaluateActiveNominalStressIntegral(
+double MAT::MuscleGiantesio::EvaluateActiveNominalStressIntegral(
     const double& lambdaM, const double& dotLambdaM, const double& currentTime)
 {
   // get active microstructural parameters from params_
@@ -767,7 +767,7 @@ double MAT::Muscle_Giantesio::EvaluateActiveNominalStressIntegral(
   return intPa;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::Muscle_Giantesio::ActDefGrad(
+CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::ActDefGrad(
     const double omegaa, const CORE::LINALG::Matrix<3, 3>& M)
 {
   // active deformation gradient Fa
@@ -777,7 +777,7 @@ CORE::LINALG::Matrix<3, 3> MAT::Muscle_Giantesio::ActDefGrad(
   return Fa;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::Muscle_Giantesio::DActDefGrad_DActLevel(
+CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::DActDefGrad_DActLevel(
     const double omegaa, const CORE::LINALG::Matrix<3, 3>& M)
 {
   // first derivative of Fa w.r.t. omegaa
@@ -794,7 +794,7 @@ CORE::LINALG::Matrix<3, 3> MAT::Muscle_Giantesio::DActDefGrad_DActLevel(
   return dFadomegaa;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::Muscle_Giantesio::DDActDefGrad_DDActLevel(
+CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::DDActDefGrad_DDActLevel(
     const double omegaa, const CORE::LINALG::Matrix<3, 3>& M)
 {
   // second derivative of Fa w.r.t. omegaa
@@ -811,8 +811,7 @@ CORE::LINALG::Matrix<3, 3> MAT::Muscle_Giantesio::DDActDefGrad_DDActLevel(
   return ddFaddomegaa;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::Muscle_Giantesio::InvActDefGrad(
-    const CORE::LINALG::Matrix<3, 3>& Fa)
+CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::InvActDefGrad(const CORE::LINALG::Matrix<3, 3>& Fa)
 {
   // inverse of active deformation gradient Fa^{-1}
   CORE::LINALG::Matrix<3, 3> invFa(true);
@@ -820,7 +819,7 @@ CORE::LINALG::Matrix<3, 3> MAT::Muscle_Giantesio::InvActDefGrad(
   return invFa;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::Muscle_Giantesio::DInvActDefGrad_DActLevel(
+CORE::LINALG::Matrix<3, 3> MAT::MuscleGiantesio::DInvActDefGrad_DActLevel(
     const CORE::LINALG::Matrix<3, 3>& Fa, const CORE::LINALG::Matrix<3, 3>& dFadomegaa)
 {
   CORE::LINALG::Matrix<3, 3> invFa = InvActDefGrad(Fa);
@@ -833,7 +832,7 @@ CORE::LINALG::Matrix<3, 3> MAT::Muscle_Giantesio::DInvActDefGrad_DActLevel(
   return dinvFadomegaa;
 }
 
-bool MAT::Muscle_Giantesio::IsActive(const double& currentTime)
+bool MAT::MuscleGiantesio::IsActive(const double& currentTime)
 {
   bool isActive = false;
 

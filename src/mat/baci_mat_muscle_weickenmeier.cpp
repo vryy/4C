@@ -22,7 +22,7 @@ approach)
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::PAR::Muscle_Weickenmeier::Muscle_Weickenmeier(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::MuscleWeickenmeier::MuscleWeickenmeier(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       alpha_(*matdata->Get<double>("ALPHA")),
       beta_(*matdata->Get<double>("BETA")),
@@ -97,21 +97,21 @@ MAT::PAR::Muscle_Weickenmeier::Muscle_Weickenmeier(Teuchos::RCP<MAT::PAR::Materi
   if (density_ < 0.0) dserror("DENS should be positive");
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Muscle_Weickenmeier::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::MuscleWeickenmeier::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::Muscle_Weickenmeier(this));
+  return Teuchos::rcp(new MAT::MuscleWeickenmeier(this));
 }
 
-MAT::Muscle_WeickenmeierType MAT::Muscle_WeickenmeierType::instance_;
+MAT::MuscleWeickenmeierType MAT::MuscleWeickenmeierType::instance_;
 
-CORE::COMM::ParObject* MAT::Muscle_WeickenmeierType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::MuscleWeickenmeierType::Create(const std::vector<char>& data)
 {
-  auto* muscle_weickenmeier = new MAT::Muscle_Weickenmeier();
+  auto* muscle_weickenmeier = new MAT::MuscleWeickenmeier();
   muscle_weickenmeier->Unpack(data);
   return muscle_weickenmeier;
 }
 
-MAT::Muscle_Weickenmeier::Muscle_Weickenmeier()
+MAT::MuscleWeickenmeier::MuscleWeickenmeier()
     : params_(nullptr),
       lambdaMOld_(1.0),
       anisotropy_(),
@@ -122,7 +122,7 @@ MAT::Muscle_Weickenmeier::Muscle_Weickenmeier()
 {
 }
 
-MAT::Muscle_Weickenmeier::Muscle_Weickenmeier(MAT::PAR::Muscle_Weickenmeier* params)
+MAT::MuscleWeickenmeier::MuscleWeickenmeier(MAT::PAR::MuscleWeickenmeier* params)
     : params_(params),
       lambdaMOld_(1.0),
       anisotropy_(),
@@ -142,7 +142,7 @@ MAT::Muscle_Weickenmeier::Muscle_Weickenmeier(MAT::PAR::Muscle_Weickenmeier* par
                                              MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MAT::Muscle_Weickenmeier::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::MuscleWeickenmeier::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -161,7 +161,7 @@ void MAT::Muscle_Weickenmeier::Pack(CORE::COMM::PackBuffer& data) const
   anisotropyExtension_.PackAnisotropy(data);
 }
 
-void MAT::Muscle_Weickenmeier::Unpack(const std::vector<char>& data)
+void MAT::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -182,7 +182,7 @@ void MAT::Muscle_Weickenmeier::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Muscle_Weickenmeier*>(mat);
+        params_ = static_cast<MAT::PAR::MuscleWeickenmeier*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -196,14 +196,14 @@ void MAT::Muscle_Weickenmeier::Unpack(const std::vector<char>& data)
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void MAT::Muscle_Weickenmeier::Setup(int numgp, INPUT::LineDefinition* linedef)
+void MAT::MuscleWeickenmeier::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);
   anisotropy_.ReadAnisotropyFromElement(linedef);
 }
 
-void MAT::Muscle_Weickenmeier::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
+void MAT::MuscleWeickenmeier::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
     Teuchos::ParameterList& params, int const eleGID)
 {
   // compute the current fibre stretch using the deformation gradient and the structural tensor
@@ -218,7 +218,7 @@ void MAT::Muscle_Weickenmeier::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, 
   lambdaMOld_ = MAT::UTILS::MUSCLE::FiberStretch(C, M);
 }
 
-void MAT::Muscle_Weickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
@@ -348,7 +348,7 @@ void MAT::Muscle_Weickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd
   cmat->Update(1.0, ccmat, 1.0);
 }
 
-void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
+void MAT::MuscleWeickenmeier::EvaluateActiveNominalStress(
     Teuchos::ParameterList& params, const double lambdaM, double& Pa, double& derivPa)
 {
   // save current simulation time
@@ -420,7 +420,7 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
   derivPa = Poptft * (fv * dFxidLamdaM + fxi * dFvdLambdaM);
 }
 
-void MAT::Muscle_Weickenmeier::EvaluateActivationLevel(const double lambdaM, const double Pa,
+void MAT::MuscleWeickenmeier::EvaluateActivationLevel(const double lambdaM, const double Pa,
     const double derivPa, double& omegaa, double& derivOmegaa)
 {
   // get passive material parameters

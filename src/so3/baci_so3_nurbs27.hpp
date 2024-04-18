@@ -46,12 +46,12 @@ namespace DRT
   {
     namespace NURBS
     {
-      class So_nurbs27Type : public DRT::ElementType
+      class SoNurbs27Type : public DRT::ElementType
       {
        public:
         std::string Name() const override { return "So_nurbs27Type"; }
 
-        static So_nurbs27Type& Instance();
+        static SoNurbs27Type& Instance();
 
         CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -73,7 +73,7 @@ namespace DRT
             override;
 
        private:
-        static So_nurbs27Type instance_;
+        static SoNurbs27Type instance_;
 
         std::string GetElementTypeString() const { return "SONURBS27"; }
       };
@@ -88,11 +88,11 @@ namespace DRT
 
       \author gammi
       */
-      class So_nurbs27 : public So_base
+      class SoNurbs27 : public SoBase
       {
        public:
         //! @name Friends
-        friend class So_nurbs27Type;
+        friend class SoNurbs27Type;
 
         //@}
         //! @name Constructors and destructors and related methods
@@ -103,7 +103,7 @@ namespace DRT
         \param id : A unique global id
         \param owner : elements owner
         */
-        So_nurbs27(int id, int owner);
+        SoNurbs27(int id, int owner);
 
         /*!
         \brief Copy Constructor
@@ -111,7 +111,7 @@ namespace DRT
         Makes a deep copy of a Element
 
         */
-        So_nurbs27(const So_nurbs27& old);
+        SoNurbs27(const SoNurbs27& old);
 
         /*!
         \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -162,7 +162,7 @@ namespace DRT
         */
         int UniqueParObjectId() const override
         {
-          return So_nurbs27Type::Instance().UniqueParObjectId();
+          return SoNurbs27Type::Instance().UniqueParObjectId();
         }
 
         /*!
@@ -216,7 +216,7 @@ namespace DRT
         */
         void Print(std::ostream& os) const override;
 
-        DRT::ElementType& ElementType() const override { return So_nurbs27Type::Instance(); }
+        DRT::ElementType& ElementType() const override { return SoNurbs27Type::Instance(); }
 
         //! @name Input and Creation
 
@@ -283,7 +283,7 @@ namespace DRT
          \return void
          */
         void CalcSTCMatrix(CORE::LINALG::Matrix<81, 81>& elemat1,
-            const INPAR::STR::STC_Scale stc_scaling, const int stc_layer, std::vector<int>& lm,
+            const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
             DRT::Discretization& discretization, bool do_inverse);
 
        protected:
@@ -317,7 +317,7 @@ namespace DRT
         // internal calculation methods
 
         //! don't want = operator
-        So_nurbs27& operator=(const So_nurbs27& old);
+        SoNurbs27& operator=(const SoNurbs27& old);
 
         //! init the inverse of the jacobian and its determinant in
         //! the material configuration

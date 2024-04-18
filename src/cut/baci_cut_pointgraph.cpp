@@ -444,7 +444,7 @@ bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
 #endif
   }
 
-  face_visitor vis(name_map, cycles);
+  FaceVisitor vis(name_map, cycles);
   boost::planar_face_traversal(g, embedding.data(), vis);
 
 #if DEBUG_POINTGRAPH
@@ -613,8 +613,8 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(Side *side, Cycle &cycl
   {
     for (int i = 0; i < num_comp; ++i)
     {
-      typedef boost::filtered_graph<graph_t, edge_filter> filtered_graph_t;
-      edge_filter filter(g, component, i);
+      typedef boost::filtered_graph<graph_t, EdgeFilter> filtered_graph_t;
+      EdgeFilter filter(g, component, i);
       filtered_graph_t fg(g, filter);
 
       std::vector<Cycle> filtered_cycles;
@@ -797,8 +797,8 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
     {
       for (int i = 0; i < num_comp; ++i)
       {
-        typedef boost::filtered_graph<graph_t, edge_filter> filtered_graph_t;
-        edge_filter filter(g, component, i);
+        typedef boost::filtered_graph<graph_t, EdgeFilter> filtered_graph_t;
+        EdgeFilter filter(g, component, i);
         filtered_graph_t fg(g, filter);
 
         std::vector<Cycle> filtered_cycles;
@@ -1129,10 +1129,10 @@ CORE::GEO::CUT::IMPL::PointGraph *CORE::GEO::CUT::IMPL::PointGraph::Create(Mesh 
   switch (dim)
   {
     case 1:
-      pg = new SimplePointGraph_1D(mesh, element, side, location, strategy);
+      pg = new SimplePointGraph1D(mesh, element, side, location, strategy);
       break;
     case 2:
-      pg = new SimplePointGraph_2D(mesh, element, side, location, strategy);
+      pg = new SimplePointGraph2D(mesh, element, side, location, strategy);
       break;
     case 3:
       pg = new PointGraph(mesh, element, side, location, strategy);
@@ -1152,9 +1152,9 @@ Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph> CORE::GEO::CUT::IMPL::Poin
   switch (dim)
   {
     case 1:
-      return Teuchos::rcp(new SimplePointGraph_1D::Graph());
+      return Teuchos::rcp(new SimplePointGraph1D::Graph());
     case 2:
-      return Teuchos::rcp(new SimplePointGraph_2D::Graph());
+      return Teuchos::rcp(new SimplePointGraph2D::Graph());
     case 3:
       return Teuchos::rcp(new PointGraph::Graph());
     default:

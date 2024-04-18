@@ -27,7 +27,7 @@ namespace CORE::GEO
 namespace XFEM
 {
   class ConditionManager;
-  class XFluid_Contact_Comm;
+  class XFluidContactComm;
   /*!
   \brief
    */
@@ -296,7 +296,7 @@ namespace XFEM
     bool init_volcoupling_;
 
     //! when should the local eigenvalue problem be updated
-    INPAR::XFEM::TraceEstimate_eigenvalue_update traceEstimate_eigenvalue_update_;
+    INPAR::XFEM::TraceEstimateEigenvalueUpdate traceEstimate_eigenvalue_update_;
 
     //! last reset of local eigenvalue problem
     int reset_step_;
@@ -632,13 +632,13 @@ namespace XFEM
     void Output(const int step, const double time, const bool write_restart_data) override;
 
     /// Assign communicator to contact to mesh coupling object
-    void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm)
+    void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm)
     {
       xf_c_comm_ = xf_c_comm;
     }
 
     /// Get communicator to contact
-    Teuchos::RCP<XFEM::XFluid_Contact_Comm> Get_Contact_Comm()
+    Teuchos::RCP<XFEM::XFluidContactComm> Get_Contact_Comm()
     {
       if (xf_c_comm_ == Teuchos::null)
         dserror("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
@@ -732,7 +732,7 @@ namespace XFEM
     INPAR::XFEM::InterfaceLaw interfacelaw_;
 
     //! Xfluid Contact Communicator
-    Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm_;
+    Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm_;
     //@}
   };
 

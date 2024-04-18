@@ -329,8 +329,8 @@ int main(int argc, char** argv)
      **************************************************************************/
 
     // declare empty vectors for holding "boundary" conditions
-    std::vector<EXODUS::elem_def> eledefs;
-    std::vector<EXODUS::cond_def> condefs;
+    std::vector<EXODUS::ElemDef> eledefs;
+    std::vector<EXODUS::CondDef> condefs;
 
     if (bcfile == "")
     {

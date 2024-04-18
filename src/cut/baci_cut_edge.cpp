@@ -609,7 +609,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Jus
 
 template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::HandleParallelCut(
-    Edge* other, Side* side, PointSet* cut_points, INPAR::CUT::CUT_Floattype floattype)
+    Edge* other, Side* side, PointSet* cut_points, INPAR::CUT::CutFloattype floattype)
 {
   PointSet parallel_cuts;
   if (numNodesEdge != 2 or other->NumNodes() != 2)
@@ -688,7 +688,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Han
 template <unsigned probDim, CORE::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::GetTouchingPoints(
     const std::vector<Node*>& nodes, std::vector<Node*>& touch_nodes,
-    INPAR::CUT::CUT_Floattype floattype)
+    INPAR::CUT::CutFloattype floattype)
 {
   bool signeddistance = false;
   double distance = 0;

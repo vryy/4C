@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(CORE::LINALG::SerialDenseMatrix*& oldfeas,
+void DRT::ELEMENTS::SoSh8p8::EasUpdateIncrementally(CORE::LINALG::SerialDenseMatrix*& oldfeas,
     CORE::LINALG::SerialDenseMatrix*& oldKaainv, CORE::LINALG::SerialDenseMatrix*& oldKad,
     CORE::LINALG::SerialDenseMatrix*& oldKap, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& feas,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,
@@ -67,7 +67,7 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(CORE::LINALG::SerialDenseMa
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::So_sh8p8::EasMaterialiseShapeFcts(
+void DRT::ELEMENTS::SoSh8p8::EasMaterialiseShapeFcts(
     const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M, const double& detJ0, const double& detJ,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
     const CORE::LINALG::SerialDenseMatrix& Mloc)
@@ -84,7 +84,7 @@ void DRT::ELEMENTS::So_sh8p8::EasMaterialiseShapeFcts(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::So_sh8p8::EasAddStrain(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
+void DRT::ELEMENTS::SoSh8p8::EasAddStrain(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
     const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M,
     const CORE::LINALG::SerialDenseMatrix* alpha)
 {
@@ -96,7 +96,7 @@ void DRT::ELEMENTS::So_sh8p8::EasAddStrain(CORE::LINALG::Matrix<MAT::NUM_STRESS_
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(
+void DRT::ELEMENTS::SoSh8p8::EasConstraintAndTangent(
     Teuchos::RCP<CORE::LINALG::SerialDenseVector>& feas,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kad,
@@ -214,7 +214,7 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::So_sh8p8::EasCondensation(
+void DRT::ELEMENTS::SoSh8p8::EasCondensation(
     CORE::LINALG::Matrix<NUMDISP_, 1>* force,               ///< element internal force vector
     CORE::LINALG::Matrix<NUMDISP_, NUMDISP_>* stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<NUMDISP_, NUMPRES_>* gradmatrix,   // element gradient matrix

@@ -34,7 +34,7 @@ namespace PASI
    *
    * \author Sebastian Fuchs \date 02/2017
    */
-  class PASI_PartTwoWayCoup : public PartitionedAlgo
+  class PasiPartTwoWayCoup : public PartitionedAlgo
   {
    public:
     /*!
@@ -45,7 +45,7 @@ namespace PASI
      * \param[in] comm   communicator
      * \param[in] params particle structure interaction parameter list
      */
-    explicit PASI_PartTwoWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
+    explicit PasiPartTwoWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     /*!
      * \brief init pasi algorithm
@@ -219,7 +219,7 @@ namespace PASI
    *
    * \author Sebastian Fuchs \date 03/2017
    */
-  class PASI_PartTwoWayCoup_DispRelax : public PASI_PartTwoWayCoup
+  class PasiPartTwoWayCoupDispRelax : public PasiPartTwoWayCoup
   {
    public:
     /*!
@@ -230,7 +230,7 @@ namespace PASI
      * \param[in] comm   communicator
      * \param[in] params particle structure interaction parameter list
      */
-    explicit PASI_PartTwoWayCoup_DispRelax(
+    explicit PasiPartTwoWayCoupDispRelax(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     /*!
@@ -298,7 +298,7 @@ namespace PASI
    *
    * \author Sebastian Fuchs \date 03/2017
    */
-  class PASI_PartTwoWayCoup_DispRelaxAitken : public PASI_PartTwoWayCoup_DispRelax
+  class PasiPartTwoWayCoupDispRelaxAitken : public PasiPartTwoWayCoupDispRelax
   {
    public:
     /*!
@@ -309,7 +309,7 @@ namespace PASI
      * \param[in] comm   communicator
      * \param[in] params particle structure interaction parameter list
      */
-    PASI_PartTwoWayCoup_DispRelaxAitken(
+    PasiPartTwoWayCoupDispRelaxAitken(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     /*!

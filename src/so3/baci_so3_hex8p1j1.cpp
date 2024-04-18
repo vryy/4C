@@ -18,38 +18,38 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::So_Hex8P1J1Type DRT::ELEMENTS::So_Hex8P1J1Type::instance_;
+DRT::ELEMENTS::SoHex8P1J1Type DRT::ELEMENTS::SoHex8P1J1Type::instance_;
 
-DRT::ELEMENTS::So_Hex8P1J1Type& DRT::ELEMENTS::So_Hex8P1J1Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoHex8P1J1Type& DRT::ELEMENTS::SoHex8P1J1Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_Hex8P1J1Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8P1J1Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_Hex8P1J1(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoHex8P1J1(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_Hex8P1J1Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8P1J1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_Hex8P1J1(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex8P1J1(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_Hex8P1J1Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8P1J1Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_Hex8P1J1(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex8P1J1(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_Hex8P1J1Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoHex8P1J1Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   //   numdf = 3;
@@ -57,7 +57,7 @@ void DRT::ELEMENTS::So_Hex8P1J1Type::NodalBlockInformation(
   //   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_Hex8P1J1Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoHex8P1J1Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
@@ -65,7 +65,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_Hex8P1J1Type::ComputeNullSpace
   return nullspace;
 }
 
-void DRT::ELEMENTS::So_Hex8P1J1Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex8P1J1Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -83,7 +83,7 @@ void DRT::ELEMENTS::So_Hex8P1J1Type::SetupElementDefinition(
  |  ctor (public)                                               lw 12/08|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(int id, int owner) : DRT::ELEMENTS::So_hex8(id, owner)
+DRT::ELEMENTS::SoHex8P1J1::SoHex8P1J1(int id, int owner) : DRT::ELEMENTS::SoHex8(id, owner)
 {
   K_pu_.PutScalar(0.0);
   K_tu_.PutScalar(0.0);
@@ -141,8 +141,8 @@ DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(int id, int owner) : DRT::ELEMENTS::So_h
  |  copy-ctor (public)                                          lw 12/08|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(const DRT::ELEMENTS::So_Hex8P1J1& old)
-    : DRT::ELEMENTS::So_hex8(old)
+DRT::ELEMENTS::SoHex8P1J1::SoHex8P1J1(const DRT::ELEMENTS::SoHex8P1J1& old)
+    : DRT::ELEMENTS::SoHex8(old)
 {
   return;
 }
@@ -151,9 +151,9 @@ DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(const DRT::ELEMENTS::So_Hex8P1J1& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                              lw 12/08|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_Hex8P1J1::Clone() const
+DRT::Element* DRT::ELEMENTS::SoHex8P1J1::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_Hex8P1J1(*this);
+  auto* newelement = new DRT::ELEMENTS::SoHex8P1J1(*this);
   return newelement;
 }
 
@@ -161,7 +161,7 @@ DRT::Element* DRT::ELEMENTS::So_Hex8P1J1::Clone() const
  |  Pack data                                                  (public) |
  |                                                              lw 12/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoHex8P1J1::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -170,7 +170,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So_hex8 Element
-  DRT::ELEMENTS::So_hex8::Pack(data);
+  DRT::ELEMENTS::SoHex8::Pack(data);
 
   return;
 }
@@ -179,7 +179,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                              lw 12/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoHex8P1J1::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Unpack(const std::vector<char>& data)
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So_hex8::Unpack(basedata);
+  DRT::ELEMENTS::SoHex8::Unpack(basedata);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -200,7 +200,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                 lw 12/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoHex8P1J1::Print(std::ostream& os) const
 {
   os << "So_Hex8P1J1 ";
   Element::Print(os);

@@ -43,7 +43,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor                                           hemmler 07/14 |
  *----------------------------------------------------------------------*/
-FS3I::PartFPS3I_1WC::PartFPS3I_1WC(const Epetra_Comm& comm) : PartFPS3I(comm)
+FS3I::PartFpS3I1Wc::PartFpS3I1Wc(const Epetra_Comm& comm) : PartFPS3I(comm)
 {
   // keep constructor empty
   return;
@@ -53,7 +53,7 @@ FS3I::PartFPS3I_1WC::PartFPS3I_1WC(const Epetra_Comm& comm) : PartFPS3I(comm)
 /*----------------------------------------------------------------------*
  |  Init                                                    rauch 09/16 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I_1WC::Init()
+void FS3I::PartFpS3I1Wc::Init()
 {
   FS3I::PartFPS3I::Init();
 
@@ -66,7 +66,7 @@ void FS3I::PartFPS3I_1WC::Init()
 /*----------------------------------------------------------------------*
  |  Setup                                                   rauch 09/16 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I_1WC::Setup()
+void FS3I::PartFpS3I1Wc::Setup()
 {
   FS3I::PartFPS3I::Setup();
 
@@ -98,7 +98,7 @@ void FS3I::PartFPS3I_1WC::Setup()
 /*----------------------------------------------------------------------*
  |  Timeloop                                              hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I_1WC::Timeloop()
+void FS3I::PartFpS3I1Wc::Timeloop()
 {
   CheckIsInit();
   CheckIsSetup();
@@ -126,7 +126,7 @@ void FS3I::PartFPS3I_1WC::Timeloop()
 /*----------------------------------------------------------------------*
  |  FPSI step                                             hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I_1WC::DoFPSIStep()
+void FS3I::PartFpS3I1Wc::DoFPSIStep()
 {
   fpsi_->PrepareTimeStep();
   fpsi_->SetupNewton();
@@ -142,7 +142,7 @@ void FS3I::PartFPS3I_1WC::DoFPSIStep()
 /*----------------------------------------------------------------------*
  |  Scatra step                                           hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I_1WC::DoScatraStep()
+void FS3I::PartFpS3I1Wc::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -172,7 +172,7 @@ void FS3I::PartFPS3I_1WC::DoScatraStep()
 /*----------------------------------------------------------------------*
  |  Prepare time step                                     hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I_1WC::PrepareTimeStep()
+void FS3I::PartFpS3I1Wc::PrepareTimeStep()
 {
   CheckIsInit();
   CheckIsSetup();
@@ -189,7 +189,7 @@ void FS3I::PartFPS3I_1WC::PrepareTimeStep()
 /*----------------------------------------------------------------------*
  |  Check of convergence of scatra solver                 hemmler 07/14 |
  *----------------------------------------------------------------------*/
-bool FS3I::PartFPS3I_1WC::ScatraConvergenceCheck(const int itnum)
+bool FS3I::PartFpS3I1Wc::ScatraConvergenceCheck(const int itnum)
 {
   const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
   INPAR::SCATRA::SolverType scatra_solvtype =

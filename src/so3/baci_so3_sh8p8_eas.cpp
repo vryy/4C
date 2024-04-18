@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::EasInit()
+void DRT::ELEMENTS::SoSh8p8::EasInit()
 {
   // ordinary matrices and vectors
   soh8_easinit();

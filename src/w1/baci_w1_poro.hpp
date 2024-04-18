@@ -38,7 +38,7 @@ namespace DRT
 
     */
     template <CORE::FE::CellType distype>
-    class Wall1_Poro : public Wall1
+    class Wall1Poro : public Wall1
     {
      public:
       //!@}
@@ -50,7 +50,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      Wall1_Poro(int id, int owner);
+      Wall1Poro(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -58,7 +58,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      Wall1_Poro(const Wall1_Poro& old);
+      Wall1Poro(const Wall1Poro& old);
 
       //!@}
 
@@ -272,7 +272,7 @@ namespace DRT
       }
 
       //! don't want = operator
-      Wall1_Poro& operator=(const Wall1_Poro& old) = delete;
+      Wall1Poro& operator=(const Wall1Poro& old) = delete;
 
      protected:
       /*!

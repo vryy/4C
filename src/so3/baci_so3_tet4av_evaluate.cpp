@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           seitz 03/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -45,26 +45,26 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDOF_SOTET4av, 1> elevec2(elevec2_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::So_tet4av::ActionType act = So_tet4av::none;
+  DRT::ELEMENTS::SoTet4av::ActionType act = SoTet4av::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_struct_nlnstiff")
-    act = So_tet4av::calc_struct_nlnstiff;
+    act = SoTet4av::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
-    act = So_tet4av::calc_struct_internalforce;
+    act = SoTet4av::calc_struct_internalforce;
   else if (action == "calc_struct_nlnstiffmass")
-    act = So_tet4av::calc_struct_nlnstiffmass;
+    act = SoTet4av::calc_struct_nlnstiffmass;
   else if (action == "calc_struct_stress")
-    act = So_tet4av::calc_struct_stress;
+    act = SoTet4av::calc_struct_stress;
   else if (action == "calc_struct_update_istep")
-    act = So_tet4av::calc_struct_update_istep;
+    act = SoTet4av::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
-    act = So_tet4av::calc_struct_reset_istep;
+    act = SoTet4av::calc_struct_reset_istep;
   else if (action == "calc_struct_reset_all")
-    act = So_tet4av::calc_struct_reset_all;
+    act = SoTet4av::calc_struct_reset_all;
   else if (action == "calc_struct_recover")
     return 0;
   else if (action == "calc_struct_predict")
@@ -189,7 +189,7 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)  seitz 03/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoTet4av::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
@@ -299,7 +299,7 @@ int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping and integration       seitz 03/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4av::InitJacobianMapping()
+void DRT::ELEMENTS::SoTet4av::InitJacobianMapping()
 {
   CORE::LINALG::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
   DRT::Node** nodes = Nodes();
@@ -340,8 +340,8 @@ void DRT::ELEMENTS::So_tet4av::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                          seitz 03/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                     // current displacements
+void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                    // current displacements
     CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>*
         stiffmatrix,                                                     // element stiffness matrix
     CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* massmatrix,  // element mass matrix
@@ -594,12 +594,12 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,  // location m
 /*----------------------------------------------------------------------*
  |  init the element (public)                               seitz 03/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_tet4avType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoTet4avType::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_tet4av*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoTet4av*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4av* failed");
     actele->InitJacobianMapping();
   }

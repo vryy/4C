@@ -29,12 +29,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      * HEX8 element
      *----------------------------------------------------------------------*/
-    class So_hex8ThermoType : public So_hex8Type
+    class SoHex8ThermoType : public SoHex8Type
     {
      public:
       std::string Name() const override { return "So_hex8ThermoType"; }
 
-      static So_hex8ThermoType& Instance();
+      static SoHex8ThermoType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -50,7 +50,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex8ThermoType instance_;
+      static SoHex8ThermoType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH8THERMO"; }
     };  // class So_hex8ThermoType
@@ -59,12 +59,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      * HEX8FBAR element
      *----------------------------------------------------------------------*/
-    class So_hex8fbarThermoType : public So_hex8fbarType
+    class SoHex8fbarThermoType : public SoHex8fbarType
     {
      public:
       std::string Name() const override { return "So_hex8fbarThermoType"; }
 
-      static So_hex8fbarThermoType& Instance();
+      static SoHex8fbarThermoType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -80,7 +80,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex8fbarThermoType instance_;
+      static SoHex8fbarThermoType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH8FBARTHERMO"; }
     };  // class So_hex8fbarThermoType
@@ -89,12 +89,12 @@ namespace DRT
     /*----------------------------------------------------------------------------*
      * TET4 Element
      *----------------------------------------------------------------------------*/
-    class So_tet4ThermoType : public So_tet4Type
+    class SoTet4ThermoType : public SoTet4Type
     {
      public:
       std::string Name() const override { return "So_tet4ThermoType"; }
 
-      static So_tet4ThermoType& Instance();
+      static SoTet4ThermoType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -110,7 +110,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet4ThermoType instance_;
+      static SoTet4ThermoType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT4THERMO"; }
     };  // class So_tet4ThermoType
@@ -118,12 +118,12 @@ namespace DRT
     /*----------------------------------------------------------------------------*
      * TET10 Element
      *----------------------------------------------------------------------------*/
-    class So_tet10ThermoType : public So_tet10Type
+    class SoTet10ThermoType : public SoTet10Type
     {
      public:
       std::string Name() const override { return "So_tet10ThermoType"; }
 
-      static So_tet10ThermoType& Instance();
+      static SoTet10ThermoType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -139,7 +139,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet10ThermoType instance_;
+      static SoTet10ThermoType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT10THERMO"; }
     };  // class So_tet10ThermoType
@@ -147,12 +147,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      *  HEX 27 Element
      *----------------------------------------------------------------------*/
-    class So_hex27ThermoType : public So_hex27Type
+    class SoHex27ThermoType : public SoHex27Type
     {
      public:
       std::string Name() const override { return "So_hex27ThermoType"; }
 
-      static So_hex27ThermoType& Instance();
+      static SoHex27ThermoType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -168,7 +168,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex27ThermoType instance_;
+      static SoHex27ThermoType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH27THERMO"; }
     };  // class So_hex27ThermoType
@@ -176,12 +176,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      *  HEX 20 Element
      *----------------------------------------------------------------------*/
-    class So_hex20ThermoType : public So_hex20Type
+    class SoHex20ThermoType : public SoHex20Type
     {
      public:
       std::string Name() const override { return "So_hex20ThermoType"; }
 
-      static So_hex20ThermoType& Instance();
+      static SoHex20ThermoType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -197,7 +197,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex20ThermoType instance_;
+      static SoHex20ThermoType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH20THERMO"; }
     };  // class So_hex20ThermoType
@@ -205,12 +205,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      *  NURBS 27 Element
      *----------------------------------------------------------------------*/
-    class So_nurbs27ThermoType : public NURBS::So_nurbs27Type
+    class SoNurbs27ThermoType : public NURBS::SoNurbs27Type
     {
      public:
       std::string Name() const override { return "So_nurbs27ThermoType"; }
 
-      static So_nurbs27ThermoType& Instance();
+      static SoNurbs27ThermoType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -226,7 +226,7 @@ namespace DRT
           override;
 
      private:
-      static So_nurbs27ThermoType instance_;
+      static SoNurbs27ThermoType instance_;
 
       std::string GetElementTypeString() const { return "SONURBS27THERMO"; }
     };  // class So_hex20ThermoType

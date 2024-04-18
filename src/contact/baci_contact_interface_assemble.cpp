@@ -157,8 +157,8 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact, bool& l
       std::map<int, double>::iterator gcurr;
 
       // contribution of derivative of normal
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
-      CORE::GEN::pairedvector<int, double>::iterator ncurr;
+      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      CORE::GEN::Pairedvector<int, double>::iterator ncurr;
 
       for (int j = 0; j < dim; ++j)
       {
@@ -319,7 +319,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
       /***************************************** tanplane.deriv(jump) ***/
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -337,7 +337,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
       }
 
       /**************************************** deriv(tanplane).jump  ***/
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -378,7 +378,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -397,7 +397,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
       }
 
       /******************** deriv(tanplane).jump.maxtantrac/magnitude ***/
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -665,7 +665,7 @@ void CONTACT::Interface::AssembleRegTangentForcesUzawa()
       /***************************************** tanplane.deriv(jump) ***/
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
       const int numdof = cnode->NumDof();
 
       // loop over dimensions
@@ -684,7 +684,7 @@ void CONTACT::Interface::AssembleRegTangentForcesUzawa()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -727,7 +727,7 @@ void CONTACT::Interface::AssembleRegTangentForcesUzawa()
       /***************************************** tanplane.deriv(jump) ***/
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
       const int numdof = cnode->NumDof();
 
       // loop over dimensions
@@ -747,7 +747,7 @@ void CONTACT::Interface::AssembleRegTangentForcesUzawa()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      std::vector<CORE::GEN::pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -1170,8 +1170,8 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
 
     if (tderivglobal != Teuchos::null)  // assemble tangential derivs?
     {
-      std::vector<CORE::GEN::pairedvector<int, double>>& dtmap = cnode->Data().GetDerivTxi();
-      CORE::GEN::pairedvector<int, double>::iterator colcurr;
+      std::vector<CORE::GEN::Pairedvector<int, double>>& dtmap = cnode->Data().GetDerivTxi();
+      CORE::GEN::Pairedvector<int, double>::iterator colcurr;
 
       for (int dim = 0; dim < Dim() - 1; ++dim)  // for both tangents
       {
@@ -1241,8 +1241,8 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
 
     if (nderivglobal != Teuchos::null)  // assemble normal derivs?
     {
-      std::vector<CORE::GEN::pairedvector<int, double>>& dnmap = cnode->Data().GetDerivN();
-      CORE::GEN::pairedvector<int, double>::iterator colcurr;
+      std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap = cnode->Data().GetDerivN();
+      CORE::GEN::Pairedvector<int, double>::iterator colcurr;
 
       int colsize = (int)dnmap[0].size();
       int mapsize = (int)dnmap.size();
@@ -1795,14 +1795,14 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
     }
 
     // prepare assembly, get information from node
-    std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
-    std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
-    std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+    std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+    std::vector<CORE::GEN::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+    std::vector<CORE::GEN::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
     std::map<int, double> dscmap;
 
     // iterator for maps
     std::map<int, double>::iterator colcurr;
-    CORE::GEN::pairedvector<int, double>::iterator _colcurr;
+    CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
 
     // row number of entries
     std::vector<int> row(Dim() - 1);
@@ -2596,9 +2596,9 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
       double ct_input = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+      std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<CORE::GEN::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       double cn = cn_input;
       double ct = ct_input;
@@ -2627,7 +2627,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
       double wgap = cnode->Data().Getg();
 
       // iterator for maps
-      CORE::GEN::pairedvector<int, double>::iterator colcurr;
+      CORE::GEN::Pairedvector<int, double>::iterator colcurr;
       std::map<int, double>::iterator _colcurr;
 
       // row number of entries
@@ -3630,10 +3630,10 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
       // dtx = -dny
       // FIXGIT: in the future DerivD will be called directly form node
 
-      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
 
       // iterator
-      CORE::GEN::pairedvector<int, double>::iterator _colcurr;
+      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
       std::map<int, double>::iterator colcurr;
 
       std::vector<std::map<int, double>> dtmap(Dim());
@@ -4356,9 +4356,9 @@ void CONTACT::Interface::AssembleLinSlipNormalRegularization(
       double ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
-      std::vector<CORE::GEN::pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+      std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<CORE::GEN::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<CORE::GEN::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -4384,7 +4384,7 @@ void CONTACT::Interface::AssembleLinSlipNormalRegularization(
       double wgap = cnode->Data().Getg();
 
       // iterator for maps
-      CORE::GEN::pairedvector<int, double>::iterator colcurr;
+      CORE::GEN::Pairedvector<int, double>::iterator colcurr;
       std::map<int, double>::iterator _colcurr;
 
       // row number of entries

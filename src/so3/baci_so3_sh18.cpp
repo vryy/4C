@@ -20,28 +20,28 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::So_sh18Type DRT::ELEMENTS::So_sh18Type::instance_;
+DRT::ELEMENTS::SoSh18Type DRT::ELEMENTS::SoSh18Type::instance_;
 
-DRT::ELEMENTS::So_sh18Type& DRT::ELEMENTS::So_sh18Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoSh18Type& DRT::ELEMENTS::SoSh18Type::Instance() { return instance_; }
 namespace
 {
-  const std::string name = DRT::ELEMENTS::So_sh18Type::Instance().Name();
+  const std::string name = DRT::ELEMENTS::SoSh18Type::Instance().Name();
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_sh18Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoSh18Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_sh18(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoSh18(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh18(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18(id, owner));
     return ele;
   }
 
@@ -49,13 +49,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18Type::Create(
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh18Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh18(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh18(id, owner));
   return ele;
 }
 
-void DRT::ELEMENTS::So_sh18Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoSh18Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -82,7 +82,7 @@ void DRT::ELEMENTS::So_sh18Type::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           seitz 11/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_sh18::So_sh18(int id, int owner) : So_base(id, owner), So_hex18(id, owner)
+DRT::ELEMENTS::SoSh18::SoSh18(int id, int owner) : SoBase(id, owner), SoHex18(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
       GLOBAL::Problem::Instance()->getParameterList();
@@ -98,9 +98,9 @@ DRT::ELEMENTS::So_sh18::So_sh18(int id, int owner) : So_base(id, owner), So_hex1
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      seitz 11/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_sh18::So_sh18(const DRT::ELEMENTS::So_sh18& old)
-    : So_base(old),
-      So_hex18(old),
+DRT::ELEMENTS::SoSh18::SoSh18(const DRT::ELEMENTS::SoSh18& old)
+    : SoBase(old),
+      SoHex18(old),
       dsg_shear_(old.dsg_shear_),
       dsg_membrane_(old.dsg_membrane_),
       dsg_ctl_(old.dsg_ctl_),
@@ -114,9 +114,9 @@ DRT::ELEMENTS::So_sh18::So_sh18(const DRT::ELEMENTS::So_sh18& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_sh18::Clone() const
+DRT::Element* DRT::ELEMENTS::SoSh18::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_sh18(*this);
+  auto* newelement = new DRT::ELEMENTS::SoSh18(*this);
   return newelement;
 }
 
@@ -124,7 +124,7 @@ DRT::Element* DRT::ELEMENTS::So_sh18::Clone() const
  |  Pack data                                                  (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoSh18::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -133,7 +133,7 @@ void DRT::ELEMENTS::So_sh18::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  So_base::Pack(data);
+  SoBase::Pack(data);
 
   // detJ_
   AddtoPack(data, detJ_);
@@ -156,7 +156,7 @@ void DRT::ELEMENTS::So_sh18::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoSh18::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -165,7 +165,7 @@ void DRT::ELEMENTS::So_sh18::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  So_base::Unpack(basedata);
+  SoBase::Unpack(basedata);
 
   // detJ_
   ExtractfromPack(position, data, detJ_);
@@ -192,7 +192,7 @@ void DRT::ELEMENTS::So_sh18::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                             seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoSh18::Print(std::ostream& os) const
 {
   os << "So_sh18 ";
   Element::Print(os);

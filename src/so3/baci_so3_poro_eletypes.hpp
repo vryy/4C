@@ -29,12 +29,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  HEX 8 Element                                       |
      *----------------------------------------------------------------------*/
-    class So_hex8PoroType : public So_hex8Type
+    class SoHex8PoroType : public SoHex8Type
     {
      public:
       std::string Name() const override { return "So_hex8PoroType"; }
 
-      static So_hex8PoroType& Instance();
+      static SoHex8PoroType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -50,7 +50,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex8PoroType instance_;
+      static SoHex8PoroType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH8PORO"; }
     };
@@ -58,12 +58,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  TET 4 Element                                       |
      *----------------------------------------------------------------------*/
-    class So_tet4PoroType : public So_tet4Type
+    class SoTet4PoroType : public SoTet4Type
     {
      public:
       std::string Name() const override { return "So_tet4PoroType"; }
 
-      static So_tet4PoroType& Instance();
+      static SoTet4PoroType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -79,7 +79,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet4PoroType instance_;
+      static SoTet4PoroType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT4PORO"; }
     };
@@ -88,12 +88,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  HEX 27 Element                                       |
      *----------------------------------------------------------------------*/
-    class So_hex27PoroType : public So_hex27Type
+    class SoHex27PoroType : public SoHex27Type
     {
      public:
       std::string Name() const override { return "So_hex27PoroType"; }
 
-      static So_hex27PoroType& Instance();
+      static SoHex27PoroType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -109,7 +109,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex27PoroType instance_;
+      static SoHex27PoroType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH27PORO"; }
     };
@@ -117,12 +117,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  TET 10 Element                                       |
      *----------------------------------------------------------------------*/
-    class So_tet10PoroType : public So_tet10Type
+    class SoTet10PoroType : public SoTet10Type
     {
      public:
       std::string Name() const override { return "So_tet10PoroType"; }
 
-      static So_tet10PoroType& Instance();
+      static SoTet10PoroType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -138,7 +138,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet10PoroType instance_;
+      static SoTet10PoroType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT10PORO"; }
     };
@@ -146,12 +146,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  NURBS 27 Element                                       |
      *----------------------------------------------------------------------*/
-    class So_nurbs27PoroType : public NURBS::So_nurbs27Type
+    class SoNurbs27PoroType : public NURBS::SoNurbs27Type
     {
      public:
       std::string Name() const override { return "So_nurbs27PoroType"; }
 
-      static So_nurbs27PoroType& Instance();
+      static SoNurbs27PoroType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -167,7 +167,7 @@ namespace DRT
           override;
 
      private:
-      static So_nurbs27PoroType instance_;
+      static SoNurbs27PoroType instance_;
 
       std::string GetElementTypeString() const { return "SONURBS27PORO"; }
     };

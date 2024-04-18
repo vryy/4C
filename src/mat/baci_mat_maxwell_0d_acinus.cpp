@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Maxwell_0d_acinus::Maxwell_0d_acinus(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::Maxwell0dAcinus::Maxwell0dAcinus(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       stiffness1_(*matdata->Get<double>("Stiffness1")),
       stiffness2_(*matdata->Get<double>("Stiffness2")),
@@ -41,18 +41,18 @@ MAT::PAR::Maxwell_0d_acinus::Maxwell_0d_acinus(Teuchos::RCP<MAT::PAR::Material> 
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell0dAcinus::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::Maxwell_0d_acinus(this));
+  return Teuchos::rcp(new MAT::Maxwell0dAcinus(this));
 }
 
 
-MAT::Maxwell_0d_acinusType MAT::Maxwell_0d_acinusType::instance_;
+MAT::Maxwell0dAcinusType MAT::Maxwell0dAcinusType::instance_;
 
 
-CORE::COMM::ParObject* MAT::Maxwell_0d_acinusType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Maxwell0dAcinusType::Create(const std::vector<char>& data)
 {
-  MAT::Maxwell_0d_acinus* mxwll_0d_acin = new MAT::Maxwell_0d_acinus();
+  MAT::Maxwell0dAcinus* mxwll_0d_acin = new MAT::Maxwell0dAcinus();
   mxwll_0d_acin->Unpack(data);
   return mxwll_0d_acin;
 }
@@ -60,17 +60,17 @@ CORE::COMM::ParObject* MAT::Maxwell_0d_acinusType::Create(const std::vector<char
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell_0d_acinus::Maxwell_0d_acinus() : params_(nullptr) {}
+MAT::Maxwell0dAcinus::Maxwell0dAcinus() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell_0d_acinus::Maxwell_0d_acinus(MAT::PAR::Maxwell_0d_acinus* params) : params_(params) {}
+MAT::Maxwell0dAcinus::Maxwell0dAcinus(MAT::PAR::Maxwell0dAcinus* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::Maxwell0dAcinus::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -88,7 +88,7 @@ void MAT::Maxwell_0d_acinus::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus::Unpack(const std::vector<char>& data)
+void MAT::Maxwell0dAcinus::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -105,7 +105,7 @@ void MAT::Maxwell_0d_acinus::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Maxwell_0d_acinus*>(mat);
+        params_ = static_cast<MAT::PAR::Maxwell0dAcinus*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -116,7 +116,7 @@ void MAT::Maxwell_0d_acinus::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Maxwell_0d_acinus::GetParams(std::string parametername)
+double MAT::Maxwell0dAcinus::GetParams(std::string parametername)
 {
   dserror("GetParams not implemented yet for this material!");
   return 0;
@@ -124,7 +124,7 @@ double MAT::Maxwell_0d_acinus::GetParams(std::string parametername)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus::SetParams(std::string parametername, double new_value)
+void MAT::Maxwell0dAcinus::SetParams(std::string parametername, double new_value)
 {
   dserror("SetParams not implemented yet for this material!");
 }

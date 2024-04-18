@@ -273,13 +273,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_SAN_Garny::Myocard_SAN_Garny() {}
+MyocardSanGarny::MyocardSanGarny() {}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_SAN_Garny::Myocard_SAN_Garny(const double eps_deriv_myocard, const std::string tissue)
+MyocardSanGarny::MyocardSanGarny(const double eps_deriv_myocard, const std::string tissue)
     : tools_(), s0_(15, 0.0), s_(15, 0.0), r_(15, 0.0), a_(52, 0.0), c_(133, 0.0)
 
 {
@@ -481,7 +481,7 @@ Myocard_SAN_Garny::Myocard_SAN_Garny(const double eps_deriv_myocard, const std::
 }
 
 
-double Myocard_SAN_Garny::ReaCoeff(const double phi, const double dt)
+double MyocardSanGarny::ReaCoeff(const double phi, const double dt)
 {
   s0_[0] = phi;
   s_[0] = phi;
@@ -692,12 +692,12 @@ double Myocard_SAN_Garny::ReaCoeff(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int Myocard_SAN_Garny::GetNumberOfInternalStateVariables() const { return 15; }
+int MyocardSanGarny::GetNumberOfInternalStateVariables() const { return 15; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Myocard_SAN_Garny::GetInternalState(const int k) const
+double MyocardSanGarny::GetInternalState(const int k) const
 {
   double val = 0.0;
   if (k == -1 && s0_[0] > -20)
@@ -711,7 +711,7 @@ double Myocard_SAN_Garny::GetInternalState(const int k) const
 /*----------------------------------------------------------------------*
  |  set  internal state of the material                     cbert 08/13 |
  *----------------------------------------------------------------------*/
-void Myocard_SAN_Garny::SetInternalState(const int k, const double val)
+void MyocardSanGarny::SetInternalState(const int k, const double val)
 {
   s0_[k] = val;
   s_[k] = val;
@@ -721,12 +721,12 @@ void Myocard_SAN_Garny::SetInternalState(const int k, const double val)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int Myocard_SAN_Garny::GetNumberOfIonicCurrents() const { return 13; }
+int MyocardSanGarny::GetNumberOfIonicCurrents() const { return 13; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Myocard_SAN_Garny::GetIonicCurrents(const int k) const
+double MyocardSanGarny::GetIonicCurrents(const int k) const
 {
   double val = 0.0;
   switch (k)
@@ -778,7 +778,7 @@ double Myocard_SAN_Garny::GetIonicCurrents(const int k) const
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void Myocard_SAN_Garny::Update(const double phi, const double dt)
+void MyocardSanGarny::Update(const double phi, const double dt)
 {
   // update initial values for next time step
   for (int i = 0; i < 16; i++) s0_[i] = s_[i];

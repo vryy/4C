@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
+DRT::ELEMENTS::Wall1Poro<distype>::Wall1Poro(int id, int owner)
     : DRT::ELEMENTS::Wall1(id, owner), intpoints_(distype), weights_(true), myknots_(numdim_)
 {
   numgpt_ = intpoints_.NumPoints();
@@ -38,7 +38,7 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
 }
 
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(const DRT::ELEMENTS::Wall1_Poro<distype>& old)
+DRT::ELEMENTS::Wall1Poro<distype>::Wall1Poro(const DRT::ELEMENTS::Wall1Poro<distype>& old)
     : DRT::ELEMENTS::Wall1(old),
       invJ_(old.invJ_),
       detJ_(old.detJ_),
@@ -55,14 +55,14 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(const DRT::ELEMENTS::Wall1_Poro<d
 }
 
 template <CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::Wall1_Poro<distype>::Clone() const
+DRT::Element* DRT::ELEMENTS::Wall1Poro<distype>::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::Wall1_Poro<distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::Wall1Poro<distype>(*this);
   return newelement;
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1Poro<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -102,7 +102,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(CORE::COMM::PackBuffer& data) cons
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -153,19 +153,19 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
 }
 
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_Poro<distype>::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1Poro<distype>::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1_Poro>(CORE::COMM::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1Poro>(CORE::COMM::buildLines, *this);
 }
 
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_Poro<distype>::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1Poro<distype>::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
+void DRT::ELEMENTS::Wall1Poro<distype>::Print(std::ostream& os) const
 {
   os << "Wall1_Poro ";
   Element::Print(os);
@@ -173,7 +173,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
 }
 
 template <CORE::FE::CellType distype>
-bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(
+bool DRT::ELEMENTS::Wall1Poro<distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element
@@ -192,7 +192,7 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::
+void DRT::ELEMENTS::Wall1Poro<distype>::
     ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 2; ++dim)
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::
+void DRT::ELEMENTS::Wall1Poro<distype>::
     ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 2; ++dim)
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials()
+void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterials()
 {
   // get structure material
   if (struct_mat_ == Teuchos::null)
@@ -248,7 +248,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials()
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterialsPressureBased()
+void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterialsPressureBased()
 {
   // get structure material
   if (struct_mat_ == Teuchos::null)
@@ -287,13 +287,13 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterialsPressureBased()
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<std::string, int>& names)
+void DRT::ELEMENTS::Wall1Poro<distype>::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
 }
 
 template <CORE::FE::CellType distype>
-bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::Wall1Poro<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Wall1::VisData(name, data)) return true;
@@ -301,10 +301,10 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::v
   return SolidMaterial()->VisData(name, data, numgpt_, this->Id());
 }
 
-template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs4>;
-template class DRT::ELEMENTS::Wall1_Poro<CORE::FE::CellType::nurbs9>;
+template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs4>;
+template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs9>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -16,12 +16,8 @@
 #include "baci_inpar_solver.hpp"
 #include "baci_utils_exceptions.hpp"
 
+#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-
-// forward declarations
-class Epetra_MultiVector;
-class Epetra_Vector;
-class Epetra_Comm;
 
 FOUR_C_NAMESPACE_OPEN
 

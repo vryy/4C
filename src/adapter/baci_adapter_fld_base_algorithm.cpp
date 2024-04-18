@@ -593,7 +593,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<int>("order gridvel", CORE::UTILS::IntegralValue<int>(fdyn, "GRIDVEL"));
     // handling of pressure and continuity discretization in new one step theta framework
     fluidtimeparams->set<int>("ost cont and press",
-        CORE::UTILS::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn, "OST_CONT_PRESS"));
+        CORE::UTILS::IntegralValue<INPAR::FLUID::OstContAndPress>(fdyn, "OST_CONT_PRESS"));
     // flag to switch on the new One Step Theta implementation
     bool ostnew = CORE::UTILS::IntegralValue<bool>(fdyn, "NEW_OST");
     // if the time integration strategy is not even a one step theta strategy, it cannot be the
@@ -1363,7 +1363,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     fluidtimeparams->set<int>("order gridvel", CORE::UTILS::IntegralValue<int>(fdyn, "GRIDVEL"));
     // handling of pressure and continuity discretization in new one step theta framework
     fluidtimeparams->set<int>("ost cont and press",
-        CORE::UTILS::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn, "OST_CONT_PRESS"));
+        CORE::UTILS::IntegralValue<INPAR::FLUID::OstContAndPress>(fdyn, "OST_CONT_PRESS"));
     // flag to switch on the new One Step Theta implementation
     bool ostnew = CORE::UTILS::IntegralValue<bool>(fdyn, "NEW_OST");
     // if the time integration strategy is not even a one step theta strategy, it cannot be the

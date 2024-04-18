@@ -14,12 +14,10 @@
 
 #include "baci_linalg_fixedsizematrix.hpp"
 
+#include <Epetra_FEVector.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-
-// forward declaration ...
-class Epetra_Vector;
-class Epetra_FEVector;
 
 FOUR_C_NAMESPACE_OPEN
 

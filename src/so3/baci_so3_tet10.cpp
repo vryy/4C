@@ -33,38 +33,38 @@ FOUR_C_NAMESPACE_OPEN
 // remove later
 
 
-DRT::ELEMENTS::So_tet10Type DRT::ELEMENTS::So_tet10Type::instance_;
+DRT::ELEMENTS::SoTet10Type DRT::ELEMENTS::SoTet10Type::instance_;
 
-DRT::ELEMENTS::So_tet10Type& DRT::ELEMENTS::So_tet10Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoTet10Type& DRT::ELEMENTS::SoTet10Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_tet10Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoTet10Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_tet10(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoTet10(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet10(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoTet10(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet10Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet10(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoTet10(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_tet10Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoTet10Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -72,13 +72,13 @@ void DRT::ELEMENTS::So_tet10Type::NodalBlockInformation(
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_tet10Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoTet10Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoTet10Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -103,8 +103,8 @@ void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition(
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner)
-    : So_base(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
+DRT::ELEMENTS::SoTet10::SoTet10(int id, int owner)
+    : SoBase(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
   invJ_.resize(NUMGPT_SOTET10, CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
   detJ_.resize(NUMGPT_SOTET10, 0.0);
@@ -132,8 +132,8 @@ DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner)
  |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_tet10::So_tet10(const DRT::ELEMENTS::So_tet10& old)
-    : So_base(old),
+DRT::ELEMENTS::SoTet10::SoTet10(const DRT::ELEMENTS::SoTet10& old)
+    : SoBase(old),
       detJ_(old.detJ_),
       detJ_mass_(old.detJ_mass_),
       pstype_(old.pstype_),
@@ -163,9 +163,9 @@ DRT::ELEMENTS::So_tet10::So_tet10(const DRT::ELEMENTS::So_tet10& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                                      |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_tet10::Clone() const
+DRT::Element* DRT::ELEMENTS::SoTet10::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_tet10(*this);
+  auto* newelement = new DRT::ELEMENTS::SoTet10(*this);
   return newelement;
 }
 
@@ -173,13 +173,13 @@ DRT::Element* DRT::ELEMENTS::So_tet10::Clone() const
  |                                                             (public) |
  |                                                                      |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::So_tet10::Shape() const { return CORE::FE::CellType::tet10; }
+CORE::FE::CellType DRT::ELEMENTS::SoTet10::Shape() const { return CORE::FE::CellType::tet10; }
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoTet10::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::So_tet10::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  So_base::Pack(data);
+  SoBase::Pack(data);
   // detJ_
   AddtoPack(data, detJ_);
   AddtoPack(data, detJ_mass_);
@@ -219,7 +219,7 @@ void DRT::ELEMENTS::So_tet10::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoTet10::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -228,7 +228,7 @@ void DRT::ELEMENTS::So_tet10::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  So_base::Unpack(basedata);
+  SoBase::Unpack(basedata);
 
   // detJ_
   ExtractfromPack(position, data, detJ_);
@@ -267,7 +267,7 @@ void DRT::ELEMENTS::So_tet10::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------***
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoTet10::Print(std::ostream& os) const
 {
   os << "So_tet10 ";
   Element::Print(os);
@@ -306,7 +306,7 @@ void DRT::ELEMENTS::So_tet10::Print(std::ostream& os) const
 |  get vector of surfaces (public)                                     |
 |  surface normals always point outward                                |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet10::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoTet10::Surfaces()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
       CORE::COMM::buildSurfaces, *this);
@@ -315,7 +315,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet10::Surfaces()
 /*----------------------------------------------------------------------***++
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet10::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoTet10::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
       CORE::COMM::buildLines, *this);
@@ -323,7 +323,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_tet10::Lines()
 /*----------------------------------------------------------------------*
  |  get location of element center                              jb 08/11|
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::So_tet10::ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::SoTet10::ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
@@ -351,7 +351,7 @@ std::vector<double> DRT::ELEMENTS::So_tet10::ElementCenterRefeCoords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                 st 01/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::VisNames(std::map<std::string, int>& names)
+void DRT::ELEMENTS::SoTet10::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
   return;
@@ -360,7 +360,7 @@ void DRT::ELEMENTS::So_tet10::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                          st 01/10|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_tet10::VisData(const std::string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::SoTet10::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name, data)) return true;
@@ -371,7 +371,7 @@ bool DRT::ELEMENTS::So_tet10::VisData(const std::string& name, std::vector<doubl
 /*----------------------------------------------------------------------*
  |  Call post setup routine of the materials                            |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::MaterialPostSetup(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::SoTet10::MaterialPostSetup(Teuchos::ParameterList& params)
 {
   if (DRT::FIBER::UTILS::HaveNodalFibers<CORE::FE::CellType::tet10>(Nodes()))
   {
@@ -395,7 +395,7 @@ void DRT::ELEMENTS::So_tet10::MaterialPostSetup(Teuchos::ParameterList& params)
   }
 
   // Call super post setup
-  So_base::MaterialPostSetup(params);
+  SoBase::MaterialPostSetup(params);
 
   // Cleanup ParameterList to not carry all fibers the whole simulation
   // do not throw an error if key does not exist.

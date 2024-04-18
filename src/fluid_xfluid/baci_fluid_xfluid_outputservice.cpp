@@ -1318,7 +1318,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputDiscretization(
 }
 
 void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
-    int step, Teuchos::RCP<XFEM::XFEM_EdgeStab> edge_stab)
+    int step, Teuchos::RCP<XFEM::XfemEdgeStab> edge_stab)
 {
   if (!gmsh_EOS_out_ || edge_stab == Teuchos::null) return;
 

@@ -82,7 +82,7 @@ void fpsi_drt()
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
   // 3.- Creation of Poroelastic + Fluid problem. (Discretization called inside)
-  Teuchos::RCP<FPSI::FPSI_Base> fpsi = Teuchos::null;
+  Teuchos::RCP<FPSI::FpsiBase> fpsi = Teuchos::null;
   fpsi = FPSI_UTILS->SetupDiscretizations(comm, fpsidynparams, poroelastdynparams);
 
   // 3.1- Read restart if needed.

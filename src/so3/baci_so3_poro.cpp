@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(int id, int owner)
+DRT::ELEMENTS::So3Poro<so3_ele, distype>::So3Poro(int id, int owner)
     : so3_ele(id, owner),
       intpoints_(distype),
       init_(false),
@@ -42,8 +42,8 @@ DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(int id, int owner)
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(
-    const DRT::ELEMENTS::So3_Poro<so3_ele, distype>& old)
+DRT::ELEMENTS::So3Poro<so3_ele, distype>::So3Poro(
+    const DRT::ELEMENTS::So3Poro<so3_ele, distype>& old)
     : so3_ele(old),
       invJ_(old.invJ_),
       detJ_(old.detJ_),
@@ -64,14 +64,14 @@ DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Clone() const
+DRT::Element* DRT::ELEMENTS::So3Poro<so3_ele, distype>::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So3_Poro<so3_ele, distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::So3Poro<so3_ele, distype>(*this);
   return newelement;
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::So3Poro<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -115,7 +115,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& dat
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::So3Poro<so3_ele, distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -168,21 +168,21 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Unpack(const std::vector<char>& 
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3Poro<so3_ele, distype>::Surfaces()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
       CORE::COMM::buildSurfaces, *this);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3Poro<so3_ele, distype>::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
       CORE::COMM::buildLines, *this);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Print(std::ostream& os) const
+void DRT::ELEMENTS::So3Poro<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_poro ";
   os << CORE::FE::CellTypeToString(distype).c_str() << " ";
@@ -190,7 +190,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Print(std::ostream& os) const
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ReadElement(
+bool DRT::ELEMENTS::So3Poro<so3_ele, distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element
@@ -208,7 +208,7 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ReadElement(
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
+void DRT::ELEMENTS::So3Poro<so3_ele, distype>::
     ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 3; ++dim)
@@ -220,7 +220,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
+void DRT::ELEMENTS::So3Poro<so3_ele, distype>::
     ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(INPUT::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 3; ++dim)
@@ -232,33 +232,33 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::VisNames(std::map<std::string, int>& names)
+void DRT::ELEMENTS::So3Poro<so3_ele, distype>::VisNames(std::map<std::string, int>& names)
 {
   so3_ele::VisNames(names);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3_Poro<so3_ele, distype>::VisData(
+bool DRT::ELEMENTS::So3Poro<so3_ele, distype>::VisData(
     const std::string& name, std::vector<double>& data)
 {
   return so3_ele::VisData(name, data);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::UniqueParObjectId() const
+int DRT::ELEMENTS::So3Poro<so3_ele, distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
     case CORE::FE::CellType::tet4:
-      return So_tet4PoroType::Instance().UniqueParObjectId();
+      return SoTet4PoroType::Instance().UniqueParObjectId();
     case CORE::FE::CellType::tet10:
-      return So_tet10PoroType::Instance().UniqueParObjectId();
+      return SoTet10PoroType::Instance().UniqueParObjectId();
     case CORE::FE::CellType::hex8:
-      return So_hex8PoroType::Instance().UniqueParObjectId();
+      return SoHex8PoroType::Instance().UniqueParObjectId();
     case CORE::FE::CellType::hex27:
-      return So_hex27PoroType::Instance().UniqueParObjectId();
+      return SoHex27PoroType::Instance().UniqueParObjectId();
     case CORE::FE::CellType::nurbs27:
-      return So_nurbs27PoroType::Instance().UniqueParObjectId();
+      return SoNurbs27PoroType::Instance().UniqueParObjectId();
     default:
       dserror("unknown element type!");
       break;
@@ -267,41 +267,39 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::UniqueParObjectId() const
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ElementType& DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ElementType() const
+DRT::ElementType& DRT::ELEMENTS::So3Poro<so3_ele, distype>::ElementType() const
 {
   switch (distype)
   {
     case CORE::FE::CellType::tet4:
-      return So_tet4PoroType::Instance();
+      return SoTet4PoroType::Instance();
     case CORE::FE::CellType::tet10:
-      return So_tet10PoroType::Instance();
+      return SoTet10PoroType::Instance();
     case CORE::FE::CellType::hex8:
-      return So_hex8PoroType::Instance();
+      return SoHex8PoroType::Instance();
     case CORE::FE::CellType::hex27:
-      return So_hex27PoroType::Instance();
+      return SoHex27PoroType::Instance();
     case CORE::FE::CellType::nurbs27:
-      return So_nurbs27PoroType::Instance();
+      return SoNurbs27PoroType::Instance();
     default:
       dserror("unknown element type!");
-      break;
   }
-  return So_hex8PoroType::Instance();
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-inline DRT::Node** DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Nodes()
+inline DRT::Node** DRT::ELEMENTS::So3Poro<so3_ele, distype>::Nodes()
 {
   return so3_ele::Nodes();
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Material() const
+inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3Poro<so3_ele, distype>::Material() const
 {
   return so3_ele::Material();
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-inline int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Id() const
+inline int DRT::ELEMENTS::So3Poro<so3_ele, distype>::Id() const
 {
   return so3_ele::Id();
 }

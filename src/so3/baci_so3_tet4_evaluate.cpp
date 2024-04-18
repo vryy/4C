@@ -66,7 +66,7 @@ using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -86,52 +86,52 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDOF_SOTET4, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::So_tet4::ActionType act = So_tet4::none;
+  DRT::ELEMENTS::SoTet4::ActionType act = SoTet4::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_struct_linstiff")
-    act = So_tet4::calc_struct_linstiff;
+    act = SoTet4::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
-    act = So_tet4::calc_struct_nlnstiff;
+    act = SoTet4::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
-    act = So_tet4::calc_struct_internalforce;
+    act = SoTet4::calc_struct_internalforce;
   else if (action == "calc_struct_linstiffmass")
-    act = So_tet4::calc_struct_linstiffmass;
+    act = SoTet4::calc_struct_linstiffmass;
   else if (action == "calc_struct_nlnstiffmass")
-    act = So_tet4::calc_struct_nlnstiffmass;
+    act = SoTet4::calc_struct_nlnstiffmass;
   else if (action == "calc_struct_nlnstifflmass")
-    act = So_tet4::calc_struct_nlnstifflmass;
+    act = SoTet4::calc_struct_nlnstifflmass;
   else if (action == "calc_struct_stress")
-    act = So_tet4::calc_struct_stress;
+    act = SoTet4::calc_struct_stress;
   else if (action == "calc_struct_eleload")
-    act = So_tet4::calc_struct_eleload;
+    act = SoTet4::calc_struct_eleload;
   else if (action == "calc_struct_fsiload")
-    act = So_tet4::calc_struct_fsiload;
+    act = SoTet4::calc_struct_fsiload;
   else if (action == "calc_struct_store_istep")
-    act = So_tet4::struct_calc_store_istep;
+    act = SoTet4::struct_calc_store_istep;
   else if (action == "calc_struct_recover_istep")
-    act = So_tet4::struct_calc_recover_istep;
+    act = SoTet4::struct_calc_recover_istep;
   else if (action == "calc_struct_update_istep")
-    act = So_tet4::calc_struct_update_istep;
+    act = SoTet4::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
-    act = So_tet4::calc_struct_reset_istep;
+    act = SoTet4::calc_struct_reset_istep;
   else if (action == "calc_struct_reset_all")
-    act = So_tet4::calc_struct_reset_all;
+    act = SoTet4::calc_struct_reset_all;
   else if (action == "calc_struct_prestress_update")
-    act = So_tet4::prestress_update;
+    act = SoTet4::prestress_update;
   else if (action == "calc_global_gpstresses_map")
-    act = So_tet4::calc_global_gpstresses_map;
+    act = SoTet4::calc_global_gpstresses_map;
   else if (action == "calc_struct_energy")
-    act = So_tet4::calc_struct_energy;
+    act = SoTet4::calc_struct_energy;
   else if (action == "calc_struct_output_E")
-    act = So_tet4::calc_struct_output_E;
+    act = SoTet4::calc_struct_output_E;
   else if (action == "multi_calc_dens")
-    act = So_tet4::multi_calc_dens;
+    act = SoTet4::multi_calc_dens;
   else if (action == "multi_readrestart")
-    act = So_tet4::multi_readrestart;
+    act = SoTet4::multi_readrestart;
   else if (action == "calc_struct_recover")
     return 0;
   else if (action == "calc_struct_predict")
@@ -711,7 +711,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoTet4::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
@@ -843,7 +843,7 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
+void DRT::ELEMENTS::SoTet4::InitJacobianMapping()
 {
   CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;
   DRT::Node** nodes = Nodes();
@@ -925,12 +925,12 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            vlf 08/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                   // current displacements
-    std::vector<double>* vel,                                    // current velocities
-    std::vector<double>* acc,                                    // current accelerations
-    std::vector<double>& residual,                               // current residual displ
-    std::vector<double>& dispmat,                                // current material displacements
+void DRT::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                  // current displacements
+    std::vector<double>* vel,                                   // current velocities
+    std::vector<double>* acc,                                   // current accelerations
+    std::vector<double>& residual,                              // current residual displ
+    std::vector<double>& dispmat,                               // current material displacements
     CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* massmatrix,   // element mass matrix
     CORE::LINALG::Matrix<NUMDOF_SOTET4, 1>* force,       // element internal force vector
@@ -1559,7 +1559,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                               bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::so_tet4_lumpmass(
+void DRT::ELEMENTS::SoTet4::so_tet4_lumpmass(
     CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* emass)
 {
   // lump mass matrix
@@ -1582,12 +1582,12 @@ void DRT::ELEMENTS::So_tet4::so_tet4_lumpmass(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 05/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_tet4Type::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoTet4Type::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoTet4*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4* failed");
     actele->InitJacobianMapping();
   }
@@ -1597,7 +1597,7 @@ int DRT::ELEMENTS::So_tet4Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Shape fcts at 1 Gauss Point                           |
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::So_tet4::so_tet4_1gp_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::SoTet4::so_tet4_1gp_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts(NUMGPT_SOTET4);
 
@@ -1618,7 +1618,7 @@ std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::So_tet4::so_t
  |  Evaluate Tet4 Shape fct derivs at 1 Gauss Point                     |
  *----------------------------------------------------------------------*/
 std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
-DRT::ELEMENTS::So_tet4::so_tet4_1gp_derivs()
+DRT::ELEMENTS::SoTet4::so_tet4_1gp_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> derivs(NUMGPT_SOTET4);
   // There is only one gausspoint, so the loop (and the vector) is not really needed.
@@ -1650,7 +1650,7 @@ DRT::ELEMENTS::So_tet4::so_tet4_1gp_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Weights at 1 Gauss Point                              |
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_1gp_weights()
+std::vector<double> DRT::ELEMENTS::SoTet4::so_tet4_1gp_weights()
 {
   std::vector<double> weights(NUMGPT_SOTET4);
   // There is only one gausspoint, so the loop (and the vector) is not really needed.
@@ -1661,7 +1661,7 @@ std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_1gp_weights()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Shape fcts at 4 Gauss Points                          |
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::So_tet4::so_tet4_4gp_shapefcts()
+std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::SoTet4::so_tet4_4gp_shapefcts()
 {
   std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts(4);
 
@@ -1690,7 +1690,7 @@ std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> DRT::ELEMENTS::So_tet4::so_t
  |  Evaluate Tet4 Shape fct derivs at 4 Gauss Points                    |
  *----------------------------------------------------------------------*/
 std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
-DRT::ELEMENTS::So_tet4::so_tet4_4gp_derivs()
+DRT::ELEMENTS::SoTet4::so_tet4_4gp_derivs()
 {
   std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> derivs(4);
 
@@ -1722,7 +1722,7 @@ DRT::ELEMENTS::So_tet4::so_tet4_4gp_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet4 Weights at 4 Gauss Points                             |
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_4gp_weights()
+std::vector<double> DRT::ELEMENTS::SoTet4::so_tet4_4gp_weights()
 {
   std::vector<double> weights(4);
   for (int i = 0; i < 4; ++i)
@@ -1736,7 +1736,7 @@ std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_4gp_weights()
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::DefGradient(const std::vector<double>& disp,
+void DRT::ELEMENTS::SoTet4::DefGradient(const std::vector<double>& disp,
     CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   // update element geometry
@@ -1769,7 +1769,7 @@ void DRT::ELEMENTS::So_tet4::DefGradient(const std::vector<double>& disp,
   return;
 }
 
-void DRT::ELEMENTS::So_tet4::ComputeDeformationGradient(
+void DRT::ELEMENTS::SoTet4::ComputeDeformationGradient(
     CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
     const CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4>& xdisp, const int gp) const
 {
@@ -1820,7 +1820,7 @@ void DRT::ELEMENTS::So_tet4::ComputeDeformationGradient(
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
+void DRT::ELEMENTS::SoTet4::UpdateJacobianMapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
   // get incremental disp
@@ -1864,8 +1864,8 @@ void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
 /*----------------------------------------------------------------------*
   |  remodeling of fiber directions (protected)               tinkl 01/10|
   *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                      // current displacements
+void DRT::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                     // current displacements
     Teuchos::ParameterList& params,          // algorithmic parameters e.g. time
     const Teuchos::RCP<MAT::Material>& mat)  // material
 {
@@ -2027,7 +2027,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
+void DRT::ELEMENTS::SoTet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
     const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
     const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
     CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,

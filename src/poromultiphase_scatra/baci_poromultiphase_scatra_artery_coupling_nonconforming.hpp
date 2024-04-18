@@ -15,8 +15,7 @@
 #include "baci_inpar_bio.hpp"
 #include "baci_poromultiphase_scatra_artery_coupling_base.hpp"
 
-// forward declaration
-class Epetra_FEVector;
+#include <Epetra_FEVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 

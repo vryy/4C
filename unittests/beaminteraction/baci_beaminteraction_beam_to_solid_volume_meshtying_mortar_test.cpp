@@ -61,7 +61,7 @@ namespace
       const int dummy_node_ids[2] = {0, 1};
       Teuchos::RCP<DRT::Element> beam_element = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
       beam_element->SetNodeIds(2, dummy_node_ids);
-      Teuchos::RCP<DRT::Element> solid_element = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(1, 0));
+      Teuchos::RCP<DRT::Element> solid_element = Teuchos::rcp(new DRT::ELEMENTS::SoHex8(1, 0));
 
       // Set up the beam element.
       std::vector<double> xrefe(6);

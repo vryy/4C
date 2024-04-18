@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_shw6::ReadElement(
+bool DRT::ELEMENTS::SoShw6::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read number of material model

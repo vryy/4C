@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                            seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(int id, int owner)
-    : So_base(id, owner),
+DRT::ELEMENTS::So3Plast<distype>::So3Plast(int id, int owner)
+    : SoBase(id, owner),
       fbar_(false),
       KbbInv_(std::vector<CORE::LINALG::SerialDenseMatrix>(0)),
       Kbd_(std::vector<CORE::LINALG::SerialDenseMatrix>(0)),
@@ -64,8 +64,8 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(int id, int owner)
  | copy-ctor (public)                                       seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(const DRT::ELEMENTS::So3_Plast<distype>& old)
-    : So_base(old)
+DRT::ELEMENTS::So3Plast<distype>::So3Plast(const DRT::ELEMENTS::So3Plast<distype>& old)
+    : SoBase(old)
 {
   if (distype == CORE::FE::CellType::nurbs27)
     SetNurbsElement() = true;
@@ -80,125 +80,125 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(const DRT::ELEMENTS::So3_Plast<dist
  | it (public)                                                          |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::So3_Plast<distype>::Clone() const
+DRT::Element* DRT::ELEMENTS::So3Plast<distype>::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So3_Plast<distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::So3Plast<distype>(*this);
 
   return newelement;
 }
 
 
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
-    DRT::ELEMENTS::So3_Plast<distype>::shapefunct_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nen_, 1>>
+    DRT::ELEMENTS::So3Plast<distype>::shapefunct_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nen_>>
-    DRT::ELEMENTS::So3_Plast<distype>::deriv_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nen_>>
+    DRT::ELEMENTS::So3Plast<distype>::deriv_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::invJ_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::invJ_;
 template <CORE::FE::CellType distype>
-std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::detJ_;
+std::pair<bool, double> DRT::ELEMENTS::So3Plast<distype>::detJ_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nen_>>
-    DRT::ELEMENTS::So3_Plast<distype>::N_XYZ_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nen_>>
+    DRT::ELEMENTS::So3Plast<distype>::N_XYZ_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::defgrd_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::defgrd_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::defgrd_mod_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::defgrd_mod_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::rcg_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::rcg_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::delta_Lp_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::delta_Lp_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
-                    DRT::ELEMENTS::So3_Plast<distype>::numdofperelement_>>
-    DRT::ELEMENTS::So3_Plast<distype>::bop_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::numstr_,
+                    DRT::ELEMENTS::So3Plast<distype>::numdofperelement_>>
+    DRT::ELEMENTS::So3Plast<distype>::bop_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_, 1>>
-    DRT::ELEMENTS::So3_Plast<distype>::pk2_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::numstr_, 1>>
+    DRT::ELEMENTS::So3Plast<distype>::pk2_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
-                    DRT::ELEMENTS::So3_Plast<distype>::numstr_>>
-    DRT::ELEMENTS::So3_Plast<distype>::cmat_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::numstr_,
+                    DRT::ELEMENTS::So3Plast<distype>::numstr_>>
+    DRT::ELEMENTS::So3Plast<distype>::cmat_;
 
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::xrefe_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nen_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::xrefe_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::xcurr_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nen_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::xcurr_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::xcurr_rate_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nen_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::xcurr_rate_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
-    DRT::ELEMENTS::So3_Plast<distype>::etemp_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nen_, 1>>
+    DRT::ELEMENTS::So3Plast<distype>::etemp_;
 
 template <CORE::FE::CellType distype>
-std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::detF_;
+std::pair<bool, double> DRT::ELEMENTS::So3Plast<distype>::detF_;
 template <CORE::FE::CellType distype>
-std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::detF_0_;
+std::pair<bool, double> DRT::ELEMENTS::So3Plast<distype>::detF_0_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::inv_defgrd_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::inv_defgrd_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::inv_defgrd_0_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::inv_defgrd_0_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nen_>>
-    DRT::ELEMENTS::So3_Plast<distype>::N_XYZ_0_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nen_>>
+    DRT::ELEMENTS::So3Plast<distype>::N_XYZ_0_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_, 1>>
-    DRT::ELEMENTS::So3_Plast<distype>::rcg_vec_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::numstr_, 1>>
+    DRT::ELEMENTS::So3Plast<distype>::rcg_vec_;
 template <CORE::FE::CellType distype>
-std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::f_bar_fac_;
+std::pair<bool, double> DRT::ELEMENTS::So3Plast<distype>::f_bar_fac_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numdofperelement_, 1>>
-    DRT::ELEMENTS::So3_Plast<distype>::htensor_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::numdofperelement_, 1>>
+    DRT::ELEMENTS::So3Plast<distype>::htensor_;
 
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
-                    DRT::ELEMENTS::So3_Plast<distype>::numstr_>>
-    DRT::ELEMENTS::So3_Plast<distype>::T0invT_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::numstr_,
+                    DRT::ELEMENTS::So3Plast<distype>::numstr_>>
+    DRT::ELEMENTS::So3Plast<distype>::T0invT_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
-    DRT::ELEMENTS::So3_Plast<distype>::jac_0_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nsd_,
+                    DRT::ELEMENTS::So3Plast<distype>::nsd_>>
+    DRT::ELEMENTS::So3Plast<distype>::jac_0_;
 template <CORE::FE::CellType distype>
-std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::det_jac_0_;
+std::pair<bool, double> DRT::ELEMENTS::So3Plast<distype>::det_jac_0_;
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::SerialDenseMatrix> DRT::ELEMENTS::So3_Plast<distype>::M_eas_;
+std::pair<bool, CORE::LINALG::SerialDenseMatrix> DRT::ELEMENTS::So3Plast<distype>::M_eas_;
 
 template <CORE::FE::CellType distype>
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
-    DRT::ELEMENTS::So3_Plast<distype>::weights_;
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<distype>::nen_, 1>>
+    DRT::ELEMENTS::So3Plast<distype>::weights_;
 template <CORE::FE::CellType distype>
 std::pair<bool, std::vector<CORE::LINALG::SerialDenseVector>>
-    DRT::ELEMENTS::So3_Plast<distype>::knots_;
+    DRT::ELEMENTS::So3Plast<distype>::knots_;
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3_Plast<distype>::NumVolume() const
+int DRT::ELEMENTS::So3Plast<distype>::NumVolume() const
 {
   switch (distype)
   {
@@ -210,7 +210,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumVolume() const
       return 0;
       break;
     default:
-      dserror("unknown distpye for So3_Plast");
+      dserror("unknown distpye for So3Plast");
       break;
       return 0;
   }
@@ -220,7 +220,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumVolume() const
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3_Plast<distype>::NumSurface() const
+int DRT::ELEMENTS::So3Plast<distype>::NumSurface() const
 {
   switch (distype)
   {
@@ -234,7 +234,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumSurface() const
       return 4;
       break;
     default:
-      dserror("unknown distpye for So3_Plast");
+      dserror("unknown distpye for So3Plast");
       break;
       return 0;
   }
@@ -244,7 +244,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumSurface() const
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
+int DRT::ELEMENTS::So3Plast<distype>::NumLine() const
 {
   switch (distype)
   {
@@ -258,7 +258,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
       return 6;
       break;
     default:
-      dserror("unknown distpye for So3_Plast");
+      dserror("unknown distpye for So3Plast");
       break;
       return 0;
   }
@@ -268,7 +268,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3Plast<distype>::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
       CORE::COMM::buildLines, *this);
@@ -278,7 +278,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Lines
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3Plast<distype>::Surfaces()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
       CORE::COMM::buildSurfaces, *this);
@@ -288,7 +288,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So3_Plast<distype>::Surfa
  | pack data (public)                                       seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Plast<distype>::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::So3Plast<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -298,7 +298,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, type);
 
   // add base class Element
-  So_base::Pack(data);
+  SoBase::Pack(data);
 
   // Gauss points and weights
   const auto size2 = (int)xsi_.size();
@@ -358,7 +358,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(CORE::COMM::PackBuffer& data) const
  | unpack data (public)                                     seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Plast<distype>::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -367,7 +367,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  So_base::Unpack(basedata);
+  SoBase::Unpack(basedata);
 
   // Gauss points and weights
   int size2 = ExtractInt(position, data);
@@ -400,7 +400,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(const std::vector<char>& data)
   }
 
   // EAS element technology
-  eastype_ = static_cast<DRT::ELEMENTS::So3Plast_EASType>(ExtractInt(position, data));
+  eastype_ = static_cast<DRT::ELEMENTS::So3PlastEasType>(ExtractInt(position, data));
   ExtractfromPack(position, data, neas_);
 
   // no EAS
@@ -481,9 +481,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(const std::vector<char>& data)
  | print this element (public)                              seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Plast<distype>::Print(std::ostream& os) const
+void DRT::ELEMENTS::So3Plast<distype>::Print(std::ostream& os) const
 {
-  os << "So3_Plast ";
+  os << "So3Plast ";
   return;
 }
 
@@ -492,7 +492,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Print(std::ostream& os) const
  | read this element, get the material (public)             seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
+bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   std::string buffer;
@@ -673,23 +673,23 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
  | get the nodes from so3 (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3_Plast<distype>::UniqueParObjectId() const
+int DRT::ELEMENTS::So3Plast<distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
     case CORE::FE::CellType::hex8:
     {
-      return So_hex8PlastType::Instance().UniqueParObjectId();
+      return SoHex8PlastType::Instance().UniqueParObjectId();
       break;
     }  // hex8
     case CORE::FE::CellType::hex27:
-      return So_hex27PlastType::Instance().UniqueParObjectId();
+      return SoHex27PlastType::Instance().UniqueParObjectId();
       break;
     case CORE::FE::CellType::tet4:
-      return So_tet4PlastType::Instance().UniqueParObjectId();
+      return SoTet4PlastType::Instance().UniqueParObjectId();
       break;
     case CORE::FE::CellType::nurbs27:
-      return So_nurbs27PlastType::Instance().UniqueParObjectId();
+      return SoNurbs27PlastType::Instance().UniqueParObjectId();
       break;
     default:
       dserror("unknown element type!");
@@ -705,30 +705,30 @@ int DRT::ELEMENTS::So3_Plast<distype>::UniqueParObjectId() const
  | get the nodes from so3 (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-DRT::ElementType& DRT::ELEMENTS::So3_Plast<distype>::ElementType() const
+DRT::ElementType& DRT::ELEMENTS::So3Plast<distype>::ElementType() const
 {
   switch (distype)
   {
     case CORE::FE::CellType::hex8:
     {
-      return So_hex8PlastType::Instance();
+      return SoHex8PlastType::Instance();
       break;
     }
     case CORE::FE::CellType::hex27:
-      return So_hex27PlastType::Instance();
+      return SoHex27PlastType::Instance();
       break;
     case CORE::FE::CellType::tet4:
-      return So_tet4PlastType::Instance();
+      return SoTet4PlastType::Instance();
       break;
     case CORE::FE::CellType::nurbs27:
-      return So_nurbs27PlastType::Instance();
+      return SoNurbs27PlastType::Instance();
       break;
     default:
       dserror("unknown element type!");
       break;
   }
   // Intel compiler needs a return
-  return So_hex8PlastType::Instance();
+  return SoHex8PlastType::Instance();
 
 };  // ElementType()
 
@@ -737,7 +737,7 @@ DRT::ElementType& DRT::ELEMENTS::So3_Plast<distype>::ElementType() const
  | return names of visualization data (public)              seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Plast<distype>::VisNames(std::map<std::string, int>& names)
+void DRT::ELEMENTS::So3Plast<distype>::VisNames(std::map<std::string, int>& names)
 {
   DRT::Element::VisNames(names);
   SolidMaterial()->VisNames(names);
@@ -749,7 +749,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::VisNames(std::map<std::string, int>& nam
  | return visualization data (public)                       seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3_Plast<distype>::VisData(const std::string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::So3Plast<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name, data)) return true;
@@ -762,7 +762,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::VisData(const std::string& name, std::ve
  | read relevant parameters from paramter list              seitz 01/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
+void DRT::ELEMENTS::So3Plast<distype>::ReadParameterList(
     Teuchos::RCP<Teuchos::ParameterList> plparams)
 {
   double cpl = plparams->get<double>("SEMI_SMOOTH_CPL");
@@ -817,7 +817,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 template <unsigned int num_cols>
-void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
+void DRT::ELEMENTS::So3Plast<distype>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, num_cols>& data, Epetra_MultiVector& expolData)
 {
   if (distype != CORE::FE::CellType::hex8) dserror("soh8_expol called from non-hex8 element");
@@ -895,18 +895,18 @@ void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
   return;
 }
 
-template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::soh8_expol(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, 1>&, Epetra_MultiVector&);
-template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::soh8_expol(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, numstr_>&, Epetra_MultiVector&);
-template void DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>::soh8_expol(
+template void DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, 9>&, Epetra_MultiVector&);
 
 /*----------------------------------------------------------------------*
  | Have plastic spin                                        seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3_Plast<distype>::HavePlasticSpin()
+bool DRT::ELEMENTS::So3Plast<distype>::HavePlasticSpin()
 {
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
@@ -918,7 +918,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::HavePlasticSpin()
   return false;
 }
 
-int DRT::ELEMENTS::PlastEasTypeToNumEasV(DRT::ELEMENTS::So3Plast_EASType et)
+int DRT::ELEMENTS::PlastEasTypeToNumEasV(DRT::ELEMENTS::So3PlastEasType et)
 {
   switch (et)
   {

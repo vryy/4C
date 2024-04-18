@@ -27,12 +27,12 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class So_sh18PlastType : public So_sh18Type
+    class SoSh18PlastType : public SoSh18Type
     {
      public:
-      std::string Name() const override { return "So_sh18PlastType"; }
+      std::string Name() const override { return "SoSh18PlastType"; }
 
-      static So_sh18PlastType& Instance();
+      static SoSh18PlastType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -48,51 +48,51 @@ namespace DRT
           override;
 
      private:
-      static So_sh18PlastType instance_;
+      static SoSh18PlastType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDSH18PLAST"; }
-    };  // class So_sh18PlastType
+    };  // class SoSh18PlastType
 
-    class So_sh18Plast : public virtual So3_Plast<CORE::FE::CellType::hex18>, public virtual So_sh18
+    class SoSh18Plast : public virtual So3Plast<CORE::FE::CellType::hex18>, public virtual SoSh18
     {
      public:
       //! @name Friends
-      friend class So_sh18PlastType;
+      friend class SoSh18PlastType;
 
 
       //! Standard Constructor
-      So_sh18Plast(int id,  //!< (i) this element's global id
-          int owner         //!< elements owner
+      SoSh18Plast(int id,  //!< (i) this element's global id
+          int owner        //!< elements owner
       );
 
       //! Copy Constructor
       //! Makes a deep copy of a Element
-      So_sh18Plast(const So_sh18Plast& old);
+      SoSh18Plast(const SoSh18Plast& old);
 
       bool HaveEAS() const override { return (eastype_ != soh8p_easnone); };
 
       //! resolve "no unique final overrider"
-      int NumVolume() const override { return So_sh18::NumVolume(); }
+      int NumVolume() const override { return SoSh18::NumVolume(); }
       CORE::FE::CellType Shape() const override { return CORE::FE::CellType::hex18; };
-      int NumSurface() const override { return So_sh18::NumSurface(); }
-      int NumLine() const override { return So_sh18::NumLine(); }
-      std::vector<Teuchos::RCP<DRT::Element>> Lines() override { return So_sh18::Lines(); }
-      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override { return So_sh18::Surfaces(); }
+      int NumSurface() const override { return SoSh18::NumSurface(); }
+      int NumLine() const override { return SoSh18::NumLine(); }
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override { return SoSh18::Lines(); }
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override { return SoSh18::Surfaces(); }
       int NumDofPerNode(const DRT::Node& node) const override
       {
-        return So_sh18::NumDofPerNode(node);
+        return SoSh18::NumDofPerNode(node);
       }
-      int NumDofPerElement() const override { return So_sh18::NumDofPerElement(); }
-      void VisNames(std::map<std::string, int>& names) override { return So_sh18::VisNames(names); }
+      int NumDofPerElement() const override { return SoSh18::NumDofPerElement(); }
+      void VisNames(std::map<std::string, int>& names) override { return SoSh18::VisNames(names); }
       bool VisData(const std::string& name, std::vector<double>& data) override
       {
-        return So_sh18::VisData(name, data);
+        return SoSh18::VisData(name, data);
       }
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
       {
-        return So_sh18::EvaluateNeumann(params, discretization, condition, lm, elevec1, elemat1);
+        return SoSh18::EvaluateNeumann(params, discretization, condition, lm, elevec1, elemat1);
       }
 
       //! Deep copy this instance of Solid3 and return pointer to the copy
@@ -108,7 +108,7 @@ namespace DRT
       //! this file.
       int UniqueParObjectId() const override
       {
-        return So_sh18PlastType::Instance().UniqueParObjectId();
+        return SoSh18PlastType::Instance().UniqueParObjectId();
       }
 
       //! Pack this class so it can be communicated
@@ -123,7 +123,7 @@ namespace DRT
       void Print(std::ostream& os) const override;
 
       //! return elementtype
-      So_sh18PlastType& ElementType() const override { return So_sh18PlastType::Instance(); }
+      SoSh18PlastType& ElementType() const override { return SoSh18PlastType::Instance(); }
 
       //! read input for this element
       bool ReadElement(const std::string& eletype, const std::string& distype,
@@ -154,14 +154,14 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
           ) override
       {
-        return DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>::Evaluate(params, discretization,
+        return DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>::Evaluate(params, discretization,
             la, elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
       }
 
 
      private:
       // don't want = operator
-      So_sh18Plast& operator=(const So_sh18Plast& old) = delete;
+      SoSh18Plast& operator=(const SoSh18Plast& old) = delete;
 
       std::string GetElementTypeString() const { return "SOLIDSH18PLAST"; }
 

@@ -37,7 +37,7 @@ namespace MAT
     /// This object exists only once for each read fluid.
     class FluidPoroSingleReaction : public Parameter
     {
-      enum porofluid_reaction_coupling
+      enum PorofluidReactionCoupling
       {
         porofluid_reac_coup_none,              ///< no coupling, initialization value
         porofluid_reac_coup_scalarsbyfunction  ///< reaction depending on scalars defined by
@@ -97,7 +97,7 @@ namespace MAT
       const std::vector<int>* scale_;
 
       /// type of coupling
-      const MAT::PAR::FluidPoroSingleReaction::porofluid_reaction_coupling coupling_;
+      const MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling coupling_;
 
       /// ID of the function defining the reaction
       const int functID_;
@@ -105,7 +105,7 @@ namespace MAT
 
      private:
       /// returns the enum of the current coupling type
-      MAT::PAR::FluidPoroSingleReaction::porofluid_reaction_coupling SetCouplingType(
+      MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling SetCouplingType(
           Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! templated internal Initialize implementation

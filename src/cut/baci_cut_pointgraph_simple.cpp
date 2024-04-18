@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::IMPL::SimplePointGraph_1D::SimplePointGraph_1D(Mesh &mesh, Element *element,
+CORE::GEO::CUT::IMPL::SimplePointGraph1D::SimplePointGraph1D(Mesh &mesh, Element *element,
     Side *side, PointGraph::Location location, PointGraph::Strategy strategy)
     : PointGraph::PointGraph(1) /* explicit call of the protected base
                                    class constructor */
@@ -36,7 +36,7 @@ CORE::GEO::CUT::IMPL::SimplePointGraph_1D::SimplePointGraph_1D(Mesh &mesh, Eleme
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph_1D::BuildCycle(
+void CORE::GEO::CUT::IMPL::SimplePointGraph1D::BuildCycle(
     const std::vector<Point *> &edge_points, Cycle &cycle) const
 {
   /* since a closed cycle is not possible for 1-D elements, we have to consider
@@ -51,7 +51,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_1D::BuildCycle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph_1D::AddCutLinesToGraph(
+void CORE::GEO::CUT::IMPL::SimplePointGraph1D::AddCutLinesToGraph(
     Element *element, Side *side, Strategy strategy, Cycle &cycle)
 {
   // this is completely unnecessary for the element_side
@@ -62,7 +62,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_1D::AddCutLinesToGraph(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph_1D::AddCutPointsToCycle(
+void CORE::GEO::CUT::IMPL::SimplePointGraph1D::AddCutPointsToCycle(
     Element *element, Side *side, Cycle &cycle)
 {
   std::vector<Side *> ele_sides = element->Sides();
@@ -86,7 +86,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_1D::AddCutPointsToCycle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph_1D::Graph::FindCycles(
+void CORE::GEO::CUT::IMPL::SimplePointGraph1D::Graph::FindCycles(
     Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy)
 {
   // each point defines a own main cycle in 1D
@@ -111,10 +111,10 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_1D::Graph::FindCycles(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::IMPL::SimplePointGraph_2D::SimplePointGraph_2D(Mesh &mesh, Element *element,
+CORE::GEO::CUT::IMPL::SimplePointGraph2D::SimplePointGraph2D(Mesh &mesh, Element *element,
     Side *side, PointGraph::Location location, PointGraph::Strategy strategy)
     : PointGraph::PointGraph(mesh, element, side, location, strategy),
-      graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph_2D::Graph>(GraphPtr(), true))
+      graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph2D::Graph>(GraphPtr(), true))
 {
   if (element->Dim() != 2) dserror("This class is only meaningful for 2-D elements!");
   /* intentionally left blank, the work is done in the base class */
@@ -122,7 +122,7 @@ CORE::GEO::CUT::IMPL::SimplePointGraph_2D::SimplePointGraph_2D(Mesh &mesh, Eleme
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IMPL::SimplePointGraph_2D::Graph::HasSinglePoints(Location location)
+bool CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::HasSinglePoints(Location location)
 {
   // it is allowed for the 2-D case
   if (location == cut_side) return false;
@@ -132,7 +132,7 @@ bool CORE::GEO::CUT::IMPL::SimplePointGraph_2D::Graph::HasSinglePoints(Location 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::Graph::FindCycles(
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::FindCycles(
     Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy)
 {
   if (location == element_side)
@@ -168,7 +168,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::Graph::FindCycles(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::Graph::SplitMainCyclesIntoLineCycles()
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::SplitMainCyclesIntoLineCycles()
 {
   std::vector<Cycle> line_main_cycles;
   for (std::vector<Cycle>::const_iterator ic = main_cycles_.begin(); ic != main_cycles_.end(); ++ic)
@@ -194,16 +194,16 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::Graph::SplitMainCyclesIntoLineCy
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::IMPL::SimplePointGraph_2D::SimplePointGraph_2D()
+CORE::GEO::CUT::IMPL::SimplePointGraph2D::SimplePointGraph2D()
     : CORE::GEO::CUT::IMPL::PointGraph(2),
-      graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph_2D::Graph>(GraphPtr(), true))
+      graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph2D::Graph>(GraphPtr(), true))
 {
   /* intentionally left blank */
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::FindLineFacetCycles(
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::FindLineFacetCycles(
     const plain_facet_set &line_facets, Element *parent_element)
 {
   Cycle cycle;
@@ -216,7 +216,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::FindLineFacetCycles(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::FillGraphAndCycleWithLineFacets(
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::FillGraphAndCycleWithLineFacets(
     const plain_facet_set &line_facets, Cycle &cycle)
 {
   plain_point_set point_set;
@@ -238,14 +238,14 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::FillGraphAndCycleWithLineFacets(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::FindCycles(Element *element, Cycle &cycle)
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::FindCycles(Element *element, Cycle &cycle)
 {
   Side *side = element->Sides()[0];
   GetGraph().FindCycles(element, side, cycle, PointGraph::element_side, PointGraph::all_lines);
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::CorrectRotationDirection(
+void CORE::GEO::CUT::IMPL::SimplePointGraph2D::CorrectRotationDirection(
     const Side *side, std::vector<Cycle> &cycles)
 {
   CORE::LINALG::Matrix<2, 1> rs = CORE::FE::getLocalCenterPosition<2>(side->Shape());

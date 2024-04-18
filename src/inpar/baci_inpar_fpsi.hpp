@@ -23,7 +23,7 @@ namespace INPUT
 /*----------------------------------------------------------------------*
  | Coupling Methods                                                                  |
  *----------------------------------------------------------------------*/
-enum _FPSI_COUPLING
+enum FpsiCoupling
 {
   fpsi_monolithic_plain,
   partitioned

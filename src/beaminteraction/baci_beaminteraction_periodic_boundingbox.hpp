@@ -16,9 +16,8 @@
 
 #include "baci_linalg_fixedsizematrix.hpp"
 
+#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-
-class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -89,7 +89,7 @@ static void destroy_symbol(SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void destroy_node(MAP_NODE* node)
+static void destroy_node(MapNode* node)
 {
   if (node != nullptr)
   {
@@ -157,7 +157,7 @@ void destroy_map(MAP* map)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static int map_cmp_nodes(const MAP_NODE* lhs, const char* rhs_key)
+static int map_cmp_nodes(const MapNode* lhs, const char* rhs_key)
 {
   if (lhs->key == nullptr) return -1;
   return strcmp(lhs->key, rhs_key);
@@ -174,9 +174,9 @@ static int map_cmp_nodes(const MAP_NODE* lhs, const char* rhs_key)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static MAP_NODE* map_find_node(MAP* map, const char* key)
+static MapNode* map_find_node(MAP* map, const char* key)
 {
-  MAP_NODE* node;
+  MapNode* node;
 
   node = &(map->root);
 
@@ -231,7 +231,7 @@ end:
 /*----------------------------------------------------------------------*/
 SYMBOL* map_find_symbol(MAP* map, const char* key)
 {
-  MAP_NODE* node;
+  MapNode* node;
   SYMBOL* symbol = nullptr;
 
   node = map_find_node(map, key);
@@ -558,7 +558,7 @@ int map_has_map(MAP* map, const char* key)
 /*----------------------------------------------------------------------*/
 static void map_insert_symbol(MAP* map, SYMBOL* symbol, char* key)
 {
-  MAP_NODE* node;
+  MapNode* node;
 
   node = &(map->root);
   for (;;)
@@ -569,7 +569,7 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, char* key)
     {
       if (node->rhs == nullptr)
       {
-        node->rhs = new MAP_NODE;
+        node->rhs = new MapNode;
         node->rhs->key = key;
         node->rhs->symbol = symbol;
         node->rhs->count = 1;
@@ -587,7 +587,7 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, char* key)
     {
       if (node->lhs == nullptr)
       {
-        node->lhs = new MAP_NODE;
+        node->lhs = new MapNode;
         node->lhs->key = key;
         node->lhs->symbol = symbol;
         node->lhs->count = 1;
@@ -717,7 +717,7 @@ int map_symbol_count(MAP* map, const char* key)
 {
   int count = 0;
 
-  const MAP_NODE* node = map_find_node(map, key);
+  const MapNode* node = map_find_node(map, key);
   if (node != nullptr)
   {
     count = node->count;
@@ -742,7 +742,7 @@ int map_symbol_count(MAP* map, const char* key)
 /*----------------------------------------------------------------------*/
 void map_disconnect_symbols(MAP* map, const char* key)
 {
-  MAP_NODE* node = map_find_node(map, key);
+  MapNode* node = map_find_node(map, key);
   if (node != nullptr)
   {
     node->symbol = nullptr;
@@ -766,7 +766,7 @@ void map_disconnect_symbols(MAP* map, const char* key)
 /*----------------------------------------------------------------------*/
 void map_prepend_symbols(MAP* map, const char* key, SYMBOL* symbol, int count)
 {
-  MAP_NODE* node;
+  MapNode* node;
 
   node = map_find_node(map, key);
   if (node != nullptr)
@@ -1015,7 +1015,7 @@ MAP* symbol_map(const SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-typedef enum _TOKEN_TYPE
+typedef enum TokenType
 {
   tok_none,
   tok_done,
@@ -1044,7 +1044,7 @@ typedef enum _TOKEN_TYPE
   \date 08/04
  */
 /*----------------------------------------------------------------------*/
-struct PARSER_DATA
+struct ParserData
 {
   TOKEN_TYPE tok;
   char* token_string;
@@ -1072,7 +1072,7 @@ struct PARSER_DATA
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void init_parser_data(PARSER_DATA* data, const char* filename, MPI_Comm comm)
+static void init_parser_data(ParserData* data, const char* filename, MPI_Comm comm)
 {
   data->tok = tok_none;
   data->lineno = 1;
@@ -1152,7 +1152,7 @@ static void init_parser_data(PARSER_DATA* data, const char* filename, MPI_Comm c
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void destroy_parser_data(PARSER_DATA* data) { free(data->file_buffer); }
+static void destroy_parser_data(ParserData* data) { free(data->file_buffer); }
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -1162,7 +1162,7 @@ static void destroy_parser_data(PARSER_DATA* data) { free(data->file_buffer); }
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static int getnext(PARSER_DATA* data)
+static int getnext(ParserData* data)
 {
   if (data->pos < data->file_size)
   {
@@ -1190,7 +1190,7 @@ static int getnext(PARSER_DATA* data)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void lexan(PARSER_DATA* data)
+static void lexan(ParserData* data)
 {
   int line_begin = 0;
   int t;
@@ -1417,7 +1417,7 @@ end:
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void parse_definitions(PARSER_DATA* data, MAP* dir)
+static void parse_definitions(ParserData* data, MAP* dir)
 {
   lexan(data);
 
@@ -1523,7 +1523,7 @@ end:
 /*----------------------------------------------------------------------*/
 void parse_control_file_serial(MAP* map, const char* filename)
 {
-  PARSER_DATA data;
+  ParserData data;
 
   /*
    * So here we are. Before the symbol table can be filled with values
@@ -1580,7 +1580,7 @@ void parse_control_file_serial(MAP* map, const char* filename)
 /*----------------------------------------------------------------------*/
 void parse_control_file(MAP* map, const char* filename, MPI_Comm comm)
 {
-  PARSER_DATA data;
+  ParserData data;
 
   /*
    * So here we are. Before the symbol table can be filled with values

@@ -892,8 +892,8 @@ void STRUMULTI::MicroStatic::SetEASData()
   {
     DRT::Element* actele = discret_->lRowElement(lid);
 
-    if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::So_shw6Type::Instance())
+    if (actele->ElementType() == DRT::ELEMENTS::SoHex8Type::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::SoShw6Type::Instance())
     {
       // create the parameters for the discretization
       Teuchos::ParameterList p;

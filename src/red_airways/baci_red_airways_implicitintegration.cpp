@@ -480,8 +480,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
           INPAR::MAT::m_0d_maxwell_acinus_ogden)
       {
         // get material parameters kappa and beta
-        Teuchos::RCP<MAT::Maxwell_0d_acinus_Ogden> mymat =
-            Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus_Ogden>(
+        Teuchos::RCP<MAT::Maxwell0dAcinusOgden> mymat =
+            Teuchos::rcp_dynamic_cast<MAT::Maxwell0dAcinusOgden>(
                 discret_->gElement(GID)->Material(0));
         double kappa = mymat->GetParams("kappa");
         double beta = mymat->GetParams("beta");

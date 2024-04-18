@@ -143,7 +143,7 @@ namespace ADAPTER
     bool IsAleRelaxationStep(int step) const;
 
     /// get type of monolithic XFFSI approach
-    INPAR::XFEM::Monolithic_xffsi_Approach MonolithicXffsiApproach() const
+    INPAR::XFEM::MonolithicXffsiApproach MonolithicXffsiApproach() const
     {
       return monolithic_approach_;
     }
@@ -169,7 +169,7 @@ namespace ADAPTER
 
     /// type of monolithic XFluid-Fluid approach (decides whether ALE-mesh is fixed during
     /// Newton iteration)
-    enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;
+    enum INPAR::XFEM::MonolithicXffsiApproach monolithic_approach_;
 
     /// flag, that indicates, whether ALE-relaxation is activated
     bool relaxing_ale_;

@@ -340,17 +340,17 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Vector> RHS() { return cond_rhs_; }
 
     //! clear everything that is needed for coupling
-    void Clear(POROELAST::coupltype coupltype = POROELAST::undefined);
+    void Clear(POROELAST::Coupltype coupltype = POROELAST::undefined);
 
     //! setup coupling matrixes and vecors
     void Setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid);
 
     //! return constraint matrix, that fits to coupling type
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix(POROELAST::coupltype coupltype);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix(POROELAST::Coupltype coupltype);
 
     //! return constraint matrix for structure velocity coupling
     Teuchos::RCP<CORE::LINALG::SparseMatrix> StructVelConstraintMatrix(
-        POROELAST::coupltype coupltype);
+        POROELAST::Coupltype coupltype);
 
    private:
     //! set containing global IDs of dofs with no penetration condition

@@ -26,10 +26,6 @@
 #include <string>
 #include <vector>
 
-// forward declarations
-class Epetra_Vector;
-class Epetra_MultiVector;
-
 FOUR_C_NAMESPACE_OPEN
 class PostField;
 class PostResult;

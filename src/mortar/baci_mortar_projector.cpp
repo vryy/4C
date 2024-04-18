@@ -101,32 +101,32 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::quad4:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad4,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
               CORE::FE::CellType::quad4>::Instance();
         }
         case CORE::FE::CellType::quad8:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad4,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
               CORE::FE::CellType::quad8>::Instance();
         }
         case CORE::FE::CellType::quad9:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad4,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
               CORE::FE::CellType::quad9>::Instance();
         }
         case CORE::FE::CellType::tri3:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad4,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
               CORE::FE::CellType::tri3>::Instance();
         }
         case CORE::FE::CellType::tri6:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad4,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
               CORE::FE::CellType::tri6>::Instance();
         }
         case CORE::FE::CellType::nurbs9:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad4,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
               CORE::FE::CellType::nurbs9>::Instance();
         }
         default:
@@ -141,27 +141,27 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::quad4:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad8,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad8,
               CORE::FE::CellType::quad4>::Instance();
         }
         case CORE::FE::CellType::quad8:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad8,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad8,
               CORE::FE::CellType::quad8>::Instance();
         }
         case CORE::FE::CellType::quad9:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad8,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad8,
               CORE::FE::CellType::quad9>::Instance();
         }
         case CORE::FE::CellType::tri3:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad8,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad8,
               CORE::FE::CellType::tri3>::Instance();
         }
         case CORE::FE::CellType::tri6:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad8,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad8,
               CORE::FE::CellType::tri6>::Instance();
         }
         default:
@@ -176,27 +176,27 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::quad4:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad9,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad9,
               CORE::FE::CellType::quad4>::Instance();
         }
         case CORE::FE::CellType::quad8:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad9,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad9,
               CORE::FE::CellType::quad8>::Instance();
         }
         case CORE::FE::CellType::quad9:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad9,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad9,
               CORE::FE::CellType::quad9>::Instance();
         }
         case CORE::FE::CellType::tri3:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad9,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad9,
               CORE::FE::CellType::tri3>::Instance();
         }
         case CORE::FE::CellType::tri6:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::quad9,
+          return ProjectorCalcEleBased<CORE::FE::CellType::quad9,
               CORE::FE::CellType::tri6>::Instance();
         }
         default:
@@ -211,27 +211,27 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::quad4:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::tri3,
+          return ProjectorCalcEleBased<CORE::FE::CellType::tri3,
               CORE::FE::CellType::quad4>::Instance();
         }
         case CORE::FE::CellType::quad8:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::tri3,
+          return ProjectorCalcEleBased<CORE::FE::CellType::tri3,
               CORE::FE::CellType::quad8>::Instance();
         }
         case CORE::FE::CellType::quad9:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::tri3,
+          return ProjectorCalcEleBased<CORE::FE::CellType::tri3,
               CORE::FE::CellType::quad9>::Instance();
         }
         case CORE::FE::CellType::tri3:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::tri3,
+          return ProjectorCalcEleBased<CORE::FE::CellType::tri3,
               CORE::FE::CellType::tri3>::Instance();
         }
         case CORE::FE::CellType::tri6:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::tri3,
+          return ProjectorCalcEleBased<CORE::FE::CellType::tri3,
               CORE::FE::CellType::tri6>::Instance();
         }
         default:
@@ -246,27 +246,27 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::quad4:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::tri6,
+          return ProjectorCalcEleBased<CORE::FE::CellType::tri6,
               CORE::FE::CellType::quad4>::Instance();
         }
         case CORE::FE::CellType::quad8:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::tri6,
+          return ProjectorCalcEleBased<CORE::FE::CellType::tri6,
               CORE::FE::CellType::quad8>::Instance();
         }
         case CORE::FE::CellType::quad9:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::tri6,
+          return ProjectorCalcEleBased<CORE::FE::CellType::tri6,
               CORE::FE::CellType::quad9>::Instance();
         }
         case CORE::FE::CellType::tri3:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::tri6,
+          return ProjectorCalcEleBased<CORE::FE::CellType::tri6,
               CORE::FE::CellType::tri3>::Instance();
         }
         case CORE::FE::CellType::tri6:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::tri6,
+          return ProjectorCalcEleBased<CORE::FE::CellType::tri6,
               CORE::FE::CellType::tri6>::Instance();
         }
         default:
@@ -281,12 +281,12 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::line2:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::line2,
+          return ProjectorCalcEleBased<CORE::FE::CellType::line2,
               CORE::FE::CellType::line2>::Instance();
         }
         case CORE::FE::CellType::line3:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::line2,
+          return ProjectorCalcEleBased<CORE::FE::CellType::line2,
               CORE::FE::CellType::line3>::Instance();
         }
         default:
@@ -301,12 +301,12 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::line2:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::line3,
+          return ProjectorCalcEleBased<CORE::FE::CellType::line3,
               CORE::FE::CellType::line2>::Instance();
         }
         case CORE::FE::CellType::line3:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::line3,
+          return ProjectorCalcEleBased<CORE::FE::CellType::line3,
               CORE::FE::CellType::line3>::Instance();
         }
         default:
@@ -324,12 +324,12 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::nurbs2:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs2,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs2,
               CORE::FE::CellType::nurbs2>::Instance();
         }
         case CORE::FE::CellType::nurbs3:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs2,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs2,
               CORE::FE::CellType::nurbs3>::Instance();
         }
         default:
@@ -344,12 +344,12 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::nurbs2:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs3,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs3,
               CORE::FE::CellType::nurbs2>::Instance();
         }
         case CORE::FE::CellType::nurbs3:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs3,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs3,
               CORE::FE::CellType::nurbs3>::Instance();
         }
         default:
@@ -364,17 +364,17 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::nurbs4:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs4,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs4,
               CORE::FE::CellType::nurbs4>::Instance();
         }
         case CORE::FE::CellType::nurbs8:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs4,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs4,
               CORE::FE::CellType::nurbs8>::Instance();
         }
         case CORE::FE::CellType::nurbs9:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs4,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs4,
               CORE::FE::CellType::nurbs9>::Instance();
         }
         default:
@@ -389,17 +389,17 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::nurbs4:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs8,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs8,
               CORE::FE::CellType::nurbs4>::Instance();
         }
         case CORE::FE::CellType::nurbs8:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs8,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs8,
               CORE::FE::CellType::nurbs8>::Instance();
         }
         case CORE::FE::CellType::nurbs9:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs8,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs8,
               CORE::FE::CellType::nurbs9>::Instance();
         }
         default:
@@ -414,22 +414,22 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       {
         case CORE::FE::CellType::nurbs4:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs9,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs9,
               CORE::FE::CellType::nurbs4>::Instance();
         }
         case CORE::FE::CellType::nurbs8:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs9,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs9,
               CORE::FE::CellType::nurbs8>::Instance();
         }
         case CORE::FE::CellType::nurbs9:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs9,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs9,
               CORE::FE::CellType::nurbs9>::Instance();
         }
         case CORE::FE::CellType::quad4:
         {
-          return ProjectorCalc_EleBased<CORE::FE::CellType::nurbs9,
+          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs9,
               CORE::FE::CellType::quad4>::Instance();
         }
         default:
@@ -459,7 +459,7 @@ MORTAR::ProjectorCalc<distype>::ProjectorCalc()
  |  ctor ele-based (public)                                  farah 04/14|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::ProjectorCalc_EleBased()
+MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectorCalcEleBased()
 {
   // nothing
 }
@@ -478,15 +478,15 @@ MORTAR::ProjectorCalc<distype>* MORTAR::ProjectorCalc<distype>::Instance(
 }
 
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>*
-MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::Instance(CORE::UTILS::SingletonAction action)
+MORTAR::ProjectorCalcEleBased<distypeS, distypeM>*
+MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::Instance(CORE::UTILS::SingletonAction action)
 {
-  static CORE::UTILS::SingletonOwner<MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>>
+  static CORE::UTILS::SingletonOwner<MORTAR::ProjectorCalcEleBased<distypeS, distypeM>>
       singleton_owner(
           []()
           {
-            return std::unique_ptr<MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>>(
-                new MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>());
+            return std::unique_ptr<MORTAR::ProjectorCalcEleBased<distypeS, distypeM>>(
+                new MORTAR::ProjectorCalcEleBased<distypeS, distypeM>());
           });
 
   return singleton_owner.Instance(action);
@@ -622,7 +622,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectElementNormal(
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint2D(
+bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
     MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele, double* xi)
 {
   bool ok = true;
@@ -710,7 +710,7 @@ bool MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint2D(
  | Check projection for warped elements quad4 elements       farah 01/13|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::CheckProjection4AUXPLANE(
+bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::CheckProjection4AUXPLANE(
     MORTAR::Element& ele, double* ngp, double* globgp)
 {
   if (ele.Shape() == CORE::FE::CellType::tri3) dserror("ELEMENT SHAPE TRI3 -- NO WARPING");
@@ -867,7 +867,7 @@ bool MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::CheckProjection4AUXPLAN
  |  Project a Gauss point along its normal (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint3D(
+bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
     MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele, double* xi, double& par)
 {
   if (ndim_ == 3)
@@ -1272,7 +1272,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3D(
 template <CORE::FE::CellType distype>
 bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 3) dserror("ProjectSNodeByMNormal3D is only for 3D problems!");
 
@@ -1435,7 +1435,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Node& sn
 template <CORE::FE::CellType distype>
 bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 3) dserror("ProjectSNodeByMNormal3DLin is only for 3D problems!");
 
@@ -1604,7 +1604,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(MORTAR::Nod
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
   // get linsize
   int linsize = 0;
@@ -1616,16 +1616,16 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(MORTAR::Nod
     linsize += mnode->GetLinsize();
   }
 
-  std::vector<CORE::GEN::pairedvector<int, double>> xmLin(3, n_);  // nnode entry per dimension
-  std::vector<CORE::GEN::pairedvector<int, double>> xsLin(3, 1);   // one entry per dimension
+  std::vector<CORE::GEN::Pairedvector<int, double>> xmLin(3, n_);  // nnode entry per dimension
+  std::vector<CORE::GEN::Pairedvector<int, double>> xsLin(3, 1);   // one entry per dimension
 
-  std::vector<CORE::GEN::pairedvector<int, double>> normalpartLin(
+  std::vector<CORE::GEN::Pairedvector<int, double>> normalpartLin(
       3, linsize);  // linsize of all mnodes
-  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalLin(
+  std::vector<CORE::GEN::Pairedvector<int, double>> auxnormalLin(
       3, linsize);  // linsize of all mnodes
 
-  std::vector<CORE::GEN::pairedvector<int, double>> etaLin(3, linsize + n_ + 1);  // added all sizes
-  std::vector<CORE::GEN::pairedvector<int, double>> fLin(3, linsize + n_ + 1);    // added all sizes
+  std::vector<CORE::GEN::Pairedvector<int, double>> etaLin(3, linsize + n_ + 1);  // added all sizes
+  std::vector<CORE::GEN::Pairedvector<int, double>> fLin(3, linsize + n_ + 1);    // added all sizes
 
 
   //--------------------------
@@ -1693,11 +1693,11 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(MORTAR::Nod
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<CORE::GEN::pairedvector<int, double>> n_eta0_deriv(
+  std::vector<CORE::GEN::Pairedvector<int, double>> n_eta0_deriv(
       3, linsize + n_ + 1);  // added all sizes
-  std::vector<CORE::GEN::pairedvector<int, double>> n_eta1_deriv(
+  std::vector<CORE::GEN::Pairedvector<int, double>> n_eta1_deriv(
       3, linsize + n_ + 1);                                                 // added all sizes
-  std::vector<CORE::GEN::pairedvector<int, double>> n_n_deriv(3, linsize);  // linsize
+  std::vector<CORE::GEN::Pairedvector<int, double>> n_n_deriv(3, linsize);  // linsize
 
   for (int k = 0; k < n_; ++k)
   {
@@ -1750,7 +1750,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(MORTAR::Nod
 template <CORE::FE::CellType distype>
 bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 2) dserror("ProjectSNodeByMNormal2DLin is only for 2D problems!");
 
@@ -1913,13 +1913,13 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(MORTAR::Nod
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
-  std::vector<CORE::GEN::pairedvector<int, double>> etaLin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> fLin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> xmLin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> normalpartLin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> xsLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> etaLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> fLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> xmLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> normalpartLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> xsLin(3, 1000);
 
   //--------------------------
   // master part:
@@ -1935,9 +1935,9 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(MORTAR::Nod
 
   //--------------------------
   // normal part:
-  std::vector<CORE::GEN::pairedvector<int, double>> x_0Lin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> x_0Lin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> auxnormalLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> auxnormalunitLin(3, 1000);
 
   for (int i = 0; i < n_; ++i)
   {
@@ -1990,10 +1990,10 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(MORTAR::Nod
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<CORE::GEN::pairedvector<int, double>> n_eta0_deriv(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> n_eta1_deriv(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> n_n_deriv(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> n_eta0_deriv(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> n_eta1_deriv(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> n_n_deriv(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> normaltolineLinaux(3, 1000);
 
   for (int k = 0; k < n_; ++k)
   {
@@ -2188,7 +2188,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2D(
 template <CORE::FE::CellType distype>
 bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 2) dserror("ProjectSNodeByMNormal2D is only for 2D problems!");
 
@@ -2337,13 +2337,13 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Node& sn
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
+  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
 
-  std::vector<CORE::GEN::pairedvector<int, double>> etaLin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> fLin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> xmLin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> normalpartLin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> xsLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> etaLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> fLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> xmLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> normalpartLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> xsLin(3, 1000);
 
   //--------------------------
   // master part:
@@ -2362,9 +2362,9 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Node& sn
 
   //--------------------------
   // normal part:
-  std::vector<CORE::GEN::pairedvector<int, double>> x_0Lin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> x_0Lin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> auxnormalLin(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> auxnormalunitLin(3, 1000);
 
   CORE::LINALG::Matrix<1, n_> deriv1;
   CORE::FE::shape_function_1D_deriv1(deriv1, eta[0], distype);
@@ -2451,8 +2451,8 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Node& sn
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<CORE::GEN::pairedvector<int, double>> x_0Linnew(3, 1000);
-  std::vector<CORE::GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> x_0Linnew(3, 1000);
+  std::vector<CORE::GEN::Pairedvector<int, double>> normaltolineLinaux(3, 1000);
 
   CORE::LINALG::Matrix<1, n_> deriv;
   CORE::FE::shape_function_1D_deriv1(deriv, eta[0], distype);
@@ -2541,7 +2541,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormal(
 template <CORE::FE::CellType distype>
 bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
   bool success = false;
 
@@ -2567,7 +2567,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR::Node&
 template <CORE::FE::CellType distype>
 bool MORTAR::ProjectorCalc<distype>::ProjectSNodeByMNormalLin(MORTAR::Node& snode,
     MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::pairedvector<int, double>>& normaltolineLin)
+    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ == 2)
   {
@@ -2798,7 +2798,7 @@ double MORTAR::ProjectorCalc<distype>::EvaluateGradFElementNormal(
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::EvaluateFGaussPoint2D(
+double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateFGaussPoint2D(
     const double* gpx, const double* gpn, MORTAR::Element& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xim - gpx ) x gpn,
@@ -2829,7 +2829,7 @@ double MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::EvaluateFGaussPoint2D
  |  Evaluate GradF for Gauss point case (public)              popp 01/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::EvaluateGradFGaussPoint2D(
+double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateGradFGaussPoint2D(
     const double* gpn, MORTAR::Element& ele, const double* eta)
 {
   /* Evaluate the function GradF(eta)
@@ -2856,7 +2856,7 @@ double MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::EvaluateGradFGaussPoi
  |  Evaluate F for Gauss point case (3D)                      popp 11/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::EvaluateFGaussPoint3D(double* f,
+bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateFGaussPoint3D(double* f,
     const double* gpx, const double* gpn, MORTAR::Element& ele, const double* eta,
     const double& alpha)
 {
@@ -2882,7 +2882,7 @@ bool MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::EvaluateFGaussPoint3D(d
  |  Evaluate GradF for Gauss point case (3D)                  popp 11/08|
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalc_EleBased<distypeS, distypeM>::EvaluateGradFGaussPoint3D(
+bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::EvaluateGradFGaussPoint3D(
     CORE::LINALG::Matrix<3, 3>& fgrad, const double* gpx, const double* gpn, MORTAR::Element& ele,
     const double* eta, const double& alpha)
 {

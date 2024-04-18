@@ -67,7 +67,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
   // Currently, this prestressing technique implements only a certain material (IsoNeoHooke with
   // Sussman-Bathe penalty)
 
-  auto& elhyper = dynamic_cast<MIXTURE::MixtureConstituent_ElastHyperBase&>(constituent);
+  auto& elhyper = dynamic_cast<MIXTURE::MixtureConstituentElastHyperBase&>(constituent);
 
   if (elhyper.Summands().size() != 2)
   {

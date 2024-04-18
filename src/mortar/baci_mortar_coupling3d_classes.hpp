@@ -86,8 +86,8 @@ namespace MORTAR
     \brief Affine map of IntElement coordinate derivatives to parent element
 
     */
-    virtual bool MapToParent(const std::vector<CORE::GEN::pairedvector<int, double>>& dxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dparxi);
+    virtual bool MapToParent(const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& dparxi);
 
     DRT::Node** Nodes() override
     {
@@ -108,7 +108,7 @@ namespace MORTAR
            inner vector for the spatial dimensions, map for the derivatives.
     */
     void NodeLinearization(
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& nodelin) override;
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& nodelin) override;
 
    protected:
     // don't want = operator and cctor
@@ -161,10 +161,10 @@ namespace MORTAR
 
     */
     IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coords, double* auxn,
-        const CORE::FE::CellType& shape, std::vector<CORE::GEN::pairedvector<int, double>>& linv1,
-        std::vector<CORE::GEN::pairedvector<int, double>>& linv2,
-        std::vector<CORE::GEN::pairedvector<int, double>>& linv3,
-        std::vector<CORE::GEN::pairedvector<int, double>>& linauxn);
+        const CORE::FE::CellType& shape, std::vector<CORE::GEN::Pairedvector<int, double>>& linv1,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& linv2,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& linv3,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn);
 
     /*!
     \brief Destructor
@@ -260,7 +260,7 @@ namespace MORTAR
     is addressed by an int-variable and checked internally.
 
     */
-    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivVertex(int i)
+    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivVertex(int i)
     {
       if (shape_ == CORE::FE::CellType::line2)
       {
@@ -278,7 +278,7 @@ namespace MORTAR
     \brief Return the 'DerivAuxn' map (vector) of this intcell
 
     */
-    virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivAuxn() { return linauxn_; }
+    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivAuxn() { return linauxn_; }
 
     //@}
 
@@ -320,7 +320,7 @@ namespace MORTAR
            Note that this is a linearization with respect to the intcell
            vertices, which themselves have to be linearized later, of course!
     */
-    virtual void DerivJacobian(CORE::GEN::pairedvector<int, double>& derivjac);
+    virtual void DerivJacobian(CORE::GEN::Pairedvector<int, double>& derivjac);
 
     //@}
 
@@ -339,9 +339,9 @@ namespace MORTAR
 
     bool auxplane_;             // flag indicating coupling strategy (true = auxplane)
     CORE::FE::CellType shape_;  // shape of this element (always tri3)
-    std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>
+    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>
         linvertex_;  // derivatives of the 3 vertices
-    std::vector<CORE::GEN::pairedvector<int, double>>
+    std::vector<CORE::GEN::Pairedvector<int, double>>
         linauxn_;  // derivatives of auxiliary plane normal
 
   };  // class IntCell
@@ -363,7 +363,7 @@ namespace MORTAR
   {
    public:
     //! @name Enums and Friends
-    enum vType  // vertex types recognized by Vertex
+    enum VType  // vertex types recognized by Vertex
     {
       slave,       // slave node
       projmaster,  // projected master node
@@ -382,7 +382,7 @@ namespace MORTAR
     performed in parallel by individual processes.
 
     */
-    Vertex(std::vector<double> coord, Vertex::vType type, std::vector<int> nodeids, Vertex* next,
+    Vertex(std::vector<double> coord, Vertex::VType type, std::vector<int> nodeids, Vertex* next,
         Vertex* prev, bool intersect, bool entryexit, Vertex* neighbor, double alpha);
 
     /*!
@@ -410,7 +410,7 @@ namespace MORTAR
     \brief Return vertex type (slave, projmaster or lineclip)
 
     */
-    virtual Vertex::vType& VType() { return type_; }
+    virtual Vertex::VType& v_type() { return type_; }
 
     /*!
     \brief Return pointer to next vertex on polygon
@@ -515,7 +515,7 @@ namespace MORTAR
 
    protected:
     std::vector<double> coord_;  // vertex coordinates (length 3)
-    Vertex::vType type_;         // vertex type (slave,projmaster,lineclip)
+    Vertex::VType type_;         // vertex type (slave,projmaster,lineclip)
     std::vector<int> nodeids_;   // relevant ids (1 if slave or master, 4 if lineclip)
     Vertex* next_;               // pointer to next vertex on polygon
     Vertex* prev_;               // pointer to previous vertex on polygon

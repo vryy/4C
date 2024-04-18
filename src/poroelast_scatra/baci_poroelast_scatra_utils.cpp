@@ -37,12 +37,12 @@ FOUR_C_NAMESPACE_OPEN
 bool POROELASTSCATRA::UTILS::IsPoroScatraElement(const DRT::Element* actele)
 {
   // checks if element is a poro scatra element (new elements need to be listed here)
-  return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroScatraType::Instance() or
+  return actele->ElementType() == DRT::ELEMENTS::SoHex8PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::SolidPoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_tet4PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_tet10PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_hex27PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SoTet4PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SoTet10PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SoHex27PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SoNurbs27PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallTri3PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroScatraType::Instance() or
@@ -54,8 +54,8 @@ bool POROELASTSCATRA::UTILS::IsPoroScatraElement(const DRT::Element* actele)
 bool POROELASTSCATRA::UTILS::IsPoroP1ScatraElement(const DRT::Element* actele)
 {
   // checks if element is a porop1 scatra element (new elements need to be listed here)
-  return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1ScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1ScatraType::Instance() or
+  return actele->ElementType() == DRT::ELEMENTS::SoHex8PoroP1ScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SoTet4PoroP1ScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1ScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Instance();

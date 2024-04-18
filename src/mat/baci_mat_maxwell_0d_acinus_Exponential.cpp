@@ -37,24 +37,24 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Maxwell_0d_acinus_Exponential::Maxwell_0d_acinus_Exponential(
+MAT::PAR::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Maxwell_0d_acinus(matdata)
+    : Maxwell0dAcinus(matdata)
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus_Exponential::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell0dAcinusExponential::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::Maxwell_0d_acinus_Exponential(this));
+  return Teuchos::rcp(new MAT::Maxwell0dAcinusExponential(this));
 }
 
 
-MAT::Maxwell_0d_acinusExponentialType MAT::Maxwell_0d_acinusExponentialType::instance_;
+MAT::Maxwell0dAcinusExponentialType MAT::Maxwell0dAcinusExponentialType::instance_;
 
 
-CORE::COMM::ParObject* MAT::Maxwell_0d_acinusExponentialType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Maxwell0dAcinusExponentialType::Create(const std::vector<char>& data)
 {
-  MAT::Maxwell_0d_acinus_Exponential* mxwll_0d_acin = new MAT::Maxwell_0d_acinus_Exponential();
+  MAT::Maxwell0dAcinusExponential* mxwll_0d_acin = new MAT::Maxwell0dAcinusExponential();
   mxwll_0d_acin->Unpack(data);
   return mxwll_0d_acin;
 }
@@ -62,21 +62,20 @@ CORE::COMM::ParObject* MAT::Maxwell_0d_acinusExponentialType::Create(const std::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell_0d_acinus_Exponential::Maxwell_0d_acinus_Exponential() : Maxwell_0d_acinus() {}
+MAT::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential() : Maxwell0dAcinus() {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell_0d_acinus_Exponential::Maxwell_0d_acinus_Exponential(
-    MAT::PAR::Maxwell_0d_acinus* params)
-    : Maxwell_0d_acinus(params)
+MAT::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential(MAT::PAR::Maxwell0dAcinus* params)
+    : Maxwell0dAcinus(params)
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_Exponential::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::Maxwell0dAcinusExponential::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -99,7 +98,7 @@ void MAT::Maxwell_0d_acinus_Exponential::Pack(CORE::COMM::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_Exponential::Unpack(const std::vector<char>& data)
+void MAT::Maxwell0dAcinusExponential::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -122,7 +121,7 @@ void MAT::Maxwell_0d_acinus_Exponential::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Maxwell_0d_acinus_Exponential*>(mat);
+        params_ = static_cast<MAT::PAR::Maxwell0dAcinusExponential*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -136,7 +135,7 @@ void MAT::Maxwell_0d_acinus_Exponential::Unpack(const std::vector<char>& data)
  | Setup routine to add Exponential material specific parameters E1_0   |
  | E1_LIN, E1_EXP, TAU to material                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_Exponential::Setup(INPUT::LineDefinition* linedef)
+void MAT::Maxwell0dAcinusExponential::Setup(INPUT::LineDefinition* linedef)
 {
   linedef->ExtractDouble("E1_0", e1_0_);
   linedef->ExtractDouble("E1_LIN", e1_lin_);
@@ -150,7 +149,7 @@ void MAT::Maxwell_0d_acinus_Exponential::Setup(INPUT::LineDefinition* linedef)
  | Evaluate Exponential material and build system matrix and rhs.       |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_Exponential::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
+void MAT::Maxwell0dAcinusExponential::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
     CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
     CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
     const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,

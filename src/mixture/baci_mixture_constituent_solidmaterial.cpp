@@ -21,23 +21,23 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
-MIXTURE::PAR::MixtureConstituent_SolidMaterial::MixtureConstituent_SolidMaterial(
+MIXTURE::PAR::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureConstituent(matdata), matid_(*matdata->Get<int>("MATID"))
 {
 }
 
-// Create an instance of MIXTURE::MixtureConstituent_SolidMaterial from the parameters
+// Create an instance of MIXTURE::MixtureConstituentSolidMaterial from the parameters
 std::unique_ptr<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituent_SolidMaterial::CreateConstituent(int id)
+MIXTURE::PAR::MixtureConstituentSolidMaterial::CreateConstituent(int id)
 {
-  return std::unique_ptr<MIXTURE::MixtureConstituent_SolidMaterial>(
-      new MIXTURE::MixtureConstituent_SolidMaterial(this, id));
+  return std::unique_ptr<MIXTURE::MixtureConstituentSolidMaterial>(
+      new MIXTURE::MixtureConstituentSolidMaterial(this, id));
 }
 
 // Constructor of the constituent holding the material parameters
-MIXTURE::MixtureConstituent_SolidMaterial::MixtureConstituent_SolidMaterial(
-    MIXTURE::PAR::MixtureConstituent_SolidMaterial* params, int id)
+MIXTURE::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
+    MIXTURE::PAR::MixtureConstituentSolidMaterial* params, int id)
     : MixtureConstituent(params, id), params_(params), material_()
 {
   // take the matid (i.e. here the id of the solid material), read the type and
@@ -59,12 +59,12 @@ MIXTURE::MixtureConstituent_SolidMaterial::MixtureConstituent_SolidMaterial(
         material_->Parameter()->Id());
 }
 
-INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_SolidMaterial::MaterialType() const
+INPAR::MAT::MaterialType MIXTURE::MixtureConstituentSolidMaterial::MaterialType() const
 {
   return INPAR::MAT::mix_solid_material;
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::PackConstituent(CORE::COMM::PackBuffer& data) const
+void MIXTURE::MixtureConstituentSolidMaterial::PackConstituent(CORE::COMM::PackBuffer& data) const
 {
   // pack constituent data
   MixtureConstituent::PackConstituent(data);
@@ -78,7 +78,7 @@ void MIXTURE::MixtureConstituent_SolidMaterial::PackConstituent(CORE::COMM::Pack
   material_->Pack(data);
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::UnpackConstituent(
+void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // unpack constituent data
@@ -102,7 +102,7 @@ void MIXTURE::MixtureConstituent_SolidMaterial::UnpackConstituent(
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
-        params_ = dynamic_cast<MIXTURE::PAR::MixtureConstituent_SolidMaterial*>(mat);
+        params_ = dynamic_cast<MIXTURE::PAR::MixtureConstituentSolidMaterial*>(mat);
       }
       else
       {
@@ -129,20 +129,20 @@ void MIXTURE::MixtureConstituent_SolidMaterial::UnpackConstituent(
 
 INPAR::MAT::MaterialType MaterialType() { return INPAR::MAT::mix_solid_material; }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::ReadElement(
+void MIXTURE::MixtureConstituentSolidMaterial::ReadElement(
     int numgp, INPUT::LineDefinition* linedef)
 {
   MixtureConstituent::ReadElement(numgp, linedef);
   material_->Setup(numgp, linedef);
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::Update(CORE::LINALG::Matrix<3, 3> const& defgrd,
+void MIXTURE::MixtureConstituentSolidMaterial::Update(CORE::LINALG::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   material_->Update(defgrd, gp, params, eleGID);
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
+void MIXTURE::MixtureConstituentSolidMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
     const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
@@ -150,13 +150,13 @@ void MIXTURE::MixtureConstituent_SolidMaterial::Evaluate(const CORE::LINALG::Mat
   material_->Evaluate(&F, &E_strain, params, &S_stress, &cmat, gp, eleGID);
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::RegisterOutputDataNames(
+void MIXTURE::MixtureConstituentSolidMaterial::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   material_->RegisterOutputDataNames(names_and_size);
 }
 
-bool MIXTURE::MixtureConstituent_SolidMaterial::EvaluateOutputData(
+bool MIXTURE::MixtureConstituentSolidMaterial::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   return material_->EvaluateOutputData(name, data);

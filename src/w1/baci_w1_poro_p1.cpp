@@ -16,26 +16,26 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Wall1_PoroP1<distype>::Wall1_PoroP1(int id, int owner)
-    : DRT::ELEMENTS::Wall1_Poro<distype>(id, owner)
+DRT::ELEMENTS::Wall1PoroP1<distype>::Wall1PoroP1(int id, int owner)
+    : DRT::ELEMENTS::Wall1Poro<distype>(id, owner)
 {
 }
 
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Wall1_PoroP1<distype>::Wall1_PoroP1(const DRT::ELEMENTS::Wall1_PoroP1<distype>& old)
-    : DRT::ELEMENTS::Wall1_Poro<distype>(old)
+DRT::ELEMENTS::Wall1PoroP1<distype>::Wall1PoroP1(const DRT::ELEMENTS::Wall1PoroP1<distype>& old)
+    : DRT::ELEMENTS::Wall1Poro<distype>(old)
 {
 }
 
 template <CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::Wall1_PoroP1<distype>::Clone() const
+DRT::Element* DRT::ELEMENTS::Wall1PoroP1<distype>::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::Wall1_PoroP1<distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::Wall1PoroP1<distype>(*this);
   return newelement;
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_PoroP1<distype>::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1PoroP1<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -49,7 +49,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::Pack(CORE::COMM::PackBuffer& data) co
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_PoroP1<distype>::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::Wall1PoroP1<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -65,19 +65,19 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::Unpack(const std::vector<char>& data)
 }
 
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_PoroP1<distype>::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1PoroP1<distype>::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1_PoroP1>(CORE::COMM::buildLines, *this);
+  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1PoroP1>(CORE::COMM::buildLines, *this);
 }
 
 template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1_PoroP1<distype>::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1PoroP1<distype>::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
 
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1_PoroP1<distype>::Print(std::ostream& os) const
+void DRT::ELEMENTS::Wall1PoroP1<distype>::Print(std::ostream& os) const
 {
   os << "Wall1_PoroP1 ";
   Element::Print(os);
@@ -85,7 +85,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::Print(std::ostream& os) const
 }
 
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::Wall1_PoroP1<distype>::UniqueParObjectId() const
+int DRT::ELEMENTS::Wall1PoroP1<distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
@@ -102,7 +102,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::UniqueParObjectId() const
 }
 
 template <CORE::FE::CellType distype>
-DRT::ElementType& DRT::ELEMENTS::Wall1_PoroP1<distype>::ElementType() const
+DRT::ElementType& DRT::ELEMENTS::Wall1PoroP1<distype>::ElementType() const
 {
   {
     switch (distype)
@@ -120,8 +120,8 @@ DRT::ElementType& DRT::ELEMENTS::Wall1_PoroP1<distype>::ElementType() const
   }
 }
 
-template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::Wall1_PoroP1<CORE::FE::CellType::quad9>;
+template class DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::tri3>;
+template class DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad4>;
+template class DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

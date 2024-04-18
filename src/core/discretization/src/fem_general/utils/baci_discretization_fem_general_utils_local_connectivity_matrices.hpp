@@ -1181,45 +1181,6 @@ namespace CORE::FE
    */
   CORE::FE::CellType getShapeOfBoundaryElement(const int nen, const CORE::FE::CellType parentshape);
 
-  /// a trait to identify NURBS discretization types
-  template <CORE::FE::CellType type>
-  struct is_nurbs_dis_type
-  {
-    static constexpr bool value = false;
-  };
-
-  /// supported/known NURBS types
-  template <>
-  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs2>
-  {
-    static constexpr bool value = true;
-  };
-  template <>
-  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs3>
-  {
-    static constexpr bool value = true;
-  };
-  template <>
-  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs4>
-  {
-    static constexpr bool value = true;
-  };
-  template <>
-  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs9>
-  {
-    static constexpr bool value = true;
-  };
-  template <>
-  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs8>
-  {
-    static constexpr bool value = true;
-  };
-  template <>
-  struct is_nurbs_dis_type<CORE::FE::CellType::nurbs27>
-  {
-    static constexpr bool value = true;
-  };
-
   /// return TRUE if the given dis_type is a NURBS type
   bool IsNurbsDisType(const CORE::FE::CellType dis_type);
 

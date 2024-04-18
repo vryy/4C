@@ -41,7 +41,7 @@ INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImpl
   {
     return (
         dynamic_cast<
-            DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>*>(ele))
+            DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(ele))
         ->ImplType();
   }
   // tet4 solid porop1 scatra
@@ -49,8 +49,7 @@ INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImpl
   {
     return (
         dynamic_cast<
-            DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>*>(
-            ele))
+            DRT::ELEMENTS::So3PoroP1Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(ele))
         ->ImplType();
   }
   // tet 10 solid poro scatra
@@ -58,8 +57,7 @@ INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImpl
   {
     return (
         dynamic_cast<
-            DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>*>(
-            ele))
+            DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>*>(ele))
         ->ImplType();
   }
   // HEX 8 Elements
@@ -68,7 +66,7 @@ INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImpl
   {
     return (
         dynamic_cast<
-            DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(ele))
+            DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(ele))
         ->ImplType();
   }
   // hex8 solid porop1 scatra
@@ -76,8 +74,7 @@ INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImpl
   {
     return (
         dynamic_cast<
-            DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
-            ele))
+            DRT::ELEMENTS::So3PoroP1Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(ele))
         ->ImplType();
   }
   // hex27 solid poro scatra
@@ -85,14 +82,13 @@ INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImpl
   {
     return (
         dynamic_cast<
-            DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>*>(
-            ele))
+            DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>*>(ele))
         ->ImplType();
   }
   // nurbs 27
   else if (eletypename == "So_nurbs27PoroScatraType")
   {
-    return (dynamic_cast<DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27,
+    return (dynamic_cast<DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::NURBS::SoNurbs27,
                 CORE::FE::CellType::nurbs27>*>(ele))
         ->ImplType();
   }
@@ -105,50 +101,50 @@ INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImpl
   // quad 4
   else if (eletypename == "WallQuad4PoroScatraType")
   {
-    return (dynamic_cast<DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::quad4>*>(ele))
+    return (dynamic_cast<DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::quad4>*>(ele))
         ->ImplType();
   }
   // quad 9
   else if (eletypename == "WallQuad9PoroScatraType")
   {
-    return (dynamic_cast<DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::quad9>*>(ele))
+    return (dynamic_cast<DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::quad9>*>(ele))
         ->ImplType();
   }
   // nurbs 4
   else if (eletypename == "WallNurbs4PoroScatraType")
   {
-    return (dynamic_cast<DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::nurbs4>*>(ele))
+    return (dynamic_cast<DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::nurbs4>*>(ele))
         ->ImplType();
   }
   // nurbs 9
   else if (eletypename == "WallNurbs9PoroScatraType")
   {
-    return (dynamic_cast<DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::nurbs9>*>(ele))
+    return (dynamic_cast<DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::nurbs9>*>(ele))
         ->ImplType();
   }
   // tri 3
   else if (eletypename == "WallTri3PoroScatraType")
   {
-    return (dynamic_cast<DRT::ELEMENTS::Wall1_Poro_Scatra<CORE::FE::CellType::tri3>*>(ele))
+    return (dynamic_cast<DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::tri3>*>(ele))
         ->ImplType();
   }
   // wall poro p1 elements
   // quad 4
   else if (eletypename == "WallQuad4PoroP1ScatraType")
   {
-    return (dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::quad4>*>(ele))
+    return (dynamic_cast<DRT::ELEMENTS::Wall1PoroP1Scatra<CORE::FE::CellType::quad4>*>(ele))
         ->ImplType();
   }
   // quad 9
   else if (eletypename == "WallQuad9PoroP1ScatraType")
   {
-    return (dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::quad9>*>(ele))
+    return (dynamic_cast<DRT::ELEMENTS::Wall1PoroP1Scatra<CORE::FE::CellType::quad9>*>(ele))
         ->ImplType();
   }
   // tri 3
   else if (eletypename == "WallTri3PoroP1ScatraType")
   {
-    return (dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1Scatra<CORE::FE::CellType::tri3>*>(ele))
+    return (dynamic_cast<DRT::ELEMENTS::Wall1PoroP1Scatra<CORE::FE::CellType::tri3>*>(ele))
         ->ImplType();
   }
   // call base class routine

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace FPSI
 {
-  class Monolithic_Plain;
+  class MonolithicPlain;
 }
 
 namespace ADAPTER
@@ -59,7 +59,7 @@ namespace CORE::LINALG
 
 namespace FS3I
 {
-  class PartFPS3I : public FS3I_Base
+  class PartFPS3I : public FS3IBase
   {
    public:
     //! constructor of base class for partitioned FPS3I
@@ -127,7 +127,7 @@ namespace FS3I
 
    protected:
     /// fpsi algorithm
-    Teuchos::RCP<FPSI::Monolithic_Plain> fpsi_;
+    Teuchos::RCP<FPSI::MonolithicPlain> fpsi_;
 
 
    private:

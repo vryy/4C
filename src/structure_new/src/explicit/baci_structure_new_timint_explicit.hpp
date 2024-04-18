@@ -64,7 +64,7 @@ namespace STR
 
       void PrintStep() override;
 
-      INPAR::STR::STC_Scale GetSTCAlgo() override;
+      INPAR::STR::StcScale GetSTCAlgo() override;
 
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override;
 

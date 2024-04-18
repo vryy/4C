@@ -23,14 +23,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_Minimal::Myocard_Minimal() {}
+MyocardMinimal::MyocardMinimal() {}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_Minimal::Myocard_Minimal(
-    const double eps_deriv_myocard, const std::string tissue, int num_gp)
+MyocardMinimal::MyocardMinimal(const double eps_deriv_myocard, const std::string tissue, int num_gp)
     : tools_(),
       v0_(num_gp),
       w0_(num_gp),
@@ -290,12 +289,12 @@ Myocard_Minimal::Myocard_Minimal(
   mechanical_activation_ = 0.0;  // to store the variable for activation (phi in this case=)
 }
 
-double Myocard_Minimal::ReaCoeff(const double phi, const double dt)
+double MyocardMinimal::ReaCoeff(const double phi, const double dt)
 {
-  return Myocard_Minimal::ReaCoeff(phi, dt, 0);
+  return MyocardMinimal::ReaCoeff(phi, dt, 0);
 }
 
-double Myocard_Minimal::ReaCoeff(const double phi, const double dt, int gp)
+double MyocardMinimal::ReaCoeff(const double phi, const double dt, int gp)
 {
   double reacoeff = 0.0;
   const double p = 1000.0;
@@ -341,7 +340,7 @@ double Myocard_Minimal::ReaCoeff(const double phi, const double dt, int gp)
 }
 
 
-double Myocard_Minimal::ReaCoeffN(const double phi, const double dt, int gp)
+double MyocardMinimal::ReaCoeffN(const double phi, const double dt, int gp)
 {
   double reacoeff = 0.0;
   const double p = 1000.0;
@@ -371,18 +370,18 @@ double Myocard_Minimal::ReaCoeffN(const double phi, const double dt, int gp)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int Myocard_Minimal::GetNumberOfInternalStateVariables() const { return 3; }
+int MyocardMinimal::GetNumberOfInternalStateVariables() const { return 3; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Myocard_Minimal::GetInternalState(const int k) const { return GetInternalState(k, 0); }
+double MyocardMinimal::GetInternalState(const int k) const { return GetInternalState(k, 0); }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material       hoermann 09/15 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-double Myocard_Minimal::GetInternalState(const int k, int gp) const
+double MyocardMinimal::GetInternalState(const int k, int gp) const
 {
   double val = 0.0;
   switch (k)
@@ -414,7 +413,7 @@ double Myocard_Minimal::GetInternalState(const int k, int gp) const
 /*----------------------------------------------------------------------*
  |  set  internal state of the material                     cbert 08/13 |
  *----------------------------------------------------------------------*/
-void Myocard_Minimal::SetInternalState(const int k, const double val)
+void MyocardMinimal::SetInternalState(const int k, const double val)
 {
   SetInternalState(k, val, 0);
   return;
@@ -424,7 +423,7 @@ void Myocard_Minimal::SetInternalState(const int k, const double val)
  |  set  internal state of the material                  hoermann 09/15 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-void Myocard_Minimal::SetInternalState(const int k, const double val, int gp)
+void MyocardMinimal::SetInternalState(const int k, const double val, int gp)
 {
   if (v0_.size() < (unsigned)gp) dserror("Number of gp does not match");
   switch (k)
@@ -464,18 +463,18 @@ void Myocard_Minimal::SetInternalState(const int k, const double val, int gp)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int Myocard_Minimal::GetNumberOfIonicCurrents() const { return 3; }
+int MyocardMinimal::GetNumberOfIonicCurrents() const { return 3; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Myocard_Minimal::GetIonicCurrents(const int k) const { return GetIonicCurrents(k, 0); }
+double MyocardMinimal::GetIonicCurrents(const int k) const { return GetIonicCurrents(k, 0); }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents                    hoermann 09/15 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-double Myocard_Minimal::GetIonicCurrents(const int k, int gp) const
+double MyocardMinimal::GetIonicCurrents(const int k, int gp) const
 {
   double val = 0.0;
   switch (k)
@@ -502,7 +501,7 @@ double Myocard_Minimal::GetIonicCurrents(const int k, int gp) const
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void Myocard_Minimal::Update(const double phi, const double dt)
+void MyocardMinimal::Update(const double phi, const double dt)
 {
   // update initial values for next time step
   v0_ = v_;
@@ -515,7 +514,7 @@ void Myocard_Minimal::Update(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |  resize internal state variables                      hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void Myocard_Minimal::ResizeInternalStateVariables(int gp)
+void MyocardMinimal::ResizeInternalStateVariables(int gp)
 {
   v0_.resize(gp);
   w0_.resize(gp);
@@ -532,6 +531,6 @@ void Myocard_Minimal::ResizeInternalStateVariables(int gp)
 /*----------------------------------------------------------------------*
  |  get number of Gauss points                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
-int Myocard_Minimal::GetNumberOfGP() const { return v_.size(); };
+int MyocardMinimal::GetNumberOfGP() const { return v_.size(); };
 
 FOUR_C_NAMESPACE_CLOSE

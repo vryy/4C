@@ -44,7 +44,7 @@ namespace XFEM
   \brief this class is the basic TIMEINT class for the projection, adaption or
          something else in XFEM-problems between consecutive time steps
    */
-  class XFLUID_TIMEINT_BASE
+  class XfluidTimeintBase
   {
    public:
     /*!
@@ -59,7 +59,7 @@ namespace XFEM
       /*========================================================================*/
 
       //! status for both the used special algorithm and the state within the algorithm
-      enum state
+      enum State
       {
         basicStd_,
         currSL_,
@@ -69,14 +69,14 @@ namespace XFEM
       };
 
       //! basic computation type due to FGI and FRS
-      enum type
+      enum Type
       {
         predictor_ = 0,
         standard_ = 1
       };
 
       //! does to closest projection of a node lie on a side, a line or on a point?
-      enum projection
+      enum Projection
       {
         onSide_,
         onLine_,
@@ -101,7 +101,7 @@ namespace XFEM
           CORE::LINALG::Matrix<3, 1>
               startpoint,  //! current startpoint (Lagrangean origin) approximation
           int searchedProcs, int counter, double dMin,
-          type newtype  //! basic computation type due to FGI and FRS
+          Type newtype  //! basic computation type due to FGI and FRS
           )
           : node_(node),
             nds_np_(nds_np),
@@ -135,7 +135,7 @@ namespace XFEM
           std::vector<CORE::LINALG::Matrix<1, 3>>& presDeriv,
           CORE::LINALG::Matrix<3, 1> dispnp,  //! displacement at point x (=x_Lagr(t^n+1))
           CORE::LINALG::Matrix<3, 1>& initialpoint, int initial_eid, int initial_ele_owner,
-          CORE::LINALG::Matrix<3, 1>& startpoint, int searchedProcs, int counter, type newtype)
+          CORE::LINALG::Matrix<3, 1>& startpoint, int searchedProcs, int counter, Type newtype)
           : node_(node),
             nds_np_(nds_np),
             vel_(vel),
@@ -170,7 +170,7 @@ namespace XFEM
           std::vector<CORE::LINALG::Matrix<1, 3>>& presDeriv,
           CORE::LINALG::Matrix<3, 1> dispnp,  //! displacement at point x (=x_Lagr(t^n+1))
           CORE::LINALG::Matrix<3, 1>& initialpoint, int initial_eid, int initial_ele_owner,
-          type newtype)
+          Type newtype)
           : node_(node),
             nds_np_(nds_np),
             vel_(vel),
@@ -195,7 +195,7 @@ namespace XFEM
           CORE::LINALG::Matrix<3, 1> dispnp,  //! displacement at point x (=x_Lagr(t^n+1))
           CORE::LINALG::Matrix<3, 1>& startpoint,
           std::vector<CORE::LINALG::Matrix<3, 1>>& velValues, std::vector<double>& presValues,
-          type newtype)
+          Type newtype)
           : node_(node),
             nds_np_(nds_np),
             dispnp_(dispnp),
@@ -317,7 +317,7 @@ namespace XFEM
           initialpoint_;       //! first startpoint approximation at the right side
       int initial_eid_;        //! element Id of element where the initialpoint lies in
       int initial_ele_owner_;  //! owner of the element where the initialpoint lies in
-      projection proj_;  //! projection of node on structural movement is on side/line/point/failed
+      Projection proj_;  //! projection of node on structural movement is on side/line/point/failed
 
       //------------------------------------------
       //! @name staff used for parallelization of the Semi-Lagrangean Newton-loop
@@ -338,9 +338,9 @@ namespace XFEM
       //------------------------------------------
       //! @name state, type of time-integration approach
       //------------------------------------------
-      state
+      State
           state_;  //! status for both the used special algorithm and the state within the algorithm
-      type type_;  //! basic computation type due to FGI and FRS
+      Type type_;  //! basic computation type due to FGI and FRS
 
      protected:
       explicit TimeIntData();  // don't want default constructor
@@ -350,7 +350,7 @@ namespace XFEM
 
    public:
     //! constructor
-    explicit XFLUID_TIMEINT_BASE(
+    explicit XfluidTimeintBase(
         const Teuchos::RCP<DRT::Discretization> discret,      /// background discretization
         const Teuchos::RCP<DRT::Discretization> boundarydis,  /// cut discretization
         Teuchos::RCP<CORE::GEO::CutWizard> wizard_old,  /// cut wizard w.r.t. old interface position
@@ -368,7 +368,7 @@ namespace XFEM
     );
 
     //! destructor
-    virtual ~XFLUID_TIMEINT_BASE() = default;
+    virtual ~XfluidTimeintBase() = default;
     //! perform the computation
     virtual void compute(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectorsn,
         std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectorsnp)
@@ -411,7 +411,7 @@ namespace XFEM
     size_t vectorSize(TimeIntData* data) const { return vectorSize(data->type_); };
 
     //! return the number of Epetra vectors which shall get new values for a given type
-    size_t vectorSize(TimeIntData::type currtype) const
+    size_t vectorSize(TimeIntData::Type currtype) const
     {
       if (newVectors_.size() == 0) dserror("call this function only when setting the final values");
 
@@ -432,10 +432,10 @@ namespace XFEM
     };
 
     //! overwrite an old state with a new state
-    void resetState(TimeIntData::state oldState, TimeIntData::state newState) const;
+    void resetState(TimeIntData::State oldState, TimeIntData::State newState) const;
 
     //! clear all data having some state
-    void clearState(TimeIntData::state state  /// state of time int to clear
+    void clearState(TimeIntData::State state  /// state of time int to clear
     ) const;
 
 
@@ -631,7 +631,7 @@ namespace XFEM
   \brief this class provides the basic functionality used for the reconstruction of standard degrees
          of freedom in XFEM-problems between consecutive time steps
    */
-  class XFLUID_STD : public XFLUID_TIMEINT_BASE
+  class XfluidStd : public XfluidTimeintBase
   {
    public:
     /*========================================================================*/
@@ -639,7 +639,7 @@ namespace XFEM
     /*========================================================================*/
 
     //! constructor
-    explicit XFLUID_STD(XFEM::XFLUID_TIMEINT_BASE& timeInt,  ///< time integration base class object
+    explicit XfluidStd(XFEM::XfluidTimeintBase& timeInt,  ///< time integration base class object
         const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt>>&
             reconstr_method,                      ///< reconstruction map for nodes and its dofsets
         INPAR::XFEM::XFluidTimeInt& timeIntType,  ///< type of time integration
@@ -777,7 +777,7 @@ namespace XFEM
         CORE::LINALG::Matrix<3, 1>& proj_x_np,  ///< projection of point on this side
         CORE::LINALG::Matrix<2, 1>&
             proj_xi_side,  ///< local coordinates of projection of point w.r.t to this side
-        TimeIntData::projection& proj  ///< projection type
+        TimeIntData::Projection& proj  ///< projection type
     );
 
     //! call and prepare the projection of point to line
@@ -797,7 +797,7 @@ namespace XFEM
         std::map<std::vector<int>, std::vector<int>>&
             proj_nid_line,             ///< std::map<sorted nids, side Ids>
         int& proj_sid,                 ///< id of side that contains the projected point
-        TimeIntData::projection& proj  ///< projection type
+        TimeIntData::Projection& proj  ///< projection type
     );
 
     //! call and prepare the projection of point to point (distance computation)
@@ -816,7 +816,7 @@ namespace XFEM
             proj_lineid,  ///< std::map<side ID, local line id>
         std::map<std::vector<int>, std::vector<int>>
             proj_nid_line,             ///< std::map<side ID, vec<line Ids>>
-        TimeIntData::projection& proj  ///< projection type
+        TimeIntData::Projection& proj  ///< projection type
     );
 
     //! project point from in normal direction onto corresponding side

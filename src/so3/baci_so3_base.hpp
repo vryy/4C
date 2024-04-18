@@ -37,7 +37,7 @@ namespace DRT
   namespace ELEMENTS
   {
     //! A wrapper for structural elements
-    class So_base : public DRT::Element
+    class SoBase : public DRT::Element
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -48,7 +48,7 @@ namespace DRT
       \param id    (in): A globally unique element id
       \param owner (in): owner processor of the element
       */
-      So_base(int id, int owner);
+      SoBase(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -56,13 +56,13 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_base(const So_base& old);
+      SoBase(const SoBase& old);
 
       /*!
       \brief Default Constructor must not be called
 
       */
-      So_base() = delete;
+      SoBase() = delete;
       //@}
 
       /*!

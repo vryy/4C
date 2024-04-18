@@ -40,7 +40,7 @@ namespace DRT
 namespace MAT
 {
   class MatList;
-  class Cnst_1d_art;
+  class Cnst1dArt;
 }  // namespace MAT
 namespace CORE
 {
@@ -722,7 +722,7 @@ namespace POROMULTIPHASESCATRA
     std::vector<std::vector<int>> cont_dofs_to_assemble_functions_into_;
 
     //! the artery material
-    Teuchos::RCP<MAT::Cnst_1d_art> arterymat_;
+    Teuchos::RCP<MAT::Cnst1dArt> arterymat_;
   };
 
 }  // namespace POROMULTIPHASESCATRA

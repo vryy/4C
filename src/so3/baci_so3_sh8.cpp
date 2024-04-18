@@ -21,38 +21,38 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::So_sh8Type DRT::ELEMENTS::So_sh8Type::instance_;
+DRT::ELEMENTS::SoSh8Type DRT::ELEMENTS::SoSh8Type::instance_;
 
-DRT::ELEMENTS::So_sh8Type& DRT::ELEMENTS::So_sh8Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoSh8Type& DRT::ELEMENTS::SoSh8Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_sh8Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoSh8Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_sh8(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoSh8(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh8Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh8Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh8(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh8(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh8Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoSh8Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh8(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh8(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_sh8Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoSh8Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -60,13 +60,13 @@ void DRT::ELEMENTS::So_sh8Type::NodalBlockInformation(
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_sh8Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoSh8Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::So_sh8Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoSh8Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -94,8 +94,8 @@ void DRT::ELEMENTS::So_sh8Type::SetupElementDefinition(
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_sh8::So_sh8(int id, int owner)
-    : DRT::ELEMENTS::So_hex8(id, owner),
+DRT::ELEMENTS::SoSh8::SoSh8(int id, int owner)
+    : DRT::ELEMENTS::SoHex8(id, owner),
       thickdir_(undefined),
       anstype_(ansnone),
       nodes_rearranged_(false),
@@ -116,8 +116,8 @@ DRT::ELEMENTS::So_sh8::So_sh8(int id, int owner)
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_sh8::So_sh8(const DRT::ELEMENTS::So_sh8& old)
-    : DRT::ELEMENTS::So_hex8(old),
+DRT::ELEMENTS::SoSh8::SoSh8(const DRT::ELEMENTS::SoSh8& old)
+    : DRT::ELEMENTS::SoHex8(old),
       thickdir_(old.thickdir_),
       anstype_(old.anstype_),
       nodes_rearranged_(old.nodes_rearranged_),
@@ -130,9 +130,9 @@ DRT::ELEMENTS::So_sh8::So_sh8(const DRT::ELEMENTS::So_sh8& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_sh8::Clone() const
+DRT::Element* DRT::ELEMENTS::SoSh8::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_sh8(*this);
+  auto* newelement = new DRT::ELEMENTS::SoSh8(*this);
   return newelement;
 }
 
@@ -140,7 +140,7 @@ DRT::Element* DRT::ELEMENTS::So_sh8::Clone() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoSh8::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::So_sh8::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So_hex8 Element
-  DRT::ELEMENTS::So_hex8::Pack(data);
+  DRT::ELEMENTS::SoHex8::Pack(data);
   // thickdir
   AddtoPack(data, thickdir_);
   AddtoPack(data, thickvec_);
@@ -163,7 +163,7 @@ void DRT::ELEMENTS::So_sh8::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoSh8::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::So_sh8::Unpack(const std::vector<char>& data)
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So_hex8::Unpack(basedata);
+  DRT::ELEMENTS::SoHex8::Unpack(basedata);
   // thickdir
   thickdir_ = static_cast<ThicknessDirection>(ExtractInt(position, data));
   ExtractfromPack(position, data, thickvec_);
@@ -189,7 +189,7 @@ void DRT::ELEMENTS::So_sh8::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoSh8::Print(std::ostream& os) const
 {
   os << "So_sh8 ";
   Element::Print(os);

@@ -52,12 +52,11 @@ namespace CORE::GEO
     /// sorted vector that emulates a set (and is supposed to be much more efficient)
     template <class K, bool bNoDuplicates = true, class Pr = std::less<K>,
         class A = std::allocator<K>>
-    class sorted_vector
-        : public boost::less_than_comparable<sorted_vector<K, bNoDuplicates, Pr, A>>,
-          boost::equality_comparable<sorted_vector<K, bNoDuplicates, Pr, A>>
+    class SortedVector : public boost::less_than_comparable<SortedVector<K, bNoDuplicates, Pr, A>>,
+                         boost::equality_comparable<SortedVector<K, bNoDuplicates, Pr, A>>
     {
      public:
-      typedef sorted_vector<K, bNoDuplicates, Pr, A> Myt_;
+      typedef SortedVector<K, bNoDuplicates, Pr, A> Myt_;
       typedef std::vector<K, A> Cont;
       typedef typename Cont::allocator_type allocator_type;
       typedef typename Cont::size_type size_type;
@@ -78,16 +77,16 @@ namespace CORE::GEO
       typedef std::pair<const_iterator, const_iterator> Paircc_;
       typedef std::pair<iterator, bool> Pairib_;
 
-      explicit sorted_vector(const Pr& pred = Pr(), const A& al = A()) : less_(pred), vec_(al) {}
+      explicit SortedVector(const Pr& pred = Pr(), const A& al = A()) : less_(pred), vec_(al) {}
 
       template <class It>
-      sorted_vector(It first, It beyond, const Pr& pred = Pr(), const A& al = A())
+      SortedVector(It first, It beyond, const Pr& pred = Pr(), const A& al = A())
           : less_(pred), vec_(first, beyond, al)
       {
         stable_sort();
       }
 
-      sorted_vector(const Myt_& x) : less_(x.less_), vec_(x.vec_) {}
+      SortedVector(const Myt_& x) : less_(x.less_), vec_(x.vec_) {}
 
       Myt_& operator=(const Myt_& x)
       {
@@ -256,15 +255,12 @@ namespace CORE::GEO
         }
       }
 
-      bool operator==(const sorted_vector<K, bNoDuplicates, Pr, A>& other) const
+      bool operator==(const SortedVector<K, bNoDuplicates, Pr, A>& other) const
       {
         return Eq(other);
       }
 
-      bool operator<(const sorted_vector<K, bNoDuplicates, Pr, A>& other) const
-      {
-        return Lt(other);
-      }
+      bool operator<(const SortedVector<K, bNoDuplicates, Pr, A>& other) const { return Lt(other); }
 
      protected:
       iterator Unique_()

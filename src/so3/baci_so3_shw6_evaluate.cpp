@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoShw6::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -48,36 +48,36 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
+  DRT::ELEMENTS::SoWeg6::ActionType act = SoWeg6::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_struct_linstiff")
-    act = So_weg6::calc_struct_linstiff;
+    act = SoWeg6::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
-    act = So_weg6::calc_struct_nlnstiff;
+    act = SoWeg6::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
-    act = So_weg6::calc_struct_internalforce;
+    act = SoWeg6::calc_struct_internalforce;
   else if (action == "calc_struct_linstiffmass")
-    act = So_weg6::calc_struct_linstiffmass;
+    act = SoWeg6::calc_struct_linstiffmass;
   else if (action == "calc_struct_nlnstiffmass")
-    act = So_weg6::calc_struct_nlnstiffmass;
+    act = SoWeg6::calc_struct_nlnstiffmass;
   else if (action == "calc_struct_nlnstifflmass")
-    act = So_weg6::calc_struct_nlnstifflmass;
+    act = SoWeg6::calc_struct_nlnstifflmass;
   else if (action == "calc_struct_stress")
-    act = So_weg6::calc_struct_stress;
+    act = SoWeg6::calc_struct_stress;
   else if (action == "calc_struct_eleload")
-    act = So_weg6::calc_struct_eleload;
+    act = SoWeg6::calc_struct_eleload;
   else if (action == "calc_struct_fsiload")
-    act = So_weg6::calc_struct_fsiload;
+    act = SoWeg6::calc_struct_fsiload;
   else if (action == "calc_struct_update_istep")
-    act = So_weg6::calc_struct_update_istep;
+    act = SoWeg6::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
-    act = So_weg6::calc_struct_reset_istep;
+    act = SoWeg6::calc_struct_reset_istep;
   else if (action == "calc_struct_recover")
-    act = So_weg6::calc_recover;
+    act = SoWeg6::calc_recover;
   else if (action == "calc_struct_predict")
     return 0;
   else
@@ -255,11 +255,11 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                          // current displacements
-    std::vector<double>& residual,                                      // current residual displ
-    CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,        // element stiffness matrix
-    CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,         // element mass matrix
+void DRT::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                         // current displacements
+    std::vector<double>& residual,                                     // current residual displ
+    CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,       // element stiffness matrix
+    CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,        // element mass matrix
     CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* force,      // element internal force vector
     CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* force_str,  // structure force
     CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
@@ -806,7 +806,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
 /*----------------------------------------------------------------------*
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
+void DRT::ELEMENTS::SoShw6::soshw6_anssetup(
     const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe,  // material element coords
     const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xcurr,  // current element coords
     std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>>**
@@ -917,7 +917,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(
+void DRT::ELEMENTS::SoShw6::soshw6_evaluateT(
     const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& jac,
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT)
 {
@@ -982,7 +982,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                              maf 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::soshw6_easinit()
+void DRT::ELEMENTS::SoShw6::soshw6_easinit()
 {
   // EAS enhanced strain parameters at currently investigated load/time step
   CORE::LINALG::SerialDenseMatrix alpha(neas_, 1);
@@ -1009,7 +1009,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_easinit()
 /*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
+void DRT::ELEMENTS::SoShw6::soshw6_eassetup(
     std::vector<CORE::LINALG::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
     double& detJ0,                                        // det of Jacobian at origin
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
@@ -1080,7 +1080,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
 /*----------------------------------------------------------------------*
  |  return Cauchy stress at gp                                 maf 06/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::soshw6_Cauchy(
+void DRT::ELEMENTS::SoShw6::soshw6_Cauchy(
     CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress, const int gp,
     const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& defgrd,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
@@ -1157,7 +1157,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_Cauchy(
 /*----------------------------------------------------------------------*
  | find optimal map between material space and parameter space maf 11/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_shw6::soshw6_findoptparmap()
+int DRT::ELEMENTS::SoShw6::soshw6_findoptparmap()
 {
   // create edge vectors of lower triangle
   std::vector<std::vector<double>> edgevecs(3);
@@ -1207,12 +1207,12 @@ int DRT::ELEMENTS::So_shw6::soshw6_findoptparmap()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 11/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_shw6Type::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoShw6Type::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_shw6*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoShw6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_shw6* failed");
 
     // check whether we should align the material space optimally with the parameter space.
@@ -1272,14 +1272,14 @@ int DRT::ELEMENTS::So_shw6Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_shw6*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoShw6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_shw6* failed");
     actele->InitJacobianMapping();
   }
   return 0;
 }
 
-void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
+void DRT::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residual)
 {
   if (eastype_ == soshw6_easnone) return;
 

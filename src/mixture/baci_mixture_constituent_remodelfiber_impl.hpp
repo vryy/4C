@@ -30,10 +30,10 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureConstituent_RemodelFiberImpl : public MIXTURE::PAR::MixtureConstituent
+    class MixtureConstituentRemodelFiberImpl : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituent_RemodelFiberImpl(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureConstituentRemodelFiberImpl(const Teuchos::RCP<MAT::PAR::Material>& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
@@ -55,11 +55,11 @@ namespace MIXTURE
   /*!
    * \brief Remodel fiber constituent with an implicit update rule
    */
-  class MixtureConstituent_RemodelFiberImpl : public MIXTURE::MixtureConstituent
+  class MixtureConstituentRemodelFiberImpl : public MIXTURE::MixtureConstituent
   {
    public:
-    explicit MixtureConstituent_RemodelFiberImpl(
-        MIXTURE::PAR::MixtureConstituent_RemodelFiberImpl* params, int id);
+    explicit MixtureConstituentRemodelFiberImpl(
+        MIXTURE::PAR::MixtureConstituentRemodelFiberImpl* params, int id);
 
     /// Returns the material type enum
     [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override;
@@ -111,7 +111,7 @@ namespace MIXTURE
     void Initialize();
 
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituent_RemodelFiberImpl* params_;
+    MIXTURE::PAR::MixtureConstituentRemodelFiberImpl* params_;
 
     /// An instance of the remodel fiber
     std::vector<RemodelFiber<2>> remodel_fiber_;

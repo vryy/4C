@@ -123,7 +123,7 @@ int DRT::DiscretizationHDG::FillComplete(
       {
         int ndof_ele =
             this->NumMyRowElements() > 0
-                ? dynamic_cast<DRT::DG_Element*>(this->lRowElement(0))->NumDofPerElementAuxiliary()
+                ? dynamic_cast<DRT::DgElement*>(this->lRowElement(0))->NumDofPerElementAuxiliary()
                 : 0;
         Teuchos::RCP<DRT::DofSetInterface> dofset_ele =
             Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
@@ -136,7 +136,7 @@ int DRT::DiscretizationHDG::FillComplete(
       {
         int ndof_node =
             this->NumMyRowElements() > 0
-                ? dynamic_cast<DRT::DG_Element*>(this->lRowElement(0))->NumDofPerNodeAuxiliary()
+                ? dynamic_cast<DRT::DgElement*>(this->lRowElement(0))->NumDofPerNodeAuxiliary()
                 : 0;
         Teuchos::RCP<DRT::DofSetInterface> dofset_node =
             Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));

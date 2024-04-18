@@ -32,7 +32,7 @@ namespace DRT
      *  hexahedral element", 2017
      *
      *  \author hiermeier \date 09/18 */
-    class So_Hex8_Determinant_Analysis
+    class SoHex8DeterminantAnalysis
     {
       struct BezierCube;
 
@@ -43,7 +43,7 @@ namespace DRT
        *  set-up as well.
        *
        *  \return RCP to the created class object. */
-      static Teuchos::RCP<So_Hex8_Determinant_Analysis> create();
+      static Teuchos::RCP<SoHex8DeterminantAnalysis> create();
 
       /** \brief Test the validity of the current element
        *
@@ -60,7 +60,7 @@ namespace DRT
        *  Use the create function instead.
        *
        *  \author hiermeier \date 09/18 */
-      So_Hex8_Determinant_Analysis() = default;
+      SoHex8DeterminantAnalysis() = default;
 
       /** \brief Fill the static matrix \c map_q_ with the values given in
        *  reference [1]

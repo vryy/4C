@@ -89,7 +89,7 @@ void FLD::TimIntRedModels::Init()
         discret_->SetState("dispnp", dispnp_);
       }
       coupled3D_redDbc_art_ =
-          Teuchos::rcp(new UTILS::Fluid_couplingWrapper<ADAPTER::ArtNet>(discret_,
+          Teuchos::rcp(new UTILS::FluidCouplingWrapper<ADAPTER::ArtNet>(discret_,
               ART_timeInt_->Discretization(), ART_timeInt_, output_redD, dta_, ART_timeInt_->Dt()));
     }
 
@@ -108,7 +108,7 @@ void FLD::TimIntRedModels::Init()
         discret_->SetState("dispnp", dispnp_);
       }
       coupled3D_redDbc_airways_ =
-          Teuchos::rcp(new UTILS::Fluid_couplingWrapper<AIRWAY::RedAirwayImplicitTimeInt>(discret_,
+          Teuchos::rcp(new UTILS::FluidCouplingWrapper<AIRWAY::RedAirwayImplicitTimeInt>(discret_,
               airway_imp_timeInt_->Discretization(), airway_imp_timeInt_, output_redD, dta_,
               airway_imp_timeInt_->Dt()));
     }

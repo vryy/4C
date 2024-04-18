@@ -97,10 +97,10 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     case INPAR::MAT::mes_anisoactivestress_evolution:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::ELASTIC::PAR::AnisoActiveStress_Evolution(curmat));
+        curmat->SetParameter(new MAT::ELASTIC::PAR::AnisoActiveStressEvolution(curmat));
       auto* params =
-          dynamic_cast<MAT::ELASTIC::PAR::AnisoActiveStress_Evolution*>(curmat->Parameter());
-      return Teuchos::rcp(new AnisoActiveStress_Evolution(params));
+          dynamic_cast<MAT::ELASTIC::PAR::AnisoActiveStressEvolution*>(curmat->Parameter());
+      return Teuchos::rcp(new AnisoActiveStressEvolution(params));
     }
     case INPAR::MAT::mes_coupanisoexpoactive:
     {
@@ -140,10 +140,10 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     case INPAR::MAT::mes_coupanisoneohooke_varprop:
     {
       if (curmat->Parameter() == nullptr)
-        curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp(curmat));
+        curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp(curmat));
       auto* params =
-          dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp*>(curmat->Parameter());
-      return Teuchos::rcp(new CoupAnisoNeoHooke_VarProp(params));
+          dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp*>(curmat->Parameter());
+      return Teuchos::rcp(new CoupAnisoNeoHookeVarProp(params));
     }
     case INPAR::MAT::mes_coupanisopow:
     {

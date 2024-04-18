@@ -39,12 +39,12 @@ namespace DRT
     // forward declarations
     class PreStress;
 
-    class So_weg6Type : public DRT::ElementType
+    class SoWeg6Type : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_weg6Type"; }
 
-      static So_weg6Type& Instance();
+      static SoWeg6Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -66,7 +66,7 @@ namespace DRT
           override;
 
      private:
-      static So_weg6Type instance_;
+      static SoWeg6Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDW6"; }
     };
@@ -75,11 +75,11 @@ namespace DRT
     \brief A C++ version of the 6-node wedge solid element
 
     */
-    class So_weg6 : public So_base
+    class SoWeg6 : public SoBase
     {
      public:
       //! @name Friends
-      friend class So_weg6Type;
+      friend class SoWeg6Type;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -90,7 +90,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owning processor
       */
-      So_weg6(int id, int owner);
+      SoWeg6(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -98,7 +98,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_weg6(const So_weg6& old);
+      SoWeg6(const SoWeg6& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -155,7 +155,7 @@ namespace DRT
       */
       inline int UniqueParObjectId() const override
       {
-        return So_weg6Type::Instance().UniqueParObjectId();
+        return SoWeg6Type::Instance().UniqueParObjectId();
       }
 
       /*!
@@ -209,7 +209,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return So_weg6Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoWeg6Type::Instance(); }
 
       //@}
 
@@ -373,7 +373,7 @@ namespace DRT
       // internal calculation methods
 
       // don't want = operator
-      So_weg6& operator=(const So_weg6& old);
+      SoWeg6& operator=(const SoWeg6& old);
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       virtual void InitJacobianMapping();

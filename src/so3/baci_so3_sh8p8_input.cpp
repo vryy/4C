@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_sh8p8::ReadElement(
+bool DRT::ELEMENTS::SoSh8p8::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
   // read number of material model

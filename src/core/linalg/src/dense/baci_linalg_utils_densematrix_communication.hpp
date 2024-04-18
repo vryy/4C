@@ -681,7 +681,7 @@ namespace CORE::LINALG
    This should be part of stl but is not. So we define our own version.
    */
   template <typename pair_type>
-  struct select1st
+  struct Select1st
       : public std::unary_function<const pair_type&, const typename pair_type::first_type&>
   {
     const typename pair_type::first_type& operator()(const pair_type& v) const { return v.first; }

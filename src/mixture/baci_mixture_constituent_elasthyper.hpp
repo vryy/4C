@@ -23,14 +23,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace MIXTURE
 {
-  class MixtureConstituent_ElastHyper;
+  class MixtureConstituentElastHyper;
 
   namespace PAR
   {
-    class MixtureConstituent_ElastHyper : public MIXTURE::PAR::MixtureConstituent_ElastHyperBase
+    class MixtureConstituentElastHyper : public MIXTURE::PAR::MixtureConstituentElastHyperBase
     {
      public:
-      explicit MixtureConstituent_ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureConstituentElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
@@ -46,12 +46,12 @@ namespace MIXTURE
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
    * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
    */
-  class MixtureConstituent_ElastHyper : public MIXTURE::MixtureConstituent_ElastHyperBase
+  class MixtureConstituentElastHyper : public MIXTURE::MixtureConstituentElastHyperBase
   {
    public:
     /// Constructor for the materiak given the material parameters
-    explicit MixtureConstituent_ElastHyper(
-        MIXTURE::PAR::MixtureConstituent_ElastHyper* params, int id);
+    explicit MixtureConstituentElastHyper(
+        MIXTURE::PAR::MixtureConstituentElastHyper* params, int id);
 
     /// Returns the material type enum
     INPAR::MAT::MaterialType MaterialType() const override;

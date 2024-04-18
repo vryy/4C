@@ -87,7 +87,7 @@ namespace CONSTRAINTS
       return;
     }
 
-    void SetSTCProp(INPAR::STR::STC_Scale stcalgo, Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat)
+    void SetSTCProp(INPAR::STR::StcScale stcalgo, Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat)
     {
       stcalgo_ = stcalgo;
       stcmat_ = stcmat;
@@ -159,7 +159,7 @@ namespace CONSTRAINTS
     Teuchos::RCP<CORE::LINALG::Solver> solver_;  ///< solver for linear standard linear system
     int counter_;                                ///< counts how often #Solve is called
     INPAR::STR::ConSolveAlgo algochoice_;
-    INPAR::STR::STC_Scale stcalgo_;
+    INPAR::STR::StcScale stcalgo_;
     Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat_;
 
   };  // class

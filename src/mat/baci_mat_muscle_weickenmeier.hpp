@@ -30,11 +30,11 @@ namespace MAT
 {
   namespace PAR
   {
-    class Muscle_Weickenmeier : public Parameter
+    class MuscleWeickenmeier : public Parameter
     {
      public:
       /// constructor
-      Muscle_Weickenmeier(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MuscleWeickenmeier(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
@@ -101,17 +101,17 @@ namespace MAT
   }     // end namespace PAR
 
 
-  class Muscle_WeickenmeierType : public CORE::COMM::ParObjectType
+  class MuscleWeickenmeierType : public CORE::COMM::ParObjectType
   {
    public:
     [[nodiscard]] std::string Name() const override { return "Muscle_WeickenmeierType"; }
 
-    static Muscle_WeickenmeierType& Instance() { return instance_; };
+    static MuscleWeickenmeierType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Muscle_WeickenmeierType instance_;
+    static MuscleWeickenmeierType instance_;
   };
 
 
@@ -139,18 +139,18 @@ namespace MAT
    * finite element method', Computer Methods in Biomechanics and Biomedical Engineering, vol. 11,
    * no. 5, pp. 489-504, 2008, doi: 10.1080/10255840701771750.
    */
-  class Muscle_Weickenmeier : public So3Material
+  class MuscleWeickenmeier : public So3Material
   {
    public:
     // Constructor for empty material object
-    Muscle_Weickenmeier();
+    MuscleWeickenmeier();
 
     // Constructor for the material given the material parameters
-    explicit Muscle_Weickenmeier(MAT::PAR::Muscle_Weickenmeier* params);
+    explicit MuscleWeickenmeier(MAT::PAR::MuscleWeickenmeier* params);
 
     [[nodiscard]] Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new Muscle_Weickenmeier(*this));
+      return Teuchos::rcp(new MuscleWeickenmeier(*this));
     }
 
     [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
@@ -170,7 +170,7 @@ namespace MAT
 
     [[nodiscard]] int UniqueParObjectId() const override
     {
-      return Muscle_WeickenmeierType::Instance().UniqueParObjectId();
+      return MuscleWeickenmeierType::Instance().UniqueParObjectId();
     }
 
     void Pack(CORE::COMM::PackBuffer& data) const override;
@@ -215,7 +215,7 @@ namespace MAT
         double& omegaa, double& derivOmegaa);
 
     /// Weickenmeier material parameters
-    MAT::PAR::Muscle_Weickenmeier* params_{};
+    MAT::PAR::MuscleWeickenmeier* params_{};
 
     /// Fibre stretch of the previous timestep
     double lambdaMOld_;

@@ -28,7 +28,7 @@ namespace CORE::LINALG
   namespace ANA
   {
     // forward declarations
-    class LC_s_times_vec;
+    class LCSTimesVec;
     class Vector;
 
     /*----------------------------------------------------------------------*
@@ -844,10 +844,10 @@ namespace CORE::LINALG
     \sa LCBase
 
     */
-    class LC_lc_plus_lc : public LCBase
+    class LcLcPlusLc : public LCBase
     {
      public:
-      LC_lc_plus_lc(const LCBase& left, const LCBase& right) : LCBase(), left_(left), right_(right)
+      LcLcPlusLc(const LCBase& left, const LCBase& right) : LCBase(), left_(left), right_(right)
       {
 #if DEBUGGING_ANA
         cout << "LC_lc_plus_lc(const LCBase& left, const LCBase& right)" << endl;
@@ -855,7 +855,7 @@ namespace CORE::LINALG
 #endif
       }
 
-      ~LC_lc_plus_lc() override
+      ~LcLcPlusLc() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_lc_plus_lc()" << endl;
@@ -893,10 +893,10 @@ namespace CORE::LINALG
     \sa LCBase
 
     */
-    class LC_lc_minus_lc : public LCBase
+    class LcLcMinusLc : public LCBase
     {
      public:
-      LC_lc_minus_lc(const LCBase& left, const LCBase& right) : LCBase(), left_(left), right_(right)
+      LcLcMinusLc(const LCBase& left, const LCBase& right) : LCBase(), left_(left), right_(right)
       {
 #if DEBUGGING_ANA
         cout << "LC_lc_minus_lc(const LCBase& left, const LCBase& right)" << endl;
@@ -904,7 +904,7 @@ namespace CORE::LINALG
 #endif
       }
 
-      ~LC_lc_minus_lc() override
+      ~LcLcMinusLc() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_lc_minus_lc()" << endl;
@@ -941,10 +941,10 @@ namespace CORE::LINALG
     \sa LCBase
 
     */
-    class LC_vec_plus_lc : public LCBase
+    class LcVecPlusLc : public LCBase
     {
      public:
-      LC_vec_plus_lc(const CORE::LINALG::ANA::Vector& vec, const LCBase& right)
+      LcVecPlusLc(const CORE::LINALG::ANA::Vector& vec, const LCBase& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
@@ -953,7 +953,7 @@ namespace CORE::LINALG
 #endif
       }
 
-      ~LC_vec_plus_lc() override
+      ~LcVecPlusLc() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_vec_plus_lc()" << endl;
@@ -990,10 +990,10 @@ namespace CORE::LINALG
     \sa LCBase
 
     */
-    class LC_vec_minus_lc : public LCBase
+    class LcVecMinusLc : public LCBase
     {
      public:
-      LC_vec_minus_lc(const CORE::LINALG::ANA::Vector& vec, const LCBase& right)
+      LcVecMinusLc(const CORE::LINALG::ANA::Vector& vec, const LCBase& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
@@ -1003,7 +1003,7 @@ namespace CORE::LINALG
 #endif
       }
 
-      ~LC_vec_minus_lc() override
+      ~LcVecMinusLc() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_vec_minus_lc()" << endl;
@@ -1040,10 +1040,10 @@ namespace CORE::LINALG
     \sa LCBase
 
     */
-    class LC_lc_minus_vec : public LCBase
+    class LcLcMinusVec : public LCBase
     {
      public:
-      LC_lc_minus_vec(const LCBase& left, const CORE::LINALG::ANA::Vector& vec)
+      LcLcMinusVec(const LCBase& left, const CORE::LINALG::ANA::Vector& vec)
           : LCBase(), vec_(vec), left_(left)
       {
 #if DEBUGGING_ANA
@@ -1052,7 +1052,7 @@ namespace CORE::LINALG
 #endif
       }
 
-      ~LC_lc_minus_vec() override
+      ~LcLcMinusVec() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_lc_minus_vec()" << endl;
@@ -1089,22 +1089,22 @@ namespace CORE::LINALG
     \sa LCBase
 
     */
-    class LC_s_times_vec : public LCBase
+    class LCSTimesVec : public LCBase
     {
      public:
-      LC_s_times_vec(const double scalar, const CORE::LINALG::ANA::Vector& vec)
+      LCSTimesVec(const double scalar, const CORE::LINALG::ANA::Vector& vec)
           : LCBase(), scalar_(scalar), vec_(vec)
       {
 #if DEBUGGING_ANA
-        cout << "LC_s_times_vec(const double scalar, const CORE::LINALG::ANA::Vector& vec)" << endl;
+        cout << "LCSTimesVec(const double scalar, const CORE::LINALG::ANA::Vector& vec)" << endl;
         fflush(stdout);
 #endif
       }
 
-      ~LC_s_times_vec() override
+      ~LCSTimesVec() override
       {
 #if DEBUGGING_ANA
-        cout << "~LC_s_times_vec() " << endl;
+        cout << "~LCSTimesVec() " << endl;
         fflush(stdout);
 #endif
       }
@@ -1131,7 +1131,7 @@ namespace CORE::LINALG
       const double scalar_;
       const CORE::LINALG::ANA::Vector& vec_;
 
-    };  // class LC_s_times_vec
+    };  // class LCSTimesVec
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
@@ -1141,10 +1141,10 @@ namespace CORE::LINALG
     \sa LCBase
 
     */
-    class LC_s_times_lc : public LCBase
+    class LcSTimesLc : public LCBase
     {
      public:
-      LC_s_times_lc(const double scalar, const CORE::LINALG::ANA::LCBase& right)
+      LcSTimesLc(const double scalar, const CORE::LINALG::ANA::LCBase& right)
           : LCBase(), scalar_(scalar), right_(right)
       {
 #if DEBUGGING_ANA
@@ -1154,7 +1154,7 @@ namespace CORE::LINALG
 #endif
       }
 
-      ~LC_s_times_lc() override
+      ~LcSTimesLc() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_s_times_lc() " << endl;
@@ -1191,20 +1191,19 @@ namespace CORE::LINALG
     \sa LCBase, LC_lc_plus_lc
 
     */
-    class LC_lcsv_plus_lcsv : public LCBase
+    class LcLcsvPlusLcsv : public LCBase
     {
      public:
-      LC_lcsv_plus_lcsv(const LC_s_times_vec& left, const LC_s_times_vec& right)
+      LcLcsvPlusLcsv(const LCSTimesVec& left, const LCSTimesVec& right)
           : LCBase(), left_(left), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_lcsv_plus_lcsv(const LC_s_times_vec& left, const LC_s_times_vec& right)"
-             << endl;
+        cout << "LC_lcsv_plus_lcsv(const LCSTimesVec& left, const LCSTimesVec& right)" << endl;
         fflush(stdout);
 #endif
       }
 
-      ~LC_lcsv_plus_lcsv() override
+      ~LcLcsvPlusLcsv() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_lcsv_plus_lcsv()" << endl;
@@ -1228,8 +1227,8 @@ namespace CORE::LINALG
       }
 
      private:
-      const LC_s_times_vec left_;
-      const LC_s_times_vec right_;
+      const LCSTimesVec left_;
+      const LCSTimesVec right_;
 
     };  // class LC_lcsv_plus_lcsv
 
@@ -1243,21 +1242,20 @@ namespace CORE::LINALG
     \sa LCBase, LC_vec_plus_lc
 
     */
-    class LC_vec_plus_lcsv : public LCBase
+    class LcVecPlusLcsv : public LCBase
     {
      public:
-      LC_vec_plus_lcsv(const CORE::LINALG::ANA::Vector& vec, const LC_s_times_vec& right)
+      LcVecPlusLcsv(const CORE::LINALG::ANA::Vector& vec, const LCSTimesVec& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
-        cout
-            << "LC_vec_plus_lcsv(const CORE::LINALG::ANA::Vector& vec, const LC_s_times_vec& right)"
-            << endl;
+        cout << "LC_vec_plus_lcsv(const CORE::LINALG::ANA::Vector& vec, const LCSTimesVec& right)"
+             << endl;
         fflush(stdout);
 #endif
       }
 
-      ~LC_vec_plus_lcsv() override
+      ~LcVecPlusLcsv() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_vec_plus_lcsv()" << endl;
@@ -1280,7 +1278,7 @@ namespace CORE::LINALG
 
      private:
       const CORE::LINALG::ANA::Vector& vec_;
-      const LC_s_times_vec right_;
+      const LCSTimesVec right_;
 
     };  // class LC_vec_plus_lcsv
 
@@ -1293,20 +1291,19 @@ namespace CORE::LINALG
     \sa LCBase, LC_lc_minus_lc
 
     */
-    class LC_lcsv_minus_lcsv : public LCBase
+    class LcLcsvMinusLcsv : public LCBase
     {
      public:
-      LC_lcsv_minus_lcsv(const LC_s_times_vec& left, const LC_s_times_vec& right)
+      LcLcsvMinusLcsv(const LCSTimesVec& left, const LCSTimesVec& right)
           : LCBase(), left_(left), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_lcsv_minus_lcsv(const LC_s_times_vec& left, const LC_s_times_vec& right)"
-             << endl;
+        cout << "LC_lcsv_minus_lcsv(const LCSTimesVec& left, const LCSTimesVec& right)" << endl;
         fflush(stdout);
 #endif
       }
 
-      ~LC_lcsv_minus_lcsv() override
+      ~LcLcsvMinusLcsv() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_lcsv_minus_lcsv()" << endl;
@@ -1330,8 +1327,8 @@ namespace CORE::LINALG
       }
 
      private:
-      const LC_s_times_vec left_;
-      const LC_s_times_vec right_;
+      const LCSTimesVec left_;
+      const LCSTimesVec right_;
 
     };  // class LC_lcsv_minus_lcsv
 
@@ -1344,21 +1341,21 @@ namespace CORE::LINALG
     \sa LCBase, LC_vec_minus_lc
 
     */
-    class LC_vec_minus_lcsv : public LCBase
+    class LcVecMinusLcsv : public LCBase
     {
      public:
-      LC_vec_minus_lcsv(const CORE::LINALG::ANA::Vector& vec, const LC_s_times_vec& right)
+      LcVecMinusLcsv(const CORE::LINALG::ANA::Vector& vec, const LCSTimesVec& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_vec_minus_lcsv(const CORE::LINALG::ANA::Vector& vec, const LC_s_times_vec& "
+        cout << "LC_vec_minus_lcsv(const CORE::LINALG::ANA::Vector& vec, const LCSTimesVec& "
                 "right)"
              << endl;
         fflush(stdout);
 #endif
       }
 
-      ~LC_vec_minus_lcsv() override
+      ~LcVecMinusLcsv() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_vec_minus_lcsv()" << endl;
@@ -1381,7 +1378,7 @@ namespace CORE::LINALG
 
      private:
       const CORE::LINALG::ANA::Vector& vec_;
-      const LC_s_times_vec right_;
+      const LCSTimesVec right_;
 
     };  // class LC_vec_minus_lcsv
 
@@ -1394,21 +1391,20 @@ namespace CORE::LINALG
     \sa LCBase, LC_lc_minus_vec
 
     */
-    class LC_lcsv_minus_vec : public LCBase
+    class LcLcsvMinusVec : public LCBase
     {
      public:
-      LC_lcsv_minus_vec(const LC_s_times_vec& left, const CORE::LINALG::ANA::Vector& vec)
+      LcLcsvMinusVec(const LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec)
           : LCBase(), vec_(vec), left_(left)
       {
 #if DEBUGGING_ANA
-        cout
-            << "LC_lcsv_minus_vec(const LC_s_times_vec& left, const CORE::LINALG::ANA::Vector& vec)"
-            << endl;
+        cout << "LC_lcsv_minus_vec(const LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec)"
+             << endl;
         fflush(stdout);
 #endif
       }
 
-      ~LC_lcsv_minus_vec() override
+      ~LcLcsvMinusVec() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_lcsv_minus_vec()" << endl;
@@ -1431,7 +1427,7 @@ namespace CORE::LINALG
 
      private:
       const CORE::LINALG::ANA::Vector& vec_;
-      const LC_s_times_vec left_;
+      const LCSTimesVec left_;
 
     };  // class LC_lcsv_minus_vec
 
@@ -1446,10 +1442,10 @@ namespace CORE::LINALG
     \sa LCBase
 
     */
-    class LC_vec_pointwise_vec : public LCBase
+    class LcVecPointwiseVec : public LCBase
     {
      public:
-      LC_vec_pointwise_vec(
+      LcVecPointwiseVec(
           const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::Vector& vec2)
           : LCBase(), vec1_(vec1), vec2_(vec2)
       {
@@ -1462,7 +1458,7 @@ namespace CORE::LINALG
 #endif
       }
 
-      ~LC_vec_pointwise_vec() override
+      ~LcVecPointwiseVec() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_vec_pointwise_vec()" << endl;
@@ -1499,11 +1495,10 @@ namespace CORE::LINALG
     \sa LCBase, LC_vec_pointwise_vec
 
     */
-    class LC_vec_pointwise_lc : public LCBase
+    class LcVecPointwiseLc : public LCBase
     {
      public:
-      LC_vec_pointwise_lc(
-          const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCBase& right)
+      LcVecPointwiseLc(const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCBase& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
@@ -1515,7 +1510,7 @@ namespace CORE::LINALG
 #endif
       }
 
-      ~LC_vec_pointwise_lc() override
+      ~LcVecPointwiseLc() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_vec_pointwise_lc()" << endl;
@@ -1552,22 +1547,22 @@ namespace CORE::LINALG
     \sa LCBase, LC_vec_pointwise_vec, LC_vec_pointwise_lc
 
     */
-    class LC_vec_pointwise_lcsv : public LCBase
+    class LcVecPointwiseLcsv : public LCBase
     {
      public:
-      LC_vec_pointwise_lcsv(
-          const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LC_s_times_vec& right)
+      LcVecPointwiseLcsv(
+          const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCSTimesVec& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
         cout << "LC_vec_pointwise_lcsv(const CORE::LINALG::ANA::Vector& vec, const "
-                "CORE::LINALG::ANA::LC_s_times_vec& right)"
+                "CORE::LINALG::ANA::LCSTimesVec& right)"
              << endl;
         fflush(stdout);
 #endif
       }
 
-      ~LC_vec_pointwise_lcsv() override
+      ~LcVecPointwiseLcsv() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_vec_pointwise_lcsv()" << endl;
@@ -1590,7 +1585,7 @@ namespace CORE::LINALG
 
      private:
       const CORE::LINALG::ANA::Vector& vec_;
-      const CORE::LINALG::ANA::LC_s_times_vec right_;
+      const CORE::LINALG::ANA::LCSTimesVec right_;
 
     };  // class LC_vec_pointwise_lc
 
@@ -1605,11 +1600,10 @@ namespace CORE::LINALG
     \sa LCBase, LC_vec_pointwise_vec
 
     */
-    class LC_lc_pointwise_lc : public LCBase
+    class LcLcPointwiseLc : public LCBase
     {
      public:
-      LC_lc_pointwise_lc(
-          const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right)
+      LcLcPointwiseLc(const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right)
           : LCBase(), left_(left), right_(right)
       {
 #if DEBUGGING_ANA
@@ -1621,7 +1615,7 @@ namespace CORE::LINALG
 #endif
       }
 
-      ~LC_lc_pointwise_lc() override
+      ~LcLcPointwiseLc() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_lc_pointwise_lc()" << endl;
@@ -1653,22 +1647,22 @@ namespace CORE::LINALG
     \sa LCBase, LC_lc_pointwise_lc
 
     */
-    class LC_lcsv_pointwise_lcsv : public LCBase
+    class LcLcsvPointwiseLcsv : public LCBase
     {
      public:
-      LC_lcsv_pointwise_lcsv(const CORE::LINALG::ANA::LC_s_times_vec& left,
-          const CORE::LINALG::ANA::LC_s_times_vec& right)
+      LcLcsvPointwiseLcsv(
+          const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right)
           : LCBase(), left_(left), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_lcsv_pointwise_lcsv(const CORE::LINALG::ANA::LC_s_times_vec& left, const "
-                "CORE::LINALG::ANA::LC_s_times_vec& right)"
+        cout << "LC_lcsv_pointwise_lcsv(const CORE::LINALG::ANA::LCSTimesVec& left, const "
+                "CORE::LINALG::ANA::LCSTimesVec& right)"
              << endl;
         fflush(stdout);
 #endif
       }
 
-      ~LC_lcsv_pointwise_lcsv() override
+      ~LcLcsvPointwiseLcsv() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_lcsv_pointwise_lcsv()" << endl;
@@ -1690,8 +1684,8 @@ namespace CORE::LINALG
       }
 
      private:
-      const CORE::LINALG::ANA::LC_s_times_vec left_;
-      const CORE::LINALG::ANA::LC_s_times_vec right_;
+      const CORE::LINALG::ANA::LCSTimesVec left_;
+      const CORE::LINALG::ANA::LCSTimesVec right_;
 
     };  // class LC_lcsv_pointwise_lcsv
 
@@ -1704,22 +1698,22 @@ namespace CORE::LINALG
     \sa LCBase, LC_Operator_times_lc
 
     */
-    class LC_Operator_times_lcsv : public LCBase
+    class LcOperatorTimesLcsv : public LCBase
     {
      public:
-      LC_Operator_times_lcsv(
-          const LightWeightOperatorBase& op, const CORE::LINALG::ANA::LC_s_times_vec& right)
+      LcOperatorTimesLcsv(
+          const LightWeightOperatorBase& op, const CORE::LINALG::ANA::LCSTimesVec& right)
           : LCBase(), op_(op.Clone()), right_(right)
       {
 #if DEBUGGING_ANA
         cout << "LC_Operator_times_lcsv(const LightWeightOperatorBase& op, const "
-                "CORE::LINALG::ANA::LC_s_times_vec& right)"
+                "CORE::LINALG::ANA::LCSTimesVec& right)"
              << endl;
         fflush(stdout);
 #endif
       }
 
-      ~LC_Operator_times_lcsv() override
+      ~LcOperatorTimesLcsv() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_Operator_times_lcsv()" << endl;
@@ -1736,7 +1730,7 @@ namespace CORE::LINALG
 
      private:
       const Teuchos::RCP<LightWeightOperatorBase> op_;
-      const CORE::LINALG::ANA::LC_s_times_vec right_;
+      const CORE::LINALG::ANA::LCSTimesVec right_;
 
     };  // class LC_Operator_times_lcsv
 
@@ -1749,11 +1743,10 @@ namespace CORE::LINALG
     \sa LCBase, LC_Operator_times_lcsv
 
     */
-    class LC_Operator_times_lc : public LCBase
+    class LcOperatorTimesLc : public LCBase
     {
      public:
-      LC_Operator_times_lc(
-          const LightWeightOperatorBase& op, const CORE::LINALG::ANA::LCBase& right)
+      LcOperatorTimesLc(const LightWeightOperatorBase& op, const CORE::LINALG::ANA::LCBase& right)
           : LCBase(), op_(op.Clone()), right_(right)
       {
 #if DEBUGGING_ANA
@@ -1764,7 +1757,7 @@ namespace CORE::LINALG
 #endif
       }
 
-      ~LC_Operator_times_lc() override
+      ~LcOperatorTimesLc() override
       {
 #if DEBUGGING_ANA
         cout << "~LC_Operator_times_lc()" << endl;
@@ -1798,172 +1791,168 @@ namespace CORE::LINALG
     /*----------------------------------------------------------------------*
        scalar, vector and LC operations
      *----------------------------------------------------------------------*/
-    inline CORE::LINALG::ANA::LC_s_times_vec operator*(
+    inline CORE::LINALG::ANA::LCSTimesVec operator*(
         const double& scalar, const CORE::LINALG::ANA::Vector& vec)
     {
-      return CORE::LINALG::ANA::LC_s_times_vec(scalar, vec);
+      return CORE::LINALG::ANA::LCSTimesVec(scalar, vec);
     }
-    inline CORE::LINALG::ANA::LC_s_times_vec operator*(
+    inline CORE::LINALG::ANA::LCSTimesVec operator*(
         const CORE::LINALG::ANA::Vector& vec, const double& scalar)
     {
-      return CORE::LINALG::ANA::LC_s_times_vec(scalar, vec);
+      return CORE::LINALG::ANA::LCSTimesVec(scalar, vec);
     }
-    inline CORE::LINALG::ANA::LC_s_times_vec operator/(
+    inline CORE::LINALG::ANA::LCSTimesVec operator/(
         const CORE::LINALG::ANA::Vector& vec, const double& scalar)
     {
-      return CORE::LINALG::ANA::LC_s_times_vec(1. / scalar, vec);
+      return CORE::LINALG::ANA::LCSTimesVec(1. / scalar, vec);
     }
-    inline CORE::LINALG::ANA::LC_lc_plus_lc operator+(
+    inline CORE::LINALG::ANA::LcLcPlusLc operator+(
         const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right)
     {
-      return CORE::LINALG::ANA::LC_lc_plus_lc(left, right);
+      return CORE::LINALG::ANA::LcLcPlusLc(left, right);
     }
-    inline CORE::LINALG::ANA::LC_lc_minus_lc operator-(
+    inline CORE::LINALG::ANA::LcLcMinusLc operator-(
         const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right)
     {
-      return CORE::LINALG::ANA::LC_lc_minus_lc(left, right);
+      return CORE::LINALG::ANA::LcLcMinusLc(left, right);
     }
-    inline CORE::LINALG::ANA::LC_vec_plus_lc operator+(
+    inline CORE::LINALG::ANA::LcVecPlusLc operator+(
         const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCBase& right)
     {
-      return CORE::LINALG::ANA::LC_vec_plus_lc(vec, right);
+      return CORE::LINALG::ANA::LcVecPlusLc(vec, right);
     }
-    inline CORE::LINALG::ANA::LC_vec_plus_lc operator+(
+    inline CORE::LINALG::ANA::LcVecPlusLc operator+(
         const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::Vector& vec)
     {
-      return CORE::LINALG::ANA::LC_vec_plus_lc(vec, left);
+      return CORE::LINALG::ANA::LcVecPlusLc(vec, left);
     }
-    inline CORE::LINALG::ANA::LC_vec_minus_lc operator-(
+    inline CORE::LINALG::ANA::LcVecMinusLc operator-(
         const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCBase& right)
     {
-      return CORE::LINALG::ANA::LC_vec_minus_lc(vec, right);
+      return CORE::LINALG::ANA::LcVecMinusLc(vec, right);
     }
-    inline CORE::LINALG::ANA::LC_lc_minus_vec operator-(
+    inline CORE::LINALG::ANA::LcLcMinusVec operator-(
         const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::Vector& vec)
     {
-      return CORE::LINALG::ANA::LC_lc_minus_vec(left, vec);
+      return CORE::LINALG::ANA::LcLcMinusVec(left, vec);
     }
-    inline CORE::LINALG::ANA::LC_lcsv_plus_lcsv operator+(
-        const CORE::LINALG::ANA::LC_s_times_vec& left,
-        const CORE::LINALG::ANA::LC_s_times_vec& right)
+    inline CORE::LINALG::ANA::LcLcsvPlusLcsv operator+(
+        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LC_lcsv_plus_lcsv(left, right);
+      return CORE::LINALG::ANA::LcLcsvPlusLcsv(left, right);
     }
-    inline CORE::LINALG::ANA::LC_lcsv_minus_lcsv operator-(
-        const CORE::LINALG::ANA::LC_s_times_vec& left,
-        const CORE::LINALG::ANA::LC_s_times_vec& right)
+    inline CORE::LINALG::ANA::LcLcsvMinusLcsv operator-(
+        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LC_lcsv_minus_lcsv(left, right);
+      return CORE::LINALG::ANA::LcLcsvMinusLcsv(left, right);
     }
-    inline CORE::LINALG::ANA::LC_vec_plus_lcsv operator+(
-        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LC_s_times_vec& right)
+    inline CORE::LINALG::ANA::LcVecPlusLcsv operator+(
+        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LC_vec_plus_lcsv(vec, right);
+      return CORE::LINALG::ANA::LcVecPlusLcsv(vec, right);
     }
-    inline CORE::LINALG::ANA::LC_vec_plus_lcsv operator+(
-        const CORE::LINALG::ANA::LC_s_times_vec& left, const CORE::LINALG::ANA::Vector& vec)
+    inline CORE::LINALG::ANA::LcVecPlusLcsv operator+(
+        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec)
     {
-      return CORE::LINALG::ANA::LC_vec_plus_lcsv(vec, left);
+      return CORE::LINALG::ANA::LcVecPlusLcsv(vec, left);
     }
-    inline CORE::LINALG::ANA::LC_vec_minus_lcsv operator-(
-        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LC_s_times_vec& right)
+    inline CORE::LINALG::ANA::LcVecMinusLcsv operator-(
+        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LC_vec_minus_lcsv(vec, right);
+      return CORE::LINALG::ANA::LcVecMinusLcsv(vec, right);
     }
-    inline CORE::LINALG::ANA::LC_lcsv_minus_vec operator-(
-        const CORE::LINALG::ANA::LC_s_times_vec& left, const CORE::LINALG::ANA::Vector& vec)
+    inline CORE::LINALG::ANA::LcLcsvMinusVec operator-(
+        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec)
     {
-      return CORE::LINALG::ANA::LC_lcsv_minus_vec(left, vec);
+      return CORE::LINALG::ANA::LcLcsvMinusVec(left, vec);
     }
-    inline CORE::LINALG::ANA::LC_lcsv_plus_lcsv operator+(
+    inline CORE::LINALG::ANA::LcLcsvPlusLcsv operator+(
         const CORE::LINALG::ANA::Vector& left, const CORE::LINALG::ANA::Vector& right)
     {
       return (1.0 * left + 1.0 * right);
     }
-    inline CORE::LINALG::ANA::LC_lcsv_minus_lcsv operator-(
+    inline CORE::LINALG::ANA::LcLcsvMinusLcsv operator-(
         const CORE::LINALG::ANA::Vector& left, const CORE::LINALG::ANA::Vector& right)
     {
       return (1.0 * left - 1.0 * right);
     }
-    inline CORE::LINALG::ANA::LC_s_times_lc operator*(
+    inline CORE::LINALG::ANA::LcSTimesLc operator*(
         const double& scalar, const CORE::LINALG::ANA::LCBase& right)
     {
-      return CORE::LINALG::ANA::LC_s_times_lc(scalar, right);
+      return CORE::LINALG::ANA::LcSTimesLc(scalar, right);
     }
-    inline CORE::LINALG::ANA::LC_s_times_lc operator*(
+    inline CORE::LINALG::ANA::LcSTimesLc operator*(
         const CORE::LINALG::ANA::LCBase& left, const double& scalar)
     {
       return (scalar * left);
     }
     // Teuchos::RCP versions of the above operations
-    inline CORE::LINALG::ANA::LC_s_times_vec operator*(
+    inline CORE::LINALG::ANA::LCSTimesVec operator*(
         const double& scalar, const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
     {
       return (scalar * (*vec));
     }
-    inline CORE::LINALG::ANA::LC_s_times_vec operator*(
+    inline CORE::LINALG::ANA::LCSTimesVec operator*(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec, const double& scalar)
     {
       return (scalar * (*vec));
     }
-    inline CORE::LINALG::ANA::LC_s_times_vec operator/(
+    inline CORE::LINALG::ANA::LCSTimesVec operator/(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec, const double& scalar)
     {
       return ((*vec) / scalar);
     }
-    inline CORE::LINALG::ANA::LC_vec_plus_lc operator+(
+    inline CORE::LINALG::ANA::LcVecPlusLc operator+(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
         const CORE::LINALG::ANA::LCBase& right)
     {
       return ((*vec) + right);
     }
-    inline CORE::LINALG::ANA::LC_vec_plus_lc operator+(const CORE::LINALG::ANA::LCBase& left,
+    inline CORE::LINALG::ANA::LcVecPlusLc operator+(const CORE::LINALG::ANA::LCBase& left,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
     {
       return (left + (*vec));
     }
-    inline CORE::LINALG::ANA::LC_vec_minus_lc operator-(
+    inline CORE::LINALG::ANA::LcVecMinusLc operator-(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
         const CORE::LINALG::ANA::LCBase& right)
     {
       return (*vec - right);
     }
-    inline CORE::LINALG::ANA::LC_lc_minus_vec operator-(const CORE::LINALG::ANA::LCBase& left,
+    inline CORE::LINALG::ANA::LcLcMinusVec operator-(const CORE::LINALG::ANA::LCBase& left,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
     {
       return (left - (*vec));
     }
-    inline CORE::LINALG::ANA::LC_vec_plus_lcsv operator+(
+    inline CORE::LINALG::ANA::LcVecPlusLcsv operator+(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
-        const CORE::LINALG::ANA::LC_s_times_vec& right)
+        const CORE::LINALG::ANA::LCSTimesVec& right)
     {
       return (*vec + right);
     }
-    inline CORE::LINALG::ANA::LC_vec_plus_lcsv operator+(
-        const CORE::LINALG::ANA::LC_s_times_vec& left,
+    inline CORE::LINALG::ANA::LcVecPlusLcsv operator+(const CORE::LINALG::ANA::LCSTimesVec& left,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
     {
       return (left + (*vec));
     }
-    inline CORE::LINALG::ANA::LC_vec_minus_lcsv operator-(
+    inline CORE::LINALG::ANA::LcVecMinusLcsv operator-(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
-        const CORE::LINALG::ANA::LC_s_times_vec& right)
+        const CORE::LINALG::ANA::LCSTimesVec& right)
     {
       return (*vec - right);
     }
-    inline CORE::LINALG::ANA::LC_lcsv_minus_vec operator-(
-        const CORE::LINALG::ANA::LC_s_times_vec& left,
+    inline CORE::LINALG::ANA::LcLcsvMinusVec operator-(const CORE::LINALG::ANA::LCSTimesVec& left,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
     {
       return (left - (*vec));
     }
-    inline CORE::LINALG::ANA::LC_lcsv_plus_lcsv operator+(
+    inline CORE::LINALG::ANA::LcLcsvPlusLcsv operator+(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> left,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> right)
     {
       return ((*left) + (*right));
     }
-    inline CORE::LINALG::ANA::LC_lcsv_minus_lcsv operator-(
+    inline CORE::LINALG::ANA::LcLcsvMinusLcsv operator-(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> left,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> right)
     {
@@ -1974,34 +1963,34 @@ namespace CORE::LINALG
     /*----------------------------------------------------------------------*
        LightWeightOperatorBase and  Epetra_Operator operations
      *----------------------------------------------------------------------*/
-    inline CORE::LINALG::ANA::LC_Operator_times_lc operator*(
+    inline CORE::LINALG::ANA::LcOperatorTimesLc operator*(
         const CORE::LINALG::ANA::LightWeightOperatorBase& op,
         const CORE::LINALG::ANA::LCBase& right)
     {
-      return CORE::LINALG::ANA::LC_Operator_times_lc(op, right);
+      return CORE::LINALG::ANA::LcOperatorTimesLc(op, right);
     }
-    inline CORE::LINALG::ANA::LC_Operator_times_lc operator*(
+    inline CORE::LINALG::ANA::LcOperatorTimesLc operator*(
         const Epetra_Operator& op, const CORE::LINALG::ANA::LCBase& right)
     {
-      return CORE::LINALG::ANA::LC_Operator_times_lc(CORE::LINALG::ANA::lw(op), right);
+      return CORE::LINALG::ANA::LcOperatorTimesLc(CORE::LINALG::ANA::lw(op), right);
     }
-    inline CORE::LINALG::ANA::LC_Operator_times_lcsv operator*(
+    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
         const CORE::LINALG::ANA::LightWeightOperatorBase& op,
-        const CORE::LINALG::ANA::LC_s_times_vec& right)
+        const CORE::LINALG::ANA::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LC_Operator_times_lcsv(op, right);
+      return CORE::LINALG::ANA::LcOperatorTimesLcsv(op, right);
     }
-    inline CORE::LINALG::ANA::LC_Operator_times_lcsv operator*(
+    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
         const CORE::LINALG::ANA::LightWeightOperatorBase& op, const CORE::LINALG::ANA::Vector& vec)
     {
       return op * (1.0 * vec);
     }
-    inline CORE::LINALG::ANA::LC_Operator_times_lcsv operator*(
-        const Epetra_Operator& op, const CORE::LINALG::ANA::LC_s_times_vec& right)
+    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
+        const Epetra_Operator& op, const CORE::LINALG::ANA::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LC_Operator_times_lcsv(CORE::LINALG::ANA::lw(op), right);
+      return CORE::LINALG::ANA::LcOperatorTimesLcsv(CORE::LINALG::ANA::lw(op), right);
     }
-    inline CORE::LINALG::ANA::LC_Operator_times_lcsv operator*(
+    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
         const Epetra_Operator& op, const CORE::LINALG::ANA::Vector& vec)
     {
       return CORE::LINALG::ANA::lw(op) * (1.0 * vec);
@@ -2093,13 +2082,13 @@ namespace CORE::LINALG
       return CORE::LINALG::ANA::OperatorSum(CORE::LINALG::ANA::lw(left), right, -1);
     }
     // Teuchos::RCP versions of the above operations
-    inline CORE::LINALG::ANA::LC_Operator_times_lcsv operator*(
+    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
         const CORE::LINALG::ANA::LightWeightOperatorBase& op,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
     {
       return op * (*vec);
     }
-    inline CORE::LINALG::ANA::LC_Operator_times_lcsv operator*(
+    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
         const Epetra_Operator& op, const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
     {
       return op * (*vec);
@@ -2112,17 +2101,17 @@ namespace CORE::LINALG
     double operator*(const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::Vector& vec2);
     double operator*(const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::LCBase& right);
     double operator*(
-        const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::LC_s_times_vec& right);
+        const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::LCSTimesVec& right);
     double operator*(const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right);
-    double operator*(const CORE::LINALG::ANA::LC_s_times_vec& left,
-        const CORE::LINALG::ANA::LC_s_times_vec& right);
+    double operator*(
+        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right);
     inline double operator*(
         const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::Vector& vec1)
     {
       return vec1 * left;
     }
     inline double operator*(
-        const CORE::LINALG::ANA::LC_s_times_vec& left, const CORE::LINALG::ANA::Vector& vec1)
+        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec1)
     {
       return vec1 * left;
     }
@@ -2143,11 +2132,11 @@ namespace CORE::LINALG
       return (*vec1) * left;
     }
     inline double operator*(const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec1,
-        const CORE::LINALG::ANA::LC_s_times_vec& right)
+        const CORE::LINALG::ANA::LCSTimesVec& right)
     {
       return (*vec1) * right;
     }
-    inline double operator*(const CORE::LINALG::ANA::LC_s_times_vec& left,
+    inline double operator*(const CORE::LINALG::ANA::LCSTimesVec& left,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec1)
     {
       return (*vec1) * left;
@@ -2156,68 +2145,66 @@ namespace CORE::LINALG
     /*----------------------------------------------------------------------*
        pointwise multiplications of vectors (result is a vector)
      *----------------------------------------------------------------------*/
-    inline CORE::LINALG::ANA::LC_vec_pointwise_vec pw(
+    inline CORE::LINALG::ANA::LcVecPointwiseVec pw(
         const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::Vector& vec2)
     {
-      return CORE::LINALG::ANA::LC_vec_pointwise_vec(vec1, vec2);
+      return CORE::LINALG::ANA::LcVecPointwiseVec(vec1, vec2);
     }
-    inline CORE::LINALG::ANA::LC_vec_pointwise_lc pw(
+    inline CORE::LINALG::ANA::LcVecPointwiseLc pw(
         const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCBase& right)
     {
-      return CORE::LINALG::ANA::LC_vec_pointwise_lc(vec, right);
+      return CORE::LINALG::ANA::LcVecPointwiseLc(vec, right);
     }
-    inline CORE::LINALG::ANA::LC_vec_pointwise_lc pw(
+    inline CORE::LINALG::ANA::LcVecPointwiseLc pw(
         const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::Vector& vec)
     {
       return CORE::LINALG::ANA::pw(vec, left);
     }
-    inline CORE::LINALG::ANA::LC_vec_pointwise_lcsv pw(
-        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LC_s_times_vec& right)
+    inline CORE::LINALG::ANA::LcVecPointwiseLcsv pw(
+        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LC_vec_pointwise_lcsv(vec, right);
+      return CORE::LINALG::ANA::LcVecPointwiseLcsv(vec, right);
     }
-    inline CORE::LINALG::ANA::LC_vec_pointwise_lcsv pw(
-        const CORE::LINALG::ANA::LC_s_times_vec& left, const CORE::LINALG::ANA::Vector& vec)
+    inline CORE::LINALG::ANA::LcVecPointwiseLcsv pw(
+        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec)
     {
       return CORE::LINALG::ANA::pw(vec, left);
     }
-    inline CORE::LINALG::ANA::LC_lc_pointwise_lc pw(
+    inline CORE::LINALG::ANA::LcLcPointwiseLc pw(
         const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right)
     {
-      return CORE::LINALG::ANA::LC_lc_pointwise_lc(left, right);
+      return CORE::LINALG::ANA::LcLcPointwiseLc(left, right);
     }
-    inline CORE::LINALG::ANA::LC_lcsv_pointwise_lcsv pw(
-        const CORE::LINALG::ANA::LC_s_times_vec& left,
-        const CORE::LINALG::ANA::LC_s_times_vec& right)
+    inline CORE::LINALG::ANA::LcLcsvPointwiseLcsv pw(
+        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LC_lcsv_pointwise_lcsv(left, right);
+      return CORE::LINALG::ANA::LcLcsvPointwiseLcsv(left, right);
     }
     // Teuchos::RCP versions of the above operations
-    inline CORE::LINALG::ANA::LC_vec_pointwise_vec pw(
+    inline CORE::LINALG::ANA::LcVecPointwiseVec pw(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec1,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec2)
     {
       return CORE::LINALG::ANA::pw(*vec1, *vec2);
     }
-    inline CORE::LINALG::ANA::LC_vec_pointwise_lc pw(
+    inline CORE::LINALG::ANA::LcVecPointwiseLc pw(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
         const CORE::LINALG::ANA::LCBase& right)
     {
       return CORE::LINALG::ANA::pw(*vec, right);
     }
-    inline CORE::LINALG::ANA::LC_vec_pointwise_lc pw(const CORE::LINALG::ANA::LCBase& left,
+    inline CORE::LINALG::ANA::LcVecPointwiseLc pw(const CORE::LINALG::ANA::LCBase& left,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
     {
       return CORE::LINALG::ANA::pw(left, *vec);
     }
-    inline CORE::LINALG::ANA::LC_vec_pointwise_lcsv pw(
+    inline CORE::LINALG::ANA::LcVecPointwiseLcsv pw(
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
-        const CORE::LINALG::ANA::LC_s_times_vec& right)
+        const CORE::LINALG::ANA::LCSTimesVec& right)
     {
       return CORE::LINALG::ANA::pw(*vec, right);
     }
-    inline CORE::LINALG::ANA::LC_vec_pointwise_lcsv pw(
-        const CORE::LINALG::ANA::LC_s_times_vec& left,
+    inline CORE::LINALG::ANA::LcVecPointwiseLcsv pw(const CORE::LINALG::ANA::LCSTimesVec& left,
         const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
     {
       return CORE::LINALG::ANA::pw(left, *vec);
@@ -2291,15 +2278,15 @@ namespace CORE::LINALG
     double norm2(const CORE::LINALG::ANA::LCBase& lc);
     double norm1(const CORE::LINALG::ANA::LCBase& lc);
     double norminf(const CORE::LINALG::ANA::LCBase& lc);
-    inline double norm2(const CORE::LINALG::ANA::LC_s_times_vec& lc)
+    inline double norm2(const CORE::LINALG::ANA::LCSTimesVec& lc)
     {
       return lc.Scalar() * norm2(lc.Vector());
     }
-    inline double norm1(const CORE::LINALG::ANA::LC_s_times_vec& lc)
+    inline double norm1(const CORE::LINALG::ANA::LCSTimesVec& lc)
     {
       return lc.Scalar() * norm1(lc.Vector());
     }
-    inline double norminf(const CORE::LINALG::ANA::LC_s_times_vec& lc)
+    inline double norminf(const CORE::LINALG::ANA::LCSTimesVec& lc)
     {
       return lc.Scalar() * norminf(lc.Vector());
     }

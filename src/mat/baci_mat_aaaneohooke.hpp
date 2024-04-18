@@ -47,7 +47,7 @@ namespace MAT
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       // !brief enum for mapping between material parameter and entry in the matparams_ vector
-      enum matparamnames_
+      enum Matparamnames
       {
         young,
         nue,

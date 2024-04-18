@@ -14,7 +14,7 @@
 
 #include "baci_lib_resulttest.hpp"
 
-class Epetra_Vector;
+#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 

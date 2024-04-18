@@ -61,7 +61,7 @@ IO::Pstream::~Pstream()
  * configure the output                                       wic 11/12 *
  *----------------------------------------------------------------------*/
 void IO::Pstream::setup(const bool writetoscreen, const bool writetofile, const bool prefixgroupID,
-    const IO::verbositylevel level, Teuchos::RCP<Epetra_Comm> comm, const int targetpid,
+    const IO::Verbositylevel level, Teuchos::RCP<Epetra_Comm> comm, const int targetpid,
     const int groupID, const std::string fileprefix)
 {
   // make sure that setup is called only once or we get unpredictable behavior
@@ -103,7 +103,7 @@ void IO::Pstream::setup(const bool writetoscreen, const bool writetofile, const 
 /*-----------------------------------------------------------------------*
  * return a std::ostream following the restrictions      hiermeier 12/17 *
  *-----------------------------------------------------------------------*/
-std::ostream& IO::Pstream::os(const verbositylevel level) const
+std::ostream& IO::Pstream::os(const Verbositylevel level) const
 {
   if (not is_initialized_) dserror("Setup the output before you use it!");
 
@@ -185,7 +185,7 @@ bool IO::Pstream::OnPid()
 /*----------------------------------------------------------------------*
  * set output level                                           wic 09/16 *
  *----------------------------------------------------------------------*/
-IO::Level& IO::Pstream::operator()(const verbositylevel level) { return level_->SetLevel(level); }
+IO::Level& IO::Pstream::operator()(const Verbositylevel level) { return level_->SetLevel(level); }
 
 
 /*----------------------------------------------------------------------*

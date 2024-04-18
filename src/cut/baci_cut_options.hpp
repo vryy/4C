@@ -87,19 +87,19 @@ namespace CORE::GEO
       };
 
       /** \brief Float_type for geometric intersection computation */
-      enum INPAR::CUT::CUT_Floattype GeomIntersect_Floattype() const
+      enum INPAR::CUT::CutFloattype GeomIntersect_Floattype() const
       {
         return geomintersect_floattype_;
       }
 
       /** \brief Float_type for geometric distance computation */
-      enum INPAR::CUT::CUT_Floattype GeomDistance_Floattype() const
+      enum INPAR::CUT::CutFloattype GeomDistance_Floattype() const
       {
         return geomdistance_floattype_;
       }
 
       /** \brief Which Referenceplanes are used in DirectDivergence */
-      enum INPAR::CUT::CUT_DirectDivergence_Refplane Direct_Divergence_Refplane() const
+      enum INPAR::CUT::CutDirectDivergenceRefplane Direct_Divergence_Refplane() const
       {
         return direct_divergence_refplane_;
       }
@@ -143,19 +143,19 @@ namespace CORE::GEO
 
      private:
       /** \brief Float_type for geometric intersection computation */
-      INPAR::CUT::CUT_Floattype geomintersect_floattype_;
+      INPAR::CUT::CutFloattype geomintersect_floattype_;
 
       /** \brief Float_type for geometric distance computation */
-      INPAR::CUT::CUT_Floattype geomdistance_floattype_;
+      INPAR::CUT::CutFloattype geomdistance_floattype_;
 
       /** \brief Float_type used in CORE::GEO::CUT::POSITION for ComputeDistance*/
-      INPAR::CUT::CUT_Floattype general_position_dist_floattype_;
+      INPAR::CUT::CutFloattype general_position_dist_floattype_;
 
       /** \brief Float_type used in CORE::GEO::CUT::POSITION for ComputePosition*/
-      INPAR::CUT::CUT_Floattype general_position_pos_floattype_;
+      INPAR::CUT::CutFloattype general_position_pos_floattype_;
 
       /** \brief Specifies which Referenceplanes are used in DirectDivergence*/
-      INPAR::CUT::CUT_DirectDivergence_Refplane direct_divergence_refplane_;
+      INPAR::CUT::CutDirectDivergenceRefplane direct_divergence_refplane_;
 
       INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy_;
 

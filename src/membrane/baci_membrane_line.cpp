@@ -16,22 +16,16 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  LINE 2 Element                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Membrane_line2Type DRT::ELEMENTS::Membrane_line2Type::instance_;
+DRT::ELEMENTS::MembraneLine2Type DRT::ELEMENTS::MembraneLine2Type::instance_;
 
-DRT::ELEMENTS::Membrane_line2Type& DRT::ELEMENTS::Membrane_line2Type::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::MembraneLine2Type& DRT::ELEMENTS::MembraneLine2Type::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  LINE 3 Element                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Membrane_line3Type DRT::ELEMENTS::Membrane_line3Type::instance_;
+DRT::ELEMENTS::MembraneLine3Type DRT::ELEMENTS::MembraneLine3Type::instance_;
 
-DRT::ELEMENTS::Membrane_line3Type& DRT::ELEMENTS::Membrane_line3Type::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::MembraneLine3Type& DRT::ELEMENTS::MembraneLine3Type::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                   fbraeu 06/16 |

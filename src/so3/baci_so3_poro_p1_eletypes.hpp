@@ -27,12 +27,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  HEX 8 Element                                                       |
      *----------------------------------------------------------------------*/
-    class So_hex8PoroP1Type : public So_hex8PoroType
+    class SoHex8PoroP1Type : public SoHex8PoroType
     {
      public:
       std::string Name() const override { return "So_hex8PoroP1Type"; }
 
-      static So_hex8PoroP1Type& Instance();
+      static SoHex8PoroP1Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -54,7 +54,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex8PoroP1Type instance_;
+      static SoHex8PoroP1Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH8POROP1"; }
     };
@@ -62,12 +62,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  TET 4 Element                                                       |
      *----------------------------------------------------------------------*/
-    class So_tet4PoroP1Type : public So_tet4PoroType
+    class SoTet4PoroP1Type : public SoTet4PoroType
     {
      public:
       std::string Name() const override { return "So_tet4PoroP1Type"; }
 
-      static So_tet4PoroP1Type& Instance();
+      static SoTet4PoroP1Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -89,7 +89,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet4PoroP1Type instance_;
+      static SoTet4PoroP1Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT4POROP1"; }
     };

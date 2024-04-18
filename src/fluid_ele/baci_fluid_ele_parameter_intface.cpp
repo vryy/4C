@@ -128,12 +128,12 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
 
   Teuchos::ParameterList& stablist_edgebased = params.sublist("EDGE-BASED STABILIZATION");
 
-  EOS_pres_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased, "EOS_PRES");
-  EOS_conv_stream_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(
+  EOS_pres_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EosPres>(stablist_edgebased, "EOS_PRES");
+  EOS_conv_stream_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EosConvStream>(
       stablist_edgebased, "EOS_CONV_STREAM");
-  EOS_conv_cross_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(
-      stablist_edgebased, "EOS_CONV_CROSS");
-  EOS_div_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased, "EOS_DIV");
+  EOS_conv_cross_ =
+      CORE::UTILS::IntegralValue<INPAR::FLUID::EosConvCross>(stablist_edgebased, "EOS_CONV_CROSS");
+  EOS_div_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EosDiv>(stablist_edgebased, "EOS_DIV");
 
   if (physicaltype_ == INPAR::FLUID::stokes and EOS_conv_stream_)
     dserror("no EOS_CONV_STREAM stabilization required for Stokes problems");
@@ -180,9 +180,9 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
   if (presKrylov2Dz_ and EOS_pres_ != INPAR::FLUID::EOS_PRES_std_eos)
     dserror("pressure Krylov 2Dz condition only reasonable for full p-EOS: EOS_PRES = std_eos");
 
-  EOS_element_length_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EOS_ElementLength>(
+  EOS_element_length_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EosElementLength>(
       stablist_edgebased, "EOS_H_DEFINITION");
-  EOS_whichtau_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EOS_TauType>(
+  EOS_whichtau_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EosTauType>(
       stablist_edgebased, "EOS_DEFINITION_TAU");
 
 

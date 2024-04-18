@@ -543,7 +543,7 @@ namespace INPAR
     };
 
     /// STC scaling for thin shell structures
-    enum STC_Scale
+    enum StcScale
     {
       stc_none = 0,  ///< no scaling
       stc_curr,      ///< Non-symmetric STC
@@ -551,7 +551,7 @@ namespace INPAR
     };
 
     /// map convergence check to enum term
-    static inline std::string STCString(const enum STC_Scale name  ///< enum term
+    static inline std::string STCString(const enum StcScale name  ///< enum term
     )
     {
       switch (name)

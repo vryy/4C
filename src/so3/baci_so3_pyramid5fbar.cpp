@@ -20,42 +20,42 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::So_pyramid5fbarType DRT::ELEMENTS::So_pyramid5fbarType::instance_;
+DRT::ELEMENTS::SoPyramid5fbarType DRT::ELEMENTS::SoPyramid5fbarType::instance_;
 
 
-DRT::ELEMENTS::So_pyramid5fbarType& DRT::ELEMENTS::So_pyramid5fbarType::Instance()
+DRT::ELEMENTS::SoPyramid5fbarType& DRT::ELEMENTS::SoPyramid5fbarType::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_pyramid5fbarType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoPyramid5fbarType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_pyramid5fbar(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoPyramid5fbar(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5fbarType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoPyramid5fbarType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5fbar(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoPyramid5fbar(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5fbarType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoPyramid5fbarType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5fbar(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoPyramid5fbar(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_pyramid5fbarType::NodalBlockInformation(
+void DRT::ELEMENTS::SoPyramid5fbarType::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -64,13 +64,13 @@ void DRT::ELEMENTS::So_pyramid5fbarType::NodalBlockInformation(
   np = 0;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_pyramid5fbarType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoPyramid5fbarType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
+void DRT::ELEMENTS::SoPyramid5fbarType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -94,8 +94,8 @@ void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
  |  ctor (public)                                           seitz 03/15 |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner)
-    : DRT::ELEMENTS::So_pyramid5(id, owner)
+DRT::ELEMENTS::SoPyramid5fbar::SoPyramid5fbar(int id, int owner)
+    : DRT::ELEMENTS::SoPyramid5(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
       GLOBAL::Problem::Instance()->getParameterList();
@@ -114,8 +114,8 @@ DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner)
  |  copy-ctor (public)                                      seitz 03/15 |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(const DRT::ELEMENTS::So_pyramid5fbar& old)
-    : DRT::ELEMENTS::So_pyramid5(old)
+DRT::ELEMENTS::SoPyramid5fbar::SoPyramid5fbar(const DRT::ELEMENTS::SoPyramid5fbar& old)
+    : DRT::ELEMENTS::SoPyramid5(old)
 {
   return;
 }
@@ -124,9 +124,9 @@ DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(const DRT::ELEMENTS::So_pyramid5
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                          seitz 03/15 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_pyramid5fbar::Clone() const
+DRT::Element* DRT::ELEMENTS::SoPyramid5fbar::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_pyramid5fbar(*this);
+  auto* newelement = new DRT::ELEMENTS::SoPyramid5fbar(*this);
   return newelement;
 }
 
@@ -134,7 +134,7 @@ DRT::Element* DRT::ELEMENTS::So_pyramid5fbar::Clone() const
  |  Pack data                                                  (public) |
  |                                                          seitz 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5fbar::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoPyramid5fbar::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So_pyramid5 Element
-  DRT::ELEMENTS::So_pyramid5::Pack(data);
+  DRT::ELEMENTS::SoPyramid5::Pack(data);
 
   return;
 }
@@ -152,7 +152,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          seitz 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5fbar::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoPyramid5fbar::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -161,7 +161,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::Unpack(const std::vector<char>& data)
   // extract base class So_pyramid5 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So_pyramid5::Unpack(basedata);
+  DRT::ELEMENTS::SoPyramid5::Unpack(basedata);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -173,7 +173,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              seitz 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5fbar::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoPyramid5fbar::Print(std::ostream& os) const
 {
   os << "So_pyramid5fbar ";
   Element::Print(os);

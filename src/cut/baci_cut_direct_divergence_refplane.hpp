@@ -81,7 +81,7 @@ namespace CORE::GEO
       /*!
       \brief Class used to sort maps in descending order
        */
-      struct compareClass
+      struct CompareClass
       {
         bool operator()(const double& left, const double& right) const { return left > right; }
       };

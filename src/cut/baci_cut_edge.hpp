@@ -105,7 +105,7 @@ namespace CORE::GEO
       const plain_side_set& Sides() { return sides_; }
 
       virtual void GetTouchingPoints(const std::vector<Node*>& nodes, std::vector<Node*>& points,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) = 0;
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) = 0;
 
       /*! \brief Get the intersection points of this edge with the given side and
        * store the cut points in cuts */
@@ -319,11 +319,11 @@ namespace CORE::GEO
       }
 
       void GetTouchingPoints(const std::vector<Node*>& nodes, std::vector<Node*>& touch_nodes,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) override;
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) override;
 
       /*! \brief Handles intersection of two edges that are close to each other */
       virtual bool HandleParallelCut(Edge* other, Side* side, PointSet* cut_points,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
+          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double);
 
       bool JustParallelCut(Mesh& mesh, Side& side, PointSet& cuts, int skip_id = -1) override;
 

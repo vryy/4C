@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace EXODUS
 {
   //! differentiate between underlying mesh entity
-  enum mesh_entity
+  enum MeshEntity
   {
     bceb,
     bcns,
@@ -36,7 +36,7 @@ namespace EXODUS
   };
 
   //! differentiate between corresponding condition_type
-  enum cond_type
+  enum CondType
   {
     element,
     dvol,
@@ -48,66 +48,66 @@ namespace EXODUS
   };
 
   //! this is what fully defines a baci element
-  struct elem_def
+  struct ElemDef
   {
     int id;             ///< refering to mesh_entity id of eb,ns,ss
-    mesh_entity me;     ///< refering to underlying mesh entity
+    MeshEntity me;      ///< refering to underlying mesh entity
     std::string sec;    ///< FLUID,STRUCTURE,ALE,etc.
     std::string desc;   ///< like "MAT 1 EAS full"
     std::string ename;  ///< FLUID,SOLIDSH8,etc
   };
 
   //! this is what fully defines a baci condition
-  struct cond_def
+  struct CondDef
   {
     int id;            ///< refering to mesh_entity id of eb,ns,ss
-    mesh_entity me;    ///< refering to underlying mesh entity
+    MeshEntity me;     ///< refering to underlying mesh entity
     std::string sec;   ///< see valid_condition 'sectionname'
     std::string desc;  ///< see valid_condition 'description'
     int e_id;          ///< refers to datfile 'E num -'
     DRT::Condition::GeometryType gtype;
   };
 
-  void ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>& eledefs,
-      std::vector<EXODUS::cond_def>& condefs);
+  void ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>& eledefs,
+      std::vector<EXODUS::CondDef>& condefs);
 
-  EXODUS::elem_def ReadEdef(
+  EXODUS::ElemDef ReadEdef(
       const std::string& mesh_entity, const int id, const std::string& actcond);
 
-  EXODUS::cond_def ReadCdef(
+  EXODUS::CondDef ReadCdef(
       const std::string& mesh_entity, const int id, const std::string& actcond);
 
   //! Read bc_entity specifications
   std::vector<std::string> ReadBCEntity(const std::string actcond);
 
   //! Check condition type against valid types
-  inline EXODUS::cond_type CheckCondType(const std::string buffer);
+  inline EXODUS::CondType CheckCondType(const std::string buffer);
 
   //! Conversion
-  inline std::string CondTypeToString(const EXODUS::cond_type);
+  inline std::string CondTypeToString(const EXODUS::CondType);
 
   //! Print bc_entity
-  void PrintBCDef(std::ostream& os, const EXODUS::elem_def& def);
-  void PrintBCDef(std::ostream& os, const EXODUS::cond_def& def);
+  void PrintBCDef(std::ostream& os, const EXODUS::ElemDef& def);
+  void PrintBCDef(std::ostream& os, const EXODUS::CondDef& def);
 
   // ! Check if periodic boundary conditions are defined
-  bool PeriodicBoundaryConditionsFound(std::vector<EXODUS::cond_def> condefs);
+  bool PeriodicBoundaryConditionsFound(std::vector<EXODUS::CondDef> condefs);
 
   // ! Correct nodal coordinates for periodic boundary conditions
   void CorrectNodalCoordinatesForPeriodicBoundaryConditions(
-      EXODUS::Mesh& mesh, std::vector<EXODUS::cond_def> condefs);
+      EXODUS::Mesh& mesh, std::vector<EXODUS::CondDef> condefs);
 
   // ! Correct nodal coordinates in the YZ plane for periodic boundary conditions
   void CorrectYZPlaneForPeriodicBoundaryConditions(
-      EXODUS::Mesh& mesh, const std::vector<EXODUS::cond_def>& condefs);
+      EXODUS::Mesh& mesh, const std::vector<EXODUS::CondDef>& condefs);
 
   // ! Correct nodal coordinates in the XZ plane for periodic boundary conditions
   void CorrectXZPlaneForPeriodicBoundaryConditions(
-      EXODUS::Mesh& mesh, const std::vector<EXODUS::cond_def>& condefs);
+      EXODUS::Mesh& mesh, const std::vector<EXODUS::CondDef>& condefs);
 
   // ! Correct nodal coordinates in the XY plane for periodic boundary conditions
   void CorrectXYPlaneForPeriodicBoundaryConditions(
-      EXODUS::Mesh& mesh, const std::vector<EXODUS::cond_def>& condefs);
+      EXODUS::Mesh& mesh, const std::vector<EXODUS::CondDef>& condefs);
 
 }  // namespace EXODUS
 

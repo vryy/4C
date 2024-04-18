@@ -30,13 +30,13 @@ namespace ADAPTER
 
 namespace XFEM
 {
-  class XFACoupling_Manager : public Coupling_Manager, public Coupling_Comm_Manager
+  class XfaCouplingManager : public CouplingManager, public CouplingCommManager
   {
    public:
     /// constructor
     // in idx ... idx[0] structureal discretization index , idx[1] fluid discretization index in the
     // blockmatrix
-    explicit XFACoupling_Manager(Teuchos::RCP<FLD::XFluid> xfluid,
+    explicit XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
         Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale, std::vector<int> idx,
         Teuchos::RCP<ADAPTER::Structure> structure = Teuchos::null);
     //! @name Destruction
@@ -87,7 +87,7 @@ namespace XFEM
     Teuchos::RCP<ADAPTER::Structure> structure_;
 
     //! ALE-Structure coupling object on the matching interface
-    Teuchos::RCP<XFEM::Coupling_Comm_Manager> Ale_Struct_coupling_;
+    Teuchos::RCP<XFEM::CouplingCommManager> Ale_Struct_coupling_;
   };
 }  // namespace XFEM
 FOUR_C_NAMESPACE_CLOSE

@@ -18,13 +18,10 @@
 
 #include "baci_utils_exceptions.hpp"
 
+#include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
-
-// Forward declarations.
-class Epetra_FEVector;
-class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 

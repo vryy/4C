@@ -42,7 +42,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy()
       bin_size_lower_bound_(0.0),
       domain_bounding_box_corner_positions_(true),
       deforming_simulation_domain_handler_(Teuchos::null),
-      writebinstype_(CORE::UTILS::IntegralValue<INPAR::BINSTRATEGY::writebins>(
+      writebinstype_(CORE::UTILS::IntegralValue<INPAR::BINSTRATEGY::Writebins>(
           GLOBAL::Problem::Instance()->BinningStrategyParams(), ("WRITEBINS"))),
       havepbc_(false),
       myrank_(GLOBAL::Problem::Instance()->GetCommunicators()->GlobalComm()->MyPID()),

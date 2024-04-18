@@ -1597,19 +1597,19 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
     }
     else
     {
-      if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
+      if (actele->ElementType() == DRT::ELEMENTS::SoHex8Type::Instance())
         WEAR::UTILS::av<CORE::FE::CellType::hex8>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
+      else if (actele->ElementType() == DRT::ELEMENTS::SoHex20Type::Instance())
         WEAR::UTILS::av<CORE::FE::CellType::hex20>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
+      else if (actele->ElementType() == DRT::ELEMENTS::SoHex27Type::Instance())
         WEAR::UTILS::av<CORE::FE::CellType::hex27>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
+      else if (actele->ElementType() == DRT::ELEMENTS::SoTet4Type::Instance())
         WEAR::UTILS::av<CORE::FE::CellType::tet4>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-      else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
+      else if (actele->ElementType() == DRT::ELEMENTS::SoTet10Type::Instance())
         WEAR::UTILS::av<CORE::FE::CellType::tet10>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else
@@ -1673,19 +1673,19 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
   }
   else
   {
-    if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
+    if (actele->ElementType() == DRT::ELEMENTS::SoHex8Type::Instance())
       WEAR::UTILS::av<CORE::FE::CellType::hex8>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
+    else if (actele->ElementType() == DRT::ELEMENTS::SoHex20Type::Instance())
       WEAR::UTILS::av<CORE::FE::CellType::hex20>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
+    else if (actele->ElementType() == DRT::ELEMENTS::SoHex27Type::Instance())
       WEAR::UTILS::av<CORE::FE::CellType::hex27>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
+    else if (actele->ElementType() == DRT::ELEMENTS::SoTet4Type::Instance())
       WEAR::UTILS::av<CORE::FE::CellType::tet4>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
-    else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
+    else if (actele->ElementType() == DRT::ELEMENTS::SoTet10Type::Instance())
       WEAR::UTILS::av<CORE::FE::CellType::tet10>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else

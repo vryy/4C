@@ -18,7 +18,7 @@ space-time varying coefficients
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
+MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp::CoupAnisoNeoHookeVarProp(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       c_(*matdata->Get<double>("C")),
@@ -30,26 +30,26 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
 {
 }
 
-MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
-    MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp* params)
+MAT::ELASTIC::CoupAnisoNeoHookeVarProp::CoupAnisoNeoHookeVarProp(
+    MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp* params)
     : params_(params)
 {
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::PackSummand(CORE::COMM::PackBuffer& data) const
+void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::UnpackSummand(
+void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   ExtractfromPack(position, data, a_);
   ExtractfromPack(position, data, A_);
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(int numgp, INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   // path if fibers aren't given in .dat file
   if (params_->init_ == 0)
@@ -125,7 +125,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(int numgp, INPUT::LineDefini
     dserror("INIT mode not implemented");
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
+void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::AddStressAnisoPrincipal(
     const CORE::LINALG::Matrix<6, 1>& rcg, CORE::LINALG::Matrix<6, 6>& cmat,
     CORE::LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
@@ -147,14 +147,14 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
   // cmat.MultiplyNT(delta, A_, A_, 1.0);
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::GetFiberVecs(
+void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::GetFiberVecs(
     std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   fibervecs.push_back(a_);
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::SetFiberVecs(const double newgamma,
+void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::SetFiberVecs(const double newgamma,
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90)) dserror("Fiber angle not in [-90,90]");

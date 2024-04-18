@@ -15,14 +15,9 @@
 
 #include "baci_config.hpp"
 
+#include <Epetra_Comm.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCPDecl.hpp>
-
-class Epetra_Comm;
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 

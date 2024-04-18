@@ -40,13 +40,13 @@ const int NUMDOF_SOH8 = 24;  ///< total dofs per element
 const int NUMDIM_SOH8 = 3;   ///< number of dimensions
 
 /// Gauss integration rule
-struct GP_RULE_SOH8
+struct GpRuleSoH8
 {
   static constexpr enum CORE::FE::GaussRule3D rule =
       DRT::ELEMENTS::DisTypeToOptGaussRule<CORE::FE::CellType::hex8>::rule;
 };
 /// total gauss points per element
-const unsigned NUMGPT_SOH8 = CORE::FE::GaussRule3DToNumGaussPoints<GP_RULE_SOH8::rule>::value;
+const unsigned NUMGPT_SOH8 = CORE::FE::GaussRule3DToNumGaussPoints<GpRuleSoH8::rule>::value;
 
 namespace DRT
 {
@@ -57,15 +57,15 @@ namespace DRT
   {
     // forward declarations
     class PreStress;
-    class So_sh8Type;
+    class SoSh8Type;
 
 
-    class So_hex8Type : public DRT::ElementType
+    class SoHex8Type : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_hex8Type"; }
 
-      static So_hex8Type& Instance();
+      static SoHex8Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -87,7 +87,7 @@ namespace DRT
           override;
 
      private:
-      static So_hex8Type instance_;
+      static SoHex8Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH8"; }
     };
@@ -105,12 +105,12 @@ namespace DRT
     (see DRT::ELEMENTS::So_hex8::EASType).
 
     */
-    class So_hex8 : public So_base
+    class SoHex8 : public SoBase
     {
      public:
       //! @name Friends
-      friend class So_hex8Type;
-      friend class So_sh8Type;
+      friend class SoHex8Type;
+      friend class SoSh8Type;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -121,7 +121,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      So_hex8(int id, int owner);
+      SoHex8(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -129,10 +129,10 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_hex8(const So_hex8& old);
+      SoHex8(const SoHex8& old);
 
       //! don't want = operator
-      So_hex8& operator=(const So_hex8& old) = delete;
+      SoHex8& operator=(const SoHex8& old) = delete;
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -185,7 +185,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return So_hex8Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return SoHex8Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -242,7 +242,7 @@ namespace DRT
       void Print(std::ostream& os) const override;
 
 
-      DRT::ElementType& ElementType() const override { return So_hex8Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoHex8Type::Instance(); }
 
       //@}
 
@@ -622,7 +622,7 @@ namespace DRT
       void soh8_easinit();
 
       //! Re-initialize EAS data, needed for sosh8 morphing
-      void soh8_reiniteas(DRT::ELEMENTS::So_hex8::EASType EASType);
+      void soh8_reiniteas(DRT::ELEMENTS::SoHex8::EASType EASType);
 
       //! EAS technology, setup necessary data
       void soh8_eassetup(

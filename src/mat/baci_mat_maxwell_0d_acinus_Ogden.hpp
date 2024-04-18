@@ -32,17 +32,17 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// material parameters for Maxwell 0D acinar material
     ///
-    class Maxwell_0d_acinus_Ogden : public Maxwell_0d_acinus
+    class Maxwell0dAcinusOgden : public Maxwell0dAcinus
     {
      public:
       /// standard constructor
-      Maxwell_0d_acinus_Ogden(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Maxwell0dAcinusOgden(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// enum for mapping between material parameter and entry in the matparams_ vector
-      enum matparamnames_
+      enum Matparamnames
       {
         kappa,
         beta,
@@ -54,31 +54,31 @@ namespace MAT
   }     // namespace PAR
 
 
-  class Maxwell_0d_acinusOgdenType : public Maxwell_0d_acinusType
+  class Maxwell0dAcinusOgdenType : public Maxwell0dAcinusType
   {
    public:
     std::string Name() const override { return "maxwell_0d_acinusOgdenType"; }
 
-    static Maxwell_0d_acinusOgdenType& Instance() { return instance_; };
+    static Maxwell0dAcinusOgdenType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Maxwell_0d_acinusOgdenType instance_;
+    static Maxwell0dAcinusOgdenType instance_;
   };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Maxwell 0D acinar material
   ///
   /// This object exists (several times) at every element
-  class Maxwell_0d_acinus_Ogden : public Maxwell_0d_acinus
+  class Maxwell0dAcinusOgden : public Maxwell0dAcinus
   {
    public:
     /// construct empty material object
-    Maxwell_0d_acinus_Ogden();
+    Maxwell0dAcinusOgden();
 
     /// construct the material object given material parameters
-    Maxwell_0d_acinus_Ogden(MAT::PAR::Maxwell_0d_acinus* params);
+    Maxwell0dAcinusOgden(MAT::PAR::Maxwell0dAcinus* params);
 
     //! @name Packing and Unpacking
 
@@ -90,7 +90,7 @@ namespace MAT
     */
     int UniqueParObjectId() const override
     {
-      return Maxwell_0d_acinusOgdenType::Instance().UniqueParObjectId();
+      return Maxwell0dAcinusOgdenType::Instance().UniqueParObjectId();
     }
 
 
@@ -130,7 +130,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new Maxwell_0d_acinus(*this));
+      return Teuchos::rcp(new Maxwell0dAcinus(*this));
     }
 
     /*!

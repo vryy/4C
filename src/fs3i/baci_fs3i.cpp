@@ -43,7 +43,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::FS3I_Base::FS3I_Base()
+FS3I::FS3IBase::FS3IBase()
     : infperm_(CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->FS3IDynamicParams(), "INF_PERM")),
       timemax_(GLOBAL::Problem::Instance()->FS3IDynamicParams().get<double>("MAXTIME")),
@@ -59,7 +59,7 @@ FS3I::FS3I_Base::FS3I_Base()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::Init()
+void FS3I::FS3IBase::Init()
 {
   SetIsSetup(false);
 
@@ -76,7 +76,7 @@ void FS3I::FS3I_Base::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::Setup()
+void FS3I::FS3IBase::Setup()
 {
   CheckIsInit();
 
@@ -87,7 +87,7 @@ void FS3I::FS3I_Base::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::CheckInterfaceDirichletBC()
+void FS3I::FS3IBase::CheckInterfaceDirichletBC()
 {
   Teuchos::RCP<DRT::Discretization> masterdis = scatravec_[0]->ScaTraField()->Discretization();
   Teuchos::RCP<DRT::Discretization> slavedis = scatravec_[1]->ScaTraField()->Discretization();
@@ -160,7 +160,7 @@ void FS3I::FS3I_Base::CheckInterfaceDirichletBC()
 /*----------------------------------------------------------------------*
  | Check FS3I specific inputs                                Thon 11/14 |
  *----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::CheckFS3IInputs()
+void FS3I::FS3IBase::CheckFS3IInputs()
 {
   // Check FS3I dynamic parameters
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
@@ -407,7 +407,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::ScatraOutput()
+void FS3I::FS3IBase::ScatraOutput()
 {
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
@@ -419,7 +419,7 @@ void FS3I::FS3I_Base::ScatraOutput()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::IncrementTimeAndStep()
+void FS3I::FS3IBase::IncrementTimeAndStep()
 {
   step_ += 1;
   time_ += dt_;
@@ -428,7 +428,7 @@ void FS3I::FS3I_Base::IncrementTimeAndStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::UpdateScatraFields()
+void FS3I::FS3IBase::UpdateScatraFields()
 {
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
@@ -439,7 +439,7 @@ void FS3I::FS3I_Base::UpdateScatraFields()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::ScatraEvaluateSolveIterUpdate()
+void FS3I::FS3IBase::ScatraEvaluateSolveIterUpdate()
 {
   EvaluateScatraFields();
   SetupCoupledScatraSystem();
@@ -456,7 +456,7 @@ void FS3I::FS3I_Base::ScatraEvaluateSolveIterUpdate()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::EvaluateScatraFields()
+void FS3I::FS3IBase::EvaluateScatraFields()
 {
   // membrane concentration at the interface needed for simplified membrane equation of Kedem and
   // Katchalsky. NOTE: needs to be set here, since it depends on the scalar interface values on both
@@ -493,7 +493,7 @@ void FS3I::FS3I_Base::EvaluateScatraFields()
 /*----------------------------------------------------------------------*
  |  Set Membrane concentration in scatra fields              Thon 08/16 |
  *----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::SetMembraneConcentration() const
+void FS3I::FS3IBase::SetMembraneConcentration() const
 {
   std::vector<Teuchos::RCP<Epetra_Vector>> MembraneConc;
   ExtractMembraneConcentration(MembraneConc);
@@ -508,7 +508,7 @@ void FS3I::FS3I_Base::SetMembraneConcentration() const
 /*----------------------------------------------------------------------*
  |  Extract membrane concentration                           thon 08/16 |
  *----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::ExtractMembraneConcentration(
+void FS3I::FS3IBase::ExtractMembraneConcentration(
     std::vector<Teuchos::RCP<Epetra_Vector>>& MembraneConcentration) const
 {
   // ############ Fluid Field ###############
@@ -532,7 +532,7 @@ void FS3I::FS3I_Base::ExtractMembraneConcentration(
 /*----------------------------------------------------------------------*
  |  Calculate membrane concentration                         thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::CalcMembraneConcentration() const
+Teuchos::RCP<Epetra_Vector> FS3I::FS3IBase::CalcMembraneConcentration() const
 {
   // Get concentration phi2 in scatrafield2
   // Hint: in the following we talk of phi1 and phi2, but they mean the same concentration just on
@@ -583,7 +583,7 @@ Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::CalcMembraneConcentration() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::SetupCoupledScatraSystem()
+void FS3I::FS3IBase::SetupCoupledScatraSystem()
 {
   // set up scatra rhs
   SetupCoupledScatraRHS();
@@ -595,7 +595,7 @@ void FS3I::FS3I_Base::SetupCoupledScatraSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::SetupCoupledScatraRHS()
+void FS3I::FS3IBase::SetupCoupledScatraRHS()
 {
   Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField()->Residual();
   Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField()->Residual();
@@ -628,7 +628,7 @@ void FS3I::FS3I_Base::SetupCoupledScatraRHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globalvec,
+void FS3I::FS3IBase::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globalvec,
     Teuchos::RCP<const Epetra_Vector>& vec1, Teuchos::RCP<const Epetra_Vector>& vec2)
 {
   if (infperm_)
@@ -655,7 +655,7 @@ void FS3I::FS3I_Base::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::SetupCoupledScatraMatrix()
+void FS3I::FS3IBase::SetupCoupledScatraMatrix()
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra1 = scatravec_[0]->ScaTraField()->SystemMatrix();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra2 = scatravec_[1]->ScaTraField()->SystemMatrix();
@@ -726,7 +726,7 @@ void FS3I::FS3I_Base::SetupCoupledScatraMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::Scatra2ToScatra1(
+Teuchos::RCP<Epetra_Vector> FS3I::FS3IBase::Scatra2ToScatra1(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return scatracoup_->SlaveToMaster(iv);
@@ -735,7 +735,7 @@ Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::Scatra2ToScatra1(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::Scatra1ToScatra2(
+Teuchos::RCP<Epetra_Vector> FS3I::FS3IBase::Scatra1ToScatra2(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return scatracoup_->MasterToSlave(iv);
@@ -743,7 +743,7 @@ Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::Scatra1ToScatra2(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::LinearSolveScatra()
+void FS3I::FS3IBase::LinearSolveScatra()
 {
   scatraincrement_->PutScalar(0.0);
 
@@ -762,7 +762,7 @@ void FS3I::FS3I_Base::LinearSolveScatra()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::ScatraIterUpdate()
+void FS3I::FS3IBase::ScatraIterUpdate()
 {
   // define incremental vectors for fluid- and structure-based scatra
   // fields and extract respective vectors
@@ -777,7 +777,7 @@ void FS3I::FS3I_Base::ScatraIterUpdate()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
+void FS3I::FS3IBase::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
     Teuchos::RCP<const Epetra_Vector>& vec1, Teuchos::RCP<const Epetra_Vector>& vec2)
 {
   if (infperm_)
@@ -803,14 +803,14 @@ void FS3I::FS3I_Base::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::CheckIsSetup()
+void FS3I::FS3IBase::CheckIsSetup()
 {
   if (not IsSetup()) dserror("Setup() was not called.");
 };
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_Base::CheckIsInit()
+void FS3I::FS3IBase::CheckIsInit()
 {
   if (not IsInit()) dserror("Init(...) was not called.");
 };

@@ -312,12 +312,12 @@ namespace CORE::COMM
     /*!
      * \brief Add stuff to the end of a char vector data
      *
-     * This method is a template for pairedvector<Ts...>
+     * This method is a template for Pairedvector<Ts...>
      * \param[in,out] data char string stuff shall be added to
-     * \param[in] stuff pairedvector<Ts...> that get's added to stuff
+     * \param[in] stuff Pairedvector<Ts...> that get's added to stuff
      */
     template <typename... Ts>
-    static void AddtoPack(PackBuffer& data, const CORE::GEN::pairedvector<Ts...>& stuff)
+    static void AddtoPack(PackBuffer& data, const CORE::GEN::Pairedvector<Ts...>& stuff)
     {
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
@@ -336,13 +336,13 @@ namespace CORE::COMM
     /*!
      * \brief Add stuff to the end of a char vector data first
      *
-     * This method is a template for std::vector< pairedvector<Ts...> >
+     * This method is a template for std::vector< Pairedvector<Ts...> >
      * \param[in,out] data char string stuff shall be added to
-     * \param[in] stuff std::vector<pairedvector<Ts...> > that get's added to stuff
+     * \param[in] stuff std::vector<Pairedvector<Ts...> > that get's added to stuff
      */
     template <typename... Ts>
     static void AddtoPack(
-        PackBuffer& data, const std::vector<CORE::GEN::pairedvector<Ts...>>& stuff)
+        PackBuffer& data, const std::vector<CORE::GEN::Pairedvector<Ts...>>& stuff)
     {
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
@@ -366,13 +366,13 @@ namespace CORE::COMM
      */
     template <typename... Ts>
     static void AddtoPack(
-        PackBuffer& data, const std::vector<CORE::GEN::pairedmatrix<Ts...>>& stuff)
+        PackBuffer& data, const std::vector<CORE::GEN::Pairedmatrix<Ts...>>& stuff)
     {
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
 
       int i = 0;
-      for (const typename CORE::GEN::pairedmatrix_base<Ts...>::type& paired_mat : stuff)
+      for (const typename CORE::GEN::PairedmatrixBase<Ts...>::type& paired_mat : stuff)
       {
         AddtoPack(data, paired_mat);
         ++i;
@@ -707,16 +707,16 @@ namespace CORE::COMM
     /*!
      * \brief Extract stuff from a char vector data and increment position
      *
-     * This method is a template for stuff of type pairedvector<Key,T0,Ts...>*
+     * This method is a template for stuff of type Pairedvector<Key,T0,Ts...>*
      *
      * \param[in,out] position place in data where to extract stuff. Position will be incremented
      * by this method
      * \param[in] data char vector where stuff is extracted from
-     * \param[out] stuff pairedvector<Key,T0,Ts...> to extract from data
+     * \param[out] stuff Pairedvector<Key,T0,Ts...> to extract from data
      */
     template <typename Key, typename T0, typename... Ts>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, CORE::GEN::pairedvector<Key, T0, Ts...>& stuff)
+        const std::vector<char>& data, CORE::GEN::Pairedvector<Key, T0, Ts...>& stuff)
     {
       int numentries = 0;
       ExtractfromPack(position, data, numentries);
@@ -739,16 +739,16 @@ namespace CORE::COMM
     /*!
      * \brief Extract stuff from a char vector data and increment position
      *
-     * This method is a template for stuff of type std::vector< pairedvector<Ts...> >*
+     * This method is a template for stuff of type std::vector< Pairedvector<Ts...> >*
      *
      * \param[in,out] position place in data where to extract stuff. Position will be incremented
      * by this method
      * \param[in] data char vector where stuff is extracted from
-     * \param[out] stuff std::vector< pairedvector<Ts...> > to extract from data
+     * \param[out] stuff std::vector< Pairedvector<Ts...> > to extract from data
      */
     template <typename... Ts>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, std::vector<CORE::GEN::pairedvector<Ts...>>& stuff)
+        const std::vector<char>& data, std::vector<CORE::GEN::Pairedvector<Ts...>>& stuff)
     {
       int numentries = 0;
       ExtractfromPack(position, data, numentries);
@@ -756,7 +756,7 @@ namespace CORE::COMM
       stuff.clear();
       stuff.resize(numentries);
 
-      CORE::GEN::pairedvector<Ts...> paired_vec;
+      CORE::GEN::Pairedvector<Ts...> paired_vec;
       for (int i = 0; i < numentries; i++)
       {
         ExtractfromPack(position, data, paired_vec);
@@ -779,7 +779,7 @@ namespace CORE::COMM
      */
     template <typename... Ts>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, std::vector<CORE::GEN::pairedmatrix<Ts...>>& stuff)
+        const std::vector<char>& data, std::vector<CORE::GEN::Pairedmatrix<Ts...>>& stuff)
     {
       int numentries = 0;
       ExtractfromPack(position, data, numentries);
@@ -787,7 +787,7 @@ namespace CORE::COMM
       stuff.clear();
       stuff.resize(numentries);
 
-      typename CORE::GEN::pairedmatrix_base<Ts...>::type paired_mat;
+      typename CORE::GEN::PairedmatrixBase<Ts...>::type paired_mat;
       for (int i = 0; i < numentries; i++)
       {
         ExtractfromPack(position, data, paired_mat);

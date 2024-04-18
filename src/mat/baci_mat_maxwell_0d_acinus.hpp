@@ -32,11 +32,11 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// material parameters for Maxwell 0D acinar material
     ///
-    class Maxwell_0d_acinus : public Parameter
+    class Maxwell0dAcinus : public Parameter
     {
      public:
       /// standard constructor
-      Maxwell_0d_acinus(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Maxwell0dAcinus(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -57,31 +57,31 @@ namespace MAT
 
   }  // namespace PAR
 
-  class Maxwell_0d_acinusType : public CORE::COMM::ParObjectType
+  class Maxwell0dAcinusType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "maxwell_0d_acinusType"; }
 
-    static Maxwell_0d_acinusType& Instance() { return instance_; };
+    static Maxwell0dAcinusType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Maxwell_0d_acinusType instance_;
+    static Maxwell0dAcinusType instance_;
   };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Maxwell 0D acinar material
   ///
   /// This object exists (several times) at every element
-  class Maxwell_0d_acinus : public Material
+  class Maxwell0dAcinus : public Material
   {
    public:
     /// construct empty material object
-    Maxwell_0d_acinus();
+    Maxwell0dAcinus();
 
     /// construct the material object given material parameters
-    explicit Maxwell_0d_acinus(MAT::PAR::Maxwell_0d_acinus* params);
+    explicit Maxwell0dAcinus(MAT::PAR::Maxwell0dAcinus* params);
 
     //! @name Packing and Unpacking
 
@@ -93,7 +93,7 @@ namespace MAT
     */
     int UniqueParObjectId() const override
     {
-      return Maxwell_0d_acinusType::Instance().UniqueParObjectId();
+      return Maxwell0dAcinusType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -155,7 +155,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new Maxwell_0d_acinus(*this));
+      return Teuchos::rcp(new Maxwell0dAcinus(*this));
     }
 
     /// return density
@@ -194,7 +194,7 @@ namespace MAT
 
    protected:
     /// my material parameters
-    MAT::PAR::Maxwell_0d_acinus* params_;
+    MAT::PAR::Maxwell0dAcinus* params_;
   };
 
 }  // namespace MAT

@@ -36,7 +36,7 @@ namespace CONTACT
     class UniqueProjInfo;
 
     /// type definitions
-    typedef CORE::GEN::pairedvector<MORTAR::Element*, CONTACT::INTEGRATOR::UniqueProjInfo>
+    typedef CORE::GEN::Pairedvector<MORTAR::Element*, CONTACT::INTEGRATOR::UniqueProjInfo>
         UniqueProjInfoPair;
     typedef CONTACT::AUG::Deriv1stMap Deriv1stMap;
     typedef CONTACT::AUG::Deriv1stVecMap Deriv1stVecMap;

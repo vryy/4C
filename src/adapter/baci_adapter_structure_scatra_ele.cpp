@@ -34,7 +34,7 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
   if (eletypename == "So_tet4ScatraType")
   {
     impltype =
-        (dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>*>(
+        (dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(
              ele))
             ->ImplType();
   }
@@ -42,8 +42,8 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
   else if (eletypename == "So_tet10ScatraType")
   {
     impltype =
-        (dynamic_cast<
-             DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>*>(ele))
+        (dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>*>(
+             ele))
             ->ImplType();
   }
   // HEX 8 Elements
@@ -51,7 +51,7 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
   else if (eletypename == "So_hex8ScatraType")
   {
     impltype =
-        (dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>*>(
+        (dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
              ele))
             ->ImplType();
   }
@@ -60,29 +60,29 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
   {
     impltype =
         (dynamic_cast<
-             DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, CORE::FE::CellType::hex8>*>(ele))
+             DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8fbar, CORE::FE::CellType::hex8>*>(ele))
             ->ImplType();
   }
   // hex27 solid scatra
   else if (eletypename == "So_hex27ScatraType")
   {
     impltype =
-        (dynamic_cast<
-             DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>*>(ele))
+        (dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>*>(
+             ele))
             ->ImplType();
   }
   // wedge6
   else if (eletypename == "So_weg6ScatraType")
   {
     impltype =
-        (dynamic_cast<
-             DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, CORE::FE::CellType::wedge6>*>(ele))
+        (dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoWeg6, CORE::FE::CellType::wedge6>*>(
+             ele))
             ->ImplType();
   }
   // wall scatra elements
   else if (eletypename == "Wall1ScatraType")
   {
-    impltype = (dynamic_cast<DRT::ELEMENTS::Wall1_Scatra*>(ele))->ImplType();
+    impltype = (dynamic_cast<DRT::ELEMENTS::Wall1Scatra*>(ele))->ImplType();
   }
   // shell scatra elements
   else if (eletypename == "Shell7pScatraType")

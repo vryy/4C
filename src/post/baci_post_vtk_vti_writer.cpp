@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 #define TOL_N 1.0e-14
 
 template <class T>
-struct less_tol
+struct LessTol
 {
   bool operator()(const T& x, const T& y) const { return x < y - TOL_N; }
 };
@@ -391,7 +391,7 @@ void PostVtiWriter::WriterPrepTimestep()
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   // collect all possible values of the x-, y- and z-coordinate
-  typedef std::set<double, less_tol<double>> set_tol;
+  typedef std::set<double, LessTol<double>> set_tol;
   set_tol collected_coords[3];
   for (int n = 0; n < dis->NumMyColNodes(); ++n)
   {

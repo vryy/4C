@@ -18,12 +18,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_Tools::Myocard_Tools() {}
+MyocardTools::MyocardTools() {}
 
 /*----------------------------------------------------------------------*
  |                                                           cbert 08/13 |
  *----------------------------------------------------------------------*/
-double Myocard_Tools::GatingFunction(const double Gate1, const double Gate2, const double p,
+double MyocardTools::GatingFunction(const double Gate1, const double Gate2, const double p,
     const double var, const double thresh) const
 {
   double Erg = Gate1 + (Gate2 - Gate1) * (1.0 + tanh(p * (var - thresh))) / 2;
@@ -34,7 +34,7 @@ double Myocard_Tools::GatingFunction(const double Gate1, const double Gate2, con
 /*----------------------------------------------------------------------*
  |                                                           cbert 10/14 |
  *----------------------------------------------------------------------*/
-double Myocard_Tools::GatingVarCalc(
+double MyocardTools::GatingVarCalc(
     const double dt, double y_0, const double y_inf, const double y_tau) const
 {
   // Solve dy/dt = (1/a)*(y_inf-y)

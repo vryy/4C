@@ -432,7 +432,7 @@ namespace XFEM
         const double&
             NITStabScalingTang,  ///< prefactor of Nitsche's scaling in tangential direction
         const bool& IsPseudo2D,  ///< is this a pseudo 2d problem
-        const INPAR::XFEM::ViscStab_TraceEstimate
+        const INPAR::XFEM::ViscStabTraceEstimate
             ViscStab_TraceEstimate  ///< trace estimate for visc stab fac
     );
 

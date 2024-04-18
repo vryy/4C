@@ -26,12 +26,12 @@ namespace DRT
   {
     namespace NURBS
     {
-      class Ale2_NurbsType : public Ale2Type
+      class Ale2NurbsType : public Ale2Type
       {
        public:
         std::string Name() const override { return "Ale2_NurbsType"; }
 
-        static Ale2_NurbsType& Instance();
+        static Ale2NurbsType& Instance();
 
         CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -48,7 +48,7 @@ namespace DRT
         }
 
        private:
-        static Ale2_NurbsType instance_;
+        static Ale2NurbsType instance_;
       };
 
 
@@ -83,14 +83,14 @@ namespace DRT
         */
         int UniqueParObjectId() const override
         {
-          return Ale2_NurbsType::Instance().UniqueParObjectId();
+          return Ale2NurbsType::Instance().UniqueParObjectId();
         }
 
 
         /// Print this element
         void Print(std::ostream& os) const override;
 
-        DRT::ElementType& ElementType() const override { return Ale2_NurbsType::Instance(); }
+        DRT::ElementType& ElementType() const override { return Ale2NurbsType::Instance(); }
 
         /*!
         \brief Get shape type of element

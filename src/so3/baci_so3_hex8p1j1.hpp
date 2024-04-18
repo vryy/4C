@@ -26,12 +26,12 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class So_Hex8P1J1Type : public DRT::ElementType
+    class SoHex8P1J1Type : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_Hex8P1J1Type"; }
 
-      static So_Hex8P1J1Type& Instance();
+      static SoHex8P1J1Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -53,7 +53,7 @@ namespace DRT
           override;
 
      private:
-      static So_Hex8P1J1Type instance_;
+      static SoHex8P1J1Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDH8P1J1"; }
     };
@@ -79,11 +79,11 @@ namespace DRT
     ///
     /// \author lw
     /// \date spring/09
-    class So_Hex8P1J1 : public So_hex8
+    class SoHex8P1J1 : public SoHex8
     {
      public:
       //! @name Friends
-      friend class So_Hex8P1J1Type;
+      friend class SoHex8P1J1Type;
       friend class Soh8Surface;
       friend class Soh8Line;
 
@@ -96,7 +96,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owning processor
       */
-      So_Hex8P1J1(int id, int owner);
+      SoHex8P1J1(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -104,7 +104,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_Hex8P1J1(const So_Hex8P1J1& old);
+      SoHex8P1J1(const SoHex8P1J1& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -123,7 +123,7 @@ namespace DRT
       */
       int UniqueParObjectId() const override
       {
-        return So_Hex8P1J1Type::Instance().UniqueParObjectId();
+        return SoHex8P1J1Type::Instance().UniqueParObjectId();
       }
 
       /*!
@@ -159,7 +159,7 @@ namespace DRT
           const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& F,
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& D_T_bar, const double t);
 
-      So_Hex8P1J1Type& ElementType() const override { return So_Hex8P1J1Type::Instance(); }
+      SoHex8P1J1Type& ElementType() const override { return SoHex8P1J1Type::Instance(); }
 
       //@}
 
@@ -278,7 +278,7 @@ namespace DRT
       void soh8P1J1_recover(const std::vector<double>& residual);
 
       // don't want = operator
-      So_Hex8P1J1& operator=(const So_Hex8P1J1& old);
+      SoHex8P1J1& operator=(const SoHex8P1J1& old);
 
       CORE::LINALG::Matrix<1, NUMDOF_SOH8> K_pu_;
       CORE::LINALG::Matrix<1, NUMDOF_SOH8> K_tu_;

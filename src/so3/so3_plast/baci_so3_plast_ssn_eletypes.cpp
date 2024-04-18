@@ -18,18 +18,18 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 07/13 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex8PlastType DRT::ELEMENTS::So_hex8PlastType::instance_;
+DRT::ELEMENTS::SoHex8PlastType DRT::ELEMENTS::SoHex8PlastType::instance_;
 
-DRT::ELEMENTS::So_hex8PlastType& DRT::ELEMENTS::So_hex8PlastType::Instance() { return instance_; }
+DRT::ELEMENTS::SoHex8PlastType& DRT::ELEMENTS::SoHex8PlastType::Instance() { return instance_; }
 
 
 /*----------------------------------------------------------------------*
  | create the new element type (public)                     seitz 07/13 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -39,13 +39,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8PlastType::Create(const std::vector
  | create the new element type (public)                     seitz 07/13 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PlastType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>(id, owner));
+        Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>(id, owner));
 
     return ele;
   }
@@ -57,10 +57,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PlastType::Create(
  | create the new element type (public)                     seitz 07/13 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PlastType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8PlastType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>(id, owner));
   return ele;
 
 }  // Create()
@@ -69,11 +69,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PlastType::Create(const int id,
 /*----------------------------------------------------------------------*
  | setup the element definition (public)                    seitz 07/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8PlastType::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex8PlastType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex8;
-  So_hex8Type::SetupElementDefinition(definitions_hex8);
+  SoHex8Type::SetupElementDefinition(definitions_hex8);
 
   std::map<std::string, INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
 
@@ -90,14 +90,14 @@ void DRT::ELEMENTS::So_hex8PlastType::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex8PlastType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoHex8PlastType::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex8>*>(dis.lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_Plast* failed");
     // initialise all quantities
     actele->InitJacobianMapping();
@@ -118,17 +118,17 @@ int DRT::ELEMENTS::So_hex8PlastType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
 | build an instance of Plast type                         seitz 07/13 |
 *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex18PlastType DRT::ELEMENTS::So_hex18PlastType::instance_;
+DRT::ELEMENTS::SoHex18PlastType DRT::ELEMENTS::SoHex18PlastType::instance_;
 
-DRT::ELEMENTS::So_hex18PlastType& DRT::ELEMENTS::So_hex18PlastType::Instance() { return instance_; }
+DRT::ELEMENTS::SoHex18PlastType& DRT::ELEMENTS::SoHex18PlastType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 07/13 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::So_hex18PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoHex18PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -138,13 +138,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::So_hex18PlastType::Create(const std::vecto
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex18PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(id, owner));
+        Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -155,10 +155,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex18PlastType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>(id, owner));
   return ele;
 }  // Create()
 
@@ -166,7 +166,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(const int id
 /*---------------------------------------------------------------------*
 |                                                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex18PlastType::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex18PlastType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -189,14 +189,14 @@ void DRT::ELEMENTS::So_hex18PlastType::SetupElementDefinition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex18PlastType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoHex18PlastType::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex18>*>(dis.lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex18_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -216,17 +216,17 @@ int DRT::ELEMENTS::So_hex18PlastType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
 | build an instance of Plast type                         seitz 07/13 |
 *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex27PlastType DRT::ELEMENTS::So_hex27PlastType::instance_;
+DRT::ELEMENTS::SoHex27PlastType DRT::ELEMENTS::SoHex27PlastType::instance_;
 
-DRT::ELEMENTS::So_hex27PlastType& DRT::ELEMENTS::So_hex27PlastType::Instance() { return instance_; }
+DRT::ELEMENTS::SoHex27PlastType& DRT::ELEMENTS::SoHex27PlastType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 07/13 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::So_hex27PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoHex27PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex27>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -236,13 +236,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::So_hex27PlastType::Create(const std::vecto
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PlastType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>(id, owner));
+        Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex27>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -253,10 +253,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PlastType::Create(
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PlastType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex27PlastType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex27>(id, owner));
   return ele;
 }  // Create()
 
@@ -264,11 +264,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PlastType::Create(const int id
 /*---------------------------------------------------------------------*
 |                                                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27PlastType::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex27PlastType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_hex27;
-  So_hex27Type::SetupElementDefinition(definitions_hex27);
+  SoHex27Type::SetupElementDefinition(definitions_hex27);
 
   std::map<std::string, INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
 
@@ -282,14 +282,14 @@ void DRT::ELEMENTS::So_hex27PlastType::SetupElementDefinition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex27PlastType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoHex27PlastType::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::hex27>*>(dis.lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -309,17 +309,17 @@ int DRT::ELEMENTS::So_hex27PlastType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
 | build an instance of Plast type                         seitz 07/13 |
 *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_tet4PlastType DRT::ELEMENTS::So_tet4PlastType::instance_;
+DRT::ELEMENTS::SoTet4PlastType DRT::ELEMENTS::SoTet4PlastType::instance_;
 
-DRT::ELEMENTS::So_tet4PlastType& DRT::ELEMENTS::So_tet4PlastType::Instance() { return instance_; }
+DRT::ELEMENTS::SoTet4PlastType& DRT::ELEMENTS::SoTet4PlastType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 07/13 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoTet4PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -329,13 +329,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::So_tet4PlastType::Create(const std::vector
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PlastType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>(id, owner));
+        Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -346,10 +346,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PlastType::Create(
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PlastType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoTet4PlastType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>(id, owner));
   return ele;
 }  // Create()
 
@@ -357,11 +357,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PlastType::Create(const int id,
 /*---------------------------------------------------------------------*
 |                                                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4PlastType::SetupElementDefinition(
+void DRT::ELEMENTS::SoTet4PlastType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_tet4;
-  So_tet4Type::SetupElementDefinition(definitions_tet4);
+  SoTet4Type::SetupElementDefinition(definitions_tet4);
 
   std::map<std::string, INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
 
@@ -375,14 +375,14 @@ void DRT::ELEMENTS::So_tet4PlastType::SetupElementDefinition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_tet4PlastType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoTet4PlastType::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::tet4>*>(dis.lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -401,9 +401,9 @@ int DRT::ELEMENTS::So_tet4PlastType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
 | build an instance of Plast type                         seitz 07/13 |
 *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_nurbs27PlastType DRT::ELEMENTS::So_nurbs27PlastType::instance_;
+DRT::ELEMENTS::SoNurbs27PlastType DRT::ELEMENTS::SoNurbs27PlastType::instance_;
 
-DRT::ELEMENTS::So_nurbs27PlastType& DRT::ELEMENTS::So_nurbs27PlastType::Instance()
+DRT::ELEMENTS::SoNurbs27PlastType& DRT::ELEMENTS::SoNurbs27PlastType::Instance()
 {
   return instance_;
 }
@@ -412,9 +412,9 @@ DRT::ELEMENTS::So_nurbs27PlastType& DRT::ELEMENTS::So_nurbs27PlastType::Instance
 | create the new element type (public)                     seitz 07/13 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::So_nurbs27PlastType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoNurbs27PlastType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -424,13 +424,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::So_nurbs27PlastType::Create(const std::vec
 | create the new element type (public)                     seitz 07/13 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PlastType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>(id, owner));
+        Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -441,10 +441,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PlastType::Create(
 | create the new element type (public)                     seitz 07/13 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PlastType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoNurbs27PlastType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>(id, owner));
+      Teuchos::rcp(new DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>(id, owner));
   return ele;
 }  // Create()
 
@@ -452,7 +452,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PlastType::Create(const int 
 /*---------------------------------------------------------------------*
 |                                                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_nurbs27PlastType::SetupElementDefinition(
+void DRT::ELEMENTS::SoNurbs27PlastType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -468,14 +468,14 @@ void DRT::ELEMENTS::So_nurbs27PlastType::SetupElementDefinition(
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 07/13 |
 *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_nurbs27PlastType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoNurbs27PlastType::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
     auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<CORE::FE::CellType::nurbs27>*>(dis.lColElement(i));
+        dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_Plast* failed");
 
     actele->InitJacobianMapping();

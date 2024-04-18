@@ -186,7 +186,7 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter(Teuchos::Pa
 
       // set flag, time integration scheme
       ostalgo_ =
-          CORE::UTILS::GetAsEnum<INPAR::FLUID::OST_Cont_and_Press>(params, "ost cont and press");
+          CORE::UTILS::GetAsEnum<INPAR::FLUID::OstContAndPress>(params, "ost cont and press");
       ostnew_ = params.get<bool>("ost new", false);
 
       if (ostnew_)

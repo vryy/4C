@@ -445,7 +445,7 @@ namespace ADAPTER
     Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override = 0;
 
     /// Get type of thickness scaling for thin shell structures
-    INPAR::STR::STC_Scale GetSTCAlgo() override = 0;
+    INPAR::STR::StcScale GetSTCAlgo() override = 0;
 
     /// Access to scaling matrix for STC
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override = 0;

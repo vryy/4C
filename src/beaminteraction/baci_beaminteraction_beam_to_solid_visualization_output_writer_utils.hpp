@@ -15,14 +15,13 @@
 
 #include "baci_config.hpp"
 
+#include <Epetra_MultiVector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 #include <unordered_map>
 #include <vector>
 
-// Forward declarations.
-class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 

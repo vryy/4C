@@ -44,15 +44,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /// \date 09/13
 
-class Myocard_Fitzhugh_Nagumo : public Myocard_General
+class MyocardFitzhughNagumo : public MyocardGeneral
 
 {
  public:
   /// construct empty material object
-  Myocard_Fitzhugh_Nagumo();
+  MyocardFitzhughNagumo();
 
   /// construct empty material object
-  explicit Myocard_Fitzhugh_Nagumo(
+  explicit MyocardFitzhughNagumo(
       const double eps_deriv_myocard, const std::string tissue, int num_gp);
 
   /// compute reaction coefficient
@@ -102,7 +102,7 @@ class Myocard_Fitzhugh_Nagumo : public Myocard_General
   }
 
  private:
-  Myocard_Tools tools_;
+  MyocardTools tools_;
 
   /// perturbation for numerical approximation of the derivative
   double eps_deriv_;

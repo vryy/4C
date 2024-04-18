@@ -59,7 +59,7 @@ namespace MAT
         //@{
 
         // !brief enum for mapping between material parameter and entry in the matparams_ vector
-        enum matparamnames_
+        enum Matparamnames
         {
           clum,      /// stiffness parameter (luminal)
           cmed,      /// stiffness parameter (medial)

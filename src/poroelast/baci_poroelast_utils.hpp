@@ -43,7 +43,7 @@ namespace POROELAST
   class PoroBase;
 
   //! coupling types of porous media problem
-  enum coupltype
+  enum Coupltype
   {
     fluidfluid,
     fluidstructure,

@@ -44,9 +44,9 @@ namespace CORE::GEN
 
   /*--------------------------------------------------------------------------*/
   template <typename Key, typename T>
-  class default_insert_policy
+  class DefaultInsertPolicy
   {
-    typedef default_insert_policy<Key, T> class_type;
+    typedef DefaultInsertPolicy<Key, T> class_type;
 
    protected:
     typedef std::pair<Key, T> pair_type;
@@ -89,7 +89,7 @@ namespace CORE::GEN
       iterator it = find(k, data, entries);
       if (it != last) return it->second;
 
-      if (entries >= data.size()) throw std::length_error("pairedvector::operator[]");
+      if (entries >= data.size()) throw std::length_error("Pairedvector::operator[]");
 
       ++entries;
       last->first = k;
@@ -100,7 +100,7 @@ namespace CORE::GEN
     {
       iterator last = data.begin() + entries;
       iterator it = find(k, data, entries);
-      if (it == last) dserror("pairedvector::at(): invalid key");
+      if (it == last) dserror("Pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -109,7 +109,7 @@ namespace CORE::GEN
     {
       const_iterator last = data.begin() + entries;
       const_iterator it = find(k, data, entries);
-      if (it == last) dserror("pairedvector::at(): invalid key");
+      if (it == last) dserror("Pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -164,12 +164,12 @@ namespace CORE::GEN
 
   /*--------------------------------------------------------------------------*/
   template <typename Key, typename T>
-  class quick_insert_policy : public default_insert_policy<Key, T>
+  class QuickInsertPolicy : public DefaultInsertPolicy<Key, T>
   {
-    typedef quick_insert_policy<Key, T> class_type;
+    typedef QuickInsertPolicy<Key, T> class_type;
 
    protected:
-    typedef default_insert_policy<Key, T> base_type;
+    typedef DefaultInsertPolicy<Key, T> base_type;
     typedef typename base_type::pair_type pair_type;
     typedef typename base_type::pairedvector_type pairedvector_type;
     typedef typename base_type::iterator iterator;
@@ -191,7 +191,7 @@ namespace CORE::GEN
       if (it != last) return it->second;
 
       if (entries + capacity_offset() >= data.size())
-        throw std::length_error("pairedvector::get()");
+        throw std::length_error("Pairedvector::get()");
 
       ++entries;
       return last->second;
@@ -202,7 +202,7 @@ namespace CORE::GEN
     {
       iterator last = data.begin() + entries;
       iterator it = find(k, data, entries);
-      if (it == last) dserror("pairedvector::at(): invalid key");
+      if (it == last) dserror("Pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -212,7 +212,7 @@ namespace CORE::GEN
     {
       const_iterator last = data.begin() + entries;
       const_iterator it = find(k, data, entries);
-      if (it == last) dserror("pairedvector::at(): invalid key");
+      if (it == last) dserror("Pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -482,19 +482,19 @@ namespace CORE::GEN
 
   /*--------------------------------------------------------------------------*/
   template <typename Key, typename T>
-  class insert_and_sort_policy : public default_insert_policy<Key, T>
+  class InsertAndSortPolicy : public DefaultInsertPolicy<Key, T>
   {
-    typedef insert_and_sort_policy<Key, T> class_type;
+    typedef InsertAndSortPolicy<Key, T> class_type;
 
    protected:
-    typedef default_insert_policy<Key, T> base_type;
+    typedef DefaultInsertPolicy<Key, T> base_type;
     typedef typename base_type::pair_type pair_type;
     typedef typename base_type::pairedvector_type pairedvector_type;
     typedef typename base_type::iterator iterator;
     typedef typename base_type::const_iterator const_iterator;
 
    public:
-    insert_and_sort_policy()
+    InsertAndSortPolicy()
         : _non_unique_vec(0),
           _non_unique_entries(0),
           _dyn_max_allowed_capacity(CONST_MAX_ALLOWED_CAPACITY),
@@ -1034,7 +1034,7 @@ namespace CORE::GEN
 }  // namespace CORE::GEN
 
 template <typename Key, typename T>
-size_t CORE::GEN::insert_and_sort_policy<Key, T>::_max_capacity = 0;
+size_t CORE::GEN::InsertAndSortPolicy<Key, T>::_max_capacity = 0;
 
 
 

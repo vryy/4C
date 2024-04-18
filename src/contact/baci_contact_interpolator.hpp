@@ -81,8 +81,8 @@ namespace NTS
 
      */
     void DerivXiGP3D(MORTAR::Element& sele, MORTAR::Element& mele, double* sxigp, double* mxigp,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi, double& alpha);
+        const std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi, double& alpha);
 
     /*!
      \brief node-wise gap calculation for 3D problems
@@ -90,7 +90,7 @@ namespace NTS
      */
     void nwGap3D(CONTACT::Node& mynode, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, double* gpn);
+        std::vector<CORE::GEN::Pairedvector<int, double>>& dmxi, double* gpn);
 
    private:
     /*!
@@ -110,8 +110,8 @@ namespace NTS
 
      */
     void DerivXiGP2D(MORTAR::Element& sele, MORTAR::Element& mele, double& sxigp, double& mxigp,
-        const CORE::GEN::pairedvector<int, double>& derivsxi,
-        CORE::GEN::pairedvector<int, double>& derivmxi, int& linsize);
+        const CORE::GEN::Pairedvector<int, double>& derivsxi,
+        CORE::GEN::Pairedvector<int, double>& derivmxi, int& linsize);
 
     /*!
      \brief node-wise D/M calculation
@@ -119,7 +119,7 @@ namespace NTS
      */
     void nwDM2D(CONTACT::Node& mynode, MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
-        CORE::GEN::pairedvector<int, double>& dmxi);
+        CORE::GEN::Pairedvector<int, double>& dmxi);
 
     /*!
      \brief node-wise D/M calculation for 3D problems
@@ -127,7 +127,7 @@ namespace NTS
      */
     void nwDM3D(CONTACT::Node& mynode, MORTAR::Element& mele, CORE::LINALG::SerialDenseVector& mval,
         CORE::LINALG::SerialDenseMatrix& mderiv,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dmxi);
+        std::vector<CORE::GEN::Pairedvector<int, double>>& dmxi);
 
     /*!
      \brief node-wise gap calculation
@@ -135,7 +135,7 @@ namespace NTS
      */
     void nwGap2D(CONTACT::Node& mynode, MORTAR::Element& sele, MORTAR::Element& mele,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
-        CORE::GEN::pairedvector<int, double>& dmxi, double* gpn);
+        CORE::GEN::Pairedvector<int, double>& dmxi, double* gpn);
 
     /*!
      \brief node-wise master temperature calculation for 3D problems
@@ -143,7 +143,7 @@ namespace NTS
      */
     void nwMasterTemp(CONTACT::Node& mynode, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi);
+        const std::vector<CORE::GEN::Pairedvector<int, double>>& dmxi);
 
     /*!
      \brief node-wise slip calculation
@@ -154,7 +154,7 @@ namespace NTS
         CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mcoordold, int& snodes, int& linsize,
-        CORE::GEN::pairedvector<int, double>& dmxi);
+        CORE::GEN::Pairedvector<int, double>& dmxi);
 
     /*!
      \brief node-wise wear calculation (internal state var.)
@@ -166,16 +166,16 @@ namespace NTS
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mcoordold,
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult, int& snodes, int& linsize,
-        double& jumpval, double& area, double* gpn, CORE::GEN::pairedvector<int, double>& dmxi,
-        CORE::GEN::pairedvector<int, double>& dslipmatrix,
-        CORE::GEN::pairedvector<int, double>& dwear);
+        double& jumpval, double& area, double* gpn, CORE::GEN::Pairedvector<int, double>& dmxi,
+        CORE::GEN::Pairedvector<int, double>& dslipmatrix,
+        CORE::GEN::Pairedvector<int, double>& dwear);
 
     /*!
      \brief node-wise wear calculation (primary variable)
 
      */
     void nwTE2D(CONTACT::Node& mynode, double& area, double& jumpval,
-        CORE::GEN::pairedvector<int, double>& dslipmatrix);
+        CORE::GEN::Pairedvector<int, double>& dslipmatrix);
 
     Teuchos::ParameterList& iparams_;  //< containing contact input parameters
     int dim_;                          //< problem dimension

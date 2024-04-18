@@ -29,24 +29,24 @@ namespace CONTACT
 
     /// a trait to identify Lagrange discretization types
     template <CORE::FE::CellType type>
-    struct is_lagrange_ele_type
+    struct IsLagrangeEleType
     {
       static constexpr bool value_ = false;
     };
 
     /// supported standard types
     template <>
-    struct is_lagrange_ele_type<CORE::FE::CellType::line2>
+    struct IsLagrangeEleType<CORE::FE::CellType::line2>
     {
       static constexpr bool value_ = true;
     };
     template <>
-    struct is_lagrange_ele_type<CORE::FE::CellType::tri3>
+    struct IsLagrangeEleType<CORE::FE::CellType::tri3>
     {
       static constexpr bool value_ = true;
     };
     template <>
-    struct is_lagrange_ele_type<CORE::FE::CellType::quad4>
+    struct IsLagrangeEleType<CORE::FE::CellType::quad4>
     {
       static constexpr bool value_ = true;
     };
@@ -57,7 +57,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
-    inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type shape_function(
+    inline typename std::enable_if<IsLagrangeEleType<type>::value_, bool>::type shape_function(
         MORTAR::Element& ele, T& xi, V& val)
     {
       CORE::FE::shape_function<type>(xi, val);
@@ -71,7 +71,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
-    inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
+    inline typename std::enable_if<IsLagrangeEleType<type>::value_, bool>::type
     shape_function_deriv1(MORTAR::Element& ele, T& xi, V& deriv)
     {
       CORE::FE::shape_function_deriv1<type>(xi, deriv);
@@ -85,7 +85,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename U, typename V>
-    inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
+    inline typename std::enable_if<IsLagrangeEleType<type>::value_, bool>::type
     shape_function_and_deriv1(MORTAR::Element& ele, T& xi, U& val, V& deriv)
     {
       shape_function<type>(ele, xi, val);
@@ -100,7 +100,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
-    inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
+    inline typename std::enable_if<IsLagrangeEleType<type>::value_, bool>::type
     shape_function_deriv2(MORTAR::Element& ele, T& xi, V& deriv2)
     {
       CORE::FE::shape_function_deriv2<type>(xi, deriv2);
@@ -114,7 +114,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename U, typename V, typename W>
-    inline typename std::enable_if<is_lagrange_ele_type<type>::value_, bool>::type
+    inline typename std::enable_if<IsLagrangeEleType<type>::value_, bool>::type
     shape_function_and_deriv1_and_deriv2(MORTAR::Element& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
       CORE::FE::shape_function<type>(xi, val);
@@ -131,29 +131,29 @@ namespace CONTACT
 
     /// a trait to identify NURBS discretization types
     template <CORE::FE::CellType type>
-    struct is_nurbs_ele_type
+    struct IsNurbsEleType
     {
       static constexpr bool value_ = false;
     };
 
     /// supported nurbs types
     template <>
-    struct is_nurbs_ele_type<CORE::FE::CellType::nurbs2>
+    struct IsNurbsEleType<CORE::FE::CellType::nurbs2>
     {
       static constexpr bool value_ = true;
     };
     template <>
-    struct is_nurbs_ele_type<CORE::FE::CellType::nurbs3>
+    struct IsNurbsEleType<CORE::FE::CellType::nurbs3>
     {
       static constexpr bool value_ = true;
     };
     template <>
-    struct is_nurbs_ele_type<CORE::FE::CellType::nurbs4>
+    struct IsNurbsEleType<CORE::FE::CellType::nurbs4>
     {
       static constexpr bool value_ = true;
     };
     template <>
-    struct is_nurbs_ele_type<CORE::FE::CellType::nurbs9>
+    struct IsNurbsEleType<CORE::FE::CellType::nurbs9>
     {
       static constexpr bool value_ = true;
     };
@@ -177,7 +177,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
-    inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type shape_function(
+    inline typename std::enable_if<IsNurbsEleType<type>::value_, bool>::type shape_function(
         MORTAR::Element& ele, T& xi, V& val)
     {
       static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
@@ -195,8 +195,8 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
-    inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
-    shape_function_deriv1(MORTAR::Element& ele, T& xi, V& deriv)
+    inline typename std::enable_if<IsNurbsEleType<type>::value_, bool>::type shape_function_deriv1(
+        MORTAR::Element& ele, T& xi, V& deriv)
     {
       static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
 
@@ -214,7 +214,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename U, typename V>
-    inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
+    inline typename std::enable_if<IsNurbsEleType<type>::value_, bool>::type
     shape_function_and_deriv1(MORTAR::Element& ele, T& xi, U& val, V& deriv)
     {
       static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
@@ -232,8 +232,8 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename V>
-    inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
-    shape_function_deriv2(MORTAR::Element& ele, T& xi, V& deriv2)
+    inline typename std::enable_if<IsNurbsEleType<type>::value_, bool>::type shape_function_deriv2(
+        MORTAR::Element& ele, T& xi, V& deriv2)
     {
       static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
       static constexpr unsigned DIM = CORE::FE::dim<type>;
@@ -254,7 +254,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <CORE::FE::CellType type, typename T, typename U, typename V, typename W>
-    inline typename std::enable_if<is_nurbs_ele_type<type>::value_, bool>::type
+    inline typename std::enable_if<IsNurbsEleType<type>::value_, bool>::type
     shape_function_and_deriv1_and_deriv2(MORTAR::Element& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
       static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;

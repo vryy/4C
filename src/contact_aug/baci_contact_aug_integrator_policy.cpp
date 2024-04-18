@@ -162,7 +162,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_UnitSlaveEle
     if (d_unit_normal.size() < probdim) dserror("Given vector has the wrong size.");
     for (auto& d_un_ndof : d_unit_normal)
       if (d_un_ndof.capacity() < SLAVENUMNODE * probdim)
-        dserror("Given pairedvector provides an insufficient capacity.");
+        dserror("Given Pairedvector provides an insufficient capacity.");
   }
 
   // (0) calculate the projection matrix into the tangential plain

@@ -139,7 +139,7 @@ namespace STR
       };
 
       /// Get type of shell thickness scaling
-      const enum INPAR::STR::STC_Scale& GetSTCAlgoType() const
+      const enum INPAR::STR::StcScale& GetSTCAlgoType() const
       {
         CheckInitSetup();
         return stcscale_;
@@ -759,7 +759,7 @@ namespace STR
       enum INPAR::STR::DynamicType dyntype_;
 
       /// scaled thickness conditioning type (necessary for shells)
-      enum INPAR::STR::STC_Scale stcscale_;
+      enum INPAR::STR::StcScale stcscale_;
 
       /// number of layers for multilayered case
       int stclayer_;

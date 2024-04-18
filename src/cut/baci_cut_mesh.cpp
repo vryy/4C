@@ -2450,9 +2450,9 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
   //       }
   //     }
   //   }
-  pp_->SetMergeStrategy(Pointpool_MergeStrategy::InitialLoad);
+  pp_->SetMergeStrategy(PointpoolMergeStrategy::InitialLoad);
   Point* p = NewPoint(xyz, nullptr, nullptr, tolerance);
-  pp_->SetMergeStrategy(Pointpool_MergeStrategy::NormalCutLoad);
+  pp_->SetMergeStrategy(PointpoolMergeStrategy::NormalCutLoad);
   Node* n = new Node(nid, p, lsv);
   nodes_[nid] = Teuchos::rcp(n);
 #ifdef CUT_DUMPCREATION

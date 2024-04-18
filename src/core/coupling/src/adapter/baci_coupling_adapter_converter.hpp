@@ -15,10 +15,9 @@
 /* headers */
 #include "baci_config.hpp"
 
-#include <map>
+#include <Epetra_Vector.h>
 
-class Epetra_Map;
-class Epetra_Vector;
+#include <map>
 
 namespace Teuchos
 {

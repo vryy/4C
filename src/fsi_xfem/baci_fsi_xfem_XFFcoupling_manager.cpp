@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-XFEM::XFFCoupling_Manager::XFFCoupling_Manager(Teuchos::RCP<ConditionManager> condmanager,
+XFEM::XffCouplingManager::XffCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
     Teuchos::RCP<FLD::XFluid> xfluid, Teuchos::RCP<FLD::XFluid> fluid, std::vector<int> idx)
-    : Coupling_Comm_Manager(fluid->Discretization(), "XFEMSurfFluidFluid", 0, 3),
+    : CouplingCommManager(fluid->Discretization(), "XFEMSurfFluidFluid", 0, 3),
       fluid_(fluid),
       xfluid_(xfluid),
       cond_name_("XFEMSurfFluidFluid"),
@@ -39,13 +39,13 @@ XFEM::XFFCoupling_Manager::XFFCoupling_Manager(Teuchos::RCP<ConditionManager> co
 /*-----------------------------------------------------------------------------------------*
 | Set required displacement & velocity states in the coupling object          ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XFFCoupling_Manager::InitCouplingStates() {}
+void XFEM::XffCouplingManager::InitCouplingStates() {}
 
 
 /*-----------------------------------------------------------------------------------------*
 | Set required displacement & velocity states in the coupling object          ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XFFCoupling_Manager::SetCouplingStates()
+void XFEM::XffCouplingManager::SetCouplingStates()
 {
   std::cout << "SetCouplingStates in XFFCoupling_Manager" << std::endl;
 
@@ -91,7 +91,7 @@ void XFEM::XFFCoupling_Manager::SetCouplingStates()
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling matrixes to the global systemmatrix                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XFFCoupling_Manager::AddCouplingMatrix(
+void XFEM::XffCouplingManager::AddCouplingMatrix(
     CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling)
 {
   /*----------------------------------------------------------------------*/
@@ -113,7 +113,7 @@ void XFEM::XFFCoupling_Manager::AddCouplingMatrix(
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XFFCoupling_Manager::AddCouplingRHS(
+void XFEM::XffCouplingManager::AddCouplingRHS(
     Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling)
 {
   // REMARK: Copy this vector to store the correct lambda_ in update!

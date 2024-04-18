@@ -70,11 +70,11 @@ namespace XFEM
   class MeshCoupling;
   class MeshCouplingFPI;
 
-  class XFluid_Contact_Comm
+  class XFluidContactComm
   {
    public:
     //! constructor
-    explicit XFluid_Contact_Comm(CONTACT::NitscheStrategy& contact_strategy)
+    explicit XFluidContactComm(CONTACT::NitscheStrategy& contact_strategy)
         : fluid_init_(false),
           ele_ptrs_already_setup_(false),
           cutwizard_(Teuchos::null),
@@ -109,7 +109,7 @@ namespace XFEM
     }
 
     //! destructor
-    virtual ~XFluid_Contact_Comm() = default;
+    virtual ~XFluidContactComm() = default;
     /// Initialize overall Fluid State (includes the Cut intersection information)
     void InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
         Teuchos::RCP<DRT::Discretization> fluiddis,
@@ -309,9 +309,9 @@ namespace XFEM
     bool isporo_;
 
     /// Viscous trace estimate for FSI-Nit-Pen
-    INPAR::XFEM::ViscStab_TraceEstimate visc_stab_trace_estimate_;
+    INPAR::XFEM::ViscStabTraceEstimate visc_stab_trace_estimate_;
     /// h-definition for FSI-Nit-Pen
-    INPAR::XFEM::ViscStab_hk visc_stab_hk_;
+    INPAR::XFEM::ViscStabHk visc_stab_hk_;
     /// reference penalty parameter for FSI-Nit-Pen
     double nit_stab_gamma_;
     /// pseudo 2D flag for 2D simulation with one element in z-direction
@@ -376,7 +376,7 @@ namespace XFEM
 
     /// last computed element h measure with key fluidele id
     std::pair<int, double> last_ele_h_;
-  };  // class XFluid_Contact_Comm
+  };  // class XFluidContactComm
 }  // namespace XFEM
 
 FOUR_C_NAMESPACE_CLOSE

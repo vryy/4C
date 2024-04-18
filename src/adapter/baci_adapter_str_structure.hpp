@@ -239,7 +239,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
-    virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
+    virtual INPAR::STR::StcScale GetSTCAlgo() = 0;
 
     /// Access to scaling matrix for STC
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() = 0;

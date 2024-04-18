@@ -162,7 +162,7 @@ namespace CONTACT
         std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) = 0;
 
     //! brief Struct for debug data in Gmsh
-    struct gmshDebugPoint
+    struct GmshDebugPoint
     {
       CORE::LINALG::Matrix<3, 1, double> r1;
       CORE::LINALG::Matrix<3, 1, double> x2;
@@ -175,7 +175,7 @@ namespace CONTACT
     /*
     \ brief Get debug data for Gmsh
      */
-    virtual std::vector<gmshDebugPoint> GetGmshDebugPoints() = 0;
+    virtual std::vector<GmshDebugPoint> GetGmshDebugPoints() = 0;
 
 
   };  // class Beam3tosolidcontactinterface
@@ -326,7 +326,7 @@ namespace CONTACT
     /*!
     \brief Get debugging data at Gauss points for Gmsh
     */
-    std::vector<gmshDebugPoint> GetGmshDebugPoints() override { return gmshDebugPoints_; };
+    std::vector<GmshDebugPoint> GetGmshDebugPoints() override { return gmshDebugPoints_; };
 
 
     //@}
@@ -426,7 +426,7 @@ namespace CONTACT
     }
 
     //! Vector containing structs for Gmsh debug
-    std::vector<gmshDebugPoint> gmshDebugPoints_;
+    std::vector<GmshDebugPoint> gmshDebugPoints_;
 
 
     //@}

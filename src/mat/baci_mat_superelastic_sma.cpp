@@ -77,7 +77,7 @@ MAT::PAR::SuperElasticSMA::SuperElasticSMA(Teuchos::RCP<MAT::PAR::Material> matd
 /*----------------------------------------------------------------------*
  | struct with all material parameters                    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-struct MAT::SuperElasticSMA::material
+struct MAT::SuperElasticSMA::Material
 {
   // elastic material data
   double youngs;
@@ -109,7 +109,7 @@ struct MAT::SuperElasticSMA::material
   double temperature;
 };
 
-struct MAT::SuperElasticSMA::loadingData
+struct MAT::SuperElasticSMA::LoadingData
 {
   double drucker_prager;
   double drucker_prager_last;
@@ -337,7 +337,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
    * Step 0.1 * Load material data from the input file        *
    **********************************************************
    */
-  material matdata;
+  Material matdata;
   // elastic material data
   matdata.youngs = params_->youngs_;                                      // Young's modulus
   matdata.poisson = params_->poissonratio_;                               // Poisson's ratio
@@ -627,7 +627,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         bool accept = false;
 
         // Compute local Newton step
-        loadingData loading = ComputeLocalNewtonLoading(
+        LoadingData loading = ComputeLocalNewtonLoading(
             xi_s_tmp, logarithmic_strain_volumetric, logarithmic_strain_deviatoric_norm, matdata);
         loading.drucker_prager_AS_last = drucker_prager_loading_AS_last;
         loading.drucker_prager_SA_last = drucker_prager_loading_SA_last;
@@ -648,7 +648,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         {
           lambda_S_p.Update(1.0, lambda_S, -gamma * damping, res_vec);  // Eqn. 57
           double xi_s_p = xi_S + lambda_S_p(0) + lambda_S_p(1);
-          loadingData loading_p = ComputeLocalNewtonLoading(
+          LoadingData loading_p = ComputeLocalNewtonLoading(
               xi_s_p, logarithmic_strain_volumetric, logarithmic_strain_deviatoric_norm, matdata);
           loading_p.drucker_prager_AS_last = drucker_prager_loading_AS_last;
           loading_p.drucker_prager_SA_last = drucker_prager_loading_SA_last;
@@ -1026,7 +1026,7 @@ void MAT::SuperElasticSMA::VisNames(std::map<std::string, int>& names)
 }  // VisNames()
 
 CORE::LINALG::Matrix<2, 1> MAT::SuperElasticSMA::ComputeLocalNewtonResidual(
-    CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, loadingData loading, material mat_data)
+    CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data)
 {
   CORE::LINALG::Matrix<2, 1> R;
   if (mat_data.model == 1)
@@ -1053,7 +1053,7 @@ CORE::LINALG::Matrix<2, 1> MAT::SuperElasticSMA::ComputeLocalNewtonResidual(
 }
 
 CORE::LINALG::Matrix<2, 2> MAT::SuperElasticSMA::ComputeLocalNewtonJacobian(
-    CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, loadingData loading, material mat_data)
+    CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data)
 {
   CORE::LINALG::Matrix<2, 2> d_R_d_lambda;
   if (mat_data.model == 1)
@@ -1104,10 +1104,10 @@ CORE::LINALG::Matrix<2, 2> MAT::SuperElasticSMA::ComputeLocalNewtonJacobian(
   return d_R_d_lambda;
 }
 
-MAT::SuperElasticSMA::loadingData MAT::SuperElasticSMA::ComputeLocalNewtonLoading(
-    double xi_S, double log_strain_vol, double log_strain_dev_norm, material mat_data)
+MAT::SuperElasticSMA::LoadingData MAT::SuperElasticSMA::ComputeLocalNewtonLoading(
+    double xi_S, double log_strain_vol, double log_strain_dev_norm, Material mat_data)
 {
-  loadingData loading;
+  LoadingData loading;
   double kirchhoff_stress_volumetric_tmp =
       mat_data.bulk * (log_strain_vol - 3.0 * mat_data.alpha * mat_data.epsilon_L * xi_S);
   double kirchhoff_stress_deviatoric_norm_tmp =

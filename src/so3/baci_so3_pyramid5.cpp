@@ -27,39 +27,39 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::So_pyramid5Type DRT::ELEMENTS::So_pyramid5Type::instance_;
+DRT::ELEMENTS::SoPyramid5Type DRT::ELEMENTS::SoPyramid5Type::instance_;
 
-DRT::ELEMENTS::So_pyramid5Type& DRT::ELEMENTS::So_pyramid5Type::Instance() { return instance_; }
+DRT::ELEMENTS::SoPyramid5Type& DRT::ELEMENTS::SoPyramid5Type::Instance() { return instance_; }
 
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_pyramid5Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoPyramid5Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_pyramid5(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoPyramid5(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoPyramid5Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoPyramid5(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5Type::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoPyramid5Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoPyramid5(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_pyramid5Type::NodalBlockInformation(
+void DRT::ELEMENTS::SoPyramid5Type::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -67,13 +67,13 @@ void DRT::ELEMENTS::So_pyramid5Type::NodalBlockInformation(
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_pyramid5Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoPyramid5Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::So_pyramid5Type::SetupElementDefinition(
+void DRT::ELEMENTS::SoPyramid5Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -98,8 +98,8 @@ void DRT::ELEMENTS::So_pyramid5Type::SetupElementDefinition(
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_pyramid5::So_pyramid5(int id, int owner)
-    : So_base(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
+DRT::ELEMENTS::SoPyramid5::SoPyramid5(int id, int owner)
+    : SoBase(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
   kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   invJ_.resize(NUMGPT_SOP5, CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>(true));
@@ -125,8 +125,8 @@ DRT::ELEMENTS::So_pyramid5::So_pyramid5(int id, int owner)
  |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_pyramid5::So_pyramid5(const DRT::ELEMENTS::So_pyramid5& old)
-    : So_base(old),
+DRT::ELEMENTS::SoPyramid5::SoPyramid5(const DRT::ELEMENTS::SoPyramid5& old)
+    : SoBase(old),
       kintype_(old.kintype_),
       detJ_(old.detJ_),
       pstype_(old.pstype_),
@@ -149,24 +149,21 @@ DRT::ELEMENTS::So_pyramid5::So_pyramid5(const DRT::ELEMENTS::So_pyramid5& old)
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_pyramid5::Clone() const
+DRT::Element* DRT::ELEMENTS::SoPyramid5::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_pyramid5(*this);
+  auto* newelement = new DRT::ELEMENTS::SoPyramid5(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::So_pyramid5::Shape() const
-{
-  return CORE::FE::CellType::pyramid5;
-}
+CORE::FE::CellType DRT::ELEMENTS::SoPyramid5::Shape() const { return CORE::FE::CellType::pyramid5; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoPyramid5::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -203,7 +200,7 @@ void DRT::ELEMENTS::So_pyramid5::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoPyramid5::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -236,7 +233,7 @@ void DRT::ELEMENTS::So_pyramid5::Unpack(const std::vector<char>& data)
     {
       int numgpt = NUMGPT_SOP5;
       // see whether I am actually a So_pyramid5fbar element
-      auto* me = dynamic_cast<DRT::ELEMENTS::So_pyramid5fbar*>(this);
+      auto* me = dynamic_cast<DRT::ELEMENTS::SoPyramid5fbar*>(this);
       if (me) numgpt += 1;  // one more history entry for centroid data in pyramid5fbar
       prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, numgpt));
     }
@@ -254,7 +251,7 @@ void DRT::ELEMENTS::So_pyramid5::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoPyramid5::Print(std::ostream& os) const
 {
   os << "So_pyramid5 ";
   Element::Print(os);
@@ -295,7 +292,7 @@ void DRT::ELEMENTS::So_pyramid5::Print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_pyramid5::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoPyramid5::Surfaces()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralSurface>(CORE::COMM::buildSurfaces, *this);
 }
@@ -303,7 +300,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_pyramid5::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_pyramid5::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SoPyramid5::Lines()
 {
   return CORE::COMM::ElementBoundaryFactory<StructuralLine, DRT::Element>(
       CORE::COMM::buildLines, *this);
@@ -312,7 +309,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::So_pyramid5::Lines()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5::VisNames(std::map<std::string, int>& names)
+void DRT::ELEMENTS::SoPyramid5::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
   return;
@@ -321,7 +318,7 @@ void DRT::ELEMENTS::So_pyramid5::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                                  |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_pyramid5::VisData(const std::string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::SoPyramid5::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name, data)) return true;

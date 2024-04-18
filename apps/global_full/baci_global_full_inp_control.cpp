@@ -110,7 +110,7 @@ void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Com
   bool file = CORE::UTILS::IntegralValue<int>(io, "WRITE_TO_FILE");
   bool preGrpID = CORE::UTILS::IntegralValue<int>(io, "PREFIX_GROUP_ID");
   int oproc = io.get<int>("LIMIT_OUTP_TO_PROC");
-  auto level = CORE::UTILS::IntegralValue<IO::verbositylevel>(io, "VERBOSITY");
+  auto level = CORE::UTILS::IntegralValue<IO::Verbositylevel>(io, "VERBOSITY");
 
   IO::cout.setup(screen, file, preGrpID, level, std::move(lcomm), oproc, group, outputfile_kenner);
 }

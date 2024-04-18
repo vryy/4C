@@ -44,15 +44,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /// \date 09/13
 
-class Myocard_Inada : public Myocard_General
+class MyocardInada : public MyocardGeneral
 
 {
  public:
   /// construct empty material object
-  Myocard_Inada();
+  MyocardInada();
 
   /// construct empty material object
-  explicit Myocard_Inada(const double eps0_deriv_myocard, const std::string tissue);
+  explicit MyocardInada(const double eps0_deriv_myocard, const std::string tissue);
 
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt) override;
@@ -76,7 +76,7 @@ class Myocard_Inada : public Myocard_General
   void Update(const double phi, const double dt) override;
 
  private:
-  Myocard_Tools tools_;
+  MyocardTools tools_;
 
   /// Global time
   double VOI_;

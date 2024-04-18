@@ -40,16 +40,16 @@ namespace DRT
     //! A structural 3 dimensional solid displacement element for large deformations
     //! and with small and large strains
     template <class so3_ele, CORE::FE::CellType distype>
-    class So3_Thermo : public so3_ele
+    class So3Thermo : public so3_ele
     {
       //! @name Friends
-      friend class So_hex8ThermoType;
-      friend class So_hex8fbarThermoType;
-      friend class So_tet4ThermoType;
-      friend class So_tet10ThermoType;
-      friend class So_hex27ThermoType;
-      friend class So_hex20ThermoType;
-      friend class So_nurbs27ThermoType;
+      friend class SoHex8ThermoType;
+      friend class SoHex8fbarThermoType;
+      friend class SoTet4ThermoType;
+      friend class SoTet10ThermoType;
+      friend class SoHex27ThermoType;
+      friend class SoHex20ThermoType;
+      friend class SoNurbs27ThermoType;
 
      public:
       //@}
@@ -57,13 +57,13 @@ namespace DRT
 
 
       //! Standard Constructor
-      So3_Thermo(int id,  //!< (i) this element's global id
-          int owner       //!< elements owner
+      So3Thermo(int id,  //!< (i) this element's global id
+          int owner      //!< elements owner
       );
 
       //! Copy Constructor
       //! Makes a deep copy of a Element
-      So3_Thermo(const So3_Thermo& old);
+      So3Thermo(const So3Thermo& old);
 
 
       //@}
@@ -205,7 +205,7 @@ namespace DRT
 
      protected:
       //! don't want = operator
-      So3_Thermo& operator=(const So3_Thermo& old);
+      So3Thermo& operator=(const So3Thermo& old);
 
       //! action parameters recognized by so_hex8
       enum ActionType

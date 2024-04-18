@@ -70,8 +70,8 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     CORE::LINALG::SparseMatrix* stiff_ptr_;
 
     //! Enforcement Strategy
-    enum INPAR::RVE_MPC::enforcementStrategy strategy_ =
-        INPAR::RVE_MPC::enforcementStrategy::penalty;
+    enum INPAR::RVE_MPC::EnforcementStrategy strategy_ =
+        INPAR::RVE_MPC::EnforcementStrategy::penalty;
 
     //! Pointer to the discretization
     Teuchos::RCP<const DRT::Discretization> discret_ptr_ = Teuchos::null;

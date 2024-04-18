@@ -58,12 +58,12 @@ namespace CONTACT
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-        double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-        CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override;
+        CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+        double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
+        CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi) override;
 
     /*!
      \brief Perform integration at GP
@@ -72,23 +72,23 @@ namespace CONTACT
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-        double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-        CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override;
+        CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+        double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
+        CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi) override;
 
    private:
     // integrate surface gradient
     void GP_WeightedSurfGradAndDeriv(MORTAR::Element& sele, const double* xi,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+        const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxigp,
         const CORE::LINALG::SerialDenseVector& lmval,
         const CORE::LINALG::SerialDenseMatrix& lmderiv,
-        const CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap,
+        const CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const CORE::LINALG::SerialDenseMatrix& sderiv2, const double& wgt, const double& jac,
-        const CORE::GEN::pairedvector<int, double>& jacintcellmap);
+        const CORE::GEN::Pairedvector<int, double>& jacintcellmap);
 
     // integrate relative and average tangential velocity
     void GP_WeightedAvRelVel(MORTAR::Element& sele, MORTAR::Element& mele,
@@ -96,12 +96,12 @@ namespace CONTACT
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const CORE::LINALG::SerialDenseMatrix& mderiv,
         const CORE::LINALG::SerialDenseMatrix& lmderiv,
-        const CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap,
-        const double& wgt, const double& jac, const CORE::GEN::pairedvector<int, double>& derivjac,
-        const double* normal, const std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit,
-        const double& gap, const CORE::GEN::pairedvector<int, double>& deriv_gap, const double* sxi,
-        const double* mxi, const std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi);
+        const CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap,
+        const double& wgt, const double& jac, const CORE::GEN::Pairedvector<int, double>& derivjac,
+        const double* normal, const std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit,
+        const double& gap, const CORE::GEN::Pairedvector<int, double>& deriv_gap, const double* sxi,
+        const double* mxi, const std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
+        const std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi);
   };
 
 }  // namespace CONTACT

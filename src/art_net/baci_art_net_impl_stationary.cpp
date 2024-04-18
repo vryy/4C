@@ -366,8 +366,8 @@ void ART::ArtNetImplStationary::ResetArteryDiamPreviousTimeStep()
     DRT::Element* actele = discret_->lColElement(i);
 
     // get the artery-material
-    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
-        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(actele->Material());
+    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(actele->Material());
     if (arterymat == Teuchos::null) dserror("cast to artery material failed");
 
     const double diam = arterymat->Diam();
@@ -512,10 +512,10 @@ void ART::ArtNetImplStationary::OutputRadius()
   {
     DRT::Element* actele = discret_->lRowElement(i);
     // cast the material to artery material material
-    const Teuchos::RCP<const MAT::Cnst_1d_art>& arterymat =
-        Teuchos::rcp_dynamic_cast<const MAT::Cnst_1d_art>(actele->Material());
+    const Teuchos::RCP<const MAT::Cnst1dArt>& arterymat =
+        Teuchos::rcp_dynamic_cast<const MAT::Cnst1dArt>(actele->Material());
     if (arterymat == Teuchos::null)
-      dserror("cast to MAT::Cnst_1d_art failed during output of radius!");
+      dserror("cast to MAT::Cnst1dArt failed during output of radius!");
     const double radius = arterymat->Diam() / 2.0;
     ele_radius_->ReplaceGlobalValue(actele->Id(), 0, radius);
   }
@@ -632,8 +632,8 @@ void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
     DRT::Element* actele = discret_->lColElement(i);
 
     // get the artery-material
-    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
-        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(actele->Material());
+    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(actele->Material());
     if (arterymat == Teuchos::null) dserror("cast to artery material failed");
 
     const double diam = 2.0 * (*ele_radius_col)[i];

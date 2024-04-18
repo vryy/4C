@@ -36,12 +36,12 @@ FOUR_C_NAMESPACE_OPEN
 bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
 {
   // all poro elements need to be listed here
-  return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroType::Instance() or
+  return actele->ElementType() == DRT::ELEMENTS::SoHex8PoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::SolidPoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_tet4PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_tet10PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SoTet4PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SoTet10PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SoHex27PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SoNurbs27PoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallTri3PoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroType::Instance() or
@@ -53,8 +53,8 @@ bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
 bool POROELAST::UTILS::IsPoroP1Element(const DRT::Element* actele)
 {
   // all poro-p1 elements need to be listed here
-  return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1Type::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1Type::Instance() or
+  return actele->ElementType() == DRT::ELEMENTS::SoHex8PoroP1Type::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SoTet4PoroP1Type::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1Type::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1Type::Instance() or
          actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1Type::Instance();
@@ -458,7 +458,7 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
   }
 
   // if Aele is a so3_base element
-  auto* so_base = dynamic_cast<DRT::ELEMENTS::So_base*>(ele1);
+  auto* so_base = dynamic_cast<DRT::ELEMENTS::SoBase*>(ele1);
 
   // if Bele is a fluid element
   auto* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele2);

@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::So3_Poro_Scatra(int id, int owner)
-    : So3_Poro<so3_ele, distype>(id, owner), impltype_(INPAR::SCATRA::impltype_undefined)
+DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::So3PoroScatra(int id, int owner)
+    : So3Poro<so3_ele, distype>(id, owner), impltype_(INPAR::SCATRA::impltype_undefined)
 {
   return;
 }
@@ -28,9 +28,9 @@ DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::So3_Poro_Scatra(int id, int ow
  |  copy-ctor (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::So3_Poro_Scatra(
-    const DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>& old)
-    : So3_Poro<so3_ele, distype>(old), impltype_(old.impltype_)
+DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::So3PoroScatra(
+    const DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>& old)
+    : So3Poro<so3_ele, distype>(old), impltype_(old.impltype_)
 {
   return;
 }
@@ -40,9 +40,9 @@ DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::So3_Poro_Scatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::Element* DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Clone() const
+DRT::Element* DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>(*this);
   return newelement;
 }
 
@@ -50,7 +50,7 @@ DRT::Element* DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Clone() const
  |  Pack data (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -71,7 +71,7 @@ void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Pack(CORE::COMM::PackBuff
  |  Unpack data (public)                                  schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -95,7 +95,7 @@ void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Unpack(const std::vector<
  |  print this element (public)                           schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Print(std::ostream& os) const
+void DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_Poro_Scatra ";
   os << CORE::FE::CellTypeToString(distype).c_str() << " ";
@@ -107,7 +107,7 @@ void DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::Print(std::ostream& os) c
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::ReadElement(
+bool DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element
@@ -151,34 +151,34 @@ bool DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::ReadElement(
  | get the unique ParObject Id (public)                    schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::UniqueParObjectId() const
+int DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::UniqueParObjectId() const
 {
   int parobjectid(-1);
   switch (distype)
   {
     case CORE::FE::CellType::tet4:
     {
-      parobjectid = So_tet4PoroScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoTet4PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
     case CORE::FE::CellType::tet10:
     {
-      parobjectid = So_tet10PoroScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoTet10PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
     case CORE::FE::CellType::hex8:
     {
-      parobjectid = So_hex8PoroScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoHex8PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
     case CORE::FE::CellType::hex27:
     {
-      parobjectid = So_hex27PoroScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoHex27PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
     case CORE::FE::CellType::nurbs27:
     {
-      parobjectid = So_nurbs27PoroScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoNurbs27PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
     default:
@@ -194,35 +194,35 @@ int DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::UniqueParObjectId() const
  | get the element type (public)                           schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-DRT::ElementType& DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::ElementType() const
+DRT::ElementType& DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::ElementType() const
 {
   switch (distype)
   {
     case CORE::FE::CellType::tet4:
-      return So_tet4PoroScatraType::Instance();
+      return SoTet4PoroScatraType::Instance();
     case CORE::FE::CellType::tet10:
-      return So_tet10PoroScatraType::Instance();
+      return SoTet10PoroScatraType::Instance();
     case CORE::FE::CellType::hex8:
-      return So_hex8PoroScatraType::Instance();
+      return SoHex8PoroScatraType::Instance();
     case CORE::FE::CellType::hex27:
-      return So_hex27PoroScatraType::Instance();
+      return SoHex27PoroScatraType::Instance();
     case CORE::FE::CellType::nurbs27:
-      return So_nurbs27PoroScatraType::Instance();
+      return SoNurbs27PoroScatraType::Instance();
     default:
       dserror("unknown element type!");
       break;
   }
-  return So_hex8PoroScatraType::Instance();
+  return SoHex8PoroScatraType::Instance();
 };
 
 /*----------------------------------------------------------------------*
  |                                                         schmidt 09/17|
  *----------------------------------------------------------------------*/
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, CORE::FE::CellType::tet10>;
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27,
+template class DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>;
+template class DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>;
+template class DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>;
+template class DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>;
+template class DRT::ELEMENTS::So3PoroScatra<DRT::ELEMENTS::NURBS::SoNurbs27,
     CORE::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

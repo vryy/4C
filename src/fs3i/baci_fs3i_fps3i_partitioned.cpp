@@ -52,7 +52,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor                                           hemmler 07/14 |
  *----------------------------------------------------------------------*/
-FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm) : FS3I_Base(), comm_(comm)
+FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm) : FS3IBase(), comm_(comm)
 {
   // keep empty
   return;
@@ -64,7 +64,7 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm) : FS3I_Base(), comm_(comm)
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::Init()
 {
-  FS3I::FS3I_Base::Init();
+  FS3I::FS3IBase::Init();
 
   if (comm_.MyPID() == 0)
   {
@@ -113,7 +113,7 @@ void FS3I::PartFPS3I::Init()
 
   // ##################    2.- Creation of Poroelastic + Fluid problem. (Discretization called
   //  inside)     //##################
-  Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
+  Teuchos::RCP<FPSI::FpsiBase> fpsi_algo = Teuchos::null;
 
   fpsi_algo = FPSI_UTILS->SetupDiscretizations(comm_, fpsidynparams, poroelastdynparams);
 
@@ -122,8 +122,8 @@ void FS3I::PartFPS3I::Init()
   if (coupling == fpsi_monolithic_plain)
   {
     // Cast needed because functions such as PoroField() and FluidField() are just a
-    // member-functions of the derived class Monolithic_Plain, but not of the base class FPSI_Base
-    fpsi_ = Teuchos::rcp_dynamic_cast<FPSI::Monolithic_Plain>(fpsi_algo);
+    // member-functions of the derived class MonolithicPlain, but not of the base class FPSI_Base
+    fpsi_ = Teuchos::rcp_dynamic_cast<FPSI::MonolithicPlain>(fpsi_algo);
   }
   else
   {
@@ -324,7 +324,7 @@ void FS3I::PartFPS3I::Init()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::Setup()
 {
-  FS3I::FS3I_Base::Setup();
+  FS3I::FS3IBase::Setup();
 
   // only now we must call Setup() on the scatra base algo.
   // all objects relying on the parallel distribution are

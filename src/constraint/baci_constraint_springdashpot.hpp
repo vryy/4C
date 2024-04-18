@@ -15,16 +15,11 @@
 
 #include "baci_utils_pairedvector.hpp"
 
+#include <Epetra_MultiVector.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
-// forward declarations
-class Epetra_Vector;
-class Epetra_MultiVector;
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -207,7 +202,7 @@ namespace CONSTRAINTS
     std::map<int, std::vector<double>> normals_;
 
     //! Linearization of nodal normal
-    std::map<int, std::vector<CORE::GEN::pairedvector<int, double>>> dnormals_;
+    std::map<int, std::vector<CORE::GEN::Pairedvector<int, double>>> dnormals_;
 
     //! Nodal force applied by spring dashpot BC for output
     std::map<int, std::vector<double>> springstress_;

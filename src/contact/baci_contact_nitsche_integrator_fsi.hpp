@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace XFEM
 {
-  class XFluid_Contact_Comm;
+  class XFluidContactComm;
 }
 
 namespace CONTACT
@@ -90,12 +90,12 @@ namespace CONTACT
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-        double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-        CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override;
+        CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+        double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
+        CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi) override;
 
     /*!
      \brief Perform integration at GP
@@ -106,12 +106,12 @@ namespace CONTACT
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-        double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
-        CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override
+        CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+        double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
+        CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi) override
     {
       dserror("2d problems not available for IntegratorNitscheFsi, as CutFEM is only 3D!");
     }
@@ -123,12 +123,12 @@ namespace CONTACT
     template <int dim>
     void GPTSForces(MORTAR::Element& sele, MORTAR::Element& mele,
         const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
+        const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxi,
         const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, const double jac,
-        const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
-        const double gap, const CORE::GEN::pairedvector<int, double>& dgapgp, const double* gpn,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
+        const std::vector<CORE::GEN::Pairedvector<int, double>>& dmxi, const double jac,
+        const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
+        const double gap, const CORE::GEN::Pairedvector<int, double>& dgapgp, const double* gpn,
+        std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
 
     /// Update Element contact state -2...not_specified, -1...no_contact, 0...mixed, 1...contact
     void UpdateEleContactState(MORTAR::Element& sele, int state);
@@ -137,7 +137,7 @@ namespace CONTACT
     int ele_contact_state_;
 
     /// Xfluid Contact Communicator
-    Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm_;
+    Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm_;
   };
 
   namespace UTILS

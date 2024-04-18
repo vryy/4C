@@ -290,7 +290,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
           line.ExtractString("TYPE", vartype);
 
           // read periodicity data
-          periodicstruct periodicdata{};
+          Periodicstruct periodicdata{};
 
           periodicdata.periodic = line.HasString("PERIODIC");
           if (periodicdata.periodic)

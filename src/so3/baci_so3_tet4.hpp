@@ -38,12 +38,12 @@ namespace DRT
     // forward declarations
     class PreStress;
 
-    class So_tet4Type : public DRT::ElementType
+    class SoTet4Type : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_tet4Type"; }
 
-      static So_tet4Type& Instance();
+      static SoTet4Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -65,7 +65,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet4Type instance_;
+      static SoTet4Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT4"; }
     };
@@ -75,11 +75,11 @@ namespace DRT
 
     */
 
-    class So_tet4 : public So_base
+    class SoTet4 : public SoBase
     {
      public:
       //! @name Friends
-      friend class So_tet4Type;
+      friend class SoTet4Type;
 
 
       //@}
@@ -91,7 +91,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owning processor
       */
-      So_tet4(int id, int owner);
+      SoTet4(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -99,10 +99,10 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_tet4(const So_tet4& old);
+      SoTet4(const SoTet4& old);
 
       // don't want = operator
-      So_tet4& operator=(const So_tet4& old) = delete;
+      SoTet4& operator=(const SoTet4& old) = delete;
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -153,7 +153,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return So_tet4Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return SoTet4Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -205,7 +205,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return So_tet4Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoTet4Type::Instance(); }
 
       //@}
 

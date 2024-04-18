@@ -21,7 +21,7 @@ DRT::ELEMENTS::Wall1ScatraType& DRT::ELEMENTS::Wall1ScatraType::Instance() { ret
 
 CORE::COMM::ParObject* DRT::ELEMENTS::Wall1ScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1_Scatra* object = new DRT::ELEMENTS::Wall1_Scatra(-1, -1);
+  DRT::ELEMENTS::Wall1Scatra* object = new DRT::ELEMENTS::Wall1Scatra(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -34,7 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1ScatraType::Create(
   {
     if (eledistype != "NURBS4" and eledistype != "NURBS9")
     {
-      return Teuchos::rcp(new DRT::ELEMENTS::Wall1_Scatra(id, owner));
+      return Teuchos::rcp(new DRT::ELEMENTS::Wall1Scatra(id, owner));
     }
   }
   return Teuchos::null;
@@ -42,7 +42,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1ScatraType::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1ScatraType::Create(const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::Wall1_Scatra(id, owner));
+  return Teuchos::rcp(new DRT::ELEMENTS::Wall1Scatra(id, owner));
 }
 
 void DRT::ELEMENTS::Wall1ScatraType::SetupElementDefinition(
@@ -64,7 +64,7 @@ void DRT::ELEMENTS::Wall1ScatraType::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 01/14/|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1_Scatra::Wall1_Scatra(int id, int owner)
+DRT::ELEMENTS::Wall1Scatra::Wall1Scatra(int id, int owner)
     : Wall1(id, owner), impltype_(INPAR::SCATRA::impltype_undefined)
 {
   return;
@@ -73,7 +73,7 @@ DRT::ELEMENTS::Wall1_Scatra::Wall1_Scatra(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       vuong 01/14|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1_Scatra::Wall1_Scatra(const DRT::ELEMENTS::Wall1_Scatra& old)
+DRT::ELEMENTS::Wall1Scatra::Wall1Scatra(const DRT::ELEMENTS::Wall1Scatra& old)
     : Wall1(old), impltype_(old.impltype_)
 {
   return;
@@ -83,9 +83,9 @@ DRT::ELEMENTS::Wall1_Scatra::Wall1_Scatra(const DRT::ELEMENTS::Wall1_Scatra& old
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Wall1_Scatra::Clone() const
+DRT::Element* DRT::ELEMENTS::Wall1Scatra::Clone() const
 {
-  DRT::ELEMENTS::Wall1_Scatra* newelement = new DRT::ELEMENTS::Wall1_Scatra(*this);
+  DRT::ELEMENTS::Wall1Scatra* newelement = new DRT::ELEMENTS::Wall1Scatra(*this);
   return newelement;
 }
 
@@ -93,7 +93,7 @@ DRT::Element* DRT::ELEMENTS::Wall1_Scatra::Clone() const
  |  Pack data                                                  (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1_Scatra::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::Wall1Scatra::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -115,7 +115,7 @@ void DRT::ELEMENTS::Wall1_Scatra::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1_Scatra::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::Wall1Scatra::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -133,7 +133,7 @@ void DRT::ELEMENTS::Wall1_Scatra::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              vuong 01/14|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1_Scatra::Print(std::ostream& os) const
+void DRT::ELEMENTS::Wall1Scatra::Print(std::ostream& os) const
 {
   os << "Wall1_Scatra ";
   Wall1::Print(os);
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::Wall1_Scatra::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Wall1_Scatra::ReadElement(
+bool DRT::ELEMENTS::Wall1Scatra::ReadElement(
     const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
 {
   // read base element

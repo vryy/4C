@@ -33,24 +33,24 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Maxwell_0d_acinus_NeoHookean::Maxwell_0d_acinus_NeoHookean(
+MAT::PAR::Maxwell0dAcinusNeoHookean::Maxwell0dAcinusNeoHookean(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Maxwell_0d_acinus(matdata)
+    : Maxwell0dAcinus(matdata)
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus_NeoHookean::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell0dAcinusNeoHookean::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::Maxwell_0d_acinus_NeoHookean(this));
+  return Teuchos::rcp(new MAT::Maxwell0dAcinusNeoHookean(this));
 }
 
 
-MAT::Maxwell_0d_acinusNeoHookeanType MAT::Maxwell_0d_acinusNeoHookeanType::instance_;
+MAT::Maxwell0dAcinusNeoHookeanType MAT::Maxwell0dAcinusNeoHookeanType::instance_;
 
 
-CORE::COMM::ParObject* MAT::Maxwell_0d_acinusNeoHookeanType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Maxwell0dAcinusNeoHookeanType::Create(const std::vector<char>& data)
 {
-  MAT::Maxwell_0d_acinus_NeoHookean* mxwll_0d_acin = new MAT::Maxwell_0d_acinus_NeoHookean();
+  MAT::Maxwell0dAcinusNeoHookean* mxwll_0d_acin = new MAT::Maxwell0dAcinusNeoHookean();
   mxwll_0d_acin->Unpack(data);
   return mxwll_0d_acin;
 }
@@ -58,20 +58,20 @@ CORE::COMM::ParObject* MAT::Maxwell_0d_acinusNeoHookeanType::Create(const std::v
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell_0d_acinus_NeoHookean::Maxwell_0d_acinus_NeoHookean() : Maxwell_0d_acinus() {}
+MAT::Maxwell0dAcinusNeoHookean::Maxwell0dAcinusNeoHookean() : Maxwell0dAcinus() {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell_0d_acinus_NeoHookean::Maxwell_0d_acinus_NeoHookean(MAT::PAR::Maxwell_0d_acinus* params)
-    : Maxwell_0d_acinus(params)
+MAT::Maxwell0dAcinusNeoHookean::Maxwell0dAcinusNeoHookean(MAT::PAR::Maxwell0dAcinus* params)
+    : Maxwell0dAcinus(params)
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_NeoHookean::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::Maxwell0dAcinusNeoHookean::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -90,7 +90,7 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_NeoHookean::Unpack(const std::vector<char>& data)
+void MAT::Maxwell0dAcinusNeoHookean::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -107,7 +107,7 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Maxwell_0d_acinus_NeoHookean*>(mat);
+        params_ = static_cast<MAT::PAR::Maxwell0dAcinusNeoHookean*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -121,7 +121,7 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Unpack(const std::vector<char>& data)
  | Setup routine for NeoHookean material                                |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_NeoHookean::Setup(INPUT::LineDefinition* linedef)
+void MAT::Maxwell0dAcinusNeoHookean::Setup(INPUT::LineDefinition* linedef)
 {
   // do nothing, all parameters are read by base class already
 }
@@ -131,7 +131,7 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Setup(INPUT::LineDefinition* linedef)
  | Evaluate NeoHookean material and build system matrix and rhs         |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_NeoHookean::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
+void MAT::Maxwell0dAcinusNeoHookean::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
     CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
     CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
     const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,

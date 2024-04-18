@@ -18,14 +18,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::MembraneScatra_tri3Type DRT::ELEMENTS::MembraneScatra_tri3Type::instance_;
+DRT::ELEMENTS::MembraneScatraTri3Type DRT::ELEMENTS::MembraneScatraTri3Type::instance_;
 
-DRT::ELEMENTS::MembraneScatra_tri3Type& DRT::ELEMENTS::MembraneScatra_tri3Type::Instance()
+DRT::ELEMENTS::MembraneScatraTri3Type& DRT::ELEMENTS::MembraneScatraTri3Type::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_tri3Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatraTri3Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>* object =
       new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>(-1, -1);
@@ -33,7 +33,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_tri3Type::Create(const std:
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri3Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraTri3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA3" && eledistype == "TRI3")
@@ -45,7 +45,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri3Type::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri3Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraTri3Type::Create(
     const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -53,11 +53,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri3Type::Create(
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneScatra_tri3Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneScatraTri3Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
-  Membrane_tri3Type::SetupElementDefinition(definitions_membrane);
+  MembraneTri3Type::SetupElementDefinition(definitions_membrane);
 
   std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE3"];
 
@@ -70,14 +70,14 @@ void DRT::ELEMENTS::MembraneScatra_tri3Type::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  |  TRI 6 Element                                          sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::MembraneScatra_tri6Type DRT::ELEMENTS::MembraneScatra_tri6Type::instance_;
+DRT::ELEMENTS::MembraneScatraTri6Type DRT::ELEMENTS::MembraneScatraTri6Type::instance_;
 
-DRT::ELEMENTS::MembraneScatra_tri6Type& DRT::ELEMENTS::MembraneScatra_tri6Type::Instance()
+DRT::ELEMENTS::MembraneScatraTri6Type& DRT::ELEMENTS::MembraneScatraTri6Type::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_tri6Type::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatraTri6Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>* object =
       new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>(-1, -1);
@@ -85,7 +85,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_tri6Type::Create(const std:
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri6Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraTri6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA6" && eledistype == "TRI6")
@@ -97,7 +97,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri6Type::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri6Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraTri6Type::Create(
     const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -105,11 +105,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri6Type::Create(
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneScatra_tri6Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneScatraTri6Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
-  Membrane_tri6Type::SetupElementDefinition(definitions_membrane);
+  MembraneTri6Type::SetupElementDefinition(definitions_membrane);
 
   std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE6"];
 
@@ -122,15 +122,14 @@ void DRT::ELEMENTS::MembraneScatra_tri6Type::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                         sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::MembraneScatra_quad4Type DRT::ELEMENTS::MembraneScatra_quad4Type::instance_;
+DRT::ELEMENTS::MembraneScatraQuad4Type DRT::ELEMENTS::MembraneScatraQuad4Type::instance_;
 
-DRT::ELEMENTS::MembraneScatra_quad4Type& DRT::ELEMENTS::MembraneScatra_quad4Type::Instance()
+DRT::ELEMENTS::MembraneScatraQuad4Type& DRT::ELEMENTS::MembraneScatraQuad4Type::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
-    const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatraQuad4Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>* object =
       new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>(-1, -1);
@@ -138,7 +137,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraQuad4Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA4" && eledistype == "QUAD4")
@@ -150,7 +149,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraQuad4Type::Create(
     const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -158,11 +157,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneScatra_quad4Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneScatraQuad4Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
-  Membrane_quad4Type::SetupElementDefinition(definitions_membrane);
+  MembraneQuad4Type::SetupElementDefinition(definitions_membrane);
 
   std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE4"];
 
@@ -175,15 +174,14 @@ void DRT::ELEMENTS::MembraneScatra_quad4Type::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  |  QUAD 9 Element                                         sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::MembraneScatra_quad9Type DRT::ELEMENTS::MembraneScatra_quad9Type::instance_;
+DRT::ELEMENTS::MembraneScatraQuad9Type DRT::ELEMENTS::MembraneScatraQuad9Type::instance_;
 
-DRT::ELEMENTS::MembraneScatra_quad9Type& DRT::ELEMENTS::MembraneScatra_quad9Type::Instance()
+DRT::ELEMENTS::MembraneScatraQuad9Type& DRT::ELEMENTS::MembraneScatraQuad9Type::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
-    const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatraQuad9Type::Create(const std::vector<char>& data)
 {
   DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>* object =
       new DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>(-1, -1);
@@ -191,7 +189,7 @@ CORE::COMM::ParObject* DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraQuad9Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA9" && eledistype == "QUAD9")
@@ -203,7 +201,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatraQuad9Type::Create(
     const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele =
@@ -211,11 +209,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
   return ele;
 }
 
-void DRT::ELEMENTS::MembraneScatra_quad9Type::SetupElementDefinition(
+void DRT::ELEMENTS::MembraneScatraQuad9Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_membrane;
-  Membrane_quad9Type::SetupElementDefinition(definitions_membrane);
+  MembraneQuad9Type::SetupElementDefinition(definitions_membrane);
 
   std::map<std::string, INPUT::LineDefinition>& defs_membrane = definitions_membrane["MEMBRANE9"];
 

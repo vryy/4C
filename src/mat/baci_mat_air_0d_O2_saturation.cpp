@@ -23,25 +23,25 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Air_0d_O2_saturation::Air_0d_O2_saturation(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::Air0dO2Saturation::Air0dO2Saturation(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       atmospheric_p_(*matdata->Get<double>("AtmosphericPressure")),
       nO2_per_VO2_(*matdata->Get<double>("NumberOfO2PerVO2"))
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Air_0d_O2_saturation::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::Air0dO2Saturation::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::Air_0d_O2_saturation(this));
+  return Teuchos::rcp(new MAT::Air0dO2Saturation(this));
 }
 
 
-MAT::Air_0d_O2_saturationType MAT::Air_0d_O2_saturationType::instance_;
+MAT::Air0dO2SaturationType MAT::Air0dO2SaturationType::instance_;
 
 
-CORE::COMM::ParObject* MAT::Air_0d_O2_saturationType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* MAT::Air0dO2SaturationType::Create(const std::vector<char>& data)
 {
-  MAT::Air_0d_O2_saturation* air_0d_O2_sat = new MAT::Air_0d_O2_saturation();
+  MAT::Air0dO2Saturation* air_0d_O2_sat = new MAT::Air0dO2Saturation();
   air_0d_O2_sat->Unpack(data);
   return air_0d_O2_sat;
 }
@@ -49,20 +49,17 @@ CORE::COMM::ParObject* MAT::Air_0d_O2_saturationType::Create(const std::vector<c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Air_0d_O2_saturation::Air_0d_O2_saturation() : params_(nullptr) {}
+MAT::Air0dO2Saturation::Air0dO2Saturation() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Air_0d_O2_saturation::Air_0d_O2_saturation(MAT::PAR::Air_0d_O2_saturation* params)
-    : params_(params)
-{
-}
+MAT::Air0dO2Saturation::Air0dO2Saturation(MAT::PAR::Air0dO2Saturation* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Air_0d_O2_saturation::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::Air0dO2Saturation::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -80,7 +77,7 @@ void MAT::Air_0d_O2_saturation::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Air_0d_O2_saturation::Unpack(const std::vector<char>& data)
+void MAT::Air0dO2Saturation::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -97,7 +94,7 @@ void MAT::Air_0d_O2_saturation::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Air_0d_O2_saturation*>(mat);
+        params_ = static_cast<MAT::PAR::Air0dO2Saturation*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper(
+MAT::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       nummat_elast_(*matdata->Get<int>("NUMMATEL")),
@@ -47,18 +47,18 @@ MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_Elas
   }
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::MultiplicativeSplitDefgradElastHyper::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::MultiplicativeSplitDefgrad_ElastHyper(this));
+  return Teuchos::rcp(new MAT::MultiplicativeSplitDefgradElastHyper(this));
 }
 
-MAT::MultiplicativeSplitDefgrad_ElastHyperType
-    MAT::MultiplicativeSplitDefgrad_ElastHyperType::instance_;
+MAT::MultiplicativeSplitDefgradElastHyperType
+    MAT::MultiplicativeSplitDefgradElastHyperType::instance_;
 
-CORE::COMM::ParObject* MAT::MultiplicativeSplitDefgrad_ElastHyperType::Create(
+CORE::COMM::ParObject* MAT::MultiplicativeSplitDefgradElastHyperType::Create(
     const std::vector<char>& data)
 {
-  auto* splitdefgrad_elhy = new MAT::MultiplicativeSplitDefgrad_ElastHyper();
+  auto* splitdefgrad_elhy = new MAT::MultiplicativeSplitDefgradElastHyper();
   splitdefgrad_elhy->Unpack(data);
 
   return splitdefgrad_elhy;
@@ -66,7 +66,7 @@ CORE::COMM::ParObject* MAT::MultiplicativeSplitDefgrad_ElastHyperType::Create(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper()
+MAT::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper()
     : anisotropy_(Teuchos::rcp(new MAT::Anisotropy())),
       inelastic_(Teuchos::rcp(new MAT::InelasticFactorsHandler())),
       params_(nullptr),
@@ -76,8 +76,8 @@ MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHype
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper(
-    MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params)
+MAT::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
+    MAT::PAR::MultiplicativeSplitDefgradElastHyper* params)
     : anisotropy_(Teuchos::rcp(new MAT::Anisotropy())),
       inelastic_(Teuchos::rcp(new MAT::InelasticFactorsHandler())),
       params_(params),
@@ -97,7 +97,7 @@ MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHype
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(CORE::COMM::PackBuffer& data) const
+void MAT::MultiplicativeSplitDefgradElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -121,7 +121,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(CORE::COMM::PackBuffer& da
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>& data)
+void MAT::MultiplicativeSplitDefgradElastHyper::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -141,7 +141,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
       auto* mat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = dynamic_cast<MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper*>(mat);
+        params_ = dynamic_cast<MAT::PAR::MultiplicativeSplitDefgradElastHyper*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -173,7 +173,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
+void MAT::MultiplicativeSplitDefgradElastHyper::Evaluate(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>* stress,
     CORE::LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
@@ -259,7 +259,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivatives(
+void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateCauchyNDirAndDerivatives(
     const CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<3, 1>& n,
     const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
     CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
@@ -428,7 +428,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivative
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateLinearizationOD(
+void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateLinearizationOD(
     const CORE::LINALG::Matrix<3, 3>& defgrd, const double concentration,
     CORE::LINALG::Matrix<9, 1>* d_F_dx)
 {
@@ -470,7 +470,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateLinearizationOD(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
+void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateStressCmatIso(
     const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 1>& iCinV,
     const CORE::LINALG::Matrix<6, 1>& iCinCiCinV, const CORE::LINALG::Matrix<3, 1>& gamma,
     const CORE::LINALG::Matrix<8, 1>& delta, const double detFin,
@@ -503,7 +503,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
+void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateKinQuantElast(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinM,
     CORE::LINALG::Matrix<6, 1>& iCinV, CORE::LINALG::Matrix<6, 1>& iCinCiCinV,
     CORE::LINALG::Matrix<6, 1>& iCV, CORE::LINALG::Matrix<3, 3>& iCinCM,
@@ -566,7 +566,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
+void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateInvariantDerivatives(
     const CORE::LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID,
     CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII) const
 {
@@ -584,7 +584,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
+void MAT::MultiplicativeSplitDefgradElastHyper::EvaluatedSdiFin(
     const CORE::LINALG::Matrix<3, 1>& gamma, const CORE::LINALG::Matrix<8, 1>& delta,
     const CORE::LINALG::Matrix<3, 3>& iFinM, const CORE::LINALG::Matrix<3, 3>& iCinCM,
     const CORE::LINALG::Matrix<6, 1>& iCinV, const CORE::LINALG::Matrix<9, 1>& CiFin9x1,
@@ -639,7 +639,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
+void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateAdditionalCmat(
     const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<6, 1>& iCV,
     const CORE::LINALG::Matrix<6, 9>& dSdiFin, CORE::LINALG::Matrix<6, 6>& cmatadd)
 {
@@ -716,7 +716,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::Setup(
+void MAT::MultiplicativeSplitDefgradElastHyper::Setup(
     const int numgp, INPUT::LineDefinition* linedef)
 {
   // Read anisotropy
@@ -729,7 +729,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Setup(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::Update()
+void MAT::MultiplicativeSplitDefgradElastHyper::Update()
 {
   // loop map of associated potential summands
   for (const auto& summand : potsumel_) summand->Update();
@@ -737,7 +737,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Update()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(PAR::InelasticSource source,
+void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::InelasticSource source,
     const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<6, 9>& dSdiFin,
     CORE::LINALG::Matrix<6, 1>& dstressdx)
 {
@@ -820,7 +820,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(PAR::Inelast
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::PreEvaluate(
+void MAT::MultiplicativeSplitDefgradElastHyper::PreEvaluate(
     Teuchos::ParameterList& params, const int gp) const
 {
   // loop over all inelastic contributions
@@ -830,7 +830,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::PreEvaluate(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::SetConcentrationGP(const double concentration)
+void MAT::MultiplicativeSplitDefgradElastHyper::SetConcentrationGP(const double concentration)
 {
   for (int p = 0; p < inelastic_->NumInelasticDefGrad(); ++p)
     inelastic_->FacDefGradIn()[p].second->SetConcentrationGP(concentration);
@@ -838,7 +838,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::SetConcentrationGP(const double
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params)
+void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgradElastHyper* params)
 {
   facdefgradin_.clear();
   iFinj_.clear();

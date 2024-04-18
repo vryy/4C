@@ -62,7 +62,7 @@ namespace DRT
     /*!
     \brief HDG weakly compressible fluid element
     */
-    class FluidHDGWeakComp : public Fluid, public DG_Element
+    class FluidHDGWeakComp : public Fluid, public DgElement
     {
      public:
       //! @name constructors and destructors and related methods

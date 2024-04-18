@@ -560,7 +560,7 @@ void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS(
   }
 }
 
-void POROELAST::NoPenetrationConditionHandle::Clear(POROELAST::coupltype coupltype)
+void POROELAST::NoPenetrationConditionHandle::Clear(POROELAST::Coupltype coupltype)
 {
   if (has_cond_)
   {
@@ -607,7 +607,7 @@ void POROELAST::NoPenetrationConditionHandle::Setup(
 }
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::ConstraintMatrix(
-    POROELAST::coupltype coupltype)
+    POROELAST::Coupltype coupltype)
 {
   if (has_cond_)
   {
@@ -620,7 +620,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle
 }
 
 Teuchos::RCP<CORE::LINALG::SparseMatrix>
-POROELAST::NoPenetrationConditionHandle::StructVelConstraintMatrix(POROELAST::coupltype coupltype)
+POROELAST::NoPenetrationConditionHandle::StructVelConstraintMatrix(POROELAST::Coupltype coupltype)
 {
   if (has_cond_)
   {

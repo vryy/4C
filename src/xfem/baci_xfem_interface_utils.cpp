@@ -61,7 +61,7 @@ void XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
     const double &penscaling,  ///< material dependent penalty scaling (e.g. visceff) divided by h
     const double &NIT_stabscaling,  ///< basic nit penalty stab scaling
     const bool &is_pseudo_2D,       ///< is pseudo 2d
-    const INPAR::XFEM::ViscStab_TraceEstimate
+    const INPAR::XFEM::ViscStabTraceEstimate
         &visc_stab_trace_estimate,  ///< how to estimate the scaling from the trace inequality
     double &NIT_visc_stab_fac       ///< viscous part of Nitsche's penalty term
 )
@@ -665,7 +665,7 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
         &bcells,  ///< bcells for boundary cell integration
     const std::map<int, std::vector<CORE::FE::GaussIntegration>>
         &bintpoints,  ///< integration points for boundary cell integration
-    const INPAR::XFEM::ViscStab_hk visc_stab_hk,  ///< h definition
+    const INPAR::XFEM::ViscStabHk visc_stab_hk,  ///< h definition
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
         emb,            ///< pointer to the embedded coupling implementation
     DRT::Element *face  ///< side element in 3D
@@ -849,7 +849,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
     const double NITStabScaling,      ///< scaling of nit stab fac
     INPAR::XFEM::ConvStabScaling
         ConvStabScaling,  ///< which convective stab. scaling of inflow stab
-    INPAR::XFEM::XFF_ConvStabScaling
+    INPAR::XFEM::XffConvStabScaling
         XFF_ConvStabScaling,    ///< which convective stab. scaling on XFF interface
     const bool IsConservative,  ///< conservative formulation of navier stokes
     bool error_calc             ///< when called in error calculation, don't add the inflow terms
@@ -1109,49 +1109,49 @@ template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex8>(DRT:
     CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStab_hk,
+    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::hex8>>,
     DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex20>(DRT::Element *,
     CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStab_hk,
+    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::hex20>>,
     DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex27>(DRT::Element *,
     CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStab_hk,
+    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::hex27>>,
     DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::tet4>(DRT::Element *,
     CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStab_hk,
+    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::tet4>>,
     DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::tet10>(DRT::Element *,
     CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStab_hk,
+    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::tet10>>,
     DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::wedge6>(DRT::Element *,
     CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStab_hk,
+    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::wedge6>>,
     DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::wedge15>(DRT::Element *,
     CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStab_hk,
+    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::wedge15>>,
     DRT::Element *);
 

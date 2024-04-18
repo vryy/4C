@@ -29,12 +29,12 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class So_sh8PlastType : public So_hex8PlastType
+    class SoSh8PlastType : public SoHex8PlastType
     {
      public:
       std::string Name() const override { return "So_sh8PlastType"; }
 
-      static So_sh8PlastType& Instance();
+      static SoSh8PlastType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -50,26 +50,26 @@ namespace DRT
           override;
 
      private:
-      static So_sh8PlastType instance_;
+      static SoSh8PlastType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDSH8PLAST"; }
     };  // class So_sh8PlastType
 
-    class So_sh8Plast : public virtual So3_Plast<CORE::FE::CellType::hex8>
+    class SoSh8Plast : public virtual So3Plast<CORE::FE::CellType::hex8>
     {
      public:
       //! @name Friends
-      friend class So_sh8PlastType;
+      friend class SoSh8PlastType;
 
 
       //! Standard Constructor
-      So_sh8Plast(int id,  //!< (i) this element's global id
-          int owner        //!< elements owner
+      SoSh8Plast(int id,  //!< (i) this element's global id
+          int owner       //!< elements owner
       );
 
       //! Copy Constructor
       //! Makes a deep copy of a Element
-      So_sh8Plast(const So_sh8Plast& old);
+      SoSh8Plast(const SoSh8Plast& old);
 
       //! Deep copy this instance of Solid3 and return pointer to the copy
       //!
@@ -84,7 +84,7 @@ namespace DRT
       //! this file.
       int UniqueParObjectId() const override
       {
-        return So_sh8PlastType::Instance().UniqueParObjectId();
+        return SoSh8PlastType::Instance().UniqueParObjectId();
       }
 
       //! Pack this class so it can be communicated
@@ -99,7 +99,7 @@ namespace DRT
       void Print(std::ostream& os) const override;
 
       //! return elementtype
-      So_sh8PlastType& ElementType() const override { return So_sh8PlastType::Instance(); }
+      SoSh8PlastType& ElementType() const override { return SoSh8PlastType::Instance(); }
 
       //! read input for this element
       bool ReadElement(const std::string& eletype, const std::string& distype,
@@ -130,7 +130,7 @@ namespace DRT
 
      private:
       // don't want = operator
-      So_sh8Plast& operator=(const So_sh8Plast& old) = delete;
+      SoSh8Plast& operator=(const SoSh8Plast& old) = delete;
 
       std::string GetElementTypeString() const { return "SOLIDSH8PLAST"; }
 
@@ -204,11 +204,11 @@ namespace DRT
       );
 
       //! Re-initialize EAS data, needed for sosh8 morphing
-      void ReInitEas(const DRT::ELEMENTS::So3Plast_EASType EASType);
+      void ReInitEas(const DRT::ELEMENTS::So3PlastEasType EASType);
 
       void InvalidGpData() override
       {
-        So3_Plast<CORE::FE::CellType::hex8>::InvalidGpData();
+        So3Plast<CORE::FE::CellType::hex8>::InvalidGpData();
         jac_refe_.first = false;
         jac_curr_.first = false;
         TinvT_.first = false;
@@ -216,7 +216,7 @@ namespace DRT
 
       void InvalidEleData()
       {
-        So3_Plast<CORE::FE::CellType::hex8>::InvalidEleData();
+        So3Plast<CORE::FE::CellType::hex8>::InvalidEleData();
         B_ans_loc_.first = false;
       }
 

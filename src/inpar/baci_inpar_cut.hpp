@@ -72,7 +72,7 @@ namespace INPAR
     };
 
     // Cut_Floattype
-    enum CUT_Floattype
+    enum CutFloattype
     {
       floattype_double,  ///< use double type for geometric intersection
       floattype_cln,     ///< use cln type (arbitrary precision) for geometric intersection
@@ -80,7 +80,7 @@ namespace INPAR
     };
 
     //! Specifiy which Referenceplanes are used in DirectDivergence
-    enum CUT_DirectDivergence_Refplane
+    enum CutDirectDivergenceRefplane
     {
       DirDiv_refplane_all,            ///< use all strategies for Referenceplane
       DirDiv_refplane_diagonal_side,  ///< use diagonal and side based Referenceplane

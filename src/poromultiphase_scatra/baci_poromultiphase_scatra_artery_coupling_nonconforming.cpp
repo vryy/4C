@@ -396,8 +396,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetVarying
     DRT::Element* actele = arterydis_->lColElement(i);
 
     // get the artery-material
-    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
-        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(actele->Material());
+    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(actele->Material());
     if (arterymat == Teuchos::null) dserror("cast to artery material failed");
 
     if (arterymat->DiameterLaw() == MAT::PAR::ArteryDiameterLaw::diameterlaw_by_function)

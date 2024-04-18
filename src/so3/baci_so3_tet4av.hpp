@@ -38,12 +38,12 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class So_tet4avType : public DRT::ElementType
+    class SoTet4avType : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_tet4avType"; }
 
-      static So_tet4avType& Instance();
+      static SoTet4avType& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -65,7 +65,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet4avType instance_;
+      static SoTet4avType instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT4AV"; }
     };
@@ -75,11 +75,11 @@ namespace DRT
 
     */
 
-    class So_tet4av : public So_base
+    class SoTet4av : public SoBase
     {
      public:
       //! @name Friends
-      friend class So_tet4avType;
+      friend class SoTet4avType;
 
 
       //@}
@@ -91,7 +91,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owning processor
       */
-      So_tet4av(int id, int owner);
+      SoTet4av(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -99,7 +99,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_tet4av(const So_tet4av& old);
+      SoTet4av(const SoTet4av& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -150,7 +150,7 @@ namespace DRT
       */
       int UniqueParObjectId() const override
       {
-        return So_tet4avType::Instance().UniqueParObjectId();
+        return SoTet4avType::Instance().UniqueParObjectId();
       }
 
       /*!
@@ -203,7 +203,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return So_tet4avType::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoTet4avType::Instance(); }
 
       //@}
 
@@ -361,7 +361,7 @@ namespace DRT
       // internal calculation methods
 
       // don't want = operator
-      So_tet4av& operator=(const So_tet4av& old);
+      SoTet4av& operator=(const SoTet4av& old);
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       virtual void InitJacobianMapping();

@@ -54,7 +54,7 @@ namespace CORE::FE
    * @tparam celltypes Celltypes in the sequence
    */
   template <CellType... celltypes>
-  struct celltype_sequence
+  struct CelltypeSequence
   {
   };
 }  // namespace CORE::FE

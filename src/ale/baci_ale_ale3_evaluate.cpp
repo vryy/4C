@@ -23,52 +23,50 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
-    DRT::ELEMENTS::Ale3* ele)
+DRT::ELEMENTS::Ale3ImplInterface* DRT::ELEMENTS::Ale3ImplInterface::Impl(DRT::ELEMENTS::Ale3* ele)
 {
   switch (ele->Shape())
   {
     case CORE::FE::CellType::hex8:
     {
-      return Ale3_Impl<CORE::FE::CellType::hex8>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<CORE::FE::CellType::hex8>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case CORE::FE::CellType::hex20:
     {
-      return Ale3_Impl<CORE::FE::CellType::hex20>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<CORE::FE::CellType::hex20>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case CORE::FE::CellType::hex27:
     {
-      return Ale3_Impl<CORE::FE::CellType::hex27>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<CORE::FE::CellType::hex27>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case CORE::FE::CellType::tet4:
     {
-      return Ale3_Impl<CORE::FE::CellType::tet4>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<CORE::FE::CellType::tet4>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case CORE::FE::CellType::tet10:
     {
-      return Ale3_Impl<CORE::FE::CellType::tet10>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<CORE::FE::CellType::tet10>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case CORE::FE::CellType::wedge6:
     {
-      return Ale3_Impl<CORE::FE::CellType::wedge6>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<CORE::FE::CellType::wedge6>::Instance(CORE::UTILS::SingletonAction::create);
     }
       /*  case CORE::FE::CellType::wedge15:
         {
           return
-        Ale3_Impl<CORE::FE::CellType::wedge15>::Instance(CORE::UTILS::SingletonAction::create);
+        Ale3Impl<CORE::FE::CellType::wedge15>::Instance(CORE::UTILS::SingletonAction::create);
         }*/
     case CORE::FE::CellType::pyramid5:
     {
-      return Ale3_Impl<CORE::FE::CellType::pyramid5>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<CORE::FE::CellType::pyramid5>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case CORE::FE::CellType::nurbs8:
     {
-      return Ale3_Impl<CORE::FE::CellType::nurbs8>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<CORE::FE::CellType::nurbs8>::Instance(CORE::UTILS::SingletonAction::create);
     }
     case CORE::FE::CellType::nurbs27:
     {
-      return Ale3_Impl<CORE::FE::CellType::nurbs27>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<CORE::FE::CellType::nurbs27>::Instance(CORE::UTILS::SingletonAction::create);
     }
     default:
       dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
@@ -78,14 +76,14 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
 }
 
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Ale3_Impl<distype>* DRT::ELEMENTS::Ale3_Impl<distype>::Instance(
+DRT::ELEMENTS::Ale3Impl<distype>* DRT::ELEMENTS::Ale3Impl<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
   static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::Ale3_Impl<distype>>(
-            new DRT::ELEMENTS::Ale3_Impl<distype>());
+        return std::unique_ptr<DRT::ELEMENTS::Ale3Impl<distype>>(
+            new DRT::ELEMENTS::Ale3Impl<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -139,7 +137,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       my_dispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3_Impl_Interface::Impl(this)->static_ke_laplace(
+      Ale3ImplInterface::Impl(this)->static_ke_laplace(
           this, discretization, elemat1, elevec1, my_dispnp, mat, false);
 
       break;
@@ -151,7 +149,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       my_dispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3_Impl_Interface::Impl(this)->static_ke_laplace(
+      Ale3ImplInterface::Impl(this)->static_ke_laplace(
           this, discretization, elemat1, elevec1, my_dispnp, mat, true);
 
       break;
@@ -162,7 +160,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3_Impl_Interface::Impl(this)->static_ke_nonlinear(
+      Ale3ImplInterface::Impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, true);
 
       break;
@@ -173,7 +171,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3_Impl_Interface::Impl(this)->static_ke_nonlinear(
+      Ale3ImplInterface::Impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, false);
 
       break;
@@ -184,7 +182,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3_Impl_Interface::Impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, false);
+      Ale3ImplInterface::Impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, false);
 
       break;
     }
@@ -194,7 +192,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3_Impl_Interface::Impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, true);
+      Ale3ImplInterface::Impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, true);
 
       break;
     }
@@ -204,7 +202,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3_Impl_Interface::Impl(this)->ElementNodeNormal(this, elevec1, my_dispnp);
+      Ale3ImplInterface::Impl(this)->ElementNodeNormal(this, elevec1, my_dispnp);
 
       break;
     }
@@ -255,7 +253,7 @@ int DRT::ELEMENTS::Ale3::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
+inline void DRT::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
     Ale3* ele, CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& my_dispnp)
 {
   if (distype == CORE::FE::CellType::nurbs8 or distype == CORE::FE::CellType::nurbs27)
@@ -329,7 +327,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(int i, int j,
+inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_edge_geometry(int i, int j,
     const CORE::LINALG::Matrix<3, iel>& xyze, double& length, double& dx, double& dy, double& dz)
 {
   /*---------------------------------------------- x-, y- and z-difference ---*/
@@ -346,7 +344,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(int i, int j,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(int node_p, int node_q, int node_r,
+void DRT::ELEMENTS::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, int node_q, int node_r,
     int node_s, const CORE::LINALG::Matrix<3, 1>& sq, const double len_sq,
     const CORE::LINALG::Matrix<3, 1>& rp, const double len_rp, const CORE::LINALG::Matrix<3, 1>& qp,
     const CORE::LINALG::Matrix<3, 1>& local_x, CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat)
@@ -655,7 +653,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(int node_p, int 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2,
+void DRT::ELEMENTS::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2,
     int tet_3, CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
     const CORE::LINALG::Matrix<3, iel>& xyze)
 {
@@ -725,7 +723,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_tet4(
+inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_tet4(
     CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(0, 1, 2, 3, sys_mat, xyze);
@@ -734,7 +732,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_tet4(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_pyramid5(
+inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_pyramid5(
     CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(0, 1, 3, 4, sys_mat, xyze);
@@ -746,7 +744,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_pyramid5(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_wedge6(
+inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_wedge6(
     CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(2, 0, 1, 3, sys_mat, xyze);
@@ -768,7 +766,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_wedge6(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_hex8(
+inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_hex8(
     CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   // Use 8 tetrahedra to prevent node-face-penetration
@@ -786,7 +784,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_hex8(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
+inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_nurbs27(
     CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   //                          v
@@ -916,7 +914,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
+void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
     CORE::LINALG::SerialDenseMatrix& sys_mat_epetra,
     CORE::LINALG::SerialDenseVector& residual_epetra, const std::vector<double>& displacements,
     const bool spatialconfiguration)
@@ -1351,7 +1349,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discretization& dis,
+void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discretization& dis,
     std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& sys_mat_epetra,
     CORE::LINALG::SerialDenseVector& residual_epetra, std::vector<double>& my_dispnp,
     Teuchos::ParameterList& params, const bool spatialconfiguration)
@@ -1572,7 +1570,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discretization& dis,
+void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discretization& dis,
     CORE::LINALG::SerialDenseMatrix& sys_mat_epetra, CORE::LINALG::SerialDenseVector& residual,
     std::vector<double>& my_dispnp, Teuchos::RCP<MAT::Material> material,
     const bool spatialconfiguration)
@@ -1723,7 +1721,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline CORE::FE::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
+inline CORE::FE::GaussRule3D DRT::ELEMENTS::Ale3Impl<distype>::getOptimalGaussrule()
 {
   switch (distype)
   {

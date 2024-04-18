@@ -131,7 +131,7 @@ int CORE::LINALG::ANA::OperatorInverse::Apply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ANA::LC_vec_pointwise_lc::Update(
+void CORE::LINALG::ANA::LcVecPointwiseLc::Update(
     CORE::LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -149,7 +149,7 @@ void CORE::LINALG::ANA::LC_vec_pointwise_lc::Update(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ANA::LC_lc_pointwise_lc::Set(
+void CORE::LINALG::ANA::LcLcPointwiseLc::Set(
     CORE::LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -163,7 +163,7 @@ void CORE::LINALG::ANA::LC_lc_pointwise_lc::Set(
   right_.Set(tmp, 1.0);
   v.Multiply(scale, v, tmp, 0.0);
 }
-void CORE::LINALG::ANA::LC_lc_pointwise_lc::Update(
+void CORE::LINALG::ANA::LcLcPointwiseLc::Update(
     CORE::LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -183,7 +183,7 @@ void CORE::LINALG::ANA::LC_lc_pointwise_lc::Update(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ANA::LC_Operator_times_lcsv::Set(
+void CORE::LINALG::ANA::LcOperatorTimesLcsv::Set(
     CORE::LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -201,7 +201,7 @@ void CORE::LINALG::ANA::LC_Operator_times_lcsv::Set(
   if (err) dserror("LightWeightOperatorBase::Apply returned err=%d", err);
   if (scale * right_.Scalar() != 1.0) v.Scale(scale * right_.Scalar());
 }
-void CORE::LINALG::ANA::LC_Operator_times_lcsv::Update(
+void CORE::LINALG::ANA::LcOperatorTimesLcsv::Update(
     CORE::LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -223,7 +223,7 @@ void CORE::LINALG::ANA::LC_Operator_times_lcsv::Update(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ANA::LC_Operator_times_lc::Set(
+void CORE::LINALG::ANA::LcOperatorTimesLc::Set(
     CORE::LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -242,7 +242,7 @@ void CORE::LINALG::ANA::LC_Operator_times_lc::Set(
   int err = op_->Apply(tmp, v);
   if (err) dserror("LightWeightOperatorBase::Apply returned err=%d", err);
 }
-void CORE::LINALG::ANA::LC_Operator_times_lc::Update(
+void CORE::LINALG::ANA::LcOperatorTimesLc::Update(
     CORE::LINALG::ANA::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -327,11 +327,11 @@ double CORE::LINALG::ANA::operator*(
    vec dot lcsv (result is scalar) (specialization)
  *----------------------------------------------------------------------*/
 double CORE::LINALG::ANA::operator*(
-    const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::LC_s_times_vec& right)
+    const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::LCSTimesVec& right)
 {
 #if DEBUGGING_ANA
   cout << "double operator* (const CORE::LINALG::ANA::Vector& vec1, const "
-          "CORE::LINALG::ANA::LC_s_times_vec& "
+          "CORE::LINALG::ANA::LCSTimesVec& "
           "right)"
        << endl;
   fflush(stdout);
@@ -346,11 +346,11 @@ double CORE::LINALG::ANA::operator*(
    lcsv dot lcsv (result is scalar) (specialization)
  *----------------------------------------------------------------------*/
 double CORE::LINALG::ANA::operator*(
-    const CORE::LINALG::ANA::LC_s_times_vec& left, const CORE::LINALG::ANA::LC_s_times_vec& right)
+    const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right)
 {
 #if DEBUGGING_ANA
-  cout << "double operator* (const CORE::LINALG::ANA::LC_s_times_vec& left, const "
-          "CORE::LINALG::ANA::LC_s_times_vec& right)"
+  cout << "double operator* (const CORE::LINALG::ANA::LCSTimesVec& left, const "
+          "CORE::LINALG::ANA::LCSTimesVec& right)"
        << endl;
   fflush(stdout);
 #endif

@@ -398,9 +398,9 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
   rblock.clear();
 
   // stl map to construct
-  std::map<double, std::map<double, int, doublecomp>, doublecomp> xtoy;
-  std::map<double, std::map<double, int, doublecomp>, doublecomp>::iterator x_and_y;
-  std::map<double, int, doublecomp>::iterator y_and_i;
+  std::map<double, std::map<double, int, Doublecomp>, Doublecomp> xtoy;
+  std::map<double, std::map<double, int, Doublecomp>, Doublecomp>::iterator x_and_y;
+  std::map<double, int, Doublecomp>::iterator y_and_i;
 
   // create an exporter for point to point comunication
   CORE::COMM::Exporter exporter(avgcomm);
@@ -510,10 +510,10 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
         {
           // it's not in the map yet. construct second map with
           // one initial connection
-          std::map<double, int, doublecomp> y_to_i_map;
+          std::map<double, int, Doublecomp> y_to_i_map;
           y_to_i_map.insert(std::pair<double, int>(y[i], i));
 
-          xtoy.insert(std::pair<double, std::map<double, int, doublecomp>>(x[i], y_to_i_map));
+          xtoy.insert(std::pair<double, std::map<double, int, Doublecomp>>(x[i], y_to_i_map));
         }
       }
 
@@ -812,10 +812,10 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       {
         // it's not in the map yet. construct second map with
         // one initial connection
-        std::map<double, int, doublecomp> y_to_i_map;
+        std::map<double, int, Doublecomp> y_to_i_map;
         y_to_i_map.insert(std::pair<double, int>(y[i], i));
 
-        xtoy.insert(std::pair<double, std::map<double, int, doublecomp>>(x[i], y_to_i_map));
+        xtoy.insert(std::pair<double, std::map<double, int, Doublecomp>>(x[i], y_to_i_map));
       }
     }
 

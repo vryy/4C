@@ -14,13 +14,11 @@
 #include "baci_inpar_solver.hpp"
 #include "baci_utils_exceptions.hpp"
 
+#include <Epetra_LinearProblem.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-
-// forward declarations
-class Epetra_LinearProblem;
 
 FOUR_C_NAMESPACE_OPEN
 

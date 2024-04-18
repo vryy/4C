@@ -146,7 +146,7 @@ namespace INPAR
     };
 
     //! flag to select the type of pressure edge-based (EOS) stabilization
-    enum EOS_Pres
+    enum EosPres
     {
       EOS_PRES_none,
       EOS_PRES_std_eos,
@@ -154,7 +154,7 @@ namespace INPAR
     };
 
     //! flag to select the type of convective streamline edge-based (EOS) stabilization
-    enum EOS_Conv_Stream
+    enum EosConvStream
     {
       EOS_CONV_STREAM_none,
       EOS_CONV_STREAM_std_eos,
@@ -162,7 +162,7 @@ namespace INPAR
     };
 
     //! flag to select the type of convective crosswind edge-based (EOS) stabilization
-    enum EOS_Conv_Cross
+    enum EosConvCross
     {
       EOS_CONV_CROSS_none,
       EOS_CONV_CROSS_std_eos,
@@ -170,7 +170,7 @@ namespace INPAR
     };
 
     //! flag to select the type of divergence EOS stabilization
-    enum EOS_Div
+    enum EosDiv
     {
       EOS_DIV_none,
       EOS_DIV_vel_jump_std_eos,
@@ -180,7 +180,7 @@ namespace INPAR
     };
 
     /// tau type for edge-oriented / continuous interior penalty stabilization
-    enum EOS_TauType
+    enum EosTauType
     {
       EOS_tau_burman,
       EOS_tau_burman_fernandez_hansbo,
@@ -199,7 +199,7 @@ namespace INPAR
     };
 
     /// Element length for edge-oriented / continuous interior penalty stabilization
-    enum EOS_ElementLength
+    enum EosElementLength
     {
       EOS_he_max_diameter_to_opp_surf,
       EOS_he_max_dist_to_opp_surf,
@@ -210,7 +210,7 @@ namespace INPAR
     };
 
     /// EdgeBased (EOS) and Ghost Penalty matrix pattern
-    enum EOS_GP_Pattern
+    enum EosGpPattern
     {
       EOS_GP_Pattern_uvwp,
       EOS_GP_Pattern_up,
@@ -228,7 +228,7 @@ namespace INPAR
     };
 
     /// One step theta variations
-    enum OST_Cont_and_Press
+    enum OstContAndPress
     {
       Cont_normal_Press_normal,
       Cont_impl_Press_normal,

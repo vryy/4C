@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int EXODUS::WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
-    const std::string& headfile, const std::vector<EXODUS::elem_def>& eledefs,
-    const std::vector<EXODUS::cond_def>& condefs,
+    const std::string& headfile, const std::vector<EXODUS::ElemDef>& eledefs,
+    const std::vector<EXODUS::CondDef>& condefs,
     const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo)
 {
   // open datfile
@@ -138,7 +138,7 @@ void EXODUS::RemoveDatSection(const std::string& secname, std::string& headstrin
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::WriteDatConditions(
-    const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
+    const std::vector<EXODUS::CondDef>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   using namespace FourC;
 
@@ -187,7 +187,7 @@ void EXODUS::WriteDatConditions(
     dat << geo << (count->second).size() << std::endl;
     for (i_c = (count->second).begin(); i_c != (count->second).end(); ++i_c)
     {
-      EXODUS::cond_def actcon = condefs[*i_c];
+      EXODUS::CondDef actcon = condefs[*i_c];
       std::string name;
       std::string pname;
       if (actcon.me == EXODUS::bcns)
@@ -308,15 +308,15 @@ std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::WriteDatDesignTopology(
-    const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
+    const std::vector<EXODUS::CondDef>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   using namespace FourC;
 
   // sort baciconds w.r.t. underlying topology
-  std::map<int, EXODUS::cond_def> dpoints;
-  std::map<int, EXODUS::cond_def> dlines;
-  std::map<int, EXODUS::cond_def> dsurfs;
-  std::map<int, EXODUS::cond_def> dvols;
+  std::map<int, EXODUS::CondDef> dpoints;
+  std::map<int, EXODUS::CondDef> dlines;
+  std::map<int, EXODUS::CondDef> dsurfs;
+  std::map<int, EXODUS::CondDef> dvols;
 
   for (const auto& conditiondefinition : condefs)
   {
@@ -388,7 +388,7 @@ void EXODUS::WriteDatDesignTopology(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m)
+std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::CondDef& e, const EXODUS::Mesh& m)
 {
   if (e.me == EXODUS::bcns)
   {
@@ -446,22 +446,22 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh,
+void EXODUS::WriteDatEles(const std::vector<ElemDef>& eledefs, const EXODUS::Mesh& mymesh,
     std::ostream& dat,
     const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo)
 {
   // sort elements w.r.t. structure, fluid, ale, scalar transport, thermo, etc.
-  std::vector<EXODUS::elem_def> structure_elements;
-  std::vector<EXODUS::elem_def> fluid_elements;
-  std::vector<EXODUS::elem_def> ale_elements;
-  std::vector<EXODUS::elem_def> lubrication_elements;
-  std::vector<EXODUS::elem_def> transport_elements;
-  std::vector<EXODUS::elem_def> transport2_elements;
-  std::vector<EXODUS::elem_def> thermo_elements;
-  std::vector<EXODUS::elem_def> cell_elements;
-  std::vector<EXODUS::elem_def> cellscatra_elements;
-  std::vector<EXODUS::elem_def> elemag_elements;
-  std::vector<EXODUS::elem_def> artery_elements;
+  std::vector<EXODUS::ElemDef> structure_elements;
+  std::vector<EXODUS::ElemDef> fluid_elements;
+  std::vector<EXODUS::ElemDef> ale_elements;
+  std::vector<EXODUS::ElemDef> lubrication_elements;
+  std::vector<EXODUS::ElemDef> transport_elements;
+  std::vector<EXODUS::ElemDef> transport2_elements;
+  std::vector<EXODUS::ElemDef> thermo_elements;
+  std::vector<EXODUS::ElemDef> cell_elements;
+  std::vector<EXODUS::ElemDef> cellscatra_elements;
+  std::vector<EXODUS::ElemDef> elemag_elements;
+  std::vector<EXODUS::ElemDef> artery_elements;
 
   for (const auto& element_definition : eledefs)
   {
@@ -501,7 +501,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   int startele = 1;
 
   const auto printElementSection =
-      [&](const std::vector<elem_def>& ele_vector, const std::string& section_name)
+      [&](const std::vector<ElemDef>& ele_vector, const std::string& section_name)
   {
     const unsigned padding_length = 66;
     // we need at least 2 dashes at the beginning to be recognizable to the dat file reader
@@ -561,7 +561,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte,
+void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::ElemDef& acte,
     int& startele, std::ostream& datfile,
     const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo,
     const int eb_id)

@@ -158,7 +158,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
           line.ExtractString("TYPE", vartype);
 
           // read periodicity data
-          periodicstruct periodicdata{};
+          Periodicstruct periodicdata{};
 
           periodicdata.periodic = line.HasString("PERIODIC");
           if (periodicdata.periodic)

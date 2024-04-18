@@ -141,7 +141,7 @@ namespace MORTAR
     \brief Return directional derivative of matrix of dual shape function coefficients
 
     */
-    virtual Teuchos::RCP<CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>>&
+    virtual Teuchos::RCP<CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>>&
     DerivDualShape()
     {
       return derivdualshapecoeff_;
@@ -244,7 +244,7 @@ namespace MORTAR
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> dualshapecoeff_;
 
     // derivative of coefficient matrix for dual shape functions
-    Teuchos::RCP<CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
+    Teuchos::RCP<CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
         derivdualshapecoeff_;
 
     // coefficient matrix for boundary trafo
@@ -706,7 +706,7 @@ namespace MORTAR
            for a Element in order to compute a unit normal derivative at any point.
     */
     virtual void DerivUnitNormalAtXi(
-        const double* xi, std::vector<CORE::GEN::pairedvector<int, double>>& derivn);
+        const double* xi, std::vector<CORE::GEN::Pairedvector<int, double>>& derivn);
 
     /*!
     \brief Get nodal reference / spatial coords of current element
@@ -774,7 +774,7 @@ namespace MORTAR
     /*!
     \brief Compute Jacobian determinant derivative
     */
-    virtual void DerivJacobian(const double* xi, CORE::GEN::pairedvector<int, double>& derivjac);
+    virtual void DerivJacobian(const double* xi, CORE::GEN::Pairedvector<int, double>& derivjac);
 
     /*!
     \brief Compute length/area of the element
@@ -784,7 +784,7 @@ namespace MORTAR
     /*!
     \brief Compute length/area of the element and its derivative
     */
-    virtual double ComputeAreaDeriv(CORE::GEN::pairedvector<int, double>& area_deriv);
+    virtual double ComputeAreaDeriv(CORE::GEN::Pairedvector<int, double>& area_deriv);
 
     /*!
     \brief A repository for all kinds of 1D/2D shape functions
@@ -799,7 +799,7 @@ namespace MORTAR
                            (= derivatives of the dual coefficient matrix Ae)
     */
     void ShapeFunctionLinearizations(Element::ShapeType shape,
-        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual);
+        CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual);
 
     /*!
     \brief Evaluate displacement shape functions and derivatives
@@ -895,7 +895,7 @@ namespace MORTAR
                            (= derivatives of the dual coefficient matrix Ae)
     */
     virtual bool DerivShapeDual(
-        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual);
+        CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual);
 
     /*!
     \brief Interpolate global coordinates for given local element coordinates
@@ -997,7 +997,7 @@ namespace MORTAR
            Needed to be overloaded by IntElement
     */
     virtual void NodeLinearization(
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& nodelin);
+        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& nodelin);
 
     // h.Willmann return physical type of the mortar element
     PhysicalType& PhysType() { return physicaltype_; };

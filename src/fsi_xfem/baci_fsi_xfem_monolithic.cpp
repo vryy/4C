@@ -242,7 +242,7 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
         have_contact_ = true;
 
         // Do contact and xfluid communication stuff
-        xf_c_comm_ = Teuchos::rcp(new XFEM::XFluid_Contact_Comm(*cs));
+        xf_c_comm_ = Teuchos::rcp(new XFEM::XFluidContactComm(*cs));
         xf_c_comm_->InitializeFluidState(FluidField()->GetCutWizard(),
             FluidField()->Discretization(), FluidField()->GetConditionManager(),
             FluidField()->Params());
@@ -250,9 +250,8 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
         xf_c_comm_->SetupSurfElePtrs(cs->ContactInterfaces()[0]->Discret());
 
         for (int i = 0; i < (int)cs->ContactInterfaces().size(); ++i)
-          cs->ContactInterfaces()[i]
-              ->InterfaceParams()
-              .set<Teuchos::RCP<XFEM::XFluid_Contact_Comm>>("XFluid_Contact_Comm", xf_c_comm_);
+          cs->ContactInterfaces()[i]->InterfaceParams().set<Teuchos::RCP<XFEM::XFluidContactComm>>(
+              "XFluidContactComm", xf_c_comm_);
       }
     }
   }
@@ -264,7 +263,7 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
   {
     idx.push_back(structp_block_);
     idx.push_back(fluid_block_);
-    coup_man_[coup_idx] = Teuchos::rcp(new XFEM::XFSCoupling_Manager(
+    coup_man_[coup_idx] = Teuchos::rcp(new XFEM::XfsCouplingManager(
         FluidField()->GetConditionManager(), StructurePoro()->StructureField(), FluidField(), idx));
 
     if (have_contact_)
@@ -282,7 +281,7 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
     idx.push_back(fluid_block_);
     idx.push_back(ale_i_block_);
     idx.push_back(structp_block_);
-    coup_man_[coup_idx] = Teuchos::rcp(new XFEM::XFACoupling_Manager(
+    coup_man_[coup_idx] = Teuchos::rcp(new XFEM::XfaCouplingManager(
         FluidField(), AleField(), idx, StructurePoro()->StructureField()));
   }
 
@@ -293,7 +292,7 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
     idx.clear();
     idx.push_back(fluid_block_);
     idx.push_back(fluid_block_);
-    coup_man_[coup_idx] = Teuchos::rcp(new XFEM::XFFCoupling_Manager(
+    coup_man_[coup_idx] = Teuchos::rcp(new XFEM::XffCouplingManager(
         FluidField()->GetConditionManager(), FluidField(), FluidField(), idx));
   }
 
@@ -308,7 +307,7 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
       idx.push_back(structp_block_);
       idx.push_back(fluid_block_);
       idx.push_back(fluidp_block_);
-      coup_man_[coup_idx] = Teuchos::rcp(new XFEM::XFPCoupling_Manager(
+      coup_man_[coup_idx] = Teuchos::rcp(new XFEM::XfpCouplingManager(
           FluidField()->GetConditionManager(), StructurePoro()->PoroField(), FluidField(), idx));
 
       if (have_contact_)
@@ -333,7 +332,7 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
   // ------------------------------------------------------------------
   // set the current interface displacement to the fluid field to be used in the cut
   // ------------------------------------------------------------------
-  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
+  for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->InitCouplingStates();
 
@@ -528,7 +527,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   systemmatrix_->Assign(fluid_block_, fluid_block_, CORE::LINALG::View, *f);
 
   // Add Coupling Sysmat
-  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
+  for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->AddCouplingMatrix(*systemmatrix_, scaling_F);
 
@@ -556,7 +555,7 @@ void FSI::MonolithicXFEM::SetupRHS()
 
   // Add Coupling RHS
   const double scaling_F = FluidField()->ResidualScaling();
-  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
+  for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->AddCouplingRHS(rhs_, Extractor(), scaling_F);
 }
@@ -810,7 +809,7 @@ void FSI::MonolithicXFEM::PrepareTimeStep()
   FluidField()->PrepareTimeStep();
 
   // predict coupling states (for relaxing ale mesh!) /after Structure->PrepareTimestep
-  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
+  for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->PredictCouplingStates();
 
@@ -893,7 +892,7 @@ void FSI::MonolithicXFEM::Update()
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::Update");
 
   const double scaling_F = FluidField()->ResidualScaling();  // 1/(theta * dt) = 1/weight^F_np
-  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
+  for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->Update(scaling_F);
 
@@ -925,7 +924,7 @@ void FSI::MonolithicXFEM::Output()
   if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) ||
       FluidField()->Step() % upres == 0)  // Fluid desides about restart, write output
   {
-    for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
+    for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
          coupit != coup_man_.end(); ++coupit)
       coupit->second->Output(*StructurePoro()->StructureField()->DiscWriter());
   }
@@ -1532,7 +1531,7 @@ bool FSI::MonolithicXFEM::Evaluate()
 
   // update coupling objects and conditionmanager
 
-  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
+  for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->SetCouplingStates();
 
@@ -2541,7 +2540,7 @@ void FSI::MonolithicXFEM::ReadRestart(int step)
   // read fluid field
   // set the current interface displacement to the fluid field to be used in the cut
   // (as we just loaded the displacements in the structure this has to be done again here)
-  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
+  for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->InitCouplingStates();
 
@@ -2565,7 +2564,7 @@ void FSI::MonolithicXFEM::ReadRestart(int step)
   // consisting of fluid forces and the Nitsche penalty term contribution)
   IO::DiscretizationReader reader = IO::DiscretizationReader(
       StructurePoro()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
-  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
+  for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->ReadRestart(reader);
   //

@@ -163,11 +163,11 @@ void FLD::XFluidFluid::SetXFluidFluidParams()
 
   // whether an eigenvalue problem has to be solved to estimate Nitsche's parameter
   nitsche_evp_ =
-      (CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStab_TraceEstimate>(params_xf_stab,
+      (CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStabTraceEstimate>(params_xf_stab,
            "VISC_STAB_TRACE_ESTIMATE") == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue);
 
   // get general XFEM/XFFSI specific parameters
-  monolithic_approach_ = CORE::UTILS::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>(
+  monolithic_approach_ = CORE::UTILS::IntegralValue<INPAR::XFEM::MonolithicXffsiApproach>(
       params_->sublist("XFLUID DYNAMIC/GENERAL"), "MONOLITHIC_XFFSI_APPROACH");
   xfem_timeintapproach_ = CORE::UTILS::IntegralValue<INPAR::XFEM::XFluidFluidTimeInt>(
       params_->sublist("XFLUID DYNAMIC/GENERAL"), "XFLUIDFLUID_TIMEINT");

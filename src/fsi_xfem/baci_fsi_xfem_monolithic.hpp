@@ -45,8 +45,8 @@ namespace CORE::LINALG
 
 namespace XFEM
 {
-  class Coupling_Manager;
-  class XFluid_Contact_Comm;
+  class CouplingManager;
+  class XFluidContactComm;
 }  // namespace XFEM
 
 namespace FSI
@@ -518,11 +518,11 @@ namespace FSI
     bool have_contact_;
 
     //! Xfluid-Contact-Communicator
-    Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm_;
+    Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm_;
     //@}
 
     // Map of Coupling Object for FS, FP, FA coupling, ...(Fluid, Structure, Poro, Ale)
-    std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>> coup_man_;
+    std::map<int, Teuchos::RCP<XFEM::CouplingManager>> coup_man_;
   };
 }  // namespace FSI
 

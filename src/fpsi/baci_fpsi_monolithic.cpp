@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 
 FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
     const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
-    : FPSI_Base(comm, fpsidynparams)
+    : FpsiBase(comm, fpsidynparams)
 {
   // Creation of the subproblems
   // As for general FPSI problems overlapping FSI/FPSI - interfaces can occur, the maps in the

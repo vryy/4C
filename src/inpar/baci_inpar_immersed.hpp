@@ -31,13 +31,13 @@ namespace INPAR
     /*----------------------------------------------------------------------*
      | Coupling Methods                                                     |
      *----------------------------------------------------------------------*/
-    enum _IMMERSED_COUPLING
+    enum ImmersedCoupling
     {
       partitioned,
       monolithic
     };
 
-    typedef enum _PARITIONED_SCHEME
+    typedef enum ParitionedScheme
     {
       cell_coupling_undefined = 0,
       cell_basic_sequ_stagg = 1,
@@ -45,31 +45,31 @@ namespace INPAR
       cell_iter_stagg_AITKEN_rel_param = 3,
     } PARITIONED_SCHEME;
 
-    enum _IMMERSED_COUPLING_SCHEME
+    enum ImmersedCouplingScheme
     {
       neumannneumann,
       dirichletneumann
     };
 
-    enum _IMMERSED_PROJECTION
+    enum ImmersedProjection
     {
       shapefunctions,
       mortar
     };
 
-    enum _IMMERSED_RELAXATION
+    enum ImmersedRelaxation
     {
       globally,
       selectively
     };
 
-    enum _IMMERSED_NLNSOLVER
+    enum ImmersedNlnsolver
     {
       nlnsolver_stop,
       nlnsolver_continue
     };
 
-    enum _IMMERSED_RELAXATIONPARAM
+    enum ImmersedRelaxationparam
     {
       fixed,
       aitken

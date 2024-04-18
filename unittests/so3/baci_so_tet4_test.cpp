@@ -35,12 +35,12 @@ namespace
         testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, coords[lid], 0)));
 
       // create 1 element
-      testele_ = Teuchos::rcp(new DRT::ELEMENTS::So_tet4(0, 0));
+      testele_ = Teuchos::rcp(new DRT::ELEMENTS::SoTet4(0, 0));
       testele_->SetNodeIds(4, nodeids.data());
       testdis_->AddElement(testele_);
       testdis_->FillComplete(false, false, false);
 
-      copytestele_ = Teuchos::rcp(new DRT::ELEMENTS::So_tet4(*testele_));
+      copytestele_ = Teuchos::rcp(new DRT::ELEMENTS::SoTet4(*testele_));
     }
 
     // Delete pointers.
@@ -58,9 +58,9 @@ namespace
     //! dummy discretization for holding element and node pointers
     Teuchos::RCP<DRT::Discretization> testdis_;
     //! the tet4 element to be tested
-    Teuchos::RCP<DRT::ELEMENTS::So_tet4> testele_;
+    Teuchos::RCP<DRT::ELEMENTS::SoTet4> testele_;
     //! a copy of the tet element to test the copy constructor
-    Teuchos::RCP<DRT::ELEMENTS::So_tet4> copytestele_;
+    Teuchos::RCP<DRT::ELEMENTS::SoTet4> copytestele_;
   };
 
   /**

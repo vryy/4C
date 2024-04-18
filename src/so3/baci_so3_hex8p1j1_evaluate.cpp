@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::SoHex8P1J1::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
@@ -45,44 +45,44 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
   CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
+  DRT::ELEMENTS::SoHex8::ActionType act = SoHex8::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_struct_linstiff")
-    act = So_hex8::calc_struct_linstiff;
+    act = SoHex8::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
-    act = So_hex8::calc_struct_nlnstiff;
+    act = SoHex8::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
-    act = So_hex8::calc_struct_internalforce;
+    act = SoHex8::calc_struct_internalforce;
   else if (action == "calc_struct_linstiffmass")
-    act = So_hex8::calc_struct_linstiffmass;
+    act = SoHex8::calc_struct_linstiffmass;
   else if (action == "calc_struct_nlnstiffmass")
-    act = So_hex8::calc_struct_nlnstiffmass;
+    act = SoHex8::calc_struct_nlnstiffmass;
   else if (action == "calc_struct_nlnstifflmass")
-    act = So_hex8::calc_struct_nlnstifflmass;
+    act = SoHex8::calc_struct_nlnstifflmass;
   else if (action == "calc_struct_stress")
-    act = So_hex8::calc_struct_stress;
+    act = SoHex8::calc_struct_stress;
   else if (action == "calc_struct_eleload")
-    act = So_hex8::calc_struct_eleload;
+    act = SoHex8::calc_struct_eleload;
   else if (action == "calc_struct_fsiload")
-    act = So_hex8::calc_struct_fsiload;
+    act = SoHex8::calc_struct_fsiload;
   else if (action == "calc_struct_update_istep")
-    act = So_hex8::calc_struct_update_istep;
+    act = SoHex8::calc_struct_update_istep;
   else if (action == "calc_struct_reset_istep")
-    act = So_hex8::calc_struct_reset_istep;
+    act = SoHex8::calc_struct_reset_istep;
   else if (action == "multi_eas_init")
-    act = So_hex8::multi_eas_init;
+    act = SoHex8::multi_eas_init;
   else if (action == "multi_eas_set")
-    act = So_hex8::multi_eas_set;
+    act = SoHex8::multi_eas_set;
   else if (action == "multi_calc_dens")
-    act = So_hex8::multi_calc_dens;
+    act = SoHex8::multi_calc_dens;
   else if (action == "multi_readrestart")
-    act = So_hex8::multi_readrestart;
+    act = SoHex8::multi_readrestart;
   else if (action == "calc_struct_recover")
-    act = So_hex8::calc_recover;
+    act = SoHex8::calc_recover;
   else if (action == "calc_struct_predict")
     return 0;
   else
@@ -253,8 +253,8 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // location matrix
-    const std::vector<double>& disp,                              // current displacements
+void DRT::ELEMENTS::SoHex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // location matrix
+    const std::vector<double>& disp,                                        // current displacements
     const std::vector<double>& residual,                          // current residual displ
     CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,  // element stiffness matrix
     CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,   // element mass matrix
@@ -686,7 +686,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
 /*----------------------------------------------------------------------------*
  |  convert constitutive tensor (material -> current configuration)   lw 02/09|
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::ConvertMat(
+void DRT::ELEMENTS::SoHex8P1J1::ConvertMat(
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& F,
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& D_T_bar, const double t)
@@ -708,7 +708,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ConvertMat(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::Stress(
+void DRT::ELEMENTS::SoHex8P1J1::Stress(
     CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,
     const INPAR::STR::StressType iostress, const int gp, const double& detdefgrd,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
@@ -755,7 +755,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Stress(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::Strain(
+void DRT::ELEMENTS::SoHex8P1J1::Strain(
     CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< store the strain herein
     const INPAR::STR::StrainType iostrain,  ///< strain type to store for post-proc
     const int gp,                           ///< Gauss point index
@@ -808,7 +808,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Strain(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::PushPullOperator(
+void DRT::ELEMENTS::SoHex8P1J1::PushPullOperator(
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& g,  // G_IJ^KL or G^IJ_KL
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& f,  // [F^-1]=[F^B_b] or [F]=[F^b_B]
     const bool& transpose,                                    // co-variant if true
@@ -945,12 +945,12 @@ void DRT::ELEMENTS::So_Hex8P1J1::PushPullOperator(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                   lw 12/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_Hex8P1J1Type::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SoHex8P1J1Type::Initialize(DRT::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::So_Hex8P1J1*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex8P1J1*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_Hex8P1J1* failed");
     actele->InitJacobianMapping();
     actele->InitKpt();
@@ -960,7 +960,7 @@ int DRT::ELEMENTS::So_Hex8P1J1Type::Initialize(DRT::Discretization& dis)
 }
 
 
-void DRT::ELEMENTS::So_Hex8P1J1::soh8P1J1_recover(const std::vector<double>& residual)
+void DRT::ELEMENTS::SoHex8P1J1::soh8P1J1_recover(const std::vector<double>& residual)
 {
   CORE::LINALG::Matrix<24, 1> disi(false);
   for (int i = 0; i < NUMDOF_SOH8; ++i) disi(i) = residual[i];

@@ -29,9 +29,9 @@ namespace DRT
 
     */
     template <CORE::FE::CellType distype>
-    class Wall1_PoroP1 : public Wall1_Poro<distype>
+    class Wall1PoroP1 : public Wall1Poro<distype>
     {
-      using Base = DRT::ELEMENTS::Wall1_Poro<distype>;
+      using Base = DRT::ELEMENTS::Wall1Poro<distype>;
 
      public:
       //!@}
@@ -43,7 +43,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      Wall1_PoroP1(int id, int owner);
+      Wall1PoroP1(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -51,7 +51,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      Wall1_PoroP1(const Wall1_PoroP1& old);
+      Wall1PoroP1(const Wall1PoroP1& old);
 
       //!@}
 
@@ -170,7 +170,7 @@ namespace DRT
       void InitElement() override;
 
       //! don't want = operator
-      Wall1_PoroP1& operator=(const Wall1_PoroP1& old) = delete;
+      Wall1PoroP1& operator=(const Wall1PoroP1& old) = delete;
 
      protected:
       /*!

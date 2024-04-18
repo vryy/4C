@@ -192,7 +192,7 @@ namespace CONTACT
      \brief Build element normal derivative at node passed in
      */
     virtual void DerivNormalAtNode(int nid, int& i, CORE::LINALG::SerialDenseMatrix& elens,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivn);
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivn);
 
     virtual void OldUnitNormalAtXi(const double* xi, CORE::LINALG::Matrix<3, 1>& n_old,
         CORE::LINALG::Matrix<3, 2>& d_n_old_dxi);
@@ -227,7 +227,7 @@ namespace CONTACT
     /*!
      \brief Access to D-Matrix deriv to add Gauss point contribution
      */
-    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetDderiv()
+    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetDderiv()
     {
       if (dMatrixDeriv_ == Teuchos::null) dserror("trying to get Dderiv, but not initialized");
       return *dMatrixDeriv_;
@@ -236,7 +236,7 @@ namespace CONTACT
     /*!
      \brief Access to M-Matrix deriv to add Gauss point contribution
      */
-    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetMderiv()
+    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetMderiv()
     {
       if (mMatrixDeriv_ == Teuchos::null) dserror("trying to get Mderiv, but not initialized");
       return *mMatrixDeriv_;
@@ -260,12 +260,12 @@ namespace CONTACT
      integrated into the whole nodal normal calculation process.
      */
     virtual void DerivNormalAtXi(double* xi, int& i, CORE::LINALG::SerialDenseMatrix& elens,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivn);
+        std::vector<CORE::GEN::Pairedvector<int, double>>& derivn);
 
    private:
-    Teuchos::RCP<CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
+    Teuchos::RCP<CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
         dMatrixDeriv_;  //< temporary matrix for D linearization during integration
-    Teuchos::RCP<CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
+    Teuchos::RCP<CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
         mMatrixDeriv_;  //< temporary matrix for M linearization during integration
   };
   // class Element

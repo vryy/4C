@@ -41,12 +41,12 @@ namespace DRT
     // forward declarations
     class PreStress;
 
-    class So_tet10Type : public DRT::ElementType
+    class SoTet10Type : public DRT::ElementType
     {
      public:
       std::string Name() const override { return "So_tet10Type"; }
 
-      static So_tet10Type& Instance();
+      static SoTet10Type& Instance();
 
       CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
@@ -68,7 +68,7 @@ namespace DRT
           override;
 
      private:
-      static So_tet10Type instance_;
+      static SoTet10Type instance_;
 
       std::string GetElementTypeString() const { return "SOLIDT10"; }
     };
@@ -80,11 +80,11 @@ namespace DRT
     \author biehler
     */
 
-    class So_tet10 : public So_base
+    class SoTet10 : public SoBase
     {
      public:
       //! @name Friends
-      friend class So_tet10Type;
+      friend class SoTet10Type;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -95,7 +95,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owning processor
       */
-      So_tet10(int id, int owner);
+      SoTet10(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -103,7 +103,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So_tet10(const So_tet10& old);
+      SoTet10(const SoTet10& old);
 
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -154,10 +154,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
-      {
-        return So_tet10Type::Instance().UniqueParObjectId();
-      }
+      int UniqueParObjectId() const override { return SoTet10Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -209,7 +206,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      DRT::ElementType& ElementType() const override { return So_tet10Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return SoTet10Type::Instance(); }
 
       //@}
 
@@ -376,7 +373,7 @@ namespace DRT
       // internal calculation methods
 
       // don't want = operator
-      So_tet10& operator=(const So_tet10& old);
+      SoTet10& operator=(const SoTet10& old);
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       virtual void InitJacobianMapping();

@@ -16,11 +16,10 @@
 
 #include "baci_inpar_structure.hpp"
 
+#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
-class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 

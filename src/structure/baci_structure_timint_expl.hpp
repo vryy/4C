@@ -339,7 +339,7 @@ namespace STR
     };
 
     //! Get type of thickness scaling for thin shell structures
-    INPAR::STR::STC_Scale GetSTCAlgo() override
+    INPAR::STR::StcScale GetSTCAlgo() override
     {
       dserror("GetSTCAlgo() has not been tested for explicit time integrators");
       return INPAR::STR::stc_none;

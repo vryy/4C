@@ -33,7 +33,7 @@ namespace MAT
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
-      enum matparamnames_
+      enum Matparamnames
       {
         diff1,
         diff2,

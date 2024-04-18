@@ -42,10 +42,10 @@ namespace CORE::LINALG
 
 namespace FPSI
 {
-  class Monolithic_Plain : public Monolithic
+  class MonolithicPlain : public Monolithic
   {
    public:
-    explicit Monolithic_Plain(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams,
+    explicit MonolithicPlain(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams,
         const Teuchos::ParameterList& poroelastdynparams);
 
     /*! do the setup for the monolithic system

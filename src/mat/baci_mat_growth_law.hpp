@@ -1384,7 +1384,7 @@ namespace MAT
       /// @name material parameters
       //@{
       //! enum for mapping between material parameter and entry in Parameter::matparams_
-      enum matparamnames_
+      enum Matparamnames
       {
         thetarate,
         first = thetarate,

@@ -27,11 +27,11 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// material parameters for Hemoglobin 0D O2 saturation material
     ///
-    class Hemoglobin_0d_O2_saturation : public Parameter
+    class Hemoglobin0dO2Saturation : public Parameter
     {
      public:
       /// standard constructor
-      Hemoglobin_0d_O2_saturation(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Hemoglobin0dO2Saturation(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -55,31 +55,31 @@ namespace MAT
 
   }  // namespace PAR
 
-  class Hemoglobin_0d_O2_saturationType : public CORE::COMM::ParObjectType
+  class Hemoglobin0dO2SaturationType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "hemoglobin_0d_O2_saturationType"; }
 
-    static Hemoglobin_0d_O2_saturationType& Instance() { return instance_; };
+    static Hemoglobin0dO2SaturationType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Hemoglobin_0d_O2_saturationType instance_;
+    static Hemoglobin0dO2SaturationType instance_;
   };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Hemoglobin 0D O2 saturation material
   ///
   /// This object exists (several times) at every element
-  class Hemoglobin_0d_O2_saturation : public Material
+  class Hemoglobin0dO2Saturation : public Material
   {
    public:
     /// construct empty material object
-    Hemoglobin_0d_O2_saturation();
+    Hemoglobin0dO2Saturation();
 
     /// construct the material object given material parameters
-    explicit Hemoglobin_0d_O2_saturation(MAT::PAR::Hemoglobin_0d_O2_saturation* params);
+    explicit Hemoglobin0dO2Saturation(MAT::PAR::Hemoglobin0dO2Saturation* params);
 
     //! @name Packing and Unpacking
 
@@ -91,7 +91,7 @@ namespace MAT
     */
     int UniqueParObjectId() const override
     {
-      return Hemoglobin_0d_O2_saturationType::Instance().UniqueParObjectId();
+      return Hemoglobin0dO2SaturationType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -131,7 +131,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new Hemoglobin_0d_O2_saturation(*this));
+      return Teuchos::rcp(new Hemoglobin0dO2Saturation(*this));
     }
 
     /// how much of blood satisfies this rule
@@ -149,7 +149,7 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::Hemoglobin_0d_O2_saturation* params_;
+    MAT::PAR::Hemoglobin0dO2Saturation* params_;
   };
 
 }  // namespace MAT

@@ -130,7 +130,7 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
 
     dyntype_ = CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
 
-    stcscale_ = CORE::UTILS::IntegralValue<INPAR::STR::STC_Scale>(sdynparams, "STC_SCALING");
+    stcscale_ = CORE::UTILS::IntegralValue<INPAR::STR::StcScale>(sdynparams, "STC_SCALING");
 
     stclayer_ = sdynparams.get<int>("STC_LAYER");
 

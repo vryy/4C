@@ -39,13 +39,13 @@ namespace DRT
 
     */
     template <class so3_ele, CORE::FE::CellType distype>
-    class So3_Poro : public so3_ele
+    class So3Poro : public so3_ele
     {
       //! @name Friends
-      friend class So_tet4PoroType;
-      friend class So_tet10PoroType;
-      friend class So_hex8PoroType;
-      friend class So_hex27PoroType;
+      friend class SoTet4PoroType;
+      friend class SoTet10PoroType;
+      friend class SoHex8PoroType;
+      friend class SoHex27PoroType;
 
      public:
       //!@}
@@ -57,7 +57,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      So3_Poro(int id, int owner);
+      So3Poro(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -65,7 +65,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So3_Poro(const So3_Poro& old);
+      So3Poro(const So3Poro& old);
 
       //!@}
 
@@ -289,7 +289,7 @@ namespace DRT
       }
 
       //! don't want = operator
-      So3_Poro& operator=(const So3_Poro& old) = delete;
+      So3Poro& operator=(const So3Poro& old) = delete;
 
      protected:
       /*!

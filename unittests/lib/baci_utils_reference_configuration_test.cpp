@@ -41,8 +41,8 @@ namespace
       {
         testdis_->AddNode(Teuchos::rcp(new DRT::Node(nodeidshex8[i], coordshex8[i], 0)));
       }
-      Teuchos::RCP<DRT::ELEMENTS::So_hex8> testhex8ele =
-          Teuchos::rcp(new DRT::ELEMENTS::So_hex8(0, 0));
+      Teuchos::RCP<DRT::ELEMENTS::SoHex8> testhex8ele =
+          Teuchos::rcp(new DRT::ELEMENTS::SoHex8(0, 0));
       testhex8ele->SetNodeIds(8, nodeidshex8.data());
       testdis_->AddElement(testhex8ele);
 
@@ -60,8 +60,8 @@ namespace
       {
         testdis_->AddNode(Teuchos::rcp(new DRT::Node(nodeidstet4[j], coordstet4[j], 0)));
       }
-      Teuchos::RCP<DRT::ELEMENTS::So_tet4> testtet4ele =
-          Teuchos::rcp(new DRT::ELEMENTS::So_tet4(2, 0));
+      Teuchos::RCP<DRT::ELEMENTS::SoTet4> testtet4ele =
+          Teuchos::rcp(new DRT::ELEMENTS::SoTet4(2, 0));
       testtet4ele->SetNodeIds(4, nodeidstet4.data());
       testdis_->AddElement(testtet4ele);
 

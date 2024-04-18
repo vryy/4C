@@ -4373,7 +4373,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
     bool close = false;
 
     // do not collapse poly1 (slave) points
-    if (convexhull[i].VType() == MORTAR::Vertex::slave)
+    if (convexhull[i].v_type() == MORTAR::Vertex::slave)
     {
       collconvexhull.push_back(convexhull[i]);
       continue;
@@ -4383,7 +4383,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
     for (int j = 0; j < (int)convexhull.size(); ++j)
     {
       // only collapse with poly1 (slave) points
-      if (convexhull[j].VType() != MORTAR::Vertex::slave) continue;
+      if (convexhull[j].v_type() != MORTAR::Vertex::slave) continue;
 
       // distance vector
       std::array<double, 3> diff = {0.0, 0.0, 0.0};
@@ -4399,19 +4399,19 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
     }
 
     // do not check poly2 (master) points
-    if (convexhull[i].VType() == MORTAR::Vertex::projmaster)
+    if (convexhull[i].v_type() == MORTAR::Vertex::projmaster)
     {
       if (!close) collconvexhull.push_back(convexhull[i]);
       continue;
     }
 
     // check intersec points against poly2 (master) points
-    if (!close && convexhull[i].VType() == MORTAR::Vertex::lineclip)
+    if (!close && convexhull[i].v_type() == MORTAR::Vertex::lineclip)
     {
       for (int j = 0; j < (int)convexhull.size(); ++j)
       {
         // only collapse with poly2 (master) points
-        if (convexhull[j].VType() != MORTAR::Vertex::projmaster) continue;
+        if (convexhull[j].v_type() != MORTAR::Vertex::projmaster) continue;
 
         // distance vector
         std::array<double, 3> diff = {0.0, 0.0, 0.0};
@@ -4524,12 +4524,12 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CenterTriangulation(
   // preparations
   cells.resize(0);
   int clipsize = (int)(clip.size());
-  std::vector<CORE::GEN::pairedvector<int, double>> lincenter(3, 100);
+  std::vector<CORE::GEN::Pairedvector<int, double>> lincenter(3, 100);
 
-  std::vector<CORE::GEN::pairedvector<int, double>> derivauxn;
+  std::vector<CORE::GEN::Pairedvector<int, double>> derivauxn;
 
-  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linvertex(
-      clipsize, std::vector<CORE::GEN::pairedvector<int, double>>(3, 100));
+  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> linvertex(
+      clipsize, std::vector<CORE::GEN::Pairedvector<int, double>>(3, 100));
 
   //**********************************************************************
   // (1) Trivial clipping polygon -> IntCells
@@ -4686,10 +4686,10 @@ bool CORE::VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
   cells.resize(0);
   int clipsize = (int)(clip.size());
 
-  std::vector<CORE::GEN::pairedvector<int, double>> derivauxn;
+  std::vector<CORE::GEN::Pairedvector<int, double>> derivauxn;
 
-  std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> linvertex(
-      clipsize, std::vector<CORE::GEN::pairedvector<int, double>>(3, 100));
+  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> linvertex(
+      clipsize, std::vector<CORE::GEN::Pairedvector<int, double>>(3, 100));
   //**********************************************************************
   // (1) Trivial clipping polygon -> IntCells
   //**********************************************************************

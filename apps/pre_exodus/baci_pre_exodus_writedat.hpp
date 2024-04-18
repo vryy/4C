@@ -22,8 +22,8 @@ namespace EXODUS
 {
   //! write datfile
   int WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
-      const std::string& headfile, const std::vector<EXODUS::elem_def>& eledefs,
-      const std::vector<EXODUS::cond_def>& condefs,
+      const std::string& headfile, const std::vector<EXODUS::ElemDef>& eledefs,
+      const std::vector<EXODUS::CondDef>& condefs,
       const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo);
 
   //! datfile Intro
@@ -37,33 +37,33 @@ namespace EXODUS
 
   //! conditions
   void WriteDatConditions(
-      const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat);
+      const std::vector<EXODUS::CondDef>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat);
 
   //! special condition SurfLocsys: calculates Normal and Tangent
   std::vector<double> CalcNormalSurfLocsys(const int ns_id, const EXODUS::Mesh& m);
 
   //! DesignNode - Node Topology
   void WriteDatDesignTopology(
-      const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat);
+      const std::vector<EXODUS::CondDef>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat);
 
   //! return set of nodes in bc_entity
-  std::set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m);
+  std::set<int> GetNsFromBCEntity(const EXODUS::CondDef& e, const EXODUS::Mesh& m);
 
   //! Nodes into datfile
   void WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat);
 
   //! Elements into datfile
-  void WriteDatEles(const std::vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh,
+  void WriteDatEles(const std::vector<EXODUS::ElemDef>& eledefs, const EXODUS::Mesh& mymesh,
       std::ostream& dat,
       const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo);
 
   //! Elements from eblock
-  void DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte,
+  void DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::ElemDef& acte,
       int& startele, std::ostream& dat,
       const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo,
       const int eb_id);
 
-  inline std::string CondGeomTypeToString(const EXODUS::cond_def& def)
+  inline std::string CondGeomTypeToString(const EXODUS::CondDef& def)
   {
     switch (def.gtype)
     {

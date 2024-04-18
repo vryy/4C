@@ -86,7 +86,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
             .set<Teuchos::RCP<std::vector<double>>>("pressure nullspace", pnewns);
       }
 
-      P_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner(A,
+      P_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner(A,
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2")));
     }
@@ -178,7 +178,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
             .set<Teuchos::RCP<Epetra_MultiVector>>("pressure nullspace", nullspace);
       }
 
-      P_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner(A,
+      P_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner(A,
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2")));
     }
@@ -232,7 +232,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
       }
 
       P_ = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner(A, sublist1, sublist2));
+          new CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner(A, sublist1, sublist2));
     }
     else
     {
@@ -286,7 +286,7 @@ void CORE::LINEAR_SOLVER::BGSPreconditioner::Setup(
       double block2_omega = bgslist_.get<double>("block2_omega");
       bool fliporder = bgslist_.get<bool>("fliporder");
 
-      P_ = Teuchos::rcp(new CORE::LINALG::BGS2x2_Operator(Teuchos::rcp(matrix, false),
+      P_ = Teuchos::rcp(new CORE::LINALG::BgS2x2Operator(Teuchos::rcp(matrix, false),
           params_.sublist("Inverse1"), params_.sublist("Inverse2"), global_iter, global_omega,
           block1_iter, block1_omega, block2_iter, block2_omega, fliporder));
     }

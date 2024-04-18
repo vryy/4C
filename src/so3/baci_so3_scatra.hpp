@@ -36,15 +36,15 @@ namespace DRT
 
     */
     template <class so3_ele, CORE::FE::CellType distype>
-    class So3_Scatra : public so3_ele
+    class So3Scatra : public so3_ele
     {
       //! @name Friends
-      friend class So_tet4ScatraType;
-      friend class So_tet10ScatraType;
-      friend class So_hex8ScatraType;
-      friend class So_hex8fbarScatraType;
-      friend class So_hex27ScatraType;
-      friend class So_weg6ScatraType;
+      friend class SoTet4ScatraType;
+      friend class SoTet10ScatraType;
+      friend class SoHex8ScatraType;
+      friend class SoHex8fbarScatraType;
+      friend class SoHex27ScatraType;
+      friend class SoWeg6ScatraType;
       // friend class NStet5ScatraType;
 
      public:
@@ -57,7 +57,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      So3_Scatra(int id, int owner);
+      So3Scatra(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -65,10 +65,10 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      So3_Scatra(const So3_Scatra& old);
+      So3Scatra(const So3Scatra& old);
 
       //! don't want = operator
-      So3_Scatra& operator=(const So3_Scatra& old) = delete;
+      So3Scatra& operator=(const So3Scatra& old) = delete;
       //@}
 
       // static constexpr CORE::FE::GaussIntegration intpoints_ =
@@ -109,25 +109,25 @@ namespace DRT
         {
           case CORE::FE::CellType::tet4:
           {
-            return So_tet4ScatraType::Instance().UniqueParObjectId();
+            return SoTet4ScatraType::Instance().UniqueParObjectId();
           }
           case CORE::FE::CellType::tet10:
-            return So_tet10ScatraType::Instance().UniqueParObjectId();
+            return SoTet10ScatraType::Instance().UniqueParObjectId();
           case CORE::FE::CellType::hex8:
           {
             // cast the most specialised element
             // otherwise cast fails, because hex8fbar == hex8
-            const auto* ele = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
+            const auto* ele = dynamic_cast<const DRT::ELEMENTS::SoHex8fbar*>(this);
 
             if (ele != nullptr)
-              return So_hex8fbarScatraType::Instance().UniqueParObjectId();
+              return SoHex8fbarScatraType::Instance().UniqueParObjectId();
             else
-              return So_hex8ScatraType::Instance().UniqueParObjectId();
+              return SoHex8ScatraType::Instance().UniqueParObjectId();
           }
           case CORE::FE::CellType::hex27:
-            return So_hex27ScatraType::Instance().UniqueParObjectId();
+            return SoHex27ScatraType::Instance().UniqueParObjectId();
           case CORE::FE::CellType::wedge6:
-            return So_weg6ScatraType::Instance().UniqueParObjectId();
+            return SoWeg6ScatraType::Instance().UniqueParObjectId();
           default:
             dserror("unknown element type!");
             break;
@@ -168,33 +168,33 @@ namespace DRT
         {
           case CORE::FE::CellType::tet4:
           {
-            const auto* ele = dynamic_cast<const DRT::ELEMENTS::So_tet4*>(this);
-            if (ele != nullptr) return So_tet4ScatraType::Instance();
+            const auto* ele = dynamic_cast<const DRT::ELEMENTS::SoTet4*>(this);
+            if (ele != nullptr) return SoTet4ScatraType::Instance();
             break;
           }
           case CORE::FE::CellType::tet10:
-            return So_tet10ScatraType::Instance();
+            return SoTet10ScatraType::Instance();
           case CORE::FE::CellType::hex8:
           {
             // cast the most specialised element
             // otherwise cast fails, because hex8fbar == hex8
-            const auto* ele = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
+            const auto* ele = dynamic_cast<const DRT::ELEMENTS::SoHex8fbar*>(this);
 
             if (ele != nullptr)
-              return So_hex8fbarScatraType::Instance();
+              return SoHex8fbarScatraType::Instance();
             else
-              return So_hex8ScatraType::Instance();
+              return SoHex8ScatraType::Instance();
           }
           case CORE::FE::CellType::hex27:
-            return So_hex27ScatraType::Instance();
+            return SoHex27ScatraType::Instance();
           case CORE::FE::CellType::wedge6:
-            return So_weg6ScatraType::Instance();
+            return SoWeg6ScatraType::Instance();
           default:
             dserror("unknown element type!");
             break;
         }
         // Intel compiler needs a return so
-        return So_weg6ScatraType::Instance();
+        return SoWeg6ScatraType::Instance();
       };
 
 

@@ -32,13 +32,13 @@ namespace XFEM
   class ConditionManager;
   class MeshCouplingFSI;
 
-  class XFSCoupling_Manager : public Coupling_Manager, public Coupling_Comm_Manager
+  class XfsCouplingManager : public CouplingManager, public CouplingCommManager
   {
    public:
     /// constructor
     // in idx ... idx[0] structureal discretization index , idx[1] fluid discretization index in the
     // blockmatrix
-    explicit XFSCoupling_Manager(Teuchos::RCP<ConditionManager> condmanager,
+    explicit XfsCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
         Teuchos::RCP<ADAPTER::Structure> structure, Teuchos::RCP<FLD::XFluid> xfluid,
         std::vector<int> idx);
 

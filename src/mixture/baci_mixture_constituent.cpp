@@ -67,7 +67,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_ElastHyper(curmat));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituentElastHyper(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -75,7 +75,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_ElastHyperDamage(curmat));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituentElastHyperDamage(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -83,8 +83,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(
-            new MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane(curmat));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -92,7 +91,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl(curmat));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituentRemodelFiberExpl(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -101,7 +100,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
       if (curmat->Parameter() == nullptr)
       {
         curmat->SetParameter(
-            new MIXTURE::PAR::MixtureConstituent_FullConstrainedMixtureFiber(curmat));
+            new MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -109,7 +108,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_RemodelFiberImpl(curmat));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituentRemodelFiberImpl(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -117,7 +116,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_SolidMaterial(curmat));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituentSolidMaterial(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }

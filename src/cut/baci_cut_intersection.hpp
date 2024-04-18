@@ -564,7 +564,7 @@ namespace CORE::GEO
 
       // Remove all the edges from list of touching edges that are further away than 1e-14 (
       // TOPOLOGICAL_TOLERANCE ) distance from the point
-      template <unsigned int dim, INPAR::CUT::CUT_Floattype floattype>
+      template <unsigned int dim, INPAR::CUT::CutFloattype floattype>
       void FixDistantTouchingEdges(
           CORE::LINALG::Matrix<dim, 1>& p_coord, std::vector<int>& touching_edges)
       {
@@ -648,7 +648,7 @@ namespace CORE::GEO
         }
       }
 
-      template <INPAR::CUT::CUT_Floattype floattype>
+      template <INPAR::CUT::CutFloattype floattype>
       IntersectionStatus ComputeEdgeSideIntersectionT(
           double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = nullptr)
       {
@@ -960,7 +960,7 @@ namespace CORE::GEO
         }
       }
 
-      template <INPAR::CUT::CUT_Floattype floattype>
+      template <INPAR::CUT::CutFloattype floattype>
       bool ComputeEdgeTri3IntersectionT(int triangleid, KERNEL::PointOnSurfaceLoc& location)
       {
         if (triangleid < 0) dserror("The triangle id has to be positive!");
@@ -1008,7 +1008,7 @@ namespace CORE::GEO
         }
       }
 
-      template <INPAR::CUT::CUT_Floattype floattype>
+      template <INPAR::CUT::CutFloattype floattype>
       IntersectionStatus ComputeEdgeTri3IntersectionQuad4SplitT(
           int triangleid, bool* close_to_shared_edge = nullptr)
       {
@@ -1090,7 +1090,7 @@ namespace CORE::GEO
         }
       }
 
-      template <INPAR::CUT::CUT_Floattype floattype>
+      template <INPAR::CUT::CutFloattype floattype>
       bool ComputeDistanceT(CORE::LINALG::Matrix<probdim, 1> point, double& distance,
           double& tolerance, bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc,
           std::vector<int>& touched_edges, bool signeddistance = false)
@@ -1200,7 +1200,7 @@ namespace CORE::GEO
         }
       }
 
-      template <INPAR::CUT::CUT_Floattype floattype>
+      template <INPAR::CUT::CutFloattype floattype>
       bool ComputeDistanceT(CORE::LINALG::Matrix<3, 1> point, double& distance, double& tolerance,
           bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
           bool signeddistance, int tri3_id, bool& extended_tri_tolerance_loc_triangle_split)

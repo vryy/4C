@@ -31,11 +31,11 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// material parameters for Maxwell 0D acinar material
     ///
-    class Maxwell_0d_acinus_Exponential : public Maxwell_0d_acinus
+    class Maxwell0dAcinusExponential : public Maxwell0dAcinus
     {
      public:
       /// standard constructor
-      Maxwell_0d_acinus_Exponential(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Maxwell0dAcinusExponential(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
@@ -44,31 +44,31 @@ namespace MAT
   }     // namespace PAR
 
 
-  class Maxwell_0d_acinusExponentialType : public Maxwell_0d_acinusType
+  class Maxwell0dAcinusExponentialType : public Maxwell0dAcinusType
   {
    public:
     std::string Name() const override { return "maxwell_0d_acinusExponentialType"; }
 
-    static Maxwell_0d_acinusExponentialType& Instance() { return instance_; };
+    static Maxwell0dAcinusExponentialType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static Maxwell_0d_acinusExponentialType instance_;
+    static Maxwell0dAcinusExponentialType instance_;
   };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Maxwell 0D acinar material
   ///
   /// This object exists (several times) at every element
-  class Maxwell_0d_acinus_Exponential : public Maxwell_0d_acinus
+  class Maxwell0dAcinusExponential : public Maxwell0dAcinus
   {
    public:
     /// construct empty material object
-    Maxwell_0d_acinus_Exponential();
+    Maxwell0dAcinusExponential();
 
     /// construct the material object given material parameters
-    Maxwell_0d_acinus_Exponential(MAT::PAR::Maxwell_0d_acinus* params);
+    Maxwell0dAcinusExponential(MAT::PAR::Maxwell0dAcinus* params);
 
     //! @name Packing and Unpacking
 
@@ -80,7 +80,7 @@ namespace MAT
     */
     int UniqueParObjectId() const override
     {
-      return Maxwell_0d_acinusExponentialType::Instance().UniqueParObjectId();
+      return Maxwell0dAcinusExponentialType::Instance().UniqueParObjectId();
     }
 
 
@@ -120,7 +120,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new Maxwell_0d_acinus(*this));
+      return Teuchos::rcp(new Maxwell0dAcinus(*this));
     }
 
     /*!

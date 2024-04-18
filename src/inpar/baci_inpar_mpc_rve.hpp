@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace INPAR::RVE_MPC
 {
   /// Definition Type of the MultiPoint Constraint
-  enum multiPointConstraintType
+  enum MultiPointConstraintType
   {
     none,
     coupled_equation,  ///< Manually enter the dofs as coupled equation
@@ -28,7 +28,7 @@ namespace INPAR::RVE_MPC
 
   /// Definition Type of Coupled Equation
   /// (this enum represents the input file parameter COUPLED_DOF_EQUATIONS)
-  enum ceType
+  enum CeType
   {
     ce_none,
     ce_linear
@@ -36,7 +36,7 @@ namespace INPAR::RVE_MPC
 
   /// Strategy used to enforce the MPCs
   /// (this enum represents the input file parameter ENFORCEMENT)
-  enum enforcementStrategy
+  enum EnforcementStrategy
   {
     penalty,            ///< Enforce the Multi-Point Constraint with the penalty method
     lagrangeMultiplier  ///< Enforce the Multi-Point Constraint with the Lagrange Multiplier
@@ -45,20 +45,20 @@ namespace INPAR::RVE_MPC
 
   /// Methods used to determine the reference points for an periodic RVE
   /// (this enum represents the input file parameter RVE_REFERENCE_POINTS)
-  enum rveReferenceDeformationDefinition
+  enum RveReferenceDeformationDefinition
   {
     automatic,  ///< Automatically use the corner nodes for reference
     manual      ///< provide the reference nodes as condition
 
   };
 
-  enum rveDimension
+  enum RveDimension
   {
     rve2d,
     rve3d
   };
 
-  enum rveEdgeIdentifiers
+  enum RveEdgeIdentifiers
   {
     Gamma_xm,
     Gamma_ym,

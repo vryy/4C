@@ -47,7 +47,7 @@ using NO = Node;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner(
+CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::CheapSimpleBlockPreconditioner(
     Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& predict_list,
     const Teuchos::ParameterList& correct_list)
     : predictSolver_list_(predict_list),
@@ -78,7 +78,7 @@ CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPrecondit
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_Operator> A,
+void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epetra_Operator> A,
     const Teuchos::ParameterList& origvlist, const Teuchos::ParameterList& origplist)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
@@ -383,7 +383,7 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Ep
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::ApplyInverse(
+int CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   // note: might pass X and Y as physically identical objects,
@@ -418,7 +418,7 @@ int CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::ApplyInverse(
  | A Multigrid Preconditioned Newton-Krylov method for the incomp.      |
  | Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  |
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Simpler(CORE::LINALG::ANA::Vector& vx,
+void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Simpler(CORE::LINALG::ANA::Vector& vx,
     CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
     CORE::LINALG::ANA::Vector& pb) const
 {
@@ -452,7 +452,7 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Simpler(CORE::LINALG:
  | Sandia technical report SAND2007-2761, 2007                          |
  | Also appeared in JCP                                                 |
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Simple(CORE::LINALG::ANA::Vector& vx,
+void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Simple(CORE::LINALG::ANA::Vector& vx,
     CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
     CORE::LINALG::ANA::Vector& pb) const
 {
@@ -488,8 +488,8 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Simple(CORE::LINALG::
  |                                                                      |
  | all solves replaced by single AMG sweeps                             |
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSimple(
-    CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
+void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::CheapSimple(CORE::LINALG::ANA::Vector& vx,
+    CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
     CORE::LINALG::ANA::Vector& pb) const
 {
   CORE::LINALG::SparseMatrix& A10 = (*A_)(1, 0);

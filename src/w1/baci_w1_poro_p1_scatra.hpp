@@ -43,9 +43,9 @@ namespace DRT
 
     */
     template <CORE::FE::CellType distype>
-    class Wall1_PoroP1Scatra : public Wall1_PoroP1<distype>
+    class Wall1PoroP1Scatra : public Wall1PoroP1<distype>
     {
-      typedef DRT::ELEMENTS::Wall1_PoroP1<distype> my;
+      typedef DRT::ELEMENTS::Wall1PoroP1<distype> my;
 
      public:
       //@}
@@ -57,7 +57,7 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */
-      Wall1_PoroP1Scatra(int id, int owner);
+      Wall1PoroP1Scatra(int id, int owner);
 
       /*!
       \brief Copy Constructor
@@ -65,7 +65,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      Wall1_PoroP1Scatra(const Wall1_PoroP1Scatra& old);
+      Wall1PoroP1Scatra(const Wall1PoroP1Scatra& old);
 
 
       //@}
@@ -134,7 +134,7 @@ namespace DRT
 
      protected:
       //! don't want = operator
-      Wall1_PoroP1Scatra& operator=(const Wall1_PoroP1Scatra& old);
+      Wall1PoroP1Scatra& operator=(const Wall1PoroP1Scatra& old);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

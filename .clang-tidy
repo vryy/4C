@@ -29,28 +29,12 @@ Checks: >-
   -bugprone-assert-side-effect,
   -bugprone-multiple-statement-macro
 CheckOptions:
-  - key: readability-identifier-naming.TypedefCase
-    value: CamelCase
   - key: readability-identifier-naming.StructCase
     value: CamelCase
   - key: readability-identifier-naming.ClassCase
     value: CamelCase
   - key: readability-identifier-naming.EnumCase
     value: CamelCase
-  - key: readability-identifier-naming.TypeTemplateParameterCase
-    value: CamelCase
-  - key: readability-identifier-naming.ValueTemplateParameterCase
-    value: lower_case
-  - key: readability-identifier-naming.FunctionCase
-    value: lower_case
-  - key: readability-identifier-naming.ParameterCase
-    value: lower_case
-  - key: readability-identifier-naming.NamespaceCase
-    value: CamelCase
-  - key: readability-identifier-naming.MacroDefinitionCase
-    value: UPPER_CASE
-  - key: readability-identifier-naming.PrivateMemberSuffix
-    value: _
   - key: misc-assert-side-effect.CheckFunctionCalls
     value: 1
   - key: misc-assert-side-effect.AssertMacros
@@ -63,5 +47,6 @@ WarningsAsErrors: >-
   modernize-use-nullptr,
   modernize-use-override,
   readability-const-return-type,
+  readability-identifier-naming,
   readability-inconsistent-declaration-parameter-name,
   cppcoreguidelines-virtual-class-destructor

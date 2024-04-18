@@ -17,13 +17,8 @@
 
 #include "baci_inpar_beaminteraction.hpp"
 
+#include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
-
-// Forward declarations.
-class Epetra_Map;
-class Epetra_MultiVector;
-class Epetra_Vector;
-class Epetra_FEVector;
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -16,12 +16,10 @@
 
 #include "baci_geometry_pair_element.hpp"
 
+#include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
-
-class Epetra_Vector;
-class Epetra_FEVector;
 
 FOUR_C_NAMESPACE_OPEN
 

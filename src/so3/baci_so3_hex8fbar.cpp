@@ -21,38 +21,38 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::So_hex8fbarType DRT::ELEMENTS::So_hex8fbarType::instance_;
+DRT::ELEMENTS::SoHex8fbarType DRT::ELEMENTS::SoHex8fbarType::instance_;
 
-DRT::ELEMENTS::So_hex8fbarType& DRT::ELEMENTS::So_hex8fbarType::Instance() { return instance_; }
+DRT::ELEMENTS::SoHex8fbarType& DRT::ELEMENTS::SoHex8fbarType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::So_hex8fbarType::Create(const std::vector<char>& data)
+CORE::COMM::ParObject* DRT::ELEMENTS::SoHex8fbarType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So_hex8fbar(-1, -1);
+  auto* object = new DRT::ELEMENTS::SoHex8fbar(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarType::Create(
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8fbarType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8fbar(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex8fbar(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarType::Create(const int id, const int owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoHex8fbarType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8fbar(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex8fbar(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_hex8fbarType::NodalBlockInformation(
+void DRT::ELEMENTS::SoHex8fbarType::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -61,13 +61,13 @@ void DRT::ELEMENTS::So_hex8fbarType::NodalBlockInformation(
   np = 0;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_hex8fbarType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoHex8fbarType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition(
+void DRT::ELEMENTS::SoHex8fbarType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
 {
   std::map<std::string, INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition(
  |  ctor (public)                                             popp 07/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(int id, int owner) : DRT::ELEMENTS::So_hex8(id, owner)
+DRT::ELEMENTS::SoHex8fbar::SoHex8fbar(int id, int owner) : DRT::ELEMENTS::SoHex8(id, owner)
 {
   if (PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8 + 1));
@@ -111,8 +111,8 @@ DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(int id, int owner) : DRT::ELEMENTS::So_h
  |  copy-ctor (public)                                        popp 07/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(const DRT::ELEMENTS::So_hex8fbar& old)
-    : DRT::ELEMENTS::So_hex8(old)
+DRT::ELEMENTS::SoHex8fbar::SoHex8fbar(const DRT::ELEMENTS::SoHex8fbar& old)
+    : DRT::ELEMENTS::SoHex8(old)
 {
   return;
 }
@@ -121,9 +121,9 @@ DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(const DRT::ELEMENTS::So_hex8fbar& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::So_hex8fbar::Clone() const
+DRT::Element* DRT::ELEMENTS::SoHex8fbar::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So_hex8fbar(*this);
+  auto* newelement = new DRT::ELEMENTS::SoHex8fbar(*this);
   return newelement;
 }
 
@@ -131,7 +131,7 @@ DRT::Element* DRT::ELEMENTS::So_hex8fbar::Clone() const
  |  Pack data                                                  (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8fbar::Pack(CORE::COMM::PackBuffer& data) const
+void DRT::ELEMENTS::SoHex8fbar::Pack(CORE::COMM::PackBuffer& data) const
 {
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::So_hex8fbar::Pack(CORE::COMM::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So_hex8 Element
-  DRT::ELEMENTS::So_hex8::Pack(data);
+  DRT::ELEMENTS::SoHex8::Pack(data);
 
   return;
 }
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::So_hex8fbar::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8fbar::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::SoHex8fbar::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -158,7 +158,7 @@ void DRT::ELEMENTS::So_hex8fbar::Unpack(const std::vector<char>& data)
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So_hex8::Unpack(basedata);
+  DRT::ELEMENTS::SoHex8::Unpack(basedata);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -170,7 +170,7 @@ void DRT::ELEMENTS::So_hex8fbar::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                               popp 07/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8fbar::Print(std::ostream& os) const
+void DRT::ELEMENTS::SoHex8fbar::Print(std::ostream& os) const
 {
   os << "So_hex8fbar ";
   Element::Print(os);

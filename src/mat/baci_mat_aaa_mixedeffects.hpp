@@ -33,11 +33,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for aneurysm wall material
-    class AAA_mixedeffects : public Parameter
+    class AaaMixedeffects : public Parameter
     {
      public:
       /// standard constructor
-      AAA_mixedeffects(Teuchos::RCP<MAT::PAR::Material> matdata);
+      AaaMixedeffects(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -60,31 +60,31 @@ namespace MAT
 
   }  // namespace PAR
 
-  class AAA_mixedeffectsType : public CORE::COMM::ParObjectType
+  class AaaMixedeffectsType : public CORE::COMM::ParObjectType
   {
    public:
     std::string Name() const override { return "AAA_mixedeffectsType"; }
 
-    static AAA_mixedeffectsType& Instance() { return instance_; };
+    static AaaMixedeffectsType& Instance() { return instance_; };
 
     CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
 
    private:
-    static AAA_mixedeffectsType instance_;
+    static AaaMixedeffectsType instance_;
   };
 
 
 
   /*----------------------------------------------------------------------*/
 
-  class AAA_mixedeffects : public So3Material
+  class AaaMixedeffects : public So3Material
   {
    public:
     // empty constructor
-    AAA_mixedeffects();
+    AaaMixedeffects();
 
     // constructor with given material parameters
-    AAA_mixedeffects(MAT::PAR::AAA_mixedeffects* params);
+    AaaMixedeffects(MAT::PAR::AaaMixedeffects* params);
 
     //! @name Packing and Unpacking
 
@@ -96,7 +96,7 @@ namespace MAT
     */
     int UniqueParObjectId() const override
     {
-      return AAA_mixedeffectsType::Instance().UniqueParObjectId();
+      return AaaMixedeffectsType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -155,7 +155,7 @@ namespace MAT
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override
     {
-      return Teuchos::rcp(new AAA_mixedeffects(*this));
+      return Teuchos::rcp(new AaaMixedeffects(*this));
     }
 
     // THE material routine
@@ -175,7 +175,7 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::AAA_mixedeffects* params_;
+    MAT::PAR::AaaMixedeffects* params_;
   };
 }  // namespace MAT
 

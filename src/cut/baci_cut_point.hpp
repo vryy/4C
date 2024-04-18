@@ -560,10 +560,10 @@ namespace CORE::GEO
     };
 
 #ifdef CUT_USE_SORTED_VECTOR
-    typedef sorted_vector<Point*, true, PointPidLess> PointSet;
-    typedef sorted_vector<Point*, true, PointPositionLess> PointPositionSet;
+    typedef SortedVector<Point*, true, PointPidLess> PointSet;
+    typedef SortedVector<Point*, true, PointPositionLess> PointPositionSet;
 
-    typedef sorted_vector<Teuchos::RCP<Point>, true, PointPidLess> RCPPointSet;
+    typedef SortedVector<Teuchos::RCP<Point>, true, PointPidLess> RCPPointSet;
 
 #else
     typedef std::set<Point*, PointPidLess> PointSet;

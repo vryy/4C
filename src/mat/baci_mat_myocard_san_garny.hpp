@@ -44,15 +44,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /// \date 09/13
 
-class Myocard_SAN_Garny : public Myocard_General
+class MyocardSanGarny : public MyocardGeneral
 
 {
  public:
   /// construct empty material object
-  Myocard_SAN_Garny();
+  MyocardSanGarny();
 
   /// construct empty material object
-  explicit Myocard_SAN_Garny(const double eps_deriv_myocard, const std::string tissue);
+  explicit MyocardSanGarny(const double eps_deriv_myocard, const std::string tissue);
 
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt) override;
@@ -76,7 +76,7 @@ class Myocard_SAN_Garny : public Myocard_General
   void Update(const double phi, const double dt) override;
 
  private:
-  Myocard_Tools tools_;
+  MyocardTools tools_;
 
   /// perturbation for numerical approximation of the derivative
   double eps_deriv_;

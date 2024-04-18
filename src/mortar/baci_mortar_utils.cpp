@@ -594,8 +594,8 @@ int MORTAR::SortConvexHullPoints(bool out, CORE::LINALG::SerialDenseMatrix& tran
 
   // always push pack starting point
   Vertex* current = &collconvexhull[startindex];
-  respoly.push_back(Vertex(current->Coord(), current->VType(), current->Nodeids(), nullptr, nullptr,
-      false, false, nullptr, -1.0));
+  respoly.push_back(Vertex(current->Coord(), current->v_type(), current->Nodeids(), nullptr,
+      nullptr, false, false, nullptr, -1.0));
 
   // number of points removed from convex hull
   int removed = (int)collconvexhull.size() - np;
@@ -698,7 +698,7 @@ int MORTAR::SortConvexHullPoints(bool out, CORE::LINALG::SerialDenseMatrix& tran
     if (cw <= -tol)
     {
       Vertex* current = &collconvexhull[sorted[i]];
-      respoly.push_back(Vertex(current->Coord(), current->VType(), current->Nodeids(), nullptr,
+      respoly.push_back(Vertex(current->Coord(), current->v_type(), current->Nodeids(), nullptr,
           nullptr, false, false, nullptr, -1.0));
     }
     // mark vertex as "removed" if counter-clockwise triple

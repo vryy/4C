@@ -22,14 +22,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Interface::Impl(
+DRT::ELEMENTS::Ale3SurfaceImplInterface* DRT::ELEMENTS::Ale3SurfaceImplInterface::Impl(
     DRT::ELEMENTS::Ale3Surface* ele)
 {
   switch (ele->Shape())
   {
     case CORE::FE::CellType::quad4:
     {
-      return DRT::ELEMENTS::Ale3Surface_Impl<CORE::FE::CellType::quad4>::Instance(
+      return DRT::ELEMENTS::Ale3SurfaceImpl<CORE::FE::CellType::quad4>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
     default:
@@ -40,14 +40,14 @@ DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Inter
 }
 
 template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Ale3Surface_Impl<distype>* DRT::ELEMENTS::Ale3Surface_Impl<distype>::Instance(
+DRT::ELEMENTS::Ale3SurfaceImpl<distype>* DRT::ELEMENTS::Ale3SurfaceImpl<distype>::Instance(
     CORE::UTILS::SingletonAction action)
 {
   static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::Ale3Surface_Impl<distype>>(
-            new DRT::ELEMENTS::Ale3Surface_Impl<distype>());
+        return std::unique_ptr<DRT::ELEMENTS::Ale3SurfaceImpl<distype>>(
+            new DRT::ELEMENTS::Ale3SurfaceImpl<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -78,7 +78,7 @@ int DRT::ELEMENTS::Ale3Surface::Evaluate(Teuchos::ParameterList& params,
         CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
       }
 
-      Ale3Surface_Impl_Interface::Impl(this)->ElementNodeNormal(
+      Ale3SurfaceImplInterface::Impl(this)->ElementNodeNormal(
           this, params, discretization, lm, elevec1, mydispnp);
 
       break;
@@ -103,7 +103,7 @@ int DRT::ELEMENTS::Ale3Surface::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3Surface_Impl<distype>::ElementNodeNormal(Ale3Surface* ele,
+inline void DRT::ELEMENTS::Ale3SurfaceImpl<distype>::ElementNodeNormal(Ale3Surface* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp)
 {
