@@ -27,7 +27,7 @@ values per element
 #include <unordered_map>
 
 
-BACI_NAMESPACE_OPEN
+FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
@@ -118,4 +118,4 @@ void MIXTURE::MapMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
 }
 
 
-BACI_NAMESPACE_CLOSE
+FOUR_C_NAMESPACE_CLOSE
