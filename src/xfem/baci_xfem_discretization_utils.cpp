@@ -15,10 +15,10 @@
 #include "baci_lib_discret_faces.hpp"
 #include "baci_lib_discret_xfem.hpp"
 #include "baci_lib_dofset_fixed_size.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
-#include "baci_rebalance.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_binning_based.hpp"
+#include "baci_rebalance_graph_based.hpp"
+#include "baci_rebalance_print.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

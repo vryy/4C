@@ -35,7 +35,7 @@
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_print.hpp"
 #include "baci_structure_new_model_evaluator_data.hpp"
 #include "baci_structure_new_timint_base.hpp"
 #include "baci_structure_new_utils.hpp"

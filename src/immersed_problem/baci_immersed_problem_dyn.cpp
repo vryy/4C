@@ -16,7 +16,7 @@
 #include "baci_immersed_problem_immersed_partitioned_fsi_dirichletneumann.hpp"
 #include "baci_inpar_immersed.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
+#include "baci_rebalance_binning_based.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -97,7 +97,7 @@ void immersed_problem_drt()
           algo->Init(params);
 
           // ghost structure redundantly on all procs
-          DRT::UTILS::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));
+          CORE::REBALANCE::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));
 
           // setup algo
           algo->Setup();

@@ -14,18 +14,19 @@
 #include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_lib_discret_faces.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
 #include "baci_mat_list.hpp"
 #include "baci_mat_material.hpp"
 #include "baci_mat_newtonianfluid.hpp"
+#include "baci_rebalance_binning_based.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
     std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp)
 {
-  Teuchos::RCP<const Epetra_Vector> dispcol = DRT::UTILS::GetColVersionOfRowVector(dis, idispnp);
+  Teuchos::RCP<const Epetra_Vector> dispcol =
+      CORE::REBALANCE::GetColVersionOfRowVector(dis, idispnp);
   nodevecmap.clear();
 
   for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)

@@ -17,10 +17,10 @@
 #include "baci_lib_dofset_gidbased_wrapper.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_poroelast_scatra_utils.hpp"
 #include "baci_poroelast_scatra_utils_clonestrategy.hpp"
 #include "baci_poroelast_utils_setup.hpp"
+#include "baci_rebalance_binning_based.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -94,7 +94,7 @@ namespace POROELASTSCATRA
         dis.push_back(fluiddis);
         dis.push_back(scatradis);
 
-        DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+        CORE::REBALANCE::RebalanceDiscretizationsByBinning(dis, false);
 
         // set material pointers
         POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);

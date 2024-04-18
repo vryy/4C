@@ -11,7 +11,6 @@
 
 #include "baci_global_data.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
@@ -21,6 +20,7 @@
 #include "baci_porofluidmultiphase_utils.hpp"
 #include "baci_poromultiphase_scatra_artery_coupling_defines.hpp"
 #include "baci_poromultiphase_scatra_artery_coupling_pair.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_scatra_ele_parameter_timint.hpp"
 
 #include <Epetra_FEVector.h>

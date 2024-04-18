@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_rebalance.hpp"
+#include "baci_rebalance_graph_based.hpp"
 
 #include "baci_discretization_geometric_search_bounding_volume.hpp"
 #include "baci_discretization_geometric_search_distributed_tree.hpp"

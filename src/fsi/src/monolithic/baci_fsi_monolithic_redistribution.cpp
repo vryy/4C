@@ -30,7 +30,7 @@
 #include "baci_lib_node.hpp"
 #include "baci_linalg_blocksparsematrix.hpp"
 #include "baci_linalg_utils_sparse_algebra_math.hpp"
-#include "baci_rebalance.hpp"
+#include "baci_rebalance_graph_based.hpp"
 #include "baci_structure_aux.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

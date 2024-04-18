@@ -14,8 +14,8 @@
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_dofset_transparent.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_utils_function_of_time.hpp"
 
 #include <iostream>
@@ -38,7 +38,7 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> disc
     constraintdis_ =
         CreateDiscretizationFromCondition(actdisc_, constrcond_, "ConstrDisc", "CONSTRELE2", dummy);
     Teuchos::RCP<Epetra_Map> newcolnodemap =
-        DRT::UTILS::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
+        CORE::REBALANCE::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
     Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
     (constraintdis_.find(0)->second)->ReplaceDofSet(newdofset);

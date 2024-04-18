@@ -17,8 +17,8 @@
 #include "baci_io_utils_reader.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_elementdefinition.hpp"
-#include "baci_lib_utils_parallel.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_binning_based.hpp"
+#include "baci_rebalance_print.hpp"
 
 #include <Teuchos_Time.hpp>
 

@@ -15,14 +15,14 @@
 #include "baci_io_control.hpp"
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_mat_maxwell_0d_acinus_Ogden.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_binning_based.hpp"
+#include "baci_rebalance_print.hpp"
 #include "baci_red_airways_evaluation_data.hpp"
 #include "baci_red_airways_resulttest.hpp"
 #include "baci_utils_exceptions.hpp"
@@ -108,7 +108,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
     }
 
     // make search discret fully overlapping on all procs
-    DRT::UTILS::GhostDiscretizationOnAllProcs(discret_);
+    CORE::REBALANCE::GhostDiscretizationOnAllProcs(discret_);
     discret_->FillComplete(false, false, false);
 
     // Get elements and nodes that need to be ghosted to have correct neighbor search

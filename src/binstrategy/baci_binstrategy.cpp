@@ -27,8 +27,8 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_mortar_element.hpp"
 #include "baci_mortar_node.hpp"
-#include "baci_rebalance.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_graph_based.hpp"
+#include "baci_rebalance_print.hpp"
 #include "baci_rigidsphere.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

@@ -40,8 +40,8 @@
 #include "baci_io_pstream.hpp"
 #include "baci_lib_condition.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_mat_par_bundle.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_shell7p_ele.hpp"
 #include "baci_so3_hex8fbar.hpp"
 #include "baci_so3_plast_ssn_eletypes.hpp"
@@ -166,7 +166,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   {
     std::vector<Teuchos::RCP<DRT::Discretization>> actdis_vec(1, actdis_);
     actdis_vec[0]->FillComplete(false, false, false);
-    DRT::UTILS::RedistributeDiscretizationsByBinning(actdis_vec, true);
+    CORE::REBALANCE::RebalanceDiscretizationsByBinning(actdis_vec, true);
   }
   else if (not actdis_->Filled() || not actdis_->HaveDofs())
   {

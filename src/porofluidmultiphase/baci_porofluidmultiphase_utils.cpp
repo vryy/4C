@@ -17,12 +17,12 @@
 #include "baci_global_data.hpp"
 #include "baci_inpar_bio.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_mat_cnst_1d_art.hpp"
 #include "baci_mat_material.hpp"
 #include "baci_porofluidmultiphase_timint_ost.hpp"
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_binning_based.hpp"
+#include "baci_rebalance_print.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -295,7 +295,7 @@ POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
       discloner->CreateMatchingDiscretization(artdis, disname, false, false, false, false);
 
   // ghost on all procs.
-  DRT::UTILS::GhostDiscretizationOnAllProcs(artsearchdis);
+  CORE::REBALANCE::GhostDiscretizationOnAllProcs(artsearchdis);
   artsearchdis->FillComplete(false, false, doboundaryconditions);
 
   return artsearchdis;

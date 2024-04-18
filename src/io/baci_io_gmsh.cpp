@@ -15,9 +15,9 @@
 #include "baci_discretization_geometry_position_array.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_discret.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"  // CORE::LINALG::Export
+#include "baci_rebalance_binning_based.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -30,7 +30,7 @@ void IO::GMSH::ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret
 {
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<const Epetra_Vector> scalarfield =
-      DRT::UTILS::GetColVersionOfRowVector(discret, scalarfield_row);
+      CORE::REBALANCE::GetColVersionOfRowVector(discret, scalarfield_row);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -80,7 +80,7 @@ void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
 {
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<const Epetra_Vector> scalarfield =
-      DRT::UTILS::GetColVersionOfRowVector(discret, scalarfield_row, nds);
+      CORE::REBALANCE::GetColVersionOfRowVector(discret, scalarfield_row, nds);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -201,7 +201,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
 {
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<const Epetra_Vector> vectorfield =
-      DRT::UTILS::GetColVersionOfRowVector(discret, vectorfield_row, nds);
+      CORE::REBALANCE::GetColVersionOfRowVector(discret, vectorfield_row, nds);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -327,7 +327,7 @@ void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discreti
 {
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<const Epetra_Vector> vectorfield =
-      DRT::UTILS::GetColVersionOfRowVector(discret, vectorfield_row);
+      CORE::REBALANCE::GetColVersionOfRowVector(discret, vectorfield_row);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -387,7 +387,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
 {
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<const Epetra_Vector> vectorfield =
-      DRT::UTILS::GetColVersionOfRowVector(discret, vectorfield_row, nds);
+      CORE::REBALANCE::GetColVersionOfRowVector(discret, vectorfield_row, nds);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -475,7 +475,8 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
     const Teuchos::RCP<const Epetra_MultiVector> vectorfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
-  // remark: DRT::UTILS::GetColVersionOfRowVector() does only work for Epetra_Vectors on DofRowMap
+  // remark: CORE::REBALANCE::GetColVersionOfRowVector() does only work for Epetra_Vectors
+  // on DofRowMap
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(), 3, true));
   CORE::LINALG::Export(*vectorfield_row, *vectorfield);
@@ -521,7 +522,8 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
     const Teuchos::RCP<const Epetra_Vector> scalarfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
-  // remark: DRT::UTILS::GetColVersionOfRowVector() does only work for Epetra_Vectors on DofRowMap
+  // remark: CORE::REBALANCE::GetColVersionOfRowVector() does only work for Epetra_Vectors
+  // on DofRowMap
   //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for
   //         Epetra_MultiVectors
   const Teuchos::RCP<Epetra_Vector> scalarfield =

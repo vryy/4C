@@ -8,7 +8,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_rebalance_utils.hpp"
+#include "baci_rebalance_print.hpp"
 
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"

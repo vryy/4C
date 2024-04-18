@@ -15,7 +15,6 @@
 #include "baci_global_data.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
@@ -34,7 +33,8 @@
 #include "baci_nurbs_discret.hpp"
 #include "baci_poroelast_scatra_utils.hpp"
 #include "baci_poroelast_utils.hpp"
-#include "baci_rebalance.hpp"
+#include "baci_rebalance_binning_based.hpp"
+#include "baci_rebalance_graph_based.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_SerialComm.h>
@@ -1196,10 +1196,10 @@ void MORTAR::Interface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& rownode
   }
   else
   {
-    DRT::UTILS::RedistributeInAccordanceWithReference(
+    CORE::REBALANCE::RebalanceInAccordanceWithReference(
         *GetMaSharingRefInterfacePtr()->MasterRowNodes(), *MasterRowNodes(), rownodes);
 
-    DRT::UTILS::RedistributeInAccordanceWithReference(
+    CORE::REBALANCE::RebalanceInAccordanceWithReference(
         *GetMaSharingRefInterfacePtr()->MasterColNodes(), *MasterColNodes(), colnodes);
   }
 }

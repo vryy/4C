@@ -11,7 +11,6 @@
 #include "baci_art_net_utils.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_poroelast_scatra_utils_clonestrategy.hpp"
 #include "baci_poroelast_utils.hpp"
 #include "baci_poroelast_utils_clonestrategy.hpp"
@@ -22,6 +21,7 @@
 #include "baci_poromultiphase_scatra_monolithic_twoway.hpp"
 #include "baci_poromultiphase_scatra_partitioned_twoway.hpp"
 #include "baci_poromultiphase_utils.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_scatra_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN

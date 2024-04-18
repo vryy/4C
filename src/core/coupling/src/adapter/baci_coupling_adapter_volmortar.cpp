@@ -18,11 +18,11 @@
 #include "baci_inpar_volmortar.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
+#include "baci_rebalance_binning_based.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -147,7 +147,7 @@ void CORE::ADAPTER::MortarVolCoupl::Redistribute()
   dis.push_back(masterdis_);
   dis.push_back(slavedis_);
 
-  DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+  CORE::REBALANCE::RebalanceDiscretizationsByBinning(dis, false);
 
   return;
 }

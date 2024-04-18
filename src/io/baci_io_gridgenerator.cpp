@@ -16,8 +16,8 @@
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_elementdefinition.hpp"
-#include "baci_lib_utils_parallel.hpp"
-#include "baci_rebalance.hpp"
+#include "baci_rebalance_binning_based.hpp"
+#include "baci_rebalance_graph_based.hpp"
 
 #include <algorithm>
 

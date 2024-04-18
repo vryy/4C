@@ -25,10 +25,10 @@
 #include "baci_lib_condition_selector.hpp"
 #include "baci_lib_discret_faces.hpp"
 #include "baci_lib_dofset_transparent_independent.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_lib_xfem_dofset.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_xfem_condition_manager.hpp"
 #include "baci_xfem_edgestab.hpp"
 #include "baci_xfem_mesh_projector.hpp"
@@ -565,9 +565,9 @@ bool FLD::XFluidFluid::XTimint_ProjectFromEmbeddedDiscretization(
 {
   std::vector<Teuchos::RCP<const Epetra_Vector>> oldStateVectors;
 
-  Teuchos::RCP<const Epetra_Vector> velncol = DRT::UTILS::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> velncol = CORE::REBALANCE::GetColVersionOfRowVector(
       embedded_fluid_->Discretization(), embedded_fluid_->Veln());
-  Teuchos::RCP<const Epetra_Vector> accncol = DRT::UTILS::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> accncol = CORE::REBALANCE::GetColVersionOfRowVector(
       embedded_fluid_->Discretization(), embedded_fluid_->Accn());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
@@ -577,7 +577,7 @@ bool FLD::XFluidFluid::XTimint_ProjectFromEmbeddedDiscretization(
       xfluid_timeint->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
 
   Teuchos::RCP<const Epetra_Vector> disp =
-      DRT::UTILS::GetColVersionOfRowVector(embedded_fluid_->Discretization(), dispnpoldstate_);
+      CORE::REBALANCE::GetColVersionOfRowVector(embedded_fluid_->Discretization(), dispnpoldstate_);
   projector_->SetSourcePositionVector(disp);
   projector_->SetSourceStateVectors(oldStateVectors);
 
@@ -650,19 +650,19 @@ void FLD::XFluidFluid::InterpolateEmbeddedStateVectors()
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> oldStateVectors;
 
-  Teuchos::RCP<const Epetra_Vector> velncol = DRT::UTILS::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> velncol = CORE::REBALANCE::GetColVersionOfRowVector(
       embedded_fluid_->Discretization(), embedded_fluid_->Velnp());
-  Teuchos::RCP<const Epetra_Vector> accncol = DRT::UTILS::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> accncol = CORE::REBALANCE::GetColVersionOfRowVector(
       embedded_fluid_->Discretization(), embedded_fluid_->Accnp());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
 
   Teuchos::RCP<const Epetra_Vector> srcdisp =
-      DRT::UTILS::GetColVersionOfRowVector(embedded_fluid_->Discretization(), dispnpoldstate_);
+      CORE::REBALANCE::GetColVersionOfRowVector(embedded_fluid_->Discretization(), dispnpoldstate_);
   embedded_projector.SetSourcePositionVector(srcdisp);
   embedded_projector.SetSourceStateVectors(oldStateVectors);
 
-  Teuchos::RCP<const Epetra_Vector> tardisp = DRT::UTILS::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> tardisp = CORE::REBALANCE::GetColVersionOfRowVector(
       embedded_fluid_->Discretization(), embedded_fluid_->Dispnp());
 
   embedded_projector.ProjectInFullTargetDiscretization(newRowStateVectors, tardisp);

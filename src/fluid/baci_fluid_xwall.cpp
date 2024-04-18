@@ -29,7 +29,7 @@
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
-#include "baci_rebalance.hpp"
+#include "baci_rebalance_graph_based.hpp"
 
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Workspace.h>

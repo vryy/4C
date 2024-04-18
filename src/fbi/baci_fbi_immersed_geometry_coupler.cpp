@@ -19,9 +19,9 @@ The current implementation does not scale at all!
 #include "baci_lib_discret_faces.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_lib_node.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_rebalance_binning_based.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -127,11 +127,11 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
 
 /*----------------------------------------------------------------------*/
 
-// todo Maybe we can use DRT::UTILS::GhostDiscretizationOnAllProcs instead
+// todo Maybe we can use CORE::REBALANCE::GhostDiscretizationOnAllProcs instead
 // todo Needs to be adapted as soon as problems can contain beam and general structure nodes
 void FBI::FBIGeometryCoupler::ExtendBeamGhosting(DRT::Discretization& discretization)
 {
-  // DRT::UTILS::GhostDiscretizationOnAllProcs(structure_->Discretization());
+  // CORE::REBALANCE::GhostDiscretizationOnAllProcs(structure_->Discretization());
   std::vector<int> allproc(discretization.Comm().NumProc());
   for (int i = 0; i < discretization.Comm().NumProc(); ++i) allproc[i] = i;
 

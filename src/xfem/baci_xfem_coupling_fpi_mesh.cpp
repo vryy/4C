@@ -19,12 +19,12 @@ xfluid class and the cut-library
 #include "baci_io_pstream.hpp"
 #include "baci_lib_dofset_transparent_independent.hpp"
 #include "baci_lib_utils_createdis.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_mat_fluidporo.hpp"
 #include "baci_mat_structporo.hpp"
 #include "baci_poroelast_utils.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_xfem_discretization_utils.hpp"
 #include "baci_xfem_interface_utils.hpp"
 #include "baci_xfem_utils.hpp"
@@ -835,7 +835,7 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<const Epetra_Vector> iforcecol =
-      DRT::UTILS::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
+      CORE::REBALANCE::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
 
   if (myrank_ == 0)
   {

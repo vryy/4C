@@ -16,9 +16,9 @@
 #include "baci_contact_strategy_factory.hpp"
 #include "baci_inpar_contact.hpp"
 #include "baci_io_pstream.hpp"
-#include "baci_lib_utils_parallel.hpp"
 #include "baci_linalg_mapextractor.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_rebalance_binning_based.hpp"
 #include "baci_structure_new_solver_factory.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -438,7 +438,7 @@ void CONTACT::AUG::ComboStrategy::GlobalNoDbc::Assemble(
 void CONTACT::AUG::ComboStrategy::GlobalNoDbc::Redistribute(const CONTACT::AUG::DataContainer& data)
 {
   slMaMap_ =
-      DRT::UTILS::RedistributeInAccordanceWithReference(*data.GSlMaDofRowMapPtr(), *slMaMap_);
+      CORE::REBALANCE::RebalanceInAccordanceWithReference(*data.GSlMaDofRowMapPtr(), *slMaMap_);
 
   Reset(*slMaMap_, data);
 }
