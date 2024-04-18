@@ -40,30 +40,31 @@ MAT::ELASTIC::AnisoActiveStressEvolution::AnisoActiveStressEvolution(
     : params_(params),
       tauc_np_(0.0),
       tauc_n_(0.0),
-      anisotropyExtension_(params->init_, params_->gamma_, params_->adapt_angle_ != 0,
+      anisotropy_extension_(params->init_, params_->gamma_, params_->adapt_angle_ != 0,
           params_->StructuralTensorStrategy(), {0})
 {
-  anisotropyExtension_.RegisterNeededTensors(FiberAnisotropyExtension<1>::FIBER_VECTORS |
-                                             FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
+  anisotropy_extension_.RegisterNeededTensors(
+      FiberAnisotropyExtension<1>::FIBER_VECTORS |
+      FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
 }
 
 void MAT::ELASTIC::AnisoActiveStressEvolution::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, tauc_n_);
-  anisotropyExtension_.PackAnisotropy(data);
+  anisotropy_extension_.PackAnisotropy(data);
 }
 
 void MAT::ELASTIC::AnisoActiveStressEvolution::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   ExtractfromPack(position, data, tauc_n_);
-  anisotropyExtension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.UnpackAnisotropy(data, position);
 }
 
 void MAT::ELASTIC::AnisoActiveStressEvolution::RegisterAnisotropyExtensions(
     MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
+  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
 }
 
 void MAT::ELASTIC::AnisoActiveStressEvolution::Setup(int numgp, INPUT::LineDefinition* linedef)
@@ -94,7 +95,7 @@ void MAT::ELASTIC::AnisoActiveStressEvolution::AddStressAnisoPrincipal(
     const int eleGID)
 {
   // Virtual GP (is zero for element fibers, otherwise it is the current GP)
-  CORE::LINALG::Matrix<6, 1> A = anisotropyExtension_.GetStructuralTensor_stress(gp, 0);
+  CORE::LINALG::Matrix<6, 1> A = anisotropy_extension_.GetStructuralTensor_stress(gp, 0);
 
   double dt = params.get("delta time", -1.0);
   if (dt < 0.0)
@@ -210,7 +211,7 @@ void MAT::ELASTIC::AnisoActiveStressEvolution::GetFiberVecs(
     return;
   }
 
-  fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 0));
+  fibervecs.push_back(anisotropy_extension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 0));
 }
 
 // Update internal stress variables
@@ -219,7 +220,7 @@ void MAT::ELASTIC::AnisoActiveStressEvolution::Update() { tauc_n_ = tauc_np_; }
 void MAT::ELASTIC::AnisoActiveStressEvolution::SetFiberVecs(const double newgamma,
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
-  anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
+  anisotropy_extension_.SetFiberVecs(newgamma, locsys, defgrd);
 }
 
 FOUR_C_NAMESPACE_CLOSE

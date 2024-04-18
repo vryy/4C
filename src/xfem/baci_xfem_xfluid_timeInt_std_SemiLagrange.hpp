@@ -191,8 +191,8 @@ namespace XFEM
 
     const double theta_default_;  //! factor of one-step theta scheme
 
-    const double relTolIncr_;  //! tolerance for the increment
-    const double relTolRes_;   //! tolerance for the residual
+    const double rel_tol_incr_;  //! tolerance for the increment
+    const double rel_tol_res_;   //! tolerance for the residual
 
   };  // class XFLUID_SemiLagrange
 }  // namespace XFEM

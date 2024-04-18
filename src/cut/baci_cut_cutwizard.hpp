@@ -374,9 +374,9 @@ namespace CORE::GEO
     //---------------------------------Options ----------------------------
 
     //! @name Options
-    INPAR::CUT::VCellGaussPts VCellgausstype_;  ///< integration type for volume-cells
-    INPAR::CUT::BCellGaussPts BCellgausstype_;  ///< integration type for boundary-cells
-    bool gmsh_output_;                          ///< write gmsh output?
+    INPAR::CUT::VCellGaussPts v_cellgausstype_;  ///< integration type for volume-cells
+    INPAR::CUT::BCellGaussPts b_cellgausstype_;  ///< integration type for boundary-cells
+    bool gmsh_output_;                           ///< write gmsh output?
     bool tetcellsonly_;          ///< enforce to create tetrahedral integration cells exclusively
     bool screenoutput_;          ///< write output to screen
     bool lsv_only_plus_domain_;  ///< consider only plus domain of level-set field as physical field

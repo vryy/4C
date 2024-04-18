@@ -306,7 +306,7 @@ bool CORE::LINALG::MatrixRowTransform::operator()(const CORE::LINALG::SparseMatr
     double scale, const CORE::ADAPTER::CouplingConverter& converter,
     CORE::LINALG::SparseMatrix& dst, bool addmatrix)
 {
-  return transformer(
+  return transformer_(
       src, src.RangeMap(), src.DomainMap(), scale, &converter, nullptr, dst, false, addmatrix);
 }
 
@@ -317,7 +317,7 @@ bool CORE::LINALG::MatrixColTransform::operator()(const Epetra_Map&, const Epetr
     const CORE::ADAPTER::CouplingConverter& converter, CORE::LINALG::SparseMatrix& dst,
     bool exactmatch, bool addmatrix)
 {
-  return transformer(
+  return transformer_(
       src, src.RangeMap(), src.DomainMap(), scale, nullptr, &converter, dst, exactmatch, addmatrix);
 }
 
@@ -328,8 +328,8 @@ bool CORE::LINALG::MatrixRowColTransform::operator()(const CORE::LINALG::SparseM
     const CORE::ADAPTER::CouplingConverter& colconverter, CORE::LINALG::SparseMatrix& dst,
     bool exactmatch, bool addmatrix)
 {
-  return transformer(src, src.RangeMap(), src.DomainMap(), scale, &rowconverter, &colconverter, dst,
-      exactmatch, addmatrix);
+  return transformer_(src, src.RangeMap(), src.DomainMap(), scale, &rowconverter, &colconverter,
+      dst, exactmatch, addmatrix);
 }
 
 FOUR_C_NAMESPACE_CLOSE

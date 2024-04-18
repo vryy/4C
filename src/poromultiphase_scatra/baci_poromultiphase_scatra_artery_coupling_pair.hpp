@@ -536,7 +536,7 @@ namespace POROMULTIPHASESCATRA
     //! reference diameter of the artery element (constant across element)
     double arterydiamref_;
     //! current diameter of the artery element at the GP
-    double arterydiamAtGP_;
+    double arterydiam_at_gp_;
     //! derivatives of the diameter function
     std::vector<double> diamderivs_;
 
@@ -635,13 +635,13 @@ namespace POROMULTIPHASESCATRA
     std::string coupling_element_type_;
 
     //! GPTS/NTP stiffness matrix (artery-artery contribution)
-    CORE::LINALG::SerialDenseMatrix GPTS_NTP_stiffmat11_;
+    CORE::LINALG::SerialDenseMatrix gpts_ntp_stiffmat11_;
     //! GPTS/NTP stiffness matrix (artery-cont contribution)
-    CORE::LINALG::SerialDenseMatrix GPTS_NTP_stiffmat12_;
+    CORE::LINALG::SerialDenseMatrix gpts_ntp_stiffmat12_;
     //! GPTS/NTP stiffness matrix (cont-artery contribution)
-    CORE::LINALG::SerialDenseMatrix GPTS_NTP_stiffmat21_;
+    CORE::LINALG::SerialDenseMatrix gpts_ntp_stiffmat21_;
     //! GPTS/NTP stiffness matrix (cont-cont contribution)
-    CORE::LINALG::SerialDenseMatrix GPTS_NTP_stiffmat22_;
+    CORE::LINALG::SerialDenseMatrix gpts_ntp_stiffmat22_;
 
     //! (varying) diameter stiffness matrix (artery-artery contribution)
     CORE::LINALG::SerialDenseMatrix diam_stiffmat11_;
@@ -649,14 +649,14 @@ namespace POROMULTIPHASESCATRA
     CORE::LINALG::SerialDenseMatrix diam_stiffmat12_;
 
     //! mortar coupling matrix D
-    CORE::LINALG::SerialDenseMatrix D_;
+    CORE::LINALG::SerialDenseMatrix d_;
     //! mortar coupling matrix M
-    CORE::LINALG::SerialDenseMatrix M_;
+    CORE::LINALG::SerialDenseMatrix m_;
     //! mortar coupling vector kappa
-    CORE::LINALG::SerialDenseVector Kappa_;
+    CORE::LINALG::SerialDenseVector kappa_;
 
     //! (dX/dxi)^-1
-    std::vector<CORE::LINALG::Matrix<numdim_, numdim_>> invJ_;
+    std::vector<CORE::LINALG::Matrix<numdim_, numdim_>> inv_j_;
 
     //! phase manager of the fluid
     Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface> phasemanager_;

@@ -542,7 +542,7 @@ void MAT::CrystalPlasticity::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   if (eleGID == -1) FOUR_C_THROW("no element provided in material");
 
   // extract time increment
-  dt = params.get<double>("delta time");
+  dt_ = params.get<double>("delta time");
 
   // get current deformation gradient
   (*deform_grad_current_)[gp] = *defgrd;
@@ -1214,7 +1214,7 @@ void MAT::CrystalPlasticity::NewtonRaphson(CORE::LINALG::Matrix<3, 3>& deform_gr
   // elastic predictor
   //--------------------------------------------------------------------------
   // assume load step is elastic, i.e., there is no change in plastic shear
-  std::vector<double> gamma_trial = gamma_last_->at(gp);
+  std::vector<double> gamma_trial = gamma_last_->at(gp_);
 
   // trial values of internal variables
   std::vector<double> defect_densities_trial(def_system_count_);
@@ -1433,7 +1433,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
 
   for (int i = 0; i < def_system_count_; i++)
   {
-    delta_gamma_trial[i] = gamma_trial[i] - (*gamma_last_)[gp][i];
+    delta_gamma_trial[i] = gamma_trial[i] - (*gamma_last_)[gp_][i];
   }
 
   // determine trial defect densities that would result from delta_gamma_trial
@@ -1442,7 +1442,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
   double total_dislocation_densitiy_last = 0.0;
 
   for (int i = 0; i < slip_system_count_; i++)
-    total_dislocation_densitiy_last += (*defect_densities_last_)[gp][i];
+    total_dislocation_densitiy_last += (*defect_densities_last_)[gp_][i];
 
   // current total defect densities
   double total_twinned_volume_curr = 0.0;
@@ -1456,13 +1456,13 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
 
     // dislocation generation
     defect_densities_trial[i] =
-        (*defect_densities_last_)[gp][i] +
+        (*defect_densities_last_)[gp_][i] +
         (1.0 / (slip_burgers_mag_[i] * dislocation_generation_coeff_[ind])) *
             std::sqrt(total_dislocation_densitiy_last) * std::abs(delta_gamma_trial[i]);
 
     // dynamic recovery
     defect_densities_trial[i] -= dislocation_dyn_recovery_coeff_[ind] *
-                                 (*defect_densities_last_)[gp][i] * std::abs(delta_gamma_trial[i]);
+                                 (*defect_densities_last_)[gp_][i] * std::abs(delta_gamma_trial[i]);
     // determine updated total dislocation density
     total_dislocation_density_curr += defect_densities_trial[i];
   }
@@ -1476,7 +1476,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
       // TODO INCLUDE TWINNING SHEAR OF RESPECTIVE LATTICE HERE!!! BEST IN SETUP LAZTTICE
       // VECTORS!
       defect_densities_trial[i] =
-          (*defect_densities_last_)[gp][i] + std::abs(delta_gamma_trial[i]) * std::sqrt(2.0);
+          (*defect_densities_last_)[gp_][i] + std::abs(delta_gamma_trial[i]) * std::sqrt(2.0);
 
       // determine updated total twinned volume fraction
       total_twinned_volume_curr += defect_densities_trial[i];
@@ -1519,7 +1519,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
 
   // determine trial plastic deformation gradient
   plastic_deform_grad_trial.MultiplyNN(
-      unimod_identity_plus_plastic_velocity_grad_trial, (*plastic_deform_grad_last_)[gp]);
+      unimod_identity_plus_plastic_velocity_grad_trial, (*plastic_deform_grad_last_)[gp_]);
 
   // determine trial stress
   //--------------------------------------------------------------------------
@@ -1615,7 +1615,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
     gamma_dot = std::copysign(gamma_dot, resolved_shear_stress(0, 0));
 
     // set up corresponding residual
-    residuals_trial[i] = (delta_gamma_trial[i] / dt) - gamma_dot;
+    residuals_trial[i] = (delta_gamma_trial[i] / dt_) - gamma_dot;
   }
   if (is_twinning_)
   {
@@ -1688,7 +1688,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
         gamma_dot = gamma_dot * gamma_dot_0_twin_[ind];
       }
       // set up corresponding residual
-      residuals_trial[i] = (delta_gamma_trial[i] / dt) - gamma_dot;
+      residuals_trial[i] = (delta_gamma_trial[i] / dt_) - gamma_dot;
     }
   }
   return;

@@ -40,16 +40,16 @@ POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epet
     : MonolithicSplit(comm, timeparams, porosity_splitter), normrhs_nopenetration_(-1.0)
 {
   // Initialize Transformation Objects
-  k_D_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  k_invD_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
+  k_d_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  k_inv_d_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
 
-  k_DLin_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  k_d_lin_transform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));
   lambdanp_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));
 
-  k_Dn_ = Teuchos::null;
+  k_dn_ = Teuchos::null;
 
   mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(
       GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->MortarCouplingParams(),
@@ -124,16 +124,16 @@ void POROELAST::MonolithicSplitNoPenetration::SetupVector(
       Teuchos::rcp(new Epetra_Vector(*FluidField()->Interface()->FSICondMap(), true));
   Teuchos::RCP<Epetra_Vector> couprhs =
       Teuchos::rcp(new Epetra_Vector(*FluidField()->Interface()->FSICondMap(), true));
-  if (k_Dn_ != Teuchos::null)
+  if (k_dn_ != Teuchos::null)
   {
     double stiparam = StructureField()->TimIntParam();
 
-    k_Dn_->Multiply(false, *lambda_, *Dlam);  // D(n)*lambda(n)
+    k_dn_->Multiply(false, *lambda_, *Dlam);  // D(n)*lambda(n)
 
     Dlam->Scale(stiparam);  //*(1-b)
   }
   Dlam->Update(-1.0, *fcv, 1.0);
-  k_lambdainvD_->Multiply(false, *Dlam, *couprhs);
+  k_lambdainv_d_->Multiply(false, *Dlam, *couprhs);
 
   couprhs->Update(1.0, *nopenetration_rhs_, 1.0);
 
@@ -222,16 +222,16 @@ void POROELAST::MonolithicSplitNoPenetration::RecoverLagrangeMultiplierAfterNewt
   tmplambda->Update(1.0, *fggddg, 1.0);
   tmplambda->Update(-1.0, *rhs_fgcur_, 1.0);
 
-  if (k_Dn_ != Teuchos::null)  // for first timestep lambda = 0 !
+  if (k_dn_ != Teuchos::null)  // for first timestep lambda = 0 !
   {
     Teuchos::RCP<Epetra_Vector> Dlam =
         Teuchos::rcp(new Epetra_Vector(*FluidField()->Interface()->FSICondMap(), true));
-    k_Dn_->Apply(*lambda_, *Dlam);  // D(n)*lambda(n)
+    k_dn_->Apply(*lambda_, *Dlam);  // D(n)*lambda(n)
     Dlam->Scale(stiparam);          //*(1-b)
     tmplambda->Update(1.0, *Dlam, 1.0);
   }
 
-  k_invD_->Apply(*tmplambda, *lambdanp_);
+  k_inv_d_->Apply(*tmplambda, *lambdanp_);
   lambdanp_->Scale(-1 / (1.0 - stiparam));  //*-1/b
 }
 
@@ -318,13 +318,13 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix(
   cfsggcur_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(k_fs->Matrix(fidx_nopen, sidx_nopen)));
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> tanginvDkfsgi =
-      CORE::LINALG::MLMultiply(*k_lambdainvD_, *cfsgicur_, true);  // T*D^-1*K^FS_gi;
+      CORE::LINALG::MLMultiply(*k_lambdainv_d_, *cfsgicur_, true);  // T*D^-1*K^FS_gi;
   Teuchos::RCP<CORE::LINALG::SparseMatrix> tanginvDfgi =
-      CORE::LINALG::MLMultiply(*k_lambdainvD_, *fgicur_, true);  // T*D^-1*Fgi;
+      CORE::LINALG::MLMultiply(*k_lambdainv_d_, *fgicur_, true);  // T*D^-1*Fgi;
   Teuchos::RCP<CORE::LINALG::SparseMatrix> tanginvDfgg =
-      CORE::LINALG::MLMultiply(*k_lambdainvD_, *fggcur_, true);  // T*D^-1*Fgg;
+      CORE::LINALG::MLMultiply(*k_lambdainv_d_, *fggcur_, true);  // T*D^-1*Fgg;
   Teuchos::RCP<CORE::LINALG::SparseMatrix> tanginvDkfsgg =
-      CORE::LINALG::MLMultiply(*k_lambdainvD_, *cfsggcur_, true);  // T*D^-1*K^FS_gg;
+      CORE::LINALG::MLMultiply(*k_lambdainv_d_, *cfsggcur_, true);  // T*D^-1*K^FS_gg;
 
   mat.Matrix(1, 0).Add(*tanginvDkfsgi, false, -1.0, 1.0);
   mat.Matrix(1, 0).Add(*tanginvDkfsgg, false, -1.0, 1.0);
@@ -350,8 +350,8 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
 
   // reset
   k_fluid_->Zero();
-  k_D_->Zero();
-  k_invD_->Zero();
+  k_d_->Zero();
+  k_inv_d_->Zero();
   k_struct_->Zero();
   k_lambda_->Zero();
   k_porodisp_->Zero();
@@ -533,12 +533,12 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
   // Matrix!-----------------------------------------------
 
   // Transform also colum map of D-Matrix
-  (*k_D_transform_)(*FluidField()->Interface()->FSICondMap(),
+  (*k_d_transform_)(*FluidField()->Interface()->FSICondMap(),
       FluidField()->BlockSystemMatrix()->Matrix(1, 1).ColMap(), *tmp_k_D, 1.0,
-      CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_), *k_D_);
+      CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_), *k_d_);
 
-  (*k_invD_transform_)(
-      *invd, 1.0, CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_), *k_invD_, false);
+  (*k_inv_d_transform_)(
+      *invd, 1.0, CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_), *k_inv_d_, false);
 
   double stiparam = StructureField()->TimIntParam();
 
@@ -546,7 +546,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
   tmp_k_DLin->Complete();
 
   // Transform also column map of D-Matrix
-  (*k_DLin_transform_)(*FluidField()->Interface()->FSICondMap(),
+  (*k_d_lin_transform_)(*FluidField()->Interface()->FSICondMap(),
       FluidField()->BlockSystemMatrix()->Matrix(1, 1).ColMap(), *tmp_k_DLin,
       1.0 - stiparam,  // *= b
       CORE::ADAPTER::CouplingSlaveConverter(*icoupfs_),
@@ -555,12 +555,12 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
 
   k_lambda_->Complete(
       *StructureField()->Interface()->FSICondMap(), *FluidField()->Interface()->FSICondMap());
-  k_invD_->Complete(
+  k_inv_d_->Complete(
       *FluidField()->Interface()->FSICondMap(), *StructureField()->Interface()->FSICondMap());
 
   // Calculate 1/b*Tangent*invD
-  k_lambdainvD_ = CORE::LINALG::MLMultiply(*k_lambda_, *k_invD_, true);
-  k_lambdainvD_->Scale(1.0 / (1.0 - stiparam));  // *= 1/b
+  k_lambdainv_d_ = CORE::LINALG::MLMultiply(*k_lambda_, *k_inv_d_, true);
+  k_lambdainv_d_->Scale(1.0 / (1.0 - stiparam));  // *= 1/b
 }
 
 void POROELAST::MonolithicSplitNoPenetration::ApplyStrCouplMatrix(
@@ -585,8 +585,8 @@ void POROELAST::MonolithicSplitNoPenetration::Update()
   lambda_->Update(1.0, *lambdanp_, 0.0);
 
   // copy D matrix from current time step to old D matrix
-  k_Dn_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *k_D_, CORE::LINALG::Copy));  // store D-Matrix from last timestep
+  k_dn_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *k_d_, CORE::LINALG::Copy));  // store D-Matrix from last timestep
 }
 
 void POROELAST::MonolithicSplitNoPenetration::Output(bool forced_writerestart)
@@ -634,10 +634,10 @@ void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrices()
   k_lambda_ = Teuchos::rcp(
       new CORE::LINALG::SparseMatrix(*(FluidField()->Interface()->FSICondMap()), 81, true, true));
 
-  k_D_ = Teuchos::rcp(
+  k_d_ = Teuchos::rcp(
       new CORE::LINALG::SparseMatrix(*(FluidField()->Interface()->FSICondMap()), 81, true, true));
 
-  k_invD_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+  k_inv_d_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       *(StructureField()->Interface()->FSICondMap()), 81, true, true));
 
   k_porodisp_ =
@@ -684,8 +684,8 @@ void POROELAST::MonolithicSplitNoPenetration::ReadRestart(const int step)
     Evaluate(zeros_, false);
 
     // copy D matrix from current time step to old D matrix
-    k_Dn_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-        *k_D_, CORE::LINALG::Copy));  // store D-Matrix from last timestep
+    k_dn_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+        *k_d_, CORE::LINALG::Copy));  // store D-Matrix from last timestep
   }
 }
 

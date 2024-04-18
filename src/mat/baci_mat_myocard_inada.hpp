@@ -79,7 +79,7 @@ class MyocardInada : public MyocardGeneral
   MyocardTools tools_;
 
   /// Global time
-  double VOI_;
+  double voi_;
 
   /// perturbation for numerical approximation of the derivative
   double eps0_deriv_;

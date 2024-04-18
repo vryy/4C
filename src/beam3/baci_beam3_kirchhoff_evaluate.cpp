@@ -190,12 +190,12 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
               "energy vector of invalid size %i, expected row dimension 1 (total elastic energy of "
               "element)!",
               elevec1.numRows());
-        elevec1(0) = Eint_;
+        elevec1(0) = eint_;
       }
       else if (IsParamsInterface())  // new structural time integration
       {
-        ParamsInterface().AddContributionToEnergyType(Eint_, STR::internal_energy);
-        ParamsInterface().AddContributionToEnergyType(Ekin_, STR::kinetic_energy);
+        ParamsInterface().AddContributionToEnergyType(eint_, STR::internal_energy);
+        ParamsInterface().AddContributionToEnergyType(ekin_, STR::kinetic_energy);
       }
       break;
     }
@@ -211,7 +211,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
        * dynamic equilibrium has finally been found; this is the point where the variable
        * representing the geometric
        * status of the beam at the end of the time step has to be stored */
-      Qconvmass_ = Qnewmass_;
+      qconvmass_ = qnewmass_;
       wconvmass_ = wnewmass_;
       aconvmass_ = anewmass_;
       amodconvmass_ = amodnewmass_;
@@ -220,7 +220,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       rtconvmass_ = rtnewmass_;
       rconvmass_ = rnewmass_;
 
-      Qrefconv_ = Qrefnew_;
+      qrefconv_ = qrefnew_;
 
       break;
     }
@@ -235,7 +235,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
        * configuration should be canceled and the configuration should be reset to the value at the
        * beginning of the time step */
 
-      Qnewmass_ = Qconvmass_;
+      qnewmass_ = qconvmass_;
       wnewmass_ = wconvmass_;
       anewmass_ = aconvmass_;
       amodnewmass_ = amodconvmass_;
@@ -244,7 +244,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       rtnewmass_ = rtconvmass_;
       rnewmass_ = rconvmass_;
 
-      Qrefnew_ = Qrefconv_;
+      qrefnew_ = qrefconv_;
 
       break;
     }
@@ -326,7 +326,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 
 
   // analytic linearization of internal forces
-  if (not useFAD_)
+  if (not use_fad_)
   {
     if (rotvec_ == true)
     {
@@ -354,13 +354,13 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
         BEAM3K_COLLOCATION_POINTS, CORE::LINALG::Matrix<3, 3, double>(true));
 
     UpdateNodalVariables<nnodecl, double>(
-        disp_totlag, disp_totlag_centerline, triad_mat_cp, Qrefnew_);
+        disp_totlag, disp_totlag_centerline, triad_mat_cp, qrefnew_);
 
     // Store nodal tangents in class variable
     for (unsigned int i = 0; i < 3; ++i)
     {
-      T_[0](i) = disp_totlag_centerline(3 + i);
-      T_[1](i) = disp_totlag_centerline(10 + i);
+      t_[0](i) = disp_totlag_centerline(3 + i);
+      t_[1](i) = disp_totlag_centerline(10 + i);
     }
 
 
@@ -425,13 +425,13 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
     SetAutomaticDifferentiationVariables<nnodecl>(disp_totlag_FAD);
 
     UpdateNodalVariables<nnodecl, FAD>(
-        disp_totlag_FAD, disp_totlag_centerline_FAD, triad_mat_cp_FAD, Qrefnew_);
+        disp_totlag_FAD, disp_totlag_centerline_FAD, triad_mat_cp_FAD, qrefnew_);
 
     // Store nodal tangents in class variable
     for (unsigned int i = 0; i < 3; ++i)
     {
-      T_[0](i) = disp_totlag_centerline_FAD(3 + i).val();
-      T_[1](i) = disp_totlag_centerline_FAD(10 + i).val();
+      t_[0](i) = disp_totlag_centerline_FAD(3 + i).val();
+      t_[1](i) = disp_totlag_centerline_FAD(10 + i).val();
     }
 
 
@@ -711,25 +711,25 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
     if (stiffmatrix != nullptr)
     {
       PreComputeTermsAtCPForStiffmatContributionsAnalyticWK<nnodecl>(
-          lin_theta_cp[ind], lin_v_epsilon_cp[ind], L, N_s, r_s, abs_r_s, Qrefconv_[ind]);
+          lin_theta_cp[ind], lin_v_epsilon_cp[ind], L, N_s, r_s, abs_r_s, qrefconv_[ind]);
     }
   }
   //********end: evaluate quantities at collocation points********************************
 
 
   // Clear energy in the beginning
-  Eint_ = 0.0;
+  eint_ = 0.0;
 
   // re-assure correct size of strain and stress resultant class variables
-  axial_strain_GP_.resize(gausspoints.nquad);
-  twist_GP_.resize(gausspoints.nquad);
-  curvature_2_GP_.resize(gausspoints.nquad);
-  curvature_3_GP_.resize(gausspoints.nquad);
+  axial_strain_gp_.resize(gausspoints.nquad);
+  twist_gp_.resize(gausspoints.nquad);
+  curvature_2_gp_.resize(gausspoints.nquad);
+  curvature_3_gp_.resize(gausspoints.nquad);
 
-  axial_force_GP_.resize(gausspoints.nquad);
-  torque_GP_.resize(gausspoints.nquad);
-  bending_moment_2_GP_.resize(gausspoints.nquad);
-  bending_moment_3_GP_.resize(gausspoints.nquad);
+  axial_force_gp_.resize(gausspoints.nquad);
+  torque_gp_.resize(gausspoints.nquad);
+  bending_moment_2_gp_.resize(gausspoints.nquad);
+  bending_moment_3_gp_.resize(gausspoints.nquad);
 
 
   //******begin: gauss integration for internal force vector and stiffness matrix*********
@@ -798,7 +798,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
 
     for (unsigned int idim = 0; idim < 3; ++idim)
     {
-      Omega(idim) = K(idim) - (K0_[numgp])(idim);
+      Omega(idim) = K(idim) - (k0_[numgp])(idim);
     }
 
     // compute material stress resultants
@@ -844,25 +844,25 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
     }
 
     // Calculate internal energy and store it in class variable
-    Eint_ += 0.5 * CORE::FADUTILS::CastToDouble(epsilon_bar) * CORE::FADUTILS::CastToDouble(f_par) *
+    eint_ += 0.5 * CORE::FADUTILS::CastToDouble(epsilon_bar) * CORE::FADUTILS::CastToDouble(f_par) *
              wgt * jacobi_[numgp];
 
     for (unsigned int idim = 0; idim < 3; ++idim)
     {
-      Eint_ += 0.5 * CORE::FADUTILS::CastToDouble(Omega(idim)) *
+      eint_ += 0.5 * CORE::FADUTILS::CastToDouble(Omega(idim)) *
                CORE::FADUTILS::CastToDouble(M(idim)) * wgt * jacobi_[numgp];
     }
 
     // store material strain and stress resultant values in class variables
-    axial_strain_GP_[numgp] = CORE::FADUTILS::CastToDouble(epsilon_bar);
-    twist_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(0));
-    curvature_2_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(1));
-    curvature_3_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(2));
+    axial_strain_gp_[numgp] = CORE::FADUTILS::CastToDouble(epsilon_bar);
+    twist_gp_[numgp] = CORE::FADUTILS::CastToDouble(Omega(0));
+    curvature_2_gp_[numgp] = CORE::FADUTILS::CastToDouble(Omega(1));
+    curvature_3_gp_[numgp] = CORE::FADUTILS::CastToDouble(Omega(2));
 
-    axial_force_GP_[numgp] = CORE::FADUTILS::CastToDouble(f_par);
-    torque_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(0));
-    bending_moment_2_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(1));
-    bending_moment_3_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(2));
+    axial_force_gp_[numgp] = CORE::FADUTILS::CastToDouble(f_par);
+    torque_gp_[numgp] = CORE::FADUTILS::CastToDouble(M(0));
+    bending_moment_2_gp_[numgp] = CORE::FADUTILS::CastToDouble(M(1));
+    bending_moment_3_gp_[numgp] = CORE::FADUTILS::CastToDouble(M(2));
   }
   //******end: gauss integration for internal force vector and stiffness matrix*********
 }
@@ -1318,18 +1318,18 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
   //********end: evaluate quantities at collocation points********************************
 
   // Clear energy in the beginning
-  Eint_ = 0.0;
+  eint_ = 0.0;
 
   // re-assure correct size of strain and stress resultant class variables
-  axial_strain_GP_.resize(gausspoints.nquad);
-  twist_GP_.resize(gausspoints.nquad);
-  curvature_2_GP_.resize(gausspoints.nquad);
-  curvature_3_GP_.resize(gausspoints.nquad);
+  axial_strain_gp_.resize(gausspoints.nquad);
+  twist_gp_.resize(gausspoints.nquad);
+  curvature_2_gp_.resize(gausspoints.nquad);
+  curvature_3_gp_.resize(gausspoints.nquad);
 
-  axial_force_GP_.resize(gausspoints.nquad);
-  torque_GP_.resize(gausspoints.nquad);
-  bending_moment_2_GP_.resize(gausspoints.nquad);
-  bending_moment_3_GP_.resize(gausspoints.nquad);
+  axial_force_gp_.resize(gausspoints.nquad);
+  torque_gp_.resize(gausspoints.nquad);
+  bending_moment_2_gp_.resize(gausspoints.nquad);
+  bending_moment_3_gp_.resize(gausspoints.nquad);
 
 
   //******begin: gauss integration for internal force vector and stiffness matrix*********
@@ -1553,7 +1553,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     computestrainSK(phi_s, kappacl, triad_mat_cp[REFERENCE_NODE], triad_mat_gp[numgp], K);
     for (unsigned int i = 0; i < 3; i++)
     {
-      Omega(i) = K(i) - K0_[numgp](i);
+      Omega(i) = K(i) - k0_[numgp](i);
     }
 
     // compute material stress resultants at Gauss point
@@ -1562,10 +1562,10 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     straintostress(Omega, epsilon, Cn, Cm, M, f_par);
 
     // Calculate internal energy and store it in class variable
-    Eint_ += 0.5 * epsilon.val() * f_par.val() * wgt * jacobi_[numgp];
+    eint_ += 0.5 * epsilon.val() * f_par.val() * wgt * jacobi_[numgp];
     for (unsigned int i = 0; i < 3; i++)
     {
-      Eint_ += 0.5 * Omega(i).val() * M(i).val() * wgt * jacobi_[numgp];
+      eint_ += 0.5 * Omega(i).val() * M(i).val() * wgt * jacobi_[numgp];
     }
 
     // pushforward of stress resultants
@@ -1586,15 +1586,15 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
 
 
     // store material strain and stress resultant values in class variables
-    axial_strain_GP_[numgp] = CORE::FADUTILS::CastToDouble(epsilon);
-    twist_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(0));
-    curvature_2_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(1));
-    curvature_3_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(2));
+    axial_strain_gp_[numgp] = CORE::FADUTILS::CastToDouble(epsilon);
+    twist_gp_[numgp] = CORE::FADUTILS::CastToDouble(Omega(0));
+    curvature_2_gp_[numgp] = CORE::FADUTILS::CastToDouble(Omega(1));
+    curvature_3_gp_[numgp] = CORE::FADUTILS::CastToDouble(Omega(2));
 
-    axial_force_GP_[numgp] = CORE::FADUTILS::CastToDouble(f_par);
-    torque_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(0));
-    bending_moment_2_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(1));
-    bending_moment_3_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(2));
+    axial_force_gp_[numgp] = CORE::FADUTILS::CastToDouble(f_par);
+    torque_gp_[numgp] = CORE::FADUTILS::CastToDouble(M(0));
+    bending_moment_2_gp_[numgp] = CORE::FADUTILS::CastToDouble(M(1));
+    bending_moment_3_gp_[numgp] = CORE::FADUTILS::CastToDouble(M(2));
   }
   //******end: gauss integration for internal force vector and stiffness matrix*********
 }
@@ -1689,7 +1689,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
   // Get integration points for exact integration
   CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(MYGAUSSRULEBEAM3K);
 
-  Ekin_ = 0.0;
+  ekin_ = 0.0;
 
   // loop through Gauss points
   for (int numgp = 0; numgp < gausspoints.nquad; ++numgp)
@@ -1714,7 +1714,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
     // get quaternion in converged state at gp and compute corresponding triad
     triad_mat_old.Clear();
     CORE::LINALG::Matrix<4, 1, T> Qconv(true);
-    for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (Qconvmass_[numgp])(i);
+    for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (qconvmass_[numgp])(i);
 
     CORE::LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_old);
 
@@ -1858,7 +1858,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
     CORE::LINALG::Matrix<1, 1, T> ekintrans(true);
     ekinrot.MultiplyTN(Wnewmass, Jp_Wnewmass);
     ekintrans.MultiplyTN(rtnewmass, rtnewmass);
-    Ekin_ += 0.5 *
+    ekin_ += 0.5 *
              (CORE::FADUTILS::CastToDouble(ekinrot(0, 0)) +
                  mass_inertia_translational * CORE::FADUTILS::CastToDouble(ekintrans(0, 0))) *
              wgt * jacobi_[numgp];
@@ -1879,7 +1879,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
 
     for (unsigned int i = 0; i < 4; ++i)
     {
-      (Qnewmass_[numgp])(i) = CORE::FADUTILS::CastToDouble(Qnewmass(i));
+      (qnewmass_[numgp])(i) = CORE::FADUTILS::CastToDouble(Qnewmass(i));
     }
 
     for (unsigned int i = 0; i < 3; ++i)
@@ -2222,7 +2222,7 @@ void DRT::ELEMENTS::Beam3k::EvaluatePointNeumannEB(CORE::LINALG::SerialDenseVect
     /* in tangent based formulation, we need to linearize the residual contributions from
      * external moments */
     // analytic linearization
-    if (not useFAD_)
+    if (not use_fad_)
     {
       CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double>
           disp_totlag_centerline(true);
@@ -2446,7 +2446,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumann(CORE::LINALG::SerialDenseVector&
     const CORE::LINALG::Matrix<6, 1, double>& load_vector_neumann,
     const std::vector<int>* function_numbers, double time) const
 {
-  if (not useFAD_)
+  if (not use_fad_)
   {
     CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double> disp_totlag_centerline(
         true);
@@ -2653,7 +2653,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
 
 
   // analytic linearization of residual contributions
-  if (not useFAD_)
+  if (not use_fad_)
   {
     // force vector resulting from Brownian dynamics
     CORE::LINALG::Matrix<ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1, double>
@@ -2676,7 +2676,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
 
 
     UpdateNodalVariables<nnode, double>(disp_totlag, disp_totlag_centerline, triad_mat_cp,
-        Qrefnew_);  // Todo @grill: do we need to update Qrefnew_ here? doesn't seem to be a problem
+        qrefnew_);  // Todo @grill: do we need to update Qrefnew_ here? doesn't seem to be a problem
                     // but anyway ...
 
     CORE::LINALG::Matrix<nnode * vpernode * ndim, 1, double> disp_totlag_centerlineDOFs_only(true);
@@ -2729,7 +2729,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
     SetAutomaticDifferentiationVariables<nnode>(disp_totlag_FAD);
 
     UpdateNodalVariables<nnode, FAD>(disp_totlag_FAD, disp_totlag_centerline_FAD, triad_mat_cp_FAD,
-        Qrefnew_);  // Todo do we need to update Qrefnew_ here? doesn't seem to be a problem but
+        qrefnew_);  // Todo do we need to update Qrefnew_ here? doesn't seem to be a problem but
                     // anyway ...
 
     CORE::LINALG::Matrix<nnode * vpernode * ndim, 1, FAD> disp_totlag_centerlineDOFs_only(true);
@@ -3194,7 +3194,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
     Calc_v_thetapartheta<2, T>(v_thetapar_cp[ind], L, r_s, abs_r_s);
 
     PreComputeTermsAtCPForAnalyticStiffmatContributionsFromRotationalDamping<2, 2, 3>(
-        lin_theta_cp[ind], L, N_s, r_s, abs_r_s, Qrefconv_[ind]);
+        lin_theta_cp[ind], L, N_s, r_s, abs_r_s, qrefconv_[ind]);
   }
 
 
@@ -3229,10 +3229,10 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
 
     // store in class variable in order to get QconvGPmass_ in subsequent time step
     for (unsigned int i = 0; i < 4; ++i)
-      (Qnewmass_[gp])(i) = CORE::FADUTILS::CastToDouble(Qnewmass(i));
+      (qnewmass_[gp])(i) = CORE::FADUTILS::CastToDouble(Qnewmass(i));
 
     CORE::LINALG::Matrix<4, 1, T> Qconv(true);
-    for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (Qconvmass_[gp])(i);
+    for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (qconvmass_[gp])(i);
 
     CORE::LINALG::Matrix<3, 3, T> triad_mat_conv(true);
     CORE::LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_conv);

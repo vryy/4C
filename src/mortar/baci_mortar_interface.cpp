@@ -96,47 +96,47 @@ MORTAR::InterfaceDataContainer::InterfaceDataContainer()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 MORTAR::Interface::Interface(Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData)
-    : interfaceData_(std::move(interfaceData)),
-      id_(interfaceData_->Id()),
-      comm_(interfaceData_->CommPtr()),
-      procmap_(interfaceData_->ProcMap()),
-      redistributed_(interfaceData_->IsRedistributed()),
-      idiscret_(interfaceData_->IDiscret()),
-      dim_(interfaceData_->Dim()),
-      imortar_(interfaceData_->IMortar()),
-      shapefcn_(interfaceData_->ShapeFcn()),
-      quadslave_(interfaceData_->IsQuadSlave()),
-      oldnodecolmap_(interfaceData_->OldNodeColMap()),
-      oldelecolmap_(interfaceData_->OldEleColMap()),
-      snoderowmap_(interfaceData_->SNodeRowMap()),
-      snodecolmap_(interfaceData_->SNodeColMap()),
-      mnoderowmap_(interfaceData_->MNodeRowMap()),
-      mnodecolmap_(interfaceData_->MNodeColMap()),
-      snoderowmapbound_(interfaceData_->SNodeRowMapBound()),
-      snodecolmapbound_(interfaceData_->SNodeColMapBound()),
-      mnoderowmapnobound_(interfaceData_->MNodeRowMapNoBound()),
-      mnodecolmapnobound_(interfaceData_->MNodeColMapNoBound()),
-      selerowmap_(interfaceData_->SEleRowMap()),
-      selecolmap_(interfaceData_->SEleColMap()),
-      melerowmap_(interfaceData_->MEleRowMap()),
-      melecolmap_(interfaceData_->MEleColMap()),
-      sdofrowmap_(interfaceData_->SDofRowMap()),
-      sdofcolmap_(interfaceData_->SDofColMap()),
-      mdofrowmap_(interfaceData_->MDofRowMap()),
-      mdofcolmap_(interfaceData_->MDofColMap()),
-      psdofrowmap_(interfaceData_->PSDofRowMap()),
-      plmdofmap_(interfaceData_->PLmDofRowMap()),
-      lmdofmap_(interfaceData_->LmDofRowMap()),
-      maxdofglobal_(interfaceData_->MaxDofGlobal()),
-      searchalgo_(interfaceData_->SearchAlgorithm()),
-      binarytree_(interfaceData_->BinaryTree()),
-      searchparam_(interfaceData_->SearchParam()),
-      searchuseauxpos_(interfaceData_->SearchUseAuxPos()),
-      inttime_interface_(interfaceData_->IntTimeInterface()),
-      nurbs_(interfaceData_->IsNurbs()),
-      ehl_(interfaceData_->IsEhl())
+    : interface_data_(std::move(interfaceData)),
+      id_(interface_data_->Id()),
+      comm_(interface_data_->CommPtr()),
+      procmap_(interface_data_->ProcMap()),
+      redistributed_(interface_data_->IsRedistributed()),
+      idiscret_(interface_data_->IDiscret()),
+      dim_(interface_data_->Dim()),
+      imortar_(interface_data_->IMortar()),
+      shapefcn_(interface_data_->ShapeFcn()),
+      quadslave_(interface_data_->IsQuadSlave()),
+      oldnodecolmap_(interface_data_->OldNodeColMap()),
+      oldelecolmap_(interface_data_->OldEleColMap()),
+      snoderowmap_(interface_data_->SNodeRowMap()),
+      snodecolmap_(interface_data_->SNodeColMap()),
+      mnoderowmap_(interface_data_->MNodeRowMap()),
+      mnodecolmap_(interface_data_->MNodeColMap()),
+      snoderowmapbound_(interface_data_->SNodeRowMapBound()),
+      snodecolmapbound_(interface_data_->SNodeColMapBound()),
+      mnoderowmapnobound_(interface_data_->MNodeRowMapNoBound()),
+      mnodecolmapnobound_(interface_data_->MNodeColMapNoBound()),
+      selerowmap_(interface_data_->SEleRowMap()),
+      selecolmap_(interface_data_->SEleColMap()),
+      melerowmap_(interface_data_->MEleRowMap()),
+      melecolmap_(interface_data_->MEleColMap()),
+      sdofrowmap_(interface_data_->SDofRowMap()),
+      sdofcolmap_(interface_data_->SDofColMap()),
+      mdofrowmap_(interface_data_->MDofRowMap()),
+      mdofcolmap_(interface_data_->MDofColMap()),
+      psdofrowmap_(interface_data_->PSDofRowMap()),
+      plmdofmap_(interface_data_->PLmDofRowMap()),
+      lmdofmap_(interface_data_->LmDofRowMap()),
+      maxdofglobal_(interface_data_->MaxDofGlobal()),
+      searchalgo_(interface_data_->SearchAlgorithm()),
+      binarytree_(interface_data_->BinaryTree()),
+      searchparam_(interface_data_->SearchParam()),
+      searchuseauxpos_(interface_data_->SearchUseAuxPos()),
+      inttime_interface_(interface_data_->IntTimeInterface()),
+      nurbs_(interface_data_->IsNurbs()),
+      ehl_(interface_data_->IsEhl())
 {
-  if (not interfaceData_->IsInit())
+  if (not interface_data_->IsInit())
   {
     FOUR_C_THROW(
         "This constructor is only allowed for already initialized "
@@ -161,53 +161,53 @@ Teuchos::RCP<MORTAR::Interface> MORTAR::Interface::Create(const int id, const Ep
  *----------------------------------------------------------------------*/
 MORTAR::Interface::Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData, const int id,
     const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar)
-    : interfaceData_(std::move(interfaceData)),
-      id_(interfaceData_->Id()),
-      comm_(interfaceData_->CommPtr()),
-      procmap_(interfaceData_->ProcMap()),
-      redistributed_(interfaceData_->IsRedistributed()),
-      idiscret_(interfaceData_->IDiscret()),
-      dim_(interfaceData_->Dim()),
-      imortar_(interfaceData_->IMortar()),
-      shapefcn_(interfaceData_->ShapeFcn()),
-      quadslave_(interfaceData_->IsQuadSlave()),
-      oldnodecolmap_(interfaceData_->OldNodeColMap()),
-      oldelecolmap_(interfaceData_->OldEleColMap()),
-      snoderowmap_(interfaceData_->SNodeRowMap()),
-      snodecolmap_(interfaceData_->SNodeColMap()),
-      mnoderowmap_(interfaceData_->MNodeRowMap()),
-      mnodecolmap_(interfaceData_->MNodeColMap()),
-      snoderowmapbound_(interfaceData_->SNodeRowMapBound()),
-      snodecolmapbound_(interfaceData_->SNodeColMapBound()),
-      mnoderowmapnobound_(interfaceData_->MNodeRowMapNoBound()),
-      mnodecolmapnobound_(interfaceData_->MNodeColMapNoBound()),
-      selerowmap_(interfaceData_->SEleRowMap()),
-      selecolmap_(interfaceData_->SEleColMap()),
-      melerowmap_(interfaceData_->MEleRowMap()),
-      melecolmap_(interfaceData_->MEleColMap()),
-      sdofrowmap_(interfaceData_->SDofRowMap()),
-      sdofcolmap_(interfaceData_->SDofColMap()),
-      mdofrowmap_(interfaceData_->MDofRowMap()),
-      mdofcolmap_(interfaceData_->MDofColMap()),
-      psdofrowmap_(interfaceData_->PSDofRowMap()),
-      plmdofmap_(interfaceData_->PLmDofRowMap()),
-      lmdofmap_(interfaceData_->LmDofRowMap()),
-      maxdofglobal_(interfaceData_->MaxDofGlobal()),
-      searchalgo_(interfaceData_->SearchAlgorithm()),
-      binarytree_(interfaceData_->BinaryTree()),
-      searchparam_(interfaceData_->SearchParam()),
-      searchuseauxpos_(interfaceData_->SearchUseAuxPos()),
-      inttime_interface_(interfaceData_->IntTimeInterface()),
-      nurbs_(interfaceData_->IsNurbs()),
-      ehl_(interfaceData_->IsEhl())
+    : interface_data_(std::move(interfaceData)),
+      id_(interface_data_->Id()),
+      comm_(interface_data_->CommPtr()),
+      procmap_(interface_data_->ProcMap()),
+      redistributed_(interface_data_->IsRedistributed()),
+      idiscret_(interface_data_->IDiscret()),
+      dim_(interface_data_->Dim()),
+      imortar_(interface_data_->IMortar()),
+      shapefcn_(interface_data_->ShapeFcn()),
+      quadslave_(interface_data_->IsQuadSlave()),
+      oldnodecolmap_(interface_data_->OldNodeColMap()),
+      oldelecolmap_(interface_data_->OldEleColMap()),
+      snoderowmap_(interface_data_->SNodeRowMap()),
+      snodecolmap_(interface_data_->SNodeColMap()),
+      mnoderowmap_(interface_data_->MNodeRowMap()),
+      mnodecolmap_(interface_data_->MNodeColMap()),
+      snoderowmapbound_(interface_data_->SNodeRowMapBound()),
+      snodecolmapbound_(interface_data_->SNodeColMapBound()),
+      mnoderowmapnobound_(interface_data_->MNodeRowMapNoBound()),
+      mnodecolmapnobound_(interface_data_->MNodeColMapNoBound()),
+      selerowmap_(interface_data_->SEleRowMap()),
+      selecolmap_(interface_data_->SEleColMap()),
+      melerowmap_(interface_data_->MEleRowMap()),
+      melecolmap_(interface_data_->MEleColMap()),
+      sdofrowmap_(interface_data_->SDofRowMap()),
+      sdofcolmap_(interface_data_->SDofColMap()),
+      mdofrowmap_(interface_data_->MDofRowMap()),
+      mdofcolmap_(interface_data_->MDofColMap()),
+      psdofrowmap_(interface_data_->PSDofRowMap()),
+      plmdofmap_(interface_data_->PLmDofRowMap()),
+      lmdofmap_(interface_data_->LmDofRowMap()),
+      maxdofglobal_(interface_data_->MaxDofGlobal()),
+      searchalgo_(interface_data_->SearchAlgorithm()),
+      binarytree_(interface_data_->BinaryTree()),
+      searchparam_(interface_data_->SearchParam()),
+      searchuseauxpos_(interface_data_->SearchUseAuxPos()),
+      inttime_interface_(interface_data_->IntTimeInterface()),
+      nurbs_(interface_data_->IsNurbs()),
+      ehl_(interface_data_->IsEhl())
 {
-  interfaceData_->SetIsInit(true);
+  interface_data_->SetIsInit(true);
   id_ = id;
   comm_ = Teuchos::rcpFromRef(comm);
   dim_ = spatialDim;
   imortar_.setParameters(imortar);
   quadslave_ = false;
-  interfaceData_->SetExtendGhosting(Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+  interface_data_->SetExtendGhosting(Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
       imortar.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY"));
   searchalgo_ =
       CORE::UTILS::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar, "SEARCH_ALGORITHM");
@@ -375,12 +375,12 @@ void MORTAR::Interface::PrintParallelDistribution() const
     my_m_ghostele[myrank] = melecolmap_->NumMyElements() - my_m_elements[myrank];
 
     // adapt output for redundant master or all redundant case
-    if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_master)
+    if (interface_data_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_master)
     {
       my_m_ghostnodes[myrank] = mnoderowmap_->NumGlobalElements() - my_m_nodes[myrank];
       my_m_ghostele[myrank] = melerowmap_->NumGlobalElements() - my_m_elements[myrank];
     }
-    else if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_all)
+    else if (interface_data_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_all)
     {
       my_m_ghostnodes[myrank] = mnoderowmap_->NumGlobalElements() - my_m_nodes[myrank];
       my_m_ghostele[myrank] = melerowmap_->NumGlobalElements() - my_m_elements[myrank];
@@ -576,9 +576,9 @@ void MORTAR::Interface::FillComplete(
 
   // ghost also parent elements according to the ghosting strategy of the interface (atm just for
   // poro)
-  if (interfaceData_->IsPoro())
+  if (interface_data_->IsPoro())
   {
-    if (interfaceData_->PoroType() == INPAR::MORTAR::poroscatra)
+    if (interface_data_->PoroType() == INPAR::MORTAR::poroscatra)
       POROELASTSCATRA::UTILS::CreateVolumeGhosting(Discret());
     else
       POROELAST::UTILS::CreateVolumeGhosting(Discret());
@@ -897,11 +897,11 @@ void MORTAR::Interface::InitializeDataContainer()
 
     // initialize container if not yet initialized before
     mnode->InitializeDataContainer();
-    if (interfaceData_->IsPoro())  // initialize just for poro contact case!
+    if (interface_data_->IsPoro())  // initialize just for poro contact case!
       mnode->InitializePoroDataContainer();
     if (ehl_) mnode->InitializeEhlDataContainer();
   }
-  if (interfaceData_
+  if (interface_data_
           ->IsPoro())  // as velocities of structure and fluid exist also on master nodes!!!
   {
     const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(MasterRowNodes()));
@@ -933,7 +933,7 @@ void MORTAR::Interface::InitializeDataContainer()
     mele->InitializeDataContainer();
   }
 
-  if (interfaceData_->IsPoro())
+  if (interface_data_->IsPoro())
   {
     // initialize master element data container
     for (int i = 0; i < MasterColElements()->NumMyElements(); ++i)
@@ -1227,7 +1227,7 @@ void MORTAR::Interface::ExtendInterfaceGhosting(
     const bool isFinalParallelDistribution, const double meanVelocity)
 {
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
-  if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_all)
+  if (interface_data_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_all)
   {
     // to ease our search algorithms we'll afford the luxury to ghost all nodes
     // on all processors. To do so, we'll take the node row map and export it to
@@ -1295,7 +1295,7 @@ void MORTAR::Interface::ExtendInterfaceGhosting(
   }
 
   //*****ONLY REDUNDANT MASTER STORAGE*****
-  else if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_master)
+  else if (interface_data_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_master)
   {
     // to ease our search algorithms we'll afford the luxury to ghost all master
     // nodes on all processors. To do so, we'll take the master node row map and
@@ -1399,8 +1399,8 @@ void MORTAR::Interface::ExtendInterfaceGhosting(
   }
 
   //*****NON-REDUNDANT STORAGE*****
-  else if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::roundrobin ||
-           interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::binning)
+  else if (interface_data_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::roundrobin ||
+           interface_data_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::binning)
   {
     // nothing to do here, we work with the given non-redundant distribution
     // of both slave and master nodes to the individual processors. However
@@ -1460,7 +1460,7 @@ void MORTAR::Interface::ExtendInterfaceGhosting(
     Discret().ExportColumnNodes(*newnodecolmap);
     Discret().ExportColumnElements(*newelecolmap);
 
-    if (interfaceData_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::binning)
+    if (interface_data_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::binning)
     {
       /* We have to update the row/column maps split into master/slave. We start from the new
        * node/element column maps. Since we don't have row maps at this point, we can/have to pass
@@ -1740,7 +1740,7 @@ void MORTAR::Interface::UpdateMasterSlaveNodeMaps(
       Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mcb.size(), mcb.data(), 0, Comm()));
 
   // build exporter
-  interfaceData_->SlExporterPtr() =
+  interface_data_->SlExporterPtr() =
       Teuchos::rcp(new CORE::COMM::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
 }
 
@@ -1865,11 +1865,11 @@ Teuchos::RCP<Epetra_Map> MORTAR::Interface::UpdateLagMultSets(
 void MORTAR::Interface::StoreUnredistributedMaps()
 {
   psdofrowmap_ = Teuchos::rcp(new Epetra_Map(*sdofrowmap_));
-  interfaceData_->PMDofRowMap() = Teuchos::rcp(new Epetra_Map(*mdofrowmap_));
+  interface_data_->PMDofRowMap() = Teuchos::rcp(new Epetra_Map(*mdofrowmap_));
   plmdofmap_ = Teuchos::rcp(new Epetra_Map(*lmdofmap_));
 
-  interfaceData_->PSNodeRowMap() = Teuchos::rcp(new Epetra_Map(*snoderowmap_));
-  interfaceData_->PMNodeRowMap() = Teuchos::rcp(new Epetra_Map(*mnoderowmap_));
+  interface_data_->PSNodeRowMap() = Teuchos::rcp(new Epetra_Map(*snoderowmap_));
+  interface_data_->PMNodeRowMap() = Teuchos::rcp(new Epetra_Map(*mnoderowmap_));
 }
 
 /*----------------------------------------------------------------------*
@@ -2697,7 +2697,7 @@ void MORTAR::Interface::ExportNodalNormals() const
 
   // communicate from slave node row to column map
 
-  interfaceData_->Exporter().Export(triad);
+  interface_data_->Exporter().Export(triad);
 
   // extract info on column map
   for (int i = 0; i < snodecolmapbound_->NumMyElements(); ++i)
@@ -4204,14 +4204,14 @@ void MORTAR::Interface::CreateVolumeGhosting()
  *----------------------------------------------------------------------------*/
 bool MORTAR::Interface::HasMaSharingRefInterface() const
 {
-  return (interfaceData_->GetMaSharingRefInterfacePtr() != nullptr);
+  return (interface_data_->GetMaSharingRefInterfacePtr() != nullptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const MORTAR::Interface* MORTAR::Interface::GetMaSharingRefInterfacePtr() const
 {
-  return interfaceData_->GetMaSharingRefInterfacePtr();
+  return interface_data_->GetMaSharingRefInterfacePtr();
 }
 
 
@@ -4243,7 +4243,7 @@ void MORTAR::Interface::AddMaSharingRefInterface(const Interface* ref_interface)
     if (size_curr_ref_interface >= size_new_ref_interface) return;
   }
 
-  interfaceData_->SetMaSharingRefInterfacePtr(ref_interface);
+  interface_data_->SetMaSharingRefInterfacePtr(ref_interface);
 }
 
 /*----------------------------------------------------------------------------*

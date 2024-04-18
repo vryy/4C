@@ -274,8 +274,8 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
       neprenp_(true),
       nedispnp_(true),
       xyze_(true),
-      p_conv_c(true),
-      n_conv_c(true),
+      p_conv_c_(true),
+      n_conv_c_(true),
       pxjm_(true),
       pxji_(true),
       pfunct_(true),
@@ -4215,17 +4215,17 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   //--------------------------------------------------------------------------------------------------------------
 
   // viscous and transient ghost penalty contributions
-  tau_u_GP1_visc_reaction_ = gamma_ghost_penalty_visc * density_ * p_hk_ * kinvisc_ +
-                             gamma_ghost_penalty_trans * density_ * p_hk_cubed_ /
-                                 timefac;  // viscous and reactive part of velocity ghost penalty
+  tau_u_gp_1_visc_reaction_ = gamma_ghost_penalty_visc * density_ * p_hk_ * kinvisc_ +
+                              gamma_ghost_penalty_trans * density_ * p_hk_cubed_ /
+                                  timefac;  // viscous and reactive part of velocity ghost penalty
 
   // CIP related 1st order ghost penalty scalings are set being equal to the original CIP scalings
-  tau_u_GP1_ = tau_u_;
-  tau_div_GP1_ = tau_div_;
-  tau_p_GP1_ = tau_p_;
+  tau_u_gp_1_ = tau_u_;
+  tau_div_gp_1_ = tau_div_;
+  tau_p_gp_1_ = tau_p_;
 
   // add viscous and transient ghost penalty contributions
-  tau_vel_1st_final_ = tau_u_GP1_visc_reaction_;
+  tau_vel_1st_final_ = tau_u_gp_1_visc_reaction_;
 
   // assemble combined divergence and streamline(EOS) stabilization terms for fluid
   tau_vel_1st_final_ += (EOS_conv_stream or EOS_conv_cross) ? tau_u_ : 0.0;
@@ -4236,8 +4236,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // final stabilization parameter scalings for 1st order CIP jump terms (note: no div terms for
   // ghost penalty reconstruction)
   tau_vel_1st_final_ = is_ghost_penalty_reconstruct ? 1.0 : tau_vel_1st_final_;
-  tau_div_1st_final_ = is_ghost_penalty_reconstruct ? 0.0 : std::max(tau_div_, tau_div_GP1_);
-  tau_pre_1st_final_ = is_ghost_penalty_reconstruct ? 1.0 : std::max(tau_p_, tau_p_GP1_);
+  tau_div_1st_final_ = is_ghost_penalty_reconstruct ? 0.0 : std::max(tau_div_, tau_div_gp_1_);
+  tau_pre_1st_final_ = is_ghost_penalty_reconstruct ? 1.0 : std::max(tau_p_, tau_p_gp_1_);
 
   //--------------------------------------------------------------------------------------------------------------
   //                                     final 2nd order ghost penalty scalings
@@ -4247,15 +4247,16 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   if (use2ndderiv)
   {
     // second order ghost penalty scalings (scale with additional h^2)
-    tau_u_GP2_visc_reaction_ = tau_u_GP1_visc_reaction_ * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
-    tau_u_GP2_ = tau_u_ * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
-    tau_div_GP2_ = tau_div_ * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
-    tau_p_GP2_ = tau_p_ * p_hk_squared_ * gamma_ghost_penalty_p_2nd;
+    tau_u_gp_2_visc_reaction_ =
+        tau_u_gp_1_visc_reaction_ * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
+    tau_u_gp_2_ = tau_u_ * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
+    tau_div_gp_2_ = tau_div_ * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
+    tau_p_gp_2_ = tau_p_ * p_hk_squared_ * gamma_ghost_penalty_p_2nd;
 
     tau_vel_2nd_final_ = is_ghost_penalty_reconstruct
                              ? p_hk_squared_
-                             : tau_u_GP2_visc_reaction_ + tau_u_GP2_ + tau_div_GP2_;
-    tau_pre_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_p_GP2_;
+                             : tau_u_gp_2_visc_reaction_ + tau_u_gp_2_ + tau_div_gp_2_;
+    tau_pre_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_p_gp_2_;
   }
 
   return;

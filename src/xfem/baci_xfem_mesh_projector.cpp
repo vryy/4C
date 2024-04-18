@@ -181,12 +181,12 @@ void XFEM::MeshProjector::FindSearchRadius()
 void XFEM::MeshProjector::SetupSearchTree()
 {
   // init of 3D search tree
-  searchTree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
+  search_tree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // find the bounding box of all elements of source discretization
   const CORE::LINALG::Matrix<3, 2> sourceEleBox =
       CORE::GEO::getXAABBofPositions(src_nodepositions_n_);
-  searchTree_->initializeTree(sourceEleBox, *sourcedis_, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
+  search_tree_->initializeTree(sourceEleBox, *sourcedis_, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   // TODO: find the bounding box of the nodes from the target discretization, that demand
   // projection, intersect the bounding boxes to obtain a smaller one
@@ -202,7 +202,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
   // size of a fluid dofset
   const unsigned numdofperset = 4;
 
-  targetnodeToParent_.clear();
+  targetnode_to_parent_.clear();
 
   // vector of node ids to be projected
   std::vector<int> projection_targetnodes;
@@ -407,7 +407,7 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
     CORE::LINALG::Matrix<8, 1> interpolatedvec(true);
 
     // search for near elements
-    std::map<int, std::set<int>> closeeles = searchTree_->searchElementsInRadius(
+    std::map<int, std::set<int>> closeeles = search_tree_->searchElementsInRadius(
         *sourcedis_, src_nodepositions_n_, node_xyz, searchradius_, 0);
 
     if (closeeles.empty())
@@ -447,7 +447,7 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
 
         if (insideelement)
         {
-          targetnodeToParent_[projection_targetnodes[ni]] = pele->Id();
+          targetnode_to_parent_[projection_targetnodes[ni]] = pele->Id();
           break;
         }
       }
@@ -633,9 +633,9 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
       }
       tar_dofs.clear();
 
-      std::map<int, int>::const_iterator iter = targetnodeToParent_.find(actnode->Id());
+      std::map<int, int>::const_iterator iter = targetnode_to_parent_.find(actnode->Id());
 
-      if (iter != targetnodeToParent_.end())
+      if (iter != targetnode_to_parent_.end())
       {
         int id = iter->second;
         IO::GMSH::ScalarToStream(pos, id, gmshfilecontent);

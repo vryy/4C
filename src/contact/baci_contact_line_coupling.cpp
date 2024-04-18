@@ -39,12 +39,12 @@ CONTACT::LineToSurfaceCoupling3d::LineToSurfaceCoupling3d(DRT::Discretization& i
     std::vector<Element*> surfEles, LineToSurfaceCoupling3d::IntType type)
     : idiscret_(idiscret),
       dim_(dim),
-      pEle_(pEle),
-      lEle_(lEle),
-      surfEles_(surfEles),
-      currEle_(-1),
+      p_ele_(pEle),
+      l_ele_(lEle),
+      surf_eles_(surfEles),
+      curr_ele_(-1),
       imortar_(params),
-      intType_(type)
+      int_type_(type)
 {
   // empty constructor
 
@@ -2319,7 +2319,7 @@ const Epetra_Comm& CONTACT::LineToSurfaceCoupling3d::Comm() const { return idisc
 CONTACT::LineToLineCouplingPoint3d::LineToLineCouplingPoint3d(DRT::Discretization& idiscret,
     int dim, Teuchos::ParameterList& params, Teuchos::RCP<MORTAR::Element>& lsele,
     Teuchos::RCP<MORTAR::Element>& lmele)
-    : idiscret_(idiscret), dim_(dim), imortar_(params), lSele_(lsele), lMele_(lmele)
+    : idiscret_(idiscret), dim_(dim), imortar_(params), l_sele_(lsele), l_mele_(lmele)
 {
   // empty constructor
 }

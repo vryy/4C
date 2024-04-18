@@ -54,9 +54,9 @@ NOX::NLN::Direction::ModifiedNewton::ModifiedNewton(
   fillDefaultStepTests(pmod);
 
   if (p.sublist("Newton").get("Forcing Term Method", "Constant") == "Constant")
-    useAdjustableForcingTerm_ = false;
+    use_adjustable_forcing_term_ = false;
   else
-    useAdjustableForcingTerm_ = true;
+    use_adjustable_forcing_term_ = true;
 
   fp_except_.shall_be_caught_ = pmod.get<bool>("Catch Floating Point Exceptions");
 
@@ -270,7 +270,7 @@ bool NOX::NLN::Direction::ModifiedNewton::solveModifiedSystem(
   if (not grp.isJacobian()) FOUR_C_THROW("At this point the jacobian must be fully evaluated!");
 
   // Reset the linear solver tolerance.
-  if (useAdjustableForcingTerm_)
+  if (use_adjustable_forcing_term_)
   {
     resetForcingTerm(grp, solver.getPreviousSolutionGroup(), solver.getNumIterations(), solver);
   }

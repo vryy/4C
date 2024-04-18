@@ -114,7 +114,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> islave_;
 
     //! Slave displacement on master side at every time step begin
-    Teuchos::RCP<Epetra_Vector> FTStemp_;
+    Teuchos::RCP<Epetra_Vector> ft_stemp_;
   };
 
 }  // namespace FSI

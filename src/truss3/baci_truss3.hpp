@@ -203,7 +203,7 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       //! coordinates of nodes in reference configuration
-      const CORE::LINALG::Matrix<6, 1>& X() const { return X_; }
+      const CORE::LINALG::Matrix<6, 1>& X() const { return x_; }
 
      protected:
       //! kind of integration to be performed
@@ -322,7 +322,7 @@ namespace DRT
       int material_;
 
       //! reference node position
-      CORE::LINALG::Matrix<6, 1> X_;
+      CORE::LINALG::Matrix<6, 1> x_;
 
       // don't want = operator
       Truss3& operator=(const Truss3& old);

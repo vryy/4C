@@ -421,13 +421,13 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Set whether the given element is a nurbs element
     */
-    virtual bool& SetNurbsElement() { return isNurbs_; }
+    virtual bool& SetNurbsElement() { return is_nurbs_; }
 
 
     /*!
     \brief Get whether the given element is a nurbs element
     */
-    virtual bool IsNurbsElement() const { return isNurbs_; }
+    virtual bool IsNurbsElement() const { return is_nurbs_; }
 
     /*!
     \brief Returns whether the given element actually is a face element with degrees of freedom
@@ -1283,7 +1283,7 @@ might become invalid after a redistribution of the discretization.
     std::vector<Teuchos::RCP<MAT::Material>> mat_;
 
     //! is this a nurbs element?
-    bool isNurbs_;
+    bool is_nurbs_;
   };  // class Element
 
 

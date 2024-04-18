@@ -340,8 +340,8 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::InitializeInternal()
   dp_.emplace_back("dp", 0.0);
 
   // initialize saturation vector for function evaluation
-  S_.clear();
-  S_.emplace_back("S", 0.0);
+  s_.clear();
+  s_.emplace_back("S", 0.0);
 }
 
 
@@ -472,12 +472,12 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturati
   if ((*presids_)[doftoderive] == 0) return 0.0;
 
   // directly write into entry without checking the name for performance reasons
-  S_[0].second = saturation;
+  s_[0].second = saturation;
 
   std::vector<double> deriv =
       GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
-          .EvaluateDerivative(S_, {}, 0);
+          .EvaluateDerivative(s_, {}, 0);
 
   return deriv[0] * (*presids_)[doftoderive];
 }
@@ -506,11 +506,11 @@ template <int dim>
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressureInternal(double saturation)
 {
   // directly write into entry without checking the name for performance reasons
-  S_[0].second = saturation;
+  s_[0].second = saturation;
 
   return GLOBAL::Problem::Instance()
       ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
-      .Evaluate(S_, {}, 0);
+      .Evaluate(s_, {}, 0);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -37,9 +37,9 @@ MyocardMinimal::MyocardMinimal(const double eps_deriv_myocard, const std::string
       v_(num_gp),
       w_(num_gp),
       s_(num_gp),
-      Jfi_(num_gp),
-      Jso_(num_gp),
-      Jsi_(num_gp)
+      jfi_(num_gp),
+      jso_(num_gp),
+      jsi_(num_gp)
 
 {
   for (int i = 0; i < num_gp; ++i)
@@ -51,9 +51,9 @@ MyocardMinimal::MyocardMinimal(const double eps_deriv_myocard, const std::string
     v_[i] = v0_[i];
     w_[i] = w0_[i];
     s_[i] = s0_[i];
-    Jfi_[i] = 0.0;  /// fast inward current
-    Jso_[i] = 0.0;  /// slow outward current
-    Jsi_[i] = 0.0;  /// slow inward current
+    jfi_[i] = 0.0;  /// fast inward current
+    jso_[i] = 0.0;  /// slow outward current
+    jsi_[i] = 0.0;  /// slow inward current
   }
 
 
@@ -63,186 +63,186 @@ MyocardMinimal::MyocardMinimal(const double eps_deriv_myocard, const std::string
   {
     u_o_ = 0.0;
     u_u_ = 1.61;
-    Theta_v_ = 0.3;
-    Theta_w_ = 0.13;
-    Theta_vm_ = 0.1;
-    Theta_o_ = 0.005;
-    Tau_v1m_ = 80.0;
-    Tau_v2m_ = 1.4506;
-    Tau_vp_ = 1.4506;
-    Tau_w1m_ = 70.0;
-    Tau_w2m_ = 8.0;
+    theta_v_ = 0.3;
+    theta_w_ = 0.13;
+    theta_vm_ = 0.1;
+    theta_o_ = 0.005;
+    tau_v1m_ = 80.0;
+    tau_v2m_ = 1.4506;
+    tau_vp_ = 1.4506;
+    tau_w1m_ = 70.0;
+    tau_w2m_ = 8.0;
     k_wm_ = 200.0;
     u_wm_ = 0.016;
-    Tau_wp_ = 280.0;
-    Tau_fi_ = 0.078;
-    Tau_o1_ = 410.0;
-    Tau_o2_ = 7.0;
-    Tau_so1_ = 91;
-    Tau_so2_ = 0.8;
+    tau_wp_ = 280.0;
+    tau_fi_ = 0.078;
+    tau_o1_ = 410.0;
+    tau_o2_ = 7.0;
+    tau_so1_ = 91;
+    tau_so2_ = 0.8;
     k_so_ = 2.1;
     u_so_ = 0.6;
-    Tau_s1_ = 2.7342;
-    Tau_s2_ = 4.0;
+    tau_s1_ = 2.7342;
+    tau_s2_ = 4.0;
     k_s_ = 2.0994;
     u_s_ = 0.9087;
-    Tau_si_ = 3.3849;
-    Tau_winf_ = 0.01;
+    tau_si_ = 3.3849;
+    tau_winf_ = 0.01;
     w_infs_ = 0.5;
   }
   else if (tissue == "ENDO")
   {
     u_o_ = 0.0;
     u_u_ = 1.56;
-    Theta_v_ = 0.3;
-    Theta_w_ = 0.13;
-    Theta_vm_ = 0.2;
-    Theta_o_ = 0.006;
-    Tau_v1m_ = 75.0;
-    Tau_v2m_ = 10.0;
-    Tau_vp_ = 1.4506;
-    Tau_w1m_ = 6.0;
-    Tau_w2m_ = 140.0;
+    theta_v_ = 0.3;
+    theta_w_ = 0.13;
+    theta_vm_ = 0.2;
+    theta_o_ = 0.006;
+    tau_v1m_ = 75.0;
+    tau_v2m_ = 10.0;
+    tau_vp_ = 1.4506;
+    tau_w1m_ = 6.0;
+    tau_w2m_ = 140.0;
     k_wm_ = 200.0;
     u_wm_ = 0.016;
-    Tau_wp_ = 280.0;
-    Tau_fi_ = 0.1;
-    Tau_o1_ = 470.0;
-    Tau_o2_ = 6.0;
-    Tau_so1_ = 40.0;
-    Tau_so2_ = 1.2;
+    tau_wp_ = 280.0;
+    tau_fi_ = 0.1;
+    tau_o1_ = 470.0;
+    tau_o2_ = 6.0;
+    tau_so1_ = 40.0;
+    tau_so2_ = 1.2;
     k_so_ = 2.0;
     u_so_ = 0.65;
-    Tau_s1_ = 2.7342;
-    Tau_s2_ = 2.0;
+    tau_s1_ = 2.7342;
+    tau_s2_ = 2.0;
     k_s_ = 2.0994;
     u_s_ = 0.9087;
-    Tau_si_ = 2.9013;
-    Tau_winf_ = 0.0273;
+    tau_si_ = 2.9013;
+    tau_winf_ = 0.0273;
     w_infs_ = 0.78;
   }
   else if (tissue == "EPI")
   {
     u_o_ = 0.0;
     u_u_ = 1.55;
-    Theta_v_ = 0.3;
-    Theta_w_ = 0.13;
-    Theta_vm_ = 0.006;
-    Theta_o_ = 0.006;
-    Tau_v1m_ = 60.0;
-    Tau_v2m_ = 1150;
-    Tau_vp_ = 1.4506;
-    Tau_w1m_ = 60.0;
-    Tau_w2m_ = 15.0;
+    theta_v_ = 0.3;
+    theta_w_ = 0.13;
+    theta_vm_ = 0.006;
+    theta_o_ = 0.006;
+    tau_v1m_ = 60.0;
+    tau_v2m_ = 1150;
+    tau_vp_ = 1.4506;
+    tau_w1m_ = 60.0;
+    tau_w2m_ = 15.0;
     k_wm_ = 65.0;
     u_wm_ = 0.03;
-    Tau_wp_ = 200.0;
-    Tau_fi_ = 0.11;
-    Tau_o1_ = 400.0;
-    Tau_o2_ = 6.0;
-    Tau_so1_ = 30.0181;
-    Tau_so2_ = 0.9957;
+    tau_wp_ = 200.0;
+    tau_fi_ = 0.11;
+    tau_o1_ = 400.0;
+    tau_o2_ = 6.0;
+    tau_so1_ = 30.0181;
+    tau_so2_ = 0.9957;
     k_so_ = 2.0458;
     u_so_ = 0.65;
-    Tau_s1_ = 2.7342;
-    Tau_s2_ = 16.0;
+    tau_s1_ = 2.7342;
+    tau_s2_ = 16.0;
     k_s_ = 2.0994;
     u_s_ = 0.9087;
-    Tau_si_ = 1.8875;
-    Tau_winf_ = 0.07;
+    tau_si_ = 1.8875;
+    tau_winf_ = 0.07;
     w_infs_ = 0.94;
   }
   else if (tissue == "Atria")
   {
     u_o_ = 0.0;
     u_u_ = 1.02;  // 1.58;
-    Theta_v_ = 0.302;
-    Theta_w_ = 0.33;    // 0.015;
-    Theta_vm_ = 0.172;  // 0.015;
-    Theta_o_ = 0.06;
-    Tau_v1m_ = 65.6;
-    Tau_v2m_ = 1150.0;
-    Tau_vp_ = 0.95;
-    Tau_w1m_ = 170.8;  // 70.0;
-    Tau_w2m_ = 112.4;  // 20.0;
+    theta_v_ = 0.302;
+    theta_w_ = 0.33;    // 0.015;
+    theta_vm_ = 0.172;  // 0.015;
+    theta_o_ = 0.06;
+    tau_v1m_ = 65.6;
+    tau_v2m_ = 1150.0;
+    tau_vp_ = 0.95;
+    tau_w1m_ = 170.8;  // 70.0;
+    tau_w2m_ = 112.4;  // 20.0;
     k_wm_ = 135.0;
     u_wm_ = 0.0744;
-    Tau_wp_ = 217.0;  // 280.0;
-    Tau_fi_ = 0.0678;
-    Tau_o1_ = 100.0;  // 6.0;
-    Tau_o2_ = 64.87;
-    Tau_so1_ = 53.54;  // 43.0;
-    Tau_so2_ = 8.03;   // 0.2;
+    tau_wp_ = 217.0;  // 280.0;
+    tau_fi_ = 0.0678;
+    tau_o1_ = 100.0;  // 6.0;
+    tau_o2_ = 64.87;
+    tau_so1_ = 53.54;  // 43.0;
+    tau_so2_ = 8.03;   // 0.2;
     k_so_ = 1.748;     // 2.0;
     u_so_ = 0.644;
-    Tau_s1_ = 5.406;
-    Tau_s2_ = 52.91;  // 3.0;
+    tau_s1_ = 5.406;
+    tau_s2_ = 52.91;  // 3.0;
     k_s_ = 1.008;
     u_s_ = 0.814;
-    Tau_si_ = 6.978;  // 2.8723;
-    Tau_winf_ = 4.97;
+    tau_si_ = 6.978;  // 2.8723;
+    tau_winf_ = 4.97;
     w_infs_ = 1.0;
   }
   else if (tissue == "pAtria")  // Lenk et al. 2015, "Initation of atrial fibrillation..." (JTB)
   {
     u_o_ = 0.0;
     u_u_ = 0.9205;
-    Theta_v_ = 0.35;
-    Theta_w_ = 0.328;
-    Theta_vm_ = 0.126;
-    Theta_o_ = 0.00005;
-    Tau_v1m_ = 41.857;
-    Tau_v2m_ = 1150;
-    Tau_vp_ = 1.7;
-    Tau_w1m_ = 138.69;
-    Tau_w2m_ = 62.341;
+    theta_v_ = 0.35;
+    theta_w_ = 0.328;
+    theta_vm_ = 0.126;
+    theta_o_ = 0.00005;
+    tau_v1m_ = 41.857;
+    tau_v2m_ = 1150;
+    tau_vp_ = 1.7;
+    tau_w1m_ = 138.69;
+    tau_w2m_ = 62.341;
     k_wm_ = 202.66;
     u_wm_ = 0.055;
-    Tau_wp_ = 177.41;
-    Tau_fi_ = 0.045;
-    Tau_o1_ = 410;
-    Tau_o2_ = 64.914;
-    Tau_so1_ = 115;
-    Tau_so2_ = 6.5;
+    tau_wp_ = 177.41;
+    tau_fi_ = 0.045;
+    tau_o1_ = 410;
+    tau_o2_ = 64.914;
+    tau_so1_ = 115;
+    tau_so2_ = 6.5;
     k_so_ = 1.386;
     u_so_ = 0.332;
-    Tau_s1_ = 11.457;
-    Tau_s2_ = 53.902;
+    tau_s1_ = 11.457;
+    tau_s2_ = 53.902;
     k_s_ = 1.226;
     u_s_ = 0.792;
-    Tau_si_ = 7.802;
-    Tau_winf_ = 0.05;
+    tau_si_ = 7.802;
+    tau_winf_ = 0.05;
     w_infs_ = 1.0;
   }
   else if (tissue == "pAtriaRe")  // Lenk et al. 2015, "Initation of atrial fibrillation..." (JTB)
   {
     u_o_ = 0.0;
     u_u_ = 0.9205;
-    Theta_v_ = 0.35;
-    Theta_w_ = 0.328;
-    Theta_vm_ = 0.126;
-    Theta_o_ = 0.00005;
-    Tau_v1m_ = 41.857;
-    Tau_v2m_ = 1150;
-    Tau_vp_ = 1.7;
-    Tau_w1m_ = 138.69;
-    Tau_w2m_ = 62.341;
+    theta_v_ = 0.35;
+    theta_w_ = 0.328;
+    theta_vm_ = 0.126;
+    theta_o_ = 0.00005;
+    tau_v1m_ = 41.857;
+    tau_v2m_ = 1150;
+    tau_vp_ = 1.7;
+    tau_w1m_ = 138.69;
+    tau_w2m_ = 62.341;
     k_wm_ = 202.66;
     u_wm_ = 0.055;
-    Tau_wp_ = 177.41;
-    Tau_fi_ = 0.11;
-    Tau_o1_ = 410;
-    Tau_o2_ = 64.914;
-    Tau_so1_ = 115;
-    Tau_so2_ = 6.5;
+    tau_wp_ = 177.41;
+    tau_fi_ = 0.11;
+    tau_o1_ = 410;
+    tau_o2_ = 64.914;
+    tau_so1_ = 115;
+    tau_so2_ = 6.5;
     k_so_ = 1.386;
     u_so_ = 0.332;
-    Tau_s1_ = 11.457;
-    Tau_s2_ = 53.902;
+    tau_s1_ = 11.457;
+    tau_s2_ = 53.902;
     k_s_ = 1.226;
     u_s_ = 0.792;
-    Tau_si_ = 7.802;
-    Tau_winf_ = 0.05;
+    tau_si_ = 7.802;
+    tau_winf_ = 0.05;
     w_infs_ = 1.0;
   }
   else if (tissue == "rAtria")
@@ -251,31 +251,31 @@ MyocardMinimal::MyocardMinimal(const double eps_deriv_myocard, const std::string
   {
     u_o_ = 0.00;
     u_u_ = 1.0089;
-    Theta_v_ = 0.3;
-    Theta_w_ = 0.18171;
-    Theta_vm_ = 0.1007;
-    Theta_o_ = 0.015473;
-    Tau_v1m_ = 16.3;
-    Tau_v2m_ = 1150;
-    Tau_vp_ = 1.7026;
-    Tau_w1m_ = 79.963;
-    Tau_w2m_ = 28.136;
+    theta_v_ = 0.3;
+    theta_w_ = 0.18171;
+    theta_vm_ = 0.1007;
+    theta_o_ = 0.015473;
+    tau_v1m_ = 16.3;
+    tau_v2m_ = 1150;
+    tau_vp_ = 1.7026;
+    tau_w1m_ = 79.963;
+    tau_w2m_ = 28.136;
     k_wm_ = 60.219;
     u_wm_ = 0.00991;
-    Tau_wp_ = 213.55;
-    Tau_fi_ = 0.083536;
-    Tau_o1_ = 250.03;
-    Tau_o2_ = 16.632;
-    Tau_so1_ = 73.675;
-    Tau_so2_ = 6.5537;
+    tau_wp_ = 213.55;
+    tau_fi_ = 0.083536;
+    tau_o1_ = 250.03;
+    tau_o2_ = 16.632;
+    tau_so1_ = 73.675;
+    tau_so2_ = 6.5537;
     k_so_ = 2.9748;
     u_so_ = 0.592093;
-    Tau_s1_ = 9.876;
-    Tau_s2_ = 4.2036;
+    tau_s1_ = 9.876;
+    tau_s2_ = 4.2036;
     k_s_ = 2.2268;
     u_s_ = 0.81568;
-    Tau_si_ = 10.699;
-    Tau_winf_ = 0.2233;
+    tau_si_ = 10.699;
+    tau_winf_ = 0.2233;
     w_infs_ = 0.902;
   }
   else
@@ -300,37 +300,37 @@ double MyocardMinimal::ReaCoeff(const double phi, const double dt, int gp)
   const double p = 1000.0;
 
   // calculate voltage dependent time constants ([7] page 545)
-  double Tau_vm = tools_.GatingFunction(Tau_v1m_, Tau_v2m_, p, phi, Theta_vm_);
-  double Tau_wm = tools_.GatingFunction(Tau_w1m_, Tau_w2m_, k_wm_, phi, u_wm_);
-  double Tau_so = tools_.GatingFunction(Tau_so1_, Tau_so2_, k_so_, phi, u_so_);
-  double Tau_s = tools_.GatingFunction(Tau_s1_, Tau_s2_, p, phi, Theta_w_);
-  double Tau_o = tools_.GatingFunction(Tau_o1_, Tau_o2_, p, phi, Theta_o_);
+  double Tau_vm = tools_.GatingFunction(tau_v1m_, tau_v2m_, p, phi, theta_vm_);
+  double Tau_wm = tools_.GatingFunction(tau_w1m_, tau_w2m_, k_wm_, phi, u_wm_);
+  double Tau_so = tools_.GatingFunction(tau_so1_, tau_so2_, k_so_, phi, u_so_);
+  double Tau_s = tools_.GatingFunction(tau_s1_, tau_s2_, p, phi, theta_w_);
+  double Tau_o = tools_.GatingFunction(tau_o1_, tau_o2_, p, phi, theta_o_);
 
   // calculate infinity values ([7] page 545)
-  double v_inf = tools_.GatingFunction(1.0, 0.0, p, phi, Theta_vm_);
-  double w_inf = tools_.GatingFunction(1.0 - phi / Tau_winf_, w_infs_, p, phi, Theta_o_);
+  double v_inf = tools_.GatingFunction(1.0, 0.0, p, phi, theta_vm_);
+  double w_inf = tools_.GatingFunction(1.0 - phi / tau_winf_, w_infs_, p, phi, theta_o_);
 
   // calculate gating variables according to [8]
-  double Tau_v = tools_.GatingFunction(Tau_vm, Tau_vp_, p, phi, Theta_v_);
-  double v_inf_GF = tools_.GatingFunction(v_inf, 0.0, p, phi, Theta_v_);
+  double Tau_v = tools_.GatingFunction(Tau_vm, tau_vp_, p, phi, theta_v_);
+  double v_inf_GF = tools_.GatingFunction(v_inf, 0.0, p, phi, theta_v_);
   v_[gp] = tools_.GatingVarCalc(dt, v0_[gp], v_inf_GF, Tau_v);
 
-  double Tau_w = tools_.GatingFunction(Tau_wm, Tau_wp_, p, phi, Theta_w_);
-  double w_inf_GF = tools_.GatingFunction(w_inf, 0.0, p, phi, Theta_w_);
+  double Tau_w = tools_.GatingFunction(Tau_wm, tau_wp_, p, phi, theta_w_);
+  double w_inf_GF = tools_.GatingFunction(w_inf, 0.0, p, phi, theta_w_);
   w_[gp] = tools_.GatingVarCalc(dt, w0_[gp], w_inf_GF, Tau_w);
 
   const double s_inf = tools_.GatingFunction(0.0, 1.0, k_s_, phi, u_s_);
   s_[gp] = tools_.GatingVarCalc(dt, s0_[gp], s_inf, Tau_s);
 
   // calculate currents J_fi, J_so and J_si ([7] page 545)
-  Jfi_[gp] = -tools_.GatingFunction(0.0, v_[gp] * (phi - Theta_v_) * (u_u_ - phi) / Tau_fi_, p, phi,
-      Theta_v_);  // fast inward current
-  Jso_[gp] = tools_.GatingFunction(
-      (phi - u_o_) / Tau_o, 1.0 / Tau_so, p, phi, Theta_w_);  // slow outward current
-  Jsi_[gp] = -tools_.GatingFunction(
-      0.0, w_[gp] * s_[gp] / Tau_si_, p, phi, Theta_w_);  // slow inward current
+  jfi_[gp] = -tools_.GatingFunction(0.0, v_[gp] * (phi - theta_v_) * (u_u_ - phi) / tau_fi_, p, phi,
+      theta_v_);  // fast inward current
+  jso_[gp] = tools_.GatingFunction(
+      (phi - u_o_) / Tau_o, 1.0 / Tau_so, p, phi, theta_w_);  // slow outward current
+  jsi_[gp] = -tools_.GatingFunction(
+      0.0, w_[gp] * s_[gp] / tau_si_, p, phi, theta_w_);  // slow inward current
 
-  reacoeff = (Jfi_[gp] + Jso_[gp] + Jsi_[gp]);
+  reacoeff = (jfi_[gp] + jso_[gp] + jsi_[gp]);
 
 
   // Store necessary variables for mechanical activation and electromechanical coupling
@@ -347,18 +347,18 @@ double MyocardMinimal::ReaCoeffN(const double phi, const double dt, int gp)
 
   // calculate voltage dependent time constants ([7] page 545)
 
-  double Tau_so = tools_.GatingFunction(Tau_so1_, Tau_so2_, k_so_, phi, u_so_);
-  double Tau_o = tools_.GatingFunction(Tau_o1_, Tau_o2_, p, phi, Theta_o_);
+  double Tau_so = tools_.GatingFunction(tau_so1_, tau_so2_, k_so_, phi, u_so_);
+  double Tau_o = tools_.GatingFunction(tau_o1_, tau_o2_, p, phi, theta_o_);
 
   // calculate currents J_fi, J_so and J_si ([7] page 545)
-  Jfi_[gp] = -tools_.GatingFunction(0.0, v0_[gp] * (phi - Theta_v_) * (u_u_ - phi) / Tau_fi_, p,
-      phi, Theta_v_);  // fast inward current
-  Jso_[gp] = tools_.GatingFunction(
-      (phi - u_o_) / Tau_o, 1.0 / Tau_so, p, phi, Theta_w_);  // slow outward current
-  Jsi_[gp] = -tools_.GatingFunction(
-      0.0, w0_[gp] * s0_[gp] / Tau_si_, p, phi, Theta_w_);  // slow inward current
+  jfi_[gp] = -tools_.GatingFunction(0.0, v0_[gp] * (phi - theta_v_) * (u_u_ - phi) / tau_fi_, p,
+      phi, theta_v_);  // fast inward current
+  jso_[gp] = tools_.GatingFunction(
+      (phi - u_o_) / Tau_o, 1.0 / Tau_so, p, phi, theta_w_);  // slow outward current
+  jsi_[gp] = -tools_.GatingFunction(
+      0.0, w0_[gp] * s0_[gp] / tau_si_, p, phi, theta_w_);  // slow inward current
 
-  reacoeff = (Jfi_[gp] + Jso_[gp] + Jsi_[gp]);
+  reacoeff = (jfi_[gp] + jso_[gp] + jsi_[gp]);
 
 
   // Store necessary variables for mechanical activation and electromechanical coupling
@@ -481,17 +481,17 @@ double MyocardMinimal::GetIonicCurrents(const int k, int gp) const
   {
     case 0:
     {
-      val = Jfi_[gp];
+      val = jfi_[gp];
       break;
     }
     case 1:
     {
-      val = Jso_[gp];
+      val = jso_[gp];
       break;
     }
     case 2:
     {
-      val = Jsi_[gp];
+      val = jsi_[gp];
       break;
     }
   }
@@ -522,9 +522,9 @@ void MyocardMinimal::ResizeInternalStateVariables(int gp)
   v_.resize(gp);
   w_.resize(gp);
   s_.resize(gp);
-  Jfi_.resize(gp);
-  Jso_.resize(gp);
-  Jsi_.resize(gp);
+  jfi_.resize(gp);
+  jso_.resize(gp);
+  jsi_.resize(gp);
   return;
 }
 

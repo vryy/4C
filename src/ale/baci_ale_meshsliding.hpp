@@ -88,10 +88,10 @@ namespace ALE
 
     Teuchos::RCP<Epetra_Vector> lm_;  // current vector of Lagrange multipliers at t_n+1
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> A_ss_;   // stiffness block A_ss (needed for LM)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> A_sm_;   // stiffness block A_sm (needed for LM)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> A_sn_;   // stiffness block A_sn (needed for LM)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> D_inv_;  // inverse of Mortar matrix D (needed for LM)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> a_ss_;   // stiffness block A_ss (needed for LM)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> a_sm_;   // stiffness block A_sm (needed for LM)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> a_sn_;   // stiffness block A_sn (needed for LM)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> d_inv_;  // inverse of Mortar matrix D (needed for LM)
     Teuchos::RCP<Epetra_Vector> rs_;                  // slave side effective forces (needed for LM)
   };
 

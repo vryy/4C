@@ -39,8 +39,8 @@ XFEM::XfluidSemiLagrange::XfluidSemiLagrange(
     )
     : XfluidStd(timeInt, reconstr_method, timeIntType, veln, dt, initialize),
       theta_default_(theta),
-      relTolIncr_(1.0e-10),
-      relTolRes_(1.0e-10)
+      rel_tol_incr_(1.0e-10),
+      rel_tol_res_(1.0e-10)
 {
   return;
 }  // end constructor
@@ -599,8 +599,8 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
       // convergence criterion
       if (data->startpoint_.Norm2() > 1e-3)
       {
-        if (incr.Norm2() / data->startpoint_.Norm2() < relTolIncr_ &&
-            residuum.Norm2() / data->startpoint_.Norm2() < relTolRes_)
+        if (incr.Norm2() / data->startpoint_.Norm2() < rel_tol_incr_ &&
+            residuum.Norm2() / data->startpoint_.Norm2() < rel_tol_res_)
         {
           if (data->changedside_ == false)
           {
@@ -630,7 +630,7 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
       }
       else
       {
-        if (incr.Norm2() < relTolIncr_ && residuum.Norm2() < relTolRes_)
+        if (incr.Norm2() < rel_tol_incr_ && residuum.Norm2() < rel_tol_res_)
         {
           if (data->changedside_ == false)
           {

@@ -33,8 +33,8 @@ DRT::ELEMENTS::So3Scatra<so3_ele, distype>::So3Scatra(int id, int owner)
                                : DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule)),
       numgpt_(intpoints_.nquad),
       xsi_(0.0),
-      invJ_(0.0),
-      detJ_(0.0)
+      inv_j_(0.0),
+      det_j_(0.0)
 {
   return;
 }
@@ -52,8 +52,8 @@ DRT::ELEMENTS::So3Scatra<so3_ele, distype>::So3Scatra(
       intpoints_(old.intpoints_),
       numgpt_(old.numgpt_),
       xsi_(old.xsi_),
-      invJ_(old.invJ_),
-      detJ_(old.detJ_)
+      inv_j_(old.inv_j_),
+      det_j_(old.det_j_)
 {
   return;
 }
@@ -87,12 +87,12 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& da
   so3_ele::AddtoPack(data, impltype_);
 
   // detJ_
-  so3_ele::AddtoPack(data, detJ_);
+  so3_ele::AddtoPack(data, det_j_);
 
   // invJ_
-  auto size = (int)invJ_.size();
+  auto size = (int)inv_j_.size();
   so3_ele::AddtoPack(data, size);
-  for (int i = 0; i < size; ++i) so3_ele::AddtoPack(data, invJ_[i]);
+  for (int i = 0; i < size; ++i) so3_ele::AddtoPack(data, inv_j_[i]);
 
   // xsi_
   size = (int)xsi_.size();
@@ -119,13 +119,13 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Unpack(const std::vector<char>&
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(so3_ele::ExtractInt(position, data));
 
   // detJ_
-  so3_ele::ExtractfromPack(position, data, detJ_);
+  so3_ele::ExtractfromPack(position, data, det_j_);
 
   // invJ_
   int size = 0;
   so3_ele::ExtractfromPack(position, data, size);
-  invJ_.resize(size, CORE::LINALG::Matrix<numdim_, numdim_>(true));
-  for (int i = 0; i < size; ++i) so3_ele::ExtractfromPack(position, data, invJ_[i]);
+  inv_j_.resize(size, CORE::LINALG::Matrix<numdim_, numdim_>(true));
+  for (int i = 0; i < size; ++i) so3_ele::ExtractfromPack(position, data, inv_j_[i]);
 
   // xsi_
   size = 0;

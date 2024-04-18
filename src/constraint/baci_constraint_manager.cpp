@@ -33,11 +33,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONSTRAINTS::ConstrManager::ConstrManager()
-    : offsetID_(-1),
-      maxConstrID_(0),
-      numConstrID_(-1),
-      numMonitorID_(-1),
-      minMonitorID_(-1),
+    : offset_id_(-1),
+      max_constr_id_(0),
+      num_constr_id_(-1),
+      num_monitor_id_(-1),
+      min_monitor_id_(-1),
       haveconstraint_(false),
       havelagrconstr_(false),
       havepenaconstr_(false),
@@ -65,21 +65,21 @@ void CONSTRAINTS::ConstrManager::Init(
 
   // constructors of constraints increment number of constraints defined and the minimum
   // ConditionID read so far.
-  numConstrID_ = 0;
-  offsetID_ = 10000;
+  num_constr_id_ = 0;
+  offset_id_ = 10000;
   // Check, what kind of constraining boundary conditions there are
   volconstr3d_ =
-      Teuchos::rcp(new Constraint(actdisc_, "VolumeConstraint_3D", offsetID_, maxConstrID_));
+      Teuchos::rcp(new Constraint(actdisc_, "VolumeConstraint_3D", offset_id_, max_constr_id_));
   areaconstr3d_ =
-      Teuchos::rcp(new Constraint(actdisc_, "AreaConstraint_3D", offsetID_, maxConstrID_));
+      Teuchos::rcp(new Constraint(actdisc_, "AreaConstraint_3D", offset_id_, max_constr_id_));
   areaconstr2d_ =
-      Teuchos::rcp(new Constraint(actdisc_, "AreaConstraint_2D", offsetID_, maxConstrID_));
+      Teuchos::rcp(new Constraint(actdisc_, "AreaConstraint_2D", offset_id_, max_constr_id_));
   mpconline2d_ =
-      Teuchos::rcp(new MPConstraint2(actdisc_, "MPC_NodeOnLine_2D", offsetID_, maxConstrID_));
+      Teuchos::rcp(new MPConstraint2(actdisc_, "MPC_NodeOnLine_2D", offset_id_, max_constr_id_));
   mpconplane3d_ =
-      Teuchos::rcp(new MPConstraint3(actdisc_, "MPC_NodeOnPlane_3D", offsetID_, maxConstrID_));
-  mpcnormcomp3d_ =
-      Teuchos::rcp(new MPConstraint3(actdisc_, "MPC_NormalComponent_3D", offsetID_, maxConstrID_));
+      Teuchos::rcp(new MPConstraint3(actdisc_, "MPC_NodeOnPlane_3D", offset_id_, max_constr_id_));
+  mpcnormcomp3d_ = Teuchos::rcp(
+      new MPConstraint3(actdisc_, "MPC_NormalComponent_3D", offset_id_, max_constr_id_));
 
   volconstr3dpen_ = Teuchos::rcp(new ConstraintPenalty(actdisc_, "VolumeConstraint_3D_Pen"));
   areaconstr3dpen_ = Teuchos::rcp(new ConstraintPenalty(actdisc_, "AreaConstraint_3D_Pen"));
@@ -111,17 +111,17 @@ void CONSTRAINTS::ConstrManager::Setup(
 
   if (haveconstraint_)
   {
-    numConstrID_ = std::max(maxConstrID_ - offsetID_ + 1, 0);
+    num_constr_id_ = std::max(max_constr_id_ - offset_id_ + 1, 0);
     constrdofset_ = Teuchos::rcp(new ConstraintDofSet());
-    constrdofset_->AssignDegreesOfFreedom(actdisc_, numConstrID_, 0);
-    offsetID_ -= constrdofset_->FirstGID();
+    constrdofset_->AssignDegreesOfFreedom(actdisc_, num_constr_id_, 0);
+    offset_id_ -= constrdofset_->FirstGID();
     Teuchos::ParameterList p;
     uzawaparam_ = params.get<double>("uzawa parameter", 1);
     double time = params.get<double>("total time", 0.0);
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     // initialize constrMatrix
-    constrMatrix_ =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, numConstrID_, false, true));
+    constr_matrix_ =
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, num_constr_id_, false, true));
     // build Epetra_Map used as domainmap for constrMatrix and rowmap for result vectors
     constrmap_ = Teuchos::rcp(new Epetra_Map(*(constrdofset_->DofRowMap())));
     // build an all reduced version of the constraintmap, since sometimes all processors
@@ -134,7 +134,7 @@ void CONSTRAINTS::ConstrManager::Setup(
     Teuchos::RCP<Epetra_Vector> refbaseredundant = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
     // Compute initial values and assemble them to the completely redundant vector
     // We will always use the third systemvector for this purpose
-    p.set("OffsetID", offsetID_);
+    p.set("OffsetID", offset_id_);
     p.set("total time", time);
     actdisc_->SetState("displacement", disp);
     volconstr3d_->Initialize(p, refbaseredundant);
@@ -160,25 +160,25 @@ void CONSTRAINTS::ConstrManager::Setup(
     referencevalues_ = Teuchos::rcp(new Epetra_Vector(*constrmap_));
     actvalues_ = Teuchos::rcp(new Epetra_Vector(*constrmap_, true));
     constrainterr_ = Teuchos::rcp(new Epetra_Vector(*constrmap_));
-    lagrMultVec_ = Teuchos::rcp(new Epetra_Vector(*constrmap_, true));
-    lagrMultVecOld_ = Teuchos::rcp(new Epetra_Vector(*constrmap_, true));
+    lagr_mult_vec_ = Teuchos::rcp(new Epetra_Vector(*constrmap_, true));
+    lagr_mult_vec_old_ = Teuchos::rcp(new Epetra_Vector(*constrmap_, true));
     fact_ = Teuchos::rcp(new Epetra_Vector(*constrmap_));
   }
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Monitor Conditions!
   actdisc_->SetState("displacement", disp);
-  minMonitorID_ = 10000;
+  min_monitor_id_ = 10000;
   int maxMonitorID = 0;
   volmonitor3d_ =
-      Teuchos::rcp(new Monitor(actdisc_, "VolumeMonitor_3D", minMonitorID_, maxMonitorID));
+      Teuchos::rcp(new Monitor(actdisc_, "VolumeMonitor_3D", min_monitor_id_, maxMonitorID));
   areamonitor3d_ =
-      Teuchos::rcp(new Monitor(actdisc_, "AreaMonitor_3D", minMonitorID_, maxMonitorID));
+      Teuchos::rcp(new Monitor(actdisc_, "AreaMonitor_3D", min_monitor_id_, maxMonitorID));
   areamonitor2d_ =
-      Teuchos::rcp(new Monitor(actdisc_, "AreaMonitor_2D", minMonitorID_, maxMonitorID));
+      Teuchos::rcp(new Monitor(actdisc_, "AreaMonitor_2D", min_monitor_id_, maxMonitorID));
   //----------------------------------------------------
   //--------------include possible further monitors here
   //----------------------------------------------------
-  numMonitorID_ = std::max(maxMonitorID - minMonitorID_ + 1, 0);
+  num_monitor_id_ = std::max(maxMonitorID - min_monitor_id_ + 1, 0);
   havemonitor_ = (areamonitor3d_->HaveMonitor()) || (volmonitor3d_->HaveMonitor()) ||
                  (areamonitor2d_->HaveMonitor());
   if (havemonitor_)
@@ -188,17 +188,17 @@ void CONSTRAINTS::ConstrManager::Setup(
     int nummyele = 0;
     if (!actdisc_->Comm().MyPID())
     {
-      nummyele = numMonitorID_;
+      nummyele = num_monitor_id_;
     }
     // initialize maps and importer
-    monitormap_ = Teuchos::rcp(new Epetra_Map(numMonitorID_, nummyele, 0, actdisc_->Comm()));
+    monitormap_ = Teuchos::rcp(new Epetra_Map(num_monitor_id_, nummyele, 0, actdisc_->Comm()));
     redmonmap_ = CORE::LINALG::AllreduceEMap(*monitormap_);
     monimpo_ = Teuchos::rcp(new Epetra_Export(*redmonmap_, *monitormap_));
     monitorvalues_ = Teuchos::rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_ = Teuchos::rcp(new Epetra_Vector(*monitormap_));
 
     Teuchos::RCP<Epetra_Vector> initialmonredundant = Teuchos::rcp(new Epetra_Vector(*redmonmap_));
-    p1.set("OffsetID", minMonitorID_);
+    p1.set("OffsetID", min_monitor_id_);
     volmonitor3d_->Evaluate(p1, initialmonredundant);
     areamonitor3d_->Evaluate(p1, initialmonredundant);
     areamonitor2d_->Evaluate(p1, initialmonredundant);
@@ -230,13 +230,13 @@ void CONSTRAINTS::ConstrManager::EvaluateForceStiff(const double time,
   Teuchos::ParameterList p;
   std::vector<DRT::Condition*> constrcond(0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-  constrMatrix_->Reset();  //=Teuchos::rcp(new
-                           // CORE::LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
+  constr_matrix_->Reset();  //=Teuchos::rcp(new
+                            // CORE::LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
 
   // other parameters that might be needed by the elements
   p.set("total time", time);
-  p.set("OffsetID", offsetID_);
-  p.set("NumberofID", numConstrID_);
+  p.set("OffsetID", offset_id_);
+  p.set("NumberofID", num_constr_id_);
   p.set("old disp", displast);
   p.set("new disp", disp);
   p.set("scaleStiffEntries", scStiff);
@@ -245,7 +245,7 @@ void CONSTRAINTS::ConstrManager::EvaluateForceStiff(const double time,
   // Convert Epetra_Vector containing lagrange multipliers to an completely
   // redundant Epetra_vector since every element with the constraint condition needs them
   Teuchos::RCP<Epetra_Vector> lagrMultVecDense = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
-  CORE::LINALG::Export(*lagrMultVec_, *lagrMultVecDense);
+  CORE::LINALG::Export(*lagr_mult_vec_, *lagrMultVecDense);
   p.set("LagrMultVector", lagrMultVecDense);
   // Construct a redundant time curve factor and put it into parameter list
   Teuchos::RCP<Epetra_Vector> factredundant = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
@@ -256,20 +256,20 @@ void CONSTRAINTS::ConstrManager::EvaluateForceStiff(const double time,
 
   actdisc_->ClearState();
   actdisc_->SetState("displacement", disp);
-  volconstr3d_->Evaluate(p, stiff, constrMatrix_, fint, refbaseredundant, actredundant);
-  areaconstr3d_->Evaluate(p, stiff, constrMatrix_, fint, refbaseredundant, actredundant);
-  areaconstr2d_->Evaluate(p, stiff, constrMatrix_, fint, refbaseredundant, actredundant);
+  volconstr3d_->Evaluate(p, stiff, constr_matrix_, fint, refbaseredundant, actredundant);
+  areaconstr3d_->Evaluate(p, stiff, constr_matrix_, fint, refbaseredundant, actredundant);
+  areaconstr2d_->Evaluate(p, stiff, constr_matrix_, fint, refbaseredundant, actredundant);
   volconstr3dpen_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   areaconstr3dpen_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
 
   mpconplane3d_->SetConstrState("displacement", disp);
-  mpconplane3d_->Evaluate(p, stiff, constrMatrix_, fint, refbaseredundant, actredundant);
+  mpconplane3d_->Evaluate(p, stiff, constr_matrix_, fint, refbaseredundant, actredundant);
   mpcnormcomp3d_->SetConstrState("displacement", disp);
-  mpcnormcomp3d_->Evaluate(p, stiff, constrMatrix_, fint, refbaseredundant, actredundant);
+  mpcnormcomp3d_->Evaluate(p, stiff, constr_matrix_, fint, refbaseredundant, actredundant);
   mpcnormcomp3dpen_->SetConstrState("displacement", disp);
   mpcnormcomp3dpen_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   mpconline2d_->SetConstrState("displacement", disp);
-  mpconline2d_->Evaluate(p, stiff, constrMatrix_, fint, refbaseredundant, actredundant);
+  mpconline2d_->Evaluate(p, stiff, constr_matrix_, fint, refbaseredundant, actredundant);
   // Export redundant vectors into distributed ones
   actvalues_->PutScalar(0.0);
   actvalues_->Export(*actredundant, *conimpo_, Add);
@@ -286,11 +286,11 @@ void CONSTRAINTS::ConstrManager::EvaluateForceStiff(const double time,
   constrainterr_->Update(scConMat, *referencevalues_, -1.0 * scConMat, *actvalues_, 0.0);
   actdisc_->ClearState();
   // finalize the constraint matrix
-  std::string label(constrMatrix_->Label());
+  std::string label(constr_matrix_->Label());
   if (label == "CORE::LINALG::BlockSparseMatrixBase")
-    constrMatrix_->Complete();
+    constr_matrix_->Complete();
   else
-    constrMatrix_->Complete(*constrmap_, *dofrowmap);
+    constr_matrix_->Complete(*constrmap_, *dofrowmap);
 }
 
 /*----------------------------------------------------------------------*
@@ -309,7 +309,7 @@ void CONSTRAINTS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_V
   CORE::LINALG::Export(*actvalues_, *actredundant);
   // Compute current values and assemble them to the completely redundant vector
   // We will always use the third systemvector for this purpose
-  p.set("OffsetID", offsetID_);
+  p.set("OffsetID", offset_id_);
   volconstr3d_->Evaluate(
       p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, actredundant);
   areaconstr3d_->Evaluate(
@@ -368,33 +368,33 @@ void CONSTRAINTS::ConstrManager::SetRefBaseValues(
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::ConstrManager::UpdateLagrMult(double factor)
 {
-  lagrMultVec_->Update(factor, *constrainterr_, 1.0);
+  lagr_mult_vec_->Update(factor, *constrainterr_, 1.0);
   if (volconstr3d_->HaveConstraint())
   {
     std::vector<int> volconID = volconstr3d_->GetActiveCondID();
     for (unsigned int i = 0; i < volconID.size(); i++)
     {
-      if (constrmap_->LID(int(i - offsetID_)) != -1)
+      if (constrmap_->LID(int(i - offset_id_)) != -1)
       {
         std::cout << "Multiplier for Volume Constraint: " << volconID.at(i) << ":  "
-                  << (*lagrMultVec_)[constrmap_->LID(int(i - offsetID_))] << '\n';
+                  << (*lagr_mult_vec_)[constrmap_->LID(int(i - offset_id_))] << '\n';
       }
     }
   }
 }
 
-void CONSTRAINTS::ConstrManager::Update() { lagrMultVecOld_->Update(1.0, *lagrMultVec_, 0.0); }
+void CONSTRAINTS::ConstrManager::Update() { lagr_mult_vec_old_->Update(1.0, *lagr_mult_vec_, 0.0); }
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::ConstrManager::UpdateLagrMult(Teuchos::RCP<Epetra_Vector> vect)
 {
-  lagrMultVec_->Update(1.0, *vect, 1.0);
+  lagr_mult_vec_->Update(1.0, *vect, 1.0);
 }
 
 void CONSTRAINTS::ConstrManager::UpdateTotLagrMult(Teuchos::RCP<Epetra_Vector> vect)
 {
-  lagrMultVec_->Update(1.0, *vect, 1.0, *lagrMultVecOld_, 0.0);
+  lagr_mult_vec_->Update(1.0, *vect, 1.0, *lagr_mult_vec_old_, 0.0);
 }
 
 /*-----------------------------------------------------------------------*
@@ -407,7 +407,7 @@ void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector
   actdisc_->SetState("displacement", disp);
 
   Teuchos::RCP<Epetra_Vector> actmonredundant = Teuchos::rcp(new Epetra_Vector(*redmonmap_));
-  p.set("OffsetID", minMonitorID_);
+  p.set("OffsetID", min_monitor_id_);
 
   volmonitor3d_->Evaluate(p, actmonredundant);
   areamonitor3d_->Evaluate(p, actmonredundant);
@@ -438,7 +438,7 @@ void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_
     actdisc_->SetState("displacement", disp);
 
   Teuchos::RCP<Epetra_Vector> actmonredundant = Teuchos::rcp(new Epetra_Vector(*redmonmap_));
-  p.set("OffsetID", minMonitorID_);
+  p.set("OffsetID", min_monitor_id_);
 
   volmonitor3d_->Evaluate(p, actmonredundant);
   areamonitor3d_->Evaluate(p, actmonredundant);
@@ -452,21 +452,21 @@ void CONSTRAINTS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::ConstrManager::PrintMonitorValues() const
 {
-  if (numMonitorID_ == 1)
+  if (num_monitor_id_ == 1)
     printf("Monitor value:\n");
-  else if (numMonitorID_ > 1)
+  else if (num_monitor_id_ > 1)
     printf("Monitor values:\n");
 
-  for (int i = 0; i < numMonitorID_; ++i)
+  for (int i = 0; i < num_monitor_id_; ++i)
   {
     if ((*monitortypes_)[i] == 1.0)
     {
-      printf("%2d (volume): %10.5e (%5.2f%% of initial value)\n", i + minMonitorID_,
+      printf("%2d (volume): %10.5e (%5.2f%% of initial value)\n", i + min_monitor_id_,
           abs((*monitorvalues_)[i]), ((*monitorvalues_)[i]) * 100 / ((*initialmonvalues_)[i]));
     }
     else if ((*monitortypes_)[i] == 2.0)
     {
-      printf("%2d   (area): %10.5e (%5.2f%% of initial value)\n", i + minMonitorID_,
+      printf("%2d   (area): %10.5e (%5.2f%% of initial value)\n", i + min_monitor_id_,
           abs((*monitorvalues_)[i]), ((*monitorvalues_)[i]) * 100 / ((*initialmonvalues_)[i]));
     }
   }
@@ -478,7 +478,7 @@ void CONSTRAINTS::ConstrManager::BuildMoniType()
   // build distributed and redundant dummy monitor vector
   Teuchos::RCP<Epetra_Vector> dummymonredundant = Teuchos::rcp(new Epetra_Vector(*redmonmap_));
   Teuchos::RCP<Epetra_Vector> dummymondist = Teuchos::rcp(new Epetra_Vector(*monitormap_));
-  p1.set("OffsetID", minMonitorID_);
+  p1.set("OffsetID", min_monitor_id_);
 
   // do the volumes
   volmonitor3d_->Evaluate(p1, dummymonredundant);
@@ -525,7 +525,7 @@ void CONSTRAINTS::ConstrManager::UseBlockMatrix(
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {
   // (re)allocate system matrix
-  constrMatrix_ =
+  constr_matrix_ =
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *domainmaps, *rangemaps, 81, false, true));
 }

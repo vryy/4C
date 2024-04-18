@@ -782,8 +782,8 @@ NOX::NLN::LinSystem::PrePostOp::PseudoTransient::PseudoTransient(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
     const NOX::NLN::Solver::PseudoTransient& ptcsolver)
     : ptcsolver_(ptcsolver),
-      scalingDiagOpPtr_(scalingDiagOpPtr),
-      scalingMatrixOpPtr_(scalingMatrixOpPtr)
+      scaling_diag_op_ptr_(scalingDiagOpPtr),
+      scaling_matrix_op_ptr_(scalingMatrixOpPtr)
 {
   // empty constructor
 }
@@ -853,7 +853,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modifyJacobian(
        * pseudo time step. Finally, we modify the jacobian.
        *
        *        (\delta^{-1} \boldsymbol{I} + \boldsymbol{J}) */
-      Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*scalingDiagOpPtr_));
+      Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*scaling_diag_op_ptr_));
       // Scale v with scaling factor
       v->Scale(deltaInv * scaleFactor);
       // get the diagonal terms of the jacobian
@@ -871,8 +871,8 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modifyJacobian(
        *
        *        (\delta^{-1} \boldsymbol{V} + \boldsymbol{J}) */
 
-      scalingMatrixOpPtr_->Complete();
-      jac.Add(*scalingMatrixOpPtr_, false, scaleFactor * deltaInv, 1.0);
+      scaling_matrix_op_ptr_->Complete();
+      jac.Add(*scaling_matrix_op_ptr_, false, scaleFactor * deltaInv, 1.0);
       jac.Complete();
 
       break;
@@ -898,9 +898,9 @@ NOX::NLN::GROUP::PrePostOp::PseudoTransient::PseudoTransient(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
     const NOX::NLN::Solver::PseudoTransient& ptcsolver)
     : ptcsolver_(ptcsolver),
-      scalingDiagOpPtr_(scalingDiagOpPtr),
-      scalingMatrixOpPtr_(scalingMatrixOpPtr),
-      isPseudoTransientResidual_(false)
+      scaling_diag_op_ptr_(scalingDiagOpPtr),
+      scaling_matrix_op_ptr_(scalingMatrixOpPtr),
+      is_pseudo_transient_residual_(false)
 {
   // empty constructor
 }
@@ -929,7 +929,7 @@ NOX::NLN::GROUP::PrePostOp::PseudoTransient::evalPseudoTransientFUpdate(const NO
   {
     case NOX::NLN::Solver::PseudoTransient::scale_op_identity:
     {
-      ::NOX::Epetra::Vector v = ::NOX::Epetra::Vector(scalingDiagOpPtr_);
+      ::NOX::Epetra::Vector v = ::NOX::Epetra::Vector(scaling_diag_op_ptr_);
       v.scale(ptcsolver_.getInversePseudoTimeStep());
       xUpdate->scale(v);
 
@@ -937,7 +937,8 @@ NOX::NLN::GROUP::PrePostOp::PseudoTransient::evalPseudoTransientFUpdate(const NO
     }
     case NOX::NLN::Solver::PseudoTransient::scale_op_element_based:
     {
-      scalingMatrixOpPtr_->Multiply(false, xUpdate->getEpetraVector(), xUpdate->getEpetraVector());
+      scaling_matrix_op_ptr_->Multiply(
+          false, xUpdate->getEpetraVector(), xUpdate->getEpetraVector());
       xUpdate->scale(ptcsolver_.getInversePseudoTimeStep());
 
       break;
@@ -962,7 +963,7 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPostComputeF(
 
   /* If we need no pseudo transient residual or if the transient residual
    * has already been added, we can skip this function. */
-  if (not usePseudoTransientResidual or isPseudoTransientResidual_) return;
+  if (not usePseudoTransientResidual or is_pseudo_transient_residual_) return;
 
   Teuchos::RCP<::NOX::Epetra::Vector> fUpdate = evalPseudoTransientFUpdate(grp);
 
@@ -970,7 +971,7 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPostComputeF(
   F.Update(1.0, fUpdate->getEpetraVector(), 1.0);
 
   // set the flag
-  isPseudoTransientResidual_ = true;
+  is_pseudo_transient_residual_ = true;
 
   return;
 }
@@ -985,13 +986,13 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPreComputeF(
   // If the current rhs has not been calculated, yet.
   if (!grp.isF())
   {
-    isPseudoTransientResidual_ = false;
+    is_pseudo_transient_residual_ = false;
     return;
   }
 
   /* Recalculate the static residual, if the current right hand side
    * has already been modified, though we need the static residual. */
-  if (ptcsolver_.usePseudoTransientResidual() or !isPseudoTransientResidual_) return;
+  if (ptcsolver_.usePseudoTransientResidual() or !is_pseudo_transient_residual_) return;
 
   Teuchos::RCP<::NOX::Epetra::Vector> fUpdate = evalPseudoTransientFUpdate(grp);
 
@@ -999,7 +1000,7 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPreComputeF(
   F.Update(-1.0, fUpdate->getEpetraVector(), 1.0);
 
   // set flag
-  isPseudoTransientResidual_ = false;
+  is_pseudo_transient_residual_ = false;
 
   return;
 }

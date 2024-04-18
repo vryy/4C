@@ -47,7 +47,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::SphereBeamLinking()
-    : sm_crosslinkink_ptr(Teuchos::null),
+    : sm_crosslinkink_ptr_(Teuchos::null),
       spherebeamlinking_params_ptr_(Teuchos::null),
       visualization_manager_ptr_(Teuchos::null),
       random_number_sphere_beam_linking_step_(-1)
@@ -97,7 +97,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitSubmodelDependen
   STR::MODELEVALUATOR::BeamInteraction::Map::const_iterator miter;
   for (miter = (*submodelmap).begin(); miter != (*submodelmap).end(); ++miter)
     if (miter->first == INPAR::BEAMINTERACTION::submodel_crosslinking)
-      sm_crosslinkink_ptr =
+      sm_crosslinkink_ptr_ =
           Teuchos::rcp_dynamic_cast<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking>(
               miter->second);
 }

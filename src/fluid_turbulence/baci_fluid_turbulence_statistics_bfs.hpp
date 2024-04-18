@@ -229,7 +229,7 @@ namespace FLD
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sump_;
 
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sumrho_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sumT_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sum_t_;
 
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sumtauw_;
 
@@ -239,7 +239,7 @@ namespace FLD
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sump_;
 
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumrho_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumT_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sum_t_;
 
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqu_;
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqv_;
@@ -247,16 +247,16 @@ namespace FLD
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqp_;
 
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqrho_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqT_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsq_t_;
 
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumuv_;
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumuw_;
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumvw_;
 
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumrhou_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumuT_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumu_t_;
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumrhov_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumvT_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumv_t_;
 
     void convertStringToGeoType(const std::string& geotype);
   };

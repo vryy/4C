@@ -24,66 +24,66 @@ MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::CoupAnisoExpoShearAnisotrop
 void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::PackAnisotropy(
     CORE::COMM::PackBuffer& data) const
 {
-  CORE::COMM::ParObject::AddtoPack(data, scalarProducts_);
-  CORE::COMM::ParObject::AddtoPack(data, structuralTensors_stress_);
-  CORE::COMM::ParObject::AddtoPack(data, structuralTensors_);
-  CORE::COMM::ParObject::AddtoPack(data, isInitialized_);
+  CORE::COMM::ParObject::AddtoPack(data, scalar_products_);
+  CORE::COMM::ParObject::AddtoPack(data, structural_tensors_stress_);
+  CORE::COMM::ParObject::AddtoPack(data, structural_tensors_);
+  CORE::COMM::ParObject::AddtoPack(data, is_initialized_);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::UnpackAnisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  CORE::COMM::ParObject::ExtractfromPack(position, data, scalarProducts_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, structuralTensors_stress_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, structuralTensors_);
-  isInitialized_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
+  CORE::COMM::ParObject::ExtractfromPack(position, data, scalar_products_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, structural_tensors_stress_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, structural_tensors_);
+  is_initialized_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
 double MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetScalarProduct(int gp) const
 {
-  if (!isInitialized_)
+  if (!is_initialized_)
   {
     FOUR_C_THROW("Fibers have not been initialized yet.");
   }
 
-  if (scalarProducts_.size() == 1)
+  if (scalar_products_.size() == 1)
   {
-    return scalarProducts_[0];
+    return scalar_products_[0];
   }
 
-  return scalarProducts_[gp];
+  return scalar_products_[gp];
 }
 
 const CORE::LINALG::Matrix<3, 3>&
 MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor(int gp) const
 {
-  if (!isInitialized_)
+  if (!is_initialized_)
   {
     FOUR_C_THROW("Fibers have not been initialized yet.");
   }
 
-  if (structuralTensors_.size() == 1)
+  if (structural_tensors_.size() == 1)
   {
-    return structuralTensors_[0];
+    return structural_tensors_[0];
   }
 
-  return structuralTensors_[gp];
+  return structural_tensors_[gp];
 }
 
 const CORE::LINALG::Matrix<6, 1>&
 MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor_stress(int gp) const
 {
-  if (!isInitialized_)
+  if (!is_initialized_)
   {
     FOUR_C_THROW("Fibers have not been initialized yet.");
   }
 
-  if (structuralTensors_stress_.size() == 1)
+  if (structural_tensors_stress_.size() == 1)
   {
-    return structuralTensors_stress_[0];
+    return structural_tensors_stress_[0];
   }
 
-  return structuralTensors_stress_[gp];
+  return structural_tensors_stress_[gp];
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalDataInitialized()
@@ -114,23 +114,23 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalElementDataIni
     FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
 
-  scalarProducts_.resize(1);
-  structuralTensors_.resize(1);
-  structuralTensors_stress_.resize(1);
-  scalarProducts_[0] = GetAnisotropy()
-                           ->GetElementFiber(fiber_ids_[0])
-                           .Dot(GetAnisotropy()->GetElementFiber(fiber_ids_[1]));
+  scalar_products_.resize(1);
+  structural_tensors_.resize(1);
+  structural_tensors_stress_.resize(1);
+  scalar_products_[0] = GetAnisotropy()
+                            ->GetElementFiber(fiber_ids_[0])
+                            .Dot(GetAnisotropy()->GetElementFiber(fiber_ids_[1]));
 
   CORE::LINALG::Matrix<3, 3> fiber1fiber2T(false);
   fiber1fiber2T.MultiplyNT(GetAnisotropy()->GetElementFiber(fiber_ids_[0]),
       GetAnisotropy()->GetElementFiber(fiber_ids_[1]));
 
-  structuralTensors_[0].Update(0.5, fiber1fiber2T);
-  structuralTensors_[0].UpdateT(0.5, fiber1fiber2T, 1.0);
+  structural_tensors_[0].Update(0.5, fiber1fiber2T);
+  structural_tensors_[0].UpdateT(0.5, fiber1fiber2T, 1.0);
   CORE::LINALG::VOIGT::Stresses::MatrixToVector(
-      structuralTensors_[0], structuralTensors_stress_[0]);
+      structural_tensors_[0], structural_tensors_stress_[0]);
 
-  isInitialized_ = true;
+  is_initialized_ = true;
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitialized()
@@ -156,27 +156,27 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitiali
     FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
 
-  scalarProducts_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
-  structuralTensors_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
-  structuralTensors_stress_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
+  scalar_products_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
+  structural_tensors_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
+  structural_tensors_stress_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
 
   for (auto gp = 0; gp < GetAnisotropy()->GetNumberOfGaussPoints(); ++gp)
   {
-    scalarProducts_[gp] = GetAnisotropy()
-                              ->GetGPFiber(gp, fiber_ids_[0])
-                              .Dot(GetAnisotropy()->GetGPFiber(gp, fiber_ids_[1]));
+    scalar_products_[gp] = GetAnisotropy()
+                               ->GetGPFiber(gp, fiber_ids_[0])
+                               .Dot(GetAnisotropy()->GetGPFiber(gp, fiber_ids_[1]));
 
     CORE::LINALG::Matrix<3, 3> fiber1fiber2T(false);
     fiber1fiber2T.MultiplyNT(GetAnisotropy()->GetGPFiber(gp, fiber_ids_[0]),
         GetAnisotropy()->GetGPFiber(gp, fiber_ids_[1]));
 
-    structuralTensors_[gp].Update(0.5, fiber1fiber2T);
-    structuralTensors_[gp].UpdateT(0.5, fiber1fiber2T, 1.0);
+    structural_tensors_[gp].Update(0.5, fiber1fiber2T);
+    structural_tensors_[gp].UpdateT(0.5, fiber1fiber2T, 1.0);
     CORE::LINALG::VOIGT::Stresses::MatrixToVector(
-        structuralTensors_[gp], structuralTensors_stress_[gp]);
+        structural_tensors_[gp], structural_tensors_stress_[gp]);
   }
 
-  isInitialized_ = true;
+  is_initialized_ = true;
 }
 
 MAT::ELASTIC::PAR::CoupAnisoExpoShear::CoupAnisoExpoShear(
@@ -191,24 +191,24 @@ MAT::ELASTIC::PAR::CoupAnisoExpoShear::CoupAnisoExpoShear(
 MAT::ELASTIC::CoupAnisoExpoShear::CoupAnisoExpoShear(MAT::ELASTIC::PAR::CoupAnisoExpoShear* params)
     : MAT::ELASTIC::CoupAnisoExpoBase(params),
       params_(params),
-      anisotropyExtension_(params_->init_, params->fiber_id_)
+      anisotropy_extension_(params_->init_, params->fiber_id_)
 {
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShear::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
+  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShear::PackSummand(CORE::COMM::PackBuffer& data) const
 {
-  anisotropyExtension_.PackAnisotropy(data);
+  anisotropy_extension_.PackAnisotropy(data);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShear::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  anisotropyExtension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.UnpackAnisotropy(data, position);
 }
 
 void MAT::ELASTIC::CoupAnisoExpoShear::GetFiberVecs(

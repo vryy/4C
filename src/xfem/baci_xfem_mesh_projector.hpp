@@ -115,7 +115,7 @@ namespace XFEM
     double searchradius_fac_;
 
     //! 3D seach tree for embedded discretization
-    Teuchos::RCP<CORE::GEO::SearchTree> searchTree_;
+    Teuchos::RCP<CORE::GEO::SearchTree> search_tree_;
 
     //! min. radius needed for the search tree
     double searchradius_;
@@ -127,7 +127,7 @@ namespace XFEM
     std::vector<Teuchos::RCP<const Epetra_Vector>> source_statevecs_;
 
     //! map between target node id and parent element id
-    std::map<int, int> targetnodeToParent_;
+    std::map<int, int> targetnode_to_parent_;
   };
 }  // namespace XFEM
 

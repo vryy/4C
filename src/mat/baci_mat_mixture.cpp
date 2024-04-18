@@ -112,10 +112,10 @@ void MAT::Mixture::Pack(CORE::COMM::PackBuffer& data) const
 
   // Pack isPreEvaluated flag
   std::vector<int> isPreEvaluatedInt;
-  isPreEvaluatedInt.resize(isPreEvaluated_.size());
-  for (unsigned i = 0; i < isPreEvaluated_.size(); ++i)
+  isPreEvaluatedInt.resize(is_pre_evaluated_.size());
+  for (unsigned i = 0; i < is_pre_evaluated_.size(); ++i)
   {
-    isPreEvaluatedInt[i] = static_cast<int>(isPreEvaluated_[i]);
+    isPreEvaluatedInt[i] = static_cast<int>(is_pre_evaluated_[i]);
   }
   AddtoPack(data, isPreEvaluatedInt);
 
@@ -174,10 +174,10 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
     // Extract is isPreEvaluated
     std::vector<int> isPreEvaluatedInt(0);
     CORE::COMM::ParObject::ExtractfromPack(position, data, isPreEvaluatedInt);
-    isPreEvaluated_.resize(isPreEvaluatedInt.size());
+    is_pre_evaluated_.resize(isPreEvaluatedInt.size());
     for (unsigned i = 0; i < isPreEvaluatedInt.size(); ++i)
     {
-      isPreEvaluated_[i] = static_cast<bool>(isPreEvaluatedInt[i]);
+      is_pre_evaluated_[i] = static_cast<bool>(isPreEvaluatedInt[i]);
     }
 
     anisotropy_.UnpackAnisotropy(data, position);
@@ -225,7 +225,7 @@ void MAT::Mixture::Setup(const int numgp, INPUT::LineDefinition* linedef)
   So3Material::Setup(numgp, linedef);
 
   // resize preevaluation flag
-  isPreEvaluated_.resize(numgp, false);
+  is_pre_evaluated_.resize(numgp, false);
 
   // Setup anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);
@@ -283,11 +283,11 @@ void MAT::Mixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // check, whether the PostSetup method was already called
   if (!setup_) FOUR_C_THROW("The material's PostSetup() method has not been called yet.");
 
-  if (!isPreEvaluated_[gp])
+  if (!is_pre_evaluated_[gp])
   {
     for (const auto& constituent : *constituents_)
     {
-      isPreEvaluated_[gp] = true;
+      is_pre_evaluated_[gp] = true;
       constituent->PreEvaluate(*mixture_rule_, params, gp, eleGID);
     }
 

@@ -48,7 +48,7 @@ namespace DRT
       double TimeFac() const { return timefac_; };
       double TimeFacRhs() const { return timefacrhs_; };
       double TimeFacRhsTau() const { return timefacrhstau_; };
-      double AlphaF() const { return alphaF_; };
+      double AlphaF() const { return alpha_f_; };
 
      private:
       //! private constructor for singletons
@@ -63,7 +63,7 @@ namespace DRT
       double timefac_;
       double timefacrhs_;
       double timefacrhstau_;
-      double alphaF_;
+      double alpha_f_;
     };  // class ScaTraEleParameterTimInt
   }     // namespace ELEMENTS
 }  // namespace DRT

@@ -219,11 +219,11 @@ namespace MAT
     MAT::Anisotropy anisotropy_;
 
     /// Anisotropy extension holder
-    MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
+    MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
 
     /// Activation evaluator, either analytical symbolic function of space and time or discrete
     /// activation map
-    ActivationEvaluatorVariant activationEvaluator_;
+    ActivationEvaluatorVariant activation_evaluator_;
   };  // end class Muscle_Combo
 
 }  // end namespace MAT

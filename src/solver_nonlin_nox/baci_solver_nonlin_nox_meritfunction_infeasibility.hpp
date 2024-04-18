@@ -88,7 +88,7 @@ namespace NOX
 
         enum MeritFctName infeasibility_type_;
 
-        std::string meritFunctionName_;
+        std::string merit_function_name_;
       };
     }  // namespace MeritFunction
   }    // namespace NLN

@@ -53,14 +53,14 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     virtual void Reset() = 0;
 
     //! Return the Penalty-Parameter
-    double& GetPenaltyParameterPtr() { return penaltyParameter_; }
+    double& GetPenaltyParameterPtr() { return penalty_parameter_; }
 
    private:
     //! Colum Map
     Teuchos::RCP<Epetra_Map> n_condition_map_;
 
     //! Penalty parameter
-    double penaltyParameter_;
+    double penalty_parameter_;
 
    protected:
     //! Vector containing all multipoint constraint and related constraint equation objects

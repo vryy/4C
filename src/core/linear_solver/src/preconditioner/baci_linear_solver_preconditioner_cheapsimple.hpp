@@ -60,8 +60,8 @@ namespace CORE::LINEAR_SOLVER
       vsolver_ = Teuchos::null;  // solver objects only generated for SIMPLE and SIMPLER (not for
                                  // CheapSIMPLE)
       psolver_ = Teuchos::null;
-      Ppredict_ = Teuchos::null;
-      Pschur_ = Teuchos::null;
+      ppredict_ = Teuchos::null;
+      pschur_ = Teuchos::null;
     }
 
     /*!
@@ -73,9 +73,9 @@ namespace CORE::LINEAR_SOLVER
 
       strLabel << "CheapSIMPLE ";
 
-      const bool visml = predictSolver_list_.isSublist("ML Parameters");
-      const bool vismuelu = predictSolver_list_.isSublist("MueLu Parameters");
-      const bool visifpack = predictSolver_list_.isSublist("IFPACK Parameters");
+      const bool visml = predict_solver_list_.isSublist("ML Parameters");
+      const bool vismuelu = predict_solver_list_.isSublist("MueLu Parameters");
+      const bool visifpack = predict_solver_list_.isSublist("IFPACK Parameters");
       strLabel << "[Inv1=";
       if (visml)
         strLabel << "ML-type";
@@ -84,7 +84,7 @@ namespace CORE::LINEAR_SOLVER
       else if (visifpack)
       {
         const Teuchos::ParameterList& ifpackParams =
-            predictSolver_list_.sublist("IFPACK Parameters");
+            predict_solver_list_.sublist("IFPACK Parameters");
         if (ifpackParams.isParameter("relaxation: type"))
         {
           strLabel << ifpackParams.get<std::string>("relaxation: type");
@@ -98,16 +98,17 @@ namespace CORE::LINEAR_SOLVER
         strLabel << "unknown";
 
       strLabel << ",Inv2=";
-      const bool pisml = schurSolver_list_.isSublist("ML Parameters");
-      const bool pismuelu = predictSolver_list_.isSublist("MueLu Parameters");
-      const bool pisifpack = schurSolver_list_.isSublist("IFPACK Parameters");
+      const bool pisml = schur_solver_list_.isSublist("ML Parameters");
+      const bool pismuelu = predict_solver_list_.isSublist("MueLu Parameters");
+      const bool pisifpack = schur_solver_list_.isSublist("IFPACK Parameters");
       if (pisml)
         strLabel << "ML-type";
       else if (pismuelu)
         strLabel << "MueLu-type";
       else if (pisifpack)
       {
-        const Teuchos::ParameterList& ifpackParams = schurSolver_list_.sublist("IFPACK Parameters");
+        const Teuchos::ParameterList& ifpackParams =
+            schur_solver_list_.sublist("IFPACK Parameters");
         if (ifpackParams.isParameter("relaxation: type"))
         {
           strLabel << ifpackParams.get<std::string>("relaxation: type");
@@ -136,7 +137,7 @@ namespace CORE::LINEAR_SOLVER
      Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
 
      */
-    const Epetra_Comm& Comm() const override { return (A_->Comm()); }
+    const Epetra_Comm& Comm() const override { return (a_->Comm()); }
 
 
     /*!
@@ -145,7 +146,7 @@ namespace CORE::LINEAR_SOLVER
      Derived from Epetra_Operator, get fine level OperatorDomainMap
 
      */
-    const Epetra_Map& OperatorDomainMap() const override { return A_->FullDomainMap(); }
+    const Epetra_Map& OperatorDomainMap() const override { return a_->FullDomainMap(); }
 
     /*!
       \brief Get fine level OperatorRangeMap
@@ -153,7 +154,7 @@ namespace CORE::LINEAR_SOLVER
       Derived from Epetra_Operator, get fine level OperatorRangeMap
 
     */
-    const Epetra_Map& OperatorRangeMap() const override { return A_->FullRangeMap(); }
+    const Epetra_Map& OperatorRangeMap() const override { return a_->FullRangeMap(); }
 
     /*!
       \brief ApplyInverse the preconditioner
@@ -243,19 +244,19 @@ namespace CORE::LINEAR_SOLVER
     void CheapSimple(CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px,
         CORE::LINALG::ANA::Vector& vb, CORE::LINALG::ANA::Vector& pb) const;
 
-    Teuchos::ParameterList predictSolver_list_;  // list for primary solver
-    Teuchos::ParameterList schurSolver_list_;    // list for secondary solver
-    double alpha_;                               // pressure damping \in (0,1]
+    Teuchos::ParameterList predict_solver_list_;  // list for primary solver
+    Teuchos::ParameterList schur_solver_list_;    // list for secondary solver
+    double alpha_;                                // pressure damping \in (0,1]
 
     CORE::LINALG::MultiMapExtractor mmex_;  // a multimapetxractor to handle extracts (reference not
                                             // an Teuchos::RCP by intention!)
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A_;  // 2x2 block matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> diagAinv_;    // inverse of main diagonal of A(0,0)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a_;  // 2x2 block matrix
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> diag_ainv_;   // inverse of main diagonal of A(0,0)
     Teuchos::RCP<CORE::LINALG::SparseMatrix>
-        S_;  // Approximate Schur complement on the pressure space
+        s_;  // Approximate Schur complement on the pressure space
 
-    Teuchos::RCP<Epetra_Operator> Ppredict_;  // preconditioner for primary prediction subproblem
-    Teuchos::RCP<Epetra_Operator> Pschur_;    // preconditioner for Schur-complement subproblem
+    Teuchos::RCP<Epetra_Operator> ppredict_;  // preconditioner for primary prediction subproblem
+    Teuchos::RCP<Epetra_Operator> pschur_;    // preconditioner for Schur-complement subproblem
 
     Teuchos::RCP<CORE::LINALG::ANA::Vector> vx_;      // velocity solution
     Teuchos::RCP<CORE::LINALG::ANA::Vector> px_;      // pressure solution
@@ -272,14 +273,14 @@ namespace CORE::LINEAR_SOLVER
     bool vdw_;  // indicate downwinding for velocity subproblem
     Teuchos::RCP<CORE::LINALG::DownwindMatrix>
         vdwind_;  // downwinding reindexer for velocity subproblem
-    Teuchos::RCP<Epetra_CrsMatrix> dwA00_;
+    Teuchos::RCP<Epetra_CrsMatrix> dw_a00_;
     Teuchos::RCP<CORE::LINALG::ANA::Vector> vdwin_;   // working vector
     Teuchos::RCP<CORE::LINALG::ANA::Vector> vdwout_;  // working vector
 
     bool pdw_;  // indicate downwinding for velocity subproblem
     Teuchos::RCP<CORE::LINALG::DownwindMatrix>
         pdwind_;  // downwinding reindexer for velocity subproblem
-    Teuchos::RCP<Epetra_CrsMatrix> dwS_;
+    Teuchos::RCP<Epetra_CrsMatrix> dw_s_;
     Teuchos::RCP<CORE::LINALG::ANA::Vector> pdwin_;   // working vector
     Teuchos::RCP<CORE::LINALG::ANA::Vector> pdwout_;  // working vector
 

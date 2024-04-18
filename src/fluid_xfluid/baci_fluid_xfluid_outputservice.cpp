@@ -258,10 +258,10 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
       gmsh_debug_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT")),
       gmsh_debug_out_screen_(
           (bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT_SCREEN")),
-      gmsh_EOS_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
+      gmsh_eos_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
       gmsh_discret_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_DISCRET_OUT")),
       gmsh_step_diff_(500),
-      VolumeCellGaussPointBy_(CORE::UTILS::IntegralValue<INPAR::CUT::VCellGaussPts>(
+      volume_cell_gauss_point_by_(CORE::UTILS::IntegralValue<INPAR::CUT::VCellGaussPts>(
           params_xfem, "VOLUME_GAUSS_POINTS_BY")),
       include_inner_(include_inner)
 {
@@ -823,7 +823,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
 
   // facet based output for cut volumes
   // integrationcells are not available because tessellation is not used
-  if (VolumeCellGaussPointBy_ != INPAR::CUT::VCellGaussPts_Tessellation)
+  if (volume_cell_gauss_point_by_ != INPAR::CUT::VCellGaussPts_Tessellation)
   {
     const CORE::GEO::CUT::plain_facet_set& facete = vc->Facets();
     for (CORE::GEO::CUT::plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
@@ -1320,7 +1320,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputDiscretization(
 void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
     int step, Teuchos::RCP<XFEM::XfemEdgeStab> edge_stab)
 {
-  if (!gmsh_EOS_out_ || edge_stab == Teuchos::null) return;
+  if (!gmsh_eos_out_ || edge_stab == Teuchos::null) return;
 
   // cast to DiscretizationXFEM
   Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =

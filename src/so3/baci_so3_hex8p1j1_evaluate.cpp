@@ -330,24 +330,24 @@ void DRT::ELEMENTS::SoHex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // l
     else
     {
       // dt= K_tp_^-1*(-R_p_-K_pu_*du)
-      dt_.MultiplyNN(-1.0 / K_pt_, K_pu_, disi);
-      dt_.Update(-1.0 / K_pt_, R_p_, 1.0);
+      dt_.MultiplyNN(-1.0 / k_pt_, k_pu_, disi);
+      dt_.Update(-1.0 / k_pt_, r_p_, 1.0);
 
       // dp= K_tp_^-1 * (-R_t_ - K_tu_*du - K_tt*dt)
-      dp_.MultiplyNN(1.0, K_tu_, disi);
-      dp_.Update(K_tt_, dt_, 1.0);
-      dp_.Update(1.0, R_t_, 1.0);
-      dp_.Scale(-1.0 / K_pt_);
+      dp_.MultiplyNN(1.0, k_tu_, disi);
+      dp_.Update(k_tt_, dt_, 1.0);
+      dp_.Update(1.0, r_t_, 1.0);
+      dp_.Scale(-1.0 / k_pt_);
 
       t_ += dt_;
       p_ += dp_;
     }
   }
-  K_tt_ = 0.0;
-  K_pu_.PutScalar(0.0);
-  K_tu_.PutScalar(0.0);
-  R_t_.PutScalar(0.0);
-  R_p_.PutScalar(0.0);
+  k_tt_ = 0.0;
+  k_pu_.PutScalar(0.0);
+  k_tu_.PutScalar(0.0);
+  r_t_.PutScalar(0.0);
+  r_p_.PutScalar(0.0);
 
   //******************************************************************************************
 
@@ -549,8 +549,8 @@ void DRT::ELEMENTS::SoHex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // l
     // update of stiffness matrix
     if (stiffmatrix != nullptr)
     {
-      R_p_(0, 0) += (J - t_(0, 0)) * detJ_w;
-      R_t_(0, 0) += (p_bar - p_(0, 0)) * detJ_w;
+      r_p_(0, 0) += (J - t_(0, 0)) * detJ_w;
+      r_t_(0, 0) += (p_bar - p_(0, 0)) * detJ_w;
 
       CORE::LINALG::Matrix<1, 1> D_22(false);
       {
@@ -563,21 +563,21 @@ void DRT::ELEMENTS::SoHex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // l
       CORE::LINALG::Matrix<6, 6> D_11(false);
       {
         CORE::LINALG::Matrix<6, 6> temp2(false);
-        temp2.Multiply(I_d_, D_T_bar);
-        D_11.Multiply(temp2, I_d_);
+        temp2.Multiply(i_d_, D_T_bar);
+        D_11.Multiply(temp2, i_d_);
         D_11.MultiplyNT(-2.0 / 3.0, m_, sigma_bar_dev, 1.0);
         D_11.MultiplyNT(-2.0 / 3.0, sigma_bar_dev, m_, 1.0);
         double scalar = 2.0 / 3.0 * p_bar - p_hook;
         D_11.MultiplyNT(-scalar, m_, m_, 1.0);
         scalar = 2.0 * (p_bar - p_hook);
-        D_11.Update(scalar, I_0_, 1.0);
+        D_11.Update(scalar, i_0_, 1.0);
       }
 
       CORE::LINALG::Matrix<6, 1> D_12(sigma_bar_dev);
       {
         CORE::LINALG::Matrix<6, 6> temp2(false);
         D_12.Scale(2.0 / 3.0);
-        temp2.MultiplyNN(1.0 / 3.0, I_d_, D_T_bar);
+        temp2.MultiplyNN(1.0 / 3.0, i_d_, D_T_bar);
         D_12.MultiplyNN(1.0, temp2, m_, 1.0);
       }
 
@@ -621,13 +621,13 @@ void DRT::ELEMENTS::SoHex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // l
       }
 
       // K_tu = (D_12^T . B) * N_t  * detJ * w(gp) , wobei N_t=1
-      K_tu_.MultiplyTN(detJ_w, D_12, bopn, 1.0);
+      k_tu_.MultiplyTN(detJ_w, D_12, bopn, 1.0);
 
       // K_pu = ( m^T . B) * N_p * J * detJ * w(gp) , wobei N_p=1
-      K_pu_.MultiplyTN(detJ_w_J, m_, bopn, 1.0);
+      k_pu_.MultiplyTN(detJ_w_J, m_, bopn, 1.0);
 
       // K_tt = N_t * D_22 * N_t * Theta * detJ * w(gp), wobei N_t=1
-      K_tt_ += D_22(0, 0) * detJ_w / t_(0, 0);
+      k_tt_ += D_22(0, 0) * detJ_w / t_(0, 0);
 
     }  // end of stiffness matrix ++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -658,25 +658,25 @@ void DRT::ELEMENTS::SoHex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // l
   //=============================================================================
 
   // K_uu_.PutScalar(0.0);
-  K_uu_.Update(1.0, *stiffmatrix);
+  k_uu_.Update(1.0, *stiffmatrix);
   // F_u_.PutScalar(0.0);
-  F_u_.Update(1.0, *force);
+  f_u_.Update(1.0, *force);
 
   if (split_res)
     if (params.get<int>("MyPID") == Owner())
-      params.get<double>("cond_rhs_norm") += R_p_(0, 0) * R_p_(0, 0) + R_t_(0, 0) * R_t_(0, 0);
+      params.get<double>("cond_rhs_norm") += r_p_(0, 0) * r_p_(0, 0) + r_t_(0, 0) * r_t_(0, 0);
 
   // K_t= K_uu + K_ut * K_pt^-1 * K_pu + K_up * K_tp^-1 * K_tu + K_up * K_tp^-1 * K_tt K_pt^-1 *
   // K_pu
-  const double scalar = 1.0 / K_pt_ * K_tt_ * 1.0 / K_pt_;
+  const double scalar = 1.0 / k_pt_ * k_tt_ * 1.0 / k_pt_;
 
-  stiffmatrix->MultiplyTN(-1.0 / K_pt_, K_tu_, K_pu_, 1.0);
-  stiffmatrix->MultiplyTN(-1.0 / K_pt_, K_pu_, K_tu_, 1.0);
-  stiffmatrix->MultiplyTN(scalar, K_pu_, K_pu_, 1.0);
+  stiffmatrix->MultiplyTN(-1.0 / k_pt_, k_tu_, k_pu_, 1.0);
+  stiffmatrix->MultiplyTN(-1.0 / k_pt_, k_pu_, k_tu_, 1.0);
+  stiffmatrix->MultiplyTN(scalar, k_pu_, k_pu_, 1.0);
 
-  force->MultiplyTN(scalar, K_pu_, R_p_, 1.0);
-  force->MultiplyTN(-1.0 / K_pt_, K_pu_, R_t_, 1.0);
-  force->MultiplyTN(-1.0 / K_pt_, K_tu_, R_p_, 1.0);
+  force->MultiplyTN(scalar, k_pu_, r_p_, 1.0);
+  force->MultiplyTN(-1.0 / k_pt_, k_pu_, r_t_, 1.0);
+  force->MultiplyTN(-1.0 / k_pt_, k_tu_, r_p_, 1.0);
 
   return;
 }  // DRT::ELEMENTS::So_sh8::ForceStiffMass
@@ -966,14 +966,14 @@ void DRT::ELEMENTS::SoHex8P1J1::soh8P1J1_recover(const std::vector<double>& resi
   for (int i = 0; i < NUMDOF_SOH8; ++i) disi(i) = residual[i];
 
   // dt= K_tp_^-1*(-R_p_-K_pu_*du)
-  dt_.MultiplyNN(-1.0 / K_pt_, K_pu_, disi);
-  dt_.Update(-1.0 / K_pt_, R_p_, 1.0);
+  dt_.MultiplyNN(-1.0 / k_pt_, k_pu_, disi);
+  dt_.Update(-1.0 / k_pt_, r_p_, 1.0);
 
   // dp= K_tp_^-1 * (-R_t_ - K_tu_*du - K_tt*dt)
-  dp_.MultiplyNN(1.0, K_tu_, disi);
-  dp_.Update(K_tt_, dt_, 1.0);
-  dp_.Update(1.0, R_t_, 1.0);
-  dp_.Scale(-1.0 / K_pt_);
+  dp_.MultiplyNN(1.0, k_tu_, disi);
+  dp_.Update(k_tt_, dt_, 1.0);
+  dp_.Update(1.0, r_t_, 1.0);
+  dp_.Scale(-1.0 / k_pt_);
 
   t_ += dt_;
   p_ += dp_;

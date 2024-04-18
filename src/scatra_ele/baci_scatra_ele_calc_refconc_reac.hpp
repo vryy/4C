@@ -115,13 +115,13 @@ namespace DRT
 
      private:
       /// determinante of deformation gradient
-      double J_;
+      double j_;
 
       /// inverse of cauchy-green deformation gradient
-      CORE::LINALG::Matrix<nsd_, nsd_> C_inv_;
+      CORE::LINALG::Matrix<nsd_, nsd_> c_inv_;
 
       /// derivative dJ/dX by finite differences
-      CORE::LINALG::Matrix<nsd_, 1> dJdX_;
+      CORE::LINALG::Matrix<nsd_, 1> d_jd_x_;
 
     };  // end ScaTraEleCalcRefConcReac
 

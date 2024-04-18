@@ -130,7 +130,10 @@ namespace CONTACT
     \brief Return pointer to adjacent tree nodes
 
     */
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> AdjacentTreenodes() { return adjacentTreenodes_; }
+    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> AdjacentTreenodes()
+    {
+      return adjacent_treenodes_;
+    }
 
     /*!
     \brief set adjacent tree nodes
@@ -138,7 +141,7 @@ namespace CONTACT
     */
     void SetAdjacentTnodes(std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjTnodes)
     {
-      adjacentTreenodes_ = adjTnodes;
+      adjacent_treenodes_ = adjTnodes;
     }
 
     /*!
@@ -236,7 +239,7 @@ namespace CONTACT
     std::vector<int> endnodes_;
 
     //! vector pointers to adjacent treenodes on the same layer
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjacentTreenodes_;
+    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjacent_treenodes_;
 
     //! reference to sample vectors
     const CORE::LINALG::SerialDenseMatrix& samplevectors_;

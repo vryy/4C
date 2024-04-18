@@ -40,16 +40,16 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discr
       dispnp_(dispnp),
       alefluid_(alefluid),
       numdim_(numdim),
-      SepEnr_(Teuchos::null),
-      WssType_(CORE::UTILS::IntegralValue<INPAR::FLUID::WSSType>(
+      sep_enr_(Teuchos::null),
+      wss_type_(CORE::UTILS::IntegralValue<INPAR::FLUID::WSSType>(
           GLOBAL::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")),
-      SumStresses_(Teuchos::null),
-      SumWss_(Teuchos::null),
-      SumDtStresses_(0.0),
-      SumDtWss_(0.0),
+      sum_stresses_(Teuchos::null),
+      sum_wss_(Teuchos::null),
+      sum_dt_stresses_(0.0),
+      sum_dt_wss_(0.0),
       isinit_(false)
 {
-  switch (WssType_)
+  switch (wss_type_)
   {
     case INPAR::FLUID::wss_standard:
       isinit_ = true;  // in this cases nothing has to be initialized
@@ -58,8 +58,8 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discr
       isinit_ = false;  // we do this in InitAggr()
       break;
     case INPAR::FLUID::wss_mean:
-      SumStresses_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true)),
-      SumWss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true)), isinit_ = true;
+      sum_stresses_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true)),
+      sum_wss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true)), isinit_ = true;
       break;
     default:
       FOUR_C_THROW(
@@ -73,11 +73,11 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discr
  *----------------------------------------------------------------------*/
 void FLD::UTILS::StressManager::InitAggr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat)
 {
-  if (WssType_ != INPAR::FLUID::wss_aggregation)
+  if (wss_type_ != INPAR::FLUID::wss_aggregation)
     FOUR_C_THROW("One should end up here just in case of aggregated stresses!");
 
   CalcSepEnr(sysmat);
-  if (SepEnr_ == Teuchos::null)
+  if (sep_enr_ == Teuchos::null)
     FOUR_C_THROW("SepEnr matrix has not been build correctly. Strange...");
 
   isinit_ = true;
@@ -93,7 +93,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStresses(
 {
   Teuchos::RCP<Epetra_Vector> wss = GetWallShearStressesWOAgg(trueresidual);
 
-  switch (WssType_)
+  switch (wss_type_)
   {
     case INPAR::FLUID::wss_standard:
       // nothing to do
@@ -121,7 +121,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcWallShearStress
 {
   Teuchos::RCP<Epetra_Vector> wss = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
 
-  switch (WssType_)
+  switch (wss_type_)
   {
     case INPAR::FLUID::wss_standard:
       wss = GetWallShearStressesWOAgg(trueresidual);
@@ -131,8 +131,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcWallShearStress
       wss = AggreagteStresses(wss);
       break;
     case INPAR::FLUID::wss_mean:
-      if (SumDtWss_ > 0.0)  // iff we have actually calculated some mean wss
-        wss->Update(1.0 / SumDtWss_, *SumWss_, 0.0);  // weighted sum of all prior stresses
+      if (sum_dt_wss_ > 0.0)  // iff we have actually calculated some mean wss
+        wss->Update(1.0 / sum_dt_wss_, *sum_wss_, 0.0);  // weighted sum of all prior stresses
       break;
     default:
       FOUR_C_THROW(
@@ -177,7 +177,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStresses(
 {
   Teuchos::RCP<Epetra_Vector> stresses = GetStressesWOAgg(trueresidual);
 
-  switch (WssType_)
+  switch (wss_type_)
   {
     case INPAR::FLUID::wss_standard:
       // nothing to do
@@ -206,7 +206,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcStresses(
   Teuchos::RCP<Epetra_Vector> stresses =
       Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
 
-  switch (WssType_)
+  switch (wss_type_)
   {
     case INPAR::FLUID::wss_standard:
       stresses = GetStressesWOAgg(trueresidual);
@@ -216,9 +216,9 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcStresses(
       stresses = AggreagteStresses(stresses);
       break;
     case INPAR::FLUID::wss_mean:
-      if (SumDtStresses_ > 0.0)  // iff we have actually calculated some mean stresses
+      if (sum_dt_stresses_ > 0.0)  // iff we have actually calculated some mean stresses
         stresses->Update(
-            1.0 / SumDtStresses_, *SumStresses_, 0.0);  // weighted sum of all prior stresses
+            1.0 / sum_dt_stresses_, *sum_stresses_, 0.0);  // weighted sum of all prior stresses
       break;
     default:
       FOUR_C_THROW(
@@ -375,13 +375,13 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcWallShearStresses(
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::AggreagteStresses(
     Teuchos::RCP<Epetra_Vector> wss)
 {
-  if (SepEnr_ == Teuchos::null) FOUR_C_THROW("no scale separation matrix");
+  if (sep_enr_ == Teuchos::null) FOUR_C_THROW("no scale separation matrix");
 
   Teuchos::RCP<Epetra_Vector> mean_wss =
       Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
 
   // Do the actual aggregation
-  SepEnr_->Multiply(false, *wss, *mean_wss);
+  sep_enr_->Multiply(false, *wss, *mean_wss);
 
   return mean_wss;
 }
@@ -392,12 +392,12 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::AggreagteStresses(
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageStresses(
     Teuchos::RCP<const Epetra_Vector> stresses, const double dt)
 {
-  SumStresses_->Update(dt, *stresses, 1.0);  // weighted sum of all prior stresses
-  SumDtStresses_ += dt;
+  sum_stresses_->Update(dt, *stresses, 1.0);  // weighted sum of all prior stresses
+  sum_dt_stresses_ += dt;
 
   Teuchos::RCP<Epetra_Vector> mean_stresses =
       Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-  mean_stresses->Update(1.0 / SumDtStresses_, *SumStresses_, 0.0);
+  mean_stresses->Update(1.0 / sum_dt_stresses_, *sum_stresses_, 0.0);
 
   return mean_stresses;
 }
@@ -408,12 +408,12 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageStresses(
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageWss(
     Teuchos::RCP<const Epetra_Vector> wss, const double dt)
 {
-  SumWss_->Update(dt, *wss, 1.0);  // weighted sum of all prior stresses
-  SumDtWss_ += dt;
+  sum_wss_->Update(dt, *wss, 1.0);  // weighted sum of all prior stresses
+  sum_dt_wss_ += dt;
 
   Teuchos::RCP<Epetra_Vector> mean_wss =
       Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-  mean_wss->Update(1.0 / SumDtWss_, *SumWss_, 0.0);
+  mean_wss->Update(1.0 / sum_dt_wss_, *sum_wss_, 0.0);
 
   return mean_wss;
 }
@@ -424,8 +424,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageWss(
  *------------------------------------------------- --------------------*/
 void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat)
 {
-  if (WssType_ == INPAR::FLUID::wss_aggregation)  // iff we have not specified a ML-solver one does
-                                                  // not want to smooth the wss
+  if (wss_type_ == INPAR::FLUID::wss_aggregation)  // iff we have not specified a ML-solver one does
+                                                   // not want to smooth the wss
   {
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat2;
 
@@ -519,8 +519,8 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
     CORE::LINALG::SparseMatrix Ptent(crsPtent, CORE::LINALG::View);
 
     // compute scale-separation matrix: S = Ptent*Ptent^T
-    SepEnr_ = CORE::LINALG::Multiply(Ptent, false, Ptent, true);
-    SepEnr_->Complete();
+    sep_enr_ = CORE::LINALG::Multiply(Ptent, false, Ptent, true);
+    sep_enr_->Complete();
   }
 
   return;

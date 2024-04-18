@@ -30,11 +30,11 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
       regularization_type_(INPAR::BEAMPOTENTIAL::regularization_none),
       regularization_separation_(0.0),
       num_integration_segments_(-1),
-      num_GPs_(-1),
-      useFAD_(false),
+      num_gp_s_(-1),
+      use_fad_(false),
       choice_master_slave_(INPAR::BEAMPOTENTIAL::MasterSlaveChoice::choice_master_slave_vague),
       visualization_output_(false),
-      params_runtime_visualization_output_BTB_potential_(Teuchos::null)
+      params_runtime_visualization_output_btb_potential_(Teuchos::null)
 {
   // empty constructor
 }
@@ -144,12 +144,12 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
     FOUR_C_THROW("Invalid number of integration segments per element!");
 
   /****************************************************************************/
-  num_GPs_ = beam_potential_params_list.get<int>("NUM_GAUSSPOINTS");
+  num_gp_s_ = beam_potential_params_list.get<int>("NUM_GAUSSPOINTS");
 
-  if (num_GPs_ <= 0) FOUR_C_THROW("Invalid number of Gauss points per integration segment!");
+  if (num_gp_s_ <= 0) FOUR_C_THROW("Invalid number of Gauss points per integration segment!");
 
   /****************************************************************************/
-  useFAD_ =
+  use_fad_ =
       CORE::UTILS::IntegralValue<int>(beam_potential_params_list, "AUTOMATIC_DIFFERENTIATION");
 
   /****************************************************************************/
@@ -169,12 +169,12 @@ void BEAMINTERACTION::BeamPotentialParams::Init(const double restart_time)
   // create and initialize parameter container object for runtime output
   if (visualization_output_)
   {
-    params_runtime_visualization_output_BTB_potential_ =
+    params_runtime_visualization_output_btb_potential_ =
         Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams(restart_time));
 
-    params_runtime_visualization_output_BTB_potential_->Init(
+    params_runtime_visualization_output_btb_potential_->Init(
         beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"));
-    params_runtime_visualization_output_BTB_potential_->Setup();
+    params_runtime_visualization_output_btb_potential_->Setup();
   }
 
 

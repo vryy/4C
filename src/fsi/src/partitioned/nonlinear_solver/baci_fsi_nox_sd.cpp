@@ -112,10 +112,10 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
     const ::NOX::Abstract::Vector& dir, ::NOX::Epetra::Interface::Required& interface)
 {
   // Allocate space for vecPtr and grpPtr if necessary
-  if (Teuchos::is_null(vecPtr_)) vecPtr_ = dir.clone(::NOX::ShapeCopy);
+  if (Teuchos::is_null(vec_ptr_)) vec_ptr_ = dir.clone(::NOX::ShapeCopy);
 
   const ::NOX::Epetra::Vector& edir = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
-  ::NOX::Epetra::Vector& evec = dynamic_cast<::NOX::Epetra::Vector&>(*vecPtr_);
+  ::NOX::Epetra::Vector& evec = dynamic_cast<::NOX::Epetra::Vector&>(*vec_ptr_);
 
   // we do not want the group to remember this solution
   // and we want to set our own flag
@@ -123,7 +123,7 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
   interface.computeF(
       edir.getEpetraVector(), evec.getEpetraVector(), ::NOX::Epetra::Interface::Required::User);
 
-  return *vecPtr_;
+  return *vec_ptr_;
 }
 
 FOUR_C_NAMESPACE_CLOSE

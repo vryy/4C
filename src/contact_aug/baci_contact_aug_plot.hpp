@@ -277,9 +277,9 @@ namespace CONTACT
 
       std::vector<CORE::LINALG::Matrix<3, 1>> ref_points_;
 
-      CORE::LINALG::SerialDenseMatrix X_;
-      CORE::LINALG::SerialDenseMatrix Y_;
-      std::vector<CORE::LINALG::SerialDenseMatrix> Z_;
+      CORE::LINALG::SerialDenseMatrix x_;
+      CORE::LINALG::SerialDenseMatrix y_;
+      std::vector<CORE::LINALG::SerialDenseMatrix> z_;
     };  // class Plot
 
     template <typename T>

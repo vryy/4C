@@ -115,7 +115,7 @@ namespace CONSTRAINTS
     std::map<int, bool> absconstraint_;  ///< maps condition ID to indicator if absolute values are
                                          ///< to use for controlling
     std::map<int, int>
-        eletocondID_;  ///< maps element ID to condition ID, to allow use of other maps
+        eletocond_id_;  ///< maps element ID to condition ID, to allow use of other maps
     std::map<int, int>
         eletocondvecindex_;  ///< maps element ID to condition index in vector #constrcond_
 

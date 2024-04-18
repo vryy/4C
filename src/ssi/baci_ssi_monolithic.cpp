@@ -342,23 +342,23 @@ void SSI::SSIMono::EvaluateSubproblems()
 void SSI::SSIMono::EvaluateOffDiagContributions()
 {
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
-  scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
+  scatrastructure_off_diagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
       ssi_matrices_->ScaTraStructureMatrix());
 
   // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
   if (SSIInterfaceMeshtying())
-    scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
+    scatrastructure_off_diagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
         ssi_matrices_->ScaTraStructureMatrix());
 
   // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
   // global system matrix
-  scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
+  scatrastructure_off_diagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
       ssi_matrices_->StructureScaTraMatrix());
 
   if (IsScaTraManifold())
   {
     // evaluate off-diagonal manifold-structure block of global system matrix
-    scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraManifoldStructureDomain(
+    scatrastructure_off_diagcoupling_->EvaluateOffDiagBlockScatraManifoldStructureDomain(
         ssi_matrices_->ScaTraManifoldStructureMatrix());
   }
 }
@@ -780,9 +780,10 @@ void SSI::SSIMono::SetupSystem()
   if (IsScaTraManifold())
   {
     // initialize object, that performs evaluations of OD coupling
-    scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraManifoldStructureOffDiagCoupling(
-        BlockMapStructure(), SSIMaps()->StructureDofRowMap(), SSIStructureMeshTying(),
-        MeshtyingStrategyS2I(), ScaTraField(), ScaTraManifold(), StructureField()));
+    scatrastructure_off_diagcoupling_ =
+        Teuchos::rcp(new SSI::ScatraManifoldStructureOffDiagCoupling(BlockMapStructure(),
+            SSIMaps()->StructureDofRowMap(), SSIStructureMeshTying(), MeshtyingStrategyS2I(),
+            ScaTraField(), ScaTraManifold(), StructureField()));
 
     // initialize object, that performs evaluations of scatra - scatra on manifold coupling
     manifoldscatraflux_ = Teuchos::rcp(new SSI::ScaTraManifoldScaTraFluxEvaluator(*this));
@@ -794,7 +795,7 @@ void SSI::SSIMono::SetupSystem()
   }
   else
   {
-    scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
+    scatrastructure_off_diagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
         BlockMapStructure(), SSIMaps()->StructureDofRowMap(), SSIStructureMeshTying(),
         MeshtyingStrategyS2I(), ScaTraField(), StructureField()));
   }

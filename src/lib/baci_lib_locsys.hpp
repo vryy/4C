@@ -300,7 +300,7 @@ namespace DRT
       Teuchos::RCP<CORE::LINALG::SparseMatrix> subtrafo_;
 
       // Boolean, which is yes if a locsys warning has already been thrown
-      bool warningThrown_;
+      bool warning_thrown_;
       //@}
 
     };  // class LocsysManager

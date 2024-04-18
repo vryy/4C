@@ -193,10 +193,10 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<DRT::Discreti
   sumabssvelaf_ = Teuchos::rcp(new std::vector<double>);
   sumabssvelaf_->resize((nodeplanes_->size() - 1), 0.0);
 
-  sumresC_ = Teuchos::rcp(new std::vector<double>);
-  sumresC_->resize(nodeplanes_->size() - 1, 0.0);
-  sumresC_sq_ = Teuchos::rcp(new std::vector<double>);
-  sumresC_sq_->resize(nodeplanes_->size() - 1, 0.0);
+  sumres_c_ = Teuchos::rcp(new std::vector<double>);
+  sumres_c_->resize(nodeplanes_->size() - 1, 0.0);
+  sumres_c_sq_ = Teuchos::rcp(new std::vector<double>);
+  sumres_c_sq_->resize(nodeplanes_->size() - 1, 0.0);
 
   sumspressnp_ = Teuchos::rcp(new std::vector<double>);
   sumspressnp_->resize(nodeplanes_->size() - 1, 0.0);
@@ -211,10 +211,10 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<DRT::Discreti
   sumstrle_->resize(nodeplanes_->size() - 1, 0.0);
   sumgradle_ = Teuchos::rcp(new std::vector<double>);
   sumgradle_->resize(nodeplanes_->size() - 1, 0.0);
-  sumtauM_ = Teuchos::rcp(new std::vector<double>);
-  sumtauM_->resize(nodeplanes_->size() - 1, 0.0);
-  sumtauC_ = Teuchos::rcp(new std::vector<double>);
-  sumtauC_->resize(nodeplanes_->size() - 1, 0.0);
+  sumtau_m_ = Teuchos::rcp(new std::vector<double>);
+  sumtau_m_->resize(nodeplanes_->size() - 1, 0.0);
+  sumtau_c_ = Teuchos::rcp(new std::vector<double>);
+  sumtau_c_->resize(nodeplanes_->size() - 1, 0.0);
 
   summk_ = Teuchos::rcp(new std::vector<double>);
   summk_->resize(nodeplanes_->size() - 1, 0.0);
@@ -617,13 +617,13 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
     (*sumstrle_)[rr] += (*global_incrstrle)[rr];
     (*sumgradle_)[rr] += (*global_incrgradle)[rr];
 
-    (*sumtauM_)[rr] += (*global_incrtauM)[rr];
-    (*sumtauC_)[rr] += (*global_incrtauC)[rr];
+    (*sumtau_m_)[rr] += (*global_incrtauM)[rr];
+    (*sumtau_c_)[rr] += (*global_incrtauC)[rr];
 
     (*summk_)[rr] += (*global_incrmk)[rr];
 
-    (*sumresC_)[rr] += (*global_incrresC)[rr];
-    (*sumresC_sq_)[rr] += (*global_incrresC_sq)[rr];
+    (*sumres_c_)[rr] += (*global_incrresC)[rr];
+    (*sumres_c_sq_)[rr] += (*global_incrresC_sq)[rr];
     (*sumspressnp_)[rr] += (*global_incrspressnp)[rr];
     (*sumspressnp_sq_)[rr] += (*global_incrspressnp_sq)[rr];
 
@@ -866,15 +866,15 @@ void FLD::TurbulenceStatisticsTgv::DumpStatistics(const int step)
       (*log_res) << std::setw(11) << std::setprecision(4) << (*sumabsres_)[rr] / numele_ << "  ";
       (*log_res) << std::setw(11) << std::setprecision(4) << (*sumabssvelaf_)[rr] / numele_ << "  ";
 
-      (*log_res) << std::setw(11) << std::setprecision(4) << (*sumresC_)[rr] / numele_ << "  ";
+      (*log_res) << std::setw(11) << std::setprecision(4) << (*sumres_c_)[rr] / numele_ << "  ";
       (*log_res) << std::setw(11) << std::setprecision(4) << (*sumspressnp_)[rr] / numele_ << "  ";
 
-      (*log_res) << std::setw(11) << std::setprecision(4) << (*sumresC_sq_)[rr] / numele_ << "  ";
+      (*log_res) << std::setw(11) << std::setprecision(4) << (*sumres_c_sq_)[rr] / numele_ << "  ";
       (*log_res) << std::setw(11) << std::setprecision(4) << (*sumspressnp_sq_)[rr] / numele_
                  << "  ";
 
-      (*log_res) << std::setw(11) << std::setprecision(4) << (*sumtauM_)[rr] / numele_ << "  ";
-      (*log_res) << std::setw(11) << std::setprecision(4) << (*sumtauC_)[rr] / numele_ << "  ";
+      (*log_res) << std::setw(11) << std::setprecision(4) << (*sumtau_m_)[rr] / numele_ << "  ";
+      (*log_res) << std::setw(11) << std::setprecision(4) << (*sumtau_c_)[rr] / numele_ << "  ";
 
       (*log_res) << std::setw(11) << std::setprecision(4) << (*sum_eps_pspg_)[rr] / numele_ << "  ";
       (*log_res) << std::setw(11) << std::setprecision(4) << (*sum_eps_supg_)[rr] / numele_ << "  ";
@@ -973,7 +973,7 @@ void FLD::TurbulenceStatisticsTgv::ClearStatistics()
       (*sum_reystress_)[6 * rr + mm] = 0.0;
     }
   }
-  for (unsigned rr = 0; rr < sumresC_->size(); ++rr)
+  for (unsigned rr = 0; rr < sumres_c_->size(); ++rr)
   {
     (*sumabsres_)[rr] = 0.0;
     (*sumabssvelaf_)[rr] = 0.0;
@@ -983,8 +983,8 @@ void FLD::TurbulenceStatisticsTgv::ClearStatistics()
     (*sumstrle_)[rr] = 0.0;
     (*sumgradle_)[rr] = 0.0;
 
-    (*sumtauM_)[rr] = 0.0;
-    (*sumtauC_)[rr] = 0.0;
+    (*sumtau_m_)[rr] = 0.0;
+    (*sumtau_c_)[rr] = 0.0;
 
     (*summk_)[rr] = 0.0;
 
@@ -1001,10 +1001,10 @@ void FLD::TurbulenceStatisticsTgv::ClearStatistics()
     (*sum_eps_mfsrey_)[rr] = 0.0;
     (*sum_eps_avm3_)[rr] = 0.0;
 
-    (*sumresC_)[rr] = 0.0;
+    (*sumres_c_)[rr] = 0.0;
     (*sumspressnp_)[rr] = 0.0;
 
-    (*sumresC_sq_)[rr] = 0.0;
+    (*sumres_c_sq_)[rr] = 0.0;
     (*sumspressnp_sq_)[rr] = 0.0;
   }
 

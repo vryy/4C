@@ -88,7 +88,7 @@ class MyocardTenTusscher : public MyocardGeneral
   std::vector<double> a_;
   std::vector<double> c_;
 
-  double VOI_;  // current time (for debugging with CellML)
+  double voi_;  // current time (for debugging with CellML)
 
 };  // Myocard_TenTusscher
 

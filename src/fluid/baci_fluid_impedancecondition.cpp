@@ -188,9 +188,9 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(
       theta_(0.5),
       treetype_(*impedancecond->Get<std::string>("TYPE")),
       period_(*impedancecond->Get<double>("TIMEPERIOD")),
-      R1_(*impedancecond->Get<double>("R1")),
-      R2_(*impedancecond->Get<double>("R2")),
-      C_(*impedancecond->Get<double>("C")),
+      r1_(*impedancecond->Get<double>("R1")),
+      r2_(*impedancecond->Get<double>("R2")),
+      c_(*impedancecond->Get<double>("C")),
       functnum_(*impedancecond->Get<int>("FUNCT"))
 {
   if (myrank_ == 0)
@@ -202,15 +202,15 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(
   // ---------------------------------------------------------------------
   // Initialize member variables
   // ---------------------------------------------------------------------
-  P_np_ = 0.0;
-  Q_np_ = 0.0;
+  p_np_ = 0.0;
+  q_np_ = 0.0;
 
   // NOTE: one could think of using non-zero inital conditions...
-  P_n_ = 0.0;
-  Q_n_ = 0.0;
+  p_n_ = 0.0;
+  q_n_ = 0.0;
 
-  WKrelerror_ = 1.0;
-  P_0_ = P_n_;
+  w_krelerror_ = 1.0;
+  p_0_ = p_n_;
 
   // ---------------------------------------------------------------------
   // get theta for time integration
@@ -311,7 +311,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const int condid)
   double flowrate = 0.0;
   dofrowmap->Comm().SumAll(&local_flowrate, &flowrate, 1);
 
-  Q_np_ = flowrate;
+  q_np_ = flowrate;
 
   //  if (myrank_ == 0)
   //    std::cout<<"Impedance condition Id: "<<condid<<", Current flux: "<<flowrate<<std::endl;
@@ -339,17 +339,17 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
 
   if (treetype_ == "resistive")
   {
-    Q_np_fac = R1_ + R2_;
-    pressure = Q_np_fac * Q_np_;
+    Q_np_fac = r1_ + r2_;
+    pressure = Q_np_fac * q_np_;
   }
   else if (treetype_ == "windkessel")
   {
-    const double fac = 1.0 / (C_ * R2_ + theta_ * dta);
-    const double p_n_fac = fac * (C_ * R2_ - dta * (1 - theta_));
-    const double Q_n_fac = fac * (dta * (1 - theta_) * (R1_ + R2_) - C_ * R1_ * R2_);
-    Q_np_fac = fac * (C_ * R1_ * R2_ + dta * theta_ * (R1_ + R2_));
+    const double fac = 1.0 / (c_ * r2_ + theta_ * dta);
+    const double p_n_fac = fac * (c_ * r2_ - dta * (1 - theta_));
+    const double Q_n_fac = fac * (dta * (1 - theta_) * (r1_ + r2_) - c_ * r1_ * r2_);
+    Q_np_fac = fac * (c_ * r1_ * r2_ + dta * theta_ * (r1_ + r2_));
 
-    pressure = p_n_fac * P_n_ + Q_np_fac * Q_np_ + Q_n_fac * Q_n_;
+    pressure = p_n_fac * p_n_ + Q_np_fac * q_np_ + Q_n_fac * q_n_;
   }
   else if (treetype_ == "pressure_by_funct")
   {
@@ -367,7 +367,7 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
   }
 
   // save pressure value
-  P_np_ = pressure;
+  p_np_ = pressure;
 
   // call the element to apply the pressure
   Teuchos::ParameterList eleparams;
@@ -466,7 +466,7 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time, const int condid)
 {
-  const double actpressure = P_np_;
+  const double actpressure = p_np_;
 
   // NOTE:: time may be a huge number (e.g. in case of multiscale in time AC-FS3I).
   // Hence, the naive approach fmod(time+1e.8,period_)-1e-8 < 1e-8) is not suited.
@@ -474,8 +474,8 @@ void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time, const 
   if (fabs((fmod(time + period_ / 2, period_) - period_ / 2)) / time <
       1e-12)  // iff we are at the beginning of a new period
   {
-    WKrelerror_ = fabs((actpressure - P_0_) / actpressure);
-    P_0_ = actpressure;
+    w_krelerror_ = fabs((actpressure - p_0_) / actpressure);
+    p_0_ = actpressure;
 
     if (myrank_ == 0)
     {
@@ -487,8 +487,8 @@ void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time, const 
   }
 
   // shift time step
-  P_n_ = P_np_;
-  Q_n_ = Q_np_;
+  p_n_ = p_np_;
+  q_n_ = q_np_;
 
   return;
 }  // FluidImplicitTimeInt::OutflowBoundary
@@ -505,25 +505,25 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart(IO::DiscretizationWriter& output
 
   stream1 << "P_np" << condnum;
   // write the pressure at time step n+1
-  output.WriteDouble(stream1.str(), P_np_);
+  output.WriteDouble(stream1.str(), p_np_);
 
   stream6 << "Q_np" << condnum;
   // write the flux at time step n+1
-  output.WriteDouble(stream6.str(), Q_np_);
+  output.WriteDouble(stream6.str(), q_np_);
 
   stream2 << "WKrelerror" << condnum;
-  output.WriteDouble(stream2.str(), WKrelerror_);
+  output.WriteDouble(stream2.str(), w_krelerror_);
 
   stream3 << "P_0" << condnum;
-  output.WriteDouble(stream3.str(), P_0_);
+  output.WriteDouble(stream3.str(), p_0_);
 
   stream4 << "P_n" << condnum;
   // write the input pressure at time step n
-  output.WriteDouble(stream4.str(), P_n_);
+  output.WriteDouble(stream4.str(), p_n_);
 
   stream5 << "Q_n" << condnum;
   // write the flux pressure at time step n
-  output.WriteDouble(stream5.str(), Q_n_);
+  output.WriteDouble(stream5.str(), q_n_);
 
   return;
 }
@@ -537,35 +537,35 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart(IO::DiscretizationReader& reader,
 
   stream1 << "P_np" << condnum;
   // read the pressure at time step n+1
-  P_np_ = reader.ReadDouble(stream1.str());
+  p_np_ = reader.ReadDouble(stream1.str());
 
   stream6 << "Q_np" << condnum;
   // read the pressure at time step n+1
-  Q_np_ = reader.ReadDouble(stream6.str());
+  q_np_ = reader.ReadDouble(stream6.str());
 
   // read in pressure difference
   stream3 << "P_0" << condnum;
-  P_0_ = reader.ReadDouble(stream3.str());
+  p_0_ = reader.ReadDouble(stream3.str());
 
   stream4 << "P_n" << condnum;
   // read the input pressure at time step n
-  P_n_ = reader.ReadDouble(stream4.str());
+  p_n_ = reader.ReadDouble(stream4.str());
 
   stream5 << "Q_n" << condnum;
   // read the flux pressure at time step n
-  Q_n_ = reader.ReadDouble(stream5.str());
+  q_n_ = reader.ReadDouble(stream5.str());
 
   // get pressure difference and pressure of last period
-  if (abs(WKrelerror_ - 1.0) <
+  if (abs(w_krelerror_ - 1.0) <
       1e-14)  // if we just initialized the class (in context of AC-FS3I this is not guaranteed!)
   {
     // read in pressure difference
     stream2 << "WKrelerror" << condnum;
-    WKrelerror_ = reader.ReadDouble(stream2.str());
+    w_krelerror_ = reader.ReadDouble(stream2.str());
   }
   else
   {
-    WKrelerror_ = 0.0;
+    w_krelerror_ = 0.0;
   }
 
   return;

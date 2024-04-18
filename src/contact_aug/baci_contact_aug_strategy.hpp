@@ -1305,13 +1305,13 @@ namespace CONTACT
        *
        * \author hiermeier
        * \date 05/16 */
-      inline CONTACT::AUG::DataContainer& Data() { return augData_; }
+      inline CONTACT::AUG::DataContainer& Data() { return aug_data_; }
 
       /*! \brief Get access to the internal data container of the strategy (read-only)
        *
        * \author hiermeier
        * \date 05/16 */
-      inline const CONTACT::AUG::DataContainer& Data() const { return augData_; }
+      inline const CONTACT::AUG::DataContainer& Data() const { return aug_data_; }
 
      public:
       //! @name Unsupported derived routines (dead-end)
@@ -1403,10 +1403,10 @@ namespace CONTACT
 
      private:
       /// augmented contact strategy data container pointer
-      Teuchos::RCP<CONTACT::AUG::DataContainer> augDataPtr_;
+      Teuchos::RCP<CONTACT::AUG::DataContainer> aug_data_ptr_;
 
       /// reference to the augmented contact strategy data container
-      CONTACT::AUG::DataContainer& augData_;
+      CONTACT::AUG::DataContainer& aug_data_;
 
       /// contact interface set
       plain_interface_set interface_;

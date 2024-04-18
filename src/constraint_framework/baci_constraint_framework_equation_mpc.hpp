@@ -63,10 +63,10 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
    private:
     //! Number of dof coupled per Object (= Number of MPCs per Obj.)
-    int nDofCoupled_ = 1;
+    int n_dof_coupled_ = 1;
 
     //! ID of the first constraint in the set
-    int firstRowId_;
+    int first_row_id_;
   };
   /*! \brief The class provides the method for evaluating linear coupled
    *  equations and manages associated coefficients and data.
@@ -99,7 +99,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     };
 
     //! Vector with the data of the terms of a single equation
-    std::vector<TermData> equationData_;
+    std::vector<TermData> equation_data_;
   };
 }  // namespace CONSTRAINTS::SUBMODELEVALUATOR
 

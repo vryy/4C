@@ -44,7 +44,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParameter(
       timefac_(0.0),
       timefacrhs_(0.0),
       timefacrhstau_(0.0),
-      alphaF_(0.0),
+      alpha_f_(0.0),
       is_genalpha_(false),
       is_stationary_(false),
       is_ale_(false),
@@ -89,7 +89,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetTimeStepParameters(
   //-----------------------------------------------------
 
   timefac_ = 1.0;
-  alphaF_ = 1.0;
+  alpha_f_ = 1.0;
   timefacrhs_ = 1.0;
   timefacrhstau_ = 1.0;
 
@@ -99,8 +99,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetTimeStepParameters(
 
     if (is_genalpha_)
     {
-      alphaF_ = parameters.get<double>("alpha_F");
-      timefac_ *= alphaF_;
+      alpha_f_ = parameters.get<double>("alpha_F");
+      timefac_ *= alpha_f_;
     }
     if (timefac_ < 0.0) FOUR_C_THROW("time factor is negative.");
   }
@@ -109,7 +109,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetTimeStepParameters(
   {
     if (is_genalpha_)
     {
-      timefacrhs_ = timefac_ / alphaF_;
+      timefacrhs_ = timefac_ / alpha_f_;
       timefacrhstau_ = timefacrhs_;
     }
     else

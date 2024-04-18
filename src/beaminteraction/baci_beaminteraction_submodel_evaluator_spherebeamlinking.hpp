@@ -163,7 +163,7 @@ namespace BEAMINTERACTION
 
      private:
       //! cell discretization
-      Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking> sm_crosslinkink_ptr;
+      Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking> sm_crosslinkink_ptr_;
 
       //! data container holding all beam contact related parameters
       Teuchos::RCP<BEAMINTERACTION::SphereBeamLinkingParams> spherebeamlinking_params_ptr_;

@@ -244,7 +244,7 @@ namespace FS3I
     int growth_updates_counter_;
 
     /// mean WSS vector of the last period
-    Teuchos::RCP<Epetra_Vector> WallShearStress_lp_;
+    Teuchos::RCP<Epetra_Vector> wall_shear_stress_lp_;
 
     /// time of one fsi period, e.g. time of a heart cycle
     const double fsiperiod_;
@@ -295,15 +295,15 @@ namespace FS3I
 
    private:
     /// weighted sum of all prior wall shear stresses
-    Teuchos::RCP<Epetra_Vector> SumWss_;
+    Teuchos::RCP<Epetra_Vector> sum_wss_;
     /// weighted sum of all prior concentrations
-    Teuchos::RCP<Epetra_Vector> SumPhi_;
+    Teuchos::RCP<Epetra_Vector> sum_phi_;
     /// weighted sum of all prior pressures
-    Teuchos::RCP<Epetra_Vector> SumPres_;
+    Teuchos::RCP<Epetra_Vector> sum_pres_;
 
-    double SumDtWss_;
-    double SumDtPhi_;
-    double SumDtPres_;
+    double sum_dt_wss_;
+    double sum_dt_phi_;
+    double sum_dt_pres_;
   };
 }  // namespace FS3I
 

@@ -131,7 +131,7 @@ void POROMULTIPHASESCATRA::AddValidPoroFunctions(CORE::UTILS::FunctionManager& f
 template <int dim>
 POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::TumorGrowthLawHeaviside(
     const std::vector<std::pair<std::string, double>>& funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter_(funct_params)
 {
 }
 
@@ -179,14 +179,14 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate(
   const double necr_frac = variables[8].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-  const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
-  const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+  const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+  const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
+  const double macaulay = parameter_.gamma_T_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                          (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
 
   // evaluate function
   const double functval = (macaulay * heaviside_pres) * (1 - necr_frac) * porosity * S2 -
-                          parameter.lambda * porosity * oxy_mass_frac * S2;
+                          parameter_.lambda * porosity * oxy_mass_frac * S2;
   return functval;
 }
 
@@ -208,30 +208,30 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate
   const double necr_frac = variables[8].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-  const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
-  const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+  const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+  const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
+  const double macaulay = parameter_.gamma_T_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                          (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
 
   // set saturation derivs w.r.t. S2
   const double saturationderiv = (macaulay * heaviside_pres) * (1 - necr_frac) * porosity -
-                                 parameter.lambda * necr_frac * porosity;
+                                 parameter_.lambda * necr_frac * porosity;
   deriv[4] = saturationderiv;
 
   // set porosity derivs
   const double porosityderiv =
-      (macaulay * heaviside_pres) * (1 - necr_frac) * S2 - parameter.lambda * necr_frac * S2;
+      (macaulay * heaviside_pres) * (1 - necr_frac) * S2 - parameter_.lambda * necr_frac * S2;
   deriv[6] = porosityderiv;
 
   // set scalar derivs w.r.t. phi1
-  const double oxygenderiv = parameter.gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 /
-                             (parameter.w_nl_env - parameter.w_nl_crit) * (1 - necr_frac) *
+  const double oxygenderiv = parameter_.gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 /
+                             (parameter_.w_nl_env - parameter_.w_nl_crit) * (1 - necr_frac) *
                              porosity * S2;
   deriv[7] = oxygenderiv;
 
   // set scalar derivs w.r.t. phi2
   const double necroticderiv =
-      -(macaulay * heaviside_pres) * porosity * S2 - parameter.lambda * porosity * S2;
+      -(macaulay * heaviside_pres) * porosity * S2 - parameter_.lambda * porosity * S2;
   deriv[8] = necroticderiv;
 
   return deriv;
@@ -242,7 +242,7 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate
 template <int dim>
 POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::NecrosisLawHeaviside(
     const std::vector<std::pair<std::string, double>>& funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter_(funct_params)
 {
 }
 
@@ -290,14 +290,14 @@ double POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::Evaluate(
   const double necr_frac = variables[1].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((-(oxy_mass_frac - parameter.w_nl_crit)) > 0. ? 1. : 0.);
-  const double macaulay = -parameter.gamma_t_necr * (oxy_mass_frac - parameter.w_nl_crit) /
-                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
-  const double heaviside_pres((p2 - parameter.p_t_crit) > 0. ? 1. : 0.);
+  const double heaviside_oxy((-(oxy_mass_frac - parameter_.w_nl_crit)) > 0. ? 1. : 0.);
+  const double macaulay = -parameter_.gamma_t_necr * (oxy_mass_frac - parameter_.w_nl_crit) /
+                          (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
+  const double heaviside_pres((p2 - parameter_.p_t_crit) > 0. ? 1. : 0.);
 
   // evaluate the function
   const double functval =
-      (1.0 - necr_frac) * S2 * porosity * (macaulay + parameter.delta_a_t * heaviside_pres);
+      (1.0 - necr_frac) * S2 * porosity * (macaulay + parameter_.delta_a_t * heaviside_pres);
 
   return functval;
 }
@@ -322,20 +322,20 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::EvaluateDer
     const double necr_frac = variables[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((-(oxy_mass_frac - parameter.w_nl_crit)) > 0. ? 1. : 0.);
-    const double macaulay = -parameter.gamma_t_necr * (oxy_mass_frac - parameter.w_nl_crit) /
-                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
-    const double heaviside_pres((p2 - parameter.p_t_crit) > 0. ? 1. : 0.);
+    const double heaviside_oxy((-(oxy_mass_frac - parameter_.w_nl_crit)) > 0. ? 1. : 0.);
+    const double macaulay = -parameter_.gamma_t_necr * (oxy_mass_frac - parameter_.w_nl_crit) /
+                            (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
+    const double heaviside_pres((p2 - parameter_.p_t_crit) > 0. ? 1. : 0.);
 
     // derivative w.r.t. oxygen mass fraction
     const double oxy_deriv = (1.0 - necr_frac) * porosity * S2 *
-                             (-parameter.gamma_t_necr * heaviside_oxy * 1.0 /
-                                 (parameter.w_nl_env - parameter.w_nl_crit));
+                             (-parameter_.gamma_t_necr * heaviside_oxy * 1.0 /
+                                 (parameter_.w_nl_env - parameter_.w_nl_crit));
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
     const double necro_deriv =
-        porosity * S2 * (macaulay + parameter.delta_a_t * heaviside_pres) * (-1.0);
+        porosity * S2 * (macaulay + parameter_.delta_a_t * heaviside_pres) * (-1.0);
     deriv[1] = necro_deriv;
   }
   else if (variables[0].first == "p1")  // OD-derivative
@@ -348,19 +348,19 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::EvaluateDer
     const double necr_frac = constants[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((-(oxy_mass_frac - parameter.w_nl_crit)) > 0. ? 1. : 0.);
-    const double macaulay = -parameter.gamma_t_necr * (oxy_mass_frac - parameter.w_nl_crit) /
-                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
-    const double heaviside_pres((p2 - parameter.p_t_crit) > 0. ? 1. : 0.);
+    const double heaviside_oxy((-(oxy_mass_frac - parameter_.w_nl_crit)) > 0. ? 1. : 0.);
+    const double macaulay = -parameter_.gamma_t_necr * (oxy_mass_frac - parameter_.w_nl_crit) /
+                            (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
+    const double heaviside_pres((p2 - parameter_.p_t_crit) > 0. ? 1. : 0.);
 
     // derivative w.r.t. tumor cell saturation S2
     const double tc_deriv =
-        (1.0 - necr_frac) * porosity * (macaulay + parameter.delta_a_t * heaviside_pres);
+        (1.0 - necr_frac) * porosity * (macaulay + parameter_.delta_a_t * heaviside_pres);
     deriv[4] = tc_deriv;
 
     // derivative w.r.t. porosity
     const double poro_deriv =
-        (1.0 - necr_frac) * S2 * (macaulay + parameter.delta_a_t * heaviside_pres);
+        (1.0 - necr_frac) * S2 * (macaulay + parameter_.delta_a_t * heaviside_pres);
     deriv[6] = poro_deriv;
 
     // Note: no pressure derivative, only coupling is with heaviside --> derivative zero
@@ -378,7 +378,7 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::EvaluateDer
 template <int dim>
 POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::OxygenConsumptionLawHeaviside(
     const std::vector<std::pair<std::string, double>>& funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter_(funct_params)
 {
 }
 
@@ -425,16 +425,16 @@ double POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Evaluate(
   const double necr_frac = variables[1].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-  const double macaulay = parameter.gamma_nl_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
-  const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+  const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+  const double macaulay = parameter_.gamma_nl_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                          (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
+  const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
 
   // evaluate the function
   const double functval =
       (1.0 - necr_frac) * S2 * porosity *
       (macaulay * heaviside_pres +
-          parameter.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter.w_nl_env));
+          parameter_.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter_.w_nl_env));
 
   return functval;
 }
@@ -459,24 +459,24 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Ev
     const double necr_frac = variables[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-    const double macaulay = parameter.gamma_nl_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
-    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+    const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+    const double macaulay = parameter_.gamma_nl_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                            (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
+    const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
 
     // derivative w.r.t. oxygen mass fraction
     const double oxy_deriv = (1.0 - necr_frac) * S2 * porosity *
-                             (parameter.gamma_nl_growth * heaviside_oxy * heaviside_pres * 1.0 /
-                                     (parameter.w_nl_env - parameter.w_nl_crit) +
-                                 parameter.gamma_0_nl * M_PI / 2.0 / parameter.w_nl_env *
-                                     cos(M_PI / 2.0 * oxy_mass_frac / parameter.w_nl_env));
+                             (parameter_.gamma_nl_growth * heaviside_oxy * heaviside_pres * 1.0 /
+                                     (parameter_.w_nl_env - parameter_.w_nl_crit) +
+                                 parameter_.gamma_0_nl * M_PI / 2.0 / parameter_.w_nl_env *
+                                     cos(M_PI / 2.0 * oxy_mass_frac / parameter_.w_nl_env));
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
     const double necro_deriv =
         S2 * porosity * (-1.0) *
         (macaulay * heaviside_pres +
-            parameter.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter.w_nl_env));
+            parameter_.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter_.w_nl_env));
     deriv[1] = necro_deriv;
   }
   else if (variables[0].first == "p1")  // OD-derivative
@@ -489,23 +489,23 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Ev
     const double necr_frac = constants[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-    const double macaulay = parameter.gamma_nl_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
-    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+    const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+    const double macaulay = parameter_.gamma_nl_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                            (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
+    const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
 
     // derivative w.r.t. tumor cell saturation S2
     const double tc_deriv =
         (1.0 - necr_frac) * porosity *
         (macaulay * heaviside_pres +
-            parameter.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter.w_nl_env));
+            parameter_.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter_.w_nl_env));
     deriv[4] = tc_deriv;
 
     // derivative w.r.t. porosity
     const double poro_deriv =
         (1.0 - necr_frac) * S2 *
         (macaulay * heaviside_pres +
-            parameter.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter.w_nl_env));
+            parameter_.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter_.w_nl_env));
     deriv[6] = poro_deriv;
   }
   else
@@ -520,7 +520,7 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Ev
 template <int dim>
 POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::TumorGrowthLawHeavisideOxy(
     const std::vector<std::pair<std::string, double>>& funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter_(funct_params)
 {
 }
 
@@ -567,15 +567,15 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evaluate(
   const double necr_frac = variables[1].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-  const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
-  const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+  const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+  const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
+  const double macaulay = parameter_.gamma_T_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                          (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
 
   // evaluate function
   const double functval =
       oxy_mass_frac * S2 * porosity *
-      ((macaulay * heaviside_pres) * (1 - necr_frac) - parameter.lambda * necr_frac);
+      ((macaulay * heaviside_pres) * (1 - necr_frac) - parameter_.lambda * necr_frac);
 
   return functval;
 }
@@ -600,23 +600,23 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evalu
     const double necr_frac = variables[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
-    const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+    const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+    const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
+    const double macaulay = parameter_.gamma_T_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                            (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
 
     // derivative w.r.t. oxygen mass fraction
     const double oxy_deriv =
-        (parameter.gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 /
-            (parameter.w_nl_env - parameter.w_nl_crit) * (1 - necr_frac)) *
+        (parameter_.gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 /
+            (parameter_.w_nl_env - parameter_.w_nl_crit) * (1 - necr_frac)) *
             oxy_mass_frac * S2 * porosity +
-        ((macaulay * heaviside_pres) * (1 - necr_frac) - parameter.lambda * necr_frac) * S2 *
+        ((macaulay * heaviside_pres) * (1 - necr_frac) - parameter_.lambda * necr_frac) * S2 *
             porosity;
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
     const double necro_deriv =
-        ((macaulay * heaviside_pres) * (-1.0) - parameter.lambda) * oxy_mass_frac * S2 * porosity;
+        ((macaulay * heaviside_pres) * (-1.0) - parameter_.lambda) * oxy_mass_frac * S2 * porosity;
     deriv[1] = necro_deriv;
   }
   else if (variables[0].first == "p1")  // OD-derivative
@@ -629,20 +629,20 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evalu
     const double necr_frac = constants[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
-    const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+    const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+    const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
+    const double macaulay = parameter_.gamma_T_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                            (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
 
     // derivative w.r.t. tumor cell saturation S2
     const double tc_deriv =
-        ((macaulay * heaviside_pres) * (1.0 - necr_frac) - parameter.lambda * necr_frac) *
+        ((macaulay * heaviside_pres) * (1.0 - necr_frac) - parameter_.lambda * necr_frac) *
         oxy_mass_frac * porosity;
     deriv[4] = tc_deriv;
 
     // derivative w.r.t. porosity
     const double poro_deriv =
-        (macaulay * heaviside_pres * (1.0 - necr_frac) - parameter.lambda * necr_frac) *
+        (macaulay * heaviside_pres * (1.0 - necr_frac) - parameter_.lambda * necr_frac) *
         oxy_mass_frac * S2;
     deriv[6] = poro_deriv;
   }
@@ -657,7 +657,7 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evalu
 template <int dim>
 POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::TumorGrowthLawHeavisideNecro(
     const std::vector<std::pair<std::string, double>>& funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter_(funct_params)
 {
 }
 
@@ -704,16 +704,16 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Evaluate(
   const double necr_frac = variables[1].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-  const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
-  const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+  const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+  const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
+  const double macaulay = parameter_.gamma_T_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                          (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
 
   // evaluate function
   const double functval =
       porosity * S2 *
-      (((macaulay * heaviside_pres) * (1 - necr_frac) - parameter.lambda * necr_frac) * necr_frac +
-          parameter.lambda * necr_frac);
+      (((macaulay * heaviside_pres) * (1 - necr_frac) - parameter_.lambda * necr_frac) * necr_frac +
+          parameter_.lambda * necr_frac);
 
   return functval;
 }
@@ -738,20 +738,20 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Eva
     const double necr_frac = variables[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
-    const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+    const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+    const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
+    const double macaulay = parameter_.gamma_T_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                            (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
 
     // derivative w.r.t. oxygen mass fraction
-    const double oxy_deriv = (parameter.gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 /
-                                 (parameter.w_nl_env - parameter.w_nl_crit)) *
+    const double oxy_deriv = (parameter_.gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 /
+                                 (parameter_.w_nl_env - parameter_.w_nl_crit)) *
                              (1 - necr_frac) * necr_frac * porosity * S2;
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
     const double necro_deriv = ((macaulay * heaviside_pres) * (1 - 2.0 * necr_frac) -
-                                   2.0 * parameter.lambda * necr_frac + parameter.lambda) *
+                                   2.0 * parameter_.lambda * necr_frac + parameter_.lambda) *
                                porosity * S2;
     deriv[1] = necro_deriv;
   }
@@ -765,23 +765,24 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Eva
     const double necr_frac = constants[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
-    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
-    const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
-                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+    const double heaviside_oxy((oxy_mass_frac - parameter_.w_nl_crit) > 0. ? 1. : 0.);
+    const double heaviside_pres((parameter_.p_t_crit - p2) > 0. ? 1. : 0.);
+    const double macaulay = parameter_.gamma_T_growth * (oxy_mass_frac - parameter_.w_nl_crit) /
+                            (parameter_.w_nl_env - parameter_.w_nl_crit) * heaviside_oxy;
 
     // derivative w.r.t. tumor cell saturation S2
     const double tc_deriv =
-        porosity * (((macaulay * heaviside_pres) * (1 - necr_frac) - parameter.lambda * necr_frac) *
-                           necr_frac +
-                       parameter.lambda * necr_frac);
+        porosity *
+        (((macaulay * heaviside_pres) * (1 - necr_frac) - parameter_.lambda * necr_frac) *
+                necr_frac +
+            parameter_.lambda * necr_frac);
     deriv[4] = tc_deriv;
 
     // derivative w.r.t. porosity
     const double poro_deriv =
-        S2 * (((macaulay * heaviside_pres) * (1 - necr_frac) - parameter.lambda * necr_frac) *
+        S2 * (((macaulay * heaviside_pres) * (1 - necr_frac) - parameter_.lambda * necr_frac) *
                      necr_frac +
-                 parameter.lambda * necr_frac);
+                 parameter_.lambda * necr_frac);
     deriv[6] = poro_deriv;
 
     // Note: no pressure derivative, only coupling is with heaviside --> derivative zero
@@ -798,7 +799,7 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Eva
 template <int dim>
 POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::OxygenTransvascularExchangeLawCont(
     const std::vector<std::pair<std::string, double>>& funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter_(funct_params)
 {
 }
 
@@ -837,7 +838,7 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::Evaluate(
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
 
-  const double fac_if = parameter.rho_oxy / parameter.rho_if * parameter.alpha_IF;
+  const double fac_if = parameter_.rho_oxy / parameter_.rho_if * parameter_.alpha_IF;
 
   // read variables and constants (order is crucial)
   double VF1 = constants[7].second;
@@ -845,17 +846,17 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::Evaluate(
   double oxy_mass_frac_nv = variables[3].second;
 
   double Pb = 0.0;
-  double CaO2 = oxy_mass_frac_nv * parameter.rho_bl / parameter.rho_oxy;
+  double CaO2 = oxy_mass_frac_nv * parameter_.rho_bl / parameter_.rho_oxy;
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
-  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter.CaO2_max));
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
-      Pb, CaO2, parameter.CaO2_max, parameter.Pb50, parameter.n, parameter.alpha_bl_eff);
+      Pb, CaO2, parameter_.CaO2_max, parameter_.Pb50, parameter_.n, parameter_.alpha_bl_eff);
 
   // evaluate function
   const double heaviside_oxy((Pb - oxy_mass_frac_if / fac_if) > 0. ? 1. : 0.);
   const double functval =
-      parameter.gammarhoSV * heaviside_oxy * (Pb - oxy_mass_frac_if / fac_if) * VF1;
+      parameter_.gammarhoSV * heaviside_oxy * (Pb - oxy_mass_frac_if / fac_if) * VF1;
 
   return functval;
 }
@@ -871,7 +872,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivativ
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
-  const double fac_if = parameter.rho_oxy / parameter.rho_if * parameter.alpha_IF;
+  const double fac_if = parameter_.rho_oxy / parameter_.rho_if * parameter_.alpha_IF;
 
   double VF1 = 0.0, oxy_mass_frac_if = 0.0;
 
@@ -898,22 +899,22 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivativ
         "Something went wrong in derivative evaluation of OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT");
 
   FAD Pb = 0.0;
-  FAD CaO2 = oxy_mass_frac_nv * parameter.rho_bl / parameter.rho_oxy;
+  FAD CaO2 = oxy_mass_frac_nv * parameter_.rho_bl / parameter_.rho_oxy;
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
-  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter.CaO2_max));
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
-      Pb, CaO2, parameter.CaO2_max, parameter.Pb50, parameter.n, parameter.alpha_bl_eff);
+      Pb, CaO2, parameter_.CaO2_max, parameter_.Pb50, parameter_.n, parameter_.alpha_bl_eff);
   const double heaviside_oxy((Pb - oxy_mass_frac_if / fac_if) > 0. ? 1. : 0.);
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
-    deriv[0] = parameter.gammarhoSV * VF1 * (-1.0 / fac_if) * heaviside_oxy;
-    deriv[3] = parameter.gammarhoSV * VF1 * (Pb.fastAccessDx(0)) * heaviside_oxy;
+    deriv[0] = parameter_.gammarhoSV * VF1 * (-1.0 / fac_if) * heaviside_oxy;
+    deriv[3] = parameter_.gammarhoSV * VF1 * (Pb.fastAccessDx(0)) * heaviside_oxy;
   }
   else if (variables[0].first == "p1")  // OD-derivative
   {
-    deriv[7] = parameter.gammarhoSV * (Pb.val() - oxy_mass_frac_if / fac_if) * heaviside_oxy;
+    deriv[7] = parameter_.gammarhoSV * (Pb.val() - oxy_mass_frac_if / fac_if) * heaviside_oxy;
   }
   else
     FOUR_C_THROW(
@@ -927,7 +928,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivativ
 template <int dim>
 POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::OxygenTransvascularExchangeLawDisc(
     const std::vector<std::pair<std::string, double>>& funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params), pos_oxy_art_(-1), pos_diam_(-1)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter_(funct_params), pos_oxy_art_(-1), pos_diam_(-1)
 {
 }
 
@@ -978,7 +979,7 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::Evaluate(
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
 
-  const double fac_if = parameter.rho_oxy / parameter.rho_if * parameter.alpha_IF;
+  const double fac_if = parameter_.rho_oxy / parameter_.rho_if * parameter_.alpha_IF;
 
   // read variables and constants (order is crucial)
   double oxy_mass_frac_if = variables[0].second;
@@ -987,17 +988,17 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::Evaluate(
   const double S2 = constants[4].second;
 
   double Pb = 0.0;
-  double CaO2 = oxy_mass_frac_nv * parameter.rho_bl / parameter.rho_oxy;
+  double CaO2 = oxy_mass_frac_nv * parameter_.rho_bl / parameter_.rho_oxy;
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
-  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter.CaO2_max));
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
-      Pb, CaO2, parameter.CaO2_max, parameter.Pb50, parameter.n, parameter.alpha_bl_eff);
+      Pb, CaO2, parameter_.CaO2_max, parameter_.Pb50, parameter_.n, parameter_.alpha_bl_eff);
 
   // evaluate function
-  const double heaviside_S2 = ((S2 - parameter.S2_max) > 0. ? 0. : 1.);
+  const double heaviside_S2 = ((S2 - parameter_.S2_max) > 0. ? 0. : 1.);
   const double functval =
-      parameter.gammarho * M_PI * D * (Pb - oxy_mass_frac_if / fac_if) * heaviside_S2;
+      parameter_.gammarho * M_PI * D * (Pb - oxy_mass_frac_if / fac_if) * heaviside_S2;
 
   return functval;
 }
@@ -1013,7 +1014,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::EvaluateDerivativ
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
-  const double fac_if = parameter.rho_oxy / parameter.rho_if * parameter.alpha_IF;
+  const double fac_if = parameter_.rho_oxy / parameter_.rho_if * parameter_.alpha_IF;
 
   // define Fad object for evaluation
   using FAD = Sacado::Fad::DFad<double>;
@@ -1026,18 +1027,18 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::EvaluateDerivativ
   const double S2 = constants[4].second;
 
   FAD Pb = 0.0;
-  FAD CaO2 = oxy_mass_frac_nv * parameter.rho_bl / parameter.rho_oxy;
+  FAD CaO2 = oxy_mass_frac_nv * parameter_.rho_bl / parameter_.rho_oxy;
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
-  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter.CaO2_max));
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
-      Pb, CaO2, parameter.CaO2_max, parameter.Pb50, parameter.n, parameter.alpha_bl_eff);
+      Pb, CaO2, parameter_.CaO2_max, parameter_.Pb50, parameter_.n, parameter_.alpha_bl_eff);
 
   // evaluate function
-  const double heaviside_S2 = ((S2 - parameter.S2_max) > 0. ? 0. : 1.);
+  const double heaviside_S2 = ((S2 - parameter_.S2_max) > 0. ? 0. : 1.);
 
-  deriv[0] = parameter.gammarho * M_PI * D * (-1.0 / fac_if) * heaviside_S2;
-  deriv[pos_oxy_art_] = parameter.gammarho * M_PI * D * (Pb.fastAccessDx(0)) * heaviside_S2;
+  deriv[0] = parameter_.gammarho * M_PI * D * (-1.0 / fac_if) * heaviside_S2;
+  deriv[pos_oxy_art_] = parameter_.gammarho * M_PI * D * (Pb.fastAccessDx(0)) * heaviside_S2;
 
   return deriv;
 }
@@ -1047,7 +1048,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::EvaluateDerivativ
 template <int dim>
 POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::LungOxygenExchangeLaw(
     const std::vector<std::pair<std::string, double>>& funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter_(funct_params)
 {
 }
 
@@ -1120,23 +1121,23 @@ double POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::Evaluate(
   const double volfrac_blood = constants[3].second;
 
   // partial pressure of oxygen in air
-  const double P_oA =
-      oxy_mass_frac_air * (P_air + parameter.P_atmospheric) * parameter.rho_air / parameter.rho_oxy;
+  const double P_oA = oxy_mass_frac_air * (P_air + parameter_.P_atmospheric) * parameter_.rho_air /
+                      parameter_.rho_oxy;
 
   // CoB_total is total concentration of oxygen in blood (physically dissolved and bound to
   // hemoglobin)
-  const double CoB_total = oxy_mass_frac_bl * parameter.rho_bl / parameter.rho_oxy;
+  const double CoB_total = oxy_mass_frac_bl * parameter_.rho_bl / parameter_.rho_oxy;
 
   // partial pressure of oxygen in blood
   double P_oB = 0.0;
 
   // Calculate partial pressure of oxygen in blood
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
-      P_oB, CoB_total, parameter.NC_Hb, parameter.P_oB50, parameter.n, parameter.alpha_oxy);
+      P_oB, CoB_total, parameter_.NC_Hb, parameter_.P_oB50, parameter_.n, parameter_.alpha_oxy);
 
   // evaluate function
-  const double functval = parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy *
-                          (volfrac_blood / parameter.volfrac_blood_ref) * (P_oA - P_oB);
+  const double functval = parameter_.rho_oxy * parameter_.DiffAdVTLC * parameter_.alpha_oxy *
+                          (volfrac_blood / parameter_.volfrac_blood_ref) * (P_oA - P_oB);
 
   return functval;
 }
@@ -1186,32 +1187,34 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
         variables[0].first.c_str());
 
   // volfrac relation
-  const double volfrac_relation = (volfrac_blood / parameter.volfrac_blood_ref);
+  const double volfrac_relation = (volfrac_blood / parameter_.volfrac_blood_ref);
 
   FAD P_oB = 0.0;
-  FAD C_oB_total = oxy_mass_frac_bl * parameter.rho_bl / parameter.rho_oxy;
+  FAD C_oB_total = oxy_mass_frac_bl * parameter_.rho_bl / parameter_.rho_oxy;
 
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
-      P_oB, C_oB_total, parameter.NC_Hb, parameter.P_oB50, parameter.n, parameter.alpha_oxy);
+      P_oB, C_oB_total, parameter_.NC_Hb, parameter_.P_oB50, parameter_.n, parameter_.alpha_oxy);
 
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
-    deriv[0] = parameter.rho_oxy * parameter.DiffAdVTLC * volfrac_relation * parameter.alpha_oxy *
-               ((P_air + parameter.P_atmospheric) * parameter.rho_air / parameter.rho_oxy);
-    deriv[1] = parameter.rho_oxy * parameter.DiffAdVTLC * volfrac_relation * parameter.alpha_oxy *
-               (-1.0) * P_oB.fastAccessDx(0);
+    deriv[0] = parameter_.rho_oxy * parameter_.DiffAdVTLC * volfrac_relation *
+               parameter_.alpha_oxy *
+               ((P_air + parameter_.P_atmospheric) * parameter_.rho_air / parameter_.rho_oxy);
+    deriv[1] = parameter_.rho_oxy * parameter_.DiffAdVTLC * volfrac_relation *
+               parameter_.alpha_oxy * (-1.0) * P_oB.fastAccessDx(0);
   }
   else if (variables[0].first == "p1")  // OD-derivative
   {
-    deriv[0] = (parameter.rho_oxy * parameter.DiffAdVTLC * volfrac_relation * parameter.alpha_oxy) *
-               ((oxy_mass_frac_air * parameter.rho_air) /
-                   parameter.rho_oxy);  // derivative wrt P_air (dFunc/dP_oA * dP_oA/P_air)
-                                        // partial pressure of oxygen in air
-    const double P_oA = oxy_mass_frac_air * (P_air + parameter.P_atmospheric) * parameter.rho_air /
-                        parameter.rho_oxy;
-    deriv[3] = parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy *
-               (1 / parameter.volfrac_blood_ref) * (P_oA - P_oB.val());
+    deriv[0] =
+        (parameter_.rho_oxy * parameter_.DiffAdVTLC * volfrac_relation * parameter_.alpha_oxy) *
+        ((oxy_mass_frac_air * parameter_.rho_air) /
+            parameter_.rho_oxy);  // derivative wrt P_air (dFunc/dP_oA * dP_oA/P_air)
+                                  // partial pressure of oxygen in air
+    const double P_oA = oxy_mass_frac_air * (P_air + parameter_.P_atmospheric) *
+                        parameter_.rho_air / parameter_.rho_oxy;
+    deriv[3] = parameter_.rho_oxy * parameter_.DiffAdVTLC * parameter_.alpha_oxy *
+               (1 / parameter_.volfrac_blood_ref) * (P_oA - P_oB.val());
   }
   else
     FOUR_C_THROW("Derivative w.r.t. <%s> not supported in LUNG_OXYGEN_EXCHANGE_LAW.",
@@ -1226,7 +1229,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
 template <int dim>
 POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::LungCarbonDioxideExchangeLaw(
     const std::vector<std::pair<std::string, double>>& funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter_(funct_params)
 {
 }
 
@@ -1300,38 +1303,38 @@ double POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Evaluate(
   const double volfrac_blood = constants[3].second;
 
   // partial pressure of carbon dioxide in air
-  const double P_CO2A =
-      CO2_mass_frac_air * (P_air + parameter.P_atmospheric) * parameter.rho_air / parameter.rho_CO2;
+  const double P_CO2A = CO2_mass_frac_air * (P_air + parameter_.P_atmospheric) *
+                        parameter_.rho_air / parameter_.rho_CO2;
 
   // CoB_total is total concentration of oxygen in blood (physically dissolved and bound to
   // hemoglobin)
-  const double CoB_total = O2_mass_frac_bl * parameter.rho_bl / parameter.rho_oxy;
+  const double CoB_total = O2_mass_frac_bl * parameter_.rho_bl / parameter_.rho_oxy;
 
   // partial pressure of oxygen in blood
   double P_O2B = 0.0;
 
   // Calculate partial pressure of oxygen in blood
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
-      P_O2B, CoB_total, parameter.NC_Hb, parameter.P_oB50, parameter.n, parameter.alpha_oxy);
+      P_O2B, CoB_total, parameter_.NC_Hb, parameter_.P_oB50, parameter_.n, parameter_.alpha_oxy);
 
   // saturation of hemoglobin with oxygen from hill equation
   const double SO2 =
-      pow(P_O2B, parameter.n) / (pow(P_O2B, parameter.n) + pow(parameter.P_oB50, parameter.n));
+      pow(P_O2B, parameter_.n) / (pow(P_O2B, parameter_.n) + pow(parameter_.P_oB50, parameter_.n));
 
   // temporary help variable for calculating partial pressure of carbon dioxide in blood
   const double temp =
-      (1.0 - (0.02924 * parameter.C_Hb) / ((2.244 - 0.422 * SO2) * (8.740 - parameter.pH))) *
-      0.0301 * 2.226 * (1 + pow(10, parameter.pH - 6.1));
+      (1.0 - (0.02924 * parameter_.C_Hb) / ((2.244 - 0.422 * SO2) * (8.740 - parameter_.pH))) *
+      0.0301 * 2.226 * (1 + pow(10, parameter_.pH - 6.1));
 
   // partial pressure of carbon dioxide in blood
-  double P_CO2B = (CO2_mass_frac_bl * parameter.rho_bl) / (parameter.rho_CO2 * temp);
+  double P_CO2B = (CO2_mass_frac_bl * parameter_.rho_bl) / (parameter_.rho_CO2 * temp);
 
   // scaling of P_CO2B to get from mmHg to the used pressure unit in the input file
-  P_CO2B *= parameter.ScalingFormmHg;
+  P_CO2B *= parameter_.ScalingFormmHg;
 
   // evaluate function
-  const double functval = parameter.rho_CO2 * parameter.DiffsolAdVTLC *
-                          (volfrac_blood / parameter.volfrac_blood_ref) * (P_CO2B - P_CO2A);
+  const double functval = parameter_.rho_CO2 * parameter_.DiffsolAdVTLC *
+                          (volfrac_blood / parameter_.volfrac_blood_ref) * (P_CO2B - P_CO2A);
 
   return functval;
 }
@@ -1384,61 +1387,61 @@ std::vector<double> POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Eva
         variables[0].first.c_str());
 
   // volfrac relation
-  const double volfrac_relation = (volfrac_blood / parameter.volfrac_blood_ref);
+  const double volfrac_relation = (volfrac_blood / parameter_.volfrac_blood_ref);
 
   FAD P_O2B = 0.0;
-  FAD C_oB_total = O2_mass_frac_bl * parameter.rho_bl / parameter.rho_oxy;
+  FAD C_oB_total = O2_mass_frac_bl * parameter_.rho_bl / parameter_.rho_oxy;
 
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
-      P_O2B, C_oB_total, parameter.NC_Hb, parameter.P_oB50, parameter.n, parameter.alpha_oxy);
+      P_O2B, C_oB_total, parameter_.NC_Hb, parameter_.P_oB50, parameter_.n, parameter_.alpha_oxy);
 
   // saturation of hemoglobin with oxygen from hill equation
-  const double SO2 = pow(P_O2B.val(), parameter.n) /
-                     (pow(P_O2B.val(), parameter.n) + pow(parameter.P_oB50, parameter.n));
+  const double SO2 = pow(P_O2B.val(), parameter_.n) /
+                     (pow(P_O2B.val(), parameter_.n) + pow(parameter_.P_oB50, parameter_.n));
 
   // temporary help variable for calculating partial pressure of carbon dioxide in blood
   const double temp =
-      (1.0 - (0.02924 * parameter.C_Hb) / ((2.244 - 0.422 * SO2) * (8.740 - parameter.pH))) *
-      0.0301 * 2.226 * (1.0 + pow(10.0, parameter.pH - 6.1));
+      (1.0 - (0.02924 * parameter_.C_Hb) / ((2.244 - 0.422 * SO2) * (8.740 - parameter_.pH))) *
+      0.0301 * 2.226 * (1.0 + pow(10.0, parameter_.pH - 6.1));
 
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
     // linearization w.r.t. phi2 (oxygen in blood) = dMassexchangeCO2/dwO2B = dMassexchangeCO2/dPCO2
     // * dPCO2/dSO2 * dSO2/dPO2B * dPO2B/dwO2B
-    double dMassexchangeCO2dPCO2 =
-        parameter.rho_CO2 * parameter.DiffsolAdVTLC * volfrac_relation * parameter.ScalingFormmHg;
-    double dPCO2dSO2 = CO2_mass_frac_bl * (parameter.rho_bl / parameter.rho_CO2) * pow(temp, -2.0) *
-                       0.0301 * (1.0 + pow(10.0, parameter.pH - 6.10)) * 2.226 *
-                       (0.02924 * parameter.C_Hb) / ((8.740 - parameter.pH)) *
+    double dMassexchangeCO2dPCO2 = parameter_.rho_CO2 * parameter_.DiffsolAdVTLC *
+                                   volfrac_relation * parameter_.ScalingFormmHg;
+    double dPCO2dSO2 = CO2_mass_frac_bl * (parameter_.rho_bl / parameter_.rho_CO2) *
+                       pow(temp, -2.0) * 0.0301 * (1.0 + pow(10.0, parameter_.pH - 6.10)) * 2.226 *
+                       (0.02924 * parameter_.C_Hb) / ((8.740 - parameter_.pH)) *
                        pow(2.244 - 0.422 * SO2, -2.0) * 0.422;
     double dSO2dPO2B =
-        parameter.n * pow(P_O2B.val(), parameter.n - 1.0) *
-            pow(pow(P_O2B.val(), parameter.n) + pow(parameter.P_oB50, parameter.n), -1.0) -
-        pow(pow(P_O2B.val(), parameter.n) + pow(parameter.P_oB50, parameter.n), -2.0) *
-            pow(P_O2B.val(), parameter.n) * parameter.n * pow(P_O2B.val(), parameter.n - 1.0);
+        parameter_.n * pow(P_O2B.val(), parameter_.n - 1.0) *
+            pow(pow(P_O2B.val(), parameter_.n) + pow(parameter_.P_oB50, parameter_.n), -1.0) -
+        pow(pow(P_O2B.val(), parameter_.n) + pow(parameter_.P_oB50, parameter_.n), -2.0) *
+            pow(P_O2B.val(), parameter_.n) * parameter_.n * pow(P_O2B.val(), parameter_.n - 1.0);
     double dPO2BdwO2B = P_O2B.fastAccessDx(0);
     deriv[1] = dMassexchangeCO2dPCO2 * dPCO2dSO2 * dSO2dPO2B * dPO2BdwO2B;
 
-    deriv[2] = (-1.0) * parameter.rho_CO2 * parameter.DiffsolAdVTLC * volfrac_relation *
-               ((P_air + parameter.P_atmospheric) * parameter.rho_air / parameter.rho_CO2);
+    deriv[2] = (-1.0) * parameter_.rho_CO2 * parameter_.DiffsolAdVTLC * volfrac_relation *
+               ((P_air + parameter_.P_atmospheric) * parameter_.rho_air / parameter_.rho_CO2);
 
-    deriv[3] = parameter.rho_CO2 * parameter.DiffsolAdVTLC * volfrac_relation *
-               parameter.ScalingFormmHg * parameter.rho_bl / (parameter.rho_CO2 * temp);
+    deriv[3] = parameter_.rho_CO2 * parameter_.DiffsolAdVTLC * volfrac_relation *
+               parameter_.ScalingFormmHg * parameter_.rho_bl / (parameter_.rho_CO2 * temp);
   }
   else if (variables[0].first == "p1")  // OD-derivative
   {
     // derivative w.r.t. P_air (dFunc/dP_CO2A * dP_CO2A/P_air)
-    deriv[0] = (-1.0) * (parameter.rho_CO2 * parameter.DiffsolAdVTLC * volfrac_relation) *
-               ((CO2_mass_frac_air * parameter.rho_air) / parameter.rho_CO2);
+    deriv[0] = (-1.0) * (parameter_.rho_CO2 * parameter_.DiffsolAdVTLC * volfrac_relation) *
+               ((CO2_mass_frac_air * parameter_.rho_air) / parameter_.rho_CO2);
 
     // partial pressure of carbon dioxide in air
-    const double P_CO2A = CO2_mass_frac_air * (P_air + parameter.P_atmospheric) *
-                          parameter.rho_air / parameter.rho_CO2;
+    const double P_CO2A = CO2_mass_frac_air * (P_air + parameter_.P_atmospheric) *
+                          parameter_.rho_air / parameter_.rho_CO2;
     // partial pressure of carbon dioxide in blood
-    double P_CO2B = ((CO2_mass_frac_bl * parameter.rho_bl / parameter.rho_CO2) / temp) *
-                    parameter.ScalingFormmHg;
-    deriv[3] = parameter.rho_CO2 * parameter.DiffsolAdVTLC * (1 / parameter.volfrac_blood_ref) *
+    double P_CO2B = ((CO2_mass_frac_bl * parameter_.rho_bl / parameter_.rho_CO2) / temp) *
+                    parameter_.ScalingFormmHg;
+    deriv[3] = parameter_.rho_CO2 * parameter_.DiffsolAdVTLC * (1 / parameter_.volfrac_blood_ref) *
                (P_CO2B - P_CO2A);
   }
   else

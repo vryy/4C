@@ -34,11 +34,11 @@ MIXTURE::PAR::AnisotropicGrowthStrategy::CreateGrowthStrategy()
 MIXTURE::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
     MIXTURE::PAR::AnisotropicGrowthStrategy* params)
     : params_(params),
-      anisotropyExtension_(params_->init_mode_, 0.0, false,
+      anisotropy_extension_(params_->init_mode_, 0.0, false,
           Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {params->fiber_id_ - 1})
 {
-  anisotropyExtension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+  anisotropy_extension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::PackMixtureGrowthStrategy(
@@ -46,7 +46,7 @@ void MIXTURE::AnisotropicGrowthStrategy::PackMixtureGrowthStrategy(
 {
   MixtureGrowthStrategy::PackMixtureGrowthStrategy(data);
 
-  anisotropyExtension_.PackAnisotropy(data);
+  anisotropy_extension_.PackAnisotropy(data);
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::UnpackMixtureGrowthStrategy(
@@ -54,12 +54,12 @@ void MIXTURE::AnisotropicGrowthStrategy::UnpackMixtureGrowthStrategy(
 {
   MixtureGrowthStrategy::UnpackMixtureGrowthStrategy(position, data);
 
-  anisotropyExtension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.UnpackAnisotropy(data, position);
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
+  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradient(
@@ -69,7 +69,7 @@ void MIXTURE::AnisotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradien
   const CORE::LINALG::Matrix<3, 3> Id = CORE::LINALG::IdentityMatrix<3>();
 
   iFgM.Update(1.0 / currentReferenceGrowthScalar - 1.0,
-      anisotropyExtension_.GetStructuralTensor(gp, 0), 1.0, Id);
+      anisotropy_extension_.GetStructuralTensor(gp, 0), 1.0, Id);
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::EvaluateGrowthStressCmat(

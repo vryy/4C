@@ -42,17 +42,17 @@ namespace CONTACT
 
       int GetFirstMatID() const { return firstmatid_; };
       int GetSecondMatID() const { return secondmatid_; };
-      double GetLateralLength() const { return lateralLength_; };
-      bool GetPressureGreenFunFlag() const { return pressureGreenFunFlag_; };
+      double GetLateralLength() const { return lateral_length_; };
+      bool GetPressureGreenFunFlag() const { return pressure_green_fun_flag_; };
       double GetTolerance() const { return tolerance_; };
-      double GetMaxIteration() const { return maxIteration_; };
-      bool GetWarmStartingFlag() const { return warmStartingFlag_; };
-      double GetCompositeYoungs() const { return compositeYoungs_; };
-      double GetCompositePoissonsRatio() const { return compositePoissonsRatio_; };
-      double GetGridSize() const { return gridSize_; };
-      double GetComplianceCorrection() const { return elasticComplianceCorrection_; };
-      double GetFiniteDifferenceFraction() const { return finiteDifferenceFraction_; };
-      double GetActiveGapTolerance() const { return activeGapTolerance_; };
+      double GetMaxIteration() const { return max_iteration_; };
+      bool GetWarmStartingFlag() const { return warm_starting_flag_; };
+      double GetCompositeYoungs() const { return composite_youngs_; };
+      double GetCompositePoissonsRatio() const { return composite_poissons_ratio_; };
+      double GetGridSize() const { return grid_size_; };
+      double GetComplianceCorrection() const { return elastic_compliance_correction_; };
+      double GetFiniteDifferenceFraction() const { return finite_difference_fraction_; };
+      double GetActiveGapTolerance() const { return active_gap_tolerance_; };
       Teuchos::Ptr<std::vector<double>> GetMeshGrid() const { return meshgrid_; };
 
       void SetParameters();
@@ -63,23 +63,23 @@ namespace CONTACT
 
       int firstmatid_;
       int secondmatid_;
-      double lateralLength_;
+      double lateral_length_;
       int resolution_;
-      bool pressureGreenFunFlag_;
-      bool randomTopologyFlag_;
-      bool randomSeedFlag_;
-      int randomGeneratorSeed_;
+      bool pressure_green_fun_flag_;
+      bool random_topology_flag_;
+      bool random_seed_flag_;
+      int random_generator_seed_;
       double tolerance_;
-      int maxIteration_;
-      bool warmStartingFlag_;
-      double compositeYoungs_;
-      double compositePoissonsRatio_;
-      double gridSize_;
-      double elasticComplianceCorrection_;
+      int max_iteration_;
+      bool warm_starting_flag_;
+      double composite_youngs_;
+      double composite_poissons_ratio_;
+      double grid_size_;
+      double elastic_compliance_correction_;
       Teuchos::Ptr<std::vector<double>> meshgrid_;
-      double finiteDifferenceFraction_;
-      double activeGapTolerance_;
-      std::string topologyFilePath_;
+      double finite_difference_fraction_;
+      double active_gap_tolerance_;
+      std::string topology_file_path_;
       //@}
     };  // class
 

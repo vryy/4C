@@ -156,7 +156,7 @@ namespace STR
       virtual void SetupMultiMapExtractor();
 
       //! set flag true if in order to request a relaxation solve
-      void SetIsRelaxationSolve(bool trueorfalse) { is_relaxationsolve = trueorfalse; };
+      void SetIsRelaxationSolve(bool trueorfalse) { is_relaxationsolve_ = trueorfalse; };
 
       //! Returns the global input/output data container
       const STR::TIMINT::BaseDataIO& GetInOutput() const;
@@ -166,7 +166,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> interface_force_np_ptr_;
 
       //! true if relaxation solve is requested
-      bool is_relaxationsolve;
+      bool is_relaxationsolve_;
 
     };  // class PartitionedFSI
 

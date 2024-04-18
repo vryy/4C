@@ -72,10 +72,10 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       /// get history of deformation gradient
-      inline CORE::LINALG::SerialDenseMatrix& FHistory() const { return *Fhist_; }
+      inline CORE::LINALG::SerialDenseMatrix& FHistory() const { return *fhist_; }
 
       /// get history of of reference configuration (inverse of Jacobian)
-      inline CORE::LINALG::SerialDenseMatrix& JHistory() const { return *invJhist_; }
+      inline CORE::LINALG::SerialDenseMatrix& JHistory() const { return *inv_jhist_; }
 
       /// put a matrix to storage
       inline void MatrixtoStorage(const int gp, const CORE::LINALG::Matrix<3, 3>& Mat,
@@ -120,13 +120,13 @@ namespace DRT
       int numnode_;
 
       /// history of deformation gradient
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Fhist_;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> fhist_;
 
       /// updated Lagrange inverse of Jacobian
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invJhist_;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> inv_jhist_;
 
       /// get number of gaussian points considered
-      inline int NGP() const { return Fhist_->numRows(); }
+      inline int NGP() const { return fhist_->numRows(); }
 
       /// get no. of nodal points
       inline int NumNode() const { return numnode_; }

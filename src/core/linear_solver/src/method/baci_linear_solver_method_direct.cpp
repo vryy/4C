@@ -31,7 +31,7 @@ CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::DirectSolver(std::str
       factored_(false),
       x_(Teuchos::null),
       b_(Teuchos::null),
-      A_(Teuchos::null),
+      a_(Teuchos::null),
       amesos_(Teuchos::null),
       reindexer_(Teuchos::null),
       projector_(Teuchos::null)
@@ -85,7 +85,7 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> A2 = projector_->Project(A_view);
 
     // hand matrix over to A_
-    A_ = A2->EpetraMatrix();
+    a_ = A2->EpetraMatrix();
     // hand over to b_ and project to (P^T b)
     b_ = b;
     projector_->ApplyPT(*b_);
@@ -96,7 +96,7 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
   {
     if (bIsCrsMatrix == true)
     {
-      A_ = matrix;
+      a_ = matrix;
     }
     else
     {
@@ -118,7 +118,7 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
       }
 
       Teuchos::RCP<CORE::LINALG::SparseMatrix> Ablock_merged = Ablock->Merge();
-      A_ = Ablock_merged->EpetraMatrix();
+      a_ = Ablock_merged->EpetraMatrix();
     }
     x_ = x;
     b_ = b;
@@ -127,7 +127,7 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
   // fill the linear problem
   lp_->SetRHS(b_.get());
   lp_->SetLHS(x_.get());
-  lp_->SetOperator(A_.get());
+  lp_->SetOperator(a_.get());
 
   /* update reindexing of vectors: Doing so, we don't need to reset the solver
    * to enforce reindexing of the entire Epetra_LinearProblem. This allows for

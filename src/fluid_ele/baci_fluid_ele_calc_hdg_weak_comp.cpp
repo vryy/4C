@@ -61,8 +61,8 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InitializeShapes(
     }
 
     // initialize local solver
-    if (localSolver_ == Teuchos::null)
-      localSolver_ = Teuchos::rcp(new LocalSolver(ele, *shapes_, *shapesface_, usescompletepoly_));
+    if (local_solver_ == Teuchos::null)
+      local_solver_ = Teuchos::rcp(new LocalSolver(ele, *shapes_, *shapesface_, usescompletepoly_));
   }
   else
     FOUR_C_THROW("Only works for HDG weakly compressible fluid elements");
@@ -98,40 +98,40 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
 
   // initialize shapes
   InitializeShapes(ele);
-  shapes_->Evaluate(*ele, aleDis_);
+  shapes_->Evaluate(*ele, ale_dis_);
 
   // initialize all
-  localSolver_->InitializeAll();
+  local_solver_->InitializeAll();
 
   // compute interior residual and matrices
-  localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, aleVel_);
-  localSolver_->ComputeInteriorMatrices(mat);
+  local_solver_->ComputeInteriorResidual(mat, interior_val_, interior_acc_, ale_vel_);
+  local_solver_->ComputeInteriorMatrices(mat);
 
   // compute face residual and face matrices
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
-    shapesface_->EvaluateFace(*ele, f, aleDis_);
-    localSolver_->ComputeFaceResidual(f, mat, interiorVal_, traceVal_, aleVel_);
-    localSolver_->ComputeFaceMatrices(f, mat);
+    shapesface_->EvaluateFace(*ele, f, ale_dis_);
+    local_solver_->ComputeFaceResidual(f, mat, interior_val_, trace_val_, ale_vel_);
+    local_solver_->ComputeFaceMatrices(f, mat);
   }
 
   // group residuals
-  localSolver_->ComputeLocalResidual();
-  localSolver_->ComputeGlobalResidual(*ele);
+  local_solver_->ComputeLocalResidual();
+  local_solver_->ComputeGlobalResidual(*ele);
 
   // group matrices
-  localSolver_->ComputeLocalLocalMatrix();
-  localSolver_->ComputeLocalGlobalMatrix(*ele);
-  localSolver_->ComputeGlobalLocalMatrix(*ele);
-  localSolver_->ComputeGlobalGlobalMatrix(*ele);
+  local_solver_->ComputeLocalLocalMatrix();
+  local_solver_->ComputeLocalGlobalMatrix(*ele);
+  local_solver_->ComputeGlobalLocalMatrix(*ele);
+  local_solver_->ComputeGlobalGlobalMatrix(*ele);
 
   // condense local part
-  localSolver_->InvertLocalLocalMatrix();
-  localSolver_->CondenseLocalResidual(elevec1);
-  localSolver_->CondenseLocalMatrix(elemat1);
+  local_solver_->InvertLocalLocalMatrix();
+  local_solver_->CondenseLocalResidual(elevec1);
+  local_solver_->CondenseLocalMatrix(elemat1);
 
   // divide rhs by alpha_f
-  elevec1.scale(1.0 / localSolver_->fldparatimint_->AlphaF());
+  elevec1.scale(1.0 / local_solver_->fldparatimint_->AlphaF());
 
   return 0;
 }
@@ -143,24 +143,24 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadGlobalVectors(
     const DRT::Element& ele, DRT::Discretization& discretization, const std::vector<int>& lm)
 {
   // initialize the vectors
-  traceVal_.resize(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
-  interiorVal_.resize((msd_ + 1 + nsd_) * shapes_->ndofs_);
-  interiorAcc_.resize((msd_ + 1 + nsd_) * shapes_->ndofs_);
+  trace_val_.resize(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
+  interior_val_.resize((msd_ + 1 + nsd_) * shapes_->ndofs_);
+  interior_acc_.resize((msd_ + 1 + nsd_) * shapes_->ndofs_);
 
   // read the trace values
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(0, "velaf");
-  CORE::FE::ExtractMyValues(*matrix_state, traceVal_, lm);
+  CORE::FE::ExtractMyValues(*matrix_state, trace_val_, lm);
 
   // get local dofs
   std::vector<int> localDofs = discretization.Dof(1, &ele);
 
   // read the interior values
   matrix_state = discretization.GetState(1, "intvelaf");
-  CORE::FE::ExtractMyValues(*matrix_state, interiorVal_, localDofs);
+  CORE::FE::ExtractMyValues(*matrix_state, interior_val_, localDofs);
 
   // read the interior time derivatives
   matrix_state = discretization.GetState(1, "intaccam");
-  CORE::FE::ExtractMyValues(*matrix_state, interiorAcc_, localDofs);
+  CORE::FE::ExtractMyValues(*matrix_state, interior_acc_, localDofs);
 
   // read ale vectors
   ReadAleVectors(ele, discretization);
@@ -173,8 +173,8 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadAleVectors(
     const DRT::Element& ele, DRT::Discretization& discretization)
 {
   // initialize ale vectors
-  aleDis_.resize(nsd_ * nen_);
-  aleVel_.resize(nsd_ * nen_);
+  ale_dis_.resize(nsd_ * nen_);
+  ale_vel_.resize(nsd_ * nen_);
 
   // check presence of ale state
   if (discretization.HasState(2, "dispnp"))
@@ -197,11 +197,11 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadAleVectors(
 
       // read the ale displacement
       matrix_state = discretization.GetState(2, "dispnp");
-      CORE::FE::ExtractMyValues(*matrix_state, aleDis_, aleDofs);
+      CORE::FE::ExtractMyValues(*matrix_state, ale_dis_, aleDofs);
 
       // read the ale velocity
       matrix_state = discretization.GetState(2, "gridv");
-      CORE::FE::ExtractMyValues(*matrix_state, aleVel_, aleDofs);
+      CORE::FE::ExtractMyValues(*matrix_state, ale_vel_, aleDofs);
     }
   }
 }
@@ -262,32 +262,32 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
 
   // initialize shapes
   InitializeShapes(ele);
-  shapes_->Evaluate(*ele, aleDis_);
+  shapes_->Evaluate(*ele, ale_dis_);
 
   // initialize all
-  localSolver_->InitializeAll();
+  local_solver_->InitializeAll();
 
   // compute interior residual and matrices
-  localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, aleVel_);
-  localSolver_->ComputeInteriorMatrices(mat);
+  local_solver_->ComputeInteriorResidual(mat, interior_val_, interior_acc_, ale_vel_);
+  local_solver_->ComputeInteriorMatrices(mat);
 
   // compute face residual and face matrices
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
-    shapesface_->EvaluateFace(*ele, f, aleDis_);
-    localSolver_->ComputeFaceResidual(f, mat, interiorVal_, traceVal_, aleVel_);
-    localSolver_->ComputeFaceMatrices(f, mat);
+    shapesface_->EvaluateFace(*ele, f, ale_dis_);
+    local_solver_->ComputeFaceResidual(f, mat, interior_val_, trace_val_, ale_vel_);
+    local_solver_->ComputeFaceMatrices(f, mat);
   }
 
   // group residuals
-  localSolver_->ComputeLocalResidual();
+  local_solver_->ComputeLocalResidual();
 
   // group matrices
-  localSolver_->ComputeLocalLocalMatrix();
-  localSolver_->ComputeLocalGlobalMatrix(*ele);
+  local_solver_->ComputeLocalLocalMatrix();
+  local_solver_->ComputeLocalGlobalMatrix(*ele);
 
   // invert local-local matrix
-  localSolver_->InvertLocalLocalMatrix();
+  local_solver_->InvertLocalLocalMatrix();
 
   // extract local trace increments
   std::vector<double> localtraceinc_vec;
@@ -302,13 +302,13 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
 
   // compute local solver vector
   CORE::LINALG::SerialDenseVector LocalSolverVec((msd_ + 1 + nsd_) * shapes_->ndofs_);
-  CORE::LINALG::multiply(LocalSolverVec, localSolver_->KlocallocalInv, localSolver_->Rlocal);
+  CORE::LINALG::multiply(LocalSolverVec, local_solver_->KlocallocalInv, local_solver_->Rlocal);
 
   // compute local solver matrix
   CORE::LINALG::SerialDenseMatrix LocalSolverMat(
       (msd_ + 1 + nsd_) * shapes_->ndofs_, nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
   CORE::LINALG::multiply(
-      0.0, LocalSolverMat, -1.0, localSolver_->KlocallocalInv, localSolver_->Klocalglobal);
+      0.0, LocalSolverMat, -1.0, local_solver_->KlocallocalInv, local_solver_->Klocalglobal);
 
   // compute local increments
   interiorinc.size((msd_ + 1 + nsd_) * shapes_->ndofs_);
@@ -331,10 +331,10 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
 
   // initialize shapes
   InitializeShapes(ele);
-  shapes_->Evaluate(*ele, aleDis_);
+  shapes_->Evaluate(*ele, ale_dis_);
 
   // get time
-  const double time = localSolver_->fldparatimint_->Time();
+  const double time = local_solver_->fldparatimint_->Time();
 
   // get interior values
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intvelnp");
@@ -445,7 +445,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
   InitializeShapes(ele);
 
   // Evaluate the element at the gauss points
-  shapes_->Evaluate(*ele, aleDis_);
+  shapes_->Evaluate(*ele, ale_dis_);
 
   // reshape elevec2 as matrix
   FOUR_C_ASSERT(elevec2.numRows() == 0 ||
@@ -489,8 +489,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
       {
-        localSolver_->massPart(i, q) = shapes_->shfunct(i, q);
-        localSolver_->massPartW(i, q) = shapes_->shfunct(i, q) * fac;
+        local_solver_->massPart(i, q) = shapes_->shfunct(i, q);
+        local_solver_->massPartW(i, q) = shapes_->shfunct(i, q) * fac;
 
         // RHS for the mixed variable
         for (unsigned int m = 0; m < msd_; ++m)
@@ -506,11 +506,11 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
     }
     // The integration is made by computing the matrix product
     CORE::LINALG::multiplyNT(
-        localSolver_->massMat, localSolver_->massPart, localSolver_->massPartW);
+        local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
     using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
     using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
     inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
     inverseMass.solve();
   }
@@ -542,7 +542,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
     }
 
     // the same function as before but for the trace elements
-    shapesface_->EvaluateFace(*ele, face, aleDis_);
+    shapesface_->EvaluateFace(*ele, face, ale_dis_);
 
     // Initializing the matrices
     mass.putScalar(0.0);

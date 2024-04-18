@@ -25,8 +25,8 @@ IO::HDFReader::HDFReader(std::string dir)
     : filenames_(0), files_(0), input_dir_(dir), num_output_proc_(0)
 {
   // inhibit delayed closure, throws error if file contents still in use
-  H5Plist_ = H5Pcreate(H5P_FILE_ACCESS);
-  herr_t status = H5Pset_fclose_degree(H5Plist_, H5F_CLOSE_WEAK);
+  h5_plist_ = H5Pcreate(H5P_FILE_ACCESS);
+  herr_t status = H5Pset_fclose_degree(h5_plist_, H5F_CLOSE_WEAK);
   if (status < 0) FOUR_C_THROW("Failed to set file access list");
 }
 
@@ -36,7 +36,7 @@ IO::HDFReader::HDFReader(std::string dir)
 IO::HDFReader::~HDFReader()
 {
   Close();
-  herr_t status = H5Pclose(H5Plist_);
+  herr_t status = H5Pclose(h5_plist_);
   if (status < 0) FOUR_C_THROW("Failed to close file access list");
 }
 
@@ -63,7 +63,7 @@ void IO::HDFReader::Open(std::string basename, int num_output_procs, int new_pro
     if (i >= start and i < end)
     {
       filenames_.push_back(buf.str());
-      files_.push_back(H5Fopen(buf.str().c_str(), H5F_ACC_RDONLY, H5Plist_));
+      files_.push_back(H5Fopen(buf.str().c_str(), H5F_ACC_RDONLY, h5_plist_));
       if (files_[i] < 0) FOUR_C_THROW("Failed to open HDF-file %s", filenames_[i].c_str());
     }
     else

@@ -280,17 +280,17 @@ namespace DRT
       Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> shapesface_;
 
       /// Local solver object.
-      Teuchos::RCP<LocalSolver> localSolver_;
+      Teuchos::RCP<LocalSolver> local_solver_;
 
       std::vector<double> localtrace_;  /// extracted values from trace solution vector
 
       /// Local values from interior solution vector (electric and magnetic fields) at n
-      CORE::LINALG::SerialDenseVector interiorElectricnp_;
-      CORE::LINALG::SerialDenseVector interiorMagneticnp_;
-      CORE::LINALG::SerialDenseVector interiorauxiliaryPML_;
+      CORE::LINALG::SerialDenseVector interior_electricnp_;
+      CORE::LINALG::SerialDenseVector interior_magneticnp_;
+      CORE::LINALG::SerialDenseVector interiorauxiliary_pml_;
       /// Local values from interior solution vector (electric and magnetic fields) at n-1
-      CORE::LINALG::SerialDenseVector interiorElectricnm_;
-      CORE::LINALG::SerialDenseVector interiorMagneticnm_;
+      CORE::LINALG::SerialDenseVector interior_electricnm_;
+      CORE::LINALG::SerialDenseVector interior_magneticnm_;
 
 
       /// Chosen dynamics/time integrator

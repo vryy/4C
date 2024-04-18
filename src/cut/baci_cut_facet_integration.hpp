@@ -39,11 +39,11 @@ namespace CORE::GEO
      public:
       FacetIntegration(Facet *face1, Element *element1,
           const CORE::GEO::CUT::Point::PointPosition posi, bool bcellInt, bool global)
-          : face1_(face1),            // facet under consideration
-            elem1_(element1),         // the element for which the facet is a part of
-            position_(posi),          // position
-            bcellInt_(bcellInt),      //"true" if it is boundarycell integration
-            orderingComputed_(false)  // whether cw or acw ordering of vertices computed
+          : face1_(face1),             // facet under consideration
+            elem1_(element1),          // the element for which the facet is a part of
+            position_(posi),           // position
+            bcell_int_(bcellInt),      //"true" if it is boundarycell integration
+            ordering_computed_(false)  // whether cw or acw ordering of vertices computed
       {
       }
 
@@ -146,7 +146,7 @@ namespace CORE::GEO
       const CORE::GEO::CUT::Point::PointPosition position_;
 
       //! True for boundarycell integration
-      bool bcellInt_;
+      bool bcell_int_;
 
       //! set the base function to be integrated
       int inte_num_;
@@ -155,7 +155,7 @@ namespace CORE::GEO
       bool clockwise_;
 
       //! whether the clockwise or ACW ordering of facet computed already
-      bool orderingComputed_;
+      bool ordering_computed_;
 
       //! equation of plane that contains the facet
       std::vector<double> eqn_plane_;

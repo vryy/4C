@@ -137,7 +137,7 @@ namespace IO
             std::flush(std::cout);
             buffer_.str(std::string());
 
-            if (prefixgroupID_) buffer_ << groupID_ << ": ";
+            if (prefixgroup_id_) buffer_ << group_id_ << ": ";
           }
         }
       }
@@ -187,10 +187,10 @@ namespace IO
     std::ofstream* outfile_;
 
     /// bool whether group ID is prefixed in each line
-    bool prefixgroupID_;
+    bool prefixgroup_id_;
 
     /// group ID that is prefixed in each line if desired
-    int groupID_;
+    int group_id_;
 
     /// buffer the output in a stringstream
     std::stringstream buffer_;

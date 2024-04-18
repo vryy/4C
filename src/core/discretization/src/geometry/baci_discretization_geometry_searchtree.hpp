@@ -70,34 +70,34 @@ namespace CORE::GEO
       const int treedepth_;
 
       //! is either STATE_LEAF_NODE or STATE_INNER_NODE
-      TreeNodeType treeNodeType_;
+      TreeNodeType tree_node_type_;
 
       //! is either a OCTTREE or a QUADTREE
-      const TreeType treeType_;
+      const TreeType tree_type_;
 
       //! stores the label of the XFEM condition or 0 for fluid
       int label_;
 
       //! stores nearestObject
-      CORE::GEO::NearestObject nearestObject_;
+      CORE::GEO::NearestObject nearest_object_;
 
       //! axis aligned bounding box of this tree node
-      const CORE::LINALG::Matrix<3, 2> nodeBox_;
+      const CORE::LINALG::Matrix<3, 2> node_box_;
 
       //! x-coord of the center of this treenode
-      const double xPlaneCoordinate_;
+      const double x_plane_coordinate_;
 
       //! y-coord of the center of this treenode
-      const double yPlaneCoordinate_;
+      const double y_plane_coordinate_;
 
       //! z-coord of the center of this treenode
-      const double zPlaneCoordinate_;
+      const double z_plane_coordinate_;
 
       //! treenode has 8 children (octtree) or 4 children (quadtree)
       std::vector<Teuchos::RCP<TreeNode>> children_;
 
       //! list of elements belonging to this treenode
-      std::map<int, std::set<int>> elementList_;
+      std::map<int, std::set<int>> element_list_;
 
       /*!
        \brief returns the node box of a child node
@@ -249,13 +249,13 @@ namespace CORE::GEO
        \brief returns tree node type INNER_NODE or LEAF_NODE
        \return returns tree node type INNER_NODE or LEAF_NODE
        */
-      TreeNodeType getTreeNodeType() const { return treeNodeType_; };
+      TreeNodeType getTreeNodeType() const { return tree_node_type_; };
 
       /*!
        \brief returns tree type OCTTREE or QUADTREE
        \return returns tree type OCTTREE or QUADTREE
        */
-      TreeType getTreeType() const { return treeType_; };
+      TreeType getTreeType() const { return tree_type_; };
 
       /*!
        \brief return number of children for tree type
@@ -284,7 +284,7 @@ namespace CORE::GEO
        \brief returns elementList
        \return element list
        */
-      const std::map<int, std::set<int>>& getElementList() const { return elementList_; };
+      const std::map<int, std::set<int>>& getElementList() const { return element_list_; };
 
       /*!
        \brief insert an element into the tree
@@ -449,7 +449,7 @@ namespace CORE::GEO
     const int max_depth_;
 
     //! pointer to the root of the tree
-    Teuchos::RCP<CORE::GEO::SearchTree::TreeNode> treeRoot_;
+    Teuchos::RCP<CORE::GEO::SearchTree::TreeNode> tree_root_;
   };
   // class tree
 }  // namespace CORE::GEO

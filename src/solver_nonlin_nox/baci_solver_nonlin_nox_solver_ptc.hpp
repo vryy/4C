@@ -411,10 +411,10 @@ namespace NOX
           const NOX::NLN::Solver::PseudoTransient& ptcsolver_;
 
           //! reference to the scaling diagonal operator
-          Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr_;
+          Teuchos::RCP<Epetra_Vector>& scaling_diag_op_ptr_;
 
           //! reference to the scaling diagonal operator matrix
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr_;
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scaling_matrix_op_ptr_;
 
         };  // class PseudoTransient
       }     // namespace PrePostOp
@@ -450,14 +450,14 @@ namespace NOX
           const NOX::NLN::Solver::PseudoTransient& ptcsolver_;
 
           //! reference to the scaling diagonal operator
-          Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr_;
+          Teuchos::RCP<Epetra_Vector>& scaling_diag_op_ptr_;
 
           //! reference to the scaling diagonal operator matrix
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr_;
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scaling_matrix_op_ptr_;
 
           //! reference to the flag which indicates, if the current right-hand-side is the transient
           //! right-hand-side
-          bool isPseudoTransientResidual_;
+          bool is_pseudo_transient_residual_;
 
         };  // class PseudoTransient
       }     // namespace PrePostOp

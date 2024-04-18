@@ -103,29 +103,29 @@ FSI::LungMonolithicFluidSplit::LungMonolithicFluidSplit(
 
   fggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform);
   fgitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
-  fgGtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
+  fg_gtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
   figtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fGgtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  f_ggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
 
   fmiitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fmGitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  fm_gitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
   fmgitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform);
   fmigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fmGgtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  fm_ggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
   fmggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform);
-  fmiGtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fmGGtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fmgGtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform);
+  fmi_gtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  fm_g_gtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  fmg_gtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform);
 
-  addfmGGtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  addfmGgtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  addfm_g_gtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  addfm_ggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
 
   fcgitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
 
   aigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  aiGtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  ai_gtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
 
-  caiGtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  cai_gtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
 
   return;
 }
@@ -315,12 +315,12 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseM
   (*fggtransform_)(fgg, scale * timescale, CORE::ADAPTER::CouplingSlaveConverter(coupsf),
       CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 0), true, true);
   (*fgitransform_)(fgi, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 1));
-  (*fgGtransform_)(
+  (*fg_gtransform_)(
       fgG, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 1), true);
 
   (*figtransform_)(blockf->FullRowMap(), blockf->FullColMap(), fig, timescale,
       CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0));
-  (*fGgtransform_)(blockf->FullRowMap(), blockf->FullColMap(), fGg, timescale,
+  (*f_ggtransform_)(blockf->FullRowMap(), blockf->FullColMap(), fGg, timescale,
       CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
 
   mat.Matrix(1, 1).Add(fii, false, 1.0, 0.0);
@@ -350,34 +350,34 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseM
     // match here.
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
         CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, false);
-    (*fmGitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmGi, 1.,
+    (*fm_gitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmGi, 1.,
         CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false, true);
     (*fmgitransform_)(fmgi, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf),
         CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 2), false, false);
 
     (*fmigtransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmig, 1.,
         CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
-    (*fmGgtransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmGg, 1.,
+    (*fm_ggtransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmGg, 1.,
         CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
 
     (*fmggtransform_)(fmgg, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf),
         CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 0), true, true);
 
-    (*fmiGtransform_)(*coupfsout_->MasterDofMap(), fmiG.ColMap(), fmiG, 1.,
+    (*fmi_gtransform_)(*coupfsout_->MasterDofMap(), fmiG.ColMap(), fmiG, 1.,
         CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
-    (*fmGGtransform_)(*coupfsout_->MasterDofMap(), fmGG.ColMap(), fmGG, 1.,
+    (*fm_g_gtransform_)(*coupfsout_->MasterDofMap(), fmGG.ColMap(), fmGG, 1.,
         CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
-    (*fmgGtransform_)(fmgG, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf),
+    (*fmg_gtransform_)(fmgG, scale, CORE::ADAPTER::CouplingSlaveConverter(coupsf),
         CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(0, 0), true, true);
 
     CORE::LINALG::SparseMatrix& addfmGg = AddFluidShapeDerivMatrix_->Matrix(3, 1);
     CORE::LINALG::SparseMatrix& addfmGG = AddFluidShapeDerivMatrix_->Matrix(3, 3);
 
-    (*addfmGGtransform_)(AddFluidShapeDerivMatrix_->FullRowMap(),
+    (*addfm_g_gtransform_)(AddFluidShapeDerivMatrix_->FullRowMap(),
         AddFluidShapeDerivMatrix_->FullColMap(), addfmGG, 1.,
         CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(1, 0), true, true);
 
-    (*addfmGgtransform_)(AddFluidShapeDerivMatrix_->FullRowMap(),
+    (*addfm_ggtransform_)(AddFluidShapeDerivMatrix_->FullRowMap(),
         AddFluidShapeDerivMatrix_->FullColMap(), addfmGg, 1.,
         CORE::ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), true, true);
   }
@@ -433,7 +433,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseM
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
       CORE::ADAPTER::CouplingSlaveConverter(coupsa), mat.Matrix(2, 0));
 
-  (*aiGtransform_)(a->FullRowMap(), a->FullColMap(), aiG, 1.,
+  (*ai_gtransform_)(a->FullRowMap(), a->FullColMap(), aiG, 1.,
       CORE::ADAPTER::CouplingSlaveConverter(*coupsaout_), mat.Matrix(2, 0), true, true);
 
   /*----------------------------------------------------------------------*/
@@ -462,7 +462,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseM
   // constraint part -> "ale"
 
   CORE::LINALG::SparseMatrix& caiG = ConstrAleMatrix_->Matrix(0, 3);
-  (*caiGtransform_)(*coupfsout_->MasterDofMap(), caiG.ColMap(), caiG, 1.0,
+  (*cai_gtransform_)(*coupfsout_->MasterDofMap(), caiG.ColMap(), caiG, 1.0,
       CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(3, 0), true, true);
 
   /*----------------------------------------------------------------------*/

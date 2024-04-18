@@ -102,7 +102,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<VectorType> b_;
 
     //! system of equations
-    Teuchos::RCP<MatrixType> A_;
+    Teuchos::RCP<MatrixType> a_;
 
     //! counting how many times matrix was solved between resets
     int ncall_{0};
@@ -143,7 +143,7 @@ namespace CORE::LINEAR_SOLVER
      *
      * \sa CheckReuseStatusOfActiveSet()
      */
-    Teuchos::RCP<Epetra_Map> activeDofMap_;
+    Teuchos::RCP<Epetra_Map> active_dof_map_;
 
     //!@}
   };

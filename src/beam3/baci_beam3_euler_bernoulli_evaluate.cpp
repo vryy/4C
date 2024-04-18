@@ -205,11 +205,11 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
               "element)!",
               elevec1.numRows());
 
-        elevec1(0) = Eint_;
+        elevec1(0) = eint_;
       }
       else if (IsParamsInterface())  // new structural time integration
       {
-        ParamsInterface().AddContributionToEnergyType(Eint_, STR::internal_energy);
+        ParamsInterface().AddContributionToEnergyType(eint_, STR::internal_energy);
       }
 
       break;
@@ -597,11 +597,11 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
   // number of nodes fixed for these element
   const int nnode = 2;
 
-  Eint_ = 0.0;
-  Eint_axial_ = 0.0;
-  Ekin_ = 0.0;
-  L_.Clear();
-  P_.Clear();
+  eint_ = 0.0;
+  eint_axial_ = 0.0;
+  ekin_ = 0.0;
+  l_.Clear();
+  p_.Clear();
   kappa_max_ = 0.0;
   epsilon_max_ = 0.0;
 
@@ -1316,11 +1316,11 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 #endif
 
     // re-assure correct size of strain and stress resultant class variables
-    axial_strain_GP_.resize(gausspoints.nquad);
-    curvature_GP_.resize(gausspoints.nquad);
+    axial_strain_gp_.resize(gausspoints.nquad);
+    curvature_gp_.resize(gausspoints.nquad);
 
-    axial_force_GP_.resize(gausspoints.nquad);
-    bending_moment_GP_.resize(gausspoints.nquad);
+    axial_force_gp_.resize(gausspoints.nquad);
+    bending_moment_gp_.resize(gausspoints.nquad);
 
     // Loop through all GP and calculate their contribution to the internal forcevector and
     // stiffnessmatrix
@@ -1713,9 +1713,9 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
       if (kappa_quad < 0) kappa_quad = -kappa_quad;
 
-      Eint_ += 0.5 * wgt * jacobi_ * EA * std::pow(epsilon_ANS, 2);
-      Eint_axial_ += 0.5 * wgt * jacobi_ * EA * std::pow(epsilon_ANS, 2);
-      Eint_ += 0.5 * wgt * jacobi_ * EI * kappa_quad;
+      eint_ += 0.5 * wgt * jacobi_ * EA * std::pow(epsilon_ANS, 2);
+      eint_axial_ += 0.5 * wgt * jacobi_ * EA * std::pow(epsilon_ANS, 2);
+      eint_ += 0.5 * wgt * jacobi_ * EI * kappa_quad;
 
       // determine maximal curvature
       if (std::sqrt(kappa_quad) > kappa_max_) kappa_max_ = std::sqrt(kappa_quad);
@@ -1727,11 +1727,11 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 #endif
 
       // store strain and stress resultant values in class variables
-      axial_strain_GP_[numgp] = epsilon_ANS;
-      curvature_GP_[numgp] = std::sqrt(kappa_quad);
+      axial_strain_gp_[numgp] = epsilon_ANS;
+      curvature_gp_[numgp] = std::sqrt(kappa_quad);
 
-      axial_force_GP_[numgp] = EA * axial_strain_GP_[numgp];
-      bending_moment_GP_[numgp] = EI * curvature_GP_[numgp];
+      axial_force_gp_[numgp] = EA * axial_strain_gp_[numgp];
+      bending_moment_gp_[numgp] = EI * curvature_gp_[numgp];
     }
 
     // tensor of mass moments of inertia for translational and rotational motion
@@ -1816,7 +1816,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 #endif
       }  // if (massmatrix != nullptr)
 
-      Ekin_ += 0.5 * wgt * jacobi_ * mass_inertia_translational * std::pow(r_t.Norm2(), 2.0);
+      ekin_ += 0.5 * wgt * jacobi_ * mass_inertia_translational * std::pow(r_t.Norm2(), 2.0);
 
       CORE::LINALG::Matrix<3, 1> dL(true);
       CORE::LINALG::Matrix<3, 3> S_r(true);
@@ -1825,8 +1825,8 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       dL.Scale(mass_inertia_translational);
       for (int i = 0; i < 3; i++)
       {
-        L_(i) += wgt * jacobi_ * dL(i);
-        P_(i) += wgt * jacobi_ * mass_inertia_translational * r_t(i);
+        l_(i) += wgt * jacobi_ * dL(i);
+        p_(i) += wgt * jacobi_ * mass_inertia_translational * r_t(i);
       }
     }
   }

@@ -389,7 +389,7 @@ void CONTACT::Element::PrepareDderiv(const std::vector<MORTAR::Element*>& meles)
   int numderiv = 0;
   numderiv += NumNode() * 3 * 12;
   for (unsigned m = 0; m < meles.size(); ++m) numderiv += (meles.at(m))->NumNode() * 3;
-  dMatrixDeriv_ = Teuchos::rcp(new CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+  d_matrix_deriv_ = Teuchos::rcp(new CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
       numderiv, 0, CORE::LINALG::SerialDenseMatrix(NumNode(), NumNode())));
 }
 
@@ -399,17 +399,17 @@ void CONTACT::Element::PrepareMderiv(const std::vector<MORTAR::Element*>& meles,
   int numderiv = 0;
   numderiv += NumNode() * 3 * 12;
   for (unsigned i = 0; i < meles.size(); ++i) numderiv += meles[i]->NumNode() * 3;
-  mMatrixDeriv_ = Teuchos::rcp(new CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+  m_matrix_deriv_ = Teuchos::rcp(new CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
       numderiv, 0, CORE::LINALG::SerialDenseMatrix(NumNode(), meles.at(m)->NumNode())));
 }
 
 
 void CONTACT::Element::AssembleDderivToNodes(bool dual)
 {
-  if (dMatrixDeriv_ == Teuchos::null)
+  if (d_matrix_deriv_ == Teuchos::null)
     FOUR_C_THROW("AssembleDderivToNodes called w/o PrepareDderiv first");
 
-  if (dMatrixDeriv_->size() == 0) return;
+  if (d_matrix_deriv_->size() == 0) return;
 
   for (int j = 0; j < NumNode(); ++j)
   {
@@ -423,8 +423,8 @@ void CONTACT::Element::AssembleDderivToNodes(bool dual)
         std::map<int, double>& ddmap_jk = cnode_j->Data().GetDerivD()[cnode_k->Id()];
 
         for (CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator p =
-                 dMatrixDeriv_->begin();
-             p != dMatrixDeriv_->end(); ++p)
+                 d_matrix_deriv_->begin();
+             p != d_matrix_deriv_->end(); ++p)
           ddmap_jk[p->first] += (p->second)(j, k);
       }
     }
@@ -433,19 +433,19 @@ void CONTACT::Element::AssembleDderivToNodes(bool dual)
       std::map<int, double>& ddmap_jj = cnode_j->Data().GetDerivD()[cnode_j->Id()];
 
       for (CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator p =
-               dMatrixDeriv_->begin();
-           p != dMatrixDeriv_->end(); ++p)
+               d_matrix_deriv_->begin();
+           p != d_matrix_deriv_->end(); ++p)
         ddmap_jj[p->first] += (p->second)(j, j);
     }
   }
-  dMatrixDeriv_ = Teuchos::null;
+  d_matrix_deriv_ = Teuchos::null;
 }
 
 void CONTACT::Element::AssembleMderivToNodes(MORTAR::Element& mele)
 {
-  if (mMatrixDeriv_ == Teuchos::null)
+  if (m_matrix_deriv_ == Teuchos::null)
     FOUR_C_THROW("AssembleMderivToNodes called w/o PrepareMderiv first");
-  if (mMatrixDeriv_->size() == 0) return;
+  if (m_matrix_deriv_->size() == 0) return;
 
   for (int j = 0; j < NumNode(); ++j)
   {
@@ -457,8 +457,8 @@ void CONTACT::Element::AssembleMderivToNodes(MORTAR::Element& mele)
       std::map<int, double>& dmmap_jk = cnode_j->Data().GetDerivM()[cnode_k->Id()];
 
       for (CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator p =
-               mMatrixDeriv_->begin();
-           p != mMatrixDeriv_->end(); ++p)
+               m_matrix_deriv_->begin();
+           p != m_matrix_deriv_->end(); ++p)
         dmmap_jk[p->first] += (p->second)(j, k);
     }
   }

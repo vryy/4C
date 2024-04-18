@@ -42,7 +42,7 @@ namespace SCATRA
     INPAR::ELCH::CCCVHalfCyclePhase GetCCCVHalfCyclePhase() const { return phase_cccv_; };
 
     //! Get ID of this half cycle condition
-    int GetConditionID() const { return halfcycleconditionID_; };
+    int GetConditionID() const { return halfcyclecondition_id_; };
 
     //! get cut off c-rate during constant voltage
     double GetCutOffCRate() const { return cutoffcrate_; };
@@ -76,7 +76,7 @@ namespace SCATRA
     const double cutoffvoltage_;
 
     //! ID of this half cycle condition
-    const int halfcycleconditionID_;
+    const int halfcyclecondition_id_;
 
     //! flag indicating whether cell is currently being operated in constant-current (CC),
     //! constant-voltage (CV), relaxation (RX), or initial relaxation mode

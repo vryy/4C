@@ -62,7 +62,7 @@ DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
       ivelint_jump_(true),
       itraction_jump_(true),
       proj_tangential_(true),
-      LB_proj_matrix_(true),
+      lb_proj_matrix_(true),
       ivelintn_jump_(true),
       itractionn_jump_(true),
       velint_s_(true),
@@ -3749,10 +3749,10 @@ namespace DRT
             ivelint_jump_.Clear();
             itraction_jump_.Clear();
             proj_tangential_.Clear();
-            LB_proj_matrix_.Clear();
+            lb_proj_matrix_.Clear();
 
             GetInterfaceJumpVectors(coupcond, coupling, ivelint_jump_, itraction_jump_,
-                proj_tangential_, LB_proj_matrix_, x_gp_lin_, normal_, si, rst_, kappa_m,
+                proj_tangential_, lb_proj_matrix_, x_gp_lin_, normal_, si, rst_, kappa_m,
                 viscaf_master_, viscaf_slave_, rst_slave, eledisp, coupl_ele);
 
             double fulltraction = 0.0;
@@ -3835,7 +3835,7 @@ namespace DRT
                   itraction_jump_,   // traction jump at interface (i.e. [| -pI + \mu*[\nabla u +
                                      // (\nabla u)^T]  |] \cdot n)
                   proj_tangential_,  // tangential projection matrix
-                  LB_proj_matrix_,   // prescribed projection matrix for laplace-beltrami problems
+                  lb_proj_matrix_,   // prescribed projection matrix for laplace-beltrami problems
                   solid_stress_,     // hold information about solid stress ([0]...traction,
                                      // [1]...dtraction_dv, [2-4]...d2traction_dv2)
                   configmap          // Configuration Map

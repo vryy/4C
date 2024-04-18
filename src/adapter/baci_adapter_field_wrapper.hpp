@@ -40,7 +40,7 @@ namespace ADAPTER
     /// constructor
     explicit FieldWrapper(
         Teuchos::RCP<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection = false)
-        : field_(field), type_(type), NOXCorrection_(NOXCorrection)
+        : field_(field), type_(type), nox_correction_(NOXCorrection)
     {
     }
 
@@ -120,7 +120,7 @@ namespace ADAPTER
     /// Get Iteration Increment from Step Increment
     virtual void GetIterinc(Teuchos::RCP<const Epetra_Vector>& stepinc);
 
-    const bool NOXCorrection_;  ///< if (true) adapter gets stepincrements!
+    const bool nox_correction_;  ///< if (true) adapter gets stepincrements!
 
     /// sum of displacement increments already applied,
     ///

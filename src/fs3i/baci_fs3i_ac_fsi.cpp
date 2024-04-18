@@ -46,7 +46,7 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
       fluidphinp_lp_(Teuchos::null),
       structurephinp_blts_(Teuchos::null),
       growth_updates_counter_(0),
-      WallShearStress_lp_(Teuchos::null),
+      wall_shear_stress_lp_(Teuchos::null),
       fsiperiod_(GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
           "PERIODICITY")),
       dt_large_(GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
@@ -158,7 +158,7 @@ void FS3I::ACFSI::Setup()
   fluidphinp_lp_ = CORE::LINALG::CreateVector(*scatravec_[0]->ScaTraField()->DofRowMap(), true);
   structurephinp_blts_ =
       CORE::LINALG::CreateVector(*scatravec_[1]->ScaTraField()->DofRowMap(), true);
-  WallShearStress_lp_ = CORE::LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0), true);
+  wall_shear_stress_lp_ = CORE::LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0), true);
 
   extractjthstructscalar_ = BuildMapExtractor();
 
@@ -193,7 +193,7 @@ void FS3I::ACFSI::ReadRestart()
       fsiisperiodic_ = (bool)fluidreader.ReadInt("fsi_periodic_flag");
       scatraisperiodic_ = (bool)fluidreader.ReadInt("scatra_periodic_flag");
 
-      fluidreader.ReadVector(WallShearStress_lp_, "wss_mean");
+      fluidreader.ReadVector(wall_shear_stress_lp_, "wss_mean");
 
       if (not(fsiisperiodic_ and scatraisperiodic_))  // restart while in a small time scale loop
       {
@@ -215,7 +215,7 @@ void FS3I::ACFSI::ReadRestart()
               "period!");
 
         WallShearStress_lp_new->Scale(1 / SumDtWss);
-        WallShearStress_lp_new->Update(1.0, *WallShearStress_lp_, -1.0);
+        WallShearStress_lp_new->Update(1.0, *wall_shear_stress_lp_, -1.0);
         double diff_norm(0.0);
         WallShearStress_lp_new->Norm2(&diff_norm);
         if (diff_norm > 1e-10) FOUR_C_THROW("WallShearStress_lp_ is not written/read correctly!");
@@ -234,7 +234,7 @@ void FS3I::ACFSI::ReadRestart()
       // AC-FSI specific input
       IO::DiscretizationReader reader = IO::DiscretizationReader(
           fsi_->FluidField()->Discretization(), input_control_file, restart);
-      reader.ReadVector(WallShearStress_lp_, "wss");
+      reader.ReadVector(wall_shear_stress_lp_, "wss");
     }
   }
 
@@ -518,10 +518,10 @@ void FS3I::ACFSI::IsFsiPeriodic()
         meanmanager_->GetMeanValue("mean_wss");  // mean wall shear stresses at fs3i interface
     const Teuchos::RCP<Epetra_Vector> wssdiff_bar_boundary =
         CORE::LINALG::CreateVector(*(fsi_->FluidField()->DofRowMap()));
-    wssdiff_bar_boundary->Update(1.0, *wss_bar_boundary, -1.0, *WallShearStress_lp_, 0.0);
+    wssdiff_bar_boundary->Update(1.0, *wss_bar_boundary, -1.0, *wall_shear_stress_lp_, 0.0);
 
     double wss_bar_boundary_norm(0.0);
-    WallShearStress_lp_->Norm2(&wss_bar_boundary_norm);
+    wall_shear_stress_lp_->Norm2(&wss_bar_boundary_norm);
     if (wss_bar_boundary_norm < 1e-10)  // e.g. at the first time step this will happen...
     {
       wss_bar_boundary_norm = 1.0;  //... so we simply check the absolut error.
@@ -540,7 +540,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
                 << wss_rel_tol << ")" << std::endl;
     }
 
-    WallShearStress_lp_->Update(1.0, *(meanmanager_->GetMeanValue("mean_wss")), 0.0);  // Update
+    wall_shear_stress_lp_->Update(1.0, *(meanmanager_->GetMeanValue("mean_wss")), 0.0);  // Update
 
     if (wss_rel_error > wss_rel_tol) fsiisperiodic_ = false;
   }
@@ -917,7 +917,7 @@ void FS3I::ACFSI::SmallTimeScaleUpdateAndOutput()
   {
     // fsi is periodic, hence wss do not change any more. But to satisfy the manager we have to add
     // something..
-    meanmanager_->AddValue("wss", WallShearStress_lp_, dt_);
+    meanmanager_->AddValue("wss", wall_shear_stress_lp_, dt_);
   }
 
   // NOTE: we can not reset the mean manager here, since we first need to write its data, to be able
@@ -970,7 +970,7 @@ void FS3I::ACFSI::FsiOutput()
       ModuloIsRealtiveZero(time_, fsiperiod_, time_))
   {
     Teuchos::RCP<IO::DiscretizationWriter> fluiddiskwriter = fsi_->FluidField()->DiscWriter();
-    fluiddiskwriter->WriteVector("wss_mean", WallShearStress_lp_);
+    fluiddiskwriter->WriteVector("wss_mean", wall_shear_stress_lp_);
   }
   // AC specific fluid output iff it is a restart step or we are at the end of a fsi circle
   if ((uprestart != 0 && step_ % uprestart == 0) or ModuloIsRealtiveZero(time_, fsiperiod_, time_))

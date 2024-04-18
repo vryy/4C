@@ -19,23 +19,23 @@ namespace
   {
    public:
     FunctionVariableStub(double start, double end, double returnValue = 0.0)
-        : FunctionVariable("stub"), start(start), end(end), returnValue(returnValue)
+        : FunctionVariable("stub"), start_(start), end_(end), return_value_(returnValue)
     {
     }
 
-    double Value(const double t) override { return returnValue; }
+    double Value(const double t) override { return return_value_; }
 
     double TimeDerivativeValue(const double t, const unsigned int deg) override
     {
-      return returnValue;
+      return return_value_;
     }
 
-    bool ContainTime(const double t) override { return t >= start && t <= end; }
+    bool ContainTime(const double t) override { return t >= start_ && t <= end_; }
 
    private:
-    const double start;
-    const double end;
-    const double returnValue;
+    const double start_;
+    const double end_;
+    const double return_value_;
   };
 
   TEST(PiecewiseVariableTest, ContainTimeSingle)

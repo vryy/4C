@@ -848,8 +848,8 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PhaseManagerDeriv
     Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager)
     : PhaseManagerDeriv(phasemanager),
       porosity_(0.0),
-      J_(0.0),
-      dporosity_dJ_(0.0),
+      j_(0.0),
+      dporosity_dj_(0.0),
       dporosity_dp_(0.0),
       porosityderiv_(Teuchos::null)
 {
@@ -882,11 +882,11 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPSt
   // empty parameter list
   Teuchos::ParameterList params;
 
-  J_ = J;
+  j_ = J;
 
   // use structure material to evaluate porosity
   structmat->ComputePorosity(params, phasemanager_->SolidPressure(), J, -1, porosity_,
-      &dporosity_dp_, &dporosity_dJ_, nullptr, nullptr, nullptr, false);
+      &dporosity_dp_, &dporosity_dj_, nullptr, nullptr, nullptr, false);
 
   // Note:
   // for phase law density dependent, incompressible:
@@ -926,8 +926,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::ClearGPState
 
   // zero everything
   porosity_ = 0.0;
-  J_ = 0.0;
-  dporosity_dJ_ = 0.0;
+  j_ = 0.0;
+  dporosity_dj_ = 0.0;
   dporosity_dp_ = 0.0;
   porosityderiv_->putScalar(0.0);
 
@@ -951,7 +951,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::JacobianDe
 {
   CheckIsEvaluated();
 
-  return J_;
+  return j_;
 }
 
 /*----------------------------------------------------------------------*
@@ -963,7 +963,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PorosityDerivWrtJ
 {
   CheckIsEvaluated();
 
-  return dporosity_dJ_;
+  return dporosity_dj_;
 }
 
 /*----------------------------------------------------------------------*
@@ -997,7 +997,7 @@ bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PorosityDepe
   phasemanager_->CheckIsEvaluated();
 
   // this check is needed for speeding up calculations of element stiffness matrices
-  return (fabs(dporosity_dJ_) > 1.0e-10);
+  return (fabs(dporosity_dj_) > 1.0e-10);
 }
 
 /*----------------------------------------------------------------------*

@@ -44,7 +44,7 @@ CORE::GEO::CUT::Facet::Facet(
       planar_(false),
       planar_known_(false),
       position_(cutsurface ? Point::oncutsurface : Point::undecided),
-      isPlanarComputed_(false)
+      is_planar_computed_(false)
 {
   FindCornerPoints();
 
@@ -249,7 +249,7 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& poin
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::Facet::IsPlanar" );
 
-  if (isPlanarComputed_) return isPlanar_;
+  if (is_planar_computed_) return is_planar_;
 
 
   CORE::LINALG::Matrix<3, 1> x1;
@@ -263,8 +263,8 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& poin
   unsigned i = Normal(points, x1, x2, x3, b1, b2, b3);
   if (i == 0)  // all on one line is ok
   {
-    isPlanarComputed_ = true;
-    isPlanar_ = true;
+    is_planar_computed_ = true;
+    is_planar_ = true;
     return true;
   }
 
@@ -298,13 +298,13 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& poin
 
       CreateTriangulation(mesh, points);
 
-      isPlanarComputed_ = true;
-      isPlanar_ = false;
+      is_planar_computed_ = true;
+      is_planar_ = false;
       return false;
     }
   }
-  isPlanarComputed_ = true;
-  isPlanar_ = true;
+  is_planar_computed_ = true;
+  is_planar_ = true;
   return true;
 }
 
@@ -1366,7 +1366,7 @@ void CORE::GEO::CUT::Facet::SplitFacet(const std::vector<Point*>& facetpts)
   {
     TriangulateFacet tf(facetpts);
     tf.SplitFacet();
-    splitCells_ = tf.GetSplitCells();
+    split_cells_ = tf.GetSplitCells();
   }
   else
   {
@@ -1377,7 +1377,7 @@ void CORE::GEO::CUT::Facet::SplitFacet(const std::vector<Point*>& facetpts)
     }
     CORE::GEO::CUT::TriangulateFacet tf(facetpts, holepts);
     tf.EarClippingWithHoles(parentside_);
-    splitCells_ = tf.GetSplitCells();
+    split_cells_ = tf.GetSplitCells();
   }
 }
 

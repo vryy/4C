@@ -105,7 +105,7 @@ namespace MAT
     void OnGlobalGPDataInitialized() override;
 
     /// flag where the coordinate system is located
-    CosyLocation cosyLocation_;
+    CosyLocation cosy_location_;
   };
 }  // namespace MAT
 FOUR_C_NAMESPACE_CLOSE

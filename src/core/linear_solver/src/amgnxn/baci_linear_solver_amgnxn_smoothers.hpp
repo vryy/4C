@@ -84,7 +84,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     BgsSmoother(Teuchos::RCP<BlockedMatrix> A, std::vector<Teuchos::RCP<GenericSmoother>> smoothers,
         std::vector<std::vector<int>> superblocks, unsigned iter, double omega,
         std::vector<unsigned> iters, std::vector<double> omegas)
-        : A_(A),
+        : a_(A),
           smoothers_(smoothers),
           superblocks_(superblocks),
           iter_(iter),
@@ -98,7 +98,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
-    Teuchos::RCP<BlockedMatrix> A_;
+    Teuchos::RCP<BlockedMatrix> a_;
     std::vector<Teuchos::RCP<GenericSmoother>> smoothers_;
     std::vector<std::vector<int>> superblocks_;
     unsigned iter_;
@@ -114,13 +114,13 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         Teuchos::RCP<BlockedMatrix> Schur, Teuchos::RCP<GenericSmoother> SmooApp,
         Teuchos::RCP<GenericSmoother> SmooSchur, std::vector<int> BlocksPred,
         std::vector<int> BlocksSchur, unsigned iter, double alpha)
-        : A_(A),
-          invApp_(invApp),
-          Schur_(Schur),
-          SmooApp_(SmooApp),
-          SmooSchur_(SmooSchur),
-          BlocksPred_(BlocksPred),
-          BlocksSchur_(BlocksSchur),
+        : a_(A),
+          inv_app_(invApp),
+          schur_(Schur),
+          smoo_app_(SmooApp),
+          smoo_schur_(SmooSchur),
+          blocks_pred_(BlocksPred),
+          blocks_schur_(BlocksSchur),
           iter_(iter),
           alpha_(alpha)
     {
@@ -130,21 +130,21 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
-    Teuchos::RCP<BlockedMatrix> A_;
-    Teuchos::RCP<BlockedMatrix> invApp_;
-    Teuchos::RCP<BlockedMatrix> Schur_;
-    Teuchos::RCP<GenericSmoother> SmooApp_;
-    Teuchos::RCP<GenericSmoother> SmooSchur_;
-    std::vector<int> BlocksPred_;
-    std::vector<int> BlocksSchur_;
+    Teuchos::RCP<BlockedMatrix> a_;
+    Teuchos::RCP<BlockedMatrix> inv_app_;
+    Teuchos::RCP<BlockedMatrix> schur_;
+    Teuchos::RCP<GenericSmoother> smoo_app_;
+    Teuchos::RCP<GenericSmoother> smoo_schur_;
+    std::vector<int> blocks_pred_;
+    std::vector<int> blocks_schur_;
     unsigned iter_;
     double alpha_;
-    mutable Teuchos::RCP<BlockedVector> Xp_tmp_;
-    mutable Teuchos::RCP<BlockedVector> Xs_tmp_;
-    mutable Teuchos::RCP<BlockedVector> Yp_tmp_;
-    mutable Teuchos::RCP<BlockedVector> DYs_;
-    mutable Teuchos::RCP<BlockedVector> DXp_;
-    mutable Teuchos::RCP<BlockedVector> DXs_;
+    mutable Teuchos::RCP<BlockedVector> xp_tmp_;
+    mutable Teuchos::RCP<BlockedVector> xs_tmp_;
+    mutable Teuchos::RCP<BlockedVector> yp_tmp_;
+    mutable Teuchos::RCP<BlockedVector> d_ys_;
+    mutable Teuchos::RCP<BlockedVector> d_xp_;
+    mutable Teuchos::RCP<BlockedVector> d_xs_;
   };
 
   class MergeAndSolve : public BlockedSmoother
@@ -154,10 +154,10 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         : solver_(Teuchos::null),
           sparse_matrix_(Teuchos::null),
           block_sparse_matrix_(Teuchos::null),
-          A_(Teuchos::null),
+          a_(Teuchos::null),
           x_(Teuchos::null),
           b_(Teuchos::null),
-          isSetUp_(false)
+          is_set_up_(false)
     {
     }
 
@@ -170,10 +170,10 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::RCP<CORE::LINALG::Solver> solver_;
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_matrix_;
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> block_sparse_matrix_;
-    Teuchos::RCP<Epetra_Operator> A_;
+    Teuchos::RCP<Epetra_Operator> a_;
     mutable Teuchos::RCP<Epetra_MultiVector> x_;
     mutable Teuchos::RCP<Epetra_MultiVector> b_;
-    bool isSetUp_;
+    bool is_set_up_;
   };
 
   // Forward declarations
@@ -197,7 +197,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
    private:
     void Setup();
 
-    Teuchos::RCP<AMGNXN::BlockedMatrix> A_;
+    Teuchos::RCP<AMGNXN::BlockedMatrix> a_;
     std::vector<Teuchos::ParameterList> muelu_lists_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
@@ -207,9 +207,9 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::ParameterList muelu_params_;
 
     bool is_setup_flag_;
-    Teuchos::RCP<AMGNXN::Hierarchies> H_;
-    Teuchos::RCP<AMGNXN::MonolithicHierarchy> M_;
-    Teuchos::RCP<AMGNXN::Vcycle> V_;
+    Teuchos::RCP<AMGNXN::Hierarchies> h_;
+    Teuchos::RCP<AMGNXN::MonolithicHierarchy> m_;
+    Teuchos::RCP<AMGNXN::Vcycle> v_;
   };
 
   class MueluSmootherWrapper : public SingleFieldSmoother
@@ -217,7 +217,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
    public:
     MueluSmootherWrapper(
         Teuchos::RCP<MueLu::SmootherBase<Scalar, LocalOrdinal, GlobalOrdinal, Node>> S)
-        : S_(S)
+        : s_(S)
     {
     }
 
@@ -225,7 +225,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         bool InitialGuessIsZero = false) const override;
 
    private:
-    Teuchos::RCP<MueLu::SmootherBase<Scalar, LocalOrdinal, GlobalOrdinal, Node>> S_;
+    Teuchos::RCP<MueLu::SmootherBase<Scalar, LocalOrdinal, GlobalOrdinal, Node>> s_;
   };
 
   class MueluHierarchyWrapper : public SingleFieldSmoother  // Not used
@@ -238,8 +238,8 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         bool InitialGuessIsZero = false) const override;
 
    private:
-    Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H_;
-    Teuchos::RCP<Epetra_Operator> P_;
+    Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> h_;
+    Teuchos::RCP<Epetra_Operator> p_;
   };
 
   class MueluAMGWrapper : public SingleFieldSmoother
@@ -264,7 +264,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     void BuildHierarchy();
 
    private:
-    Teuchos::RCP<Epetra_Operator> P_;
+    Teuchos::RCP<Epetra_Operator> p_;
   };
 
   class SingleFieldAMG : public MueluAMGWrapper
@@ -279,7 +279,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
    private:
     Teuchos::ParameterList fine_smoother_list_;
-    Teuchos::RCP<VcycleSingle> V_;
+    Teuchos::RCP<VcycleSingle> v_;
     void Setup();
   };
 
@@ -293,8 +293,8 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
    private:
     Ifpack_Preconditioner* prec_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrixBase> A_;
-    Teuchos::RCP<Epetra_RowMatrix> Arow_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrixBase> a_;
+    Teuchos::RCP<Epetra_RowMatrix> arow_;
     Teuchos::ParameterList list_;
     std::string type_;
   };
@@ -311,10 +311,10 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
    private:
     Teuchos::RCP<CORE::LINALG::Solver> solver_;
-    Teuchos::RCP<Epetra_Operator> A_;
+    Teuchos::RCP<Epetra_Operator> a_;
     mutable Teuchos::RCP<Epetra_MultiVector> x_;
     mutable Teuchos::RCP<Epetra_MultiVector> b_;
-    bool isSetUp_;
+    bool is_set_up_;
   };
 
   // Auxiliary class to wrap the null space data to be used within the smoothers

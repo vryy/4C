@@ -67,20 +67,20 @@ namespace MAT
       /**
        * Scalar products of the fibers at the Gauss points
        */
-      std::vector<double> scalarProducts_;
+      std::vector<double> scalar_products_;
 
       /**
        * Coupling structural tensor of the fibers in stress like Voigt notation at the Gauss points
        */
-      std::vector<CORE::LINALG::Matrix<6, 1>> structuralTensors_stress_;
+      std::vector<CORE::LINALG::Matrix<6, 1>> structural_tensors_stress_;
 
       /**
        * Coupling structural tensor of the fibers at the Gauss points
        */
-      std::vector<CORE::LINALG::Matrix<3, 3>> structuralTensors_;
+      std::vector<CORE::LINALG::Matrix<3, 3>> structural_tensors_;
 
       /// Flag whether fibers are initialized
-      bool isInitialized_{};
+      bool is_initialized_{};
 
       /// Initialization mode
       const int init_mode_;
@@ -178,7 +178,7 @@ namespace MAT
      protected:
       const CoupAnisoExpoBaseInterface& GetCoupAnisoExpoBaseInterface() const override
       {
-        return anisotropyExtension_;
+        return anisotropy_extension_;
       }
 
      private:
@@ -186,7 +186,7 @@ namespace MAT
       MAT::ELASTIC::PAR::CoupAnisoExpoShear* params_;
 
       /// Internal ansotropy information
-      MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension anisotropyExtension_;
+      MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension anisotropy_extension_;
     };
 
   }  // namespace ELASTIC

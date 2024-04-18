@@ -44,7 +44,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCalc(
       xjm_(true),
       xij_(true),
       det_(0.0),
-      J_(0.0),
+      j_(0.0),
       phasemanager_(Teuchos::null)
 {
   return;
@@ -285,7 +285,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
     variablemanager_->EvaluateGPVariables(funct_, derxy_);
 
     // set the current gauss point state in the manager
-    phasemanager_->EvaluateGPState(J_, *variablemanager_);
+    phasemanager_->EvaluateGPState(j_, *variablemanager_);
 
     // stabilization parameter and integration factors
     // const double taufac     = tau[k]*fac;
@@ -332,7 +332,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
     variablemanager_->EvaluateGPVariables(funct_, derxy_);
 
     // set the current gauss point state in the manager
-    phasemanager_->EvaluateGPState(J_, *variablemanager_);
+    phasemanager_->EvaluateGPState(j_, *variablemanager_);
 
     // stabilization parameter and integration factors
     // const double taufac     = tau[k]*fac;
@@ -370,7 +370,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
     variablemanager_->EvaluateGPVariables(funct_, derxy_);
 
     // set the current gauss point state in the manager
-    phasemanager_->EvaluateGPState(J_, *variablemanager_);
+    phasemanager_->EvaluateGPState(j_, *variablemanager_);
 
     // stabilization parameter and integration factors
     // const double taufac     = tau[k]*fac;
@@ -419,13 +419,13 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(DRT::Element* 
       ComputeJacobianAtNode(inode);
     }
     else
-      J_ = 1.0;
+      j_ = 1.0;
 
     // evaluate needed variables
     variablemanager_->EvaluateGPVariables(funct_, derxy_);
 
     // set the current node state as GP state in the manager
-    phasemanager_->EvaluateGPState(J_, *variablemanager_);
+    phasemanager_->EvaluateGPState(j_, *variablemanager_);
 
     //----------------------------------------------------------------
     // 1) element matrix
@@ -581,7 +581,7 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
 
   // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds)
   // )^-1
-  J_ = det_ / det0;
+  j_ = det_ / det0;
 
   // set integration factor: fac = Gauss weight * det(J)
   const double fac = intpoints.IP().qwgt[iquad] * det_;
@@ -661,7 +661,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(c
 
   // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds)
   // )^-1
-  J_ = det_ / det0;
+  j_ = det_ / det0;
 }
 
 /*----------------------------------------------------------------------*

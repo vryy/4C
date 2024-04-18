@@ -116,7 +116,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::FluidOp(
     iale->Update(1.0, *idispcurr, 0.0);
 
     // iale reduced by old displacement dispn and instead added the real last displacements
-    iale->Update(1.0, *FTStemp_, -1.0, *idispn, 1.0);
+    iale->Update(1.0, *ft_stemp_, -1.0, *idispn, 1.0);
 
     MBFluidField()->NonlinearSolve(StructToFluid(iale), StructToFluid(ivel));
 
@@ -153,7 +153,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
   {
     // real displacement of slave side at time step begin on master side --> for calcualtion of
     // FluidOp
-    FTStemp_ = FluidToStruct(islave_);
+    ft_stemp_ = FluidToStruct(islave_);
     // predict displacement
     return StructureField()->PredictInterfaceDispnp();
   }

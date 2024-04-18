@@ -266,7 +266,7 @@ namespace CORE::GEO
       /*!
       \brief check whether facet is already split
        */
-      bool IsFacetSplit() const { return splitCells_.size() > 0; }
+      bool IsFacetSplit() const { return split_cells_.size() > 0; }
 
       /*!
       \brief split the facet into a number of tri and quad. Reduced number of Gauss points when
@@ -277,7 +277,7 @@ namespace CORE::GEO
       /*!
       \brief Get the triangulated sides of this facet
        */
-      const std::vector<std::vector<Point*>>& GetSplitCells() const { return splitCells_; }
+      const std::vector<std::vector<Point*>>& GetSplitCells() const { return split_cells_; }
 
       bool IsPlanar(Mesh& mesh, const std::vector<Point*>& points);
 
@@ -319,7 +319,7 @@ namespace CORE::GEO
 
       std::vector<std::vector<Point*>> triangulation_;
 
-      std::vector<std::vector<Point*>> splitCells_;
+      std::vector<std::vector<Point*>> split_cells_;
 
       Side* parentside_;
 
@@ -332,10 +332,10 @@ namespace CORE::GEO
       plain_volumecell_set cells_;
 
       //! already cheacked whether the facet is planar?
-      bool isPlanarComputed_;
+      bool is_planar_computed_;
 
       //! whether this facet lie on a plane?
-      bool isPlanar_;
+      bool is_planar_;
     };
 
     template <class T>

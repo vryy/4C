@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 MAT::Anisotropy::Anisotropy()
     : element_fibers_initialized_(false),
       gp_fibers_initialized_(false),
-      elementFibers_(0),
-      gpFibers_(0),
-      gpCylinderCoordinateSystemManagers_(0),
+      element_fibers_(0),
+      gp_fibers_(0),
+      gp_cylinder_coordinate_system_managers_(0),
       extensions_(0)
 {
   // empty
@@ -34,20 +34,20 @@ void MAT::Anisotropy::PackAnisotropy(CORE::COMM::PackBuffer& data) const
   CORE::COMM::ParObject::AddtoPack(data, numgp_);
   CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(element_fibers_initialized_));
   CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(gp_fibers_initialized_));
-  CORE::COMM::ParObject::AddtoPack(data, elementFibers_);
-  PackFiberVector<CORE::LINALG::Matrix<3, 1>>(data, gpFibers_);
+  CORE::COMM::ParObject::AddtoPack(data, element_fibers_);
+  PackFiberVector<CORE::LINALG::Matrix<3, 1>>(data, gp_fibers_);
 
-  if (elementCylinderCoordinateSystemManager_)
+  if (element_cylinder_coordinate_system_manager_)
   {
     CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(true));
-    elementCylinderCoordinateSystemManager_->Pack(data);
+    element_cylinder_coordinate_system_manager_->Pack(data);
   }
   else
   {
     CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(false));
   }
 
-  for (const auto& gpCylinderCoordinateSystemManager : gpCylinderCoordinateSystemManagers_)
+  for (const auto& gpCylinderCoordinateSystemManager : gp_cylinder_coordinate_system_managers_)
   {
     gpCylinderCoordinateSystemManager.Pack(data);
   }
@@ -60,20 +60,20 @@ void MAT::Anisotropy::UnpackAnisotropy(
   element_fibers_initialized_ =
       static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
   gp_fibers_initialized_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
-  CORE::COMM::ParObject::ExtractfromPack(position, data, elementFibers_);
-  UnpackFiberVector<CORE::LINALG::Matrix<3, 1>>(position, data, gpFibers_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, element_fibers_);
+  UnpackFiberVector<CORE::LINALG::Matrix<3, 1>>(position, data, gp_fibers_);
 
   if (static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data)))
   {
-    elementCylinderCoordinateSystemManager_ = CylinderCoordinateSystemManager();
-    elementCylinderCoordinateSystemManager_->Unpack(data, position);
+    element_cylinder_coordinate_system_manager_ = CylinderCoordinateSystemManager();
+    element_cylinder_coordinate_system_manager_->Unpack(data, position);
   }
   else
   {
-    elementCylinderCoordinateSystemManager_ = std::nullopt;
+    element_cylinder_coordinate_system_manager_ = std::nullopt;
   }
 
-  for (auto& gpCylinderCoordinateSystemManager : gpCylinderCoordinateSystemManagers_)
+  for (auto& gpCylinderCoordinateSystemManager : gp_cylinder_coordinate_system_managers_)
   {
     gpCylinderCoordinateSystemManager.Unpack(data, position);
   }
@@ -93,12 +93,12 @@ void MAT::Anisotropy::ReadAnisotropyFromElement(INPUT::LineDefinition* lineDefin
   if (lineDefinition->HaveNamed("RAD") and lineDefinition->HaveNamed("AXI") and
       lineDefinition->HaveNamed("CIR"))
   {
-    if (!elementCylinderCoordinateSystemManager_)
+    if (!element_cylinder_coordinate_system_manager_)
     {
-      elementCylinderCoordinateSystemManager_ = CylinderCoordinateSystemManager();
+      element_cylinder_coordinate_system_manager_ = CylinderCoordinateSystemManager();
     }
 
-    elementCylinderCoordinateSystemManager_->ReadFromElementLineDefinition(lineDefinition);
+    element_cylinder_coordinate_system_manager_->ReadFromElementLineDefinition(lineDefinition);
   }
 
   // read fibers in FIBERi notation
@@ -110,8 +110,8 @@ void MAT::Anisotropy::ReadAnisotropyFromElement(INPUT::LineDefinition* lineDefin
     {
       break;
     }
-    elementFibers_.resize(i + 1);
-    ReadAnisotropyFiber(lineDefinition, "FIBER" + std::to_string(i + 1), elementFibers_[i]);
+    element_fibers_.resize(i + 1);
+    ReadAnisotropyFiber(lineDefinition, "FIBER" + std::to_string(i + 1), element_fibers_[i]);
     i += 1;
   }
 
@@ -124,7 +124,7 @@ void MAT::Anisotropy::ReadAnisotropyFromParameterList(const Teuchos::ParameterLi
   {
     const auto& fiberHolder = params.get<DRT::FIBER::NodalFiberHolder>("fiberholder");
 
-    gpFibers_.resize(numgp_);
+    gp_fibers_.resize(numgp_);
 
     for (const auto& fiber : fiberHolder.GetFibers())
     {
@@ -139,13 +139,13 @@ void MAT::Anisotropy::InsertFibers(std::vector<CORE::LINALG::Matrix<3, 1>> fiber
 {
   for (unsigned gp = 0; gp < numgp_; ++gp)
   {
-    gpFibers_[gp].emplace_back(fiber[gp]);
+    gp_fibers_[gp].emplace_back(fiber[gp]);
   }
 }
 
 void MAT::Anisotropy::SetElementFibers(const std::vector<CORE::LINALG::Matrix<3, 1>>& fibers)
 {
-  elementFibers_ = fibers;
+  element_fibers_ = fibers;
 
   OnElementFibersInitialized();
 }
@@ -180,7 +180,7 @@ void MAT::Anisotropy::SetGaussPointFibers(
     }
   }
 
-  gpFibers_ = fibers;
+  gp_fibers_ = fibers;
 
   OnGPFibersInitialized();
 }
@@ -191,12 +191,12 @@ const CORE::LINALG::Matrix<3, 1>& MAT::Anisotropy::GetElementFiber(unsigned int 
   {
     FOUR_C_THROW("The element fibers are not yet initialized.");
   }
-  if (i >= elementFibers_.size())
+  if (i >= element_fibers_.size())
   {
     FOUR_C_THROW(
-        "You requested fiber %d, but only %d fibers are available", i + 1, elementFibers_.size());
+        "You requested fiber %d, but only %d fibers are available", i + 1, element_fibers_.size());
   }
-  return elementFibers_[i];
+  return element_fibers_[i];
 }
 
 const std::vector<CORE::LINALG::Matrix<3, 1>>& MAT::Anisotropy::GetElementFibers() const
@@ -205,7 +205,7 @@ const std::vector<CORE::LINALG::Matrix<3, 1>>& MAT::Anisotropy::GetElementFibers
   {
     FOUR_C_THROW("The element fibers are not yet initialized.");
   }
-  return elementFibers_;
+  return element_fibers_;
 }
 
 const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& MAT::Anisotropy::GetGPFibers() const
@@ -214,7 +214,7 @@ const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& MAT::Anisotropy::Get
   {
     FOUR_C_THROW("The Gauss point fibers are not yet initialized.");
   }
-  return gpFibers_;
+  return gp_fibers_;
 }
 
 const CORE::LINALG::Matrix<3, 1>& MAT::Anisotropy::GetGPFiber(unsigned int gp, unsigned int i) const
@@ -224,18 +224,18 @@ const CORE::LINALG::Matrix<3, 1>& MAT::Anisotropy::GetGPFiber(unsigned int gp, u
     FOUR_C_THROW("The GP fibers are not yet initialized.");
   }
 
-  if (gp >= gpFibers_.size())
+  if (gp >= gp_fibers_.size())
   {
     FOUR_C_THROW("The number of GP is too large. %d instead of maximum allowed %d", gp + 1,
-        gpFibers_.size());
+        gp_fibers_.size());
   }
 
-  if (i >= gpFibers_[gp].size())
+  if (i >= gp_fibers_[gp].size())
   {
     FOUR_C_THROW(
-        "You requested fiber %d, but only %d fibers are available", i + 1, elementFibers_.size());
+        "You requested fiber %d, but only %d fibers are available", i + 1, element_fibers_.size());
   }
-  return gpFibers_[gp][i];
+  return gp_fibers_[gp][i];
 }
 
 void MAT::Anisotropy::RegisterAnisotropyExtension(BaseAnisotropyExtension& extension)
@@ -280,22 +280,22 @@ void MAT::Anisotropy::OnGPFibersInitialized()
 
 int MAT::Anisotropy::GetNumberOfGaussPoints() const { return numgp_; }
 
-int MAT::Anisotropy::GetNumberOfElementFibers() const { return elementFibers_.size(); }
+int MAT::Anisotropy::GetNumberOfElementFibers() const { return element_fibers_.size(); }
 
 int MAT::Anisotropy::GetNumberOfGPFibers() const
 {
-  if (gpFibers_.empty()) return 0;
+  if (gp_fibers_.empty()) return 0;
 
-  return gpFibers_[0].size();
+  return gp_fibers_[0].size();
 }
 
 bool MAT::Anisotropy::HasElementCylinderCoordinateSystem() const
 {
-  return elementCylinderCoordinateSystemManager_.has_value();
+  return element_cylinder_coordinate_system_manager_.has_value();
 }
 
 bool MAT::Anisotropy::HasGPCylinderCoordinateSystem() const
 {
-  return !gpCylinderCoordinateSystemManagers_.empty();
+  return !gp_cylinder_coordinate_system_managers_.empty();
 }
 FOUR_C_NAMESPACE_CLOSE

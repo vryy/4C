@@ -44,27 +44,27 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   /*---------------------------------------------------------------------*/
   // Parameters:
   // z-coordinates for evaluation
-  posEvaluation_.clear();
-  posEvaluation_.push_back(-0.088);
-  posEvaluation_.push_back(-0.064);
-  posEvaluation_.push_back(-0.048);
-  posEvaluation_.push_back(-0.02);
-  posEvaluation_.push_back(-0.008);
-  posEvaluation_.push_back(0.0);
-  posEvaluation_.push_back(0.008);
-  posEvaluation_.push_back(0.016);
-  posEvaluation_.push_back(0.024);
-  posEvaluation_.push_back(0.032);
-  posEvaluation_.push_back(0.06);
-  posEvaluation_.push_back(0.08);
+  pos_evaluation_.clear();
+  pos_evaluation_.push_back(-0.088);
+  pos_evaluation_.push_back(-0.064);
+  pos_evaluation_.push_back(-0.048);
+  pos_evaluation_.push_back(-0.02);
+  pos_evaluation_.push_back(-0.008);
+  pos_evaluation_.push_back(0.0);
+  pos_evaluation_.push_back(0.008);
+  pos_evaluation_.push_back(0.016);
+  pos_evaluation_.push_back(0.024);
+  pos_evaluation_.push_back(0.032);
+  pos_evaluation_.push_back(0.06);
+  pos_evaluation_.push_back(0.08);
   /*---------------------------------------------------------------------*/
   /*---------------------------------------------------------------------*/
 
   // number of evaluation planes
-  int numPosEvaluation = posEvaluation_.size();
+  int numPosEvaluation = pos_evaluation_.size();
 
   // Vector for evaluation planes of actual mesh (nodes not exactly on evaluation planes
-  actPosEvaluation_.clear();
+  act_pos_evaluation_.clear();
 
   // Resize matrix for radial coordinates in a first step (final size is later set)
   rcoordinates_.reshape(1, numPosEvaluation);
@@ -245,10 +245,10 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
     for (std::set<double, LineSortCriterion>::iterator temp_ptr_actZ = zavcoords.begin();
          temp_ptr_actZ != zavcoords.end(); ++temp_ptr_actZ)
     {
-      if (*temp_ptr_actZ >= posEvaluation_[actPosEval])
+      if (*temp_ptr_actZ >= pos_evaluation_[actPosEval])
       {
         actZ = *temp_ptr_actZ;
-        actPosEvaluation_.push_back(*temp_ptr_actZ);
+        act_pos_evaluation_.push_back(*temp_ptr_actZ);
         break;
       }
     }
@@ -524,7 +524,7 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
   // actual radial coordinate
   double actR = 0.0;
 
-  for (unsigned actPosEval = 0; actPosEval < actPosEvaluation_.size(); actPosEval++)
+  for (unsigned actPosEval = 0; actPosEval < act_pos_evaluation_.size(); actPosEval++)
   {
     for (int rnodnum = 0; rnodnum < numrstatlocations_; rnodnum++)
     {
@@ -565,8 +565,8 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
           // actual node
           if ((node->X()[1] < (actY + 2e-9) and node->X()[1] > (actY - 2e-9)) and
               (node->X()[0] < (actX + 2e-9) and node->X()[0] > (actX - 2e-9)) and
-              (node->X()[2] < (actPosEvaluation_[actPosEval] + 2e-9) and
-                  node->X()[2] > (actPosEvaluation_[actPosEval] - 2e-9)))
+              (node->X()[2] < (act_pos_evaluation_[actPosEval] + 2e-9) and
+                  node->X()[2] > (act_pos_evaluation_[actPosEval] - 2e-9)))
           {
             std::vector<int> dof = discret_->Dof(node);
             double one = 1.0;
@@ -660,7 +660,7 @@ void FLD::TurbulenceStatisticsBfda::DumpStatistics(int step)
     (*log_2) << "Number_of_samples: " << numsamp_ << "                                         \n";
     (*log_2) << "\n\n";
     (*log_2) << "Radial_coordinate ";
-    for (unsigned actEvalPlane = 0; actEvalPlane < posEvaluation_.size(); actEvalPlane++)
+    for (unsigned actEvalPlane = 0; actEvalPlane < pos_evaluation_.size(); actEvalPlane++)
       (*log_2) << "Evaluation_plane z-coordinate_of_evaluation_plane Radial_coordinate  "
                   "Mean_values_of_velocity_w_in_radial_direction "
                   "Mean_values_of_pressure_p_in_radial_direction ";
@@ -672,7 +672,7 @@ void FLD::TurbulenceStatisticsBfda::DumpStatistics(int step)
       for (int j = 0; j < rcoordinates_.numCols(); ++j)
       {
         (*log_2) << " " << std::setw(11) << std::setprecision(4) << j + 1;
-        (*log_2) << " " << std::setw(11) << std::setprecision(4) << actPosEvaluation_[j];
+        (*log_2) << " " << std::setw(11) << std::setprecision(4) << act_pos_evaluation_[j];
         (*log_2) << " " << std::setw(11) << std::setprecision(4) << rcoordinates_[j][i];
         (*log_2) << "   " << std::setw(11) << std::setprecision(4) << (*rsumw_)(i, j);
         (*log_2) << "   " << std::setw(11) << std::setprecision(4) << (*rsump_)(i, j);

@@ -279,7 +279,7 @@ namespace DRT
       // B_ = 5.17
       // constants for enrichment function
       const double k_;
-      const double B_;
+      const double b_;
       //! pre-calculated expression exp(-k_*B_)
       const double expmkmb_;
 

@@ -225,15 +225,15 @@ namespace POROMULTIPHASESCATRA
     std::vector<std::vector<int>> funct_vec_;
 
     //! mortar coupling matrices
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> D_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> M_;
-    Teuchos::RCP<Epetra_FEVector> kappaInv_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> d_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> m_;
+    Teuchos::RCP<Epetra_FEVector> kappa_inv_;
 
     //! penalty parameter
     double pp_;
 
     //! coupling rhs-vector (FE)
-    Teuchos::RCP<Epetra_FEVector> FErhs_;
+    Teuchos::RCP<Epetra_FEVector> fe_rhs_;
   };
 }  // namespace POROMULTIPHASESCATRA
 

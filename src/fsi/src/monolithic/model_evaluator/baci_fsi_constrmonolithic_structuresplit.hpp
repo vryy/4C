@@ -100,7 +100,7 @@ namespace FSI
     /// setup RHS contributions based on terms for first nonlinear iteration
     void SetupRHSFirstiter(Epetra_Vector& f) override;
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sconT_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> scon_t_;
 
     /// transformation of fluid matrix
     Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> sggtransform_;

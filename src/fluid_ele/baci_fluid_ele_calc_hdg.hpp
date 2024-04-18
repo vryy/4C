@@ -425,7 +425,7 @@ namespace DRT
       Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> shapesface_;
 
       /// local solver object
-      Teuchos::RCP<LocalSolver> localSolver_;
+      Teuchos::RCP<LocalSolver> local_solver_;
 
       CORE::LINALG::Matrix<nsd_, nen_> ebofoaf_;     /// body force (see fluid_ele_calc.cpp)
       CORE::LINALG::Matrix<nsd_, nen_> eprescpgaf_;  /// pressure gradient body force
@@ -437,10 +437,10 @@ namespace DRT
       std::vector<double>
           interiorebodyforce_;  /// local body force for the weakly compressible benchmark
 
-      std::vector<double> traceVal_;  /// extracted values from trace solution vector at n+alpha_f
-      std::vector<double> interiorVal_;  /// extracted local values (velocity gradients, velocities,
-                                         /// pressure) at n+alpha_f
-      std::vector<double> interiorAcc_;  /// extracted local accelerations at n+alpha_m
+      std::vector<double> trace_val_;  /// extracted values from trace solution vector at n+alpha_f
+      std::vector<double> interior_val_;  /// extracted local values (velocity gradients,
+                                          /// velocities, pressure) at n+alpha_f
+      std::vector<double> interior_acc_;  /// extracted local accelerations at n+alpha_m
 
       bool usescompletepoly_;
     };

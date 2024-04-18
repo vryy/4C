@@ -36,13 +36,13 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(
   SetMaterial(material);
 
   // Read the element type, the element specific variables and store them to airwayParams_
-  linedef->ExtractString("TYPE", elemType_);
-  if (elemType_ == "Resistive" || elemType_ == "InductoResistive" ||
-      elemType_ == "ComplientResistive" || elemType_ == "RLC" || elemType_ == "ViscoElasticRLC" ||
-      elemType_ == "ConvectiveViscoElasticRLC")
+  linedef->ExtractString("TYPE", elem_type_);
+  if (elem_type_ == "Resistive" || elem_type_ == "InductoResistive" ||
+      elem_type_ == "ComplientResistive" || elem_type_ == "RLC" ||
+      elem_type_ == "ViscoElasticRLC" || elem_type_ == "ConvectiveViscoElasticRLC")
   {
     linedef->ExtractString("Resistance", resistance_);
-    linedef->ExtractString("ElemSolvingType", elemsolvingType_);
+    linedef->ExtractString("ElemSolvingType", elemsolving_type_);
 
     double Ew, tw, A, Ts, Phis, nu, velPow;
     int generation;
@@ -65,30 +65,30 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(
       linedef->ExtractDouble("Pcrit_Open", Pcrit_o);
       linedef->ExtractDouble("Pcrit_Close", Pcrit_c);
       linedef->ExtractDouble("Open_Init", open_init);
-      airwayParams_.airway_coll = airwayColl;
-      airwayParams_.s_close = sc;
-      airwayParams_.s_open = so;
-      airwayParams_.p_crit_open = Pcrit_o;
-      airwayParams_.p_crit_close = Pcrit_c;
-      airwayParams_.open_init = open_init;
+      airway_params_.airway_coll = airwayColl;
+      airway_params_.s_close = sc;
+      airway_params_.s_open = so;
+      airway_params_.p_crit_open = Pcrit_o;
+      airway_params_.p_crit_close = Pcrit_c;
+      airway_params_.open_init = open_init;
     }
 
     // Correct the velocity profile power
     // this is because the 2.0 is the minimum energy consumtive laminar profile
     if (velPow < 2.0) velPow = 2.0;
-    airwayParams_.power_velocity_profile = velPow;
-    airwayParams_.wall_elasticity = Ew;
-    airwayParams_.poisson_ratio = nu;
-    airwayParams_.wall_thickness = tw;
-    airwayParams_.area = A;
-    airwayParams_.viscous_Ts = Ts;
-    airwayParams_.viscous_phase_shift = Phis;
-    airwayParams_.generation = generation;
+    airway_params_.power_velocity_profile = velPow;
+    airway_params_.wall_elasticity = Ew;
+    airway_params_.poisson_ratio = nu;
+    airway_params_.wall_thickness = tw;
+    airway_params_.area = A;
+    airway_params_.viscous_Ts = Ts;
+    airway_params_.viscous_phase_shift = Phis;
+    airway_params_.generation = generation;
     if (linedef->HaveNamed("BranchLength"))
     {
       double l_branch = 0.0;
       linedef->ExtractDouble("BranchLength", l_branch);
-      airwayParams_.branch_length = l_branch;
+      airway_params_.branch_length = l_branch;
     }
   }
   else
@@ -120,9 +120,9 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(
   SetMaterial(material);
 
   // Read the element type, the element specific variables and store them to acinusParams_
-  linedef->ExtractString("TYPE", elemType_);
-  if (elemType_ == "NeoHookean" || elemType_ == "Exponential" || elemType_ == "DoubleExponential" ||
-      elemType_ == "VolumetricOgden")
+  linedef->ExtractString("TYPE", elem_type_);
+  if (elem_type_ == "NeoHookean" || elem_type_ == "Exponential" ||
+      elem_type_ == "DoubleExponential" || elem_type_ == "VolumetricOgden")
   {
     double acinusVol, alveolarDuctVol, A;
     const int generation = -1;
@@ -130,11 +130,11 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(
     linedef->ExtractDouble("AlveolarDuctVolume", alveolarDuctVol);
     linedef->ExtractDouble("Area", A);
 
-    acinusParams_.volume_relaxed = acinusVol;
-    acinusParams_.alveolar_duct_volume = alveolarDuctVol;
-    acinusParams_.area = A;
-    acinusParams_.volume_init = acinusVol;
-    acinusParams_.generation = generation;
+    acinus_params_.volume_relaxed = acinusVol;
+    acinus_params_.alveolar_duct_volume = alveolarDuctVol;
+    acinus_params_.area = A;
+    acinus_params_.volume_init = acinusVol;
+    acinus_params_.generation = generation;
 
     // Setup material, calls overloaded function Setup(linedef) for each Maxwell_0d_acinus material
     Teuchos::RCP<MAT::Material> mat = Material();
@@ -196,15 +196,15 @@ bool DRT::ELEMENTS::RedAirBloodScatra::ReadElement(
 
   double diff = 0.0;
   linedef->ExtractDouble("DiffusionCoefficient", diff);
-  elemParams_["DiffusionCoefficient"] = diff;
+  elem_params_["DiffusionCoefficient"] = diff;
 
   double th = 0.0;
   linedef->ExtractDouble("WallThickness", th);
-  elemParams_["WallThickness"] = th;
+  elem_params_["WallThickness"] = th;
 
   double percDiffArea = 0.0;
   linedef->ExtractDouble("PercentageOfDiffusionArea", percDiffArea);
-  elemParams_["PercentageOfDiffusionArea"] = percDiffArea;
+  elem_params_["PercentageOfDiffusionArea"] = percDiffArea;
 
   return true;
 }
@@ -222,15 +222,15 @@ bool DRT::ELEMENTS::RedAirBloodScatraLine3::ReadElement(
 
   double diff = 0.0;
   linedef->ExtractDouble("DiffusionCoefficient", diff);
-  elemParams_["DiffusionCoefficient"] = diff;
+  elem_params_["DiffusionCoefficient"] = diff;
 
   double th = 0.0;
   linedef->ExtractDouble("WallThickness", th);
-  elemParams_["WallThickness"] = th;
+  elem_params_["WallThickness"] = th;
 
   double percDiffArea = 0.0;
   linedef->ExtractDouble("PercentageOfDiffusionArea", percDiffArea);
-  elemParams_["PercentageOfDiffusionArea"] = percDiffArea;
+  elem_params_["PercentageOfDiffusionArea"] = percDiffArea;
 
   return true;
 }

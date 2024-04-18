@@ -97,7 +97,7 @@ namespace SSI
     double InvThickness() const { return inv_thickness_; }
 
     //! condition ID of manifold condition
-    int ManifoldConditionID() const { return manifold_conditionID_; }
+    int ManifoldConditionID() const { return manifold_condition_id_; }
 
     //! from master to slave side
     Teuchos::RCP<CORE::ADAPTER::CouplingMasterConverter> MasterConverter() const
@@ -106,7 +106,7 @@ namespace SSI
     }
 
     //! condition ID of kinetics condition
-    int KineticsConditionID() const { return kinetics_conditionID_; }
+    int KineticsConditionID() const { return kinetics_condition_id_; }
 
     //! Map exctractor for dofs in this manifold condition
     Teuchos::RCP<CORE::LINALG::MapExtractor> ManifoldMapExtractor() const
@@ -134,10 +134,10 @@ namespace SSI
     const double inv_thickness_;
 
     //! condition ID of manifold condition
-    const int manifold_conditionID_;
+    const int manifold_condition_id_;
 
     //! condition ID of kinetics condition
-    const int kinetics_conditionID_;
+    const int kinetics_condition_id_;
 
     //! Map exctractor for dofs in this manifold condition
     Teuchos::RCP<CORE::LINALG::MapExtractor> manifold_map_extractor_;

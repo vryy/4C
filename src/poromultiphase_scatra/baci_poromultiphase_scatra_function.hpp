@@ -109,7 +109,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
-    const TumorGrowthLawHeavisideParameters parameter;
+    const TumorGrowthLawHeavisideParameters parameter_;
   };
 
   /*!
@@ -150,7 +150,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
-    const NecrosisLawHeavisideParameters parameter;
+    const NecrosisLawHeavisideParameters parameter_;
   };
 
   /*!
@@ -192,7 +192,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
-    const OxygenConsumptionLawHeavisideParameters parameter;
+    const OxygenConsumptionLawHeavisideParameters parameter_;
   };
 
   /*!
@@ -235,7 +235,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
-    const TumorGrowthLawHeavisideNecroOxyParameters parameter;
+    const TumorGrowthLawHeavisideNecroOxyParameters parameter_;
   };
 
   /*!
@@ -277,7 +277,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
-    const TumorGrowthLawHeavisideNecroOxyParameters parameter;
+    const TumorGrowthLawHeavisideNecroOxyParameters parameter_;
   };
 
   /*!
@@ -315,7 +315,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
-    const OxygenTransvascularExchangeLawContParameters parameter;
+    const OxygenTransvascularExchangeLawContParameters parameter_;
   };
 
   /*!
@@ -354,7 +354,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
-    const OxygenTransvascularExchangeLawDiscParameters parameter;
+    const OxygenTransvascularExchangeLawDiscParameters parameter_;
     mutable int pos_oxy_art_;
     mutable int pos_diam_;
   };
@@ -396,7 +396,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
-    const LungOxygenExchangeLawParameters parameter;
+    const LungOxygenExchangeLawParameters parameter_;
   };
 
   /*!
@@ -469,7 +469,7 @@ namespace POROMULTIPHASESCATRA
 
 
    private:
-    const LungCarbonDioxideExchangeLawParameters parameter;
+    const LungCarbonDioxideExchangeLawParameters parameter_;
   };
 
 }  // namespace POROMULTIPHASESCATRA

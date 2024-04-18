@@ -96,8 +96,8 @@ class MyocardFitzhughNagumo : public MyocardGeneral
   {
     r0_.resize(gp);
     r_.resize(gp);
-    J1_.resize(gp);
-    J2_.resize(gp);
+    j1_.resize(gp);
+    j2_.resize(gp);
     mechanical_activation_.resize(gp);
   }
 
@@ -114,8 +114,8 @@ class MyocardFitzhughNagumo : public MyocardGeneral
   std::vector<double> r_;  /// fast inward current
 
   /// ionic currents
-  std::vector<double> J1_;
-  std::vector<double> J2_;
+  std::vector<double> j1_;
+  std::vector<double> j2_;
 
   /// model parameters
   double a_;

@@ -66,7 +66,7 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<Epetra_CrsMatrix> Pmatrix_;
+    Teuchos::RCP<Epetra_CrsMatrix> pmatrix_;
 
    protected:
     //! MueLu parameter list
@@ -107,7 +107,7 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> Pmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> pmatrix_;
 
   };  // class MueLuFlBlockPreconditioner
 
@@ -138,7 +138,7 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> Pmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> pmatrix_;
 
   };  // class MueLuTsiBlockPreconditioner
 
@@ -185,7 +185,7 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> Pmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> pmatrix_;
 
   };  // class MueLuContactSpPreconditioner
 
@@ -227,7 +227,7 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> Pmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> pmatrix_;
 
   };  // class MueLuBeamCpPreconditioner
 
@@ -258,7 +258,7 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> Pmatrix_;
+    Teuchos::RCP<Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> pmatrix_;
   };
 
   namespace MUELU::UTILS

@@ -299,7 +299,7 @@ XFEM::MeshVolCoupling::MeshVolCoupling(
     )
     : MeshCoupling(bg_dis, cond_name, cond_dis, coupling_id, time, step, suffix),
       init_volcoupling_(false),
-      traceEstimate_eigenvalue_update_(INPAR::XFEM::Eigenvalue_update_every_iter),
+      trace_estimate_eigenvalue_update_(INPAR::XFEM::Eigenvalue_update_every_iter),
       reset_step_(-1)
 {
 }
@@ -322,7 +322,7 @@ void XFEM::MeshVolCoupling::Init()
 
     ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int, double>());
 
-    traceEstimate_eigenvalue_update_ =
+    trace_estimate_eigenvalue_update_ =
         CORE::UTILS::IntegralValue<INPAR::XFEM::TraceEstimateEigenvalueUpdate>(
             GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("STABILIZATION"),
             "UPDATE_EIGENVALUE_TRACE_ESTIMATE");
@@ -460,7 +460,7 @@ double XFEM::MeshVolCoupling::Get_EstimateNitscheTraceMaxEigenvalue(DRT::Element
  *--------------------------------------------------------------------------*/
 void XFEM::MeshVolCoupling::ResetEvaluatedTraceEstimates()
 {
-  switch (traceEstimate_eigenvalue_update_)
+  switch (trace_estimate_eigenvalue_update_)
   {
     case INPAR::XFEM::Eigenvalue_update_every_iter:
     {

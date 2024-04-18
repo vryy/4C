@@ -121,8 +121,8 @@ namespace MIXTURE
 
     /// temporary variables used within one evaluation
     /// @{
-    std::vector<CORE::LINALG::Matrix<1, 6>> dgrowthscalardC_;
-    std::vector<CORE::LINALG::Matrix<1, 6>> dlambdardC_;
+    std::vector<CORE::LINALG::Matrix<1, 6>> dgrowthscalard_c_;
+    std::vector<CORE::LINALG::Matrix<1, 6>> dlambdard_c_;
     /// @}
   };
 }  // namespace MIXTURE

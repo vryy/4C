@@ -290,20 +290,20 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
 DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner)
     : DRT::ELEMENTS::Beam3Base(id, owner),
       stiff_ptc_(),
-      useFAD_(false),
+      use_fad_(false),
       isinit_(false),
-      jacobiGPelastf_(0),
-      jacobiGPelastm_(0),
-      jacobiGPmass_(0),
-      jacobiGPdampstoch_(0),
-      jacobiGPneumannline_(0),
-      Eint_(0.0),
-      Ekin_(0.0),
-      Ekintorsion_(0.0),
-      Ekinbending_(0.0),
-      Ekintrans_(0.0),
-      L_(true),
-      P_(true)
+      jacobi_gp_elastf_(0),
+      jacobi_gp_elastm_(0),
+      jacobi_gp_mass_(0),
+      jacobi_gp_dampstoch_(0),
+      jacobi_gp_neumannline_(0),
+      eint_(0.0),
+      ekin_(0.0),
+      ekintorsion_(0.0),
+      ekinbending_(0.0),
+      ekintrans_(0.0),
+      l_(true),
+      p_(true)
 {
   return;
 }
@@ -312,57 +312,57 @@ DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old)
     : DRT::ELEMENTS::Beam3Base(old),
-      useFAD_(old.useFAD_),
+      use_fad_(old.use_fad_),
       isinit_(old.isinit_),
       reflength_(old.reflength_),
       theta0node_(old.theta0node_),
-      Tcurrnode_(old.Tcurrnode_),
-      KrefGP_(old.KrefGP_),
-      GammarefGP_(old.GammarefGP_),
-      jacobiGPelastf_(old.jacobiGPelastf_),
-      jacobiGPelastm_(old.jacobiGPelastm_),
-      jacobiGPmass_(old.jacobiGPmass_),
-      jacobiGPdampstoch_(old.jacobiGPdampstoch_),
-      jacobiGPneumannline_(old.jacobiGPneumannline_),
-      Qconvnode_(old.Qconvnode_),
-      Qnewnode_(old.Qnewnode_),
-      QconvGPmass_(old.QconvGPmass_),
-      QnewGPmass_(old.QnewGPmass_),
-      wconvGPmass_(old.wconvGPmass_),
-      wnewGPmass_(old.wnewGPmass_),
-      aconvGPmass_(old.aconvGPmass_),
-      anewGPmass_(old.anewGPmass_),
-      amodconvGPmass_(old.amodconvGPmass_),
-      amodnewGPmass_(old.amodnewGPmass_),
-      rttconvGPmass_(old.rttconvGPmass_),
-      rttnewGPmass_(old.rttnewGPmass_),
-      rttmodconvGPmass_(old.rttmodconvGPmass_),
-      rttmodnewGPmass_(old.rttmodnewGPmass_),
-      rtconvGPmass_(old.rtconvGPmass_),
-      rtnewGPmass_(old.rtnewGPmass_),
-      rconvGPmass_(old.rconvGPmass_),
-      rnewGPmass_(old.rnewGPmass_),
-      QconvGPdampstoch_(old.QconvGPdampstoch_),
-      QnewGPdampstoch_(old.QnewGPdampstoch_),
-      Eint_(old.Eint_),
-      Ekin_(old.Ekin_),
-      Ekintorsion_(old.Ekintorsion_),
-      Ekinbending_(old.Ekinbending_),
-      Ekintrans_(old.Ekintrans_),
-      L_(old.L_),
-      P_(old.P_),
-      axial_strain_GP_elastf_(old.axial_strain_GP_elastf_),
-      shear_strain_2_GP_elastf_(old.shear_strain_2_GP_elastf_),
-      shear_strain_3_GP_elastf_(old.shear_strain_3_GP_elastf_),
-      twist_GP_elastm_(old.twist_GP_elastm_),
-      curvature_2_GP_elastm_(old.curvature_2_GP_elastm_),
-      curvature_3_GP_elastm_(old.curvature_3_GP_elastm_),
-      material_axial_force_GP_elastf_(old.material_axial_force_GP_elastf_),
-      material_shear_force_2_GP_elastf_(old.material_shear_force_2_GP_elastf_),
-      material_shear_force_3_GP_elastf_(old.material_shear_force_3_GP_elastf_),
-      material_torque_GP_elastm_(old.material_torque_GP_elastm_),
-      material_bending_moment_2_GP_elastm_(old.material_bending_moment_2_GP_elastm_),
-      material_bending_moment_3_GP_elastm_(old.material_bending_moment_3_GP_elastm_)
+      tcurrnode_(old.tcurrnode_),
+      kref_gp_(old.kref_gp_),
+      gammaref_gp_(old.gammaref_gp_),
+      jacobi_gp_elastf_(old.jacobi_gp_elastf_),
+      jacobi_gp_elastm_(old.jacobi_gp_elastm_),
+      jacobi_gp_mass_(old.jacobi_gp_mass_),
+      jacobi_gp_dampstoch_(old.jacobi_gp_dampstoch_),
+      jacobi_gp_neumannline_(old.jacobi_gp_neumannline_),
+      qconvnode_(old.qconvnode_),
+      qnewnode_(old.qnewnode_),
+      qconv_gp_mass_(old.qconv_gp_mass_),
+      qnew_gp_mass_(old.qnew_gp_mass_),
+      wconv_gp_mass_(old.wconv_gp_mass_),
+      wnew_gp_mass_(old.wnew_gp_mass_),
+      aconv_gp_mass_(old.aconv_gp_mass_),
+      anew_gp_mass_(old.anew_gp_mass_),
+      amodconv_gp_mass_(old.amodconv_gp_mass_),
+      amodnew_gp_mass_(old.amodnew_gp_mass_),
+      rttconv_gp_mass_(old.rttconv_gp_mass_),
+      rttnew_gp_mass_(old.rttnew_gp_mass_),
+      rttmodconv_gp_mass_(old.rttmodconv_gp_mass_),
+      rttmodnew_gp_mass_(old.rttmodnew_gp_mass_),
+      rtconv_gp_mass_(old.rtconv_gp_mass_),
+      rtnew_gp_mass_(old.rtnew_gp_mass_),
+      rconv_gp_mass_(old.rconv_gp_mass_),
+      rnew_gp_mass_(old.rnew_gp_mass_),
+      qconv_gp_dampstoch_(old.qconv_gp_dampstoch_),
+      qnew_gp_dampstoch_(old.qnew_gp_dampstoch_),
+      eint_(old.eint_),
+      ekin_(old.ekin_),
+      ekintorsion_(old.ekintorsion_),
+      ekinbending_(old.ekinbending_),
+      ekintrans_(old.ekintrans_),
+      l_(old.l_),
+      p_(old.p_),
+      axial_strain_gp_elastf_(old.axial_strain_gp_elastf_),
+      shear_strain_2_gp_elastf_(old.shear_strain_2_gp_elastf_),
+      shear_strain_3_gp_elastf_(old.shear_strain_3_gp_elastf_),
+      twist_gp_elastm_(old.twist_gp_elastm_),
+      curvature_2_gp_elastm_(old.curvature_2_gp_elastm_),
+      curvature_3_gp_elastm_(old.curvature_3_gp_elastm_),
+      material_axial_force_gp_elastf_(old.material_axial_force_gp_elastf_),
+      material_shear_force_2_gp_elastf_(old.material_shear_force_2_gp_elastf_),
+      material_shear_force_3_gp_elastf_(old.material_shear_force_3_gp_elastf_),
+      material_torque_gp_elastm_(old.material_torque_gp_elastm_),
+      material_bending_moment_2_gp_elastm_(old.material_bending_moment_2_gp_elastm_),
+      material_bending_moment_3_gp_elastm_(old.material_bending_moment_3_gp_elastm_)
 {
   return;
 }
@@ -431,40 +431,40 @@ void DRT::ELEMENTS::Beam3r::Pack(CORE::COMM::PackBuffer& data) const
   Beam3Base::Pack(data);
 
   // add all class variables of beam3r element
-  AddtoPack(data, useFAD_);
+  AddtoPack(data, use_fad_);
   AddtoPack(data, centerline_hermite_);
   AddtoPack(data, isinit_);
   AddtoPack(data, reflength_);
   AddtoPack<3, 1>(data, theta0node_);
   AddtoPack<3, 1>(data, Tref_);
-  AddtoPack<3, 1>(data, Tcurrnode_);
-  AddtoPack<3, 1>(data, KrefGP_);
-  AddtoPack<3, 1>(data, GammarefGP_);
-  AddtoPack(data, jacobiGPelastf_);
-  AddtoPack(data, jacobiGPelastm_);
-  AddtoPack(data, jacobiGPmass_);
-  AddtoPack(data, jacobiGPdampstoch_);
-  AddtoPack(data, jacobiGPneumannline_);
-  AddtoPack<4, 1>(data, Qconvnode_);
-  AddtoPack<4, 1>(data, Qnewnode_);
-  AddtoPack<4, 1>(data, QconvGPmass_);
-  AddtoPack<4, 1>(data, QnewGPmass_);
-  AddtoPack<3, 1>(data, wconvGPmass_);
-  AddtoPack<3, 1>(data, wnewGPmass_);
-  AddtoPack<3, 1>(data, aconvGPmass_);
-  AddtoPack<3, 1>(data, anewGPmass_);
-  AddtoPack<3, 1>(data, amodnewGPmass_);
-  AddtoPack<3, 1>(data, amodconvGPmass_);
-  AddtoPack<3, 1>(data, rttconvGPmass_);
-  AddtoPack<3, 1>(data, rttnewGPmass_);
-  AddtoPack<3, 1>(data, rttmodconvGPmass_);
-  AddtoPack<3, 1>(data, rttmodnewGPmass_);
-  AddtoPack<3, 1>(data, rtconvGPmass_);
-  AddtoPack<3, 1>(data, rtnewGPmass_);
-  AddtoPack<3, 1>(data, rconvGPmass_);
-  AddtoPack<3, 1>(data, rnewGPmass_);
-  AddtoPack<4, 1>(data, QconvGPdampstoch_);
-  AddtoPack<4, 1>(data, QnewGPdampstoch_);
+  AddtoPack<3, 1>(data, tcurrnode_);
+  AddtoPack<3, 1>(data, kref_gp_);
+  AddtoPack<3, 1>(data, gammaref_gp_);
+  AddtoPack(data, jacobi_gp_elastf_);
+  AddtoPack(data, jacobi_gp_elastm_);
+  AddtoPack(data, jacobi_gp_mass_);
+  AddtoPack(data, jacobi_gp_dampstoch_);
+  AddtoPack(data, jacobi_gp_neumannline_);
+  AddtoPack<4, 1>(data, qconvnode_);
+  AddtoPack<4, 1>(data, qnewnode_);
+  AddtoPack<4, 1>(data, qconv_gp_mass_);
+  AddtoPack<4, 1>(data, qnew_gp_mass_);
+  AddtoPack<3, 1>(data, wconv_gp_mass_);
+  AddtoPack<3, 1>(data, wnew_gp_mass_);
+  AddtoPack<3, 1>(data, aconv_gp_mass_);
+  AddtoPack<3, 1>(data, anew_gp_mass_);
+  AddtoPack<3, 1>(data, amodnew_gp_mass_);
+  AddtoPack<3, 1>(data, amodconv_gp_mass_);
+  AddtoPack<3, 1>(data, rttconv_gp_mass_);
+  AddtoPack<3, 1>(data, rttnew_gp_mass_);
+  AddtoPack<3, 1>(data, rttmodconv_gp_mass_);
+  AddtoPack<3, 1>(data, rttmodnew_gp_mass_);
+  AddtoPack<3, 1>(data, rtconv_gp_mass_);
+  AddtoPack<3, 1>(data, rtnew_gp_mass_);
+  AddtoPack<3, 1>(data, rconv_gp_mass_);
+  AddtoPack<3, 1>(data, rnew_gp_mass_);
+  AddtoPack<4, 1>(data, qconv_gp_dampstoch_);
+  AddtoPack<4, 1>(data, qnew_gp_dampstoch_);
   return;
 }
 
@@ -484,68 +484,68 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   Beam3Base::Unpack(basedata);
 
   // extract all class variables of beam3r element
-  useFAD_ = ExtractInt(position, data);
+  use_fad_ = ExtractInt(position, data);
   centerline_hermite_ = ExtractInt(position, data);
   isinit_ = ExtractInt(position, data);
   ExtractfromPack(position, data, reflength_);
   ExtractfromPack<3, 1>(position, data, theta0node_);
   ExtractfromPack<3, 1>(position, data, Tref_);
-  ExtractfromPack<3, 1>(position, data, Tcurrnode_);
-  ExtractfromPack<3, 1>(position, data, KrefGP_);
-  ExtractfromPack<3, 1>(position, data, GammarefGP_);
-  ExtractfromPack(position, data, jacobiGPelastf_);
-  ExtractfromPack(position, data, jacobiGPelastm_);
-  ExtractfromPack(position, data, jacobiGPmass_);
-  ExtractfromPack(position, data, jacobiGPdampstoch_);
-  ExtractfromPack(position, data, jacobiGPneumannline_);
-  ExtractfromPack<4, 1>(position, data, Qconvnode_);
-  ExtractfromPack<4, 1>(position, data, Qnewnode_);
-  ExtractfromPack<4, 1>(position, data, QconvGPmass_);
-  ExtractfromPack<4, 1>(position, data, QnewGPmass_);
-  ExtractfromPack<3, 1>(position, data, wconvGPmass_);
-  ExtractfromPack<3, 1>(position, data, wnewGPmass_);
-  ExtractfromPack<3, 1>(position, data, aconvGPmass_);
-  ExtractfromPack<3, 1>(position, data, anewGPmass_);
-  ExtractfromPack<3, 1>(position, data, amodconvGPmass_);
-  ExtractfromPack<3, 1>(position, data, amodnewGPmass_);
-  ExtractfromPack<3, 1>(position, data, rttconvGPmass_);
-  ExtractfromPack<3, 1>(position, data, rttnewGPmass_);
-  ExtractfromPack<3, 1>(position, data, rttmodconvGPmass_);
-  ExtractfromPack<3, 1>(position, data, rttmodnewGPmass_);
-  ExtractfromPack<3, 1>(position, data, rtconvGPmass_);
-  ExtractfromPack<3, 1>(position, data, rtnewGPmass_);
-  ExtractfromPack<3, 1>(position, data, rconvGPmass_);
-  ExtractfromPack<3, 1>(position, data, rnewGPmass_);
-  ExtractfromPack<4, 1>(position, data, QconvGPdampstoch_);
-  ExtractfromPack<4, 1>(position, data, QnewGPdampstoch_);
+  ExtractfromPack<3, 1>(position, data, tcurrnode_);
+  ExtractfromPack<3, 1>(position, data, kref_gp_);
+  ExtractfromPack<3, 1>(position, data, gammaref_gp_);
+  ExtractfromPack(position, data, jacobi_gp_elastf_);
+  ExtractfromPack(position, data, jacobi_gp_elastm_);
+  ExtractfromPack(position, data, jacobi_gp_mass_);
+  ExtractfromPack(position, data, jacobi_gp_dampstoch_);
+  ExtractfromPack(position, data, jacobi_gp_neumannline_);
+  ExtractfromPack<4, 1>(position, data, qconvnode_);
+  ExtractfromPack<4, 1>(position, data, qnewnode_);
+  ExtractfromPack<4, 1>(position, data, qconv_gp_mass_);
+  ExtractfromPack<4, 1>(position, data, qnew_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, wconv_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, wnew_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, aconv_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, anew_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, amodconv_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, amodnew_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, rttconv_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, rttnew_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, rttmodconv_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, rttmodnew_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, rtconv_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, rtnew_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, rconv_gp_mass_);
+  ExtractfromPack<3, 1>(position, data, rnew_gp_mass_);
+  ExtractfromPack<4, 1>(position, data, qconv_gp_dampstoch_);
+  ExtractfromPack<4, 1>(position, data, qnew_gp_dampstoch_);
 
   // NOT communicated
-  Eint_ = 0.0;
-  Ekin_ = 0.0;
-  Ekintorsion_ = 0.0;
-  Ekinbending_ = 0.0;
-  Ekintrans_ = 0.0;
-  L_.Clear();
-  P_.Clear();
-  Kmax_ = 0.0;
-  axial_strain_GP_elastf_.clear();
-  shear_strain_2_GP_elastf_.clear();
-  shear_strain_3_GP_elastf_.clear();
-  twist_GP_elastm_.clear();
-  curvature_2_GP_elastm_.clear();
-  curvature_3_GP_elastm_.clear();
-  material_axial_force_GP_elastf_.clear();
-  material_shear_force_2_GP_elastf_.clear();
-  material_shear_force_3_GP_elastf_.clear();
-  material_torque_GP_elastm_.clear();
-  material_bending_moment_2_GP_elastm_.clear();
-  material_bending_moment_3_GP_elastm_.clear();
-  spatial_x_force_GP_elastf_.clear();
-  spatial_y_force_2_GP_elastf_.clear();
-  spatial_z_force_3_GP_elastf_.clear();
-  spatial_x_moment_GP_elastm_.clear();
-  spatial_y_moment_2_GP_elastm_.clear();
-  spatial_z_moment_3_GP_elastm_.clear();
+  eint_ = 0.0;
+  ekin_ = 0.0;
+  ekintorsion_ = 0.0;
+  ekinbending_ = 0.0;
+  ekintrans_ = 0.0;
+  l_.Clear();
+  p_.Clear();
+  kmax_ = 0.0;
+  axial_strain_gp_elastf_.clear();
+  shear_strain_2_gp_elastf_.clear();
+  shear_strain_3_gp_elastf_.clear();
+  twist_gp_elastm_.clear();
+  curvature_2_gp_elastm_.clear();
+  curvature_3_gp_elastm_.clear();
+  material_axial_force_gp_elastf_.clear();
+  material_shear_force_2_gp_elastf_.clear();
+  material_shear_force_3_gp_elastf_.clear();
+  material_torque_gp_elastm_.clear();
+  material_bending_moment_2_gp_elastm_.clear();
+  material_bending_moment_3_gp_elastm_.clear();
+  spatial_x_force_gp_elastf_.clear();
+  spatial_y_force_2_gp_elastf_.clear();
+  spatial_z_force_3_gp_elastf_.clear();
+  spatial_x_moment_gp_elastm_.clear();
+  spatial_y_moment_2_gp_elastm_.clear();
+  spatial_z_moment_3_gp_elastm_.clear();
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -828,22 +828,22 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
 
     /********************* store given nodal triads as quaternions in class variable
      * *********************/
-    Qnewnode_.resize(nnodetriad);
-    Qconvnode_.resize(nnodetriad);
+    qnewnode_.resize(nnodetriad);
+    qconvnode_.resize(nnodetriad);
 
     // nodal triads in stress-free configuration
     for (unsigned int node = 0; node < nnodetriad; node++)
     {
       CORE::LINALG::Matrix<3, 1> rotvec(&rotrefe[3 * node]);
-      CORE::LARGEROTATIONS::angletoquaternion(rotvec, Qnewnode_[node]);
+      CORE::LARGEROTATIONS::angletoquaternion(rotvec, qnewnode_[node]);
     }
 
-    Qconvnode_ = Qnewnode_;
+    qconvnode_ = qnewnode_;
 
     std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnewnode;
 
     for (unsigned int inode = 0; inode < nnodetriad; ++inode)
-      Qnewnode.push_back(CORE::LINALG::Matrix<4, 1, double>(Qnewnode_[inode], true));
+      Qnewnode.push_back(CORE::LINALG::Matrix<4, 1, double>(qnewnode_[inode], true));
 
     // reset triad interpolation with nodal quaternions
     triad_interpolation_scheme_ptr->Reset(Qnewnode);
@@ -858,7 +858,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
        * i.e. material coordinate system and reference system in the reference configuration
        * coincidence (only at the nodes)*/
       Gref.Clear();
-      CORE::LARGEROTATIONS::quaterniontotriad(Qnewnode_[node], Gref);
+      CORE::LARGEROTATIONS::quaterniontotriad(qnewnode_[node], Gref);
       // store initial nodal tangents in class variable
       for (int i = 0; i < 3; i++) (Tref_[node])(i) = (Gref)(i, 0);
 
@@ -892,8 +892,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Get the applied integration scheme
     CORE::FE::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
 
-    jacobiGPelastf_.resize(gausspoints_elast_force.nquad);
-    GammarefGP_.resize(gausspoints_elast_force.nquad);
+    jacobi_gp_elastf_.resize(gausspoints_elast_force.nquad);
+    gammaref_gp_.resize(gausspoints_elast_force.nquad);
 
     // reuse variables for individual shape functions and resize to new numgp
     H_i_xi.resize(gausspoints_elast_force.nquad);
@@ -906,28 +906,28 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
 
     // assure correct size of strain and stress resultant class variables and fill them
     // with zeros (by definition, the reference configuration is undeformed and stress-free)
-    axial_strain_GP_elastf_.resize(gausspoints_elast_force.nquad);
-    std::fill(axial_strain_GP_elastf_.begin(), axial_strain_GP_elastf_.end(), 0.0);
-    shear_strain_2_GP_elastf_.resize(gausspoints_elast_force.nquad);
-    std::fill(shear_strain_2_GP_elastf_.begin(), shear_strain_2_GP_elastf_.end(), 0.0);
-    shear_strain_3_GP_elastf_.resize(gausspoints_elast_force.nquad);
-    std::fill(shear_strain_3_GP_elastf_.begin(), shear_strain_3_GP_elastf_.end(), 0.0);
+    axial_strain_gp_elastf_.resize(gausspoints_elast_force.nquad);
+    std::fill(axial_strain_gp_elastf_.begin(), axial_strain_gp_elastf_.end(), 0.0);
+    shear_strain_2_gp_elastf_.resize(gausspoints_elast_force.nquad);
+    std::fill(shear_strain_2_gp_elastf_.begin(), shear_strain_2_gp_elastf_.end(), 0.0);
+    shear_strain_3_gp_elastf_.resize(gausspoints_elast_force.nquad);
+    std::fill(shear_strain_3_gp_elastf_.begin(), shear_strain_3_gp_elastf_.end(), 0.0);
 
-    material_axial_force_GP_elastf_.resize(gausspoints_elast_force.nquad);
-    std::fill(material_axial_force_GP_elastf_.begin(), material_axial_force_GP_elastf_.end(), 0.0);
-    material_shear_force_2_GP_elastf_.resize(gausspoints_elast_force.nquad);
+    material_axial_force_gp_elastf_.resize(gausspoints_elast_force.nquad);
+    std::fill(material_axial_force_gp_elastf_.begin(), material_axial_force_gp_elastf_.end(), 0.0);
+    material_shear_force_2_gp_elastf_.resize(gausspoints_elast_force.nquad);
     std::fill(
-        material_shear_force_2_GP_elastf_.begin(), material_shear_force_2_GP_elastf_.end(), 0.0);
-    material_shear_force_3_GP_elastf_.resize(gausspoints_elast_force.nquad);
+        material_shear_force_2_gp_elastf_.begin(), material_shear_force_2_gp_elastf_.end(), 0.0);
+    material_shear_force_3_gp_elastf_.resize(gausspoints_elast_force.nquad);
     std::fill(
-        material_shear_force_3_GP_elastf_.begin(), material_shear_force_3_GP_elastf_.end(), 0.0);
+        material_shear_force_3_gp_elastf_.begin(), material_shear_force_3_gp_elastf_.end(), 0.0);
 
-    spatial_x_force_GP_elastf_.resize(gausspoints_elast_force.nquad);
-    std::fill(spatial_x_force_GP_elastf_.begin(), spatial_x_force_GP_elastf_.end(), 0.0);
-    spatial_y_force_2_GP_elastf_.resize(gausspoints_elast_force.nquad);
-    std::fill(spatial_y_force_2_GP_elastf_.begin(), spatial_y_force_2_GP_elastf_.end(), 0.0);
-    spatial_z_force_3_GP_elastf_.resize(gausspoints_elast_force.nquad);
-    std::fill(spatial_z_force_3_GP_elastf_.begin(), spatial_z_force_3_GP_elastf_.end(), 0.0);
+    spatial_x_force_gp_elastf_.resize(gausspoints_elast_force.nquad);
+    std::fill(spatial_x_force_gp_elastf_.begin(), spatial_x_force_gp_elastf_.end(), 0.0);
+    spatial_y_force_2_gp_elastf_.resize(gausspoints_elast_force.nquad);
+    std::fill(spatial_y_force_2_gp_elastf_.begin(), spatial_y_force_2_gp_elastf_.end(), 0.0);
+    spatial_z_force_3_gp_elastf_.resize(gausspoints_elast_force.nquad);
+    std::fill(spatial_z_force_3_gp_elastf_.begin(), spatial_z_force_3_gp_elastf_.end(), 0.0);
 
     dummy.Clear();
 
@@ -937,17 +937,17 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
       Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point for under-integration
-      jacobiGPelastf_[numgp] = dr0dxi.Norm2();
+      jacobi_gp_elastf_[numgp] = dr0dxi.Norm2();
 
       // we need dr0ds for computestrain, just reuse dr0dxi from above for simplicity
-      dr0dxi.Scale(1.0 / jacobiGPelastf_[numgp]);
+      dr0dxi.Scale(1.0 / jacobi_gp_elastf_[numgp]);
 
       triad_interpolation_scheme_ptr->GetInterpolatedTriadAtXi(
           Lambda, gausspoints_elast_force.qxg[numgp][0]);
 
       /* compute material strain Gamma according to Jelenic 1999, eq. (2.12) for reference
        * configuration, i.e. call this function with gammaref=zerovector*/
-      computeGamma<double>(dr0dxi, Lambda, dummy, GammarefGP_[numgp]);
+      computeGamma<double>(dr0dxi, Lambda, dummy, gammaref_gp_[numgp]);
     }
 
     //*********************** preparation for residual contributions from moments
@@ -956,8 +956,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     // Get the applied integration scheme
     CORE::FE::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
 
-    jacobiGPelastm_.resize(gausspoints_elast_moment.nquad);
-    KrefGP_.resize(gausspoints_elast_moment.nquad);
+    jacobi_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+    kref_gp_.resize(gausspoints_elast_moment.nquad);
 
     // reuse variables for individual shape functions and resize to new numgp
     I_i.resize(gausspoints_elast_moment.nquad);
@@ -973,28 +973,28 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
 
     // assure correct size of strain and stress resultant class variables and fill them
     // with zeros (by definition, the reference configuration is undeformed and stress-free)
-    twist_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-    std::fill(twist_GP_elastm_.begin(), twist_GP_elastm_.end(), 0.0);
-    curvature_2_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-    std::fill(curvature_2_GP_elastm_.begin(), curvature_2_GP_elastm_.end(), 0.0);
-    curvature_3_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-    std::fill(curvature_3_GP_elastm_.begin(), curvature_3_GP_elastm_.end(), 0.0);
+    twist_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+    std::fill(twist_gp_elastm_.begin(), twist_gp_elastm_.end(), 0.0);
+    curvature_2_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+    std::fill(curvature_2_gp_elastm_.begin(), curvature_2_gp_elastm_.end(), 0.0);
+    curvature_3_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+    std::fill(curvature_3_gp_elastm_.begin(), curvature_3_gp_elastm_.end(), 0.0);
 
-    material_torque_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-    std::fill(material_torque_GP_elastm_.begin(), material_torque_GP_elastm_.end(), 0.0);
-    material_bending_moment_2_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-    std::fill(material_bending_moment_2_GP_elastm_.begin(),
-        material_bending_moment_2_GP_elastm_.end(), 0.0);
-    material_bending_moment_3_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-    std::fill(material_bending_moment_3_GP_elastm_.begin(),
-        material_bending_moment_3_GP_elastm_.end(), 0.0);
+    material_torque_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+    std::fill(material_torque_gp_elastm_.begin(), material_torque_gp_elastm_.end(), 0.0);
+    material_bending_moment_2_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+    std::fill(material_bending_moment_2_gp_elastm_.begin(),
+        material_bending_moment_2_gp_elastm_.end(), 0.0);
+    material_bending_moment_3_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+    std::fill(material_bending_moment_3_gp_elastm_.begin(),
+        material_bending_moment_3_gp_elastm_.end(), 0.0);
 
-    spatial_x_moment_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-    std::fill(spatial_x_moment_GP_elastm_.begin(), spatial_x_moment_GP_elastm_.end(), 0.0);
-    spatial_y_moment_2_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-    std::fill(spatial_y_moment_2_GP_elastm_.begin(), spatial_y_moment_2_GP_elastm_.end(), 0.0);
-    spatial_z_moment_3_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-    std::fill(spatial_z_moment_3_GP_elastm_.begin(), spatial_z_moment_3_GP_elastm_.end(), 0.0);
+    spatial_x_moment_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+    std::fill(spatial_x_moment_gp_elastm_.begin(), spatial_x_moment_gp_elastm_.end(), 0.0);
+    spatial_y_moment_2_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+    std::fill(spatial_y_moment_2_gp_elastm_.begin(), spatial_y_moment_2_gp_elastm_.end(), 0.0);
+    spatial_z_moment_3_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+    std::fill(spatial_z_moment_3_gp_elastm_.begin(), spatial_z_moment_3_gp_elastm_.end(), 0.0);
 
 
     dummy.Clear();
@@ -1005,19 +1005,19 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
       Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
-      jacobiGPelastm_[numgp] = dr0dxi.Norm2();
+      jacobi_gp_elastm_[numgp] = dr0dxi.Norm2();
 
       // we need dr0ds for computestrain, just reuse dr0dxi from above for simplicity
-      dr0dxi.Scale(1.0 / jacobiGPelastm_[numgp]);
+      dr0dxi.Scale(1.0 / jacobi_gp_elastm_[numgp]);
 
       triad_interpolation_scheme_ptr->GetInterpolatedLocalRotationVector(Psi_l, I_i[numgp]);
 
       triad_interpolation_scheme_ptr->GetInterpolatedLocalRotationVectorDerivative(
-          Psi_l_s, I_i_xi[numgp], jacobiGPelastm_[numgp]);
+          Psi_l_s, I_i_xi[numgp], jacobi_gp_elastm_[numgp]);
 
       /* compute material curvature K according to Jelenic 1999, eq. (2.12) for reference
        * configuration, i.e. call this function with kapparef=zerovector*/
-      computeK<double>(Psi_l, Psi_l_s, dummy, KrefGP_[numgp]);
+      computeK<double>(Psi_l, Psi_l_s, dummy, kref_gp_[numgp]);
     }
 
 
@@ -1030,23 +1030,23 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     CORE::FE::IntegrationPoints1D gausspoints_inertia(gaussrule_inertia);
 
     // these quantities will later be used mainly for calculation of inertia terms -> named 'mass'
-    jacobiGPmass_.resize(gausspoints_inertia.nquad);
-    QconvGPmass_.resize(gausspoints_inertia.nquad);
-    QnewGPmass_.resize(gausspoints_inertia.nquad);
-    wconvGPmass_.resize(gausspoints_inertia.nquad);
-    wnewGPmass_.resize(gausspoints_inertia.nquad);
-    aconvGPmass_.resize(gausspoints_inertia.nquad);
-    anewGPmass_.resize(gausspoints_inertia.nquad);
-    rttconvGPmass_.resize(gausspoints_inertia.nquad);
-    rttnewGPmass_.resize(gausspoints_inertia.nquad);
-    rttmodconvGPmass_.resize(gausspoints_inertia.nquad);
-    rttmodnewGPmass_.resize(gausspoints_inertia.nquad);
-    rtconvGPmass_.resize(gausspoints_inertia.nquad);
-    rtnewGPmass_.resize(gausspoints_inertia.nquad);
-    rconvGPmass_.resize(gausspoints_inertia.nquad);
-    rnewGPmass_.resize(gausspoints_inertia.nquad);
-    amodconvGPmass_.resize(gausspoints_inertia.nquad);
-    amodnewGPmass_.resize(gausspoints_inertia.nquad);
+    jacobi_gp_mass_.resize(gausspoints_inertia.nquad);
+    qconv_gp_mass_.resize(gausspoints_inertia.nquad);
+    qnew_gp_mass_.resize(gausspoints_inertia.nquad);
+    wconv_gp_mass_.resize(gausspoints_inertia.nquad);
+    wnew_gp_mass_.resize(gausspoints_inertia.nquad);
+    aconv_gp_mass_.resize(gausspoints_inertia.nquad);
+    anew_gp_mass_.resize(gausspoints_inertia.nquad);
+    rttconv_gp_mass_.resize(gausspoints_inertia.nquad);
+    rttnew_gp_mass_.resize(gausspoints_inertia.nquad);
+    rttmodconv_gp_mass_.resize(gausspoints_inertia.nquad);
+    rttmodnew_gp_mass_.resize(gausspoints_inertia.nquad);
+    rtconv_gp_mass_.resize(gausspoints_inertia.nquad);
+    rtnew_gp_mass_.resize(gausspoints_inertia.nquad);
+    rconv_gp_mass_.resize(gausspoints_inertia.nquad);
+    rnew_gp_mass_.resize(gausspoints_inertia.nquad);
+    amodconv_gp_mass_.resize(gausspoints_inertia.nquad);
+    amodnew_gp_mass_.resize(gausspoints_inertia.nquad);
 
     // reuse variables for individual shape functions and resize to new numgp
     H_i.resize(gausspoints_inertia.nquad);
@@ -1064,28 +1064,28 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
       Calc_r<nnodecl, vpernode, double>(pos_ref_centerline, H_i[numgp], r0);
 
       // Store Jacobi determinant at this Gauss point
-      jacobiGPmass_[numgp] = dr0dxi.Norm2();
+      jacobi_gp_mass_[numgp] = dr0dxi.Norm2();
 
       triad_interpolation_scheme_ptr->GetInterpolatedQuaternionAtXi(
-          QnewGPmass_[numgp], gausspoints_inertia.qxg[numgp][0]);
+          qnew_gp_mass_[numgp], gausspoints_inertia.qxg[numgp][0]);
 
       // copy QnewGPmass_ to QconvGPmass_
-      QconvGPmass_[numgp] = QnewGPmass_[numgp];
+      qconv_gp_mass_[numgp] = qnew_gp_mass_[numgp];
 
-      wconvGPmass_[numgp].Clear();
-      wnewGPmass_[numgp].Clear();
-      aconvGPmass_[numgp].Clear();
-      anewGPmass_[numgp].Clear();
-      amodconvGPmass_[numgp].Clear();
-      amodnewGPmass_[numgp].Clear();
-      rttconvGPmass_[numgp].Clear();
-      rttnewGPmass_[numgp].Clear();
-      rttmodconvGPmass_[numgp].Clear();
-      rttmodnewGPmass_[numgp].Clear();
-      rtconvGPmass_[numgp].Clear();
-      rtnewGPmass_[numgp].Clear();
-      rconvGPmass_[numgp] = r0;
-      rnewGPmass_[numgp] = r0;
+      wconv_gp_mass_[numgp].Clear();
+      wnew_gp_mass_[numgp].Clear();
+      aconv_gp_mass_[numgp].Clear();
+      anew_gp_mass_[numgp].Clear();
+      amodconv_gp_mass_[numgp].Clear();
+      amodnew_gp_mass_[numgp].Clear();
+      rttconv_gp_mass_[numgp].Clear();
+      rttnew_gp_mass_[numgp].Clear();
+      rttmodconv_gp_mass_[numgp].Clear();
+      rttmodnew_gp_mass_[numgp].Clear();
+      rtconv_gp_mass_[numgp].Clear();
+      rtnew_gp_mass_[numgp].Clear();
+      rconv_gp_mass_[numgp] = r0;
+      rnew_gp_mass_[numgp] = r0;
     }
 
 
@@ -1103,9 +1103,9 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
 
     // these quantities will later be used mainly for calculation of damping/stochastic terms ->
     // named 'dampstoch'
-    QconvGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
-    QnewGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
-    jacobiGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
+    qconv_gp_dampstoch_.resize(gausspoints_damp_stoch.nquad);
+    qnew_gp_dampstoch_.resize(gausspoints_damp_stoch.nquad);
+    jacobi_gp_dampstoch_.resize(gausspoints_damp_stoch.nquad);
 
     // reuse variables for individual shape functions and resize to new numgp
     H_i_xi.resize(gausspoints_damp_stoch.nquad);
@@ -1121,13 +1121,13 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
       Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
-      jacobiGPdampstoch_[numgp] = dr0dxi.Norm2();
+      jacobi_gp_dampstoch_[numgp] = dr0dxi.Norm2();
 
       triad_interpolation_scheme_ptr->GetInterpolatedQuaternionAtXi(
-          QnewGPdampstoch_[numgp], gausspoints_damp_stoch.qxg[numgp][0]);
+          qnew_gp_dampstoch_[numgp], gausspoints_damp_stoch.qxg[numgp][0]);
 
       // copy QnewGPdampstoch_ to QconvGPdampstoch_
-      QconvGPdampstoch_[numgp] = QnewGPdampstoch_[numgp];
+      qconv_gp_dampstoch_[numgp] = qnew_gp_dampstoch_[numgp];
     }
 
 
@@ -1140,7 +1140,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
     CORE::FE::IntegrationPoints1D gausspoints_neumann(gaussrule_neumann);
 
     // these quantities will later be used for calculation of Neumann lineloads
-    jacobiGPneumannline_.resize(gausspoints_neumann.nquad);
+    jacobi_gp_neumannline_.resize(gausspoints_neumann.nquad);
 
     // reuse variables for individual shape functions and resize to new numgp
     H_i_xi.resize(gausspoints_neumann.nquad);
@@ -1156,7 +1156,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
       Calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
-      jacobiGPneumannline_[numgp] = dr0dxi.Norm2();
+      jacobi_gp_neumannline_[numgp] = dr0dxi.Norm2();
     }
   }
 
@@ -1613,7 +1613,7 @@ void DRT::ELEMENTS::Beam3r::UpdateDispTotLagAndNodalTriads(const std::vector<dou
   {
     // copy quaternions of nodal triads to class variable
     for (unsigned int i = 0; i < 4; ++i)
-      Qnewnode_[node](i) = CORE::FADUTILS::CastToDouble(Q_i[node](i));
+      qnewnode_[node](i) = CORE::FADUTILS::CastToDouble(Q_i[node](i));
   }
 }
 

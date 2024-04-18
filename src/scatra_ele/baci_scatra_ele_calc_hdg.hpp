@@ -177,7 +177,7 @@ namespace DRT
       CORE::LINALG::SerialDenseVector interiorPhinp_;
 
       //! get time step
-      double Dt() { return localSolver_->scatraparatimint_->Dt(); }
+      double Dt() { return local_solver_->scatraparatimint_->Dt(); }
 
 
 
@@ -343,7 +343,7 @@ namespace DRT
           DRT::Element* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la);
 
       //! local solver object
-      Teuchos::RCP<LocalSolver> localSolver_;
+      Teuchos::RCP<LocalSolver> local_solver_;
 
       /*========================================================================*/
       //! @name trace and interior concentrations and gradients
@@ -353,7 +353,7 @@ namespace DRT
       CORE::LINALG::SerialDenseVector tracen_;
 
       //! extracted local values (concentration gradients) at n+alpha_f
-      CORE::LINALG::SerialDenseVector interiorGradPhin_;
+      CORE::LINALG::SerialDenseVector interior_grad_phin_;
 
       //! extracted values from trace solution vector at n-m
       CORE::LINALG::SerialDenseVector tracenm_;

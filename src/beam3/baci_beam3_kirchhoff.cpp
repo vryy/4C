@@ -184,13 +184,13 @@ int DRT::ELEMENTS::Beam3kType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner)
     : DRT::ELEMENTS::Beam3Base(id, owner),
-      useFAD_(false),
+      use_fad_(false),
       isinit_(false),
-      T_(0),
+      t_(0),
       theta0_(0),
-      Qrefconv_(0),
-      Qrefnew_(0),
-      K0_(0),
+      qrefconv_(0),
+      qrefnew_(0),
+      k0_(0),
       length_(0.0),
       jacobi_(0.0),
       jacobi2_(0.0),
@@ -198,10 +198,10 @@ DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner)
       jacobi2_cp_(0.0),
       rotvec_(false),
       weakkirchhoff_(false),
-      Eint_(0.0),
-      Ekin_(0.0),
-      Qconvmass_(0),
-      Qnewmass_(0),
+      eint_(0.0),
+      ekin_(0.0),
+      qconvmass_(0),
+      qnewmass_(0),
       wconvmass_(0),
       wnewmass_(0),
       aconvmass_(0),
@@ -216,14 +216,14 @@ DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner)
       rtnewmass_(0),
       rconvmass_(0),
       rnewmass_(0),
-      axial_strain_GP_(0),
-      twist_GP_(0),
-      curvature_2_GP_(0),
-      curvature_3_GP_(0),
-      axial_force_GP_(0),
-      torque_GP_(0),
-      bending_moment_2_GP_(0),
-      bending_moment_3_GP_(0)
+      axial_strain_gp_(0),
+      twist_gp_(0),
+      curvature_2_gp_(0),
+      curvature_3_gp_(0),
+      axial_force_gp_(0),
+      torque_gp_(0),
+      bending_moment_2_gp_(0),
+      bending_moment_3_gp_(0)
 {
   return;
 }
@@ -232,13 +232,13 @@ DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old)
     : DRT::ELEMENTS::Beam3Base(old),
-      useFAD_(old.useFAD_),
+      use_fad_(old.use_fad_),
       isinit_(old.isinit_),
-      T_(old.T_),
+      t_(old.t_),
       theta0_(old.theta0_),
-      Qrefconv_(old.Qrefconv_),
-      Qrefnew_(old.Qrefnew_),
-      K0_(old.K0_),
+      qrefconv_(old.qrefconv_),
+      qrefnew_(old.qrefnew_),
+      k0_(old.k0_),
       length_(old.length_),
       jacobi_(old.jacobi_),
       jacobi2_(old.jacobi2_),
@@ -246,10 +246,10 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old)
       jacobi2_cp_(old.jacobi_cp_),
       rotvec_(old.rotvec_),
       weakkirchhoff_(old.weakkirchhoff_),
-      Eint_(old.Eint_),
-      Ekin_(old.Ekin_),
-      Qconvmass_(old.Qconvmass_),
-      Qnewmass_(old.Qnewmass_),
+      eint_(old.eint_),
+      ekin_(old.ekin_),
+      qconvmass_(old.qconvmass_),
+      qnewmass_(old.qnewmass_),
       wconvmass_(old.wconvmass_),
       wnewmass_(old.wnewmass_),
       aconvmass_(old.aconvmass_),
@@ -264,14 +264,14 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old)
       rtnewmass_(old.rtnewmass_),
       rconvmass_(old.rconvmass_),
       rnewmass_(old.rnewmass_),
-      axial_strain_GP_(old.axial_strain_GP_),
-      twist_GP_(old.twist_GP_),
-      curvature_2_GP_(old.curvature_2_GP_),
-      curvature_3_GP_(old.curvature_3_GP_),
-      axial_force_GP_(old.axial_force_GP_),
-      torque_GP_(old.torque_GP_),
-      bending_moment_2_GP_(old.bending_moment_2_GP_),
-      bending_moment_3_GP_(old.bending_moment_3_GP_)
+      axial_strain_gp_(old.axial_strain_gp_),
+      twist_gp_(old.twist_gp_),
+      curvature_2_gp_(old.curvature_2_gp_),
+      curvature_3_gp_(old.curvature_3_gp_),
+      axial_force_gp_(old.axial_force_gp_),
+      torque_gp_(old.torque_gp_),
+      bending_moment_2_gp_(old.bending_moment_2_gp_),
+      bending_moment_3_gp_(old.bending_moment_3_gp_)
 {
   return;
 }
@@ -333,14 +333,14 @@ void DRT::ELEMENTS::Beam3k::Pack(CORE::COMM::PackBuffer& data) const
   Beam3Base::Pack(data);
 
   // add all class variables
-  AddtoPack(data, useFAD_);
+  AddtoPack(data, use_fad_);
   AddtoPack(data, isinit_);
   AddtoPack<3, 1>(data, Tref_);
-  AddtoPack<3, 1>(data, T_);
+  AddtoPack<3, 1>(data, t_);
   AddtoPack<3, 1>(data, theta0_);
-  AddtoPack<4, 1>(data, Qrefconv_);
-  AddtoPack<4, 1>(data, Qrefnew_);
-  AddtoPack<3, 1>(data, K0_);
+  AddtoPack<4, 1>(data, qrefconv_);
+  AddtoPack<4, 1>(data, qrefnew_);
+  AddtoPack<3, 1>(data, k0_);
   AddtoPack(data, length_);
   AddtoPack(data, jacobi_);
   AddtoPack(data, jacobi2_);
@@ -348,10 +348,10 @@ void DRT::ELEMENTS::Beam3k::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, jacobi2_cp_);
   AddtoPack(data, rotvec_);
   AddtoPack(data, weakkirchhoff_);
-  AddtoPack(data, Eint_);
-  AddtoPack(data, Ekin_);
-  AddtoPack<4, 1>(data, Qconvmass_);
-  AddtoPack<4, 1>(data, Qnewmass_);
+  AddtoPack(data, eint_);
+  AddtoPack(data, ekin_);
+  AddtoPack<4, 1>(data, qconvmass_);
+  AddtoPack<4, 1>(data, qnewmass_);
   AddtoPack<3, 1>(data, wconvmass_);
   AddtoPack<3, 1>(data, wnewmass_);
   AddtoPack<3, 1>(data, aconvmass_);
@@ -366,14 +366,14 @@ void DRT::ELEMENTS::Beam3k::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack<3, 1>(data, rtnewmass_);
   AddtoPack<3, 1>(data, rconvmass_);
   AddtoPack<3, 1>(data, rnewmass_);
-  AddtoPack(data, axial_strain_GP_);
-  AddtoPack(data, twist_GP_);
-  AddtoPack(data, curvature_2_GP_);
-  AddtoPack(data, curvature_3_GP_);
-  AddtoPack(data, axial_force_GP_);
-  AddtoPack(data, torque_GP_);
-  AddtoPack(data, bending_moment_2_GP_);
-  AddtoPack(data, bending_moment_3_GP_);
+  AddtoPack(data, axial_strain_gp_);
+  AddtoPack(data, twist_gp_);
+  AddtoPack(data, curvature_2_gp_);
+  AddtoPack(data, curvature_3_gp_);
+  AddtoPack(data, axial_force_gp_);
+  AddtoPack(data, torque_gp_);
+  AddtoPack(data, bending_moment_2_gp_);
+  AddtoPack(data, bending_moment_3_gp_);
 
   return;
 }
@@ -393,14 +393,14 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   Beam3Base::Unpack(basedata);
 
   // extract all class variables of beam3k element
-  useFAD_ = ExtractInt(position, data);
+  use_fad_ = ExtractInt(position, data);
   isinit_ = ExtractInt(position, data);
   ExtractfromPack<3, 1>(position, data, Tref_);
-  ExtractfromPack<3, 1>(position, data, T_);
+  ExtractfromPack<3, 1>(position, data, t_);
   ExtractfromPack<3, 1>(position, data, theta0_);
-  ExtractfromPack<4, 1>(position, data, Qrefconv_);
-  ExtractfromPack<4, 1>(position, data, Qrefnew_);
-  ExtractfromPack<3, 1>(position, data, K0_);
+  ExtractfromPack<4, 1>(position, data, qrefconv_);
+  ExtractfromPack<4, 1>(position, data, qrefnew_);
+  ExtractfromPack<3, 1>(position, data, k0_);
   ExtractfromPack(position, data, length_);
   ExtractfromPack(position, data, jacobi_);
   ExtractfromPack(position, data, jacobi2_);
@@ -408,10 +408,10 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, jacobi2_cp_);
   rotvec_ = ExtractInt(position, data);
   weakkirchhoff_ = ExtractInt(position, data);
-  ExtractfromPack(position, data, Eint_);
-  ExtractfromPack(position, data, Ekin_);
-  ExtractfromPack<4, 1>(position, data, Qconvmass_);
-  ExtractfromPack<4, 1>(position, data, Qnewmass_);
+  ExtractfromPack(position, data, eint_);
+  ExtractfromPack(position, data, ekin_);
+  ExtractfromPack<4, 1>(position, data, qconvmass_);
+  ExtractfromPack<4, 1>(position, data, qnewmass_);
   ExtractfromPack<3, 1>(position, data, wconvmass_);
   ExtractfromPack<3, 1>(position, data, wnewmass_);
   ExtractfromPack<3, 1>(position, data, aconvmass_);
@@ -426,14 +426,14 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   ExtractfromPack<3, 1>(position, data, rtnewmass_);
   ExtractfromPack<3, 1>(position, data, rconvmass_);
   ExtractfromPack<3, 1>(position, data, rnewmass_);
-  ExtractfromPack(position, data, axial_strain_GP_);
-  ExtractfromPack(position, data, twist_GP_);
-  ExtractfromPack(position, data, curvature_2_GP_);
-  ExtractfromPack(position, data, curvature_3_GP_);
-  ExtractfromPack(position, data, axial_force_GP_);
-  ExtractfromPack(position, data, torque_GP_);
-  ExtractfromPack(position, data, bending_moment_2_GP_);
-  ExtractfromPack(position, data, bending_moment_3_GP_);
+  ExtractfromPack(position, data, axial_strain_gp_);
+  ExtractfromPack(position, data, twist_gp_);
+  ExtractfromPack(position, data, curvature_2_gp_);
+  ExtractfromPack(position, data, curvature_3_gp_);
+  ExtractfromPack(position, data, axial_force_gp_);
+  ExtractfromPack(position, data, torque_gp_);
+  ExtractfromPack(position, data, bending_moment_2_gp_);
+  ExtractfromPack(position, data, bending_moment_3_gp_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -524,14 +524,14 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
     }
 
     Tref_.resize(2);
-    T_.resize(2);
+    t_.resize(2);
     // write initial nodal tangents in extra vector
     for (int i = 0; i < 3; i++)
     {
       (Tref_[0])(i) = (Gref[0])(i, 0);
       (Tref_[1])(i) = (Gref[1])(i, 0);
-      (T_[0])(i) = (Gref[0])(i, 0);
-      (T_[1])(i) = (Gref[1])(i, 0);
+      (t_[0])(i) = (Gref[0])(i, 0);
+      (t_[1])(i) = (Gref[1])(i, 0);
     }
 
     // Get integration points for exact integration
@@ -549,23 +549,23 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
 
     // assure correct size of strain and stress resultant class variables and fill them
     // with zeros (by definition, the reference configuration is undeformed and stress-free)
-    axial_strain_GP_.resize(gausspoints.nquad);
-    std::fill(axial_strain_GP_.begin(), axial_strain_GP_.end(), 0.0);
-    twist_GP_.resize(gausspoints.nquad);
-    std::fill(twist_GP_.begin(), twist_GP_.end(), 0.0);
-    curvature_2_GP_.resize(gausspoints.nquad);
-    std::fill(curvature_2_GP_.begin(), curvature_2_GP_.end(), 0.0);
-    curvature_3_GP_.resize(gausspoints.nquad);
-    std::fill(curvature_3_GP_.begin(), curvature_3_GP_.end(), 0.0);
+    axial_strain_gp_.resize(gausspoints.nquad);
+    std::fill(axial_strain_gp_.begin(), axial_strain_gp_.end(), 0.0);
+    twist_gp_.resize(gausspoints.nquad);
+    std::fill(twist_gp_.begin(), twist_gp_.end(), 0.0);
+    curvature_2_gp_.resize(gausspoints.nquad);
+    std::fill(curvature_2_gp_.begin(), curvature_2_gp_.end(), 0.0);
+    curvature_3_gp_.resize(gausspoints.nquad);
+    std::fill(curvature_3_gp_.begin(), curvature_3_gp_.end(), 0.0);
 
-    axial_force_GP_.resize(gausspoints.nquad);
-    std::fill(axial_force_GP_.begin(), axial_force_GP_.end(), 0.0);
-    torque_GP_.resize(gausspoints.nquad);
-    std::fill(torque_GP_.begin(), torque_GP_.end(), 0.0);
-    bending_moment_2_GP_.resize(gausspoints.nquad);
-    std::fill(bending_moment_2_GP_.begin(), bending_moment_2_GP_.end(), 0.0);
-    bending_moment_3_GP_.resize(gausspoints.nquad);
-    std::fill(bending_moment_3_GP_.begin(), bending_moment_3_GP_.end(), 0.0);
+    axial_force_gp_.resize(gausspoints.nquad);
+    std::fill(axial_force_gp_.begin(), axial_force_gp_.end(), 0.0);
+    torque_gp_.resize(gausspoints.nquad);
+    std::fill(torque_gp_.begin(), torque_gp_.end(), 0.0);
+    bending_moment_2_gp_.resize(gausspoints.nquad);
+    std::fill(bending_moment_2_gp_.begin(), bending_moment_2_gp_.end(), 0.0);
+    bending_moment_3_gp_.resize(gausspoints.nquad);
+    std::fill(bending_moment_3_gp_.begin(), bending_moment_3_gp_.end(), 0.0);
 
     // calculate the length of the element via Newton iteration
     CORE::LINALG::Matrix<12, 1> pos_ref_centerline;
@@ -622,14 +622,14 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
         CORE::LARGEROTATIONS::CalculateSRTriads<double>(r_xi, Gref[ind], G_aux);
         // rotate also Gref and theta0_ via smallest rotation to get a consistent initial state
         Gref[ind] = G_aux;
-        CORE::LARGEROTATIONS::triadtoquaternion(G_aux, Qrefconv_[ind]);
-        CORE::LARGEROTATIONS::quaterniontoangle(Qrefconv_[ind], theta0_[ind]);
+        CORE::LARGEROTATIONS::triadtoquaternion(G_aux, qrefconv_[ind]);
+        CORE::LARGEROTATIONS::quaterniontoangle(qrefconv_[ind], theta0_[ind]);
       }
       else
       {
-        CORE::LARGEROTATIONS::triadtoquaternion(Gref[ind], Qrefconv_[ind]);
+        CORE::LARGEROTATIONS::triadtoquaternion(Gref[ind], qrefconv_[ind]);
       }
-      Qrefnew_[ind] = Qrefconv_[ind];
+      qrefnew_[ind] = qrefconv_[ind];
     }
 
     // SETUP INTERPOLATION via calculation of difference angle
@@ -681,7 +681,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
           theta_s(j) += L_i_xi(i) * theta_cp[i](j) / jacobi_[numgp];
         }
       }
-      computestrain(theta, theta_s, K0_[numgp]);
+      computestrain(theta, theta_s, k0_[numgp]);
 
       CORE::LINALG::Matrix<3, 3> temp_triad(true);
       CORE::LARGEROTATIONS::angletotriad(theta, temp_triad);
@@ -734,14 +734,14 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
     }
 
     Tref_.resize(2);
-    T_.resize(2);
+    t_.resize(2);
     // write initial nodal tangents in extra vector
     for (int i = 0; i < 3; i++)
     {
       (Tref_[0])(i) = (Gref[0])(i, 0);
       (Tref_[1])(i) = (Gref[1])(i, 0);
-      (T_[0])(i) = (Gref[0])(i, 0);
-      (T_[1])(i) = (Gref[1])(i, 0);
+      (t_[0])(i) = (Gref[0])(i, 0);
+      (t_[1])(i) = (Gref[1])(i, 0);
     }
 
     // Get integration points for exact integration
@@ -759,23 +759,23 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
 
     // assure correct size of strain and stress resultant class variables and fill them
     // with zeros (by definition, the reference configuration is undeformed and stress-free)
-    axial_strain_GP_.resize(gausspoints.nquad);
-    std::fill(axial_strain_GP_.begin(), axial_strain_GP_.end(), 0.0);
-    twist_GP_.resize(gausspoints.nquad);
-    std::fill(twist_GP_.begin(), twist_GP_.end(), 0.0);
-    curvature_2_GP_.resize(gausspoints.nquad);
-    std::fill(curvature_2_GP_.begin(), curvature_2_GP_.end(), 0.0);
-    curvature_3_GP_.resize(gausspoints.nquad);
-    std::fill(curvature_3_GP_.begin(), curvature_3_GP_.end(), 0.0);
+    axial_strain_gp_.resize(gausspoints.nquad);
+    std::fill(axial_strain_gp_.begin(), axial_strain_gp_.end(), 0.0);
+    twist_gp_.resize(gausspoints.nquad);
+    std::fill(twist_gp_.begin(), twist_gp_.end(), 0.0);
+    curvature_2_gp_.resize(gausspoints.nquad);
+    std::fill(curvature_2_gp_.begin(), curvature_2_gp_.end(), 0.0);
+    curvature_3_gp_.resize(gausspoints.nquad);
+    std::fill(curvature_3_gp_.begin(), curvature_3_gp_.end(), 0.0);
 
-    axial_force_GP_.resize(gausspoints.nquad);
-    std::fill(axial_force_GP_.begin(), axial_force_GP_.end(), 0.0);
-    torque_GP_.resize(gausspoints.nquad);
-    std::fill(torque_GP_.begin(), torque_GP_.end(), 0.0);
-    bending_moment_2_GP_.resize(gausspoints.nquad);
-    std::fill(bending_moment_2_GP_.begin(), bending_moment_2_GP_.end(), 0.0);
-    bending_moment_3_GP_.resize(gausspoints.nquad);
-    std::fill(bending_moment_3_GP_.begin(), bending_moment_3_GP_.end(), 0.0);
+    axial_force_gp_.resize(gausspoints.nquad);
+    std::fill(axial_force_gp_.begin(), axial_force_gp_.end(), 0.0);
+    torque_gp_.resize(gausspoints.nquad);
+    std::fill(torque_gp_.begin(), torque_gp_.end(), 0.0);
+    bending_moment_2_gp_.resize(gausspoints.nquad);
+    std::fill(bending_moment_2_gp_.begin(), bending_moment_2_gp_.end(), 0.0);
+    bending_moment_3_gp_.resize(gausspoints.nquad);
+    std::fill(bending_moment_3_gp_.begin(), bending_moment_3_gp_.end(), 0.0);
 
     // calculate the length of the element via Newton iteration
     CORE::LINALG::Matrix<12, 1> disp_refe_centerline;
@@ -847,14 +847,14 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
         CORE::LARGEROTATIONS::CalculateSRTriads<double>(r_xi, Gref[ind], G_aux);
         // rotate also Gref and theta0_ via smallest rotation to get a consistent initial state
         Gref[ind] = G_aux;
-        CORE::LARGEROTATIONS::triadtoquaternion(G_aux, Qrefconv_[ind]);
-        CORE::LARGEROTATIONS::quaterniontoangle(Qrefconv_[ind], theta0_[ind]);
+        CORE::LARGEROTATIONS::triadtoquaternion(G_aux, qrefconv_[ind]);
+        CORE::LARGEROTATIONS::quaterniontoangle(qrefconv_[ind], theta0_[ind]);
       }
       else
       {
-        CORE::LARGEROTATIONS::triadtoquaternion(Gref[ind], Qrefconv_[ind]);
+        CORE::LARGEROTATIONS::triadtoquaternion(Gref[ind], qrefconv_[ind]);
       }
-      Qrefnew_[ind] = Qrefconv_[ind];
+      qrefnew_[ind] = qrefconv_[ind];
     }  //(int node=0;node<BEAM3K_COLLOCATION_POINTS;node++)
 
     // SETUP INTERPOLATION via calculation of difference angle
@@ -940,7 +940,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       ComputeTriadSK(phi, r_s, Gref[REFERENCE_NODE], triad_mat);
       Calculate_clcurvature(r_s, r_ss, kappacl);
 
-      computestrainSK(phi_s, kappacl, Gref[REFERENCE_NODE], triad_mat, K0_[numgp]);
+      computestrainSK(phi_s, kappacl, Gref[REFERENCE_NODE], triad_mat, k0_[numgp]);
 
       SetInitialDynamicClassVariables(numgp, triad_mat, r);
     }
@@ -1522,7 +1522,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
     g_1_cp.Update(std::pow(abs_r_s, -1.0), r_s);
 
     CORE::LINALG::Matrix<3, 3, double> triad_ref_conv_cp(true);
-    CORE::LARGEROTATIONS::quaterniontotriad(Qrefconv_[ind], triad_ref_conv_cp);
+    CORE::LARGEROTATIONS::quaterniontotriad(qrefconv_[ind], triad_ref_conv_cp);
 
     g_1_cp_bar.Clear();
     for (unsigned int idim = 0; idim < ndim; ++idim) g_1_cp_bar(idim) = triad_ref_conv_cp(idim, 0);
@@ -1826,7 +1826,7 @@ void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNode
       triad_ref.Clear();
       triad_aux.Clear();
       triad_aux2.Clear();
-      CORE::LARGEROTATIONS::quaterniontotriad(Qrefconv_[node], triad_aux);
+      CORE::LARGEROTATIONS::quaterniontotriad(qrefconv_[node], triad_aux);
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j) triad_aux2(i, j) = triad_aux(i, j);
 
@@ -1916,7 +1916,7 @@ void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoi
     triad_ref.Clear();
     triad_aux.Clear();
     triad_aux2.Clear();
-    CORE::LARGEROTATIONS::quaterniontotriad(Qrefconv_[ind], triad_aux);
+    CORE::LARGEROTATIONS::quaterniontotriad(qrefconv_[ind], triad_aux);
     for (unsigned int i = 0; i < 3; ++i)
       for (unsigned int j = 0; j < 3; ++j) triad_aux2(i, j) = triad_aux(i, j);
 

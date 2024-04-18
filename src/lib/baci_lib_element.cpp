@@ -126,7 +126,7 @@ CORE::FE::CellType DRT::ShardsKeyToDisType(const unsigned& key)
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::Element::Element(int id, int owner)
-    : ParObject(), id_(id), lid_(-1), owner_(owner), mat_(1, Teuchos::null), isNurbs_(false)
+    : ParObject(), id_(id), lid_(-1), owner_(owner), mat_(1, Teuchos::null), is_nurbs_(false)
 {
 }
 
@@ -142,7 +142,7 @@ DRT::Element::Element(const DRT::Element& old)
       node_(old.node_),
       face_(old.face_),
       mat_(1, Teuchos::null),
-      isNurbs_(old.isNurbs_)
+      is_nurbs_(old.is_nurbs_)
 {
   // we do NOT want a deep copy of the condition_ as the condition
   // is only a reference in the elements anyway

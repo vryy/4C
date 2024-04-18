@@ -86,8 +86,8 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, INPUT::LineDefini
       else if (linedef->HaveNamed(fibername))
       {
         // Read in of data
-        ReadFiber(linedef, fibername, A_);
-        params_->StructuralTensorStrategy()->SetupStructuralTensor(A_, AA_);
+        ReadFiber(linedef, fibername, a_);
+        params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, aa_);
       }
       // error path
       else
@@ -107,21 +107,21 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, INPUT::LineDefini
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::PackSummand(CORE::COMM::PackBuffer& data) const
 {
-  AddtoPack(data, A_);
-  AddtoPack(data, AA_);
+  AddtoPack(data, a_);
+  AddtoPack(data, aa_);
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  ExtractfromPack(position, data, A_);
-  ExtractfromPack(position, data, AA_);
+  ExtractfromPack(position, data, a_);
+  ExtractfromPack(position, data, aa_);
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::GetFiberVecs(
     std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs)
 {
-  fibervecs.push_back(A_);
+  fibervecs.push_back(a_);
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(const double newangle,
@@ -144,9 +144,9 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(const double newangle
   idefgrd.Invert(defgrd);
 
   A_0.Multiply(idefgrd, ca);
-  A_.Update(1. / A_0.Norm2(), A_0);
+  a_.Update(1. / A_0.Norm2(), A_0);
 
-  params_->StructuralTensorStrategy()->SetupStructuralTensor(A_, AA_);
+  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, aa_);
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
@@ -169,8 +169,8 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
   const double beta = params_->beta_;
   const double gamma = params_->gamma_;
 
-  psi += (alpha + 0.5 * beta * std::log(prinv(2)) + gamma * (I4_ - 1.0)) * (I4_ - 1.0) -
-         0.5 * alpha * (I5_ - 1.0);
+  psi += (alpha + 0.5 * beta * std::log(prinv(2)) + gamma * (i4_ - 1.0)) * (i4_ - 1.0) -
+         0.5 * alpha * (i5_ - 1.0);
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
@@ -203,14 +203,14 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
   // (0) contribution
   {
     const double delta = 8.0 * gamma;
-    cmat.MultiplyNT(delta, AA_, AA_, 1.0);
+    cmat.MultiplyNT(delta, aa_, aa_, 1.0);
   }
 
   // (1) contribution
   {
     const double delta = 2.0 * beta;
-    cmat.MultiplyNT(delta, rcg_inv_s, AA_, 1.0);
-    cmat.MultiplyNT(delta, AA_, rcg_inv_s, 1.0);
+    cmat.MultiplyNT(delta, rcg_inv_s, aa_, 1.0);
+    cmat.MultiplyNT(delta, aa_, rcg_inv_s, 1.0);
   }
 
   using vmap = CORE::LINALG::VOIGT::IndexMappings;
@@ -226,17 +226,17 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
         const unsigned k = vmap::Voigt6x6To4Tensor(a, b, 2);
         const unsigned l = vmap::Voigt6x6To4Tensor(a, b, 3);
 
-        cmat(a, b) += delta * (A_(i) * A_(l) * identity[vmap::SymToVoigt6(j, k)] +
-                                  A_(i) * A_(k) * identity[vmap::SymToVoigt6(j, l)] +
-                                  A_(k) * A_(j) * identity[vmap::SymToVoigt6(i, l)] +
-                                  A_(l) * A_(j) * identity[vmap::SymToVoigt6(i, k)]);
+        cmat(a, b) += delta * (a_(i) * a_(l) * identity[vmap::SymToVoigt6(j, k)] +
+                                  a_(i) * a_(k) * identity[vmap::SymToVoigt6(j, l)] +
+                                  a_(k) * a_(j) * identity[vmap::SymToVoigt6(i, l)] +
+                                  a_(l) * a_(j) * identity[vmap::SymToVoigt6(i, k)]);
       }
     }
   }
 
   // (3) contribution
   {
-    const double delta = -beta * (I4_ - 1.0);
+    const double delta = -beta * (i4_ - 1.0);
     for (unsigned a = 0; a < 6; ++a)
     {
       for (unsigned b = 0; b < 6; ++b)
@@ -274,14 +274,14 @@ int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
   j_ = std::sqrt(I3);
 
   // calculate pseudo invariant I4 ( strain measure in fiber direction )
-  I4_ = AA_(0) * rcg(0) + AA_(1) * rcg(1) + AA_(2) * rcg(2) + AA_(3) * rcg(3) + AA_(4) * rcg(4) +
-        AA_(5) * rcg(5);
+  i4_ = aa_(0) * rcg(0) + aa_(1) * rcg(1) + aa_(2) * rcg(2) + aa_(3) * rcg(3) + aa_(4) * rcg(4) +
+        aa_(5) * rcg(5);
 
   // calculate pseudo invariant I5 ( quad. strain measure in fiber direction )
   CORE::LINALG::Matrix<6, 1> rcg_quad(false);
   CORE::LINALG::VOIGT::Strains::PowerOfSymmetricTensor(2, rcg, rcg_quad);
-  I5_ = AA_(0) * (rcg_quad(0)) + AA_(1) * (rcg_quad(1)) + AA_(2) * (rcg_quad(2)) +
-        AA_(3) * (rcg_quad(3)) + AA_(4) * (rcg_quad(4)) + AA_(5) * (rcg_quad(5));
+  i5_ = aa_(0) * (rcg_quad(0)) + aa_(1) * (rcg_quad(1)) + aa_(2) * (rcg_quad(2)) +
+        aa_(3) * (rcg_quad(3)) + aa_(4) * (rcg_quad(4)) + aa_(5) * (rcg_quad(5));
 
   return 0;
 }
@@ -299,23 +299,23 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
 
   // (0) contribution
   {
-    const double fac = beta * (I4_ - 1.0);
+    const double fac = beta * (i4_ - 1.0);
     stress.Update(fac, rcg_inv_s, 1.0);
   }
 
   // (1) contribution
   {
-    const double fac = 2.0 * (alpha + beta * std::log(j_) + 2.0 * gamma * (I4_ - 1.0));
-    stress.Update(fac, AA_, 1.0);
+    const double fac = 2.0 * (alpha + beta * std::log(j_) + 2.0 * gamma * (i4_ - 1.0));
+    stress.Update(fac, aa_, 1.0);
   }
 
   // (2) contribution
   {
     CORE::LINALG::Matrix<3, 1> ca(true);
-    CORE::LINALG::VOIGT::Stresses::MultiplyTensorVector(rcg_s, A_, ca);
+    CORE::LINALG::VOIGT::Stresses::MultiplyTensorVector(rcg_s, a_, ca);
 
     CORE::LINALG::Matrix<6, 1> caa_aac(true);
-    CORE::LINALG::VOIGT::Stresses::SymmetricOuterProduct(ca, A_, caa_aac);
+    CORE::LINALG::VOIGT::Stresses::SymmetricOuterProduct(ca, a_, caa_aac);
 
     const double fac = -alpha;
     stress.Update(fac, caa_aac, 1.0);

@@ -62,7 +62,7 @@ namespace CORE::LINALG
       // destruction order is important
       solver_ = Teuchos::null;
       prec_ = Teuchos::null;
-      Pmatrix_ = Teuchos::null;
+      pmatrix_ = Teuchos::null;
     }
 
     /// create internal preconditioner object
@@ -142,7 +142,7 @@ namespace CORE::LINALG
     Teuchos::RCP<Epetra_Operator> prec_;
 
     //! system of equations used for preconditioning used by prec_ only
-    Teuchos::RCP<Epetra_RowMatrix> Pmatrix_;
+    Teuchos::RCP<Epetra_RowMatrix> pmatrix_;
 
     /// there is always a solver object
     Teuchos::RCP<Epetra_MultiVector> x_;

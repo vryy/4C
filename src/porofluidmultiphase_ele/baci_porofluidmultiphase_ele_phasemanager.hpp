@@ -1366,10 +1366,10 @@ namespace DRT
         double porosity_;
 
         //! Jacobian of def gradient
-        double J_;
+        double j_;
 
         //! derivative of porosity w.r.t. Jacobian of defgradient
-        double dporosity_dJ_;
+        double dporosity_dj_;
 
         //! derivative of porosity w.r.t. solid pressure
         double dporosity_dp_;

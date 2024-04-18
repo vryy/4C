@@ -41,7 +41,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::OnGlobalDataInitialized()
       MAT::FiberAnisotropyExtension<1>::SetFibers(gp, fibers);
     }
 
-    orthogonalStructuralTensor_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
+    orthogonal_structural_tensor_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
 
     SetFiberLocation(MAT::FiberLocation::GPFibers);
   }
@@ -52,7 +52,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::OnGlobalDataInitialized()
     fibers[0].Update(GetAnisotropy()->GetElementCylinderCoordinateSystem().GetRad());
     FiberAnisotropyExtension<1>::SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
 
-    orthogonalStructuralTensor_.resize(1);
+    orthogonal_structural_tensor_.resize(1);
 
     SetFiberLocation(MAT::FiberLocation::ElementFibers);
   }
@@ -63,34 +63,34 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::OnGlobalDataInitialized()
         "elastin material needs at least one.");
   }
 
-  for (unsigned gp = 0; gp < orthogonalStructuralTensor_.size(); ++gp)
+  for (unsigned gp = 0; gp < orthogonal_structural_tensor_.size(); ++gp)
   {
-    orthogonalStructuralTensor_[gp] = CORE::LINALG::IdentityMatrix<3>();
+    orthogonal_structural_tensor_[gp] = CORE::LINALG::IdentityMatrix<3>();
 
-    orthogonalStructuralTensor_[gp].Update(-1.0, GetStructuralTensor(gp, 0), 1.0);
+    orthogonal_structural_tensor_[gp].Update(-1.0, GetStructuralTensor(gp, 0), 1.0);
   }
 }
 
 const CORE::LINALG::Matrix<3, 3>&
 MIXTURE::ElastinMembraneAnisotropyExtension::GetOrthogonalStructuralTensor(int gp)
 {
-  if (orthogonalStructuralTensor_.empty())
+  if (orthogonal_structural_tensor_.empty())
   {
     FOUR_C_THROW("The coordinate system hast not been initialized yet.");
 
     // avoid compiler error
-    return orthogonalStructuralTensor_[0];
+    return orthogonal_structural_tensor_[0];
   }
 
-  if (orthogonalStructuralTensor_.size() == 1)
+  if (orthogonal_structural_tensor_.size() == 1)
   {
     // using element fibers
-    return orthogonalStructuralTensor_[0];
+    return orthogonal_structural_tensor_[0];
   }
 
 
   // using Gauss-point fibers
-  return orthogonalStructuralTensor_[gp];
+  return orthogonal_structural_tensor_[gp];
 }
 
 // Constructor for the parameter class
@@ -123,7 +123,7 @@ MIXTURE::MixtureConstituentElastHyperElastinMembrane::MixtureConstituentElastHyp
     MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane* params, int id)
     : MixtureConstituentElastHyperBase(params, id),
       params_(params),
-      anisotropyExtension_(Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
+      anisotropy_extension_(Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
           new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)))
 {
   // Create summands
@@ -162,7 +162,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::PackConstituent(
 
   CORE::COMM::ParObject::AddtoPack(data, mue_frac_);
 
-  anisotropyExtension_.PackAnisotropy(data);
+  anisotropy_extension_.PackAnisotropy(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -181,7 +181,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::UnpackConstituent(
 
   CORE::COMM::ParObject::ExtractfromPack(position, data, mue_frac_);
 
-  anisotropyExtension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.UnpackAnisotropy(data, position);
 
   // loop map of associated potential summands
   for (auto& summand : potsum_membrane_) summand->UnpackSummand(data, position);
@@ -192,7 +192,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::RegisterAnisotropyExt
 {
   MixtureConstituentElastHyperBase::RegisterAnisotropyExtensions(anisotropy);
 
-  anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
+  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
 
   for (const auto& summand : potsum_membrane_) summand->RegisterAnisotropyExtensions(anisotropy);
 }
@@ -372,8 +372,8 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::
 
   // Compute radial structural tensor in grown configuration
   static CORE::LINALG::Matrix<3, 3> FinArad(false);
-  FinArad.MultiplyNN(Fin, anisotropyExtension_.GetStructuralTensor(gp, 0));
-  Aradgr.MultiplyNT(iCin.Dot(anisotropyExtension_.GetStructuralTensor(gp, 0)), FinArad, Fin, 0.0);
+  FinArad.MultiplyNN(Fin, anisotropy_extension_.GetStructuralTensor(gp, 0));
+  Aradgr.MultiplyNT(iCin.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)), FinArad, Fin, 0.0);
 
   // Compute orthogonal (to radial) structural tensor in grown configuration
   Aorthgr = CORE::LINALG::IdentityMatrix<3>();

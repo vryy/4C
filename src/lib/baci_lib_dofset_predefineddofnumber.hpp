@@ -54,7 +54,7 @@ namespace DRT
           numdofperelementelewise_(Teuchos::null),
           numdofperface_(numdofperface),
           numdofperfacefacewise_(Teuchos::null),
-          uniqueGIDs_(uniqueGIDs)
+          unique_gi_ds_(uniqueGIDs)
     {
       return;
     }
@@ -69,7 +69,7 @@ namespace DRT
           numdofperelementelewise_(numdofperelement),
           numdofperface_(numdofperface),
           numdofperfacefacewise_(Teuchos::null),
-          uniqueGIDs_(uniqueGIDs)
+          unique_gi_ds_(uniqueGIDs)
     {
       return;
     }
@@ -85,7 +85,7 @@ namespace DRT
           numdofperelementelewise_(numdofperelement),
           numdofperface_(0),
           numdofperfacefacewise_(numdofperface),
-          uniqueGIDs_(uniqueGIDs)
+          unique_gi_ds_(uniqueGIDs)
     {
       return;
     }
@@ -99,7 +99,7 @@ namespace DRT
     /// Add Dof Set to list #static_dofsets_
     void AddDofSettoList() override
     {
-      if (uniqueGIDs_)
+      if (unique_gi_ds_)
         // add to static list -> the auxiliary dofs will get unique gids
         DofSet::AddDofSettoList();
       else
@@ -187,7 +187,7 @@ namespace DRT
 
     /// bool indicating if the dofs should get unique global IDs
     /// can be set to false, if the dofs never appear in a global map)
-    const bool uniqueGIDs_;
+    const bool unique_gi_ds_;
 
   };  // DofSetPredefinedDoFNumber
 

@@ -31,18 +31,18 @@ CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
       firstmatid_(*container->Get<int>("FirstMatID")),
       secondmatid_(*container->Get<int>("SecondMatID")),
-      lateralLength_(*container->Get<double>("LateralLength")),
+      lateral_length_(*container->Get<double>("LateralLength")),
       resolution_(*container->Get<int>("Resolution")),
-      pressureGreenFunFlag_(*container->Get<bool>("PressureGreenFunFlag")),
-      randomTopologyFlag_(*container->Get<bool>("RandomTopologyFlag")),
-      randomSeedFlag_(*container->Get<bool>("RandomSeedFlag")),
-      randomGeneratorSeed_(*container->Get<int>("RandomGeneratorSeed")),
+      pressure_green_fun_flag_(*container->Get<bool>("PressureGreenFunFlag")),
+      random_topology_flag_(*container->Get<bool>("RandomTopologyFlag")),
+      random_seed_flag_(*container->Get<bool>("RandomSeedFlag")),
+      random_generator_seed_(*container->Get<int>("RandomGeneratorSeed")),
       tolerance_(*container->Get<double>("Tolerance")),
-      maxIteration_(*container->Get<int>("MaxIteration")),
-      warmStartingFlag_(*container->Get<bool>("WarmStartingFlag")),
-      finiteDifferenceFraction_(*container->Get<double>("FiniteDifferenceFraction")),
-      activeGapTolerance_(*container->Get<double>("ActiveGapTolerance")),
-      topologyFilePath_(*(container->Get<std::string>("TopologyFilePath")))
+      max_iteration_(*container->Get<int>("MaxIteration")),
+      warm_starting_flag_(*container->Get<bool>("WarmStartingFlag")),
+      finite_difference_fraction_(*container->Get<double>("FiniteDifferenceFraction")),
+      active_gap_tolerance_(*container->Get<double>("ActiveGapTolerance")),
+      topology_file_path_(*(container->Get<std::string>("TopologyFilePath")))
 {
   this->SetParameters();
 }
@@ -84,7 +84,7 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
   const double nu2 = *secondmat->Get<double>("NUE");
 
   // Composite Young's modulus
-  compositeYoungs_ = pow(((1 - pow(nu1, 2)) / E1 + (1 - pow(nu2, 2)) / E2), -1);
+  composite_youngs_ = pow(((1 - pow(nu1, 2)) / E1 + (1 - pow(nu2, 2)) / E2), -1);
 
   // Composite Shear modulus
   double G1 = E1 / (2 * (1 + nu1));
@@ -92,9 +92,9 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
   double CompositeShear = pow(((2 - nu1) / (4 * G1) + (2 - nu2) / (4 * G2)), -1);
 
   // Composite Poisson's ratio
-  compositePoissonsRatio_ = compositeYoungs_ / (2 * CompositeShear) - 1;
+  composite_poissons_ratio_ = composite_youngs_ / (2 * CompositeShear) - 1;
 
-  gridSize_ = lateralLength_ / (pow(2, resolution_) + 1);
+  grid_size_ = lateral_length_ / (pow(2, resolution_) + 1);
 
   // Shape factors (See section 3.3 of https://doi.org/10.1007/s00466-019-01791-3)
   // These are the shape factors to calculate the elastic compliance correction of the micro-scale
@@ -115,14 +115,14 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
       {3, 0.826126871395416}, {4, 0.841369158110513}, {5, 0.851733020725652},
       {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}};
 
-  const double ShapeFactor = pressureGreenFunFlag_ ? shape_factors_pressure.at(resolution_)
-                                                   : shape_factors_force.at(resolution_);
+  const double ShapeFactor = pressure_green_fun_flag_ ? shape_factors_pressure.at(resolution_)
+                                                      : shape_factors_force.at(resolution_);
 
-  elasticComplianceCorrection_ = lateralLength_ * compositeYoungs_ / ShapeFactor;
+  elastic_compliance_correction_ = lateral_length_ * composite_youngs_ / ShapeFactor;
 
-  const int iter = int(ceil((lateralLength_ - (gridSize_ / 2)) / gridSize_));
+  const int iter = int(ceil((lateral_length_ - (grid_size_ / 2)) / grid_size_));
   meshgrid_ = Teuchos::Ptr(new std::vector<double>(iter));
-  MIRCO::CreateMeshgrid(*meshgrid_, iter, gridSize_);
+  MIRCO::CreateMeshgrid(*meshgrid_, iter, grid_size_);
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

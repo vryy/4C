@@ -139,17 +139,17 @@ namespace MAT
     std::string restartname_;
 
     //! determinate of deformation gradient of macro dis at last time step
-    double detFn_;
+    double det_fn_;
 
     //! determinate of deformation gradient of macro dis at current step
-    double detFnp_;
+    double det_fnp_;
 
     //! derivative of determinate of deformation gradient of macro dis w.r.t. time at last time step
-    double ddetFdtn_;
+    double ddet_fdtn_;
 
     //! derivative of determinate of deformation gradient of macro dis w.r.t. time at current time
     //! step
-    double ddetFdtnp_;
+    double ddet_fdtnp_;
 
     //! indicates if macro dis deforms
     const bool is_ale_;

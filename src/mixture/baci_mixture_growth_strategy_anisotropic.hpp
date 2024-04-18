@@ -73,7 +73,7 @@ namespace MIXTURE
     const PAR::AnisotropicGrowthStrategy* params_{};
 
     /// Anisotropy extension that manages fibers and structural tensors
-    MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
+    MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };
 }  // namespace MIXTURE
 

@@ -29,19 +29,19 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 CORE::LINEAR_SOLVER::AMGNXN::Vcycle::Vcycle(int NumLevels, int NumSweeps, int FirstLevel)
-    : NumLevels_(NumLevels),
-      NumSweeps_(NumSweeps),
-      FirstLevel_(FirstLevel),
-      Avec_(NumLevels, Teuchos::null),
-      Pvec_(NumLevels - 1, Teuchos::null),
-      Rvec_(NumLevels - 1, Teuchos::null),
-      SvecPre_(NumLevels, Teuchos::null),
-      SvecPos_(NumLevels - 1, Teuchos::null),
-      flag_set_up_A_(false),
-      flag_set_up_P_(false),
-      flag_set_up_R_(false),
-      flag_set_up_Pre_(false),
-      flag_set_up_Pos_(false)
+    : num_levels_(NumLevels),
+      num_sweeps_(NumSweeps),
+      first_level_(FirstLevel),
+      avec_(NumLevels, Teuchos::null),
+      pvec_(NumLevels - 1, Teuchos::null),
+      rvec_(NumLevels - 1, Teuchos::null),
+      svec_pre_(NumLevels, Teuchos::null),
+      svec_pos_(NumLevels - 1, Teuchos::null),
+      flag_set_up_a_(false),
+      flag_set_up_p_(false),
+      flag_set_up_r_(false),
+      flag_set_up_pre_(false),
+      flag_set_up_pos_(false)
 {
 }
 
@@ -52,13 +52,13 @@ CORE::LINEAR_SOLVER::AMGNXN::Vcycle::Vcycle(int NumLevels, int NumSweeps, int Fi
 void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetOperators(
     std::vector<Teuchos::RCP<BlockedMatrix>> Avec)
 {
-  if ((int)Avec.size() != NumLevels_) FOUR_C_THROW("Error in Setting Avec_: Size dismatch.");
-  for (int i = 0; i < NumLevels_; i++)
+  if ((int)Avec.size() != num_levels_) FOUR_C_THROW("Error in Setting Avec_: Size dismatch.");
+  for (int i = 0; i < num_levels_; i++)
   {
     if (Avec[i] == Teuchos::null) FOUR_C_THROW("Error in Setting Avec_: Null pointer.");
-    Avec_[i] = Avec[i];
+    avec_[i] = Avec[i];
   }
-  flag_set_up_A_ = true;
+  flag_set_up_a_ = true;
   return;
 }
 
@@ -69,13 +69,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetOperators(
 void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetProjectors(
     std::vector<Teuchos::RCP<BlockedMatrix>> Pvec)
 {
-  if ((int)Pvec.size() != NumLevels_ - 1) FOUR_C_THROW("Error in Setting Pvec_: Size dismatch.");
-  for (int i = 0; i < NumLevels_ - 1; i++)
+  if ((int)Pvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Pvec_: Size dismatch.");
+  for (int i = 0; i < num_levels_ - 1; i++)
   {
     if (Pvec[i] == Teuchos::null) FOUR_C_THROW("Error in Setting Pvec_: Null pointer.");
-    Pvec_[i] = Pvec[i];
+    pvec_[i] = Pvec[i];
   }
-  flag_set_up_P_ = true;
+  flag_set_up_p_ = true;
   return;
 }
 
@@ -86,13 +86,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetProjectors(
 void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetRestrictors(
     std::vector<Teuchos::RCP<BlockedMatrix>> Rvec)
 {
-  if ((int)Rvec.size() != NumLevels_ - 1) FOUR_C_THROW("Error in Setting Rvec_: Size dismatch.");
-  for (int i = 0; i < NumLevels_ - 1; i++)
+  if ((int)Rvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Rvec_: Size dismatch.");
+  for (int i = 0; i < num_levels_ - 1; i++)
   {
     if (Rvec[i] == Teuchos::null) FOUR_C_THROW("Error in Setting Rvec_: Null pointer.");
-    Rvec_[i] = Rvec[i];
+    rvec_[i] = Rvec[i];
   }
-  flag_set_up_R_ = true;
+  flag_set_up_r_ = true;
   return;
 }
 
@@ -103,13 +103,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetRestrictors(
 void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetPreSmoothers(
     std::vector<Teuchos::RCP<GenericSmoother>> SvecPre)
 {
-  if ((int)SvecPre.size() != NumLevels_) FOUR_C_THROW("Error in Setting SvecPre: Size dismatch.");
-  for (int i = 0; i < NumLevels_; i++)
+  if ((int)SvecPre.size() != num_levels_) FOUR_C_THROW("Error in Setting SvecPre: Size dismatch.");
+  for (int i = 0; i < num_levels_; i++)
   {
     if (SvecPre[i] == Teuchos::null) FOUR_C_THROW("Error in Setting SvecPre: Null pointer.");
-    SvecPre_[i] = SvecPre[i];
+    svec_pre_[i] = SvecPre[i];
   }
-  flag_set_up_Pre_ = true;
+  flag_set_up_pre_ = true;
   return;
 }
 
@@ -119,14 +119,14 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetPreSmoothers(
 void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetPosSmoothers(
     std::vector<Teuchos::RCP<GenericSmoother>> SvecPos)
 {
-  if ((int)SvecPos.size() != NumLevels_ - 1)
+  if ((int)SvecPos.size() != num_levels_ - 1)
     FOUR_C_THROW("Error in Setting SvecPos: Size dismatch.");
-  for (int i = 0; i < NumLevels_ - 1; i++)
+  for (int i = 0; i < num_levels_ - 1; i++)
   {
     if (SvecPos[i] == Teuchos::null) FOUR_C_THROW("Error in Setting SvecPos: Null pointer.");
-    SvecPos_[i] = SvecPos[i];
+    svec_pos_[i] = SvecPos[i];
   }
-  flag_set_up_Pos_ = true;
+  flag_set_up_pos_ = true;
   return;
 }
 
@@ -135,36 +135,36 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetPosSmoothers(
 void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::DoVcycle(
     const BlockedVector& X, BlockedVector& Y, int level, bool InitialGuessIsZero) const
 {
-  if (level != NumLevels_ - 1)  // Perform one iteration of the V-cycle
+  if (level != num_levels_ - 1)  // Perform one iteration of the V-cycle
   {
     // Apply presmoother
-    SvecPre_[level]->Solve(X, Y, InitialGuessIsZero);
+    svec_pre_[level]->Solve(X, Y, InitialGuessIsZero);
 
     // Compute residual
     BlockedVector DX = X.DeepCopy();
-    Avec_[level]->Apply(Y, DX);
+    avec_[level]->Apply(Y, DX);
     DX.Update(1.0, X, -1.0);
 
     //  Create coarser representation of the residual
     int NV = X.GetVector(0)->NumVectors();
-    Teuchos::RCP<BlockedVector> DXcoarse = Rvec_[level]->NewRangeBlockedVector(NV, false);
-    Rvec_[level]->Apply(DX, *DXcoarse);
+    Teuchos::RCP<BlockedVector> DXcoarse = rvec_[level]->NewRangeBlockedVector(NV, false);
+    rvec_[level]->Apply(DX, *DXcoarse);
 
     // Damp error with coarser levels
-    Teuchos::RCP<BlockedVector> DYcoarse = Pvec_[level]->NewDomainBlockedVector(NV, false);
+    Teuchos::RCP<BlockedVector> DYcoarse = pvec_[level]->NewDomainBlockedVector(NV, false);
     DoVcycle(*DXcoarse, *DYcoarse, level + 1, true);
 
     // Compute correction
     BlockedVector DY = Y.DeepCopy();
-    Pvec_[level]->Apply(*DYcoarse, DY);
+    pvec_[level]->Apply(*DYcoarse, DY);
     Y.Update(1.0, DY, 1.0);
 
     // Apply post smoother
-    SvecPos_[level]->Solve(X, Y, false);
+    svec_pos_[level]->Solve(X, Y, false);
   }
   else  // Apply presmoother
   {
-    SvecPre_[level]->Solve(X, Y, InitialGuessIsZero);
+    svec_pre_[level]->Solve(X, Y, InitialGuessIsZero);
   }
 
 
@@ -178,14 +178,14 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::Solve(
     const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero) const
 {
   // Check if everithing is set up
-  if (!flag_set_up_A_) FOUR_C_THROW("Operators missing");
-  if (!flag_set_up_P_) FOUR_C_THROW("Projectors missing");
-  if (!flag_set_up_R_) FOUR_C_THROW("Restrictors missing");
-  if (!flag_set_up_Pre_) FOUR_C_THROW("Pre-smoothers missing");
-  if (!flag_set_up_Pos_) FOUR_C_THROW("Post-smoothers missing");
+  if (!flag_set_up_a_) FOUR_C_THROW("Operators missing");
+  if (!flag_set_up_p_) FOUR_C_THROW("Projectors missing");
+  if (!flag_set_up_r_) FOUR_C_THROW("Restrictors missing");
+  if (!flag_set_up_pre_) FOUR_C_THROW("Pre-smoothers missing");
+  if (!flag_set_up_pos_) FOUR_C_THROW("Post-smoothers missing");
 
   // Work!
-  for (int i = 0; i < NumSweeps_; i++) DoVcycle(X, Y, FirstLevel_, InitialGuessIsZero and i == 0);
+  for (int i = 0; i < num_sweeps_; i++) DoVcycle(X, Y, first_level_, InitialGuessIsZero and i == 0);
   return;
 }
 
@@ -194,19 +194,19 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::Solve(
 /*------------------------------------------------------------------------------*/
 CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::VcycleSingle(
     int NumLevels, int NumSweeps, int FirstLevel)
-    : NumLevels_(NumLevels),
-      NumSweeps_(NumSweeps),
-      FirstLevel_(FirstLevel),
-      Avec_(NumLevels, Teuchos::null),
-      Pvec_(NumLevels - 1, Teuchos::null),
-      Rvec_(NumLevels - 1, Teuchos::null),
-      SvecPre_(NumLevels, Teuchos::null),
-      SvecPos_(NumLevels - 1, Teuchos::null),
-      flag_set_up_A_(false),
-      flag_set_up_P_(false),
-      flag_set_up_R_(false),
-      flag_set_up_Pre_(false),
-      flag_set_up_Pos_(false)
+    : num_levels_(NumLevels),
+      num_sweeps_(NumSweeps),
+      first_level_(FirstLevel),
+      avec_(NumLevels, Teuchos::null),
+      pvec_(NumLevels - 1, Teuchos::null),
+      rvec_(NumLevels - 1, Teuchos::null),
+      svec_pre_(NumLevels, Teuchos::null),
+      svec_pos_(NumLevels - 1, Teuchos::null),
+      flag_set_up_a_(false),
+      flag_set_up_p_(false),
+      flag_set_up_r_(false),
+      flag_set_up_pre_(false),
+      flag_set_up_pos_(false)
 {
 }
 
@@ -217,13 +217,13 @@ CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::VcycleSingle(
 void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetOperators(
     std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Avec)
 {
-  if ((int)Avec.size() != NumLevels_) FOUR_C_THROW("Error in Setting Avec_: Size dismatch.");
-  for (int i = 0; i < NumLevels_; i++)
+  if ((int)Avec.size() != num_levels_) FOUR_C_THROW("Error in Setting Avec_: Size dismatch.");
+  for (int i = 0; i < num_levels_; i++)
   {
     if (Avec[i] == Teuchos::null) FOUR_C_THROW("Error in Setting Avec_: Null pointer.");
-    Avec_[i] = Avec[i];
+    avec_[i] = Avec[i];
   }
-  flag_set_up_A_ = true;
+  flag_set_up_a_ = true;
   return;
 }
 
@@ -234,13 +234,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetOperators(
 void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetProjectors(
     std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Pvec)
 {
-  if ((int)Pvec.size() != NumLevels_ - 1) FOUR_C_THROW("Error in Setting Pvec_: Size dismatch.");
-  for (int i = 0; i < NumLevels_ - 1; i++)
+  if ((int)Pvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Pvec_: Size dismatch.");
+  for (int i = 0; i < num_levels_ - 1; i++)
   {
     if (Pvec[i] == Teuchos::null) FOUR_C_THROW("Error in Setting Pvec_: Null pointer.");
-    Pvec_[i] = Pvec[i];
+    pvec_[i] = Pvec[i];
   }
-  flag_set_up_P_ = true;
+  flag_set_up_p_ = true;
   return;
 }
 
@@ -251,13 +251,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetProjectors(
 void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetRestrictors(
     std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Rvec)
 {
-  if ((int)Rvec.size() != NumLevels_ - 1) FOUR_C_THROW("Error in Setting Rvec_: Size dismatch.");
-  for (int i = 0; i < NumLevels_ - 1; i++)
+  if ((int)Rvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Rvec_: Size dismatch.");
+  for (int i = 0; i < num_levels_ - 1; i++)
   {
     if (Rvec[i] == Teuchos::null) FOUR_C_THROW("Error in Setting Rvec_: Null pointer.");
-    Rvec_[i] = Rvec[i];
+    rvec_[i] = Rvec[i];
   }
-  flag_set_up_R_ = true;
+  flag_set_up_r_ = true;
   return;
 }
 
@@ -268,13 +268,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetRestrictors(
 void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetPreSmoothers(
     std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre)
 {
-  if ((int)SvecPre.size() != NumLevels_) FOUR_C_THROW("Error in Setting SvecPre: Size dismatch.");
-  for (int i = 0; i < NumLevels_; i++)
+  if ((int)SvecPre.size() != num_levels_) FOUR_C_THROW("Error in Setting SvecPre: Size dismatch.");
+  for (int i = 0; i < num_levels_; i++)
   {
     if (SvecPre[i] == Teuchos::null) FOUR_C_THROW("Error in Setting SvecPre: Null pointer.");
-    SvecPre_[i] = SvecPre[i];
+    svec_pre_[i] = SvecPre[i];
   }
-  flag_set_up_Pre_ = true;
+  flag_set_up_pre_ = true;
   return;
 }
 
@@ -284,14 +284,14 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetPreSmoothers(
 void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetPosSmoothers(
     std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos)
 {
-  if ((int)SvecPos.size() != NumLevels_ - 1)
+  if ((int)SvecPos.size() != num_levels_ - 1)
     FOUR_C_THROW("Error in Setting SvecPos: Size dismatch.");
-  for (int i = 0; i < NumLevels_ - 1; i++)
+  for (int i = 0; i < num_levels_ - 1; i++)
   {
     if (SvecPos[i] == Teuchos::null) FOUR_C_THROW("Error in Setting SvecPos: Null pointer.");
-    SvecPos_[i] = SvecPos[i];
+    svec_pos_[i] = SvecPos[i];
   }
-  flag_set_up_Pos_ = true;
+  flag_set_up_pos_ = true;
   return;
 }
 
@@ -300,38 +300,38 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetPosSmoothers(
 void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::DoVcycle(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level, bool InitialGuessIsZero) const
 {
-  if (level != NumLevels_ - 1)  // Perform one iteration of the V-cycle
+  if (level != num_levels_ - 1)  // Perform one iteration of the V-cycle
   {
     // Apply presmoother
-    SvecPre_[level]->Apply(X, Y, InitialGuessIsZero);
+    svec_pre_[level]->Apply(X, Y, InitialGuessIsZero);
 
     // Compute residual
     int NV = X.NumVectors();
     Epetra_MultiVector DX(X.Map(), NV, false);
-    Avec_[level]->Apply(Y, DX);
+    avec_[level]->Apply(Y, DX);
     DX.Update(1.0, X, -1.0);
 
     //  Create coarser representation of the residual
-    const Epetra_Map& Map = Rvec_[level]->RangeMap();
+    const Epetra_Map& Map = rvec_[level]->RangeMap();
     Epetra_MultiVector DXcoarse(Map, NV, false);
-    Rvec_[level]->Apply(DX, DXcoarse);
+    rvec_[level]->Apply(DX, DXcoarse);
 
     // Damp error with coarser levels
-    const Epetra_Map& Map2 = Pvec_[level]->DomainMap();
+    const Epetra_Map& Map2 = pvec_[level]->DomainMap();
     Epetra_MultiVector DYcoarse(Map2, NV, false);
     DoVcycle(DXcoarse, DYcoarse, level + 1, true);
 
     // Compute correction
     Epetra_MultiVector DY(Y.Map(), NV, false);
-    Pvec_[level]->Apply(DYcoarse, DY);
+    pvec_[level]->Apply(DYcoarse, DY);
     Y.Update(1.0, DY, 1.0);
 
     // Apply post smoother
-    SvecPos_[level]->Apply(X, Y, false);
+    svec_pos_[level]->Apply(X, Y, false);
   }
   else  // Apply presmoother
   {
-    SvecPre_[level]->Apply(X, Y, InitialGuessIsZero);
+    svec_pre_[level]->Apply(X, Y, InitialGuessIsZero);
   }
 
   return;
@@ -344,14 +344,14 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::Apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
   // Check if everithing is set up
-  if (!flag_set_up_A_) FOUR_C_THROW("Operators missing");
-  if (!flag_set_up_P_) FOUR_C_THROW("Projectors missing");
-  if (!flag_set_up_R_) FOUR_C_THROW("Restrictors missing");
-  if (!flag_set_up_Pre_) FOUR_C_THROW("Pre-smoothers missing");
-  if (!flag_set_up_Pos_) FOUR_C_THROW("Post-smoothers missing");
+  if (!flag_set_up_a_) FOUR_C_THROW("Operators missing");
+  if (!flag_set_up_p_) FOUR_C_THROW("Projectors missing");
+  if (!flag_set_up_r_) FOUR_C_THROW("Restrictors missing");
+  if (!flag_set_up_pre_) FOUR_C_THROW("Pre-smoothers missing");
+  if (!flag_set_up_pos_) FOUR_C_THROW("Post-smoothers missing");
 
   // Work!
-  for (int i = 0; i < NumSweeps_; i++) DoVcycle(X, Y, FirstLevel_, InitialGuessIsZero and i == 0);
+  for (int i = 0; i < num_sweeps_; i++) DoVcycle(X, Y, first_level_, InitialGuessIsZero and i == 0);
   return;
 }
 

@@ -45,12 +45,12 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
   while (1)
   {
     std::vector<double> eqn = faee1.get_equation();
-    DistributeBoundaryCellGaussPoints(eqn, corners1, BcellgausPts_, ptsEachLine);
+    DistributeBoundaryCellGaussPoints(eqn, corners1, bcellgaus_pts_, ptsEachLine);
 
 
     std::vector<std::vector<double>> moment_matbc(
-        num_func_, std::vector<double>(BcellgausPts_.size()));
-    momentFittingMatrix(moment_matbc, BcellgausPts_);
+        num_func_, std::vector<double>(bcellgaus_pts_.size()));
+    momentFittingMatrix(moment_matbc, bcellgaus_pts_);
 
 
     // if all the elements in a row of the moment fitting matrix are zero, then the row has to be
@@ -113,9 +113,9 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
     for (int i = 0; i < num_func_; i++)
     {
       err(i) = 0.0;
-      for (unsigned j = 0; j < BcellgausPts_.size(); j++)
+      for (unsigned j = 0; j < bcellgaus_pts_.size(); j++)
       {
-        err(i) += Bcellweights(j) * base_function(BcellgausPts_[j], i + 1);
+        err(i) += Bcellweights(j) * base_function(bcellgaus_pts_[j], i + 1);
       }
 
       if (fabs(rhs_bcell_temp(i)) > 1e-8)
@@ -131,7 +131,7 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
     else
     {
       ptsEachLine++;
-      BcellgausPts_.clear();
+      bcellgaus_pts_.clear();
     }
   }
 

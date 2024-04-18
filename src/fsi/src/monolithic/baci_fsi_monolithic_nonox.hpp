@@ -294,22 +294,22 @@ namespace FSI
     double tolinc_;   //!< tolerance residual temperatures
     double tolfres_;  //!< tolerance force residual
 
-    double TOL_DIS_RES_L2_;
-    double TOL_DIS_RES_INF_;
-    double TOL_DIS_INC_L2_;
-    double TOL_DIS_INC_INF_;
-    double TOL_FSI_RES_L2_;
-    double TOL_FSI_RES_INF_;
-    double TOL_FSI_INC_L2_;
-    double TOL_FSI_INC_INF_;
-    double TOL_PRE_RES_L2_;
-    double TOL_PRE_RES_INF_;
-    double TOL_PRE_INC_L2_;
-    double TOL_PRE_INC_INF_;
-    double TOL_VEL_RES_L2_;
-    double TOL_VEL_RES_INF_;
-    double TOL_VEL_INC_L2_;
-    double TOL_VEL_INC_INF_;
+    double tol_dis_res_l2_;
+    double tol_dis_res_inf_;
+    double tol_dis_inc_l2_;
+    double tol_dis_inc_inf_;
+    double tol_fsi_res_l2_;
+    double tol_fsi_res_inf_;
+    double tol_fsi_inc_l2_;
+    double tol_fsi_inc_inf_;
+    double tol_pre_res_l2_;
+    double tol_pre_res_inf_;
+    double tol_pre_inc_l2_;
+    double tol_pre_inc_inf_;
+    double tol_vel_res_l2_;
+    double tol_vel_res_inf_;
+    double tol_vel_inc_l2_;
+    double tol_vel_inc_inf_;
     //@}
 
     /// type-cast pointer to problem-specific ALE-wrapper

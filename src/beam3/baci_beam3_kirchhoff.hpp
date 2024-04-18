@@ -231,7 +231,7 @@ namespace DRT
       /*!
        \brief Get (non-unit) tangent vectors at the two boundary nodes
       */
-      std::vector<CORE::LINALG::Matrix<3, 1>> GetNodalTangents() const { return T_; }
+      std::vector<CORE::LINALG::Matrix<3, 1>> GetNodalTangents() const { return t_; }
 
       /** \brief get unit tangent vector in reference configuration at i-th node of beam element
        * (element-internal numbering)
@@ -327,14 +327,14 @@ namespace DRT
           std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
           std::vector<double>& curvature_3_GPs) const override
       {
-        axial_strain_GPs = axial_strain_GP_;
+        axial_strain_GPs = axial_strain_gp_;
         // note: shear deformations are zero by definition for Kirchhoff beam formulation
         shear_strain_2_GPs.clear();
         shear_strain_3_GPs.clear();
 
-        twist_GPs = twist_GP_;
-        curvature_2_GPs = curvature_2_GP_;
-        curvature_3_GPs = curvature_3_GP_;
+        twist_GPs = twist_gp_;
+        curvature_2_GPs = curvature_2_gp_;
+        curvature_3_GPs = curvature_3_gp_;
       }
 
       /** \brief Get material cross-section stress resultants
@@ -346,21 +346,21 @@ namespace DRT
           std::vector<double>& torque_GPs, std::vector<double>& bending_moment_2_GPs,
           std::vector<double>& bending_moment_3_GPs) const override
       {
-        axial_force_GPs = axial_force_GP_;
+        axial_force_GPs = axial_force_gp_;
         // note: shear deformations are zero by definition for Kirchhoff beam formulation
         shear_force_2_GPs.clear();
         shear_force_3_GPs.clear();
 
-        torque_GPs = torque_GP_;
-        bending_moment_2_GPs = bending_moment_2_GP_;
-        bending_moment_3_GPs = bending_moment_3_GP_;
+        torque_GPs = torque_gp_;
+        bending_moment_2_GPs = bending_moment_2_gp_;
+        bending_moment_3_GPs = bending_moment_3_gp_;
       }
 
       //! get internal (elastic) energy of element
-      double GetInternalEnergy() const override { return Eint_; };
+      double GetInternalEnergy() const override { return eint_; };
 
       //! get kinetic energy of element
-      double GetKineticEnergy() const override { return Ekin_; };
+      double GetKineticEnergy() const override { return ekin_; };
 
       /** \brief get number of nodes used for centerline interpolation
        *
@@ -1295,15 +1295,15 @@ namespace DRT
 
       void ResizeClassVariables(const int& n)
       {
-        Qrefconv_.resize(BEAM3K_COLLOCATION_POINTS);
-        Qrefnew_.resize(BEAM3K_COLLOCATION_POINTS);
-        K0_.resize(n);
+        qrefconv_.resize(BEAM3K_COLLOCATION_POINTS);
+        qrefnew_.resize(BEAM3K_COLLOCATION_POINTS);
+        k0_.resize(n);
         jacobi_.resize(n);
         jacobi2_.resize(n);
         jacobi_cp_.resize(BEAM3K_COLLOCATION_POINTS);
         jacobi2_cp_.resize(BEAM3K_COLLOCATION_POINTS);
-        Qconvmass_.resize(n);
-        Qnewmass_.resize(n);
+        qconvmass_.resize(n);
+        qnewmass_.resize(n);
         wconvmass_.resize(n);
         wnewmass_.resize(n);
         aconvmass_.resize(n);
@@ -1327,8 +1327,8 @@ namespace DRT
       void SetInitialDynamicClassVariables(const int& num,
           const CORE::LINALG::Matrix<3, 3>& triad_mat, const CORE::LINALG::Matrix<3, 1>& r)
       {
-        Qconvmass_[num].Clear();
-        Qnewmass_[num].Clear();
+        qconvmass_[num].Clear();
+        qnewmass_[num].Clear();
         rconvmass_[num].Clear();
         rnewmass_[num].Clear();
         wconvmass_[num].Clear();
@@ -1344,8 +1344,8 @@ namespace DRT
         rttmodconvmass_[num].Clear();
         rttmodnewmass_[num].Clear();
 
-        CORE::LARGEROTATIONS::triadtoquaternion(triad_mat, Qconvmass_[num]);
-        Qnewmass_[num] = Qconvmass_[num];
+        CORE::LARGEROTATIONS::triadtoquaternion(triad_mat, qconvmass_[num]);
+        qnewmass_[num] = qconvmass_[num];
         rconvmass_[num] = r;
         rnewmass_[num] = r;
 
@@ -1602,25 +1602,25 @@ namespace DRT
       // Variables
 
       //! bool storing whether automatic differentiation shall be used for this element evaluation
-      bool useFAD_;
+      bool use_fad_;
 
       //! variable saving whether element has already been initialized (then isinit_ == true)
       bool isinit_;
 
       //! current (non-unit) tangent vectors at the two boundary nodes
-      std::vector<CORE::LINALG::Matrix<3, 1>> T_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> t_;
       // Variables needed by all local triads
       //! Matrix holding pseudo rotation vectors describing the material triads in the initial
       //! configuration at each node
       std::vector<CORE::LINALG::Matrix<3, 1>> theta0_;
       //! quaternion describing the nodal reference triads (for the case BEAM3EK_ROT ==false) of the
       //! converged configuration of the last time step
-      std::vector<CORE::LINALG::Matrix<4, 1>> Qrefconv_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> qrefconv_;
       //! quaternion describing the nodal reference triads (for the case BEAM3EK_ROT ==false) of the
       //! current configuration
-      std::vector<CORE::LINALG::Matrix<4, 1>> Qrefnew_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> qrefnew_;
       //! Matrix with the material curvature in the initial configuration at each gp
-      std::vector<CORE::LINALG::Matrix<3, 1>> K0_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> k0_;
 
       //! Length of the element
       double length_;
@@ -1640,9 +1640,9 @@ namespace DRT
       //! or weak manner (weakkirchhoff_==true)
       bool weakkirchhoff_;
       //! internal energy
-      double Eint_;
+      double eint_;
       //! kinetic energy
-      double Ekin_;
+      double ekin_;
       //! temporarily storing the rot_damp_stiffness matrix for use in the PTC scaling operator
       CORE::LINALG::SerialDenseMatrix stiff_ptc_;
 
@@ -1651,10 +1651,10 @@ namespace DRT
       // integration**************************************************//
       //! triads at Gauss points for exact integration in quaternion at the end of the preceeding
       //! time step (required for computation of angular velocity)
-      std::vector<CORE::LINALG::Matrix<4, 1>> Qconvmass_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> qconvmass_;
       //! current triads at Gauss points for exact integration in quaternion (required for
       //! computation of angular velocity)
-      std::vector<CORE::LINALG::Matrix<4, 1>> Qnewmass_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> qnewmass_;
       //! spatial angular velocity vector at Gauss points for exact integration at the end of the
       //! preceeding time step (required for computation of inertia terms)
       std::vector<CORE::LINALG::Matrix<3, 1>> wconvmass_;
@@ -1704,18 +1704,18 @@ namespace DRT
 
 
       //! strain resultant values at GPs
-      std::vector<double> axial_strain_GP_;
+      std::vector<double> axial_strain_gp_;
 
-      std::vector<double> twist_GP_;
-      std::vector<double> curvature_2_GP_;
-      std::vector<double> curvature_3_GP_;
+      std::vector<double> twist_gp_;
+      std::vector<double> curvature_2_gp_;
+      std::vector<double> curvature_3_gp_;
 
       //! stress resultant values at GPs
-      std::vector<double> axial_force_GP_;
+      std::vector<double> axial_force_gp_;
 
-      std::vector<double> torque_GP_;
-      std::vector<double> bending_moment_2_GP_;
-      std::vector<double> bending_moment_3_GP_;
+      std::vector<double> torque_gp_;
+      std::vector<double> bending_moment_2_gp_;
+      std::vector<double> bending_moment_3_gp_;
     };
 
     // << operator

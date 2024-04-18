@@ -67,7 +67,7 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret)
   }
 
   // Set boolean that indicates, if a locsys warning has already been thrown, to false
-  warningThrown_ = false;
+  warning_thrown_ = false;
 }
 
 /*-------------------------------------------------------------------*
@@ -373,11 +373,11 @@ void DRT::UTILS::LocsysManager::Update(
   // Throw warning if transformation matrix has zero diagonal elements since
   // they end up on the diagonal of the system matrix. Show this warning only
   // once.
-  if ((not warningThrown_) && sanity_check)
+  if ((not warning_thrown_) && sanity_check)
   {
     if (Comm().MyPID() == 0)
     {
-      warningThrown_ = true;
+      warning_thrown_ = true;
 
       printf("Locsys warning:\n");
       printf("A zero diagonal element on the transformation matrix occured.\n");

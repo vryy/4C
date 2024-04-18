@@ -97,13 +97,13 @@ void FS3I::ACFSI::SetMeanWallShearStresses() const
   std::vector<Teuchos::RCP<const Epetra_Vector>> wss;
 
   // ############ Fluid Field ###############
-  scatravec_[0]->ScaTraField()->SetWallShearStresses(FluidToFluidScalar(WallShearStress_lp_));
+  scatravec_[0]->ScaTraField()->SetWallShearStresses(FluidToFluidScalar(wall_shear_stress_lp_));
 
   // ############ Structure Field ###############
 
   // extract FSI-Interface from fluid field
   Teuchos::RCP<Epetra_Vector> WallShearStress =
-      fsi_->FluidField()->Interface()->ExtractFSICondVector(WallShearStress_lp_);
+      fsi_->FluidField()->Interface()->ExtractFSICondVector(wall_shear_stress_lp_);
 
   // replace global fluid interface dofs through structure interface dofs
   WallShearStress = fsi_->FluidToStruct(WallShearStress);
@@ -848,12 +848,12 @@ bool FS3I::ACFSI::ModuloIsRealtiveZero(const double value, const double modulo, 
  *----------------------------------------------------------------------*/
 FS3I::MeanManager::MeanManager(
     const Epetra_Map& wssmap, const Epetra_Map& phimap, const Epetra_Map& pressuremap)
-    : SumWss_(CORE::LINALG::CreateVector(wssmap, true)),
-      SumPhi_(CORE::LINALG::CreateVector(phimap, true)),
-      SumPres_(CORE::LINALG::CreateVector(pressuremap, true)),
-      SumDtWss_(0.0),
-      SumDtPhi_(0.0),
-      SumDtPres_(0.0)
+    : sum_wss_(CORE::LINALG::CreateVector(wssmap, true)),
+      sum_phi_(CORE::LINALG::CreateVector(phimap, true)),
+      sum_pres_(CORE::LINALG::CreateVector(pressuremap, true)),
+      sum_dt_wss_(0.0),
+      sum_dt_phi_(0.0),
+      sum_dt_pres_(0.0)
 {
 }
 
@@ -866,42 +866,42 @@ void FS3I::MeanManager::AddValue(
 {
   if (type == "wss")
   {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
+#ifdef BACI_DEBUG
     // check, whether maps are the same
-    if (not value->Map().PointSameAs(SumWss_->Map()))
+    if (not value->Map().PointSameAs(sum_wss_->Map()))
     {
       FOUR_C_THROW("Maps do not match, but they have to.");
     }
 #endif
 
-    SumWss_->Update(dt, *value, 1.0);  // weighted sum of all prior stresses
-    SumDtWss_ += dt;
+    sum_wss_->Update(dt, *value, 1.0);  // weighted sum of all prior stresses
+    sum_dt_wss_ += dt;
   }
   else if (type == "phi")
   {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
+#ifdef BACI_DEBUG
     // check, whether maps are the same
-    if (not value->Map().PointSameAs(SumPhi_->Map()))
+    if (not value->Map().PointSameAs(sum_phi_->Map()))
     {
       FOUR_C_THROW("Maps do not match, but they have to.");
     }
 #endif
 
-    SumPhi_->Update(dt, *value, 1.0);  // weighted sum of all prior stresses
-    SumDtPhi_ += dt;
+    sum_phi_->Update(dt, *value, 1.0);  // weighted sum of all prior stresses
+    sum_dt_phi_ += dt;
   }
   else if (type == "pressure")
   {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
+#ifdef BACI_DEBUG
     // check, whether maps are the same
-    if (not value->Map().PointSameAs(SumPres_->Map()))
+    if (not value->Map().PointSameAs(sum_pres_->Map()))
     {
       FOUR_C_THROW("Maps do not match, but they have to.");
     }
 #endif
 
-    SumPres_->Update(dt, *value, 1.0);  // weighted sum of all prior stresses
-    SumDtPres_ += dt;
+    sum_pres_->Update(dt, *value, 1.0);  // weighted sum of all prior stresses
+    sum_dt_pres_ += dt;
   }
   else
     FOUR_C_THROW("Mean Manager does not support the given value '%s'.", type.c_str());
@@ -915,15 +915,15 @@ void FS3I::MeanManager::AddValue(
 void FS3I::MeanManager::Reset()
 {
   // first some checking
-  if (abs(SumDtWss_ - SumDtPhi_) > 1e-14 or abs(SumDtWss_ - SumDtPres_) > 1e-14)
+  if (abs(sum_dt_wss_ - sum_dt_phi_) > 1e-14 or abs(sum_dt_wss_ - sum_dt_pres_) > 1e-14)
     FOUR_C_THROW("The time ranges you did mean over do not match!");
 
-  SumWss_->PutScalar(0.0);
-  SumDtWss_ = 0.0;
-  SumPhi_->PutScalar(0.0);
-  SumDtPhi_ = 0.0;
-  SumPres_->PutScalar(0.0);
-  SumDtPres_ = 0.0;
+  sum_wss_->PutScalar(0.0);
+  sum_dt_wss_ = 0.0;
+  sum_phi_->PutScalar(0.0);
+  sum_dt_phi_ = 0.0;
+  sum_pres_->PutScalar(0.0);
+  sum_dt_pres_ = 0.0;
 }
 
 /*----------------------------------------------------------------------*
@@ -935,10 +935,10 @@ Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::str
 
   if (type == "mean_wss")
   {
-    meanvector = Teuchos::rcp(new Epetra_Vector(SumWss_->Map(), true));
+    meanvector = Teuchos::rcp(new Epetra_Vector(sum_wss_->Map(), true));
 
-    if (SumDtWss_ > 1e-12)  // iff we have actually calculated some mean wss
-      meanvector->Update(1.0 / SumDtWss_, *SumWss_, 0.0);  // weighted sum of all prior stresses
+    if (sum_dt_wss_ > 1e-12)  // iff we have actually calculated some mean wss
+      meanvector->Update(1.0 / sum_dt_wss_, *sum_wss_, 0.0);  // weighted sum of all prior stresses
     else
     {
       double norm = 0.0;
@@ -953,10 +953,10 @@ Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::str
   }
   else if (type == "mean_phi")
   {
-    meanvector = Teuchos::rcp(new Epetra_Vector(SumPhi_->Map(), true));
+    meanvector = Teuchos::rcp(new Epetra_Vector(sum_phi_->Map(), true));
 
-    if (SumDtPhi_ > 1e-12)  // iff we have actually calculated some mean wss
-      meanvector->Update(1.0 / SumDtPhi_, *SumPhi_, 0.0);  // weighted sum of all prior stresses
+    if (sum_dt_phi_ > 1e-12)  // iff we have actually calculated some mean wss
+      meanvector->Update(1.0 / sum_dt_phi_, *sum_phi_, 0.0);  // weighted sum of all prior stresses
     else
     {
       double norm = 0.0;
@@ -967,10 +967,11 @@ Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::str
   }
   else if (type == "mean_pressure")
   {
-    meanvector = Teuchos::rcp(new Epetra_Vector(SumPres_->Map(), true));
+    meanvector = Teuchos::rcp(new Epetra_Vector(sum_pres_->Map(), true));
 
-    if (SumDtPres_ > 1e-12)  // iff we have actually calculated some mean wss
-      meanvector->Update(1.0 / SumDtPres_, *SumPres_, 0.0);  // weighted sum of all prior stresses
+    if (sum_dt_pres_ > 1e-12)  // iff we have actually calculated some mean wss
+      meanvector->Update(
+          1.0 / sum_dt_pres_, *sum_pres_, 0.0);  // weighted sum of all prior stresses
     else
     {
       double norm = 0.0;
@@ -991,15 +992,15 @@ Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::str
 void FS3I::MeanManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter) const
 {
   // first some checking
-  if (abs(SumDtWss_ - SumDtPhi_) > 1e-14 or abs(SumDtWss_ - SumDtPres_) > 1e-14)
+  if (abs(sum_dt_wss_ - sum_dt_phi_) > 1e-14 or abs(sum_dt_wss_ - sum_dt_pres_) > 1e-14)
     FOUR_C_THROW("The time ranges you did mean over do not match!");
 
   // write all values
-  fluidwriter->WriteVector("SumWss", SumWss_);
-  fluidwriter->WriteVector("SumPhi", SumPhi_);
+  fluidwriter->WriteVector("SumWss", sum_wss_);
+  fluidwriter->WriteVector("SumPhi", sum_phi_);
   //  fluidwriter->WriteVector("SumPres", SumPres_);
   // we need only one SumDt since they are all the same
-  fluidwriter->WriteDouble("SumDtWss", SumDtWss_);
+  fluidwriter->WriteDouble("SumDtWss", sum_dt_wss_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1008,13 +1009,13 @@ void FS3I::MeanManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> flui
 void FS3I::MeanManager::ReadRestart(IO::DiscretizationReader& fluidreader)
 {
   // read all values...
-  fluidreader.ReadVector(SumWss_, "SumWss");
-  fluidreader.ReadVector(SumPhi_, "SumPhi");
+  fluidreader.ReadVector(sum_wss_, "SumWss");
+  fluidreader.ReadVector(sum_phi_, "SumPhi");
   //  fluidreader.ReadVector(SumPres_, "SumPres");
-  SumDtWss_ = fluidreader.ReadDouble("SumDtWss");
+  sum_dt_wss_ = fluidreader.ReadDouble("SumDtWss");
   //...and recover the rest
-  SumDtPhi_ = SumDtWss_;
-  SumDtPres_ = SumDtWss_;
+  sum_dt_phi_ = sum_dt_wss_;
+  sum_dt_pres_ = sum_dt_wss_;
 }
 
 FOUR_C_NAMESPACE_CLOSE

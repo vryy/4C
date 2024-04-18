@@ -49,7 +49,7 @@ namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::IMPLICIT::PreStress::PreStress() : absoluteDisplacementNorm_(1e9)
+STR::IMPLICIT::PreStress::PreStress() : absolute_displacement_norm_(1e9)
 {
   // empty constructor
 }
@@ -74,7 +74,7 @@ void STR::IMPLICIT::PreStress::UpdateStepState()
   CheckInitSetup();
 
   // Compute norm of the displacements
-  GlobalState().GetDisNp()->NormInf(&absoluteDisplacementNorm_);
+  GlobalState().GetDisNp()->NormInf(&absolute_displacement_norm_);
 
   if (!IsMaterialIterativePrestressConverged())
   {
@@ -115,7 +115,8 @@ void STR::IMPLICIT::PreStress::PostUpdate()
     if (GlobalState().GetMyRank() == 0)
     {
       IO::cout << "====== Iterative Prestress Status" << IO::endl;
-      IO::cout << "abs-dis-inf-norm:                    " << absoluteDisplacementNorm_ << IO::endl;
+      IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
+               << IO::endl;
     }
   }
 }
@@ -124,7 +125,7 @@ bool STR::IMPLICIT::PreStress::IsMaterialIterativePrestressConverged() const
 {
   return IsMaterialIterative() &&
          GlobalState().GetStepN() >= SDyn().GetPreStressMinimumNumberOfLoadSteps() &&
-         absoluteDisplacementNorm_ < SDyn().GetPreStressDisplacementTolerance();
+         absolute_displacement_norm_ < SDyn().GetPreStressDisplacementTolerance();
 }
 
 bool STR::IMPLICIT::PreStress::EarlyStopping() const
@@ -136,7 +137,8 @@ bool STR::IMPLICIT::PreStress::EarlyStopping() const
     if (GlobalState().GetMyRank() == 0)
     {
       IO::cout << "Prestress is converged. Stopping simulation." << IO::endl;
-      IO::cout << "abs-dis-inf-norm:                    " << absoluteDisplacementNorm_ << IO::endl;
+      IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
+               << IO::endl;
     }
     return true;
   }
@@ -148,13 +150,13 @@ void STR::IMPLICIT::PreStress::PostTimeLoop()
 {
   if (IsMaterialIterative())
   {
-    if (absoluteDisplacementNorm_ > SDyn().GetPreStressDisplacementTolerance())
+    if (absolute_displacement_norm_ > SDyn().GetPreStressDisplacementTolerance())
     {
       FOUR_C_THROW(
           "Prestress algorithm did not converged within the given timesteps. "
           "abs-dis-inf-norm is "
           "%f",
-          absoluteDisplacementNorm_);
+          absolute_displacement_norm_);
     }
   }
 }

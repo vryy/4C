@@ -51,14 +51,14 @@ namespace CORE::GEO
       /*!
       \brief Returns the location of Gauss points over the boundarycell
        */
-      std::vector<std::vector<double>> getBcellGaussPointLocation() { return BcellgausPts_; }
+      std::vector<std::vector<double>> getBcellGaussPointLocation() { return bcellgaus_pts_; }
 
      private:
       Element* elem1_;
       Facet* bcell_;
       const CORE::GEO::CUT::Point::PointPosition position_;
       int num_func_;
-      std::vector<std::vector<double>> BcellgausPts_;
+      std::vector<std::vector<double>> bcellgaus_pts_;
 
       /*!
       \brief Distribute the Gauss points over the boundarycell

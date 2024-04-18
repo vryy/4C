@@ -47,7 +47,7 @@ namespace DRT
       double TimeFac() const { return timefac_; };
       double TimeFacRhs() const { return timefacrhs_; };
       double TimeFacRhsTau() const { return timefacrhstau_; };
-      double AlphaF() const { return alphaF_; };
+      double AlphaF() const { return alpha_f_; };
       bool IsAle() const { return is_ale_; };
       bool BiotStab() const { return stab_biot_; };
       int NdsDisp() const { return nds_disp_; };
@@ -77,7 +77,7 @@ namespace DRT
       //! (time integration factor for right hand side (* (stabilization parameter)
       double timefacrhstau_;
       //! alpha_f parameter from generalized alpha time integration
-      double alphaF_;
+      double alpha_f_;
 
       //@}
 

@@ -29,7 +29,7 @@ CONSTRAINTS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<DRT::Discretization
     CORE::LINALG::Solver& solver, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
     Teuchos::ParameterList params)
     : actdisc_(discr),
-      maxIter_(params.get<int>("UZAWAMAXITER", 50)),
+      max_iter_(params.get<int>("UZAWAMAXITER", 50)),
       dirichtoggle_(Teuchos::null),
       dbcmaps_(dbcmaps)
 {
@@ -147,7 +147,7 @@ void CONSTRAINTS::ConstraintSolver::SolveUzawa(Teuchos::RCP<CORE::LINALG::Sparse
   // Solve one iteration step with augmented lagrange
   // Since we calculate displacement norm as well, at least one step has to be taken
   while (((norm_uzawa > iterationtol_ or norm_constr_uzawa > iterationtol_) and
-             numiter_uzawa < maxIter_) or
+             numiter_uzawa < max_iter_) or
          numiter_uzawa < minstep)
   {
     // solve for disi

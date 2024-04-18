@@ -63,7 +63,7 @@ namespace STR
       bool IsMaterialIterativePrestressConverged() const;
 
       /// Absolute displacement norm used for the convergence check of the prestress state
-      double absoluteDisplacementNorm_;
+      double absolute_displacement_norm_;
     };
   }  // namespace IMPLICIT
 }  // namespace STR

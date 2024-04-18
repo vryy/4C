@@ -35,17 +35,17 @@ NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     const Teuchos::RCP<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
     Teuchos::RCP<CORE::LINALG::Solver> solver, const Teuchos::RCP<::NOX::Epetra::Scaling> s)
     : utils_(printParams),
-      jacInterfacePtr_(iJac),
-      jacType_(EpetraOperator),
-      jacPtr_(J),
+      jac_interface_ptr_(iJac),
+      jac_type_(EpetraOperator),
+      jac_ptr_(J),
       scaling_(s),
       callcount_(0),
       solver_(solver),
       timer_("", true)
 {
-  tmpVectorPtr_ = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
+  tmp_vector_ptr_ = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
 
-  jacType_ = getOperatorType(*jacPtr_);
+  jac_type_ = getOperatorType(*jac_ptr_);
 
   reset(linearSolverParams);
 }
@@ -82,9 +82,9 @@ NOX::FSI::LinearSystem::OperatorType NOX::FSI::LinearSystem::getOperatorType(
  *----------------------------------------------------------------------*/
 void NOX::FSI::LinearSystem::reset(Teuchos::ParameterList& linearSolverParams)
 {
-  zeroInitialGuess_ = linearSolverParams.get("Zero Initial Guess", false);
-  manualScaling_ = linearSolverParams.get("Compute Scaling Manually", true);
-  outputSolveDetails_ = linearSolverParams.get("Output Solver Details", true);
+  zero_initial_guess_ = linearSolverParams.get("Zero Initial Guess", false);
+  manual_scaling_ = linearSolverParams.get("Compute Scaling Manually", true);
+  output_solve_details_ = linearSolverParams.get("Output Solver Details", true);
 }
 
 
@@ -93,8 +93,8 @@ void NOX::FSI::LinearSystem::reset(Teuchos::ParameterList& linearSolverParams)
 bool NOX::FSI::LinearSystem::applyJacobian(
     const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
-  jacPtr_->SetUseTranspose(false);
-  int status = jacPtr_->Apply(input.getEpetraVector(), result.getEpetraVector());
+  jac_ptr_->SetUseTranspose(false);
+  int status = jac_ptr_->Apply(input.getEpetraVector(), result.getEpetraVector());
 
   return status == 0;
 }
@@ -105,9 +105,9 @@ bool NOX::FSI::LinearSystem::applyJacobian(
 bool NOX::FSI::LinearSystem::applyJacobianTranspose(
     const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
-  jacPtr_->SetUseTranspose(true);
-  int status = jacPtr_->Apply(input.getEpetraVector(), result.getEpetraVector());
-  jacPtr_->SetUseTranspose(false);
+  jac_ptr_->SetUseTranspose(true);
+  int status = jac_ptr_->Apply(input.getEpetraVector(), result.getEpetraVector());
+  jac_ptr_->SetUseTranspose(false);
 
   return status == 0;
 }
@@ -119,7 +119,7 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
     Teuchos::ParameterList& p, const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result)
 {
   // Zero out the delta X of the linear problem if requested by user.
-  if (zeroInitialGuess_) result.init(0.0);
+  if (zero_initial_guess_) result.init(0.0);
 
   const int maxit = p.get("Max Iterations", 30);
   const double tol = p.get("Tolerance", 1.0e-10);
@@ -135,12 +135,12 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
   CORE::LINALG::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = callcount_ == 0;
-  solver_->Solve(jacPtr_, disi, fres, solver_params);
+  solver_->Solve(jac_ptr_, disi, fres, solver_params);
 
   callcount_ += 1;
 
   // Set the output parameters in the "Output" sublist
-  if (outputSolveDetails_)
+  if (output_solve_details_)
   {
     Teuchos::ParameterList& outputList = p.sublist("Output");
     const int prevLinIters = outputList.get("Total Number of Linear Iterations", 0);
@@ -184,7 +184,7 @@ void NOX::FSI::LinearSystem::resetScaling(const Teuchos::RCP<::NOX::Epetra::Scal
  *----------------------------------------------------------------------*/
 bool NOX::FSI::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
 {
-  bool success = jacInterfacePtr_->computeJacobian(x.getEpetraVector(), *jacPtr_);
+  bool success = jac_interface_ptr_->computeJacobian(x.getEpetraVector(), *jac_ptr_);
   return success;
 }
 
@@ -235,13 +235,13 @@ bool NOX::FSI::LinearSystem::hasPreconditioner() const { return false; }
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Operator> NOX::FSI::LinearSystem::getJacobianOperator() const
 {
-  return jacPtr_;
+  return jac_ptr_;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Operator> NOX::FSI::LinearSystem::getJacobianOperator() { return jacPtr_; }
+Teuchos::RCP<Epetra_Operator> NOX::FSI::LinearSystem::getJacobianOperator() { return jac_ptr_; }
 
 
 /*----------------------------------------------------------------------*
@@ -265,8 +265,8 @@ Teuchos::RCP<Epetra_Operator> NOX::FSI::LinearSystem::getGeneratedPrecOperator()
 void NOX::FSI::LinearSystem::setJacobianOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
 {
-  jacPtr_ = Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp);
-  jacType_ = getOperatorType(*solveJacOp);
+  jac_ptr_ = Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp);
+  jac_type_ = getOperatorType(*solveJacOp);
 }
 
 

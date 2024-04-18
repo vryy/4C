@@ -130,7 +130,7 @@ namespace MAT
 
      private:
       /// Anisotropy extension holder
-      MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
+      MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
 
       /*!
        * \brief Evaluate total fiber cauchy stress and derivative w.r.t the fibre stretch

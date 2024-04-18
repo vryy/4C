@@ -24,11 +24,11 @@ DRT::ELEMENTS::PreStress::PreStress(const int numnode, const int ngp, const bool
     : ParObject(), isinit_(false), numnode_(numnode)
 {
   // allocate history memory
-  Fhist_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ngp, 9));
+  fhist_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ngp, 9));
   if (!istet4)
-    invJhist_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ngp, 9));
+    inv_jhist_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ngp, 9));
   else
-    invJhist_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ngp, 12));
+    inv_jhist_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ngp, 12));
 
   // init the deformation gradient history
   CORE::LINALG::Matrix<3, 3> F(true);
@@ -43,8 +43,8 @@ DRT::ELEMENTS::PreStress::PreStress(const DRT::ELEMENTS::PreStress& old)
     : ParObject(old),
       isinit_(old.isinit_),
       numnode_(old.numnode_),
-      Fhist_(Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(old.FHistory()))),
-      invJhist_(Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(old.JHistory())))
+      fhist_(Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(old.FHistory()))),
+      inv_jhist_(Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(old.JHistory())))
 {
   return;
 }
@@ -70,10 +70,10 @@ void DRT::ELEMENTS::PreStress::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, numnode_);
 
   // pack Fhist_
-  AddtoPack(data, *Fhist_);
+  AddtoPack(data, *fhist_);
 
   // pack invJhist_
-  AddtoPack(data, *invJhist_);
+  AddtoPack(data, *inv_jhist_);
 
   return;
 }
@@ -96,10 +96,10 @@ void DRT::ELEMENTS::PreStress::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, numnode_);
 
   // extract Fhist_
-  ExtractfromPack(position, data, *Fhist_);
+  ExtractfromPack(position, data, *fhist_);
 
   // extract invJhist_
-  ExtractfromPack(position, data, *invJhist_);
+  ExtractfromPack(position, data, *inv_jhist_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

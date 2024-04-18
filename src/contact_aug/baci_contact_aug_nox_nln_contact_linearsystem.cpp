@@ -36,8 +36,8 @@ NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParam
     const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
     : NOX::NLN::LinearSystem(printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M,
           cloneVector, scalingObject),
-      iConstr_(iConstr),
-      iConstrPrec_(iConstrPrec),
+      i_constr_(iConstr),
+      i_constr_prec_(iConstrPrec),
       p_lin_prob_(*this)
 {
   // empty
@@ -56,8 +56,8 @@ NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParam
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector)
     : NOX::NLN::LinearSystem(
           printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M, cloneVector),
-      iConstr_(iConstr),
-      iConstrPrec_(iConstrPrec),
+      i_constr_(iConstr),
+      i_constr_prec_(iConstrPrec),
       p_lin_prob_(*this)
 {
   // empty
@@ -109,7 +109,7 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(
     // feed Belos based solvers with contact information
     if (solverPtr->Params().isSublist("Belos Parameters"))
     {
-      if (iConstrPrec_.size() > 1)
+      if (i_constr_prec_.size() > 1)
         FOUR_C_THROW(
             "Currently only one constraint preconditioner interface can be handled! \n "
             "Needs to be extended!");
@@ -122,16 +122,16 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(
       // (2) innerDofMap
       // (3) activeDofMap
       std::vector<Teuchos::RCP<Epetra_Map>> prec_maps(4, Teuchos::null);
-      iConstrPrec_.begin()->second->FillMapsForPreconditioner(prec_maps);
+      i_constr_prec_.begin()->second->FillMapsForPreconditioner(prec_maps);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact masterDofMap", prec_maps[0]);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap", prec_maps[1]);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", prec_maps[2]);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", prec_maps[3]);
       // contact or contact/meshtying
-      if (iConstrPrec_.begin()->first == NOX::NLN::sol_contact)
+      if (i_constr_prec_.begin()->first == NOX::NLN::sol_contact)
         mueluParams.set<std::string>("GLOBAL::ProblemType", "contact");
       // only meshtying
-      else if (iConstrPrec_.begin()->first == NOX::NLN::sol_meshtying)
+      else if (i_constr_prec_.begin()->first == NOX::NLN::sol_meshtying)
         mueluParams.set<std::string>("GLOBAL::ProblemType", "meshtying");
       else
         FOUR_C_THROW("Currently we support only a pure meshtying OR a pure contact problem!");
@@ -196,7 +196,7 @@ NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::GetActiveLinSolver(
   // ---------------------------------------------------------------------
   NOX::NLN::CONSTRAINT::PrecInterfaceMap::const_iterator cit;
   bool issaddlepoint = false;
-  for (cit = iConstrPrec_.begin(); cit != iConstrPrec_.end(); ++cit)
+  for (cit = i_constr_prec_.begin(); cit != i_constr_prec_.end(); ++cit)
   {
     if (cit->second->IsSaddlePointSystem())
     {
@@ -210,7 +210,7 @@ NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::GetActiveLinSolver(
   // (2) Penalty and Uzawa Augmented Lagrange strategies
   // ---------------------------------------------------------------------
   bool iscondensed = false;
-  for (cit = iConstrPrec_.begin(); cit != iConstrPrec_.end(); ++cit)
+  for (cit = i_constr_prec_.begin(); cit != i_constr_prec_.end(); ++cit)
   {
     if (cit->second->IsCondensedSystem())
     {
@@ -251,7 +251,7 @@ Teuchos::RCP<CORE::LINALG::Solver> NOX::NLN::CONTACT::LinearSystem::GetLinearCon
    * strategy for a meaningful linear solver. This is a small work around
    * to enable different linear solvers for changing contact solving strategies.
    *                                                       06/18 -- hiermeier */
-  CORE::LINALG::Solver* linsolver = iConstrPrec_.begin()->second->GetLinearSolver();
+  CORE::LINALG::Solver* linsolver = i_constr_prec_.begin()->second->GetLinearSolver();
 
   if (not linsolver)
     FOUR_C_THROW(

@@ -31,7 +31,7 @@ NOX::NLN::MeritFunction::Infeasibility::Infeasibility(
   const std::string& type_name = params.get<std::string>("Type");
   SetType(type_name);
 
-  meritFunctionName_ = MeritFuncName2String(Type());
+  merit_function_name_ = MeritFuncName2String(Type());
 }
 
 /*----------------------------------------------------------------------------*
@@ -146,7 +146,7 @@ void NOX::NLN::MeritFunction::Infeasibility::computeQuadraticMinimizer(
  *----------------------------------------------------------------------------*/
 const std::string& NOX::NLN::MeritFunction::Infeasibility::name() const
 {
-  return meritFunctionName_;
+  return merit_function_name_;
 }
 
 /*----------------------------------------------------------------------------*

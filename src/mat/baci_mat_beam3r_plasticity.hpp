@@ -283,9 +283,9 @@ namespace MAT
 
    private:
     //! effective constitutive matrices forces
-    std::vector<CORE::LINALG::Matrix<3, 3, T>> cN_eff_;
+    std::vector<CORE::LINALG::Matrix<3, 3, T>> c_n_eff_;
     //! effective constitutive matrices moments
-    std::vector<CORE::LINALG::Matrix<3, 3, T>> cM_eff_;
+    std::vector<CORE::LINALG::Matrix<3, 3, T>> c_m_eff_;
 
     //! converged plastic strain vectors at GPs
     std::vector<CORE::LINALG::Matrix<3, 1, T>> gammaplastconv_;
@@ -302,16 +302,16 @@ namespace MAT
     std::vector<T> kappaplastaccum_;
 
     //! effective yield force depending on accumulated plastic strain
-    std::vector<T> effyieldstressN_;
+    std::vector<T> effyieldstress_n_;
     //! effective yield moment depending on accumulated plastic curvature
-    std::vector<T> effyieldstressM_;
+    std::vector<T> effyieldstress_m_;
 
     //! norm of material plastic curvature increment
-    std::vector<T> deltaKappaplast_;
+    std::vector<T> delta_kappaplast_;
     //! norm of the moment vector
-    std::vector<T> normstressM_;
+    std::vector<T> normstress_m_;
     //! fraction of the norm of the moment vector exceeding the current yield moment
-    std::vector<T> deltastressM_;
+    std::vector<T> deltastress_m_;
 
     //! material elastic curvature
     std::vector<CORE::LINALG::Matrix<3, 1, T>> kappaelast_;
@@ -322,12 +322,12 @@ namespace MAT
     //! unit vector in the direction of the elastic curvature
     std::vector<CORE::LINALG::Matrix<3, 1, T>> elastic_curvature_;
     //! material plastic strain increment
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> deltaGammaplast_;
+    std::vector<CORE::LINALG::Matrix<3, 1, T>> delta_gammaplast_;
     //! fraction of the stress exceeding the current yield force
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> deltastressN_;
+    std::vector<CORE::LINALG::Matrix<3, 1, T>> deltastress_n_;
 
     //! axial stress
-    std::vector<T> stressN_;
+    std::vector<T> stress_n_;
 
     /// Number of integration points for forces
     unsigned int numgp_force_;

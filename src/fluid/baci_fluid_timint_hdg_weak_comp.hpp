@@ -196,7 +196,7 @@ namespace FLD
 
     ///< Keep track of whether we do the first assembly of a time step because we reconstruct the
     ///< local HDG solution as part of assembly
-    bool firstAssembly_;
+    bool first_assembly_;
 
   };  // class TimIntHDGWeakComp
 

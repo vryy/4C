@@ -79,9 +79,9 @@ namespace FLD
         : condition_manager_(condition_manager),
           nodal_dofset_strategy_(CORE::UTILS::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(
               params_xfem, "NODAL_DOFSET_STRATEGY")),
-          VolumeCellGaussPointBy_(CORE::UTILS::IntegralValue<INPAR::CUT::VCellGaussPts>(
+          volume_cell_gauss_point_by_(CORE::UTILS::IntegralValue<INPAR::CUT::VCellGaussPts>(
               params_xfem, "VOLUME_GAUSS_POINTS_BY")),
-          BoundCellGaussPointBy_(CORE::UTILS::IntegralValue<INPAR::CUT::BCellGaussPts>(
+          bound_cell_gauss_point_by_(CORE::UTILS::IntegralValue<INPAR::CUT::BCellGaussPts>(
               params_xfem, "BOUNDARY_GAUSS_POINTS_BY")),
           gmsh_cut_out_(CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_CUT_OUT")),
           maxnumdofsets_(maxnumdofsets),
@@ -134,8 +134,8 @@ namespace FLD
     //! strategy for nodal dofset management
     const INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy_;
 
-    const INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
-    const INPAR::CUT::BCellGaussPts BoundCellGaussPointBy_;
+    const INPAR::CUT::VCellGaussPts volume_cell_gauss_point_by_;
+    const INPAR::CUT::BCellGaussPts bound_cell_gauss_point_by_;
 
     /// is gmsh-output active?
     const bool gmsh_cut_out_;

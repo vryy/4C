@@ -448,13 +448,13 @@ namespace DRT
       Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> shapesface_;
 
       /// local solver object
-      Teuchos::RCP<LocalSolver> localSolver_;
+      Teuchos::RCP<LocalSolver> local_solver_;
 
-      std::vector<double> traceVal_;  /// extracted values from trace solution vector at n+alpha_f
-      std::vector<double> interiorVal_;  /// extracted local values at n+alpha_f
-      std::vector<double> interiorAcc_;  /// extracted local accelerations at n+alpha_m
-      std::vector<double> aleDis_;       /// extracted ale mesh displacement
-      std::vector<double> aleVel_;       /// extracted ale mesh velocity
+      std::vector<double> trace_val_;  /// extracted values from trace solution vector at n+alpha_f
+      std::vector<double> interior_val_;  /// extracted local values at n+alpha_f
+      std::vector<double> interior_acc_;  /// extracted local accelerations at n+alpha_m
+      std::vector<double> ale_dis_;       /// extracted ale mesh displacement
+      std::vector<double> ale_vel_;       /// extracted ale mesh velocity
 
       bool usescompletepoly_;
     };

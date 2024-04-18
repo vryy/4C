@@ -45,8 +45,8 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(const DRT::Discret
       bcparams_(beamcontactparams),
       iter_(0),
       numstep_(0),
-      R1_(BEAMINTERACTION::CalcEleRadius(element1)),
-      R2_(BEAMINTERACTION::CalcEleRadius(element2)),
+      r1_(BEAMINTERACTION::CalcEleRadius(element1)),
+      r2_(BEAMINTERACTION::CalcEleRadius(element2)),
       maxactivegap_(GetMaxActiveDist()),
       maxsegdist1_(0.0),
       maxsegdist2_(0.0),
@@ -206,7 +206,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(const DRT::Discret
   // TODO We have not considered the factor of 4 occurring in the formula of maximal Gauss point
   // distance, therefore we have an additional safety factor here...
   // TODO!!!!
-  if ((deltal1 > R1_ / sin(parshiftangle2)) and !beamsdebug)
+  if ((deltal1 > r1_ / sin(parshiftangle2)) and !beamsdebug)
     FOUR_C_THROW("Not enough Gauss points crossing of beams possible!!!");
 
   return;
@@ -1210,7 +1210,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
         deltanodalpos(i) = CORE::FADUTILS::CastToDouble(ele2pos_(i) - ele1pos_(i));
       }
 
-      double gap = deltanodalpos.Norm2() - R1_ - R2_;
+      double gap = deltanodalpos.Norm2() - r1_ - r2_;
       if (CheckContactStatus(gap) or CheckDampingStatus(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1240,7 +1240,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
         deltanodalpos(i) = CORE::FADUTILS::CastToDouble(ele2pos_(6 + i) - ele1pos_(i));
       }
 
-      double gap = deltanodalpos.Norm2() - R1_ - R2_;
+      double gap = deltanodalpos.Norm2() - r1_ - r2_;
       if (CheckContactStatus(gap) or CheckDampingStatus(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1269,7 +1269,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
         deltanodalpos(i) = CORE::FADUTILS::CastToDouble(ele2pos_(i) - ele1pos_(6 + i));
       }
 
-      double gap = deltanodalpos.Norm2() - R1_ - R2_;
+      double gap = deltanodalpos.Norm2() - r1_ - r2_;
       if (CheckContactStatus(gap) or CheckDampingStatus(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1298,7 +1298,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(
         deltanodalpos(i) = CORE::FADUTILS::CastToDouble(ele2pos_(6 + i) - ele1pos_(6 + i));
       }
 
-      double gap = deltanodalpos.Norm2() - R1_ - R2_;
+      double gap = deltanodalpos.Norm2() - r1_ - r2_;
       if (CheckContactStatus(gap) or CheckDampingStatus(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1968,7 +1968,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments(
   // Safety factor for determination of close segments
   double safetyfac = 1.1;
   // Distance at which intersection happens
-  double distancelimit = safetyfac * (maxsegdist1_ + maxsegdist2_ + maxactivedist + R1_ + R2_);
+  double distancelimit = safetyfac * (maxsegdist1_ + maxsegdist2_ + maxactivedist + r1_ + r2_);
 
   int numseg1 = (int)endpoints1.size() - 1;
   int numseg2 = (int)endpoints2.size() - 1;
@@ -2179,7 +2179,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection(dou
       // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to
       // be linearized!
       double norm_delta_r = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(delta_r));
-      gap = norm_delta_r - R1_ - R2_;
+      gap = norm_delta_r - r1_ - r2_;
 
       // The closer the beams get, the smaller is norm_delta_r, but
       // norm_delta_r is not allowed to be too small, else numerical problems occur.
@@ -2307,7 +2307,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection(dou
     if (!converged)
     {
       // Initialize g_min with a very large value, at which no active conact should occur!
-      double g_min = 1000 * R2_;
+      double g_min = 1000 * r2_;
       if (CheckContactStatus(g_min) or CheckDampingStatus(g_min))
         FOUR_C_THROW("Are sure that contact should be active at such large gaps?");
 
@@ -2331,7 +2331,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection(dou
         double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * M_PI;
         // Here, we apply the conservative estimate that the closest-point gap is by 0.1*R2_ smaller
         // than g_min
-        double g_min_estimate = g_min - 0.1 * R2_;
+        double g_min_estimate = g_min - 0.1 * r2_;
 
         // TODO
         if ((CheckContactStatus(g_min_estimate) or CheckDampingStatus(g_min_estimate)) and
@@ -2342,7 +2342,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection(dou
                     << std::endl;
           std::cout << "element1_->Id(): " << element1_->Id() << std::endl;
           std::cout << "element2_->Id(): " << element2_->Id() << std::endl;
-          std::cout << "R2_: " << R2_ << std::endl;
+          std::cout << "R2_: " << r2_ << std::endl;
           std::cout << "g_min: " << g_min << std::endl;
           std::cout << "alpha_g_min: " << alpha_g_min / M_PI * 180 << "degrees" << std::endl;
           std::cout << "numstartpoint: " << numstartpoint << std::endl;
@@ -2611,7 +2611,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
       // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to
       // be linearized!
       double norm_delta_r = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(delta_r));
-      gap_test = norm_delta_r - R1_ - R2_;
+      gap_test = norm_delta_r - r1_ - r2_;
 
       // The closer the beams get, the smaller is norm_delta_r, but
       // norm_delta_r is not allowed to be too small, else numerical problems occur.
@@ -2866,7 +2866,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::CheckUnconvergedSegmentPai
   int n = 1;
   // subdivide the slave segment by n+1 test points until the distance between the
   // test points is smaller than half of the cross-section radius
-  while (l1 / 2 * length1 / n > R2_ / 2)
+  while (l1 / 2 * length1 / n > r2_ / 2)
   {
     n = 2 * n;
   }
@@ -4982,10 +4982,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeNormal(
   CORE::LINALG::Matrix<3, 1, TYPE> normal(true);
   normal.Update(1.0 / norm_delta_r, delta_r, 0.0);
 
-  TYPE gap = norm_delta_r - R1_ - R2_;
+  TYPE gap = norm_delta_r - r1_ - r2_;
 
   // TODO
-  if (CORE::FADUTILS::CastToDouble(gap) < -MAXPENETRATIONSAFETYFAC * (R1_ + R2_) and numstep_ > 0)
+  if (CORE::FADUTILS::CastToDouble(gap) < -MAXPENETRATIONSAFETYFAC * (r1_ + r2_) and numstep_ > 0)
   {
     std::cout << "element1_->Id(): " << element1_->Id() << std::endl;
     std::cout << "element2_->Id(): " << element2_->Id() << std::endl;

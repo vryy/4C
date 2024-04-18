@@ -33,14 +33,14 @@ MAT::ELASTIC::CoupAnisoNeoHooke::CoupAnisoNeoHooke(MAT::ELASTIC::PAR::CoupAnisoN
 void MAT::ELASTIC::CoupAnisoNeoHooke::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
-  AddtoPack(data, A_);
+  AddtoPack(data, structural_tensor_);
 }
 
 void MAT::ELASTIC::CoupAnisoNeoHooke::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   ExtractfromPack(position, data, a_);
-  ExtractfromPack(position, data, A_);
+  ExtractfromPack(position, data, structural_tensor_);
 }
 
 void MAT::ELASTIC::CoupAnisoNeoHooke::Setup(int numgp, INPUT::LineDefinition* linedef)
@@ -77,7 +77,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::Setup(int numgp, INPUT::LineDefinition* li
     {
       // Read in of fiber data and setting fiber data
       ReadFiber(linedef, "FIBER1", a_);
-      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, structural_tensor_);
     }
 
     // error path
@@ -97,7 +97,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::AddStressAnisoPrincipal(const CORE::LINALG
   double c = params_->c_;
 
   double gamma = 2. * c;
-  stress.Update(gamma, A_, 1.0);
+  stress.Update(gamma, structural_tensor_, 1.0);
 
   // no contribution to cmat
   // double delta = 0.0;
@@ -141,6 +141,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::SetFiberVecs(const double newgamma,
   a_0.Multiply(idefgrd, ca);
   a_.Update(1. / a_0.Norm2(), a_0);
 
-  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
+  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, structural_tensor_);
 }
 FOUR_C_NAMESPACE_CLOSE

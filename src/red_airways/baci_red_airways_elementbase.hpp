@@ -334,13 +334,13 @@ namespace DRT
       //@}
 
       //! @name Other
-      std::string Type() { return elemType_; }
+      std::string Type() { return elem_type_; }
 
       //! @name Other
       std::string Resistance() { return resistance_; }
 
       //! @name Other
-      std::string ElemSolvingType() { return elemsolvingType_; }
+      std::string ElemSolvingType() { return elemsolving_type_; }
 
       //@}
 
@@ -393,16 +393,16 @@ namespace DRT
 
 
       //! Element Type
-      std::string elemType_;
+      std::string elem_type_;
 
       //! Resistance Type
       std::string resistance_;
 
       //! Solver Type
-      std::string elemsolvingType_;
+      std::string elemsolving_type_;
 
       //! Airway-specific parameters
-      DRT::REDAIRWAYS::AirwayParams airwayParams_;
+      DRT::REDAIRWAYS::AirwayParams airway_params_;
 
 
       // internal calculation methods
@@ -724,7 +724,7 @@ namespace DRT
 
 
       //! @name Other
-      std::string Type() { return elemType_; }
+      std::string Type() { return elem_type_; }
 
       //! @name Other
       std::string Resistance() { return resistance_; }
@@ -787,13 +787,13 @@ namespace DRT
 
 
       //! Element Type
-      std::string elemType_;
+      std::string elem_type_;
 
       //! Resistance Type
       std::string resistance_;
 
       //! Acinus-specific parameters
-      DRT::REDAIRWAYS::AcinusParams acinusParams_;
+      DRT::REDAIRWAYS::AcinusParams acinus_params_;
 
 
       // internal calculation methods
@@ -1163,7 +1163,7 @@ namespace DRT
       };
 
       // data
-      std::map<std::string, double> elemParams_;
+      std::map<std::string, double> elem_params_;
 
       // element tree generation
       int generation_;
@@ -1532,7 +1532,7 @@ namespace DRT
       };
 
       // data
-      std::map<std::string, double> elemParams_;
+      std::map<std::string, double> elem_params_;
 
       // element tree generation
       int generation_;
@@ -1907,7 +1907,7 @@ namespace DRT
       };
 
       // data
-      std::map<std::string, double> elemParams_;
+      std::map<std::string, double> elem_params_;
 
       // element tree generation
       int generation_;

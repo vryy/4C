@@ -217,10 +217,10 @@ namespace CORE::LINALG
     const std::string* weighttype_;
 
     //! projector matrix - only built if necessary (e.g. for direct solvers)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> P_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> p_;
 
     //! transposed projector matrix - only built if necessary (e.g. for direct solvers)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> PT_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> pt_;
 
     //! a set of vectors defining weighted (basis integral) vector for the projector
     Teuchos::RCP<Epetra_MultiVector> w_;
@@ -230,7 +230,7 @@ namespace CORE::LINALG
     Teuchos::RCP<Epetra_MultiVector> c_;
 
     //! inverse of product (c_^T * w_), computed once after setting c_ and w_
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invwTc_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invw_tc_;
   };
 
 }  // namespace CORE::LINALG

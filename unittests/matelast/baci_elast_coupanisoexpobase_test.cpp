@@ -53,7 +53,7 @@ namespace
       // compute norm of fibers
       for (std::size_t i = 0; i < fibersa.size(); ++i)
       {
-        scalarProducts_[i] = fibersa[i].Dot(fibersb[i]);
+        scalar_products_[i] = fibersa[i].Dot(fibersb[i]);
         CORE::LINALG::Matrix<3, 3> tmp;
         tmp.MultiplyNT(fibersa[i], fibersb[i]);
         tensors_[i].Update(0.5, tmp);
@@ -62,7 +62,7 @@ namespace
       }
     }
 
-    [[nodiscard]] double GetScalarProduct(int gp) const override { return scalarProducts_[gp]; }
+    [[nodiscard]] double GetScalarProduct(int gp) const override { return scalar_products_[gp]; }
 
     [[nodiscard]] const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override
     {
@@ -76,7 +76,7 @@ namespace
     }
 
    private:
-    std::array<double, 2> scalarProducts_;
+    std::array<double, 2> scalar_products_;
     std::array<CORE::LINALG::Matrix<3, 3>, 2> tensors_;
     std::array<CORE::LINALG::Matrix<6, 1>, 2> tensors_stress_;
   };
@@ -85,7 +85,7 @@ namespace
   {
    public:
     CoupAnisoExpoFake(MAT::ELASTIC::PAR::CoupAnisoExpoBase* params)
-        : CoupAnisoExpoBase(params), anisotropyExtension_()
+        : CoupAnisoExpoBase(params), anisotropy_extension_()
     {
     }
 
@@ -99,11 +99,11 @@ namespace
     [[nodiscard]] const MAT::ELASTIC::CoupAnisoExpoBaseInterface& GetCoupAnisoExpoBaseInterface()
         const override
     {
-      return anisotropyExtension_;
+      return anisotropy_extension_;
     }
 
    private:
-    const CoupAnisoExpoBaseInterfaceFake anisotropyExtension_;
+    const CoupAnisoExpoBaseInterfaceFake anisotropy_extension_;
   };
 
   class CoupAnisoExpoBaseTest : public ::testing::Test

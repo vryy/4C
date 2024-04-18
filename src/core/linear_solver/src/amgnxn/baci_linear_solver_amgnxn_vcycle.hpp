@@ -50,21 +50,21 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     void DoVcycle(
         const BlockedVector& X, BlockedVector& Y, int level, bool InitialGuessIsZero) const;
 
-    int NumLevels_;
-    int NumSweeps_;
-    int FirstLevel_;
+    int num_levels_;
+    int num_sweeps_;
+    int first_level_;
 
-    std::vector<Teuchos::RCP<BlockedMatrix>> Avec_;
-    std::vector<Teuchos::RCP<BlockedMatrix>> Pvec_;
-    std::vector<Teuchos::RCP<BlockedMatrix>> Rvec_;
-    std::vector<Teuchos::RCP<GenericSmoother>> SvecPre_;
-    std::vector<Teuchos::RCP<GenericSmoother>> SvecPos_;
+    std::vector<Teuchos::RCP<BlockedMatrix>> avec_;
+    std::vector<Teuchos::RCP<BlockedMatrix>> pvec_;
+    std::vector<Teuchos::RCP<BlockedMatrix>> rvec_;
+    std::vector<Teuchos::RCP<GenericSmoother>> svec_pre_;
+    std::vector<Teuchos::RCP<GenericSmoother>> svec_pos_;
 
-    bool flag_set_up_A_;
-    bool flag_set_up_P_;
-    bool flag_set_up_R_;
-    bool flag_set_up_Pre_;
-    bool flag_set_up_Pos_;
+    bool flag_set_up_a_;
+    bool flag_set_up_p_;
+    bool flag_set_up_r_;
+    bool flag_set_up_pre_;
+    bool flag_set_up_pos_;
   };
 
   // This could be done better with templates
@@ -86,21 +86,21 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     void DoVcycle(const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level,
         bool InitialGuessIsZero) const;
 
-    int NumLevels_;
-    int NumSweeps_;
-    int FirstLevel_;
+    int num_levels_;
+    int num_sweeps_;
+    int first_level_;
 
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Avec_;
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Pvec_;
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Rvec_;
-    std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre_;
-    std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos_;
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> avec_;
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> pvec_;
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> rvec_;
+    std::vector<Teuchos::RCP<SingleFieldSmoother>> svec_pre_;
+    std::vector<Teuchos::RCP<SingleFieldSmoother>> svec_pos_;
 
-    bool flag_set_up_A_;
-    bool flag_set_up_P_;
-    bool flag_set_up_R_;
-    bool flag_set_up_Pre_;
-    bool flag_set_up_Pos_;
+    bool flag_set_up_a_;
+    bool flag_set_up_p_;
+    bool flag_set_up_r_;
+    bool flag_set_up_pre_;
+    bool flag_set_up_pos_;
   };
 }  // namespace CORE::LINEAR_SOLVER::AMGNXN
 

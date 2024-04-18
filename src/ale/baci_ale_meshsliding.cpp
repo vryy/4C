@@ -163,10 +163,10 @@ void ALE::Meshsliding::CondensationOperationBlockMatrix(
   /* Store some quantities for static condensation of LM                */
   /**********************************************************************/
 
-  A_ss_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(sysmatnew->Matrix(2, 2)));
-  A_sm_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(sysmatnew->Matrix(2, 1)));
-  A_sn_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(sysmatnew->Matrix(2, 0)));
-  D_inv_ = adaptermeshsliding_->GetMortarMatrixDinv();
+  a_ss_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(sysmatnew->Matrix(2, 2)));
+  a_sm_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(sysmatnew->Matrix(2, 1)));
+  a_sn_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(sysmatnew->Matrix(2, 0)));
+  d_inv_ = adaptermeshsliding_->GetMortarMatrixDinv();
   rs_ = Teuchos::rcp(new Epetra_Vector(*splitres[2]));
 
   /**********************************************************************/
@@ -214,7 +214,7 @@ void ALE::Meshsliding::CondensationOperationBlockMatrix(
 
   // compute replacement for block sn      - (T * D^(-1) * A_sn)
   Teuchos::RCP<CORE::LINALG::SparseMatrix> Asn_mod_interm =
-      MLMultiply(*D_inv_, false, sysmatnew->Matrix(2, 0), false, false, false, true);
+      MLMultiply(*d_inv_, false, sysmatnew->Matrix(2, 0), false, false, false, true);
   Teuchos::RCP<CORE::LINALG::SparseMatrix> Asn_mod =
       MLMultiply(*T, false, *Asn_mod_interm, false, false, false, true);
 
@@ -224,7 +224,7 @@ void ALE::Meshsliding::CondensationOperationBlockMatrix(
 
   // compute replacement for block sm      - (T * D^(-1) * A_sm)   +  N_m
   Teuchos::RCP<CORE::LINALG::SparseMatrix> Asm_mod_interm =
-      MLMultiply(*D_inv_, false, sysmatnew->Matrix(2, 1), false, false, false, true);
+      MLMultiply(*d_inv_, false, sysmatnew->Matrix(2, 1), false, false, false, true);
   Teuchos::RCP<CORE::LINALG::SparseMatrix> Asm_mod =
       MLMultiply(*T, false, *Asm_mod_interm, false, false, false, true);
 
@@ -235,7 +235,7 @@ void ALE::Meshsliding::CondensationOperationBlockMatrix(
 
   // compute replacement for block ss      (- T * D^(-1) *A_ss)   +  H  +  N_s
   Teuchos::RCP<CORE::LINALG::SparseMatrix> Ass_mod_interm =
-      MLMultiply(*D_inv_, false, sysmatnew->Matrix(2, 2), false, false, false, true);
+      MLMultiply(*d_inv_, false, sysmatnew->Matrix(2, 2), false, false, false, true);
   Teuchos::RCP<CORE::LINALG::SparseMatrix> Ass_mod =
       MLMultiply(*T, false, *Ass_mod_interm, false, false, false, true);
 
@@ -276,7 +276,7 @@ void ALE::Meshsliding::CondensationOperationBlockMatrix(
 
   // r_s: add - T*D^(-1)*r_s
   Teuchos::RCP<Epetra_Vector> rs_mod_interm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
-  D_inv_->Multiply(false, *rs_, *rs_mod_interm);
+  d_inv_->Multiply(false, *rs_, *rs_mod_interm);
   Teuchos::RCP<Epetra_Vector> rs_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
   T->Multiply(false, *rs_mod_interm, *rs_mod);
 
@@ -364,19 +364,19 @@ void ALE::Meshsliding::Recover(Teuchos::RCP<Epetra_Vector>& inc)
   lm_temp->Update(1.0, *rs_, 1.0);
 
   // + A_ss*d_s
-  A_ss_->Multiply(false, *(splitinc[2]), *mod);
+  a_ss_->Multiply(false, *(splitinc[2]), *mod);
   lm_temp->Update(1.0, *mod, 1.0);
 
   // + A_sm*d_m
-  A_sm_->Multiply(false, *(splitinc[1]), *mod);
+  a_sm_->Multiply(false, *(splitinc[1]), *mod);
   lm_temp->Update(1.0, *mod, 1.0);
 
   // + A_sn*d_n
-  A_sn_->Multiply(false, *(splitinc[0]), *mod);
+  a_sn_->Multiply(false, *(splitinc[0]), *mod);
   lm_temp->Update(1.0, *mod, 1.0);
 
   // - D^(-1) *
-  D_inv_->Multiply(false, *lm_temp, *lm_);
+  d_inv_->Multiply(false, *lm_temp, *lm_);
   lm_->Scale(-1.0);
 }
 

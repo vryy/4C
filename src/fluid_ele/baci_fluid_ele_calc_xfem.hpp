@@ -441,7 +441,7 @@ namespace DRT
       CORE::LINALG::Matrix<nsd_, 1> itraction_jump_;      ///< interface traction jump at t^n+1
       CORE::LINALG::Matrix<nsd_, nsd_> proj_tangential_;  ///< tangential projection matrix at t^n+1
       CORE::LINALG::Matrix<nsd_, nsd_>
-          LB_proj_matrix_;  ///< interface matrix jump (for Laplace-Beltrami) at t^n+1
+          lb_proj_matrix_;  ///< interface matrix jump (for Laplace-Beltrami) at t^n+1
 
       std::vector<CORE::LINALG::SerialDenseMatrix>
           solid_stress_;  ///< hold information about solid stress ([0]...traction,

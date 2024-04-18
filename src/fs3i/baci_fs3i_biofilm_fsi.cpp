@@ -121,22 +121,22 @@ void FS3I::BiofilmFSI::Init()
         "false");
 
   // fsi parameters
-  dt_fsi = fsidyn.get<double>("TIMESTEP");
-  nstep_fsi = fsidyn.get<int>("NUMSTEP");
-  maxtime_fsi = fsidyn.get<double>("MAXTIME");
-  step_fsi = 0;
-  time_fsi = 0.;
+  dt_fsi_ = fsidyn.get<double>("TIMESTEP");
+  nstep_fsi_ = fsidyn.get<int>("NUMSTEP");
+  maxtime_fsi_ = fsidyn.get<double>("MAXTIME");
+  step_fsi_ = 0;
+  time_fsi_ = 0.;
 
   // growth parameters
-  dt_bio = biofilmcontrol.get<double>("BIOTIMESTEP");
-  nstep_bio = biofilmcontrol.get<int>("BIONUMSTEP");
+  dt_bio_ = biofilmcontrol.get<double>("BIOTIMESTEP");
+  nstep_bio_ = biofilmcontrol.get<int>("BIONUMSTEP");
   fluxcoef_ = biofilmcontrol.get<double>("FLUXCOEF");
   normforceposcoef_ = biofilmcontrol.get<double>("NORMFORCEPOSCOEF");
   normforcenegcoef_ = biofilmcontrol.get<double>("NORMFORCENEGCOEF");
   tangoneforcecoef_ = biofilmcontrol.get<double>("TANGONEFORCECOEF");
   tangtwoforcecoef_ = biofilmcontrol.get<double>("TANGTWOFORCECOEF");
-  step_bio = 0;
-  time_bio = 0.;
+  step_bio_ = 0;
+  time_bio_ = 0.;
 
   // total time
   time_ = 0.;
@@ -219,11 +219,11 @@ void FS3I::BiofilmFSI::Setup()
   struidispnp_ = fsi_->StructureField()->ExtractInterfaceDispn();
   struiveln_ = fsi_->StructureField()->ExtractInterfaceDispn();
 
-  struct_growth_disp = AleToStructField(ale_->WriteAccessDispnp());
-  fluid_growth_disp = AleToFluidField(fsi_->AleField()->WriteAccessDispnp());
-  scatra_struct_growth_disp = Teuchos::rcp(new Epetra_MultiVector(
+  struct_growth_disp_ = AleToStructField(ale_->WriteAccessDispnp());
+  fluid_growth_disp_ = AleToFluidField(fsi_->AleField()->WriteAccessDispnp());
+  scatra_struct_growth_disp_ = Teuchos::rcp(new Epetra_MultiVector(
       *(scatravec_[1]->ScaTraField()->Discretization())->NodeRowMap(), 3, true));
-  scatra_fluid_growth_disp = Teuchos::rcp(new Epetra_MultiVector(
+  scatra_fluid_growth_disp_ = Teuchos::rcp(new Epetra_MultiVector(
       *(scatravec_[0]->ScaTraField()->Discretization())->NodeRowMap(), 3, true));
 
   idispn_->PutScalar(0.0);
@@ -234,10 +234,10 @@ void FS3I::BiofilmFSI::Setup()
   struidispnp_->PutScalar(0.0);
   struiveln_->PutScalar(0.0);
 
-  struct_growth_disp->PutScalar(0.0);
-  fluid_growth_disp->PutScalar(0.0);
-  scatra_struct_growth_disp->PutScalar(0.0);
-  scatra_fluid_growth_disp->PutScalar(0.0);
+  struct_growth_disp_->PutScalar(0.0);
+  fluid_growth_disp_->PutScalar(0.0);
+  scatra_struct_growth_disp_->PutScalar(0.0);
+  scatra_fluid_growth_disp_->PutScalar(0.0);
 
   norminflux_ =
       Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
@@ -266,8 +266,8 @@ void FS3I::BiofilmFSI::Timeloop()
   const int outputgmsh_ = CORE::UTILS::IntegralValue<int>(biofilmcontrol, "OUTPUT_GMSH");
 
   std::cout << std::endl << "--------------SIMULATION PARAMETERS-----------------" << std::endl;
-  std::cout << "FSI TIMESTEP = " << dt_fsi << "; FSI NUMSTEP = " << nstep_fsi << std::endl;
-  std::cout << "BIO TIMESTEP = " << dt_bio << "; BIO NUMSTEP = " << nstep_bio << std::endl;
+  std::cout << "FSI TIMESTEP = " << dt_fsi_ << "; FSI NUMSTEP = " << nstep_fsi_ << std::endl;
+  std::cout << "BIO TIMESTEP = " << dt_bio_ << "; BIO NUMSTEP = " << nstep_bio_ << std::endl;
   std::cout << "FLUXCOEF = " << fluxcoef_ << ";" << std::endl;
   std::cout << "NORMFORCEPOSCOEF = " << normforceposcoef_
             << "; NORMFORCENEGCOEF = " << normforcenegcoef_ << std::endl;
@@ -278,14 +278,14 @@ void FS3I::BiofilmFSI::Timeloop()
   if (biofilmgrowth)
   {
     // outer loop for biofilm growth
-    while (step_bio <= nstep_bio)
+    while (step_bio_ <= nstep_bio_)
     {
       // update step and time
-      step_bio++;
-      time_bio += dt_bio;
-      time_ = time_bio + time_fsi;
+      step_bio_++;
+      time_bio_ += dt_bio_;
+      time_ = time_bio_ + time_fsi_;
 
-      if (step_bio == 1 && outputgmsh_)
+      if (step_bio_ == 1 && outputgmsh_)
       {
         StructGmshOutput();
         FluidGmshOutput();
@@ -304,7 +304,7 @@ void FS3I::BiofilmFSI::Timeloop()
       if (Comm().MyPID() == 0)
       {
         std::cout << "\n***********************\n     GROWTH STEP \n***********************\n";
-        printf(" growth step = %3d   \n", step_bio);
+        printf(" growth step = %3d   \n", step_bio_);
         printf(" Total time = %3f   \n", time_);
       }
 
@@ -350,7 +350,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 {
   // initialize time and step each time we enter the innerloop
   double t = 0.;
-  step_fsi = 0;
+  step_fsi_ = 0;
   // initialize fluxes and tractions each time we enter the innerloop
   norminflux_->PutScalar(0.0);
   normtraction_->PutScalar(0.0);
@@ -382,10 +382,10 @@ void FS3I::BiofilmFSI::InnerTimeloop()
   tangtemptractionone_->PutScalar(0.0);
   tangtemptractiontwo_->PutScalar(0.0);
 
-  while (step_fsi < nstep_fsi and t + 1e-10 * dt_fsi < maxtime_fsi)
+  while (step_fsi_ < nstep_fsi_ and t + 1e-10 * dt_fsi_ < maxtime_fsi_)
   {
-    step_fsi++;
-    t += dt_fsi;
+    step_fsi_++;
+    t += dt_fsi_;
 
     fsi_->PrepareTimeStep();
     fsi_->TimeStep(fsi_);
@@ -426,7 +426,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     // this is necessary because we want to write all the steps except the last one
     // the last one will be written only after the calculation of the growth
     // in this way also the displacement due to growth is written
-    if (step_fsi < nstep_fsi and t + 1e-10 * dt_fsi < maxtime_fsi)
+    if (step_fsi_ < nstep_fsi_ and t + 1e-10 * dt_fsi_ < maxtime_fsi_)
     {
       fsi_->Output();
       ScatraOutput();
@@ -631,14 +631,14 @@ void FS3I::BiofilmFSI::InnerTimeloop()
       int gnodeid = condnodemap->GID(i);
       int lnodeid = strudis->NodeRowMap()->LID(gnodeid);
 
-      (*((*norminflux_)(0)))[lnodeid] = (*((*normtempinflux_)(0)))[lnodeid] / step_fsi;
-      (*((*normtraction_)(0)))[lnodeid] = (*((*normtemptraction_)(0)))[lnodeid] / step_fsi;
-      (*((*tangtractionone_)(0)))[lnodeid] = (*((*tangtemptractionone_)(0)))[lnodeid] / step_fsi;
-      (*((*tangtractiontwo_)(0)))[lnodeid] = (*((*tangtemptractiontwo_)(0)))[lnodeid] / step_fsi;
+      (*((*norminflux_)(0)))[lnodeid] = (*((*normtempinflux_)(0)))[lnodeid] / step_fsi_;
+      (*((*normtraction_)(0)))[lnodeid] = (*((*normtemptraction_)(0)))[lnodeid] / step_fsi_;
+      (*((*tangtractionone_)(0)))[lnodeid] = (*((*tangtemptractionone_)(0)))[lnodeid] / step_fsi_;
+      (*((*tangtractiontwo_)(0)))[lnodeid] = (*((*tangtemptractiontwo_)(0)))[lnodeid] / step_fsi_;
     }
   }
 
-  time_fsi += t;
+  time_fsi_ += t;
 }
 
 /*----------------------------------------------------------------------*
@@ -729,7 +729,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idisp
     if (error > 0) FOUR_C_THROW("Could not insert values into vector struiveln_: error %d", error);
   }
 
-  struidispnp->Update(dt_bio, *struiveln_, 0.0);
+  struidispnp->Update(dt_bio_, *struiveln_, 0.0);
 
   Teuchos::RCP<Epetra_Vector> fluididisp = fsi_->StructToFluid(struidispnp);
   idispnp->Update(1.0, *fluididisp, 0.0);
@@ -774,11 +774,11 @@ void FS3I::BiofilmFSI::FluidAleSolve()
 
   // set the total displacement due to growth for output reasons
   // fluid
-  fluid_growth_disp->Update(1.0, *fluiddisp, 1.0);
-  fsi_->FluidField()->SetFldGrDisp(fluid_growth_disp);
+  fluid_growth_disp_->Update(1.0, *fluiddisp, 1.0);
+  fsi_->FluidField()->SetFldGrDisp(fluid_growth_disp_);
   // fluid scatra
-  VecToScatravec(scatradis, fluid_growth_disp, scatra_fluid_growth_disp);
-  scatra->ScaTraField()->SetScFldGrDisp(scatra_fluid_growth_disp);
+  VecToScatravec(scatradis, fluid_growth_disp_, scatra_fluid_growth_disp_);
+  scatra->ScaTraField()->SetScFldGrDisp(scatra_fluid_growth_disp_);
 
   // computation of fluid solution
   // fluid_->Solve();
@@ -820,11 +820,11 @@ void FS3I::BiofilmFSI::StructAleSolve()
 
   // set the total displacement due to growth for output reasons
   // structure
-  struct_growth_disp->Update(1.0, *structdisp, 1.0);
-  fsi_->StructureField()->SetStrGrDisp(struct_growth_disp);
+  struct_growth_disp_->Update(1.0, *structdisp, 1.0);
+  fsi_->StructureField()->SetStrGrDisp(struct_growth_disp_);
   // structure scatra
-  VecToScatravec(struscatradis, struct_growth_disp, scatra_struct_growth_disp);
-  struscatra->ScaTraField()->SetScStrGrDisp(scatra_struct_growth_disp);
+  VecToScatravec(struscatradis, struct_growth_disp_, scatra_struct_growth_disp_);
+  struscatra->ScaTraField()->SetScStrGrDisp(scatra_struct_growth_disp_);
 
   // computation of structure solution
   // structure_->Solve();
@@ -922,7 +922,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
   Teuchos::RCP<DRT::Discretization> struscatradis = scatravec_[1]->ScaTraField()->Discretization();
 
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("struct",
-      structdis->Writer()->Output()->FileName(), step_bio, 701, false, structdis->Comm().MyPID());
+      structdis->Writer()->Output()->FileName(), step_bio_, 701, false, structdis->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
 
   Teuchos::RCP<const Epetra_Vector> structdisp = fsi_->StructureField()->Dispn();
@@ -970,7 +970,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
   Teuchos::RCP<DRT::Discretization> fluidscatradis = scatravec_[0]->ScaTraField()->Discretization();
 
   const std::string filenamefluid = IO::GMSH::GetNewFileNameAndDeleteOldFiles("fluid",
-      fluiddis->Writer()->Output()->FileName(), step_bio, 701, false, fluiddis->Comm().MyPID());
+      fluiddis->Writer()->Output()->FileName(), step_bio_, 701, false, fluiddis->Comm().MyPID());
   std::ofstream gmshfilecontent(filenamefluid.c_str());
 
   Teuchos::RCP<const Epetra_Vector> fluidvel = fsi_->FluidField()->Velnp();

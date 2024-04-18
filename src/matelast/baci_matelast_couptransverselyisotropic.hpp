@@ -298,20 +298,20 @@ namespace MAT
       my_params* params_ = nullptr;
 
       /// fiber direction
-      CORE::LINALG::Matrix<3, 1> A_;
+      CORE::LINALG::Matrix<3, 1> a_;
 
       /** \brief outer product of the fiber directions
        * \f$ \underline{A} \otimes \underline{A}\f$
        *
        * \note We are following a perturbed Voigt notation:
        * {11, 22, 33, 12, 23, 13}. */
-      CORE::LINALG::Matrix<6, 1> AA_;
+      CORE::LINALG::Matrix<6, 1> aa_;
 
       /// pseudo invariant \f$ I_4 \f$ ( strain measure in fiber direction )
-      double I4_ = 0.0;
+      double i4_ = 0.0;
 
       /// pseudo invariant \f$ I_5 \f$ ( quadratic strain measure in fiber direction )
-      double I5_ = 0.0;
+      double i5_ = 0.0;
 
       /// determinant of the deformation gradient
       double j_ = 0.0;

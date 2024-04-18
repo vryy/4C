@@ -44,16 +44,16 @@ void CORE::LINEAR_SOLVER::MLPreconditioner::Setup(
     if (A == nullptr) FOUR_C_THROW("CrsMatrix expected");
 
     // free old matrix first
-    P_ = Teuchos::null;
-    Pmatrix_ = Teuchos::null;
+    p_ = Teuchos::null;
+    pmatrix_ = Teuchos::null;
 
     // create a copy of the scaled matrix
     // so we can reuse the preconditioner
-    Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
+    pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
 
     mllist_.remove("init smoother", false);
 
-    P_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_, mllist_, true));
+    p_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*pmatrix_, mllist_, true));
   }
 }
 

@@ -127,7 +127,7 @@ namespace FSI
             bestdamp_(6, 1.0),
             bestpoly_(6, 1),
             bestsweeps_(6, 1),
-            S_(7, Teuchos::null)
+            s_(7, Teuchos::null)
       {
         if (nlevel - 1 > 6) FOUR_C_THROW("Can only analyze V cycles upto 7 levels");
         return;
@@ -149,7 +149,7 @@ namespace FSI
       inline std::vector<int>& Sweeps() { return bestsweeps_; }
 
       //! Access the underlying algorithmic operator
-      inline std::vector<Teuchos::RCP<MLAPI::InverseOperator>>& S() { return S_; }
+      inline std::vector<Teuchos::RCP<MLAPI::InverseOperator>>& S() { return s_; }
 
      private:
       int nlevel_;                         ///< number of levels
@@ -157,7 +157,7 @@ namespace FSI
       std::vector<double> bestdamp_;       ///< best set of damping parameters
       std::vector<int> bestpoly_;          ///< best set of polynomial degrees
       std::vector<int> bestsweeps_;        ///< best set of number of sweeps
-      std::vector<Teuchos::RCP<MLAPI::InverseOperator>> S_;
+      std::vector<Teuchos::RCP<MLAPI::InverseOperator>> s_;
     };
 
     //! Compute rate of residual reduction

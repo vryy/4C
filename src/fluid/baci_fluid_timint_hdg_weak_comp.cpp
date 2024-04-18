@@ -32,7 +32,7 @@ FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<DRT::Discretization
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntGenAlpha(actdis, solver, params, output, alefluid),
       timealgoset_(INPAR::FLUID::timeint_afgenalpha),
-      firstAssembly_(false)
+      first_assembly_(false)
 {
 }
 
@@ -215,7 +215,7 @@ void FLD::TimIntHDGWeakComp::SetOldPartOfRighthandside()
   // This code is entered at the beginning of the nonlinear iteration, so
   // store that the assembly to be done next is going to be the first one
   // (without combined vector update) for HDG.
-  firstAssembly_ = true;
+  first_assembly_ = true;
 }
 
 
@@ -286,7 +286,7 @@ void FLD::TimIntHDGWeakComp::SetStateTimInt()
 *-----------------------------------------------------------------------*/
 void FLD::TimIntHDGWeakComp::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
 {
-  eleparams.set<bool>("needslocalupdate", !firstAssembly_);
+  eleparams.set<bool>("needslocalupdate", !first_assembly_);
 }
 
 /*----------------------------------------------------------------------*
@@ -294,7 +294,7 @@ void FLD::TimIntHDGWeakComp::SetCustomEleParamsAssembleMatAndRHS(Teuchos::Parame
 *-----------------------------------------------------------------------*/
 void FLD::TimIntHDGWeakComp::ClearStateAssembleMatAndRHS()
 {
-  if (!firstAssembly_)
+  if (!first_assembly_)
   {
     // Wrote into the state vector during element calls, need to transfer the
     // data back before it disappears when clearing the state (at least for nproc>1)
@@ -302,7 +302,7 @@ void FLD::TimIntHDGWeakComp::ClearStateAssembleMatAndRHS()
     for (int i = 0; i < intvelnp_->MyLength(); ++i)
       (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
   }
-  firstAssembly_ = false;
+  first_assembly_ = false;
   FluidImplicitTimeInt::ClearStateAssembleMatAndRHS();
 }
 

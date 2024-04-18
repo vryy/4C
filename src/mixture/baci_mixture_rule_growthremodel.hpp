@@ -137,7 +137,7 @@ namespace MIXTURE
     ///! Rule parameters as defined in the input file
     PAR::GrowthRemodelMixtureRule* params_{};
 
-    std::unique_ptr<MIXTURE::MixtureGrowthStrategy> growthStrategy_;
+    std::unique_ptr<MIXTURE::MixtureGrowthStrategy> growth_strategy_;
   };
 }  // namespace MIXTURE
 

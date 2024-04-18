@@ -218,13 +218,13 @@ namespace MAT
     MAT::PAR::MuscleWeickenmeier* params_{};
 
     /// Fibre stretch of the previous timestep
-    double lambdaMOld_;
+    double lambda_m_old_;
 
     /// Holder for anisotropic behavior
     MAT::Anisotropy anisotropy_;
 
     /// Anisotropy extension holder
-    MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
+    MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };  // end class Muscle_Weickenmeier
 
 }  // end namespace MAT

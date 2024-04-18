@@ -229,13 +229,13 @@ namespace MAT
 
     //! linearisation of Dmech w.r.t. temperatures T_{n+1}
     //! contribution to K_TT
-    double MechDiss_kTT(int gp) const { return (mechdiss_kTT_->at(gp)); }
+    double MechDiss_kTT(int gp) const { return (mechdiss_k_tt_->at(gp)); }
 
     //! linearisation of the mechanical dissipation w.r.t. displacements d_{n+1}
     //! contribution to K_Td
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> MechDiss_kTd(int gp) const
     {
-      return (mechdiss_kTd_->at(gp));
+      return (mechdiss_k_td_->at(gp));
     }
 
     //! thermoplastic heating
@@ -243,18 +243,18 @@ namespace MAT
 
     //! linearisation of thermoplastic heating w.r.t. temperatures T_{n+1}
     //! contribution to K_TT
-    double ThermoPlastHeating_kTT(int gp) const { return (thrplheat_kTT_->at(gp)); }
+    double ThermoPlastHeating_kTT(int gp) const { return (thrplheat_k_tt_->at(gp)); }
 
     //! linearisation of thermoplastic heating w.r.t. temperatures T_{n+1}
     //! contribution to K_Td
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> ThermoPlastHeating_kTd(int gp) const
     {
-      return (thrplheat_kTd_->at(gp));
+      return (thrplheat_k_td_->at(gp));
     }
 
     //! linearisation of material tangent w.r.t. temperatures T_{n+1}
     //! contribution to K_dT
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> CMat_kdT(int gp) const { return (Cmat_kdT_->at(gp)); }
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> CMat_kdT(int gp) const { return (cmat_kd_t_->at(gp)); }
 
     //! check if history variables are already initialised
     bool Initialized() const { return (isinit_ and (defgrdcurr_ != Teuchos::null)); }
@@ -383,22 +383,22 @@ namespace MAT
     //! current (i.e. at t_n+1) mechanical dissipation
     Teuchos::RCP<std::vector<double>> mechdiss_;
     //! current (i.e. at t_n+1) linearised mechanical dissipation w.r.t. T_{n+1}
-    Teuchos::RCP<std::vector<double>> mechdiss_kTT_;
+    Teuchos::RCP<std::vector<double>> mechdiss_k_tt_;
     //! current (i.e. at t_n+1) linearised mechanical dissipation w.r.t. d_{n+1}
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>> mechdiss_kTd_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>> mechdiss_k_td_;
     //! current (i.e. at t_n+1) thermoplastic heating term
     Teuchos::RCP<std::vector<double>> thrplheat_;
     //! current (i.e. at t_n+1) thermoplastic heating term
-    Teuchos::RCP<std::vector<double>> thrplheat_kTT_;
+    Teuchos::RCP<std::vector<double>> thrplheat_k_tt_;
     //! current (i.e. at t_n+1) thermoplastic heating term w.r.t. d_{n+1}
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>> thrplheat_kTd_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>> thrplheat_k_td_;
 
     //@}
 
     //! @name Linearisation terms for structural equation
 
     //! current (i.e. at t_n+1) linearised material tangent w.r.t. T_{n+1}
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>> Cmat_kdT_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>> cmat_kd_t_;
 
     //@}
 
@@ -407,7 +407,7 @@ namespace MAT
     //! indicator if material has started to be plastic
     bool plastic_step_;
     //! element ID, in which first plasticity occurs
-    int plastic_eleID_;
+    int plastic_ele_id_;
 
   };  // class ThermoPlasticHyperElast
 

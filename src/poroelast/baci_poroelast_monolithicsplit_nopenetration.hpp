@@ -110,12 +110,12 @@ namespace POROELAST
     Teuchos::RCP<CORE::LINALG::SparseOperator> k_fluid_;
 
     Teuchos::RCP<CORE::LINALG::SparseMatrix> k_lambda_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_D_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_invD_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_d_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_inv_d_;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_Dn_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_dn_;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_lambdainvD_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_lambdainv_d_;
 
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_porodisp_;
     Teuchos::RCP<CORE::LINALG::SparseOperator> k_porofluid_;
@@ -123,12 +123,12 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Vector> nopenetration_rhs_;
 
     //! transform object for k_D matrix \f$D\f$
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> k_D_transform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> k_d_transform_;
     //! transform object for k_D matrix \f$D\f$
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> k_invD_transform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> k_inv_d_transform_;
 
     //! transform object for linearization of k_D matrix \f$D\f$
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> k_DLin_transform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> k_d_lin_transform_;
 
     //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto
     //! the structure) evaluated at actual iteration step \f$t_{n+1}\f$ but needed for next

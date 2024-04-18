@@ -110,9 +110,9 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> sumgradle_;
 
     //! sum over all in plane residuals
-    Teuchos::RCP<std::vector<double>> sumtauM_;
+    Teuchos::RCP<std::vector<double>> sumtau_m_;
     //! sum over all in plane squared residuals
-    Teuchos::RCP<std::vector<double>> sumtauC_;
+    Teuchos::RCP<std::vector<double>> sumtau_c_;
 
     //! sum over all in plane mk (parameter for stabilization parameter, 1/3 for lin ele)
     Teuchos::RCP<std::vector<double>> summk_;
@@ -133,9 +133,9 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> sumabssvelaf_;
 
     //! sum over all in plane residuals of the continuity equation
-    Teuchos::RCP<std::vector<double>> sumresC_;
+    Teuchos::RCP<std::vector<double>> sumres_c_;
     //! sum over all in plane squared residuals of the continuity equation
-    Teuchos::RCP<std::vector<double>> sumresC_sq_;
+    Teuchos::RCP<std::vector<double>> sumres_c_sq_;
     //! sum over all in plane subscale pressure values at current timestep
     Teuchos::RCP<std::vector<double>> sumspressnp_;
     //! sum over all in plane squared subscale pressure values at current timestep

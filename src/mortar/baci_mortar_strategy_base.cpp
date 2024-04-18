@@ -35,7 +35,7 @@ MORTAR::StratDataContainer::StratDataContainer()
       maxdof_(0),
       systype_(INPAR::CONTACT::system_none),
       dyntype_(INPAR::STR::dyna_statics),
-      dynparamN_(0.0)
+      dynparam_n_(0.0)
 {
 }
 

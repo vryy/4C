@@ -64,13 +64,16 @@ namespace CONTACT
     //!@{
 
     //! Return parallel unbalance factors (evaluation time) for current time step \f$t_{n+1}\f$
-    std::vector<double>& UnbalanceTimeFactors() { return unbalanceEvaluationTime_; };
-    const std::vector<double>& UnbalanceTimeFactors() const { return unbalanceEvaluationTime_; };
+    std::vector<double>& UnbalanceTimeFactors() { return unbalance_evaluation_time_; };
+    const std::vector<double>& UnbalanceTimeFactors() const { return unbalance_evaluation_time_; };
 
     //! Return parallel unbalance factors (number of slave elements) for current time step
     //! \f$t_{n+1}\f$
-    std::vector<int>& UnbalanceElementFactors() { return unbalanceNumSlaveElements_; };
-    const std::vector<int>& UnbalanceElementFactors() const { return unbalanceNumSlaveElements_; };
+    std::vector<int>& UnbalanceElementFactors() { return unbalance_num_slave_elements_; };
+    const std::vector<int>& UnbalanceElementFactors() const
+    {
+      return unbalance_num_slave_elements_;
+    };
 
     //! return global Lagrange mult. dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map>& GLmDofRowMapPtr() { return glmdofrowmap_; };
@@ -181,16 +184,16 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Map> GSlipTDofRowMapPtr() const { return gslipt_; };
 
     //! return global slave dof row map associated with vertex nodes
-    Teuchos::RCP<Epetra_Map>& GSDofVertexRowMapPtr() { return gsdofVertex_; };
-    Teuchos::RCP<const Epetra_Map> GSDofVertexRowMapPtr() const { return gsdofVertex_; };
+    Teuchos::RCP<Epetra_Map>& GSDofVertexRowMapPtr() { return gsdof_vertex_; };
+    Teuchos::RCP<const Epetra_Map> GSDofVertexRowMapPtr() const { return gsdof_vertex_; };
 
     //! return global slave dof row map associated with edge nodes
-    Teuchos::RCP<Epetra_Map>& GSDofEdgeRowMapPtr() { return gsdofEdge_; };
-    Teuchos::RCP<const Epetra_Map> GSDofEdgeRowMapPtr() const { return gsdofEdge_; };
+    Teuchos::RCP<Epetra_Map>& GSDofEdgeRowMapPtr() { return gsdof_edge_; };
+    Teuchos::RCP<const Epetra_Map> GSDofEdgeRowMapPtr() const { return gsdof_edge_; };
 
     //! return global slave dof row map associated with surface nodes
-    Teuchos::RCP<Epetra_Map>& GSDofSurfRowMapPtr() { return gsdofSurf_; };
-    Teuchos::RCP<const Epetra_Map> GSDofSurfRowMapPtr() const { return gsdofSurf_; };
+    Teuchos::RCP<Epetra_Map>& GSDofSurfRowMapPtr() { return gsdof_surf_; };
+    Teuchos::RCP<const Epetra_Map> GSDofSurfRowMapPtr() const { return gsdof_surf_; };
 
     //! return global LM dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map>& PGLmDofRowMapPtr() { return pglmdofrowmap_; };
@@ -264,12 +267,12 @@ namespace CONTACT
 
     //! Return the structural contact right-hand-side contributions of the current time step
     //! \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector>& StrContactRhsPtr() { return strContactRhsPtr_; }
-    Teuchos::RCP<const Epetra_Vector> StrContactRhsPtr() const { return strContactRhsPtr_; }
+    Teuchos::RCP<Epetra_Vector>& StrContactRhsPtr() { return str_contact_rhs_ptr_; }
+    Teuchos::RCP<const Epetra_Vector> StrContactRhsPtr() const { return str_contact_rhs_ptr_; }
     Epetra_Vector& StrContactRhs()
     {
-      if (strContactRhsPtr_.is_null()) FOUR_C_THROW("The strContactRhsPtr_ is not initialized!");
-      return *strContactRhsPtr_;
+      if (str_contact_rhs_ptr_.is_null()) FOUR_C_THROW("The strContactRhsPtr_ is not initialized!");
+      return *str_contact_rhs_ptr_;
     }
 
     //! return global constraint rhs vector (only for saddlepoint problems)
@@ -379,8 +382,8 @@ namespace CONTACT
     bool IsFriction() const { return friction_; };
 
     //! return flag for nonsmooth contact
-    bool& IsNonSmoothContact() { return nonSmoothContact_; };
-    const bool& IsNonSmoothContact() const { return nonSmoothContact_; };
+    bool& IsNonSmoothContact() { return non_smooth_contact_; };
+    const bool& IsNonSmoothContact() const { return non_smooth_contact_; };
 
     //! return flag for regularized contact
     bool& IsRegularized() { return regularized_; };
@@ -497,25 +500,25 @@ namespace CONTACT
     //!@}
 
     //! global slave dof row map of vertex nodes
-    Teuchos::RCP<Epetra_Map> gsdofVertex_;
+    Teuchos::RCP<Epetra_Map> gsdof_vertex_;
 
     //! global slave dof row map of edge nodes
-    Teuchos::RCP<Epetra_Map> gsdofEdge_;
+    Teuchos::RCP<Epetra_Map> gsdof_edge_;
 
     //! global slave dof row map of surface nodes
-    Teuchos::RCP<Epetra_Map> gsdofSurf_;
+    Teuchos::RCP<Epetra_Map> gsdof_surf_;
 
     //! @name Parallel redistribution
     //!@{
 
     /*! Max-to-min ratio of evaluation time across all processes for currnet time step \f$t_{n+1}\f$
      */
-    std::vector<double> unbalanceEvaluationTime_;
+    std::vector<double> unbalance_evaluation_time_;
 
     /*! Max-to-min ratio of number of row slave elements across all processes for current time step
      * \f$t_{n+1}\f$
      */
-    std::vector<int> unbalanceNumSlaveElements_;
+    std::vector<int> unbalance_num_slave_elements_;
 
     //! global LM dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map> pglmdofrowmap_;
@@ -564,7 +567,7 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> inactiverhs_;
 
     //! structural contact right-hand-side vector at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> strContactRhsPtr_;
+    Teuchos::RCP<Epetra_Vector> str_contact_rhs_ptr_;
 
     //! global constraint right-hand side vector (only for saddlepoint problems)
     Teuchos::RCP<Epetra_Vector> constrrhs_;
@@ -641,7 +644,7 @@ namespace CONTACT
     bool friction_;
 
     //! flag for non-smooth contact
-    bool nonSmoothContact_;
+    bool non_smooth_contact_;
 
     //! flag for regularized contact
     bool regularized_;

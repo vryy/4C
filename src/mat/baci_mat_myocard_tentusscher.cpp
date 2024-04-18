@@ -211,7 +211,7 @@ MyocardTenTusscher::MyocardTenTusscher(const double eps_deriv_myocard, const std
     : tools_(), s0_(29, 0.0), s_(29, 0.0), r_(29, 0.0), a_(82, 0.0), c_(63, 0.0)
 
 {
-  VOI_ = 0.0;
+  voi_ = 0.0;
   eps_deriv_ = eps_deriv_myocard;
 
   if (tissue == "M")
@@ -730,7 +730,7 @@ void MyocardTenTusscher::Update(const double phi, const double dt)
 {
   // update initial values for next time step
   for (int i = 0; i < 19; i++) s0_[i] = s_[i];
-  VOI_ += dt;
+  voi_ += dt;
 
   return;
 }

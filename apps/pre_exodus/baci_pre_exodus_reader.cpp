@@ -122,7 +122,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
           Teuchos::rcp(new ElementBlock(StringToShape(ele_type), eleconn, blockname));
 
       // Add this ElementBlock into Mesh map
-      elementBlocks_.insert(std::pair<int, Teuchos::RCP<ElementBlock>>(ebids[i], actEleBlock));
+      element_blocks_.insert(std::pair<int, Teuchos::RCP<ElementBlock>>(ebids[i], actEleBlock));
     }
   }  // end of element section
 
@@ -186,14 +186,14 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
         std::string ns_name = actNodeSet.GetName();
         if (ns_name.size() == 0) ns_name = propname;
         const NodeSet newNodeSet(actNodeSet.GetNodeSet(), ns_name, propname);
-        nodeSets_.insert(std::pair<int, NodeSet>(i_ns->first, newNodeSet));
+        node_sets_.insert(std::pair<int, NodeSet>(i_ns->first, newNodeSet));
         ++i;  // next propname refers to next NodeSet
       }
     }
     else
     {
       // this is the standard case without prop names
-      nodeSets_ = prelimNodeSets;
+      node_sets_ = prelimNodeSets;
     }
 
     // clean up node set names
@@ -241,7 +241,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
       SideSet actSideSet(sides_in_set, sidesetname);
 
       // Add this SideSet into Mesh map
-      sideSets_.insert(std::pair<int, SideSet>(spropID[i], actSideSet));
+      side_sets_.insert(std::pair<int, SideSet>(spropID[i], actSideSet));
     }
   }  // end of sideset section
 
@@ -302,6 +302,8 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   {
     std::pair<std::map<int, std::vector<double>>::iterator, bool> check;
     check = baseNodes->insert(std::pair<int, std::vector<double>>(i_node->first, i_node->second));
+    // happens when concatenating: if (check.second == false)  FOUR_C_THROW("Extension node already
+    // exists!");
   }
   nodes_ = baseNodes;
 
@@ -309,13 +311,13 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   std::map<int, Teuchos::RCP<ElementBlock>>::const_iterator i_block;
   for (i_block = baseEblocks.begin(); i_block != baseEblocks.end(); ++i_block)
   {
-    elementBlocks_.insert(
+    element_blocks_.insert(
         std::pair<int, Teuchos::RCP<ElementBlock>>(i_block->first, i_block->second));
   }
   for (i_block = extBlocks.begin(); i_block != extBlocks.end(); ++i_block)
   {
     std::pair<std::map<int, Teuchos::RCP<ElementBlock>>::iterator, bool> check;
-    check = elementBlocks_.insert(
+    check = element_blocks_.insert(
         std::pair<int, Teuchos::RCP<ElementBlock>>(i_block->first, i_block->second));
     if (check.second == false)
       FOUR_C_THROW("Extension ElementBlock already exists!");
@@ -328,12 +330,12 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   std::map<int, NodeSet>::const_iterator i_ns;
   for (i_ns = baseNodesets.begin(); i_ns != baseNodesets.end(); ++i_ns)
   {
-    nodeSets_.insert(std::pair<int, NodeSet>(i_ns->first, i_ns->second));
+    node_sets_.insert(std::pair<int, NodeSet>(i_ns->first, i_ns->second));
   }
   for (i_ns = extNodesets.begin(); i_ns != extNodesets.end(); ++i_ns)
   {
     std::pair<std::map<int, NodeSet>::iterator, bool> check;
-    check = nodeSets_.insert(std::pair<int, NodeSet>(i_ns->first, i_ns->second));
+    check = node_sets_.insert(std::pair<int, NodeSet>(i_ns->first, i_ns->second));
     if (check.second == false) FOUR_C_THROW("Extension NodeSet already exists!");
   }
 
@@ -341,12 +343,12 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   std::map<int, SideSet>::const_iterator i_ss;
   for (i_ss = baseSidesets.begin(); i_ss != baseSidesets.end(); ++i_ss)
   {
-    sideSets_.insert(std::pair<int, SideSet>(i_ss->first, i_ss->second));
+    side_sets_.insert(std::pair<int, SideSet>(i_ss->first, i_ss->second));
   }
   for (i_ss = extSidesets.begin(); i_ss != extSidesets.end(); ++i_ss)
   {
     std::pair<std::map<int, SideSet>::iterator, bool> check;
-    check = sideSets_.insert(std::pair<int, SideSet>(i_ss->first, i_ss->second));
+    check = side_sets_.insert(std::pair<int, SideSet>(i_ss->first, i_ss->second));
     if (check.second == false) FOUR_C_THROW("Extension SideSet already exists!");
   }
 }
@@ -419,28 +421,28 @@ std::string EXODUS::Mesh::GetTitle() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<EXODUS::ElementBlock> EXODUS::Mesh::GetElementBlock(const int id) const
 {
-  if (elementBlocks_.find(id) == elementBlocks_.end())
+  if (element_blocks_.find(id) == element_blocks_.end())
     FOUR_C_THROW("ElementBlock %d not found.", id);
 
-  return (elementBlocks_.find(id))->second;
+  return (element_blocks_.find(id))->second;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 EXODUS::NodeSet EXODUS::Mesh::GetNodeSet(const int id) const
 {
-  if (nodeSets_.find(id) == nodeSets_.end()) FOUR_C_THROW("NodeSet %d not found.", id);
+  if (node_sets_.find(id) == node_sets_.end()) FOUR_C_THROW("NodeSet %d not found.", id);
 
-  return (nodeSets_.find(id))->second;
+  return (node_sets_.find(id))->second;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 EXODUS::SideSet EXODUS::Mesh::GetSideSet(const int id) const
 {
-  if (sideSets_.find(id) == sideSets_.end()) FOUR_C_THROW("SideSet %d not found.", id);
+  if (side_sets_.find(id) == side_sets_.end()) FOUR_C_THROW("SideSet %d not found.", id);
 
-  return (sideSets_.find(id))->second;
+  return (side_sets_.find(id))->second;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1134,14 +1136,14 @@ void EXODUS::Mesh::AddElementBlock(const Teuchos::RCP<EXODUS::ElementBlock> eblo
 void EXODUS::Mesh::EraseElementBlock(const int id)
 {
   int red_numele = GetElementBlock(id)->GetNumEle();
-  elementBlocks_.erase(id);
+  element_blocks_.erase(id);
   num_elem_ = num_elem_ - red_numele;
 }
 
 /*----------------------------------------------------------------------*
  |  Erase SideSet from mesh(public)                            maf 07/08|
  *----------------------------------------------------------------------*/
-void EXODUS::Mesh::EraseSideSet(const int id) { sideSets_.erase(id); }
+void EXODUS::Mesh::EraseSideSet(const int id) { side_sets_.erase(id); }
 
 /*------------------------------------------------------------------------*
  | - calculates the midpoint of each element                               |
@@ -1627,6 +1629,7 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
     EXODUS::ElementBlock::Shape quadshape = quadblock->GetShape();
     if ((quadshape != EXODUS::ElementBlock::quad4) && (quadshape != EXODUS::ElementBlock::shell4))
     {
+      // FOUR_C_THROW("Only quad4 or shell4 in quad->tri conversion");
       std::cout << "Warning! Only quad4 or shell4 in quad->tri conversion. Skipping EBlock"
                 << std::endl;
     }

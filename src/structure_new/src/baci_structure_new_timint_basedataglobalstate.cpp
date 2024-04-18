@@ -44,7 +44,7 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
       datasdyn_(Teuchos::null),
       discret_(Teuchos::null),
       comm_(Teuchos::null),
-      myRank_(-1),
+      my_rank_(-1),
       timenp_(0.0),
       timen_(Teuchos::null),
       dt_(Teuchos::null),
@@ -90,7 +90,7 @@ STR::TIMINT::BaseDataGlobalState& STR::TIMINT::BaseDataGlobalState::operator=(
 
   this->discret_ = source.discret_;
   this->comm_ = source.comm_;
-  this->myRank_ = source.myRank_;
+  this->my_rank_ = source.my_rank_;
 
   this->timen_ = source.timen_;
   this->dt_ = source.dt_;
@@ -125,7 +125,7 @@ void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretizati
   {
     discret_ = discret;
     comm_ = Teuchos::rcpFromRef(discret_->Comm());
-    myRank_ = comm_->MyPID();
+    my_rank_ = comm_->MyPID();
   }
 
   // --------------------------------------

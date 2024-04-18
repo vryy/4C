@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 NOX::NLN::MeritFunction::Lagrangian::Lagrangian(
     const std::string& identifier, const Teuchos::RCP<::NOX::Utils>& u)
-    : lagrangian_type_(mrtfct_vague), meritFunctionName_()
+    : lagrangian_type_(mrtfct_vague), merit_function_name_()
 {
   SetType(identifier);
-  meritFunctionName_ = MeritFuncName2String(Type());
+  merit_function_name_ = MeritFuncName2String(Type());
 
   utils_ = u;
 }
@@ -160,7 +160,10 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::string& NOX::NLN::MeritFunction::Lagrangian::name() const { return meritFunctionName_; }
+const std::string& NOX::NLN::MeritFunction::Lagrangian::name() const
+{
+  return merit_function_name_;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

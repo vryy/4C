@@ -291,7 +291,7 @@ namespace CORE::GEO
       \brief Return the equation of the reference plane when DirectDivergence is used for volumecell
       treatment
        */
-      const std::vector<double>& GetRefEqnPlane() { return RefEqnPlane_; }
+      const std::vector<double>& GetRefEqnPlane() { return ref_eqn_plane_; }
 
       /*!
       \brief Return Ids of all the points associated with this volumecell
@@ -329,7 +329,7 @@ namespace CORE::GEO
       \brief Returns whether this volumecell is negligibly small (used only in DirectDIvergence
       approach)
        */
-      bool IsNegligiblySmall() { return this->isNegligibleSmall_; }
+      bool IsNegligiblySmall() { return this->is_negligible_small_; }
 
      private:
       void SetTetPoints(const int* totet4, const std::vector<Point*>& points,
@@ -389,20 +389,20 @@ namespace CORE::GEO
       double volume_;
 
       /// Returns true if this volumecell is negligibly small (used only in DirectDivergence method)
-      bool isNegligibleSmall_;
+      bool is_negligible_small_;
 
       /// store the Gauss point weights and location for volumecells when moment fitting equations
       /// are used to arrive at them
       CORE::LINALG::SerialDenseVector weights_;
-      std::vector<std::vector<double>> gausPts_;
+      std::vector<std::vector<double>> gaus_pts_;
 
       /// store the Gauss point weights and location for boundarycells when moment fitting equations
       /// are used to arrive at them
-      CORE::LINALG::SerialDenseVector Bcellweights_;
-      std::vector<std::vector<double>> BcellgausPts_;
+      CORE::LINALG::SerialDenseVector bcellweights_;
+      std::vector<std::vector<double>> bcellgaus_pts_;
 
       /// Equation of plane which contains the reference facet when using DirectDivergence
-      std::vector<double> RefEqnPlane_;
+      std::vector<double> ref_eqn_plane_;
 
       /// Gauss rule for this volumecell. In case of DirectDivergence method, this just stores main
       /// Gauss points

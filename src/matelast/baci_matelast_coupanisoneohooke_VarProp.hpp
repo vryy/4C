@@ -161,7 +161,7 @@ namespace MAT
       /// fiber direction
       CORE::LINALG::Matrix<3, 1> a_;
       /// structural tensors in voigt notation for anisotropy
-      CORE::LINALG::Matrix<6, 1> A_;
+      CORE::LINALG::Matrix<6, 1> structural_tensor_;
     };
 
   }  // namespace ELASTIC

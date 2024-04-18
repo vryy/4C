@@ -44,8 +44,8 @@ FOUR_C_NAMESPACE_OPEN
 template <unsigned int numnodes, unsigned int numnodalvalues>
 BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::BeamToBeamContactPair()
     : BeamContactPair(),
-      R1_(0.0),
-      R2_(0.0),
+      r1_(0.0),
+      r2_(0.0),
       maxactivegap_(0.0),
       maxsegdist1_(0.0),
       maxsegdist2_(0.0),
@@ -74,8 +74,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
     ele2pos_(i) = 0.0;
   }
 
-  R1_ = BEAMINTERACTION::CalcEleRadius(Element1());
-  R2_ = BEAMINTERACTION::CalcEleRadius(Element2());
+  r1_ = BEAMINTERACTION::CalcEleRadius(Element1());
+  r2_ = BEAMINTERACTION::CalcEleRadius(Element2());
 
   maxactivegap_ = GetMaxActiveDist();
 
@@ -1250,7 +1250,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
         deltanodalpos(i) = CORE::FADUTILS::CastToDouble(ele2pos_(i) - ele1pos_(i));
       }
 
-      double gap = deltanodalpos.Norm2() - R1_ - R2_;
+      double gap = deltanodalpos.Norm2() - r1_ - r2_;
       if (CheckContactStatus(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1280,7 +1280,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
         deltanodalpos(i) = CORE::FADUTILS::CastToDouble(ele2pos_(6 + i) - ele1pos_(i));
       }
 
-      double gap = deltanodalpos.Norm2() - R1_ - R2_;
+      double gap = deltanodalpos.Norm2() - r1_ - r2_;
       if (CheckContactStatus(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1309,7 +1309,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
         deltanodalpos(i) = CORE::FADUTILS::CastToDouble(ele2pos_(i) - ele1pos_(6 + i));
       }
 
-      double gap = deltanodalpos.Norm2() - R1_ - R2_;
+      double gap = deltanodalpos.Norm2() - r1_ - r2_;
       if (CheckContactStatus(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1338,7 +1338,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
         deltanodalpos(i) = CORE::FADUTILS::CastToDouble(ele2pos_(6 + i) - ele1pos_(6 + i));
       }
 
-      double gap = deltanodalpos.Norm2() - R1_ - R2_;
+      double gap = deltanodalpos.Norm2() - r1_ - r2_;
       if (CheckContactStatus(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -2020,7 +2020,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetCloseS
   // Safety factor for determination of close segments
   double safetyfac = 1.1;
   // Distance at which intersection happens
-  double distancelimit = safetyfac * (maxsegdist1_ + maxsegdist2_ + maxactivedist + R1_ + R2_);
+  double distancelimit = safetyfac * (maxsegdist1_ + maxsegdist2_ + maxactivedist + r1_ + r2_);
 
   int numseg1 = (int)endpoints1.size() - 1;
   int numseg2 = (int)endpoints2.size() - 1;
@@ -2232,7 +2232,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
       // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to
       // be linearized!
       double norm_delta_r = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(delta_r));
-      gap = norm_delta_r - R1_ - R2_;
+      gap = norm_delta_r - r1_ - r2_;
 
       // The closer the beams get, the smaller is norm_delta_r, but
       // norm_delta_r is not allowed to be too small, else numerical problems occur.
@@ -2350,7 +2350,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
     if (!converged)
     {
       // Initialize g_min with a very large value, at which no active conact should occur!
-      double g_min = 1000 * R2_;
+      double g_min = 1000 * r2_;
       if (CheckContactStatus(g_min))
         FOUR_C_THROW("Are sure that contact should be active at such large gaps?");
 
@@ -2375,7 +2375,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
             Params()->BeamToBeamContactParams()->BeamToBeamPerpShiftingAngle1();
         // Here, we apply the conservative estimate that the closest-point gap is by 0.1*R2_ smaller
         // than g_min
-        double g_min_estimate = g_min - 0.1 * R2_;
+        double g_min_estimate = g_min - 0.1 * r2_;
 
         // TODO
         if (CheckContactStatus(g_min_estimate) and fabs(alpha_g_min) >= perpshiftangle1)
@@ -2385,7 +2385,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
                     << std::endl;
           std::cout << "Element1()->Id(): " << Element1()->Id() << std::endl;
           std::cout << "Element2()->Id(): " << Element2()->Id() << std::endl;
-          std::cout << "R2_: " << R2_ << std::endl;
+          std::cout << "R2_: " << r2_ << std::endl;
           std::cout << "g_min: " << g_min << std::endl;
           std::cout << "alpha_g_min: " << alpha_g_min / M_PI * 180 << "degrees" << std::endl;
           std::cout << "numstartpoint: " << numstartpoint << std::endl;
@@ -2663,7 +2663,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PointToLi
       // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to
       // be linearized!
       double norm_delta_r = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(delta_r));
-      gap_test = norm_delta_r - R1_ - R2_;
+      gap_test = norm_delta_r - r1_ - r2_;
 
       // The closer the beams get, the smaller is norm_delta_r, but
       // norm_delta_r is not allowed to be too small, else numerical problems occur.
@@ -2918,7 +2918,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckUnco
   int n = 1;
   // subdivide the slave segment by n+1 test points until the distance between the
   // test points is smaller than half of the cross-section radius
-  while (l1 / 2 * length1 / n > R2_ / 2)
+  while (l1 / 2 * length1 / n > r2_ / 2)
   {
     n = 2 * n;
   }
@@ -4794,7 +4794,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeNo
   CORE::LINALG::Matrix<3, 1, TYPE> normal(true);
   normal.Update(1.0 / norm_delta_r, delta_r, 0.0);
 
-  TYPE gap = norm_delta_r - R1_ - R2_;
+  TYPE gap = norm_delta_r - r1_ - r2_;
 
   variables->SetGap(gap);
   variables->SetNormal(normal);
@@ -4803,7 +4803,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeNo
 
   // Fixme
   //  if (CORE::FADUTILS::CastToDouble(gap)<-MAXPENETRATIONSAFETYFAC*(R1_+R2_) and numstep_>0)
-  if (CORE::FADUTILS::CastToDouble(gap) < -MAXPENETRATIONSAFETYFAC * (R1_ + R2_))
+  if (CORE::FADUTILS::CastToDouble(gap) < -MAXPENETRATIONSAFETYFAC * (r1_ + r2_))
   {
     this->Print(std::cout);
     FOUR_C_THROW(

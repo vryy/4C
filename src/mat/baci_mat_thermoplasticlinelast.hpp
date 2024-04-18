@@ -349,13 +349,13 @@ namespace MAT
 
     //! return mechanical dissipation term due to kinematic hardening
     //! \f$ D_{\rm mech,kin}\f$
-    double MechanicalKinematicDissipation(int gp) const { return Dmech_->at(gp); }
+    double MechanicalKinematicDissipation(int gp) const { return dmech_->at(gp); }
 
     //! return linearisation of mechanical dissipation w.r.t. displacements
     //! \f$ k_Td += \dfrac{\partial D_{\rm mech}}{\partial d_{n+1}}\f$
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> DissipationLinearisedForCouplCond(int gp) const
     {
-      return Dmech_d_->at(gp);
+      return dmech_d_->at(gp);
     }
 
     //@}
@@ -393,11 +393,11 @@ namespace MAT
     //@{
 
     //! mechanical dissipation term due to kinematic and isotropic hardening at t_n+1
-    Teuchos::RCP<std::vector<double>> Dmech_;
+    Teuchos::RCP<std::vector<double>> dmech_;
     //! linearisation of mechanical dissipation term w.r.t. to d_{n+1}
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>> Dmech_d_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>> dmech_d_;
     //! save plastic strain increment: Incstrainpl = strain^p_{n+1} - strain^p_n
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>> Incstrainpl_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>> incstrainpl_;
     //! elastic strain rate required for thermoelastic heating term
     //! use additive split: strain^e' = strain' - strain^p'
     Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>> strainelrate_;
@@ -409,7 +409,7 @@ namespace MAT
     //! indicator if material has started to be plastic
     bool plastic_step_;
     //! element ID, in which first plasticity occurs
-    int plastic_eleID_;
+    int plastic_ele_id_;
 
   };  // class ThermoThermoPlasticLinElast : public Material
 }  // namespace MAT

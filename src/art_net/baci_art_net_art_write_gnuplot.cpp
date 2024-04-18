@@ -217,7 +217,7 @@ void ART::UTILS::ArtWriteGnuplotWrapper::Write(Teuchos::ParameterList& params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-ART::UTILS::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : ArteryNum_(ArteryNum)
+ART::UTILS::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : artery_num_(ArteryNum)
 {
   // -------------------------------------------------------------------
   // Create the file with the following name
@@ -239,7 +239,7 @@ ART::UTILS::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : ArteryNum_(ArteryN
   delete[] cstr;
 
   // Avoid warning on unused variable
-  (void)ArteryNum_;
+  (void)artery_num_;
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

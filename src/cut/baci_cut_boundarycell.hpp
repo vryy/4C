@@ -443,7 +443,7 @@ namespace CORE::GEO
       ArbitraryBoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points, const CORE::FE::GaussIntegration& gaussRule,
           const CORE::LINALG::Matrix<3, 1>& normal)
-          : BoundaryCell(xyz, facet, points), gaussRule_(gaussRule), normal_(normal)
+          : BoundaryCell(xyz, facet, points), gauss_rule_(gaussRule), normal_(normal)
       {
       }
 
@@ -473,7 +473,7 @@ namespace CORE::GEO
       }
 
      private:
-      CORE::FE::GaussIntegration gaussRule_;
+      CORE::FE::GaussIntegration gauss_rule_;
       CORE::LINALG::Matrix<3, 1> normal_;
     };
 

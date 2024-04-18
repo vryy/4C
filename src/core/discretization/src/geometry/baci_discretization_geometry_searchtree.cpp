@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-CORE::GEO::SearchTree::SearchTree(const int max_depth) : max_depth_(max_depth), treeRoot_(nullptr)
+CORE::GEO::SearchTree::SearchTree(const int max_depth) : max_depth_(max_depth), tree_root_(nullptr)
 {
 }
 
@@ -32,11 +32,11 @@ CORE::GEO::SearchTree::SearchTree(const int max_depth) : max_depth_(max_depth), 
 void CORE::GEO::SearchTree::initializeTree(const CORE::LINALG::Matrix<3, 2>& nodeBox,
     const std::map<int, std::set<int>>& elementsByLabel, const TreeType treetype)
 {
-  treeRoot_ = Teuchos::null;
-  treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
+  tree_root_ = Teuchos::null;
+  tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   // insert element map into tree root node
-  if (elementsByLabel.size() > 0) treeRoot_->setElementList(elementsByLabel);
+  if (elementsByLabel.size() > 0) tree_root_->setElementList(elementsByLabel);
 
   return;
 }
@@ -48,12 +48,12 @@ void CORE::GEO::SearchTree::initializeTree(const CORE::LINALG::Matrix<3, 2>& nod
 void CORE::GEO::SearchTree::initializeTree(const CORE::LINALG::Matrix<3, 2>& nodeBox,
     const DRT::Discretization& dis, const TreeType treetype)
 {
-  treeRoot_ = Teuchos::null;
-  treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
+  tree_root_ = Teuchos::null;
+  tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   // inserts all elements in a map with key -1 and global id
   for (int i = 0; i < dis.NumMyColElements(); i++)
-    treeRoot_->insertElement(-1, dis.lColElement(i)->Id());
+    tree_root_->insertElement(-1, dis.lColElement(i)->Id());
 }
 
 /*----------------------------------------------------------------------*
@@ -63,14 +63,14 @@ void CORE::GEO::SearchTree::initializeTree(const CORE::LINALG::Matrix<3, 2>& nod
 void CORE::GEO::SearchTree::initializeTree(
     const CORE::LINALG::Matrix<3, 2>& nodeBox, const TreeType treetype)
 {
-  treeRoot_ = Teuchos::null;
-  treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
+  tree_root_ = Teuchos::null;
+  tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 }
 
 void CORE::GEO::SearchTree::insertElement(const int eid)
 {
   // inserts all elements in a map with key -1 and global id
-  treeRoot_->insertElement(-1, eid);
+  tree_root_->insertElement(-1, eid);
 }
 
 /*----------------------------------------------------------------------*
@@ -79,13 +79,13 @@ void CORE::GEO::SearchTree::insertElement(const int eid)
 void CORE::GEO::SearchTree::initializeTreeSlideALE(const CORE::LINALG::Matrix<3, 2>& nodeBox,
     std::map<int, Teuchos::RCP<DRT::Element>>& elements, const TreeType treetype)
 {
-  treeRoot_ = Teuchos::null;
-  treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
+  tree_root_ = Teuchos::null;
+  tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
-    treeRoot_->insertElement(-1, elemiter->first);
+    tree_root_->insertElement(-1, elemiter->first);
   }
 }
 
@@ -101,10 +101,10 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::searchElementsInRadius(
 
   std::map<int, std::set<int>> nodeset;
 
-  if (treeRoot_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
+  if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
-  if (!(treeRoot_->getElementList().empty()))
-    nodeset = treeRoot_->searchElementsInRadius(dis, currentpositions, point, radius, label);
+  if (!(tree_root_->getElementList().empty()))
+    nodeset = tree_root_->searchElementsInRadius(dis, currentpositions, point, radius, label);
   else
     FOUR_C_THROW("element list is empty");
 
@@ -120,11 +120,11 @@ void CORE::GEO::SearchTree::buildStaticSearchTree(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - buildStaticSearchTree");
 
-  if (treeRoot_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
+  if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
-  if (!treeRoot_->getElementList().empty())
+  if (!tree_root_->getElementList().empty())
   {
-    treeRoot_->buildStaticSearchTree(currentBVs);
+    tree_root_->buildStaticSearchTree(currentBVs);
   }
   else
     FOUR_C_THROW("element list is empty");
@@ -140,11 +140,11 @@ void CORE::GEO::SearchTree::buildStaticSearchTree(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - buildStaticSearchTree");
 
-  if (treeRoot_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
+  if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
-  if (!treeRoot_->getElementList().empty())
+  if (!tree_root_->getElementList().empty())
   {
-    treeRoot_->buildStaticSearchTree(currentBVs);
+    tree_root_->buildStaticSearchTree(currentBVs);
   }
   else
     FOUR_C_THROW("element list is empty");
@@ -162,11 +162,11 @@ void CORE::GEO::SearchTree::searchCollisions(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
-  if (treeRoot_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
+  if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
-  if (!treeRoot_->getElementList().empty())
+  if (!tree_root_->getElementList().empty())
   {
-    treeRoot_->searchCollisions(currentBVs, queryBV, label, collisions);
+    tree_root_->searchCollisions(currentBVs, queryBV, label, collisions);
   }
   else
     FOUR_C_THROW("element list is empty");
@@ -184,10 +184,10 @@ void CORE::GEO::SearchTree::searchCollisions(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
-  if (treeRoot_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
+  if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
-  if (!treeRoot_->getElementList().empty())
-    treeRoot_->searchCollisions(currentKDOPs, queryKDOP, label, contactEleIds);
+  if (!tree_root_->getElementList().empty())
+    tree_root_->searchCollisions(currentKDOPs, queryKDOP, label, contactEleIds);
   else
     return;
 
@@ -201,13 +201,13 @@ CORE::GEO::SearchTree::TreeNode::TreeNode(const TreeNode* const parent, const in
     const CORE::LINALG::Matrix<3, 2>& nodeBox, const TreeType treeType)
     : parent_(parent),
       treedepth_(depth),
-      treeNodeType_(LEAF_NODE),
-      treeType_(treeType),
+      tree_node_type_(LEAF_NODE),
+      tree_type_(treeType),
       label_(-1),
-      nodeBox_(nodeBox),
-      xPlaneCoordinate_((nodeBox_(0, 0) + 0.5 * (nodeBox_(0, 1) - nodeBox_(0, 0)))),
-      yPlaneCoordinate_((nodeBox_(1, 0) + 0.5 * (nodeBox_(1, 1) - nodeBox_(1, 0)))),
-      zPlaneCoordinate_((nodeBox_(2, 0) + 0.5 * (nodeBox_(2, 1) - nodeBox_(2, 0))))
+      node_box_(nodeBox),
+      x_plane_coordinate_((node_box_(0, 0) + 0.5 * (node_box_(0, 1) - node_box_(0, 0)))),
+      y_plane_coordinate_((node_box_(1, 0) + 0.5 * (node_box_(1, 1) - node_box_(1, 0)))),
+      z_plane_coordinate_((node_box_(2, 0) + 0.5 * (node_box_(2, 1) - node_box_(2, 0))))
 {
   children_.assign(getNumChildren(), Teuchos::null);
 }
@@ -256,20 +256,20 @@ CORE::GEO::SearchTree::TreeNode::TreeNode(const TreeNode* const parent, const in
 void CORE::GEO::SearchTree::TreeNode::setElementList(
     const std::map<int, std::set<int>>& elementsByLabel)
 {
-  elementList_ = elementsByLabel;
+  element_list_ = elementsByLabel;
 }
 
 void CORE::GEO::SearchTree::TreeNode::setNearestObject(
     const CORE::GEO::NearestObject& nearestObject)
 {
-  nearestObject_ = nearestObject;
+  nearest_object_ = nearestObject;
 }
 
 int CORE::GEO::SearchTree::TreeNode::getNumChildren() const
 {
-  if (treeType_ == OCTTREE)
+  if (tree_type_ == OCTTREE)
     return 8;
-  else if (treeType_ == QUADTREE)
+  else if (tree_type_ == QUADTREE)
     return 4;
   else
     FOUR_C_THROW("treetype does not exist");
@@ -290,39 +290,39 @@ CORE::LINALG::Matrix<3, 2> CORE::GEO::SearchTree::TreeNode::getChildNodeBox(cons
   // determine x-coordinates
   if ((index == 1) || (index == 3) || (index == 5) || (index == 7))
   {
-    childNodeBox(0, 0) = xPlaneCoordinate_;
-    childNodeBox(0, 1) = nodeBox_(0, 1);
+    childNodeBox(0, 0) = x_plane_coordinate_;
+    childNodeBox(0, 1) = node_box_(0, 1);
   }
   else
   {
-    childNodeBox(0, 0) = nodeBox_(0, 0);
-    childNodeBox(0, 1) = xPlaneCoordinate_;
+    childNodeBox(0, 0) = node_box_(0, 0);
+    childNodeBox(0, 1) = x_plane_coordinate_;
   }
 
   // determine y-coordinates
   if ((index == 2) || (index == 3) || (index == 6) || (index == 7))
   {
-    childNodeBox(1, 0) = yPlaneCoordinate_;
-    childNodeBox(1, 1) = nodeBox_(1, 1);
+    childNodeBox(1, 0) = y_plane_coordinate_;
+    childNodeBox(1, 1) = node_box_(1, 1);
   }
   else
   {
-    childNodeBox(1, 0) = nodeBox_(1, 0);
-    childNodeBox(1, 1) = yPlaneCoordinate_;
+    childNodeBox(1, 0) = node_box_(1, 0);
+    childNodeBox(1, 1) = y_plane_coordinate_;
   }
 
   // determine z coordinates
   if (index > 3)
   {
-    childNodeBox(2, 0) = zPlaneCoordinate_;
-    childNodeBox(2, 1) = nodeBox_(2, 1);
+    childNodeBox(2, 0) = z_plane_coordinate_;
+    childNodeBox(2, 1) = node_box_(2, 1);
   }
   else
   {
-    if (treeType_ == OCTTREE)
+    if (tree_type_ == OCTTREE)
     {
-      childNodeBox(2, 0) = nodeBox_(2, 0);
-      childNodeBox(2, 1) = zPlaneCoordinate_;
+      childNodeBox(2, 0) = node_box_(2, 0);
+      childNodeBox(2, 1) = z_plane_coordinate_;
     }
     else
     {
@@ -341,39 +341,39 @@ void CORE::GEO::SearchTree::TreeNode::getChildNodeBox(
   // determine x-coordinates
   if ((index == 1) || (index == 3) || (index == 5) || (index == 7))
   {
-    childNodeBox(0, 0) = xPlaneCoordinate_;
-    childNodeBox(0, 1) = nodeBox_(0, 1);
+    childNodeBox(0, 0) = x_plane_coordinate_;
+    childNodeBox(0, 1) = node_box_(0, 1);
   }
   else
   {
-    childNodeBox(0, 0) = nodeBox_(0, 0);
-    childNodeBox(0, 1) = xPlaneCoordinate_;
+    childNodeBox(0, 0) = node_box_(0, 0);
+    childNodeBox(0, 1) = x_plane_coordinate_;
   }
 
   // determine y-coordinates
   if ((index == 2) || (index == 3) || (index == 6) || (index == 7))
   {
-    childNodeBox(1, 0) = yPlaneCoordinate_;
-    childNodeBox(1, 1) = nodeBox_(1, 1);
+    childNodeBox(1, 0) = y_plane_coordinate_;
+    childNodeBox(1, 1) = node_box_(1, 1);
   }
   else
   {
-    childNodeBox(1, 0) = nodeBox_(1, 0);
-    childNodeBox(1, 1) = yPlaneCoordinate_;
+    childNodeBox(1, 0) = node_box_(1, 0);
+    childNodeBox(1, 1) = y_plane_coordinate_;
   }
 
   // determine z coordinates
   if (index > 3)
   {
-    childNodeBox(2, 0) = zPlaneCoordinate_;
-    childNodeBox(2, 1) = nodeBox_(2, 1);
+    childNodeBox(2, 0) = z_plane_coordinate_;
+    childNodeBox(2, 1) = node_box_(2, 1);
   }
   else
   {
-    if (treeType_ == OCTTREE)
+    if (tree_type_ == OCTTREE)
     {
-      childNodeBox(2, 0) = nodeBox_(2, 0);
-      childNodeBox(2, 1) = zPlaneCoordinate_;
+      childNodeBox(2, 0) = node_box_(2, 0);
+      childNodeBox(2, 1) = z_plane_coordinate_;
     }
     else
     {
@@ -387,7 +387,7 @@ void CORE::GEO::SearchTree::TreeNode::getChildNodeBox(
 
 void CORE::GEO::SearchTree::TreeNode::insertElement(const int label, const int eleId)
 {
-  elementList_[label].insert(eleId);
+  element_list_[label].insert(eleId);
   return;
 }
 
@@ -397,11 +397,11 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(const DRT::Discretization& 
   // create empty children
   for (int index = 0; index < getNumChildren(); index++)
     children_[index] =
-        Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), getChildNodeBox(index), treeType_));
+        Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), getChildNodeBox(index), tree_type_));
 
   // insert elements into child node
-  for (std::map<int, std::set<int>>::const_iterator labelIter = elementList_.begin();
-       labelIter != elementList_.end(); labelIter++)
+  for (std::map<int, std::set<int>>::const_iterator labelIter = element_list_.begin();
+       labelIter != element_list_.end(); labelIter++)
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
          eleIter != (labelIter->second).end(); eleIter++)
     {
@@ -414,7 +414,7 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(const DRT::Discretization& 
     }
 
   // this node becomes an inner tree node
-  treeNodeType_ = INNER_NODE;
+  tree_node_type_ = INNER_NODE;
 }
 
 
@@ -426,12 +426,12 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(
   for (int index = 0; index < getNumChildren(); index++)
   {
     getChildNodeBox(index, childNodeBox);
-    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), childNodeBox, treeType_));
+    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), childNodeBox, tree_type_));
   }
   std::vector<int> elementClassification;
   // insert elements into child node
-  for (std::map<int, std::set<int>>::const_iterator labelIter = elementList_.begin();
-       labelIter != elementList_.end(); labelIter++)
+  for (std::map<int, std::set<int>>::const_iterator labelIter = element_list_.begin();
+       labelIter != element_list_.end(); labelIter++)
   {
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
          eleIter != (labelIter->second).end(); eleIter++)
@@ -442,7 +442,7 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(
     }
   }
   // this node becomes an inner tree node
-  treeNodeType_ = INNER_NODE;
+  tree_node_type_ = INNER_NODE;
   return;
 }
 
@@ -457,13 +457,13 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(
   for (int index = 0; index < getNumChildren(); index++)
   {
     getChildNodeBox(index, childNodeBox);
-    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), childNodeBox, treeType_));
+    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), childNodeBox, tree_type_));
   }
 
   static std::vector<int> elementClassification;
   // insert elements into child node
-  for (std::map<int, std::set<int>>::const_iterator labelIter = elementList_.begin();
-       labelIter != elementList_.end(); labelIter++)
+  for (std::map<int, std::set<int>>::const_iterator labelIter = element_list_.begin();
+       labelIter != element_list_.end(); labelIter++)
   {
     for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
          eleIter != (labelIter->second).end(); eleIter++)
@@ -474,7 +474,7 @@ void CORE::GEO::SearchTree::TreeNode::createChildren(
     }
   }
   // this node becomes an inner tree node
-  treeNodeType_ = INNER_NODE;
+  tree_node_type_ = INNER_NODE;
 }
 
 
@@ -492,71 +492,71 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyXAABB(
   std::vector<int> octants;
 
   // check max_x greater than x-plane
-  if (AABB(0, 1) > (xPlaneCoordinate_ - CORE::GEO::TOL7))
+  if (AABB(0, 1) > (x_plane_coordinate_ - CORE::GEO::TOL7))
   {
     // check max_y greater than y-plane
-    if (AABB(1, 1) > (yPlaneCoordinate_ - CORE::GEO::TOL7))
+    if (AABB(1, 1) > (y_plane_coordinate_ - CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(7);
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(7);
 
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(3);
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(3);
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
         octants.push_back(3);
     }
 
     // check min_y less than y-plane
-    if (AABB(1, 0) < (yPlaneCoordinate_ + CORE::GEO::TOL7))
+    if (AABB(1, 0) < (y_plane_coordinate_ + CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(5);
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(5);
 
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(1);
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(1);
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
         octants.push_back(1);
     }
   }
 
   // check min_x less than x-plane
-  if (AABB(0, 0) < (xPlaneCoordinate_ + CORE::GEO::TOL7))
+  if (AABB(0, 0) < (x_plane_coordinate_ + CORE::GEO::TOL7))
   {
     // check min_y less than y-plane
-    if (AABB(1, 0) < (yPlaneCoordinate_ + CORE::GEO::TOL7))
+    if (AABB(1, 0) < (y_plane_coordinate_ + CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(0);
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(0);
 
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(4);
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(4);
       }
 
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
         octants.push_back(0);
     }
 
     // check max_y greater than y-plane
-    if (AABB(1, 1) > (yPlaneCoordinate_ - CORE::GEO::TOL7))
+    if (AABB(1, 1) > (y_plane_coordinate_ - CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(6);
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(6);
 
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(2);
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(2);
       }
 
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
         octants.push_back(2);
     }
   }
@@ -578,69 +578,69 @@ void CORE::GEO::SearchTree::TreeNode::classifyXAABB(
   octants.reserve(8);
 
   // check max_x greater than x-plane
-  if (AABB(0, 1) > (xPlaneCoordinate_ - CORE::GEO::TOL7))
+  if (AABB(0, 1) > (x_plane_coordinate_ - CORE::GEO::TOL7))
   {
     // check max_y greater than y-plane
-    if (AABB(1, 1) > (yPlaneCoordinate_ - CORE::GEO::TOL7))
+    if (AABB(1, 1) > (y_plane_coordinate_ - CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(7);
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(7);
 
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(3);
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(3);
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
         octants.push_back(3);
     }
 
     // check min_y less than y-plane
-    if (AABB(1, 0) < (yPlaneCoordinate_ + CORE::GEO::TOL7))
+    if (AABB(1, 0) < (y_plane_coordinate_ + CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(5);
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(5);
 
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(1);
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(1);
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
         octants.push_back(1);
     }
   }
 
   // check min_x less than x-plane
-  if (AABB(0, 0) < (xPlaneCoordinate_ + CORE::GEO::TOL7))
+  if (AABB(0, 0) < (x_plane_coordinate_ + CORE::GEO::TOL7))
   {
     // check min_y less than y-plane
-    if (AABB(1, 0) < (yPlaneCoordinate_ + CORE::GEO::TOL7))
+    if (AABB(1, 0) < (y_plane_coordinate_ + CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(0);
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(0);
 
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(4);
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(4);
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
         octants.push_back(0);
     }
 
     // check max_y greater than y-plane
-    if (AABB(1, 1) > (yPlaneCoordinate_ - CORE::GEO::TOL7))
+    if (AABB(1, 1) > (y_plane_coordinate_ - CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(6);
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(6);
 
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(2);
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(2);
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
         octants.push_back(2);
     }
   }
@@ -662,50 +662,50 @@ void CORE::GEO::SearchTree::TreeNode::classifyKDOP(
   octants.reserve(8);
 
   // check max_x greater than x-plane
-  if (KDOP(0, 1) > (xPlaneCoordinate_ - CORE::GEO::TOL7))
+  if (KDOP(0, 1) > (x_plane_coordinate_ - CORE::GEO::TOL7))
   {
     // check max_y greater than y-plane
-    if (KDOP(1, 1) > (yPlaneCoordinate_ - CORE::GEO::TOL7))
+    if (KDOP(1, 1) > (y_plane_coordinate_ - CORE::GEO::TOL7))
     {
       // check max_z greater than z-plane
-      if (KDOP(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(7);
+      if (KDOP(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(7);
 
       // check min_z less than z-plane
-      if (KDOP(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(3);
+      if (KDOP(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(3);
     }
 
     // check min_y less than y-plane
-    if (KDOP(1, 0) < (yPlaneCoordinate_ + CORE::GEO::TOL7))
+    if (KDOP(1, 0) < (y_plane_coordinate_ + CORE::GEO::TOL7))
     {
       // check max_z greater than z-plane
-      if (KDOP(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(5);
+      if (KDOP(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(5);
 
       // check min_z less than z-plane
-      if (KDOP(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(1);
+      if (KDOP(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(1);
     }
   }
 
   // check min_x less than x-plane
-  if (KDOP(0, 0) < (xPlaneCoordinate_ + CORE::GEO::TOL7))
+  if (KDOP(0, 0) < (x_plane_coordinate_ + CORE::GEO::TOL7))
   {
     // check min_y less than y-plane
-    if (KDOP(1, 0) < (yPlaneCoordinate_ + CORE::GEO::TOL7))
+    if (KDOP(1, 0) < (y_plane_coordinate_ + CORE::GEO::TOL7))
     {
       // check min_z less than z-plane
-      if (KDOP(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(0);
+      if (KDOP(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(0);
 
       // check max_z greater than z-plane
-      if (KDOP(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(4);
+      if (KDOP(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(4);
     }
 
     // check max_y greater than y-plane
-    if (KDOP(1, 1) > (yPlaneCoordinate_ - CORE::GEO::TOL7))
+    if (KDOP(1, 1) > (y_plane_coordinate_ - CORE::GEO::TOL7))
     {
       // check max_z greater than z-plane
-      if (KDOP(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7)) octants.push_back(6);
+      if (KDOP(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7)) octants.push_back(6);
 
       // check min_z less than z-plane
-      if (KDOP(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7)) octants.push_back(2);
+      if (KDOP(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7)) octants.push_back(2);
     }
   }
   return;
@@ -726,15 +726,15 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
   index = -1;
 
   // check max_x greater than x-plane
-  if (AABB(0, 1) > (xPlaneCoordinate_ - CORE::GEO::TOL7))
+  if (AABB(0, 1) > (x_plane_coordinate_ - CORE::GEO::TOL7))
   {
     // check max_y greater than y-plane
-    if (AABB(1, 1) > (yPlaneCoordinate_ - CORE::GEO::TOL7))
+    if (AABB(1, 1) > (y_plane_coordinate_ - CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7))
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 7;
@@ -745,7 +745,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
           }
         }
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7))
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 3;
@@ -756,7 +756,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
           }
         }
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
       {
         if (index == -1)
           index = 3;
@@ -769,12 +769,12 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
     }
 
     // check min_y less than y-plane
-    if (AABB(1, 0) < (yPlaneCoordinate_ + CORE::GEO::TOL7))
+    if (AABB(1, 0) < (y_plane_coordinate_ + CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7))
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 5;
@@ -786,7 +786,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
         }
 
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7))
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 1;
@@ -797,7 +797,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
           }
         }
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
       {
         if (index == -1)
           index = 1;
@@ -811,15 +811,15 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
   }
 
   // check min_x less than x-plane
-  if (AABB(0, 0) < (xPlaneCoordinate_ + CORE::GEO::TOL7))
+  if (AABB(0, 0) < (x_plane_coordinate_ + CORE::GEO::TOL7))
   {
     // check min_y less than y-plane
-    if (AABB(1, 0) < (yPlaneCoordinate_ + CORE::GEO::TOL7))
+    if (AABB(1, 0) < (y_plane_coordinate_ + CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7))
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 0;
@@ -830,7 +830,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
           }
         }
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7))
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 4;
@@ -841,7 +841,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
           }
         }
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
       {
         if (index == -1)
           index = 0;
@@ -854,12 +854,12 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
     }
 
     // check max_y greater than y-plane
-    if (AABB(1, 1) > (yPlaneCoordinate_ - CORE::GEO::TOL7))
+    if (AABB(1, 1) > (y_plane_coordinate_ - CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (AABB(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7))
+        if (AABB(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 6;
@@ -871,7 +871,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
         }
 
         // check min_z less than z-plane
-        if (AABB(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7))
+        if (AABB(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 2;
@@ -882,7 +882,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyXAABB(
           }
         }
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
       {
         if (index == -1)
           index = 2;
@@ -911,15 +911,15 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
   index = -1;
 
   // check max_x greater than x-plane
-  if (KDOP(0, 1) > (xPlaneCoordinate_ - CORE::GEO::TOL7))
+  if (KDOP(0, 1) > (x_plane_coordinate_ - CORE::GEO::TOL7))
   {
     // check max_y greater than y-plane
-    if (KDOP(1, 1) > (yPlaneCoordinate_ - CORE::GEO::TOL7))
+    if (KDOP(1, 1) > (y_plane_coordinate_ - CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (KDOP(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7))
+        if (KDOP(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 7;
@@ -930,7 +930,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
           }
         }
         // check min_z less than z-plane
-        if (KDOP(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7))
+        if (KDOP(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 3;
@@ -941,7 +941,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
           }
         }
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
       {
         if (index == -1)
           index = 3;
@@ -954,12 +954,12 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
     }
 
     // check min_y less than y-plane
-    if (KDOP(1, 0) < (yPlaneCoordinate_ + CORE::GEO::TOL7))
+    if (KDOP(1, 0) < (y_plane_coordinate_ + CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (KDOP(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7))
+        if (KDOP(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 5;
@@ -971,7 +971,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
         }
 
         // check min_z less than z-plane
-        if (KDOP(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7))
+        if (KDOP(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 1;
@@ -982,7 +982,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
           }
         }
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
       {
         if (index == -1)
           index = 1;
@@ -996,15 +996,15 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
   }
 
   // check min_x less than x-plane
-  if (KDOP(0, 0) < (xPlaneCoordinate_ + CORE::GEO::TOL7))
+  if (KDOP(0, 0) < (x_plane_coordinate_ + CORE::GEO::TOL7))
   {
     // check min_y less than y-plane
-    if (KDOP(1, 0) < (yPlaneCoordinate_ + CORE::GEO::TOL7))
+    if (KDOP(1, 0) < (y_plane_coordinate_ + CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check min_z less than z-plane
-        if (KDOP(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7))
+        if (KDOP(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 0;
@@ -1015,7 +1015,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
           }
         }
         // check max_z greater than z-plane
-        if (KDOP(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7))
+        if (KDOP(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 4;
@@ -1026,7 +1026,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
           }
         }
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
       {
         if (index == -1)
           index = 0;
@@ -1039,12 +1039,12 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
     }
 
     // check max_y greater than y-plane
-    if (KDOP(1, 1) > (yPlaneCoordinate_ - CORE::GEO::TOL7))
+    if (KDOP(1, 1) > (y_plane_coordinate_ - CORE::GEO::TOL7))
     {
-      if (treeType_ == OCTTREE)
+      if (tree_type_ == OCTTREE)
       {
         // check max_z greater than z-plane
-        if (KDOP(2, 1) > (zPlaneCoordinate_ - CORE::GEO::TOL7))
+        if (KDOP(2, 1) > (z_plane_coordinate_ - CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 6;
@@ -1056,7 +1056,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
         }
 
         // check min_z less than z-plane
-        if (KDOP(2, 0) < (zPlaneCoordinate_ + CORE::GEO::TOL7))
+        if (KDOP(2, 0) < (z_plane_coordinate_ + CORE::GEO::TOL7))
         {
           if (index == -1)
             index = 2;
@@ -1067,7 +1067,7 @@ bool CORE::GEO::SearchTree::TreeNode::classifyKDOP(
           }
         }
       }
-      else if (treeType_ == QUADTREE)
+      else if (tree_type_ == QUADTREE)
       {
         if (index == -1)
           index = 2;
@@ -1142,7 +1142,7 @@ std::vector<int> CORE::GEO::SearchTree::TreeNode::classifyRadius(
     radiusXAABB(dim, 1) = (point(dim) + radius) + CORE::GEO::TOL7;
   }
 
-  if (treeType_ == QUADTREE)
+  if (tree_type_ == QUADTREE)
   {
     radiusXAABB(2, 0) = 0.0;
     radiusXAABB(2, 1) = 0.0;
@@ -1163,7 +1163,7 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRa
 {
   std::map<int, std::set<int>> eleMap;
 
-  switch (treeNodeType_)
+  switch (tree_node_type_)
   {
     case INNER_NODE:
     {
@@ -1175,18 +1175,18 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRa
             dis, currentpositions, point, radius, label);
       else
         return CORE::GEO::getElementsInRadius(
-            dis, currentpositions, point, radius, label, elementList_);
+            dis, currentpositions, point, radius, label, element_list_);
       break;
     }
     case LEAF_NODE:
     {
-      if (elementList_.empty()) return eleMap;
+      if (element_list_.empty()) return eleMap;
 
       // max depth reached, counts reverse
       if (treedepth_ <= 0 ||
-          (elementList_.size() == 1 && (elementList_.begin()->second).size() == 1))
+          (element_list_.size() == 1 && (element_list_.begin()->second).size() == 1))
         return CORE::GEO::getElementsInRadius(
-            dis, currentpositions, point, radius, label, elementList_);
+            dis, currentpositions, point, radius, label, element_list_);
 
       // dynamically grow tree otherwise, create children and set label for empty children
       // search in appropriate child node
@@ -1202,7 +1202,7 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRa
       else
         // AABB does not fit into a single child node box anymore so don t refine any further
         return CORE::GEO::getElementsInRadius(
-            dis, currentpositions, point, radius, label, elementList_);
+            dis, currentpositions, point, radius, label, element_list_);
       break;
     }
     default:
@@ -1217,9 +1217,9 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRa
 void CORE::GEO::SearchTree::TreeNode::buildStaticSearchTree(
     const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs)
 {
-  if (elementList_.empty()) return;
+  if (element_list_.empty()) return;
 
-  if (treedepth_ > 0 and (elementList_.begin()->second).size() >
+  if (treedepth_ > 0 and (element_list_.begin()->second).size() >
                              1)  // ************************* > 8 could be interesting
   {
     createChildren(currentBVs);
@@ -1236,9 +1236,9 @@ void CORE::GEO::SearchTree::TreeNode::buildStaticSearchTree(
 void CORE::GEO::SearchTree::TreeNode::buildStaticSearchTree(
     const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs)
 {
-  if (elementList_.empty()) return;
+  if (element_list_.empty()) return;
 
-  if (treedepth_ > 0 and (elementList_.begin()->second).size() >
+  if (treedepth_ > 0 and (element_list_.begin()->second).size() >
                              1)  // ************************* > 8 could be interesting
   {
     createChildren(currentBVs);
@@ -1256,7 +1256,7 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
     const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs,
     const CORE::LINALG::Matrix<3, 2>& queryBV, const int label, std::set<int>& collisions)
 {
-  switch (treeNodeType_)
+  switch (tree_node_type_)
   {
     case INNER_NODE:
     {
@@ -1270,12 +1270,12 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
     }
     case LEAF_NODE:
     {
-      if (elementList_.empty()) return;
+      if (element_list_.empty()) return;
 
       // max depth reached, counts reverse
-      if (treedepth_ <= 0 || (elementList_.begin()->second).size() == 1)
+      if (treedepth_ <= 0 || (element_list_.begin()->second).size() == 1)
       {
-        CORE::GEO::searchCollisions(currentBVs, queryBV, label, elementList_, collisions);
+        CORE::GEO::searchCollisions(currentBVs, queryBV, label, element_list_, collisions);
         return;
       }
       // dynamically grow tree otherwise, create children and set label for empty children
@@ -1302,7 +1302,7 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
     const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs,
     const CORE::LINALG::Matrix<9, 2>& queryBV, const int label, std::set<int>& collisions)
 {
-  switch (treeNodeType_)
+  switch (tree_node_type_)
   {
     case INNER_NODE:
     {
@@ -1316,12 +1316,12 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
     }
     case LEAF_NODE:
     {
-      if (elementList_.empty()) return;
+      if (element_list_.empty()) return;
 
       // max depth reached, counts reverse
-      if (treedepth_ <= 0 || (elementList_.begin()->second).size() == 1)
+      if (treedepth_ <= 0 || (element_list_.begin()->second).size() == 1)
       {
-        CORE::GEO::searchCollisions(currentBVs, queryBV, label, elementList_, collisions);
+        CORE::GEO::searchCollisions(currentBVs, queryBV, label, element_list_, collisions);
         return;
       }
       // dynamically grow tree otherwise, create children and set label for empty children

@@ -137,7 +137,7 @@ namespace CONTACT
      and parameters from some control routine in params and evaluates element matrices and
      vectors accoring to the command in params.
 
-     \note This class implements a dummy of this method that prints a FOUR_C_THROW and
+     \note This class implements a dummy of this method that prints a dserror and
      returns false.
 
      \param params (in/out)    : ParameterList for communication between control routine
@@ -229,8 +229,9 @@ namespace CONTACT
      */
     CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetDderiv()
     {
-      if (dMatrixDeriv_ == Teuchos::null) FOUR_C_THROW("trying to get Dderiv, but not initialized");
-      return *dMatrixDeriv_;
+      if (d_matrix_deriv_ == Teuchos::null)
+        FOUR_C_THROW("trying to get Dderiv, but not initialized");
+      return *d_matrix_deriv_;
     }
 
     /*!
@@ -238,8 +239,9 @@ namespace CONTACT
      */
     CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetMderiv()
     {
-      if (mMatrixDeriv_ == Teuchos::null) FOUR_C_THROW("trying to get Mderiv, but not initialized");
-      return *mMatrixDeriv_;
+      if (m_matrix_deriv_ == Teuchos::null)
+        FOUR_C_THROW("trying to get Mderiv, but not initialized");
+      return *m_matrix_deriv_;
     }
 
     /*!
@@ -264,9 +266,9 @@ namespace CONTACT
 
    private:
     Teuchos::RCP<CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
-        dMatrixDeriv_;  //< temporary matrix for D linearization during integration
+        d_matrix_deriv_;  //< temporary matrix for D linearization during integration
     Teuchos::RCP<CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
-        mMatrixDeriv_;  //< temporary matrix for M linearization during integration
+        m_matrix_deriv_;  //< temporary matrix for M linearization during integration
   };
   // class Element
 }  // namespace CONTACT

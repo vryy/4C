@@ -99,22 +99,22 @@ namespace FSI
     CORE::LINALG::MatrixLogicalSplitAndTransform sgitransform_;
     CORE::LINALG::MatrixLogicalSplitAndTransform sigtransform_;
     CORE::LINALG::MatrixColTransform aigtransform_;
-    CORE::LINALG::MatrixColTransform aiGtransform_;
+    CORE::LINALG::MatrixColTransform ai_gtransform_;
 
     CORE::LINALG::MatrixColTransform fmiitransform_;
-    CORE::LINALG::MatrixColTransform fmGitransform_;
+    CORE::LINALG::MatrixColTransform fm_gitransform_;
     CORE::LINALG::MatrixColTransform fmgitransform_;
-    CORE::LINALG::MatrixColTransform fmiGtransform_;
-    CORE::LINALG::MatrixColTransform fmGGtransform_;
-    CORE::LINALG::MatrixColTransform fmgGtransform_;
-    CORE::LINALG::MatrixColTransform addfmGGtransform_;
+    CORE::LINALG::MatrixColTransform fmi_gtransform_;
+    CORE::LINALG::MatrixColTransform fm_g_gtransform_;
+    CORE::LINALG::MatrixColTransform fmg_gtransform_;
+    CORE::LINALG::MatrixColTransform addfm_g_gtransform_;
 
     /// split of constraint matrices
     CORE::LINALG::MatrixLogicalSplitAndTransform sciitransform_;
     CORE::LINALG::MatrixLogicalSplitAndTransform scgitransform_;
     CORE::LINALG::MatrixLogicalSplitAndTransform csiitransform_;
     CORE::LINALG::MatrixLogicalSplitAndTransform csigtransform_;
-    CORE::LINALG::MatrixColTransform caiGtransform_;
+    CORE::LINALG::MatrixColTransform cai_gtransform_;
   };
 }  // namespace FSI
 

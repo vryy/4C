@@ -40,16 +40,16 @@ PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::Paramet
       timerampfct_(params.get<int>("SURFACETENSION_RAMP_FUNCT")),
       alpha0_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
       alphamin_(params_sph_.get<double>("SURFACETENSIONMINIMUM")),
-      alphaT_(params_sph_.get<double>("SURFACETENSIONTEMPFAC")),
+      alpha_t_(params_sph_.get<double>("SURFACETENSIONTEMPFAC")),
       surf_ref_temp_(params_sph_.get<double>("SURFACETENSIONREFTEMP")),
       staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
       tpn_corr_cf_low_(params_sph_.get<double>("TRIPLEPOINTNORMAL_CORR_CF_LOW")),
       tpn_corr_cf_up_(params_sph_.get<double>("TRIPLEPOINTNORMAL_CORR_CF_UP")),
       trans_ref_temp_(params_sph_.get<double>("TRANS_REF_TEMPERATURE")),
-      trans_dT_surf_(params_sph_.get<double>("TRANS_DT_SURFACETENSION")),
-      trans_dT_mara_(params_sph_.get<double>("TRANS_DT_MARANGONI")),
-      trans_dT_curv_(params_sph_.get<double>("TRANS_DT_CURVATURE")),
-      trans_dT_wet_(params_sph_.get<double>("TRANS_DT_WETTING"))
+      trans_d_t_surf_(params_sph_.get<double>("TRANS_DT_SURFACETENSION")),
+      trans_d_t_mara_(params_sph_.get<double>("TRANS_DT_MARANGONI")),
+      trans_d_t_curv_(params_sph_.get<double>("TRANS_DT_CURVATURE")),
+      trans_d_t_wet_(params_sph_.get<double>("TRANS_DT_WETTING"))
 {
   // empty constructor
 }
@@ -80,7 +80,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Init()
   if (not(alpha0_ > alphamin_))
     FOUR_C_THROW("constant part smaller than minimum surface tension coefficient!");
 
-  if (alphaT_ != 0.0)
+  if (alpha_t_ != 0.0)
   {
     if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
@@ -91,7 +91,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Init()
           "temperature gradient evaluation needed for temperature dependent surface tension!");
   }
 
-  if (trans_dT_surf_ > 0.0 or trans_dT_mara_ > 0.0 or trans_dT_curv_ > 0.0 or trans_dT_wet_ > 0.0)
+  if (trans_d_t_surf_ > 0.0 or trans_d_t_mara_ > 0.0 or trans_d_t_curv_ > 0.0 or
+      trans_d_t_wet_ > 0.0)
   {
     if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
@@ -229,7 +230,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::AddAccelerationContribution()
   ComputeSurfaceTensionContribution();
 
   // compute temperature gradient driven contribution
-  if (alphaT_ != 0.0) ComputeTempGradDrivenContribution();
+  if (alpha_t_ != 0.0) ComputeTempGradDrivenContribution();
 
   // compute interface viscosity contribution
   if (interfaceviscosity_) interfaceviscosity_->ComputeInterfaceViscosityContribution();
@@ -469,8 +470,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
 
       // evaluate transition factor below reference temperature
       double tempfac = 1.0;
-      if (trans_dT_wet_ > 0.0)
-        tempfac = UTILS::CompLinTrans(temp_j[0], trans_ref_temp_ - trans_dT_wet_, trans_ref_temp_);
+      if (trans_d_t_wet_ > 0.0)
+        tempfac = UTILS::CompLinTrans(temp_j[0], trans_ref_temp_ - trans_d_t_wet_, trans_ref_temp_);
 
       // sum contribution of neighboring boundary particle j
       wallcf_i[0] += tempfac * fac * particlepair.Wij_;
@@ -506,8 +507,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
 
       // evaluate transition factor below reference temperature
       double tempfac = 1.0;
-      if (trans_dT_wet_ > 0.0)
-        tempfac = UTILS::CompLinTrans(temp_i[0], trans_ref_temp_ - trans_dT_wet_, trans_ref_temp_);
+      if (trans_d_t_wet_ > 0.0)
+        tempfac = UTILS::CompLinTrans(temp_i[0], trans_ref_temp_ - trans_d_t_wet_, trans_ref_temp_);
 
       // sum contribution of neighboring boundary particle i
       wallcf_j[0] += tempfac * fac * particlepair.Wji_;
@@ -661,8 +662,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
 
       // evaluate transition factor above reference temperature
       double tempfac = 1.0;
-      if (trans_dT_curv_ > 0.0)
-        tempfac = UTILS::LinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_curv_);
+      if (trans_d_t_curv_ > 0.0)
+        tempfac = UTILS::LinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_d_t_curv_);
 
       // add self-interaction
       sumj_Vj_Wij[type_i][particle_i] += tempfac * V_i * Wii;
@@ -727,8 +728,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
 
       // evaluate transition factor above reference temperature
       double tempfac = 1.0;
-      if (trans_dT_curv_ > 0.0)
-        tempfac = UTILS::LinTrans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_curv_);
+      if (trans_d_t_curv_ > 0.0)
+        tempfac = UTILS::LinTrans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_d_t_curv_);
 
       // sum contribution of neighboring particle j
       sumj_nij_Vj_eij_dWij[type_i][particle_i] += tempfac * V_j * nij_eij * particlepair.dWdrij_;
@@ -743,8 +744,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
 
       // evaluate transition factor above reference temperature
       double tempfac = 1.0;
-      if (trans_dT_curv_ > 0.0)
-        tempfac = UTILS::LinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_curv_);
+      if (trans_d_t_curv_ > 0.0)
+        tempfac = UTILS::LinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_d_t_curv_);
 
       // sum contribution of neighboring particle i
       sumj_nij_Vj_eij_dWij[type_j][particle_j] +=
@@ -814,16 +815,16 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
 
       // evaluate surface tension coefficient
       double alpha = alpha0_;
-      if (alphaT_ != 0.0)
+      if (alpha_t_ != 0.0)
       {
-        alpha += alphaT_ * (temp_i[0] - surf_ref_temp_);
+        alpha += alpha_t_ * (temp_i[0] - surf_ref_temp_);
         alpha = std::max(alpha, alphamin_);
       }
 
       // evaluate transition factor above reference temperature
       double tempfac = 1.0;
-      if (trans_dT_surf_ > 0.0)
-        tempfac = UTILS::LinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_surf_);
+      if (trans_d_t_surf_ > 0.0)
+        tempfac = UTILS::LinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_d_t_surf_);
 
       // add contribution to acceleration
       UTILS::VecAddScale(acc_i, -timefac * tempfac * alpha * curv_i[0] / dens_i[0], cfg_i);
@@ -841,7 +842,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
                   .Evaluate(time_);
 
   // temperature in transition from linear to constant regime of surface tension coefficient
-  const double transitiontemp = surf_ref_temp_ + (alphamin_ - alpha0_) / alphaT_;
+  const double transitiontemp = surf_ref_temp_ + (alphamin_ - alpha0_) / alpha_t_;
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -876,11 +877,11 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
 
       // evaluate transition factor above reference temperature
       double tempfac = 1.0;
-      if (trans_dT_mara_ > 0.0)
-        tempfac = UTILS::LinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_mara_);
+      if (trans_d_t_mara_ > 0.0)
+        tempfac = UTILS::LinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_d_t_mara_);
 
       // add contribution to acceleration
-      UTILS::VecAddScale(acc_i, timefac * tempfac * alphaT_ * UTILS::VecNormTwo(cfg_i) / dens_i[0],
+      UTILS::VecAddScale(acc_i, timefac * tempfac * alpha_t_ * UTILS::VecNormTwo(cfg_i) / dens_i[0],
           tempgrad_i_proj);
     }
   }

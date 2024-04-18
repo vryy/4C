@@ -44,10 +44,10 @@ MAT::ScatraMultiScaleGP::ScatraMultiScaleGP(
       hist_(Teuchos::null),
       micro_output_(Teuchos::null),
       restartname_(""),
-      detFn_(1.0),
-      detFnp_(1.0),
-      ddetFdtn_(0.0),
-      ddetFdtnp_(0.0),
+      det_fn_(1.0),
+      det_fnp_(1.0),
+      ddet_fdtn_(0.0),
+      ddet_fdtnp_(0.0),
       is_ale_(is_ale)
 
 {
@@ -268,11 +268,11 @@ void MAT::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, d
   if (is_ale_)
   {
     // update determinant of deformation gradient
-    detFnp_ = detFnp;
+    det_fnp_ = detFnp;
 
     // calculate time derivative and pass to micro time integration as reaction coefficient
     CalculateDdetFDt(microtimint);
-    microtimint->SetMacroMicroReaCoeff(ddetFdtnp_);
+    microtimint->SetMacroMicroReaCoeff(ddet_fdtnp_);
   }
 
   if (step_ == 0 or !solve)
@@ -370,8 +370,8 @@ void MAT::ScatraMultiScaleGP::Update()
   if (is_ale_)
   {
     // Update detF
-    detFn_ = detFnp_;
-    ddetFdtn_ = ddetFdtnp_;
+    det_fn_ = det_fnp_;
+    ddet_fdtn_ = ddet_fdtnp_;
   }
 
   // extract micro-scale time integrator
@@ -496,8 +496,8 @@ void MAT::ScatraMultiScaleGP::Output()
       microtimint->WriteRestart();
       if (is_ale_)
       {
-        microtimint->DiscWriter()->WriteDouble("detFn", detFn_);
-        microtimint->DiscWriter()->WriteDouble("ddetFdtn", ddetFdtn_);
+        microtimint->DiscWriter()->WriteDouble("detFn", det_fn_);
+        microtimint->DiscWriter()->WriteDouble("ddetFdtn", ddet_fdtn_);
       }
     }
 
@@ -538,8 +538,8 @@ void MAT::ScatraMultiScaleGP::ReadRestart()
 
   if (is_ale_)
   {
-    detFn_ = reader->ReadDouble("detFn");
-    ddetFdtn_ = reader->ReadDouble("ddetFdtn");
+    det_fn_ = reader->ReadDouble("detFn");
+    ddet_fdtn_ = reader->ReadDouble("ddetFdtn");
   }
 
   // clear state in micro-scale time integrator
@@ -558,9 +558,9 @@ void MAT::ScatraMultiScaleGP::CalculateDdetFDt(Teuchos::RCP<SCATRA::TimIntOneSte
     {
       const double theta = microtimint->ScatraParameterList()->get<double>("THETA");
 
-      const double part1 = (detFnp_ - detFn_) / dt;
-      const double part2 = (1.0 - theta) * ddetFdtn_;
-      ddetFdtnp_ = 1.0 / theta * (part1 - part2);
+      const double part1 = (det_fnp_ - det_fn_) / dt;
+      const double part2 = (1.0 - theta) * ddet_fdtn_;
+      ddet_fdtnp_ = 1.0 / theta * (part1 - part2);
 
       break;
     }

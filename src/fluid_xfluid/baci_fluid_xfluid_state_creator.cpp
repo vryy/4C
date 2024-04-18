@@ -137,8 +137,8 @@ void FLD::XFluidStateCreator::CreateNewCutState(
 
   // Set options for the cut wizard
   wizard->SetOptions(nodal_dofset_strategy_,  // strategy for nodal dofset management
-      VolumeCellGaussPointBy_,                // how to create volume cell Gauss points?
-      BoundCellGaussPointBy_,                 // how to create boundary cell Gauss points?
+      volume_cell_gauss_point_by_,            // how to create volume cell Gauss points?
+      bound_cell_gauss_point_by_,             // how to create boundary cell Gauss points?
       gmsh_cut_out_,                          // gmsh output for cut library
       true,                                   // find point positions
       false,                                  // generate only tet cells

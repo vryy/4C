@@ -774,7 +774,7 @@ namespace XFEM
     int levelset_gid_;
 
     /// global number of mesh and level-set coupling sides over all processors
-    int numglobal_coupling_sides;
+    int numglobal_coupling_sides_;
 
     /// time
     double time_;

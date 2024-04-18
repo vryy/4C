@@ -71,7 +71,7 @@ namespace AIRWAY
     /// Teuchos::RCP to element solution vector containing open status of airway
     Teuchos::RCP<Epetra_Vector> myelemsol_open_;
     /// Teuchos::RCP to element solution vector containing opening trajectory of airway
-    Teuchos::RCP<Epetra_Vector> myelemsol_openingTrajectory_;
+    Teuchos::RCP<Epetra_Vector> myelemsol_opening_trajectory_;
   };
 
 }  // namespace AIRWAY

@@ -279,10 +279,10 @@ namespace BEAMINTERACTION
     std::map<int, std::vector<int>> element_gid_to_lambda_gid_map_;
 
     //! Global \f$D\f$ matrix.
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_D_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_d_;
 
     //! Global \f$M\f$ matrix.
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_M_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_m_;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.

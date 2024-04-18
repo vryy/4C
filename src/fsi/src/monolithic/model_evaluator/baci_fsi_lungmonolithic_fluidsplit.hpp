@@ -102,34 +102,34 @@ namespace FSI
     /// transformation of fluid matrix
     Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fggtransform_;
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgGtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fg_gtransform_;
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> figtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fGgtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> f_ggtransform_;
 
     /// transformation of shape derivative matrix
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmGitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fm_gitransform_;
     Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmgitransform_;
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmigtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmGgtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fm_ggtransform_;
     Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmggtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiGtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmGGtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmgGtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmi_gtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fm_g_gtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmg_gtransform_;
 
     /// transformation of additional shape derivative matrix (volume constraint)
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> addfmGGtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> addfmGgtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> addfm_g_gtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> addfm_ggtransform_;
 
     /// transformation of fluid constraint matrix
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fcgitransform_;
 
     /// transformation of ale matrix
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aiGtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> ai_gtransform_;
 
     /// transformation of constraint "ale" matrix
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> caiGtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> cai_gtransform_;
   };
 }  // namespace FSI
 

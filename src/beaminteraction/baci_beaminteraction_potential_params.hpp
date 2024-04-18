@@ -102,13 +102,13 @@ namespace BEAMINTERACTION
     inline int NumberGaussPoints() const
     {
       ThrowErrorIfNotInitAndSetup();
-      return num_GPs_;
+      return num_gp_s_;
     }
 
     inline bool UseFAD() const
     {
       ThrowErrorIfNotInitAndSetup();
-      return useFAD_;
+      return use_fad_;
     }
 
     inline enum INPAR::BEAMPOTENTIAL::MasterSlaveChoice ChoiceMasterSlave() const
@@ -129,7 +129,7 @@ namespace BEAMINTERACTION
     GetBeamPotentialVisualizationOutputParams() const
     {
       ThrowErrorIfNotInitAndSetup();
-      return params_runtime_visualization_output_BTB_potential_;
+      return params_runtime_visualization_output_btb_potential_;
     }
 
    private:
@@ -163,10 +163,10 @@ namespace BEAMINTERACTION
     int num_integration_segments_;
 
     //! number of Gauss points to be used per integration segment
-    int num_GPs_;
+    int num_gp_s_;
 
     //! use automatic differentiation via FAD
-    bool useFAD_;
+    bool use_fad_;
 
     //! rule how to assign the role of master and slave to beam elements (if applicable)
     enum INPAR::BEAMPOTENTIAL::MasterSlaveChoice choice_master_slave_;
@@ -177,7 +177,7 @@ namespace BEAMINTERACTION
     //! data container for input parameters related to visualization output of beam contact at
     //! runtime
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
-        params_runtime_visualization_output_BTB_potential_;
+        params_runtime_visualization_output_btb_potential_;
   };
 
 }  // namespace BEAMINTERACTION

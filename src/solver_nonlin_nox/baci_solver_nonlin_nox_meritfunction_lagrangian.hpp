@@ -119,7 +119,7 @@ namespace NOX
         enum MeritFctName lagrangian_type_;
 
         //! name of this function
-        std::string meritFunctionName_;
+        std::string merit_function_name_;
       };
 
     }  // namespace MeritFunction

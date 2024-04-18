@@ -41,8 +41,8 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
       int condID = *actcond->Get<int>("coupling id");
       coupcond_[condID] = actcond;
       tmp.push_back(condID);
-      Vn_[condID] = 0.0;
-      Vnp_[condID] = 0.0;
+      vn_[condID] = 0.0;
+      vnp_[condID] = 0.0;
     }
   }
   unsigned int numcond = tmp.size();
@@ -133,14 +133,14 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
 /*======================================================================*/
 void ADAPTER::StructureRedAirway::InitVol()
 {
-  CalcVol(Vn_);
+  CalcVol(vn_);
 
   if (Discretization()->Comm().MyPID() == 0)
   {
     std::cout << "------------------------ Initial tissue volumes ----------------------"
               << std::endl;
-    for (unsigned int i = 0; i < Vn_.size(); ++i)
-      std::cout << "ID:  " << coupmap_->GID(i) << "     V:  " << Vn_[coupmap_->GID(i)] << std::endl;
+    for (unsigned int i = 0; i < vn_.size(); ++i)
+      std::cout << "ID:  " << coupmap_->GID(i) << "     V:  " << vn_[coupmap_->GID(i)] << std::endl;
     std::cout << "----------------------------------------------------------------------"
               << std::endl;
   }
@@ -151,14 +151,14 @@ void ADAPTER::StructureRedAirway::InitVol()
 void ADAPTER::StructureRedAirway::CalcFlux(
     Teuchos::RCP<Epetra_Vector> coupflux, Teuchos::RCP<Epetra_Vector> coupvol, double dt)
 {
-  CalcVol(Vnp_);
+  CalcVol(vnp_);
 
   for (int i = 0; i < coupmap_->NumMyElements(); ++i)
   {
     int coupID = coupmap_->GID(i);
     int lid = coupflux->Map().LID(coupID);
-    (*coupflux)[lid] = (Vnp_[coupID] - Vn_[coupID]) / dt;
-    (*coupvol)[lid] = Vnp_[coupID];
+    (*coupflux)[lid] = (vnp_[coupID] - vn_[coupID]) / dt;
+    (*coupvol)[lid] = vnp_[coupID];
   }
 }
 
@@ -171,7 +171,7 @@ void ADAPTER::StructureRedAirway::Update()
   for (int i = 0; i < coupmap_->NumMyElements(); ++i)
   {
     int coupID = coupmap_->GID(i);
-    Vn_[coupID] = Vnp_[coupID];
+    vn_[coupID] = vnp_[coupID];
   }
 }
 

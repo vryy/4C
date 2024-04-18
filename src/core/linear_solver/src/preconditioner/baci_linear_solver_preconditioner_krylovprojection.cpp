@@ -40,13 +40,13 @@ void CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::Setup(
   Epetra_LinearProblem& lp = preconditioner_->LinearProblem();
   Epetra_Operator* A = lp.GetOperator();
 
-  A_ = Teuchos::rcp(
+  a_ = Teuchos::rcp(
       new CORE::LINALG::LinalgProjectedOperator(Teuchos::rcp(A, false), true, projector_));
 
-  P_ = Teuchos::rcp(
+  p_ = Teuchos::rcp(
       new CORE::LINALG::LinalgPrecondOperator(preconditioner_->PrecOperator(), true, projector_));
 
-  SetupLinearProblem(&*A_, lp.GetLHS(), lp.GetRHS());
+  SetupLinearProblem(&*a_, lp.GetLHS(), lp.GetRHS());
 }
 
 //----------------------------------------------------------------------------------

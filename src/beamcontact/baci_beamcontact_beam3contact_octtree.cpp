@@ -124,7 +124,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(
   periodlength_ = Teuchos::rcp(new std::vector<double>);
   periodlength_->clear();
   for (int i = 0; i < 2; i++) periodlength_->push_back(0);
-  periodicBC_ = false;
+  periodic_bc_ = false;
 
   // determine bounding box type
   switch (bboxtype_input)
@@ -462,7 +462,7 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
 #endif
   // number of shifts across volume boundaries in case of periodic boundary conditions (for
   // intersection optimization)
-  if (periodicBC_)
+  if (periodic_bc_)
     numshifts_ = Teuchos::rcp(new Epetra_Vector(*(searchdis_.ElementColMap()), true));
 
   // determine radius factor by looking at the absolute mean variance of a bounding box (not quite
@@ -512,7 +512,7 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
   // number of shifts across periodic boundaries (std: no periodic boundary conditions ->
   // maxnumshifts = 0)
   int maxnumshifts = 0;
-  if (periodicBC_) maxnumshifts = 3;
+  if (periodic_bc_) maxnumshifts = 3;
   allbboxes_ = Teuchos::rcp(new Epetra_MultiVector(
       *(searchdis_.ElementColMap()), (maxnumshifts + 1) * numbboxcoords + 1, true));
 
@@ -618,7 +618,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
   Epetra_MultiVector allbboxesrow(*(searchdis_.ElementRowMap()), allbboxes_->NumVectors(), true);
   CommunicateMultiVector(allbboxesrow, *allbboxes_);
 
-  if (periodicBC_)
+  if (periodic_bc_)
   {
     Epetra_Vector numshiftsrow(*(searchdis_.ElementRowMap()), true);
     CommunicateVector(numshiftsrow, *numshifts_);
@@ -661,7 +661,7 @@ void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, con
   // make the bounding box continuous
   std::vector<int> cut(3, 0);
   int numshifts = 0;
-  if (periodicBC_) UndoEffectOfPeriodicBoundaryCondition(coord, cut, numshifts);
+  if (periodic_bc_) UndoEffectOfPeriodicBoundaryCondition(coord, cut, numshifts);
 
   // directional vector (of the non-interrupted bounding box/ beam element
   CORE::LINALG::Matrix<3, 1> dir;
@@ -734,7 +734,7 @@ void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, con
     (*numshifts_)[elecolid] = shift;  // store number of shifts
   }
 
-  if (periodicBC_ && numshifts < 3)
+  if (periodic_bc_ && numshifts < 3)
     for (int i = allbboxes_->NumVectors() - 1; i > (numshifts + 1) * 6 - 1; i--)
       (*allbboxes_)[i][elecolid] = -1e9;
 
@@ -759,7 +759,7 @@ void Beam3ContactOctTree::CreateCOBB(CORE::LINALG::SerialDenseMatrix& coord, con
   // make the bounding box continuous
   std::vector<int> cut(3, 0);
   int numshifts = 0;
-  if (periodicBC_) UndoEffectOfPeriodicBoundaryCondition(coord, cut, numshifts);
+  if (periodic_bc_) UndoEffectOfPeriodicBoundaryCondition(coord, cut, numshifts);
 
   double extrusionvalue = GetBoundingBoxExtrusionValue();
 
@@ -837,7 +837,7 @@ void Beam3ContactOctTree::CreateCOBB(CORE::LINALG::SerialDenseMatrix& coord, con
     //      std::cout<<(*allbboxes_)[i][elecolid]<<" ";
     //    std::cout<<std::endl;
   }
-  if (periodicBC_ && numshifts < 3)
+  if (periodic_bc_ && numshifts < 3)
     for (int i = allbboxes_->NumVectors() - 1; i > (numshifts + 1) * 6 - 1; i--)
       (*allbboxes_)[i][elecolid] = -1e9;
 
@@ -862,7 +862,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
   // make the bounding box continuous
   std::vector<int> cut(3, 0);
   int numshifts = 0;
-  if (periodicBC_) UndoEffectOfPeriodicBoundaryCondition(coord, cut, numshifts);
+  if (periodic_bc_) UndoEffectOfPeriodicBoundaryCondition(coord, cut, numshifts);
 
   // Note: diameter_ is used as the sphere diameter in the context of SPBBs
   double extrusionvalue = GetBoundingBoxExtrusionValue();
@@ -955,7 +955,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
     (*numshifts_)[elecolid] = shift;  // store number of shifts
   }
 
-  if (periodicBC_ && shift < 3)
+  if (periodic_bc_ && shift < 3)
     for (int i = allbboxes_->NumVectors() - 1; i > (shift + 1) * 3 - 1; i--)
       (*allbboxes_)[i][elecolid] = -1e9;
 
@@ -1172,7 +1172,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double>>& allbboxess
     {
       int lid =
           searchdis_.ElementColMap()->LID((int)allbboxesstdvec[i][allbboxesstdvec[i].size() - 1]);
-      if (periodicBC_) numshifts = (*numshifts_)[lid];
+      if (periodic_bc_) numshifts = (*numshifts_)[lid];
 
       for (int shift = 0; shift < numshifts + 1; shift++)
       {
@@ -1281,7 +1281,7 @@ CORE::LINALG::Matrix<6, 1> Beam3ContactOctTree::GetRootBox()
   int numshifts = 0;
   for (int i = 0; i < allbboxes_->MyLength(); i++)
   {
-    if (periodicBC_) numshifts = (int)(*numshifts_)[i];
+    if (periodic_bc_) numshifts = (int)(*numshifts_)[i];
     for (int j = 0; j < entriesperbbox * numshifts + entriesperbbox; j++)
     {
       if ((*allbboxes_)[j][i] < lim(0))  // mins
@@ -1656,7 +1656,7 @@ bool Beam3ContactOctTree::IntersectionAABB(
   int I = 0;
   int J = 0;
 
-  if (periodicBC_)
+  if (periodic_bc_)
   {
     I = (int)(*numshifts_)[entry1];
     J = (int)(*numshifts_)[entry2];
@@ -1744,7 +1744,7 @@ bool Beam3ContactOctTree::IntersectionCOBB(
   int numshifts_bbox0 = 0;
   int numshifts_bbox1 = 0;
 
-  if (periodicBC_)
+  if (periodic_bc_)
   {
     numshifts_bbox0 = (int)(*numshifts_)[bboxid0];
     numshifts_bbox1 = (int)(*numshifts_)[bboxid1];
@@ -1827,7 +1827,7 @@ bool Beam3ContactOctTree::IntersectionSPBB(
   int numshifts_bbox0 = 0;
   int numshifts_bbox1 = 0;
 
-  if (periodicBC_)
+  if (periodic_bc_)
   {
     numshifts_bbox0 = (*numshifts_)[bboxid0];
     numshifts_bbox1 = (*numshifts_)[bboxid1];

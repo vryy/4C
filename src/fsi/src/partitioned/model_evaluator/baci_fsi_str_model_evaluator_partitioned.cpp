@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::PartitionedFSI::PartitionedFSI()
-    : interface_force_np_ptr_(Teuchos::null), is_relaxationsolve(false)
+    : interface_force_np_ptr_(Teuchos::null), is_relaxationsolve_(false)
 {
   // empty
 }
@@ -90,7 +90,7 @@ bool STR::MODELEVALUATOR::PartitionedFSI::AssembleForce(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::PartitionedFSI::UpdateStepState(const double& timefac_n)
 {
-  if (not is_relaxationsolve)  // standard case
+  if (not is_relaxationsolve_)  // standard case
   {
     // add the old time factor scaled contributions to the residual
     Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();

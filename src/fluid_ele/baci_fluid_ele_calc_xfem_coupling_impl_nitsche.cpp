@@ -36,8 +36,8 @@ namespace DRT
           )
           : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(),
             fldparaxfem_(fldparaxfem),
-            C_umum_(C_umum.values(), true),
-            rhC_um_(rhC_um.values(), true),
+            c_umum_(C_umum.values(), true),
+            rh_c_um_(rhC_um.values(), true),
             adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
             eval_coupling_(false)
       {
@@ -57,8 +57,8 @@ namespace DRT
           )
           : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(slave_xyze),
             fldparaxfem_(fldparaxfem),
-            C_umum_(C_umum.values(), true),
-            rhC_um_(rhC_um.values(), true),
+            c_umum_(C_umum.values(), true),
+            rh_c_um_(rhC_um.values(), true),
             adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
             eval_coupling_(false)
       {
@@ -82,12 +82,12 @@ namespace DRT
           )
           : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(slave_xyze),
             fldparaxfem_(fldparaxfem),
-            C_umum_(C_umum.values(), true),
-            C_usum_(C_usum.values(), true),
-            C_umus_(C_umus.values(), true),
-            C_usus_(C_usus.values(), true),
-            rhC_um_(rhC_um.values(), true),
-            rhC_us_(rhC_us.values(), true),
+            c_umum_(C_umum.values(), true),
+            c_usum_(C_usum.values(), true),
+            c_umus_(C_umus.values(), true),
+            c_usus_(C_usus.values(), true),
+            rh_c_um_(rhC_um.values(), true),
+            rh_c_us_(rhC_us.values(), true),
             adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
             eval_coupling_(true)
       {
@@ -778,7 +778,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rhC_um_(mIndex(ir, ivel), 0) += tmp_val * traction_(ivel);
+            rh_c_um_(mIndex(ir, ivel), 0) += tmp_val * traction_(ivel);
           }
         }
 
@@ -788,7 +788,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rhC_us_(sIndex(ir, ivel), 0) -= tmp_val * traction_(ivel);
+            rh_c_us_(sIndex(ir, ivel), 0) -= tmp_val * traction_(ivel);
           }
         }
 
@@ -806,7 +806,7 @@ namespace DRT
                 //-----------------------------------------------
                 //    - (vm,
                 //-----------------------------------------------
-                C_umus_(mIndex(ir, ivel), col) -=
+                c_umus_(mIndex(ir, ivel), col) -=
                     funct_m(ir) * dtraction_vel_(col, ivel) * facms * timefacfac;
               }
 
@@ -816,7 +816,7 @@ namespace DRT
                 //    + (vs,
                 //-----------------------------------------------
                 // diagonal block
-                C_usus_(sIndex(ir, ivel), col) +=
+                c_usus_(sIndex(ir, ivel), col) +=
                     funct_s_(ir) * dtraction_vel_(col, ivel) * facss * timefacfac;
               }
             }
@@ -852,7 +852,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rhC_um_(mIndex(ir, ivel), 0) += tmp_val * proj_traction(ivel);
+            rh_c_um_(mIndex(ir, ivel), 0) += tmp_val * proj_traction(ivel);
           }
         }
 
@@ -862,7 +862,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rhC_us_(sIndex(ir, ivel), 0) -= tmp_val * proj_traction(ivel);
+            rh_c_us_(sIndex(ir, ivel), 0) -= tmp_val * proj_traction(ivel);
           }
         }
 
@@ -891,7 +891,7 @@ namespace DRT
                 //-----------------------------------------------
                 //    - (vm,
                 //-----------------------------------------------
-                C_umus_(mIndex(ir, ivel), col) -=
+                c_umus_(mIndex(ir, ivel), col) -=
                     funct_m(ir) * proj_dtraction_vel(col, ivel) * facms * timefacfac;
               }
 
@@ -901,7 +901,7 @@ namespace DRT
                 //    + (vs,
                 //-----------------------------------------------
                 // diagonal block
-                C_usus_(sIndex(ir, ivel), col) +=
+                c_usus_(sIndex(ir, ivel), col) +=
                     funct_s_(ir) * proj_dtraction_vel(col, ivel) * facss * timefacfac;
               }
             }
@@ -940,7 +940,7 @@ namespace DRT
             {
               const unsigned row = sIndex(ir, ivel);
               // rhs
-              rhC_us_(row, 0) += dtraction_vel(row, jvel) * velint_diff(jvel, 0) * facs;
+              rh_c_us_(row, 0) += dtraction_vel(row, jvel) * velint_diff(jvel, 0) * facs;
             }
           }
         }
@@ -960,16 +960,16 @@ namespace DRT
               for (unsigned ic = 0; ic < nen_; ++ic)
               {
                 const unsigned col = mIndex(ic, jvel);
-                C_usum_(row, col) -= funct_m(ic) * dtraction_vel(row, jvel) * facsm;
+                c_usum_(row, col) -= funct_m(ic) * dtraction_vel(row, jvel) * facsm;
               }
 
               for (unsigned ic = 0; ic < slave_nen_; ++ic)
               {
                 const unsigned col = sIndex(ic, jvel);
-                C_usus_(row, col) += funct_s_(ic) * dtraction_vel(row, jvel) * facss;
+                c_usus_(row, col) += funct_s_(ic) * dtraction_vel(row, jvel) * facss;
                 for (unsigned k = 0; k < nsd_; ++k)
                 {
-                  C_usus_(row, col) -= d2traction_vel_[k](row, col) * velint_diff(k, 0) * facs;
+                  c_usus_(row, col) -= d2traction_vel_[k](row, col) * velint_diff(k, 0) * facs;
                 }
               }
             }
@@ -1486,7 +1486,7 @@ namespace DRT
                 funct_m_timefacfac_ks(ir) * itraction_jump(ivel);
 
             const unsigned row = mIndex(ir, ivel);
-            rhC_um_(row, 0) += funct_m_ks_timefacfac_traction;
+            rh_c_um_(row, 0) += funct_m_ks_timefacfac_traction;
           }
 
           //-----------------------------------------------
@@ -1498,7 +1498,7 @@ namespace DRT
                 funct_s_timefacfac_km(ir) * itraction_jump(ivel);
 
             const unsigned row = sIndex(ir, ivel);
-            rhC_us_(row, 0) += funct_s_km_timefacfac_traction;
+            rh_c_us_(row, 0) += funct_s_km_timefacfac_traction;
           }
         }  // end loop over velocity components
       }
@@ -1550,7 +1550,7 @@ namespace DRT
             }
 
             const unsigned row = mIndex(ir, ivel);
-            rhC_um_(row, 0) -= derxy_m_ks_timefacfac_sum;
+            rh_c_um_(row, 0) -= derxy_m_ks_timefacfac_sum;
           }
 
           //-----------------------------------------------
@@ -1567,7 +1567,7 @@ namespace DRT
             }
 
             const unsigned row = sIndex(ir, ivel);
-            rhC_us_(row, 0) -= derxy_s_km_timefacfac_sum;
+            rh_c_us_(row, 0) -= derxy_s_km_timefacfac_sum;
           }
         }  // end loop over velocity components
       }
@@ -1607,7 +1607,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // -(v,p*n)
-            rhC_um_(mIndex(ir, ivel), 0) -= funct_m_pres * normal_timefacfac(ivel);
+            rh_c_um_(mIndex(ir, ivel), 0) -= funct_m_pres * normal_timefacfac(ivel);
           }
         }
 
@@ -1622,7 +1622,7 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // -(v,p*n)
-              rhC_us_(sIndex(ir, ivel), 0) += funct_s_pres * normal_timefacfac(ivel);
+              rh_c_us_(sIndex(ir, ivel), 0) += funct_s_pres * normal_timefacfac(ivel);
             }
           }  // end loop over velocity components
         }
@@ -1641,7 +1641,7 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // (v,Dp*n)
-              C_umum_(mIndex(ir, ivel), col) += tmp * normal_timefacfac(ivel);
+              c_umum_(mIndex(ir, ivel), col) += tmp * normal_timefacfac(ivel);
             }
           }
         }
@@ -1663,7 +1663,7 @@ namespace DRT
                 //-----------------------------------------------
 
                 // (v,Dp*n)
-                C_usum_(sIndex(ir, ivel), col) -= tmp * normal_timefacfac(ivel);
+                c_usum_(sIndex(ir, ivel), col) -= tmp * normal_timefacfac(ivel);
               }
             }
           }
@@ -1695,7 +1695,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // -(vm, ks * ps*n)
-            rhC_um_(mIndex(ir, ivel), 0) -= tmp * normal_timefacfac(ivel);
+            rh_c_um_(mIndex(ir, ivel), 0) -= tmp * normal_timefacfac(ivel);
           }
         }
 
@@ -1705,7 +1705,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // +(vs,ks * ps*n)
-            rhC_us_(sIndex(ir, ivel), 0) += tmp * normal_timefacfac(ivel);
+            rh_c_us_(sIndex(ir, ivel), 0) += tmp * normal_timefacfac(ivel);
           }
         }  // end loop over velocity components
 
@@ -1724,7 +1724,7 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // (vm, ks * Dps*n)
-              C_umus_(mIndex(ir, ivel), col) += tmp * normal_timefacfac(ivel);
+              c_umus_(mIndex(ir, ivel), col) += tmp * normal_timefacfac(ivel);
             }
           }
 
@@ -1736,7 +1736,7 @@ namespace DRT
             const double tmp = funct_s_s_dyad_(ir, ic) * facss;
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              C_usus_(sIndex(ir, ivel), col) -= tmp * normal_timefacfac(ivel);
+              c_usus_(sIndex(ir, ivel), col) -= tmp * normal_timefacfac(ivel);
             }
           }
         }
@@ -1791,7 +1791,7 @@ namespace DRT
           // (qm*n, km * um)
           // -(qm*n,km * u_DBC) for weak DBC or
           // -(qm*n,km * us)
-          rhC_um_(mPres(ir), 0) += funct_m(ir) * velint_diff_normal_timefacfac_km;
+          rh_c_um_(mPres(ir), 0) += funct_m(ir) * velint_diff_normal_timefacfac_km;
           //    rhC_um_(mPres(ir),0) -= funct_m(ir)*velint_diff_normal_timefacfac; //TESTING!
         }
 
@@ -1820,7 +1820,7 @@ namespace DRT
               C_umum_(row, mIndex(ic, ivel)) -= tmp * normal_timefacfac(ivel);
               //        C_umum_(row, mIndex(ic,ivel)) += tmp*normal_timefacfac_km(ivel); //TESTING!
 #else
-              C_umum_(row, mIndex(ic, ivel)) -= tmp * proj_norm_timefacfac(ivel);
+              c_umum_(row, mIndex(ic, ivel)) -= tmp * proj_norm_timefacfac(ivel);
 #endif
             }
           }
@@ -1845,7 +1845,7 @@ namespace DRT
 #ifndef PROJECT_VEL_FOR_PRESSURE_ADJOINT
                 C_umus_(row, sIndex(ic, ivel)) += tmp * normal_timefacfac(ivel);
 #else
-                C_umus_(row, sIndex(ic, ivel)) += tmp * proj_norm_timefacfac(ivel);
+                c_umus_(row, sIndex(ic, ivel)) += tmp * proj_norm_timefacfac(ivel);
 #endif
               }
             }
@@ -1888,7 +1888,7 @@ namespace DRT
         for (unsigned ir = 0; ir < slave_nen_; ++ir)
         {
           // (qs*n,ks* um)
-          rhC_us_(sPres(ir), 0) += funct_s_(ir) * velint_diff_normal_timefacfac_ks;
+          rh_c_us_(sPres(ir), 0) += funct_s_(ir) * velint_diff_normal_timefacfac_ks;
         }
 
         if (only_rhs) return;
@@ -1912,7 +1912,7 @@ namespace DRT
               C_usum_(row, mIndex(ic, ivel)) -= tmp * normal_timefacfac(ivel);
               //        C_usum_(row,mIndex(ic,ivel)) += tmp*normal_timefacfac_ks(ivel); //TESTING!
 #else
-              C_usum_(row, mIndex(ic, ivel)) -= tmp * proj_norm_timefacfac(ivel);
+              c_usum_(row, mIndex(ic, ivel)) -= tmp * proj_norm_timefacfac(ivel);
 #endif
             }
           }
@@ -1936,7 +1936,7 @@ namespace DRT
 #ifndef PROJECT_VEL_FOR_PRESSURE_ADJOINT
               C_usus_(row, sIndex(ic, ivel)) += tmp * normal_timefacfac(ivel);
 #else
-              C_usus_(row, sIndex(ic, ivel)) += tmp * proj_norm_timefacfac(ivel);
+              c_usus_(row, sIndex(ic, ivel)) += tmp * proj_norm_timefacfac(ivel);
 #endif
             }
           }
@@ -1975,7 +1975,7 @@ namespace DRT
             //-----------------------------------------------
             //    - (vm, (2*km*mum) *eps(Dum)*n)
             //-----------------------------------------------
-            rhC_um_(mIndex(ir, ivel), 0) +=
+            rh_c_um_(mIndex(ir, ivel), 0) +=
                 tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
           }
         }
@@ -1994,7 +1994,7 @@ namespace DRT
               //-----------------------------------------------
 
               // rhs
-              rhC_us_(sIndex(ir, ivel), 0) -=
+              rh_c_us_(sIndex(ir, ivel), 0) -=
                   tmp_val * vderxy_m_normal_transposed_viscm_timefacfac_km_(ivel);
             }
           }
@@ -2019,7 +2019,7 @@ namespace DRT
               const double tmpm = tmp * facmm;
               for (unsigned ir = 0; ir < nen_; ++ir)
               {
-                C_umum_(mIndex(ir, ivel), col) -= funct_m(ir) * tmpm;
+                c_umum_(mIndex(ir, ivel), col) -= funct_m(ir) * tmpm;
               }
 
               if (s_row.first)
@@ -2027,7 +2027,7 @@ namespace DRT
                 const double tmps = tmp * facsm;
                 for (unsigned ir = 0; ir < slave_nen_; ++ir)
                 {
-                  C_usum_(sIndex(ir, ivel), col) += funct_s_(ir) * tmps;
+                  c_usum_(sIndex(ir, ivel), col) += funct_s_(ir) * tmps;
                 }
               }
             }
@@ -2097,7 +2097,7 @@ namespace DRT
               for (unsigned ir = 0; ir < nen_; ++ir)
               {
                 // C_umum_(mIndex(ir,ivel), col) -= funct_m(ir) * tmp;
-                C_umum_(mIndex(ir, ivel), col) -=
+                c_umum_(mIndex(ir, ivel), col) -=
                     funct_m(ir) * facmm *
                     (proj_matrix(jvel, ivel) * normal_deriv_tmp +
                         proj_matrix_derxy_m_(ivel, ic) * half_normal_(jvel));
@@ -2109,7 +2109,7 @@ namespace DRT
 
               for (unsigned ir = 0; ir < slave_nen_; ++ir)
               {
-                C_usum_(sIndex(ir, ivel), col) +=
+                c_usum_(sIndex(ir, ivel), col) +=
                     funct_s_(ir) * facsm *
                     (proj_matrix(jvel, ivel) * normal_deriv_tmp +
                         proj_matrix_derxy_m_(ivel, ic) * half_normal_(jvel));
@@ -2128,7 +2128,7 @@ namespace DRT
             //-----------------------------------------------
             //    - (vm, (2*km*mum) *eps(Dum)*n)
             //-----------------------------------------------
-            rhC_um_(mIndex(ir, ivel), 0) +=
+            rh_c_um_(mIndex(ir, ivel), 0) +=
                 tmp_val * vderxy_x_normal_transposed_viscx_timefacfac_kx_pmatrix_(ivel);
           }
         }
@@ -2148,7 +2148,7 @@ namespace DRT
             //-----------------------------------------------
 
             // rhs
-            rhC_us_(sIndex(ir, ivel), 0) -=
+            rh_c_us_(sIndex(ir, ivel), 0) -=
                 tmp_val * vderxy_x_normal_transposed_viscx_timefacfac_kx_pmatrix_(ivel);
           }
         }
@@ -2194,7 +2194,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rhC_um_(mIndex(ir, ivel), 0) +=
+            rh_c_um_(mIndex(ir, ivel), 0) +=
                 tmp_val * vderxy_s_normal_transposed_viscs_timefacfac_ks_(ivel);
           }
         }
@@ -2205,7 +2205,7 @@ namespace DRT
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
             // rhs
-            rhC_us_(sIndex(ir, ivel), 0) -=
+            rh_c_us_(sIndex(ir, ivel), 0) -=
                 tmp_val * vderxy_s_normal_transposed_viscs_timefacfac_ks_(ivel);
           }
         }
@@ -2234,7 +2234,7 @@ namespace DRT
                 //-----------------------------------------------
                 //    - (vm, (2*ks*mus) *eps(Dus)*n)
                 //-----------------------------------------------
-                C_umus_(mIndex(ir, ivel), col) -= funct_m(ir) * tmpm;
+                c_umus_(mIndex(ir, ivel), col) -= funct_m(ir) * tmpm;
               }
 
               const double tmps = tmp * facss;
@@ -2244,7 +2244,7 @@ namespace DRT
                 //    + (vs, (2*ks*mus) *eps(Dus)*n)
                 //-----------------------------------------------
                 // diagonal block
-                C_usus_(sIndex(ir, ivel), col) += funct_s_(ir) * tmps;
+                c_usus_(sIndex(ir, ivel), col) += funct_s_(ir) * tmps;
               }
             }
           }
@@ -2304,7 +2304,7 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // rhs
-              rhC_um_(mIndex(ir, ivel), 0) +=
+              rh_c_um_(mIndex(ir, ivel), 0) +=
                   derxy_m_viscm_timefacfac_km_half_tmp * velint_diff_dyad_normal_symm(ivel, jvel);
             }
           }
@@ -2337,7 +2337,7 @@ namespace DRT
               const double tmpm = tmp * facmm;
               for (unsigned ic = 0; ic < nen_; ++ic)
               {
-                C_umum_(row, mIndex(ic, jvel)) -= funct_m(ic) * tmpm;
+                c_umum_(row, mIndex(ic, jvel)) -= funct_m(ic) * tmpm;
               }
 
 
@@ -2346,7 +2346,7 @@ namespace DRT
                 const double tmps = tmp * facms;
                 for (unsigned ic = 0; ic < slave_nen_; ++ic)
                 {
-                  C_umus_(row, sIndex(ic, jvel)) += funct_s_(ic) * tmps;
+                  c_umus_(row, sIndex(ic, jvel)) += funct_s_(ic) * tmps;
                 }
               }
             }
@@ -2427,7 +2427,7 @@ namespace DRT
                                               proj_matrix_derxy_m_(jvel, ir) * half_normal_(ivel));
               for (unsigned ic = 0; ic < nen_; ++ic)
               {
-                C_umum_(row, mIndex(ic, jvel)) -= funct_m(ic) * tmpm;
+                c_umum_(row, mIndex(ic, jvel)) -= funct_m(ic) * tmpm;
               }
 
               if (s_col.first)
@@ -2437,7 +2437,7 @@ namespace DRT
                                 proj_matrix_derxy_m_(jvel, ir) * half_normal_(ivel));
                 for (unsigned ic = 0; ic < slave_nen_; ++ic)
                 {
-                  C_umus_(row, sIndex(ic, jvel)) += funct_s_(ic) * tmps;
+                  c_umus_(row, sIndex(ic, jvel)) += funct_s_(ic) * tmps;
                 }
               }
             }
@@ -2471,8 +2471,8 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // rhs
-              rhC_um_(mIndex(ir, ivel), 0) += derxy_m_viscm_timefacfac_km_half_tmp *
-                                              velint_proj_norm_diff_dyad_normal_symm_(ivel, jvel);
+              rh_c_um_(mIndex(ir, ivel), 0) += derxy_m_viscm_timefacfac_km_half_tmp *
+                                               velint_proj_norm_diff_dyad_normal_symm_(ivel, jvel);
             }
           }
         }
@@ -2546,7 +2546,7 @@ namespace DRT
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
               // rhs
-              rhC_us_(sIndex(ir, ivel), 0) +=
+              rh_c_us_(sIndex(ir, ivel), 0) +=
                   derxy_s_viscs_timefacfac_ks_half_tmp * velint_diff_dyad_normal_symm(ivel, jvel);
             }
           }
@@ -2576,7 +2576,7 @@ namespace DRT
               const double tmpm = tmp * facsm;
               for (unsigned ic = 0; ic < nen_; ++ic)
               {
-                C_usum_(row, mIndex(ic, jvel)) -= funct_m(ic) * tmpm;
+                c_usum_(row, mIndex(ic, jvel)) -= funct_m(ic) * tmpm;
               }
 
               if (s_col.first)
@@ -2584,7 +2584,7 @@ namespace DRT
                 const double tmps = tmp * facss;
                 for (unsigned ic = 0; ic < slave_nen_; ++ic)
                 {
-                  C_usus_(row, sIndex(ic, jvel)) += funct_s_(ic) * tmps;
+                  c_usus_(row, sIndex(ic, jvel)) += funct_s_(ic) * tmps;
                 }
               }
             }
@@ -2664,7 +2664,7 @@ namespace DRT
         // derxy_m_P_derxy_m = 2.0 * derxy_m(j,IC) P^t_{jk} * derxy_m(k,IR) * mu_m * timefacfac * km
         //                   = 2.0 * C(IC,IR) * mu_m * timefacfac * km
         //  derxy_m_P_derxy_m.MultiplyTN(derxy_m,proj_tang_derxy_m_1);
-        derxy_m_P_derxy_m_.MultiplyTN(derxy_m, proj_matrix_derxy_m_);
+        derxy_m_p_derxy_m_.MultiplyTN(derxy_m, proj_matrix_derxy_m_);
 
         // here we use a non-optimal order to assemble the values into C_umum
         // however for this term we have to save operations
@@ -2681,12 +2681,12 @@ namespace DRT
 
               for (unsigned ic = 0; ic < nen_; ++ic)
               {
-                C_umum_(row, mIndex(ic, jvel)) -=
+                c_umum_(row, mIndex(ic, jvel)) -=
                     facmm *
                     (normal_deriv_m_(ic) *
                             (proj_matrix_(jvel, ivel) * normal_deriv_tmp +
                                 proj_matrix_derxy_m_(jvel, ir) * half_normal_(ivel)) +
-                        normal(ivel) * half_normal_(jvel) * derxy_m_P_derxy_m_(ic, ir) +
+                        normal(ivel) * half_normal_(jvel) * derxy_m_p_derxy_m_(ic, ir) +
                         normal_deriv_m_(ir) * proj_matrix_derxy_m_(ivel, ic) * half_normal_(jvel));
               }
             }
@@ -2716,7 +2716,7 @@ namespace DRT
 
           for (unsigned ivel = 0; ivel < nsd_; ++ivel)
           {
-            rhC_um_(mIndex(ir, ivel), 0) +=
+            rh_c_um_(mIndex(ir, ivel), 0) +=
                 facmm *
                 (normal_deriv_tmp * vderxy_m_normal_tang_(ivel) + tmp_rhs(ir) * half_normal_(ivel));
           }
@@ -2764,7 +2764,7 @@ namespace DRT
           {
             // +(stab * vm, u_DBC) (weak dirichlet case) or from
             // +(stab * vm, u_s)
-            rhC_um_(mIndex(ir, ivel), 0) -= tmp_val * velint_diff_timefacfac_stabfac_(ivel);
+            rh_c_um_(mIndex(ir, ivel), 0) -= tmp_val * velint_diff_timefacfac_stabfac_(ivel);
           }
         }
 
@@ -2781,7 +2781,7 @@ namespace DRT
             {
               // +(stab * vs, um)
               // -(stab * vs, us)
-              rhC_us_(sIndex(ir, ivel), 0) += tmp_val * velint_diff_timefacfac_stabfac_(ivel);
+              rh_c_us_(sIndex(ir, ivel), 0) += tmp_val * velint_diff_timefacfac_stabfac_(ivel);
             }
           }
         }
@@ -2798,7 +2798,7 @@ namespace DRT
 
             for (unsigned ivel = 0; ivel < nsd_; ++ivel)
             {
-              C_umum_(mIndex(ir, ivel), mIndex(ic, ivel)) += tmp_val;
+              c_umum_(mIndex(ir, ivel), mIndex(ic, ivel)) += tmp_val;
             }
           }
         }
@@ -2818,7 +2818,7 @@ namespace DRT
 
               for (unsigned ivel = 0; ivel < nsd_; ++ivel)
               {
-                C_umus_(mIndex(ir, ivel), sIndex(ic, ivel)) -= tmp_val;
+                c_umus_(mIndex(ir, ivel), sIndex(ic, ivel)) -= tmp_val;
               }
             }
           }
@@ -2837,7 +2837,7 @@ namespace DRT
 
               for (unsigned ivel = 0; ivel < nsd_; ++ivel)
               {
-                C_usus_(sIndex(ir, ivel), sIndex(ic, ivel)) += tmp_val;
+                c_usus_(sIndex(ir, ivel), sIndex(ic, ivel)) += tmp_val;
               }
             }
           }
@@ -2855,7 +2855,7 @@ namespace DRT
 
               for (unsigned ivel = 0; ivel < nsd_; ++ivel)
               {
-                C_usum_(sIndex(ir, ivel), mIndex(ic, ivel)) -= tmp_val;
+                c_usum_(sIndex(ir, ivel), mIndex(ic, ivel)) -= tmp_val;
               }
             }
           }
@@ -2895,13 +2895,13 @@ namespace DRT
           {
             for (unsigned ic = 0; ic < nen_; ++ic)
             {
-              C_umum_(mIndex(ir, ivel), mIndex(ic, 0)) += tmp_val *
+              c_umum_(mIndex(ir, ivel), mIndex(ic, 0)) += tmp_val *
                                                           velint_diff_timefacfac_stabfac_(ivel) *
                                                           funct_m(ic) * m_row_linm1.second;
-              C_umum_(mIndex(ir, ivel), mIndex(ic, 1)) += tmp_val *
+              c_umum_(mIndex(ir, ivel), mIndex(ic, 1)) += tmp_val *
                                                           velint_diff_timefacfac_stabfac_(ivel) *
                                                           funct_m(ic) * m_row_linm2.second;
-              C_umum_(mIndex(ir, ivel), mIndex(ic, 2)) += tmp_val *
+              c_umum_(mIndex(ir, ivel), mIndex(ic, 2)) += tmp_val *
                                                           velint_diff_timefacfac_stabfac_(ivel) *
                                                           funct_m(ic) * m_row_linm3.second;
             }
@@ -2970,7 +2970,7 @@ namespace DRT
               //        C_umum_(mIndex(ir,ivel), mIndex(ic,ivel)) += tmp_val;
               for (unsigned jvel = 0; jvel < nsd_; ++jvel)
               {
-                C_umum_(mIndex(ir, jvel), col) +=
+                c_umum_(mIndex(ir, jvel), col) +=
                     stab_funct_m_m_dyad_iric * proj_matrix_(ivel, jvel);
               }
             }
@@ -2987,7 +2987,7 @@ namespace DRT
           {
             // +(stab * vm, u_DBC) (weak dirichlet case) or from
             // +(stab * vm, u_s)
-            rhC_um_(mIndex(ir, ivel), 0) -= tmp_val * (velint_diff_timefacfac_stabfac_(ivel));
+            rh_c_um_(mIndex(ir, ivel), 0) -= tmp_val * (velint_diff_timefacfac_stabfac_(ivel));
           }
         }
 
@@ -3009,7 +3009,7 @@ namespace DRT
               {
                 for (unsigned jvel = 0; jvel < nsd_; ++jvel)
                 {
-                  C_umus_(mIndex(ir, jvel), sIndex(ic, ivel)) -= tmp_val * proj_matrix_(ivel, jvel);
+                  c_umus_(mIndex(ir, jvel), sIndex(ic, ivel)) -= tmp_val * proj_matrix_(ivel, jvel);
                 }
               }
             }
@@ -3031,7 +3031,7 @@ namespace DRT
               {
                 for (unsigned jvel = 0; jvel < nsd_; ++jvel)
                 {
-                  C_usus_(sIndex(ir, jvel), sIndex(ic, ivel)) += tmp_val * proj_matrix_(ivel, jvel);
+                  c_usus_(sIndex(ir, jvel), sIndex(ic, ivel)) += tmp_val * proj_matrix_(ivel, jvel);
                 }
               }
             }
@@ -3052,7 +3052,7 @@ namespace DRT
               {
                 for (unsigned jvel = 0; jvel < nsd_; ++jvel)
                 {
-                  C_usum_(sIndex(ir, jvel), mIndex(ic, ivel)) -= tmp_val * proj_matrix_(ivel, jvel);
+                  c_usum_(sIndex(ir, jvel), mIndex(ic, ivel)) -= tmp_val * proj_matrix_(ivel, jvel);
                 }
               }
             }
@@ -3070,7 +3070,7 @@ namespace DRT
             {
               // +(stab * vs, um)
               // -(stab * vs, us)
-              rhC_us_(sIndex(ir, ivel), 0) += tmp_val * velint_diff_timefacfac_stabfac_(ivel);
+              rh_c_us_(sIndex(ir, ivel), 0) += tmp_val * velint_diff_timefacfac_stabfac_(ivel);
             }
           }
         }
@@ -3111,7 +3111,7 @@ namespace DRT
             const unsigned mrow = mIndex(ir, ivel);
 
             const double tmp = funct_m(ir) * stabfac_avg_scaled;
-            rhC_um_(mrow, 0) += tmp * velint_diff_(ivel);
+            rh_c_um_(mrow, 0) += tmp * velint_diff_(ivel);
           }
 
           for (unsigned ir = 0; ir < slave_nen_; ++ir)
@@ -3119,7 +3119,7 @@ namespace DRT
             const unsigned srow = sIndex(ir, ivel);
 
             const double tmp = funct_s_(ir) * stabfac_avg_scaled;
-            rhC_us_(srow, 0) += tmp * velint_diff_(ivel);
+            rh_c_us_(srow, 0) += tmp * velint_diff_(ivel);
           }
         }
 
@@ -3134,13 +3134,13 @@ namespace DRT
 
             for (unsigned ic = 0; ic < nen_; ++ic)
             {
-              C_umum_(mrow, mIndex(ic, ivel)) -= funct_m_m_dyad_(ir, ic) * stabfac_avg_scaled;
+              c_umum_(mrow, mIndex(ic, ivel)) -= funct_m_m_dyad_(ir, ic) * stabfac_avg_scaled;
             }
 
             //  -[rho * (beta * n^b)] (0.5*vb,ue)
             for (unsigned ic = 0; ic < slave_nen_; ++ic)
             {
-              C_umus_(mrow, sIndex(ic, ivel)) += funct_s_m_dyad_(ic, ir) * stabfac_avg_scaled;
+              c_umus_(mrow, sIndex(ic, ivel)) += funct_s_m_dyad_(ic, ir) * stabfac_avg_scaled;
             }
           }
 
@@ -3151,13 +3151,13 @@ namespace DRT
 
             for (unsigned ic = 0; ic < nen_; ++ic)
             {
-              C_usum_(srow, mIndex(ic, ivel)) -= funct_s_m_dyad_(ir, ic) * stabfac_avg_scaled;
+              c_usum_(srow, mIndex(ic, ivel)) -= funct_s_m_dyad_(ir, ic) * stabfac_avg_scaled;
             }
 
             //-[rho * (beta * n^b)] (0.5*ve,ue)
             for (unsigned ic = 0; ic < slave_nen_; ++ic)
             {
-              C_usus_(srow, sIndex(ic, ivel)) += funct_s_s_dyad_(ir, ic) * stabfac_avg_scaled;
+              c_usus_(srow, sIndex(ic, ivel)) += funct_s_s_dyad_(ir, ic) * stabfac_avg_scaled;
             }
           }
         }

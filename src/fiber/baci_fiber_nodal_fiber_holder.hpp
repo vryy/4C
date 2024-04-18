@@ -171,13 +171,13 @@ namespace DRT
           const DRT::FIBER::NodalFiberHolder& holder1, const DRT::FIBER::NodalFiberHolder& holder2)
       {
         return holder1.fibers_ == holder2.fibers_ && holder1.angles_ == holder2.angles_ &&
-               holder1.coordinateSystemDirections_ == holder2.coordinateSystemDirections_;
+               holder1.coordinate_system_directions_ == holder2.coordinate_system_directions_;
       }
 
      private:
       /// Map holding GP coordinate system directions
       std::map<CoordinateSystemDirection, std::vector<CORE::LINALG::Matrix<3, 1>>>
-          coordinateSystemDirections_;
+          coordinate_system_directions_;
 
       /// List of numbered fibers
       std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>> fibers_;

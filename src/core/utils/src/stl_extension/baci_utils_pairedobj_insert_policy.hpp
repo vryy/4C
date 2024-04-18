@@ -139,7 +139,7 @@ namespace CORE::GEN
 
     void setDebugMode(bool isdebug)
     {
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_ENABLE_ASSERTIONS)
+#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
       _isdebug = isdebug;
 #else
       std::stringstream msg;
@@ -303,7 +303,7 @@ namespace CORE::GEN
      *  @author hiermeier @date 11/17 */
     T& repetitive_access(const Key k, const int rep_count, pairedvector_type& data, size_t& entries)
     {
-#if defined(FOUR_C_ENABLE_ASSERTIONS) || defined(DEBUG_INSERT_POLICY)
+#if defined(BACI_DEBUG) || defined(DEBUG_INSERT_POLICY)
       if (rep_count < -1)
         FOUR_C_THROW(
             "The repetition counter is not allowed to "
@@ -318,26 +318,26 @@ namespace CORE::GEN
         }
         case 0:
         {
-#if defined(FOUR_C_ENABLE_ASSERTIONS) || defined(DEBUG_INSERT_POLICY)
-          if (_prev_repcount != -1 and _prev_repcount != rep_count and !_isfilled)
+#if defined(BACI_DEBUG) || defined(DEBUG_INSERT_POLICY)
+          if (prev_repcount_ != -1 and prev_repcount_ != rep_count and !isfilled_)
             FOUR_C_THROW(
                 "At the end of each repetition Complete "
                 "must be called!");
 #endif
           init_id_map();
-          _isfilled = false;
+          isfilled_ = false;
           return first_access(k, data, entries);
         }
         default:
         {
-#if defined(FOUR_C_ENABLE_ASSERTIONS) || defined(DEBUG_INSERT_POLICY)
-          if (_prev_repcount != rep_count and !_isfilled)
+#if defined(BACI_DEBUG) || defined(DEBUG_INSERT_POLICY)
+          if (prev_repcount_ != rep_count and !isfilled_)
             FOUR_C_THROW(
                 "At the end of each repetition Complete "
                 "must be called!");
 #endif
-          _isfilled = false;
-          _prev_repcount = rep_count;
+          isfilled_ = false;
+          prev_repcount_ = rep_count;
           return subsequent_access(k, data, entries);
         }
       }
@@ -345,27 +345,27 @@ namespace CORE::GEN
 
     size_t complete(pairedvector_type& unique_vec, const size_t unique_entries)
     {
-      if (_isfilled) return unique_entries;
+      if (isfilled_) return unique_entries;
 
       // These things must be done only once after the first complete call,
       // i.e. repetition counter equal to zero.
-      if (_prev_repcount == 0)
+      if (prev_repcount_ == 0)
       {
-        _id_map_size = _id_map.size();
-        if (_id_index != _id_map_size)
+        id_map_size_ = id_map_.size();
+        if (id_index_ != id_map_size_)
         {
           std::stringstream msg;
-          msg << "Size (== " << _id_map.size() << " ) <--> count (== " << _id_index
+          msg << "Size (== " << id_map_.size() << " ) <--> count (== " << id_index_
               << " ) mismatch!\n";
           FOUR_C_THROW(msg.str());
         }
       }
 
-      _isfilled = true;
+      isfilled_ = true;
       // reset id-index after each single complete call
-      _id_index = 0;
+      id_index_ = 0;
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_ENABLE_ASSERTIONS)
+#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "\nCOMPLETE\n";
@@ -379,12 +379,12 @@ namespace CORE::GEN
     {
       base_type::clone(source);
 
-      _id_map = source._id_map;
-      _id_map_size = source._id_map_size;
-      _id_index = source._id_index;
+      id_map_ = source.id_map_;
+      id_map_size_ = source.id_map_size_;
+      id_index_ = source.id_index_;
 
-      _prev_repcount = source._prev_repcount;
-      _isfilled = source._isfilled;
+      prev_repcount_ = source.prev_repcount_;
+      isfilled_ = source.isfilled_;
     }
 
    private:
@@ -399,13 +399,13 @@ namespace CORE::GEN
       // nothing to do, if it is a successive access in the first repetition
       // Note: The _isfilled check guarantees that the maps are cleared, even if
       // only one GP had been considered in the previous attempt.
-      if (_prev_repcount == 0 and not _isfilled) return;
+      if (prev_repcount_ == 0 and not isfilled_) return;
 
-      _id_map.clear();
-      _id_map.reserve(_id_map_size);
-      _prev_repcount = 0;
+      id_map_.clear();
+      id_map_.reserve(id_map_size_);
+      prev_repcount_ = 0;
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_ENABLE_ASSERTIONS)
+#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
       if (this->_isdebug)
       {
         std::cout << __FUNCTION__ << std::endl;
@@ -420,8 +420,8 @@ namespace CORE::GEN
 
       // By using push_back we follow the std::vector policy if the set
       // capacity is exceeded. See previous reserve call in init_id_map().
-      _id_map.push_back(it - data.begin());
-      ++_id_index;
+      id_map_.push_back(it - data.begin());
+      ++id_index_;
 
       if (it == last)
       {
@@ -431,13 +431,13 @@ namespace CORE::GEN
         ++entries;
       }
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_ENABLE_ASSERTIONS)
+#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
       if (this->_isdebug)
       {
-        std::cout << "repetition count  = " << _prev_repcount << "\n";
-        std::cout << "_id_map index     = " << _id_index << "\n";
-        std::cout << "data id           = " << _id_map.back() << "\n";
-        std::cout << "size of _id_map   = " << _id_map.size() << "\n";
+        std::cout << "repetition count  = " << prev_repcount_ << "\n";
+        std::cout << "_id_map index     = " << id_index_ << "\n";
+        std::cout << "data id           = " << id_map_.back() << "\n";
+        std::cout << "size of _id_map   = " << id_map_.size() << "\n";
         std::cout << "key               = " << k << "\n\n";
       }
 #endif
@@ -448,11 +448,11 @@ namespace CORE::GEN
     T& subsequent_access(const Key k, pairedvector_type& data, size_t& entries)
     {
       pair_type& curr_pair = data[get_id()];
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_ENABLE_ASSERTIONS)
+#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
       if (this->_isdebug)
       {
-        std::cout << "index #" << _id_index << std::endl;
-        std::cout << "repetition count = " << _prev_repcount << "\n";
+        std::cout << "index #" << id_index_ << std::endl;
+        std::cout << "repetition count = " << prev_repcount_ << "\n";
         std::cout << "stored key       = " << curr_pair.first << "\n";
         std::cout << "received key     = " << k << "\n\n";
       }
@@ -469,15 +469,15 @@ namespace CORE::GEN
       return curr_pair.second;
     }
 
-    size_t get_id() { return _id_map[_id_index++]; }
+    size_t get_id() { return id_map_[id_index_++]; }
 
    private:
-    std::vector<size_t> _id_map;
-    size_t _id_map_size = 512;
-    size_t _id_index = 0;
+    std::vector<size_t> id_map_;
+    size_t id_map_size_ = 512;
+    size_t id_index_ = 0;
 
-    int _prev_repcount = -1;
-    bool _isfilled = false;
+    int prev_repcount_ = -1;
+    bool isfilled_ = false;
   };
 
   /*--------------------------------------------------------------------------*/
@@ -495,11 +495,11 @@ namespace CORE::GEN
 
    public:
     InsertAndSortPolicy()
-        : _non_unique_vec(0),
-          _non_unique_entries(0),
-          _dyn_max_allowed_capacity(CONST_MAX_ALLOWED_CAPACITY),
-          _isfilled(true),
-          _max_value(0.0){};
+        : non_unique_vec_(0),
+          non_unique_entries_(0),
+          dyn_max_allowed_capacity_(CONST_MAX_ALLOWED_CAPACITY),
+          isfilled_(true),
+          max_value_(0.0){};
 
     iterator begin(const iterator& first)
     {
@@ -575,20 +575,20 @@ namespace CORE::GEN
      *  @author hiermeier @date 07/17 */
     T& operator()(const Key k, pairedvector_type& data, size_t& entries)
     {
-      if (_non_unique_entries == _dyn_max_allowed_capacity and
+      if (non_unique_entries_ == dyn_max_allowed_capacity_ and
           (not setDynamicMaxAllowedCapacity(2 * entries)))
       {
         entries = midComplete(data, entries);
       }
 
-      if (_isfilled)
+      if (isfilled_)
       {
-        _isfilled = false;
+        isfilled_ = false;
         initCapacity();
-        ++_non_unique_entries;
+        ++non_unique_entries_;
       }
 
-      pair_type* pair_ptr = _non_unique_vec.data() + currentId();
+      pair_type* pair_ptr = non_unique_vec_.data() + currentId();
 
       setMaxValue(pair_ptr->second);
 
@@ -597,19 +597,19 @@ namespace CORE::GEN
       if (std::abs(pair_ptr->second) > getRelativeMachinePrecision())
       {
         increaseCapacity();
-        ++_non_unique_entries;
-        pair_ptr = _non_unique_vec.data() + currentId();
+        ++non_unique_entries_;
+        pair_ptr = non_unique_vec_.data() + currentId();
       }
 
       pair_ptr->first = k;
       return pair_ptr->second;
     }
 
-    inline bool isFilled() const { return _isfilled; }
+    inline bool isFilled() const { return isfilled_; }
 
     size_t complete(pairedvector_type& unique_vec, const size_t unique_entries)
     {
-      if (_isfilled) return unique_entries;
+      if (isfilled_) return unique_entries;
 
       const size_t new_unique_entries = groupAndMerge(unique_vec, unique_entries);
 
@@ -622,23 +622,23 @@ namespace CORE::GEN
     {
       base_type::swap(x);
 
-      const bool my_isfilled = _isfilled;
-      _isfilled = x._isfilled;
-      x._isfilled = my_isfilled;
+      const bool my_isfilled = isfilled_;
+      isfilled_ = x.isfilled_;
+      x.isfilled_ = my_isfilled;
 
-      const size_t my_non_unique_entries = _non_unique_entries;
-      _non_unique_entries = x._non_unique_entries;
-      x._non_unique_entries = my_non_unique_entries;
+      const size_t my_non_unique_entries = non_unique_entries_;
+      non_unique_entries_ = x.non_unique_entries_;
+      x.non_unique_entries_ = my_non_unique_entries;
 
-      const size_t my_dyn_max_allowed_capacity = _dyn_max_allowed_capacity;
-      _dyn_max_allowed_capacity = x._dyn_max_allowed_capacity;
-      x._dyn_max_allowed_capacity = my_dyn_max_allowed_capacity;
+      const size_t my_dyn_max_allowed_capacity = dyn_max_allowed_capacity_;
+      dyn_max_allowed_capacity_ = x.dyn_max_allowed_capacity_;
+      x.dyn_max_allowed_capacity_ = my_dyn_max_allowed_capacity;
 
-      const double my_max_value = _max_value;
-      _max_value = x._max_value;
-      x._max_value = my_max_value;
+      const double my_max_value = max_value_;
+      max_value_ = x.max_value_;
+      x.max_value_ = my_max_value;
 
-      _non_unique_vec.swap(x._non_unique_vec);
+      non_unique_vec_.swap(x.non_unique_vec_);
     }
 
     void clone(const class_type& source) { throwIfNotFilled(__LINE__, __FUNCTION__); }
@@ -661,7 +661,7 @@ namespace CORE::GEN
      *  @author hiermeier @data 07/17 */
     size_t midComplete(pairedvector_type& unique_vec, const size_t unique_entries)
     {
-      if (_isfilled) return unique_entries;
+      if (isfilled_) return unique_entries;
 
       const size_t new_unique_entries = groupAndMerge(unique_vec, unique_entries);
 
@@ -679,7 +679,7 @@ namespace CORE::GEN
      *  @author hiermeier @date 07/17 */
     inline void throwIfNotFilled(int linenumber, const std::string& functname) const
     {
-      if (not _isfilled)
+      if (not isfilled_)
       {
         std::stringstream msg;
         msg << "LINE " << linenumber << " in " << functname
@@ -703,43 +703,43 @@ namespace CORE::GEN
     {
       // get total number of entries and merge all entries temporal in the
       // _non_unique_vec member
-      const size_t merged_entries = unique_entries + _non_unique_entries;
-      if (_non_unique_vec.size() < merged_entries + 1)
-        _non_unique_vec.resize(merged_entries + 1, pair_type());
+      const size_t merged_entries = unique_entries + non_unique_entries_;
+      if (non_unique_vec_.size() < merged_entries + 1)
+        non_unique_vec_.resize(merged_entries + 1, pair_type());
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_ENABLE_ASSERTIONS)
+#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "unique_vec:\n";
         print(unique_vec);
         std::cout << "_non_unique_vec:\n";
-        print(_non_unique_vec);
+        print(non_unique_vec_);
       }
 #endif
 
       std::copy(unique_vec.begin(), unique_vec.begin() + unique_entries,
-          _non_unique_vec.begin() + _non_unique_entries);
+          non_unique_vec_.begin() + non_unique_entries_);
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_ENABLE_ASSERTIONS)
+#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "merged _non_unique_vec + unique_vec:\n";
-        print(_non_unique_vec);
+        print(non_unique_vec_);
       }
 #endif
 
       // group the entries
-      const size_t num_grps = groupData(_non_unique_vec.begin(), merged_entries);
+      const size_t num_grps = groupData(non_unique_vec_.begin(), merged_entries);
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_ENABLE_ASSERTIONS)
+#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "sorted merged _non_unique_vec + unique_vec:\n";
-        print(_non_unique_vec);
+        print(non_unique_vec_);
       }
 #endif
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_ENABLE_ASSERTIONS)
+#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "number of groups = " << num_grps << "\n";
@@ -750,7 +750,7 @@ namespace CORE::GEN
 
       // copy and merge all non-unique entries into one unique vector
       const typename pairedvector_type::iterator last_result = mergeGroupData(
-          _non_unique_vec.begin(), _non_unique_vec.begin() + merged_entries, unique_vec.begin());
+          non_unique_vec_.begin(), non_unique_vec_.begin() + merged_entries, unique_vec.begin());
 
       const size_t corrected_length = static_cast<size_t>(last_result - unique_vec.begin());
 
@@ -758,7 +758,7 @@ namespace CORE::GEN
       if (corrected_length < unique_entries)
         std::fill(last_result, unique_vec.begin() + unique_entries, pair_type());
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_ENABLE_ASSERTIONS)
+#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "corrected num_unique = " << corrected_length << "\n";
@@ -782,12 +782,12 @@ namespace CORE::GEN
     void midPostComplete()
     {
       std::fill(
-          _non_unique_vec.begin(), _non_unique_vec.begin() + _non_unique_entries, pair_type());
+          non_unique_vec_.begin(), non_unique_vec_.begin() + non_unique_entries_, pair_type());
 
-      if (_max_capacity < _non_unique_entries) _max_capacity = _non_unique_entries;
+      if (_max_capacity < non_unique_entries_) _max_capacity = non_unique_entries_;
 
-      _non_unique_entries = 0;
-      _isfilled = true;
+      non_unique_entries_ = 0;
+      isfilled_ = true;
     }
 
     /** @brief reset all class members at the end of a final externally
@@ -799,14 +799,14 @@ namespace CORE::GEN
      *  @author hiermeier @date 07/17 */
     void finalPostComplete()
     {
-      _non_unique_vec.clear();
+      non_unique_vec_.clear();
 
-      if (_max_capacity < _non_unique_entries) _max_capacity = _non_unique_entries;
+      if (_max_capacity < non_unique_entries_) _max_capacity = non_unique_entries_;
 
-      _dyn_max_allowed_capacity = CONST_MAX_ALLOWED_CAPACITY;
-      _max_value = 0.0;
-      _non_unique_entries = 0;
-      _isfilled = true;
+      dyn_max_allowed_capacity_ = CONST_MAX_ALLOWED_CAPACITY;
+      max_value_ = 0.0;
+      non_unique_entries_ = 0;
+      isfilled_ = true;
     }
 
     /** @brief Group data into clusters with same KEY values
@@ -930,7 +930,7 @@ namespace CORE::GEN
     }
 
     /// Return the local id of the last element
-    inline size_t currentId() const { return (_non_unique_entries - 1); }
+    inline size_t currentId() const { return (non_unique_entries_ - 1); }
 
     /** @brief Set a new maximal allowed capacity of the non-unique vector
      *
@@ -943,9 +943,9 @@ namespace CORE::GEN
      *  @author hiermeier @date 07/17 */
     bool setDynamicMaxAllowedCapacity(const size_t dyn_bound)
     {
-      if (dyn_bound > _dyn_max_allowed_capacity)
+      if (dyn_bound > dyn_max_allowed_capacity_)
       {
-        _dyn_max_allowed_capacity = dyn_bound;
+        dyn_max_allowed_capacity_ = dyn_bound;
         return true;
       }
       return false;
@@ -960,7 +960,7 @@ namespace CORE::GEN
     void setMaxValue(const double curr_val)
     {
       const double abs_curr_val = std::abs(curr_val);
-      if (abs_curr_val > _max_value) _max_value = abs_curr_val;
+      if (abs_curr_val > max_value_) max_value_ = abs_curr_val;
     }
 
     /** @brief Get the relative machine precision
@@ -969,19 +969,19 @@ namespace CORE::GEN
      *  interval. See setMaxValue for more information.
      *
      *  @author hiermeier @date 07/17 */
-    inline double getRelativeMachinePrecision() const { return _max_value * MACHINE_PRECISION; }
+    inline double getRelativeMachinePrecision() const { return max_value_ * MACHINE_PRECISION; }
 
     inline void initCapacity()
     {
-      _non_unique_vec.resize(std::max(1, static_cast<int>(_max_capacity)), pair_type());
+      non_unique_vec_.resize(std::max(1, static_cast<int>(_max_capacity)), pair_type());
     }
 
     void increaseCapacity()
     {
-      const size_t curr_length = _non_unique_vec.size();
-      if (_non_unique_entries < curr_length) return;
+      const size_t curr_length = non_unique_vec_.size();
+      if (non_unique_entries_ < curr_length) return;
 
-      _non_unique_vec.resize(2 * curr_length, pair_type());
+      non_unique_vec_.resize(2 * curr_length, pair_type());
     }
 
     void print(const pairedvector_type& pvec, std::ostream& os = std::cout) const
@@ -1002,13 +1002,13 @@ namespace CORE::GEN
    private:
     /** temporal allocated vector containing the unsorted and therefore
      *  non-unique entries */
-    pairedvector_type _non_unique_vec;
+    pairedvector_type non_unique_vec_;
 
     /** @brief number of the inserted non-unique entries
      *
      *  Note that this number is in general not equal to the size of the
      *  _non_unique_vec, since memory is pre-allocated. */
-    size_t _non_unique_entries;
+    size_t non_unique_entries_;
 
     /** maximal necessary capacity for all paired-vector objects of the same
      *  types */
@@ -1026,10 +1026,10 @@ namespace CORE::GEN
      *  bound must be increased to stay meaningful.
      *
      *  See the method %setDynamicMaxAllowedCapacity() for more information. */
-    size_t _dyn_max_allowed_capacity;
+    size_t dyn_max_allowed_capacity_;
 
-    bool _isfilled;
-    double _max_value;
+    bool isfilled_;
+    double max_value_;
   };
 }  // namespace CORE::GEN
 

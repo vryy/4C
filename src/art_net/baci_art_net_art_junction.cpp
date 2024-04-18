@@ -264,17 +264,17 @@ int ART::UTILS::ArtJunctionWrapper::Solve(Teuchos::ParameterList &params)
 ART::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdis,
     IO::DiscretizationWriter &output, std::vector<DRT::Condition *> conds,
     std::vector<int> IOart_flag, double dta, int condid, int numcond)
-    : condid_(condid), discret_(actdis), output_(output), IOart_flag_(IOart_flag)
+    : condid_(condid), discret_(actdis), output_(output), io_art_flag_(IOart_flag)
 {
   //----------------------------------------------------------------------
   // Check whether all the nodes have simillar flow direction
   // i.e. whether they all are inlets or all are outlets for the junctions
   //----------------------------------------------------------------------
-  int IOartFlag = IOart_flag_[0];
+  int IOartFlag = io_art_flag_[0];
   bool IOartFlags_are_fine = false;
-  for (unsigned int i = 1; i < IOart_flag_.size(); i++)
+  for (unsigned int i = 1; i < io_art_flag_.size(); i++)
   {
-    if (IOart_flag_[i] != IOartFlag)
+    if (io_art_flag_[i] != IOartFlag)
     {
       IOartFlags_are_fine = true;
       break;
@@ -296,7 +296,7 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdi
   // nodes must have 2*N degrees of freedom to be solved, which in turn
   // is the size of the nonlinear problem
   //----------------------------------------------------------------------
-  ProbSize_ = 2 * IOart_flag_.size();
+  prob_size_ = 2 * io_art_flag_.size();
 
   //----------------------------------------------------------------------
   // Extracting the nodes to whome the junction is connected
@@ -407,21 +407,21 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
   // Define the matricese and the vectors that are needed to solve the
   // nonlinear problem at the junction
   //----------------------------------------------------------------------
-  CORE::LINALG::SerialDenseMatrix Jacobian(ProbSize_, ProbSize_);
-  CORE::LINALG::SerialDenseVector f(ProbSize_);
-  CORE::LINALG::SerialDenseVector x(ProbSize_);
-  CORE::LINALG::SerialDenseVector dx(ProbSize_);
+  CORE::LINALG::SerialDenseMatrix Jacobian(prob_size_, prob_size_);
+  CORE::LINALG::SerialDenseVector f(prob_size_);
+  CORE::LINALG::SerialDenseVector x(prob_size_);
+  CORE::LINALG::SerialDenseVector dx(prob_size_);
 
   //----------------------------------------------------------------------
   // Read the element information at the node of the bifurcation
   //----------------------------------------------------------------------
-  std::vector<double> A(ProbSize_ / 2, 0.0);
-  std::vector<double> Q(ProbSize_ / 2, 0.0);
-  std::vector<double> W(ProbSize_ / 2, 0.0);
-  std::vector<double> Ao(ProbSize_ / 2, 0.0);
-  std::vector<double> rho(ProbSize_ / 2, 0.0);
-  std::vector<double> beta(ProbSize_ / 2, 0.0);
-  std::vector<double> Pext(ProbSize_ / 2, 0.0);
+  std::vector<double> A(prob_size_ / 2, 0.0);
+  std::vector<double> Q(prob_size_ / 2, 0.0);
+  std::vector<double> W(prob_size_ / 2, 0.0);
+  std::vector<double> Ao(prob_size_ / 2, 0.0);
+  std::vector<double> rho(prob_size_ / 2, 0.0);
+  std::vector<double> beta(prob_size_ / 2, 0.0);
+  std::vector<double> Pext(prob_size_ / 2, 0.0);
 
   // get the map having the junction nodal information from the elements
   Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams>>> nodalMap =
@@ -544,21 +544,21 @@ void ART::UTILS::ArtJunctionBc::Jacobian_Eval(CORE::LINALG::SerialDenseMatrix &J
     std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext)
 {
   // empty the Jacobian
-  Jacobian = CORE::LINALG::SerialDenseMatrix(ProbSize_, ProbSize_);
+  Jacobian = CORE::LINALG::SerialDenseMatrix(prob_size_, prob_size_);
 
   // fill the entities that have to do with forward charachteristic speeds
   for (unsigned int i = 0; i < nodes_.size(); i++)
   {
     Jacobian(i, i) = 1.0;
     Jacobian(i, i + nodes_.size()) =
-        double(IOart_flag_[i]) * sqrt(beta[i] / (2.0 * Ao[i] * rho[i])) / pow(A[i], 0.75);
+        double(io_art_flag_[i]) * sqrt(beta[i] / (2.0 * Ao[i] * rho[i])) / pow(A[i], 0.75);
   }
 
   // fill the entities that have to do with the mass conservation
   for (unsigned int i = 0; i < nodes_.size(); i++)
   {
-    Jacobian(nodes_.size(), i) = double(IOart_flag_[i]) * A[i];
-    Jacobian(nodes_.size(), i + nodes_.size()) = double(IOart_flag_[i]) * Q[i] / A[i];
+    Jacobian(nodes_.size(), i) = double(io_art_flag_[i]) * A[i];
+    Jacobian(nodes_.size(), i + nodes_.size()) = double(io_art_flag_[i]) * Q[i] / A[i];
   }
 
   // fill the entities that have to do with the pressure conservation
@@ -593,7 +593,7 @@ void ART::UTILS::ArtJunctionBc::Residual_Eval(CORE::LINALG::SerialDenseVector &f
   for (unsigned int i = 0; i < nodes_.size(); i++)
   {
     f[i] = Q[i] / A[i] +
-           double(IOart_flag_[i]) * 4.0 * sqrt(beta[i] / (2.0 * Ao[i] * rho[i]) * sqrt(A[i])) -
+           double(io_art_flag_[i]) * 4.0 * sqrt(beta[i] / (2.0 * Ao[i] * rho[i]) * sqrt(A[i])) -
            W[i];
   }
 
@@ -601,7 +601,7 @@ void ART::UTILS::ArtJunctionBc::Residual_Eval(CORE::LINALG::SerialDenseVector &f
   f[nodes_.size()] = 0.0;
   for (unsigned int i = 0; i < nodes_.size(); i++)
   {
-    f[nodes_.size()] += double(IOart_flag_[i]) * Q[i];
+    f[nodes_.size()] += double(io_art_flag_[i]) * Q[i];
   }
 
   // fill the entities that have to do with the pressure conservation

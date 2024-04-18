@@ -65,7 +65,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<VectorType> b_;
 
     //! system of equations
-    Teuchos::RCP<MatrixType> A_;
+    Teuchos::RCP<MatrixType> a_;
 
     //! an abstract amesos solver that can be any of the amesos concrete implementations
     Teuchos::RCP<Amesos_BaseSolver> amesos_;

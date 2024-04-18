@@ -51,7 +51,7 @@ CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Beam3tosoli
       shiftnodalvalues_(false),
       xi1_(0.0),
       xi2_(0.0),
-      gmshDebugPoints_()
+      gmsh_debug_points_()
 {
   for (int i = 0; i < 3 * numnodes * numnodalvalues; i++) ele1pos_(i) = 0.0;
 

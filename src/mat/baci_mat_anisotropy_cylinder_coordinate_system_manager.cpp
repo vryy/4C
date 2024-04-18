@@ -26,7 +26,7 @@ void MAT::CylinderCoordinateSystemManager::Pack(CORE::COMM::PackBuffer& data) co
   CORE::COMM::ParObject::AddtoPack(data, radial_);
   CORE::COMM::ParObject::AddtoPack(data, axial_);
   CORE::COMM::ParObject::AddtoPack(data, circumferential_);
-  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(isDefined_));
+  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(is_defined_));
 }
 
 void MAT::CylinderCoordinateSystemManager::Unpack(
@@ -35,7 +35,7 @@ void MAT::CylinderCoordinateSystemManager::Unpack(
   CORE::COMM::ParObject::ExtractfromPack(position, data, radial_);
   CORE::COMM::ParObject::ExtractfromPack(position, data, axial_);
   CORE::COMM::ParObject::ExtractfromPack(position, data, circumferential_);
-  isDefined_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
+  is_defined_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
 }
 
 void MAT::CylinderCoordinateSystemManager::ReadFromElementLineDefinition(
@@ -46,7 +46,7 @@ void MAT::CylinderCoordinateSystemManager::ReadFromElementLineDefinition(
     ReadAnisotropyFiber(linedef, "RAD", radial_);
     ReadAnisotropyFiber(linedef, "AXI", axial_);
     ReadAnisotropyFiber(linedef, "CIR", circumferential_);
-    isDefined_ = true;
+    is_defined_ = true;
   }
 }
 
@@ -64,12 +64,12 @@ void MAT::CylinderCoordinateSystemManager::EvaluateLocalCoordinateSystem(
 const MAT::CylinderCoordinateSystemManager& MAT::Anisotropy::GetElementCylinderCoordinateSystem()
     const
 {
-  return elementCylinderCoordinateSystemManager_.value();
+  return element_cylinder_coordinate_system_manager_.value();
 }
 
 const MAT::CylinderCoordinateSystemManager& MAT::Anisotropy::GetGPCylinderCoordinateSystem(
     const int gp) const
 {
-  return gpCylinderCoordinateSystemManagers_[gp];
+  return gp_cylinder_coordinate_system_managers_[gp];
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -47,7 +47,7 @@ std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReference
     {
       return RefPlaneEqn;
     }
-    refPtsGmsh_.clear();
+    ref_pts_gmsh_.clear();
 
     //---
     // Second estimate -- Compute reference plane based on the diagonal information
@@ -57,7 +57,7 @@ std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReference
     {
       return RefPlaneEqn;
     }
-    refPtsGmsh_.clear();
+    ref_pts_gmsh_.clear();
 
     //---
     // Third estimate -- Compute reference plane based on Side information
@@ -178,7 +178,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef(
       {
         xnormal = xn;
         RefPlaneEqn = RefPlaneTemp;
-        refPtsGmsh_ = ptl;
+        ref_pts_gmsh_ = ptl;
         found_refplane = true;
       }
     }
@@ -245,7 +245,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::FacetBasedRef(
       {
         xnormal = xn;
         RefPlaneEqn = RefPlaneTemp;
-        refPtsGmsh_ = it->second.second;
+        ref_pts_gmsh_ = it->second.second;
         found_refplane = true;
       }
     }
@@ -338,7 +338,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
       {
         xnormal = xn;
         RefPlaneEqn = RefPlaneTemp;
-        refPtsGmsh_ = it->second.second;
+        ref_pts_gmsh_ = it->second.second;
         found_refplane = true;
       }
     }

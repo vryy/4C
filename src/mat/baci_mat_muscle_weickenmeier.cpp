@@ -113,9 +113,9 @@ CORE::COMM::ParObject* MAT::MuscleWeickenmeierType::Create(const std::vector<cha
 
 MAT::MuscleWeickenmeier::MuscleWeickenmeier()
     : params_(nullptr),
-      lambdaMOld_(1.0),
+      lambda_m_old_(1.0),
       anisotropy_(),
-      anisotropyExtension_(true, 0.0, 0,
+      anisotropy_extension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0})
@@ -124,22 +124,22 @@ MAT::MuscleWeickenmeier::MuscleWeickenmeier()
 
 MAT::MuscleWeickenmeier::MuscleWeickenmeier(MAT::PAR::MuscleWeickenmeier* params)
     : params_(params),
-      lambdaMOld_(1.0),
+      lambda_m_old_(1.0),
       anisotropy_(),
-      anisotropyExtension_(true, 0.0, 0,
+      anisotropy_extension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
   // initialize lambdaMOld_
-  lambdaMOld_ = 1.0;
+  lambda_m_old_ = 1.0;
 
   // register anisotropy extension to global anisotropy
-  anisotropy_.RegisterAnisotropyExtension(anisotropyExtension_);
+  anisotropy_.RegisterAnisotropyExtension(anisotropy_extension_);
 
   // initialize fiber directions and structural tensor
-  anisotropyExtension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-                                             MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+  anisotropy_extension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
+                                              MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
 void MAT::MuscleWeickenmeier::Pack(CORE::COMM::PackBuffer& data) const
@@ -156,9 +156,9 @@ void MAT::MuscleWeickenmeier::Pack(CORE::COMM::PackBuffer& data) const
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
-  AddtoPack(data, lambdaMOld_);
+  AddtoPack(data, lambda_m_old_);
 
-  anisotropyExtension_.PackAnisotropy(data);
+  anisotropy_extension_.PackAnisotropy(data);
 }
 
 void MAT::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
@@ -189,9 +189,9 @@ void MAT::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
     }
   }
 
-  ExtractfromPack(position, data, lambdaMOld_);
+  ExtractfromPack(position, data, lambda_m_old_);
 
-  anisotropyExtension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.UnpackAnisotropy(data, position);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
@@ -213,10 +213,10 @@ void MAT::MuscleWeickenmeier::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, i
   C.MultiplyTN(defgrd, defgrd);
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  const CORE::LINALG::Matrix<3, 3>& M = anisotropyExtension_.GetStructuralTensor(gp, 0);
+  const CORE::LINALG::Matrix<3, 3>& M = anisotropy_extension_.GetStructuralTensor(gp, 0);
 
   // save the current fibre stretch in lambdaMOld_
-  lambdaMOld_ = MAT::UTILS::MUSCLE::FiberStretch(C, M);
+  lambda_m_old_ = MAT::UTILS::MUSCLE::FiberStretch(C, M);
 }
 
 void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
@@ -248,7 +248,7 @@ void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  CORE::LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
+  CORE::LINALG::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
   CORE::LINALG::Matrix<6, 1> Mv(false);                  // Voigt notation
   CORE::LINALG::VOIGT::Stresses::MatrixToVector(M, Mv);  // Mv
 
@@ -363,7 +363,7 @@ void MAT::MuscleWeickenmeier::EvaluateActiveNominalStress(
 
   // approximate first time derivative of lambdaM through BW Euler
   // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt
-  double dotLambdaM = (lambdaM - lambdaMOld_) / timestep;
+  double dotLambdaM = (lambdaM - lambda_m_old_) / timestep;
 
   // approximate second time derivative of lambdaM through BW Euler
   // dDotLambdaMdLambdaM = 1/dt approximated through BW Euler

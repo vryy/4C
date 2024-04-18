@@ -33,7 +33,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::DirectDivergence::VCIntegrat
   std::vector<plain_facet_set::const_iterator>
       facetIterator;  // iterators of facets which need to be considered for integration rule
   plain_facet_set::const_iterator IteratorRefFacet;  // iterator for the reference facet
-  isRef_ = false;                                    // whether ref plane is falling on facet?
+  is_ref_ = false;                                   // whether ref plane is falling on facet?
 
   // get integration facets and reference plane
   Teuchos::RCP<BoundingBox> fbox = Teuchos::rcp(BoundingBox::Create());
@@ -52,9 +52,9 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::DirectDivergence::VCIntegrat
   const double totalVolume = (fvolume(0, 1) - fvolume(0, 0)) * (fvolume(1, 1) - fvolume(1, 0)) *
                              (fvolume(2, 1) - fvolume(2, 0));
 
-  ListFacets(facetIterator, RefPlaneEqn, IteratorRefFacet, isRef_);
+  ListFacets(facetIterator, RefPlaneEqn, IteratorRefFacet, is_ref_);
 
-  if (isRef_) refFacet_ = *IteratorRefFacet;
+  if (is_ref_) ref_facet_ = *IteratorRefFacet;
 
   if (facetIterator.size() == 0)
   {
@@ -259,7 +259,7 @@ void CORE::GEO::CUT::DirectDivergence::ListFacets(
   // this plane, this line of projection must be completely within the background element
   DirectDivergenceGlobalRefplane ddg(elem1_, volcell_, mesh_.GetOptions());
   RefPlaneEqn = ddg.GetReferencePlane();
-  refPtsGmsh_ = ddg.GetReferencePointGmsh();
+  ref_pts_gmsh_ = ddg.GetReferencePointGmsh();
 #endif
 
   // if a1x+a2y+a3z=a4 is the equation of reference plane and
@@ -464,10 +464,10 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
   file << "Geometry.LineWidth=1.0;\n";
   file << "View \"Diagonal reference side \" {\n";
 
-  for (unsigned itp = 0; itp != refPtsGmsh_.size(); itp++)
+  for (unsigned itp = 0; itp != ref_pts_gmsh_.size(); itp++)
   {
-    Point* pt1 = refPtsGmsh_[itp];
-    Point* pt2 = refPtsGmsh_[(itp + 1) % refPtsGmsh_.size()];
+    Point* pt1 = ref_pts_gmsh_[itp];
+    Point* pt2 = ref_pts_gmsh_[(itp + 1) % ref_pts_gmsh_.size()];
     double co1[3], co2[3];
     pt1->Coordinates(co1);
     pt2->Coordinates(co2);

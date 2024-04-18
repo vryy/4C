@@ -337,7 +337,7 @@ namespace DRT
       \brief Get jacobiGP_ factor of first Gauss point for under-integration (constant over element
       length for linear Lagrange interpolation)
       */
-      const double& GetJacobi() const { return jacobiGPelastf_[0]; }
+      const double& GetJacobi() const { return jacobi_gp_elastf_[0]; }
 
       /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
        *
@@ -348,7 +348,7 @@ namespace DRT
       /*!
       \brief Get maximal bending curvature occurring in this element
       */
-      const double& GetKappaMax() const { return Kmax_; }
+      const double& GetKappaMax() const { return kmax_; }
 
       /** \brief Get material cross-section deformation measures, i.e. strain resultants
        *
@@ -359,13 +359,13 @@ namespace DRT
           std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
           std::vector<double>& curvature_3_GPs) const override
       {
-        axial_strain_GPs = axial_strain_GP_elastf_;
-        shear_strain_2_GPs = shear_strain_2_GP_elastf_;
-        shear_strain_3_GPs = shear_strain_3_GP_elastf_;
+        axial_strain_GPs = axial_strain_gp_elastf_;
+        shear_strain_2_GPs = shear_strain_2_gp_elastf_;
+        shear_strain_3_GPs = shear_strain_3_gp_elastf_;
 
-        twist_GPs = twist_GP_elastm_;
-        curvature_2_GPs = curvature_2_GP_elastm_;
-        curvature_3_GPs = curvature_3_GP_elastm_;
+        twist_GPs = twist_gp_elastm_;
+        curvature_2_GPs = curvature_2_gp_elastm_;
+        curvature_3_GPs = curvature_3_gp_elastm_;
       }
 
       /** \brief Get spatial cross-section stress resultants
@@ -393,9 +393,9 @@ namespace DRT
           std::vector<double>& spatial_shear_force_2_GPs,
           std::vector<double>& spatial_shear_force_3_GPs) const override
       {
-        spatial_axial_force_GPs = spatial_x_force_GP_elastf_;
-        spatial_shear_force_2_GPs = spatial_y_force_2_GP_elastf_;
-        spatial_shear_force_3_GPs = spatial_z_force_3_GP_elastf_;
+        spatial_axial_force_GPs = spatial_x_force_gp_elastf_;
+        spatial_shear_force_2_GPs = spatial_y_force_2_gp_elastf_;
+        spatial_shear_force_3_GPs = spatial_z_force_3_gp_elastf_;
       }
 
       /** \brief Get spatial cross-section stress resultants
@@ -406,9 +406,9 @@ namespace DRT
           std::vector<double>& spatial_bending_moment_2_GPs,
           std::vector<double>& spatial_bending_moment_3_GPs) const override
       {
-        spatial_torque_GPs = spatial_x_moment_GP_elastm_;
-        spatial_bending_moment_2_GPs = spatial_y_moment_2_GP_elastm_;
-        spatial_bending_moment_3_GPs = spatial_z_moment_3_GP_elastm_;
+        spatial_torque_GPs = spatial_x_moment_gp_elastm_;
+        spatial_bending_moment_2_GPs = spatial_y_moment_2_gp_elastm_;
+        spatial_bending_moment_3_GPs = spatial_z_moment_3_gp_elastm_;
       }
 
       /** \brief Get material cross-section stress resultants
@@ -421,13 +421,13 @@ namespace DRT
           std::vector<double>& material_bending_moment_2_GPs,
           std::vector<double>& material_bending_moment_3_GPs) const override
       {
-        material_axial_force_GPs = material_axial_force_GP_elastf_;
-        material_shear_force_2_GPs = material_shear_force_2_GP_elastf_;
-        material_shear_force_3_GPs = material_shear_force_3_GP_elastf_;
+        material_axial_force_GPs = material_axial_force_gp_elastf_;
+        material_shear_force_2_GPs = material_shear_force_2_gp_elastf_;
+        material_shear_force_3_GPs = material_shear_force_3_gp_elastf_;
 
-        material_torque_GPs = material_torque_GP_elastm_;
-        material_bending_moment_2_GPs = material_bending_moment_2_GP_elastm_;
-        material_bending_moment_3_GPs = material_bending_moment_3_GP_elastm_;
+        material_torque_GPs = material_torque_gp_elastm_;
+        material_bending_moment_2_GPs = material_bending_moment_2_gp_elastm_;
+        material_bending_moment_3_GPs = material_bending_moment_3_gp_elastm_;
       }
 
       /** \brief get access to the reference length
@@ -669,10 +669,10 @@ namespace DRT
           std::vector<double>& dofvec_centerline, bool add_reference_values = false) const override;
 
       //! get internal (elastic) energy of element
-      double GetInternalEnergy() const override { return Eint_; };
+      double GetInternalEnergy() const override { return eint_; };
 
       //! get kinetic energy of element
-      double GetKineticEnergy() const override { return Ekin_; };
+      double GetKineticEnergy() const override { return ekin_; };
 
      private:
       //! @name Internal calculation methods
@@ -1034,7 +1034,7 @@ namespace DRT
       CORE::LINALG::SerialDenseMatrix stiff_ptc_;
 
       //! bool storing whether automatic differentiation shall be used for this element evaluation
-      bool useFAD_;
+      bool use_fad_;
 
       //! variable saving whether element has already been initialized (then isinit_ == true)
       bool isinit_;
@@ -1047,158 +1047,158 @@ namespace DRT
       std::vector<CORE::LINALG::Matrix<3, 1>> theta0node_;
 
       //! vector holding current tangent at the centerline nodes Todo needed?
-      std::vector<CORE::LINALG::Matrix<3, 1>> Tcurrnode_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> tcurrnode_;
 
       //! initial material curvature at Gauss points for elasticity (corresponding to \Lambda_0^t
       //! \Labmda'_0 in eq. (3.5), Crisfield 1999
-      std::vector<CORE::LINALG::Matrix<3, 1>> KrefGP_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> kref_gp_;
 
       //! initial axial tension (always zero) and shear deformation at Gauss points for elasticity
       //! (corresponding to \Lambda_0^t rprime_0 - (1,0,0) )
-      std::vector<CORE::LINALG::Matrix<3, 1>> GammarefGP_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> gammaref_gp_;
 
 
       //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose
       //! res_elastic_force
-      std::vector<double> jacobiGPelastf_;
+      std::vector<double> jacobi_gp_elastf_;
 
       //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose
       //! res_elastic_moment
-      std::vector<double> jacobiGPelastm_;
+      std::vector<double> jacobi_gp_elastm_;
 
       //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose
       //! res_inertia
-      std::vector<double> jacobiGPmass_;
+      std::vector<double> jacobi_gp_mass_;
 
       //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose
       //! res_damp_stoch
-      std::vector<double> jacobiGPdampstoch_;
+      std::vector<double> jacobi_gp_dampstoch_;
 
       //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose
       //! neumann_lineload
-      std::vector<double> jacobiGPneumannline_;
+      std::vector<double> jacobi_gp_neumannline_;
 
 
       //  //! nodal triads in quaternion form at the end of the preceding time step
-      std::vector<CORE::LINALG::Matrix<4, 1>> Qconvnode_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> qconvnode_;
       //! nodal triads in quaternion during the current iteration step
-      std::vector<CORE::LINALG::Matrix<4, 1>> Qnewnode_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> qnewnode_;
 
       //************** begin: Class variables required for element-based Lie-group time integration
       //*******************************
       //! triads at Gauss points for exact integration in quaternion at the end of the preceding
       //! time step (required for computation of angular velocity)
-      std::vector<CORE::LINALG::Matrix<4, 1>> QconvGPmass_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> qconv_gp_mass_;
       //! current triads at Gauss points for exact integration in quaternion (required for
       //! computation of angular velocity)
-      std::vector<CORE::LINALG::Matrix<4, 1>> QnewGPmass_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> qnew_gp_mass_;
       //! spatial angular velocity vector at Gauss points for exact integration at the end of the
       //! preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> wconvGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> wconv_gp_mass_;
       //! current spatial angular velocity vector at Gauss points for exact integration (required
       //! for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> wnewGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> wnew_gp_mass_;
       //! spatial angular acceleration vector at Gauss points for exact integration at the end of
       //! the preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> aconvGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> aconv_gp_mass_;
       //! current spatial angular acceleration vector at Gauss points for exact integration
       //! (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> anewGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> anew_gp_mass_;
       //! modified spatial angular acceleration vector (according to gen-alpha time integration) at
       //! Gauss points for exact integration at the end of the preceding time step (required for
       //! computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> amodconvGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> amodconv_gp_mass_;
       //! current modified spatial angular acceleration vector (according to gen-alpha time
       //! integration) at Gauss points for exact integration (required for computation of inertia
       //! terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> amodnewGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> amodnew_gp_mass_;
       //! translational acceleration vector at Gauss points for exact integration at the end of the
       //! preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rttconvGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> rttconv_gp_mass_;
       //! current translational acceleration vector at Gauss points for exact integration (required
       //! for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rttnewGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> rttnew_gp_mass_;
       //! modified translational acceleration vector at Gauss points for exact integration at the
       //! end of the preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rttmodconvGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> rttmodconv_gp_mass_;
       //! modified current translational acceleration vector at Gauss points for exact integration
       //! (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rttmodnewGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> rttmodnew_gp_mass_;
       //! translational velocity vector at Gauss points for exact integration at the end of the
       //! preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rtconvGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> rtconv_gp_mass_;
       //! current translational velocity vector at Gauss points for exact integration (required for
       //! computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rtnewGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> rtnew_gp_mass_;
       //! translational displacement vector at Gauss points for exact integration at the end of the
       //! preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rconvGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> rconv_gp_mass_;
       //! current translational displacement vector at Gauss points for exact integration (required
       //! for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rnewGPmass_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> rnew_gp_mass_;
       //************** end: Class variables required for element-based Lie-group time integration
       //*******************************//
 
       //! triads at Gauss points for integration of damping/stochastic forces in quaternion form at
       //! the end of the preceding time step (required for computation of angular velocity)
-      std::vector<CORE::LINALG::Matrix<4, 1>> QconvGPdampstoch_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> qconv_gp_dampstoch_;
       //! current triads at Gauss points for integration of damping/stochastic forces in quaternion
       //! form (required for computation of angular velocity)
-      std::vector<CORE::LINALG::Matrix<4, 1>> QnewGPdampstoch_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> qnew_gp_dampstoch_;
 
       //!@name variables only needed/used for output purposes. Note: No need to pack and unpack
       //! @{
 
       //! internal (elastic) energy of element
-      double Eint_;
+      double eint_;
 
       //! kinetic energy of element
-      double Ekin_;
+      double ekin_;
 
       //! kinetic energy from rotational dofs part1
-      double Ekintorsion_;
+      double ekintorsion_;
 
       //! kinetic energy from rotational dofs part2
-      double Ekinbending_;
+      double ekinbending_;
 
       //! kinetic energy from translational dofs
-      double Ekintrans_;
+      double ekintrans_;
 
       //! angular momentum of the element
-      CORE::LINALG::Matrix<3, 1> L_;
+      CORE::LINALG::Matrix<3, 1> l_;
 
       //! linear momentum of the element
-      CORE::LINALG::Matrix<3, 1> P_;
+      CORE::LINALG::Matrix<3, 1> p_;
 
       //! norm of maximal bending curvature occurring in this element Todo obsolete?
-      double Kmax_;
+      double kmax_;
 
       //! strain resultant values at GPs
-      std::vector<double> axial_strain_GP_elastf_;
-      std::vector<double> shear_strain_2_GP_elastf_;
-      std::vector<double> shear_strain_3_GP_elastf_;
+      std::vector<double> axial_strain_gp_elastf_;
+      std::vector<double> shear_strain_2_gp_elastf_;
+      std::vector<double> shear_strain_3_gp_elastf_;
 
-      std::vector<double> twist_GP_elastm_;
-      std::vector<double> curvature_2_GP_elastm_;
-      std::vector<double> curvature_3_GP_elastm_;
+      std::vector<double> twist_gp_elastm_;
+      std::vector<double> curvature_2_gp_elastm_;
+      std::vector<double> curvature_3_gp_elastm_;
 
       //! material stress resultant values at GPs
-      std::vector<double> material_axial_force_GP_elastf_;
-      std::vector<double> material_shear_force_2_GP_elastf_;
-      std::vector<double> material_shear_force_3_GP_elastf_;
+      std::vector<double> material_axial_force_gp_elastf_;
+      std::vector<double> material_shear_force_2_gp_elastf_;
+      std::vector<double> material_shear_force_3_gp_elastf_;
 
-      std::vector<double> material_torque_GP_elastm_;
-      std::vector<double> material_bending_moment_2_GP_elastm_;
-      std::vector<double> material_bending_moment_3_GP_elastm_;
+      std::vector<double> material_torque_gp_elastm_;
+      std::vector<double> material_bending_moment_2_gp_elastm_;
+      std::vector<double> material_bending_moment_3_gp_elastm_;
 
       //! spatial stress resultant values at GPs
-      std::vector<double> spatial_x_force_GP_elastf_;
-      std::vector<double> spatial_y_force_2_GP_elastf_;
-      std::vector<double> spatial_z_force_3_GP_elastf_;
+      std::vector<double> spatial_x_force_gp_elastf_;
+      std::vector<double> spatial_y_force_2_gp_elastf_;
+      std::vector<double> spatial_z_force_3_gp_elastf_;
 
-      std::vector<double> spatial_x_moment_GP_elastm_;
-      std::vector<double> spatial_y_moment_2_GP_elastm_;
-      std::vector<double> spatial_z_moment_3_GP_elastm_;
+      std::vector<double> spatial_x_moment_gp_elastm_;
+      std::vector<double> spatial_y_moment_2_gp_elastm_;
+      std::vector<double> spatial_z_moment_3_gp_elastm_;
 
       //! @}
     };

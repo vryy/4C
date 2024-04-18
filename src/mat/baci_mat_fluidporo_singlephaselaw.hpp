@@ -289,7 +289,7 @@ namespace MAT
       //! vector for input of differential pressure to function
       std::vector<std::pair<std::string, double>> dp_;
       //! vector for input of saturation to function
-      std::vector<std::pair<std::string, double>> S_;
+      std::vector<std::pair<std::string, double>> s_;
     };
     // class FluidPoroPhaseLawTangent
 

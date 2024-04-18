@@ -85,13 +85,13 @@ namespace BEAMINTERACTION
     void GetAllInteractingPointCoordsElement1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
-      coords = centerline_coords_GP1_;
+      coords = centerline_coords_gp_1_;
     }
 
     void GetAllInteractingPointCoordsElement2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
-      coords = centerline_coords_GP2_;
+      coords = centerline_coords_gp_2_;
     }
 
     /*!
@@ -100,13 +100,13 @@ namespace BEAMINTERACTION
     void GetForcesAtAllInteractingPointsElement1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const override
     {
-      forces = forces_pot_GP1_;
+      forces = forces_pot_gp_1_;
     }
 
     void GetForcesAtAllInteractingPointsElement2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const override
     {
-      forces = forces_pot_GP2_;
+      forces = forces_pot_gp_2_;
     }
 
     /*!
@@ -115,13 +115,13 @@ namespace BEAMINTERACTION
     void GetMomentsAtAllInteractingPointsElement1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const override
     {
-      moments = moments_pot_GP1_;
+      moments = moments_pot_gp_1_;
     }
 
     void GetMomentsAtAllInteractingPointsElement2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const override
     {
-      moments = moments_pot_GP2_;
+      moments = moments_pot_gp_2_;
     }
 
     /*!
@@ -608,16 +608,16 @@ namespace BEAMINTERACTION
     //! @name data storage for visualization output
 
     //! centerline coordinate vector of interacting points of element 1 and 2
-    std::vector<CORE::LINALG::Matrix<3, 1, double>> centerline_coords_GP1_;
-    std::vector<CORE::LINALG::Matrix<3, 1, double>> centerline_coords_GP2_;
+    std::vector<CORE::LINALG::Matrix<3, 1, double>> centerline_coords_gp_1_;
+    std::vector<CORE::LINALG::Matrix<3, 1, double>> centerline_coords_gp_2_;
 
     //! resulting forces at interacting points of element 1 and 2
-    std::vector<CORE::LINALG::Matrix<3, 1, double>> forces_pot_GP1_;
-    std::vector<CORE::LINALG::Matrix<3, 1, double>> forces_pot_GP2_;
+    std::vector<CORE::LINALG::Matrix<3, 1, double>> forces_pot_gp_1_;
+    std::vector<CORE::LINALG::Matrix<3, 1, double>> forces_pot_gp_2_;
 
     //! resulting moments at interacting points of element 1 and 2
-    std::vector<CORE::LINALG::Matrix<3, 1, double>> moments_pot_GP1_;
-    std::vector<CORE::LINALG::Matrix<3, 1, double>> moments_pot_GP2_;
+    std::vector<CORE::LINALG::Matrix<3, 1, double>> moments_pot_gp_1_;
+    std::vector<CORE::LINALG::Matrix<3, 1, double>> moments_pot_gp_2_;
 
     //! total interaction potential of this pair
     double interaction_potential_;

@@ -350,10 +350,10 @@ namespace DRT
 
       //! vector of inverses of the jacobian (J^{-1} = \frac{\mathrm{d} \vec{r}} {\mathrm{d} \vec{X}
       //! }) at each gauss point
-      std::vector<CORE::LINALG::Matrix<numdim_, numdim_>> invJ_;
+      std::vector<CORE::LINALG::Matrix<numdim_, numdim_>> inv_j_;
       //! vector of determinants of the jacobian (\det[ \frac{\mathrm{d} \vec{X}} {\mathrm{d}
       //! \vec{r}} ]) at each gauss point
-      std::vector<double> detJ_;
+      std::vector<double> det_j_;
 
       DRT::Node** Nodes() override;
 

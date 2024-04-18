@@ -203,7 +203,7 @@ namespace ART
       int condid_;
 
       //! vector associated to the pressure head loss constant
-      std::vector<double> Kr;
+      std::vector<double> kr_;
 
       //! time step size
       double dta_;
@@ -218,10 +218,10 @@ namespace ART
       IO::DiscretizationWriter &output_;
 
       //! the vector defining whethe an element is inlet or outlet
-      std::vector<int> IOart_flag_;
+      std::vector<int> io_art_flag_;
 
       //! Size of the nonlinear problem matrix
-      int ProbSize_;
+      int prob_size_;
 
       //! vector of nodes connected to the junction
       std::vector<int> nodes_;

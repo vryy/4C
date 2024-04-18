@@ -82,12 +82,12 @@ void CORE::LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
       ifpacklist.set<bool>("relaxation: zero starting solution", true);
       // create a copy of the scaled matrix
       // so we can reuse the preconditioner
-      Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
+      pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
       // get the type of ifpack preconditioner from iterative solver
       std::string prectype = solverlist.get("preconditioner", "ILU");
       int overlap = solverlist.get("AZ_overlap", 0);
       Ifpack Factory;
-      Ifpack_Preconditioner* prec = Factory.Create(prectype, Pmatrix_.get(), overlap);
+      Ifpack_Preconditioner* prec = Factory.Create(prectype, pmatrix_.get(), overlap);
       prec->SetParameters(ifpacklist);
       prec->Initialize();
       prec->Compute();
@@ -102,8 +102,8 @@ void CORE::LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
       // create a copy of the scaled (and downwinded) matrix
       // so we can reuse the preconditioner several times
       prec_ = Teuchos::null;
-      Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
-      prec_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_, mllist, true));
+      pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
+      prec_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*pmatrix_, mllist, true));
     }
   }
 }

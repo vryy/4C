@@ -350,7 +350,7 @@ namespace CORE::GEO
       /*! \brief Get all the nodes of this element */
       const std::vector<Node*>& Nodes() const { return nodes_; }
 
-      const std::vector<Node*>& QuadCorners() const { return quadCorners_; }
+      const std::vector<Node*>& QuadCorners() const { return quad_corners_; }
 
       /*! \brief Points that are associated with nodes of this shadow element */
       const std::vector<Point*>& Points() const { return points_; }
@@ -472,12 +472,12 @@ namespace CORE::GEO
       /*!
        \brief set this element as shadow element
        */
-      void setAsShadowElem() { isShadow_ = true; }
+      void setAsShadowElem() { is_shadow_ = true; }
 
       /*!
       \brief Return true if this is a shadow element
        */
-      bool isShadow() { return isShadow_; }
+      bool isShadow() { return is_shadow_; }
 
       /*!
       \brief Store the corners of parent Quad element from which this shadow element is derived
@@ -619,10 +619,10 @@ namespace CORE::GEO
       /** For originally linear elements, this just stores the corner points. However,
        * if this linear element is derived from a Quadratic element, then this contains
        * the corner points of quad element. */
-      std::vector<Node*> quadCorners_;
+      std::vector<Node*> quad_corners_;
 
       /// True if this is a linear (shadow) element derived from a Quadratic element
-      bool isShadow_;
+      bool is_shadow_;
 
       /// Discretization shape of the parent quad element
       CORE::FE::CellType quadshape_;

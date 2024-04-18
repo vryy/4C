@@ -175,15 +175,15 @@ namespace CORE::GEO
       CORE::GEO::CUT::ParentIntersection& parentintersection_;
 
       //! map of node-Id and current node-Pos index
-      std::map<int, int> curr_undecidedNodePos_;
+      std::map<int, int> curr_undecided_node_pos_;
 
       /*!
       \brief map of shadow-nodes (identified via boundary nodes of quad8 sides and the 20 nodes of
       the hex20 element for inner center node) and current node-Pos index
        */
-      std::map<plain_int_set, int> curr_undecidedNodePos_shadow_;
+      std::map<plain_int_set, int> curr_undecided_node_pos_shadow_;
 
-      std::vector<Teuchos::RCP<CORE::GEO::CUT::MeshIntersection::DofSetData>> dofSetData_;
+      std::vector<Teuchos::RCP<CORE::GEO::CUT::MeshIntersection::DofSetData>> dof_set_data_;
 
 
     };  // class PARALLEL

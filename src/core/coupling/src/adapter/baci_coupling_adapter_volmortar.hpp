@@ -93,8 +93,8 @@ namespace CORE::ADAPTER
     \brief Get coupling matrices for field 1 and 2
 
     */
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetPMatrix12() const { return P12_; };
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetPMatrix21() const { return P21_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetPMatrix12() const { return p12_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetPMatrix21() const { return p21_; };
 
     /*!
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for vectors
@@ -223,9 +223,9 @@ namespace CORE::ADAPTER
     // s1 = P12 * s2
     // s2 = P21 * s1
     Teuchos::RCP<CORE::LINALG::SparseMatrix>
-        P12_;  ///< global Mortar projection matrix P Omega_2 -> Omega_1
+        p12_;  ///< global Mortar projection matrix P Omega_2 -> Omega_1
     Teuchos::RCP<CORE::LINALG::SparseMatrix>
-        P21_;  ///< global Mortar projection matrix P Omega_1 -> Omega_2
+        p21_;  ///< global Mortar projection matrix P Omega_1 -> Omega_2
 
     Teuchos::RCP<DRT::Discretization> masterdis_;
     Teuchos::RCP<DRT::Discretization> slavedis_;

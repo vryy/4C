@@ -61,13 +61,13 @@ namespace NOX
 
        private:
         //! calculated norm for the different quantities
-        Teuchos::RCP<std::vector<double>> normWRMS_;
+        Teuchos::RCP<std::vector<double>> norm_wrms_;
 
         //! number of quantities to check
-        std::size_t nChecks_;
+        std::size_t n_checks_;
 
         //! nox_nln_statustest quantities which are checked
-        std::vector<NOX::NLN::StatusTest::QuantityType> checkList_;
+        std::vector<NOX::NLN::StatusTest::QuantityType> check_list_;
 
         //! relative tolerance
         std::vector<double> rtol_;
@@ -85,25 +85,25 @@ namespace NOX
         double alpha_;
 
         //! Actual step size used during line search.
-        double computedStepSize_;
+        double computed_step_size_;
 
         //! Maximum linear solve tolerance allowed for WRMS norm to be flagged as converged.
         double beta_;
 
         //! Actual tolerance achieved by the linear solver during the last linear solve.
-        double achievedTol_;
+        double achieved_tol_;
 
         //! Global status
-        ::NOX::StatusTest::StatusType gStatus_;
+        ::NOX::StatusTest::StatusType g_status_;
 
         //! Status of each quantity
         std::vector<::NOX::StatusTest::StatusType> status_;
 
         //! Flag that tells the print method whether to print the criteria 2 information.
-        bool printCriteria2Info_;
+        bool print_criteria2_info_;
 
         //! Flag that tells the print method whether to print the criteria 3 information.
-        bool printCriteria3Info_;
+        bool print_criteria3_info_;
 
         //! If true, the implicit weighting will be disabled during norm calculation
         std::vector<bool> disable_implicit_weighting_;

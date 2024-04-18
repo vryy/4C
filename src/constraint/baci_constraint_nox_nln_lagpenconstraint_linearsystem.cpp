@@ -38,8 +38,8 @@ NOX::NLN::LAGPENCONSTRAINT::LinearSystem::LinearSystem(Teuchos::ParameterList& p
     const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
     : NOX::NLN::LinearSystem(printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M,
           cloneVector, scalingObject),
-      iConstr_(iConstr),
-      iConstrPrec_(iConstrPrec)
+      i_constr_(iConstr),
+      i_constr_prec_(iConstrPrec)
 {
   // empty
 }
@@ -57,8 +57,8 @@ NOX::NLN::LAGPENCONSTRAINT::LinearSystem::LinearSystem(Teuchos::ParameterList& p
     const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector)
     : NOX::NLN::LinearSystem(
           printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M, cloneVector),
-      iConstr_(iConstr),
-      iConstrPrec_(iConstrPrec)
+      i_constr_(iConstr),
+      i_constr_prec_(iConstrPrec)
 {
   // empty
 }
@@ -108,7 +108,7 @@ NOX::NLN::SolutionType NOX::NLN::LAGPENCONSTRAINT::LinearSystem::GetActiveLinSol
   // ---------------------------------------------------------------------
   NOX::NLN::CONSTRAINT::PrecInterfaceMap::const_iterator cit;
   bool issaddlepoint = false;
-  for (cit = iConstrPrec_.begin(); cit != iConstrPrec_.end(); ++cit)
+  for (cit = i_constr_prec_.begin(); cit != i_constr_prec_.end(); ++cit)
   {
     if (cit->second->IsSaddlePointSystem())
     {

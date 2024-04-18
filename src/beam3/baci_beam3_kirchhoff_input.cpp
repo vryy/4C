@@ -77,7 +77,7 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(
   this->SetUpInitialRotations(nodal_thetas);
 
   // read whether automatic differentiation via Sacado::Fad package shall be used
-  useFAD_ = linedef->HaveNamed("FAD") ? true : false;
+  use_fad_ = linedef->HaveNamed("FAD") ? true : false;
 
   return true;
 }

@@ -34,14 +34,14 @@ MAT::ELASTIC::CoupAnisoPow::CoupAnisoPow(MAT::ELASTIC::PAR::CoupAnisoPow* params
 void MAT::ELASTIC::CoupAnisoPow::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
-  AddtoPack(data, A_);
+  AddtoPack(data, structural_tensor_);
 }
 
 void MAT::ELASTIC::CoupAnisoPow::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   ExtractfromPack(position, data, a_);
-  ExtractfromPack(position, data, A_);
+  ExtractfromPack(position, data, structural_tensor_);
 }
 
 void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, INPUT::LineDefinition* linedef)
@@ -77,7 +77,7 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, INPUT::LineDefinition* linedef
     {
       // Read in of data
       ReadFiber(linedef, fibername, a_);
-      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, structural_tensor_);
     }
 
     // error path
@@ -109,8 +109,9 @@ void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(const CORE::LINALG::Mat
 
   // calc invariant I4
   double I4 = 0.0;
-  I4 = A_(0) * rcg(0) + A_(1) * rcg(1) + A_(2) * rcg(2) + A_(3) * rcg(3) + A_(4) * rcg(4) +
-       A_(5) * rcg(5);
+  I4 = structural_tensor_(0) * rcg(0) + structural_tensor_(1) * rcg(1) +
+       structural_tensor_(2) * rcg(2) + structural_tensor_(3) * rcg(3) +
+       structural_tensor_(4) * rcg(4) + structural_tensor_(5) * rcg(5);
 
   double lambda4 = pow(I4, 0.5);
   double pow_I4_d1 = pow(I4, d1);
@@ -144,8 +145,8 @@ void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(const CORE::LINALG::Mat
               4.0 * k * d2 * d1 * (d1 - 1.0) * pow_I4_d1m2 * pow(1.0 - pow_I4_d1, d2 - 1.0);
     }
   }
-  stress.Update(gamma, A_, 1.0);
-  cmat.MultiplyNT(delta, A_, A_, 1.0);
+  stress.Update(gamma, structural_tensor_, 1.0);
+  cmat.MultiplyNT(delta, structural_tensor_, structural_tensor_, 1.0);
 }
 
 void MAT::ELASTIC::CoupAnisoPow::GetFiberVecs(
@@ -185,6 +186,6 @@ void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(const double newgamma,
   a_0.Multiply(idefgrd, ca);
   a_.Update(1. / a_0.Norm2(), a_0);
 
-  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
+  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, structural_tensor_);
 }
 FOUR_C_NAMESPACE_CLOSE

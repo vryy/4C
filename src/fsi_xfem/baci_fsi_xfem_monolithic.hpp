@@ -417,53 +417,53 @@ namespace FSI
 
     // L2-NORMS (split)
     //--------------------------------------------------------------------------//
-    double normstrrhsL2_ = std::numeric_limits<double>::max();  //!< L2-norm of structural residual
-    double normflvelrhsL2_ =
+    double normstrrhs_l2_ = std::numeric_limits<double>::max();  //!< L2-norm of structural residual
+    double normflvelrhs_l2_ =
         std::numeric_limits<double>::max();  //!< L2-norm of fluid velocity residual
-    double normflpresrhsL2_ =
+    double normflpresrhs_l2_ =
         std::numeric_limits<double>::max();  //!< L2-norm of fluid pressure residual
-    double normpflvelrhsL2_ =
+    double normpflvelrhs_l2_ =
         std::numeric_limits<double>::max();  //!< L2-norm of poro fluid velocity residual
-    double normpflpresrhsL2_ =
+    double normpflpresrhs_l2_ =
         std::numeric_limits<double>::max();  //!< L2-norm of poro fluid pressure residual
 
-    //--------------------------------------------------------------------------//
-    double normstrincL2_ = std::numeric_limits<double>::max();  //!< L2-norm of structural increment
-    double normflvelincL2_ =
+    double normstrinc_l2_ =
+        std::numeric_limits<double>::max();  //!< L2-norm of structural increment
+    double normflvelinc_l2_ =
         std::numeric_limits<double>::max();  //!< L2-norm of fluid velocity increment
-    double normflpresincL2_ =
+    double normflpresinc_l2_ =
         std::numeric_limits<double>::max();  //!< L2-norm of fluid pressure increment
-    double normpflvelincL2_ =
+    double normpflvelinc_l2_ =
         std::numeric_limits<double>::max();  //!< L2-norm of poro fluid velocity increment
-    double normpflpresincL2_ =
+    double normpflpresinc_l2_ =
         std::numeric_limits<double>::max();  //!< L2-norm of poro fluid pressure increment
     //--------------------------------------------------------------------------//
 
     // Inf-NORMS (split)
     //--------------------------------------------------------------------------//
-    double normstrrhsInf_ =
+    double normstrrhs_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of structural residual
-    double normflvelrhsInf_ =
+    double normflvelrhs_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of fluid velocity residual
-    double normflpresrhsInf_ =
+    double normflpresrhs_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of fluid pressure residual
-    double normpflvelrhsInf_ =
+    double normpflvelrhs_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of poro fluid velocity residual
-    double normpflpresrhsInf_ =
+    double normpflpresrhs_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of poro fluid pressure residual
 
     //--------------------------------------------------------------------------//
-    double normstrincInf_ =
+    double normstrinc_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of structural increment
-    double normstrincdispInf_ =
+    double normstrincdisp_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of structural displacement increment
-    double normflvelincInf_ =
+    double normflvelinc_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of fluid velocity increment
-    double normflpresincInf_ =
+    double normflpresinc_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of fluid pressure increment
-    double normpflvelincInf_ =
+    double normpflvelinc_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of poro fluid velocity residual
-    double normpflpresincInf_ =
+    double normpflpresinc_inf_ =
         std::numeric_limits<double>::max();  //!< Inf-norm of poro fluid pressure residual
 
     //@}
@@ -493,20 +493,20 @@ namespace FSI
     const double tolfres_;  //!< tolerance full residual (structure + fluid)
 
     // tolerances for structure block (displacements)
-    const double TOL_DIS_RES_L2_;
-    const double TOL_DIS_RES_INF_;
-    const double TOL_DIS_INC_L2_;
-    const double TOL_DIS_INC_INF_;
+    const double tol_dis_res_l2_;
+    const double tol_dis_res_inf_;
+    const double tol_dis_inc_l2_;
+    const double tol_dis_inc_inf_;
     // tolerances for fluid block (pressure)
-    const double TOL_PRE_RES_L2_;
-    const double TOL_PRE_RES_INF_;
-    const double TOL_PRE_INC_L2_;
-    const double TOL_PRE_INC_INF_;
+    const double tol_pre_res_l2_;
+    const double tol_pre_res_inf_;
+    const double tol_pre_inc_l2_;
+    const double tol_pre_inc_inf_;
     // tolerances for fluid block (velocity)
-    const double TOL_VEL_RES_L2_;
-    const double TOL_VEL_RES_INF_;
-    const double TOL_VEL_INC_L2_;
-    const double TOL_VEL_INC_INF_;
+    const double tol_vel_res_l2_;
+    const double tol_vel_res_inf_;
+    const double tol_vel_inc_l2_;
+    const double tol_vel_inc_inf_;
     //@}
 
     //--------------------------------------------------------------------------//

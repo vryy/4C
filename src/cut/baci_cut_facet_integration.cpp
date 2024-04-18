@@ -56,7 +56,7 @@ vector and the normal vector of facet. If the dot product < 0, then the facet is
 void CORE::GEO::CUT::FacetIntegration::IsClockwise(
     const std::vector<double> &eqn_plane, const std::vector<std::vector<double>> &cornersLocal)
 {
-  orderingComputed_ = true;
+  ordering_computed_ = true;
   clockwise_ = false;
 
   bool iscut = face1_->OnCutSide();
@@ -235,7 +235,7 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
 *------------------------------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::FacetIntegration::IsClockwiseOrdering()
 {
-  if (orderingComputed_) return clockwise_;
+  if (ordering_computed_) return clockwise_;
 
   std::vector<std::vector<double>> cornersLocal;
   face1_->CornerPointsLocal(elem1_, cornersLocal);
@@ -333,13 +333,13 @@ double CORE::GEO::CUT::FacetIntegration::integrate_facet()
   eqn_plane_ = equation_plane(cornersLocal);
 
   // the face is in the x-y or in y-z plane which gives zero facet integral
-  if (fabs(eqn_plane_[0]) < TOL_EQN_PLANE && bcellInt_ == false) return 0.0;
+  if (fabs(eqn_plane_[0]) < TOL_EQN_PLANE && bcell_int_ == false) return 0.0;
   // x=0 plane which also do not contribute to facet integral
   if (fabs(eqn_plane_[1]) < TOL_EQN_PLANE && fabs(eqn_plane_[2]) < TOL_EQN_PLANE &&
-      fabs(eqn_plane_[3]) < TOL_EQN_PLANE && bcellInt_ == false)
+      fabs(eqn_plane_[3]) < TOL_EQN_PLANE && bcell_int_ == false)
     return 0.0;
 
-  if (bcellInt_ ==
+  if (bcell_int_ ==
       true)  // the integral value of boundarycell will not change w.r.t the ordering of vertices
     clockwise_ = false;
   else
@@ -347,7 +347,7 @@ double CORE::GEO::CUT::FacetIntegration::integrate_facet()
 
   // integrating over each line of the facet
   double facet_integ = 0.0;
-  if (bcellInt_ == false)
+  if (bcell_int_ == false)
   {
     std::vector<double> alpha;
     alpha = compute_alpha(eqn_plane_, CORE::GEO::CUT::proj_x);
@@ -374,7 +374,7 @@ double CORE::GEO::CUT::FacetIntegration::integrate_facet()
       coordLine(0, 1) = coords2[1];
       coordLine(1, 1) = coords2[2];
 
-      LineIntegration line1(coordLine, inte_num_, alpha, bcellInt_);
+      LineIntegration line1(coordLine, inte_num_, alpha, bcell_int_);
       facet_integ += line1.integrate_line();
     }
   }
@@ -438,7 +438,7 @@ double CORE::GEO::CUT::FacetIntegration::integrate_facet()
   }
 
   // this condition results in negative normal for all the lines in the line integral
-  if (clockwise_ && bcellInt_ == false)
+  if (clockwise_ && bcell_int_ == false)
   {
     facet_integ = -1.0 * facet_integ;
     for (int i = 0; i < 4; i++) eqn_plane_[i] = -1.0 * eqn_plane_[i];
@@ -486,7 +486,7 @@ void CORE::GEO::CUT::FacetIntegration::BoundaryFacetIntegration(
       coordLine(0, 1) = coords2[1];
       coordLine(1, 1) = coords2[2];
 
-      LineIntegration line1(coordLine, inte_num_, alpha, bcellInt_);
+      LineIntegration line1(coordLine, inte_num_, alpha, bcell_int_);
       line1.set_integ_type(CORE::GEO::CUT::proj_x);
       facet_integ += line1.integrate_line();
     }
@@ -504,7 +504,7 @@ void CORE::GEO::CUT::FacetIntegration::BoundaryFacetIntegration(
       coordLine(1, 0) = coords1[0];
       coordLine(0, 1) = coords2[2];
       coordLine(1, 1) = coords2[0];
-      LineIntegration line1(coordLine, inte_num_, alpha, bcellInt_);
+      LineIntegration line1(coordLine, inte_num_, alpha, bcell_int_);
       line1.set_integ_type(CORE::GEO::CUT::proj_y);
       facet_integ += line1.integrate_line();
     }
@@ -523,7 +523,7 @@ void CORE::GEO::CUT::FacetIntegration::BoundaryFacetIntegration(
       coordLine(1, 0) = coords1[1];
       coordLine(0, 1) = coords2[0];
       coordLine(1, 1) = coords2[1];
-      LineIntegration line1(coordLine, inte_num_, alpha, bcellInt_);
+      LineIntegration line1(coordLine, inte_num_, alpha, bcell_int_);
       line1.set_integ_type(CORE::GEO::CUT::proj_z);
       facet_integ += line1.integrate_line();
     }

@@ -92,8 +92,8 @@ namespace FLD
     /// provide access to the box filter
     Teuchos::RCP<FLD::Boxfilter> Boxfilter();
     // Boxfilter
-    Teuchos::RCP<FLD::Boxfilter> Boxf_;
-    Teuchos::RCP<FLD::Boxfilter> Boxfsc_;
+    Teuchos::RCP<FLD::Boxfilter> boxf_;
+    Teuchos::RCP<FLD::Boxfilter> boxfsc_;
 
 
 

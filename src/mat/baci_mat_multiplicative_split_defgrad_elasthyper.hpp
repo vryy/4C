@@ -111,7 +111,7 @@ namespace MAT
     /// Return vector of all inelastic deformation gradients
     const std::vector<std::pair<PAR::InelasticSource, CORE::LINALG::Matrix<3, 3>>>& GetiFinj() const
     {
-      return iFinj_;
+      return i_finj_;
     }
 
     /// total number of inelastic contributions
@@ -126,7 +126,7 @@ namespace MAT
         facdefgradin_;
 
     /// vector that holds pairs of inelastic deformation gradients and respective source
-    std::vector<std::pair<PAR::InelasticSource, CORE::LINALG::Matrix<3, 3>>> iFinj_;
+    std::vector<std::pair<PAR::InelasticSource, CORE::LINALG::Matrix<3, 3>>> i_finj_;
   };
 
   /*----------------------------------------------------------------------*/

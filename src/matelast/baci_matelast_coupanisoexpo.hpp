@@ -172,13 +172,13 @@ namespace MAT
        */
       FiberAnisotropyExtension<1>& GetFiberAnisotropyExtension() override
       {
-        return anisotropyExtension_;
+        return anisotropy_extension_;
       }
 
      protected:
       const CoupAnisoExpoBaseInterface& GetCoupAnisoExpoBaseInterface() const override
       {
-        return anisotropyExtension_;
+        return anisotropy_extension_;
       }
 
      private:
@@ -186,7 +186,7 @@ namespace MAT
       MAT::ELASTIC::PAR::CoupAnisoExpo* params_;
 
       /// Internal ansotropy information
-      MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension anisotropyExtension_;
+      MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension anisotropy_extension_;
     };  // namespace PAR
 
   }  // namespace ELASTIC

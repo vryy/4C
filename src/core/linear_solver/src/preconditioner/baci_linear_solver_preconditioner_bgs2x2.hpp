@@ -49,14 +49,14 @@ namespace CORE::LINALG
     const char* Label() const override { return "CORE::LINALG::BGS2x2_Operator"; }
 
     /// Comm of this class
-    const Epetra_Comm& Comm() const override { return (A_->Comm()); }
+    const Epetra_Comm& Comm() const override { return (a_->Comm()); }
 
 
     /// Operator domain map
-    const Epetra_Map& OperatorDomainMap() const override { return A_->FullDomainMap(); }
+    const Epetra_Map& OperatorDomainMap() const override { return a_->FullDomainMap(); }
 
     /// Operator range map
-    const Epetra_Map& OperatorRangeMap() const override { return A_->FullRangeMap(); }
+    const Epetra_Map& OperatorRangeMap() const override { return a_->FullRangeMap(); }
 
     /// Setup of preconditioners for individual blocks
     void SetupBlockPreconditioners();
@@ -112,7 +112,7 @@ namespace CORE::LINALG
     Teuchos::ParameterList list2_;  // list for solver of second diagonal block
 
     MultiMapExtractor mmex_;                 // a  multimapetxractor to handle extracts
-    Teuchos::RCP<BlockSparseMatrixBase> A_;  // 2x2 block matrix
+    Teuchos::RCP<BlockSparseMatrixBase> a_;  // 2x2 block matrix
 
     Teuchos::RCP<Preconditioner> solver1_;  // solver of block 1
     Teuchos::RCP<Preconditioner> solver2_;  // solver of block 2

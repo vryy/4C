@@ -202,9 +202,9 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> x2sumrho_;
     Teuchos::RCP<std::vector<double>> x3sumrho_;
     //! sum over T (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumT_;
-    Teuchos::RCP<std::vector<double>> x2sumT_;
-    Teuchos::RCP<std::vector<double>> x3sumT_;
+    Teuchos::RCP<std::vector<double>> x1sum_t_;
+    Teuchos::RCP<std::vector<double>> x2sum_t_;
+    Teuchos::RCP<std::vector<double>> x3sum_t_;
 
     //! sum over u^2 (over the centerlines in x1-, x2- and x3-direction)
     Teuchos::RCP<std::vector<double>> x1sumsqu_;
@@ -227,9 +227,9 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> x2sumsqrho_;
     Teuchos::RCP<std::vector<double>> x3sumsqrho_;
     //! sum over T^2 (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumsqT_;
-    Teuchos::RCP<std::vector<double>> x2sumsqT_;
-    Teuchos::RCP<std::vector<double>> x3sumsqT_;
+    Teuchos::RCP<std::vector<double>> x1sumsq_t_;
+    Teuchos::RCP<std::vector<double>> x2sumsq_t_;
+    Teuchos::RCP<std::vector<double>> x3sumsq_t_;
 
     //! sum over uv (over the centerlines in x1-, x2- and x3-direction)
     Teuchos::RCP<std::vector<double>> x1sumuv_;
@@ -244,17 +244,17 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> x2sumvw_;
     Teuchos::RCP<std::vector<double>> x3sumvw_;
     //! sum over uT (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumuT_;
-    Teuchos::RCP<std::vector<double>> x2sumuT_;
-    Teuchos::RCP<std::vector<double>> x3sumuT_;
+    Teuchos::RCP<std::vector<double>> x1sumu_t_;
+    Teuchos::RCP<std::vector<double>> x2sumu_t_;
+    Teuchos::RCP<std::vector<double>> x3sumu_t_;
     //! sum over vT (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumvT_;
-    Teuchos::RCP<std::vector<double>> x2sumvT_;
-    Teuchos::RCP<std::vector<double>> x3sumvT_;
+    Teuchos::RCP<std::vector<double>> x1sumv_t_;
+    Teuchos::RCP<std::vector<double>> x2sumv_t_;
+    Teuchos::RCP<std::vector<double>> x3sumv_t_;
     //! sum over wT (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumwT_;
-    Teuchos::RCP<std::vector<double>> x2sumwT_;
-    Teuchos::RCP<std::vector<double>> x3sumwT_;
+    Teuchos::RCP<std::vector<double>> x1sumw_t_;
+    Teuchos::RCP<std::vector<double>> x2sumw_t_;
+    Teuchos::RCP<std::vector<double>> x3sumw_t_;
   };
 
 }  // namespace FLD

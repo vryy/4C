@@ -448,8 +448,8 @@ namespace CONTACT
       /// @{
 
       /*! \brief Return the weighted gap (scalar) of this node */
-      inline double& GetWGap() { return wGap_; }
-      inline double GetWGap() const { return wGap_; }
+      inline double& GetWGap() { return w_gap_; }
+      inline double GetWGap() const { return w_gap_; }
 
       /*! \brief Return the scaling factor kappa for this node
        *
@@ -478,22 +478,22 @@ namespace CONTACT
        *
        *  Integration over the whole slave interface, without consideration of
        *  the segments or projections. */
-      inline double& GetAugA() { return augA_; }
-      inline double GetAugA() const { return augA_; }
+      inline double& GetAugA() { return aug_a_; }
+      inline double GetAugA() const { return aug_a_; }
 
       /*! \brief Return the first order derivative of the scaling factor augA
        *
        *  Integration over the whole slave interface, without consideration of
        *  the segments or projections. */
-      inline Deriv1stMap& GetDeriv1st_A() { return d_augA_; }
-      inline const Deriv1stMap& GetDeriv1st_A() const { return d_augA_; }
+      inline Deriv1stMap& GetDeriv1st_A() { return d_aug_a_; }
+      inline const Deriv1stMap& GetDeriv1st_A() const { return d_aug_a_; }
 
       /*! \brief Return the second order derivative of the scaling factor augA
        *
        *  Integration over the whole slave interface, without consideration of
        *  the segments or projections. */
-      inline Deriv2ndMap& GetDeriv2nd_A() { return dd_augA_; }
-      inline const Deriv2ndMap& GetDeriv2nd_A() const { return dd_augA_; }
+      inline Deriv2ndMap& GetDeriv2nd_A() { return dd_aug_a_; }
+      inline const Deriv2ndMap& GetDeriv2nd_A() const { return dd_aug_a_; }
 
       /*! \brief Return the 1-st order derivative of smooth averaged unit normal */
       inline Deriv1stVecMap& GetDeriv1st_N() { return d_avg_unit_normal_; }
@@ -602,8 +602,8 @@ namespace CONTACT
 
       // nodal scalar values
       double kappa_;  ///< gap-scaling factor kappa
-      double wGap_;   ///< nodal entry of weighted gap vector
-      double augA_;   ///< nodal scaling factor
+      double w_gap_;  ///< nodal entry of weighted gap vector
+      double aug_a_;  ///< nodal scaling factor
 
       /// @name Linearization
       /// @{
@@ -615,10 +615,10 @@ namespace CONTACT
       Deriv2ndMap dd_kappa_;
 
       /// 1-st order derivative of the tributary area (inactive part)
-      Deriv1stMap d_augA_;
+      Deriv1stMap d_aug_a_;
 
       /// 2-nd order derivative of the tributary area (inactive part)
-      Deriv2ndMap dd_augA_;
+      Deriv2ndMap dd_aug_a_;
 
       // 1-st derivative of the smooth averaged nodal unit normal
       Deriv1stVecMap d_avg_unit_normal_;
@@ -662,7 +662,7 @@ namespace CONTACT
       Debug debug_;
 
       /// constant reference to the parent node
-      const Node& parentNode_;
+      const Node& parent_node_;
 
     };  // class NodeDataContainer
   }     // namespace AUG

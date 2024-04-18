@@ -471,8 +471,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
   x1sumrho_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x1sumrho_->reshape(numx2statlocations_, numx1coor_);
 
-  x1sumT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-  x1sumT_->reshape(numx2statlocations_, numx1coor_);
+  x1sum_t_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x1sum_t_->reshape(numx2statlocations_, numx1coor_);
 
   x1sumtauw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x1sumtauw_->reshape(numx2statlocations_, numx1coor_);
@@ -518,27 +518,27 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
   x2sumrho_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumrho_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-  x2sumT_->reshape(numx1statlocations_, numx2coor_);
+  x2sum_t_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sum_t_->reshape(numx1statlocations_, numx2coor_);
 
   // second-order moments
   x2sumsqrho_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumsqrho_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-  x2sumsqT_->reshape(numx1statlocations_, numx2coor_);
+  x2sumsq_t_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsq_t_->reshape(numx1statlocations_, numx2coor_);
 
   x2sumrhou_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumrhou_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-  x2sumuT_->reshape(numx1statlocations_, numx2coor_);
+  x2sumu_t_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumu_t_->reshape(numx1statlocations_, numx2coor_);
 
   x2sumrhov_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumrhov_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumvT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-  x2sumvT_->reshape(numx1statlocations_, numx2coor_);
+  x2sumv_t_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumv_t_->reshape(numx1statlocations_, numx2coor_);
 
   // set number of samples to zero
   numsamp_ = 0;
@@ -939,7 +939,7 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
         (*x1sumu_)(x2nodnum, x1nodnum) += usm;
         (*x1sump_)(x2nodnum, x1nodnum) += psm;
         (*x1sumrho_)(x2nodnum, x1nodnum) += rhosm;
-        (*x1sumT_)(x2nodnum, x1nodnum) += Tsm;
+        (*x1sum_t_)(x2nodnum, x1nodnum) += Tsm;
       }
     }
   }
@@ -1110,7 +1110,7 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
         (*x2sumw_)(x1nodnum, x2nodnum) += w / countnodesonallprocs;
         (*x2sump_)(x1nodnum, x2nodnum) += p / countnodesonallprocs;
 
-        (*x2sumT_)(x1nodnum, x2nodnum) += T / countnodesonallprocs;
+        (*x2sum_t_)(x1nodnum, x2nodnum) += T / countnodesonallprocs;
         (*x2sumrho_)(x1nodnum, x2nodnum) += rho / countnodesonallprocs;
 
         (*x2sumsqu_)(x1nodnum, x2nodnum) += uu / countnodesonallprocs;
@@ -1118,7 +1118,7 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
         (*x2sumsqw_)(x1nodnum, x2nodnum) += ww / countnodesonallprocs;
         (*x2sumsqp_)(x1nodnum, x2nodnum) += pp / countnodesonallprocs;
 
-        (*x2sumsqT_)(x1nodnum, x2nodnum) += TT / countnodesonallprocs;
+        (*x2sumsq_t_)(x1nodnum, x2nodnum) += TT / countnodesonallprocs;
         (*x2sumsqrho_)(x1nodnum, x2nodnum) += rhorho / countnodesonallprocs;
 
         (*x2sumuv_)(x1nodnum, x2nodnum) += uv / countnodesonallprocs;
@@ -1126,9 +1126,9 @@ void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
         (*x2sumvw_)(x1nodnum, x2nodnum) += vw / countnodesonallprocs;
 
         (*x2sumrhou_)(x1nodnum, x2nodnum) += rhou / countnodesonallprocs;
-        (*x2sumuT_)(x1nodnum, x2nodnum) += uT / countnodesonallprocs;
+        (*x2sumu_t_)(x1nodnum, x2nodnum) += uT / countnodesonallprocs;
         (*x2sumrhov_)(x1nodnum, x2nodnum) += rhov / countnodesonallprocs;
-        (*x2sumvT_)(x1nodnum, x2nodnum) += vT / countnodesonallprocs;
+        (*x2sumv_t_)(x1nodnum, x2nodnum) += vT / countnodesonallprocs;
       }
     }
   }
@@ -1234,7 +1234,7 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
         //----------------------------------------------------------------------
         (*x1sumu_)(x2nodnum, x1nodnum) += usm;
         (*x1sump_)(x2nodnum, x1nodnum) += psm;
-        (*x1sumT_)(x2nodnum, x1nodnum) += Tsm;
+        (*x1sum_t_)(x2nodnum, x1nodnum) += Tsm;
       }
     }
   }
@@ -1379,21 +1379,21 @@ void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
         (*x2sumw_)(x1nodnum, x2nodnum) += w / countnodesonallprocs;
         (*x2sump_)(x1nodnum, x2nodnum) += p / countnodesonallprocs;
 
-        (*x2sumT_)(x1nodnum, x2nodnum) += T / countnodesonallprocs;
+        (*x2sum_t_)(x1nodnum, x2nodnum) += T / countnodesonallprocs;
 
         (*x2sumsqu_)(x1nodnum, x2nodnum) += uu / countnodesonallprocs;
         (*x2sumsqv_)(x1nodnum, x2nodnum) += vv / countnodesonallprocs;
         (*x2sumsqw_)(x1nodnum, x2nodnum) += ww / countnodesonallprocs;
         (*x2sumsqp_)(x1nodnum, x2nodnum) += pp / countnodesonallprocs;
 
-        (*x2sumsqT_)(x1nodnum, x2nodnum) += TT / countnodesonallprocs;
+        (*x2sumsq_t_)(x1nodnum, x2nodnum) += TT / countnodesonallprocs;
 
         (*x2sumuv_)(x1nodnum, x2nodnum) += uv / countnodesonallprocs;
         (*x2sumuw_)(x1nodnum, x2nodnum) += uw / countnodesonallprocs;
         (*x2sumvw_)(x1nodnum, x2nodnum) += vw / countnodesonallprocs;
 
-        (*x2sumuT_)(x1nodnum, x2nodnum) += uT / countnodesonallprocs;
-        (*x2sumvT_)(x1nodnum, x2nodnum) += vT / countnodesonallprocs;
+        (*x2sumu_t_)(x1nodnum, x2nodnum) += uT / countnodesonallprocs;
+        (*x2sumv_t_)(x1nodnum, x2nodnum) += vT / countnodesonallprocs;
       }
     }
   }
@@ -1592,7 +1592,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int step)
         double lwx1p = (*x1sump_)(0, i) / numsamp_;
 
         double lwx1rho = (*x1sumrho_)(0, i) / numsamp_;
-        double lwx1T = (*x1sumT_)(0, i) / numsamp_;
+        double lwx1T = (*x1sum_t_)(0, i) / numsamp_;
 
         (*log) << " " << std::setw(17) << std::setprecision(10) << (*x1coordinates_)[i];
         (*log) << "   " << std::setw(17) << std::setprecision(10) << lwx1duxdy;
@@ -1621,7 +1621,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int step)
         double uwx1p = (*x1sump_)(1, i) / numsamp_;
 
         double uwx1rho = (*x1sumrho_)(1, i) / numsamp_;
-        double uwx1T = (*x1sumT_)(1, i) / numsamp_;
+        double uwx1T = (*x1sum_t_)(1, i) / numsamp_;
 
         (*log) << " " << std::setw(17) << std::setprecision(10) << (*x1coordinates_)[i];
         (*log) << "   " << std::setw(17) << std::setprecision(10) << uwx1duxdy;
@@ -1676,7 +1676,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int step)
         double x2p = (*x2sump_)(i, j) / numsamp_;
 
         double x2rho = (*x2sumrho_)(i, j) / numsamp_;
-        double x2T = (*x2sumT_)(i, j) / numsamp_;
+        double x2T = (*x2sum_t_)(i, j) / numsamp_;
 
         double x2urms = 0.0;
         double x2vrms = 0.0;
@@ -1709,8 +1709,8 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int step)
         double x2Trms = 0.0;
         if (std::abs((*x2sumsqrho_)(i, j) / numsamp_ - x2rho * x2rho) > 1e-9)
           x2rhorms = std::sqrt((*x2sumsqrho_)(i, j) / numsamp_ - x2rho * x2rho);
-        if (std::abs((*x2sumsqT_)(i, j) / numsamp_ - x2T * x2T) > 1e-9)
-          x2Trms = std::sqrt((*x2sumsqT_)(i, j) / numsamp_ - x2T * x2T);
+        if (std::abs((*x2sumsq_t_)(i, j) / numsamp_ - x2T * x2T) > 1e-9)
+          x2Trms = std::sqrt((*x2sumsq_t_)(i, j) / numsamp_ - x2T * x2T);
 
 #ifdef COMBINE_SAMPLES
         double x2rhosq = (*x2sumsqrho_)(i, j) / numsamp_;
@@ -1730,9 +1730,9 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int step)
         double x2vw = (*x2sumvw_)(i, j) / numsamp_ - x2v * x2w;
 
         double x2rhou = (*x2sumrhou_)(i, j) / numsamp_ - x2u * x2rho;
-        double x2uT = (*x2sumuT_)(i, j) / numsamp_ - x2u * x2T;
+        double x2uT = (*x2sumu_t_)(i, j) / numsamp_ - x2u * x2T;
         double x2rhov = (*x2sumrhov_)(i, j) / numsamp_ - x2v * x2rho;
-        double x2vT = (*x2sumvT_)(i, j) / numsamp_ - x2v * x2T;
+        double x2vT = (*x2sumv_t_)(i, j) / numsamp_ - x2v * x2T;
 #endif
 
         double x2rhouppTpp = x2rho * (x2uT - x2u * x2T);
@@ -1816,7 +1816,7 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int step)
         double lwx1duxdy = lwx1u / dist;
         double lwx1p = (*x1sump_)(0, i) / numsamp_;
 
-        double lwx1T = (*x1sumT_)(0, i) / numsamp_;
+        double lwx1T = (*x1sum_t_)(0, i) / numsamp_;
 
         (*log) << " " << std::setw(17) << std::setprecision(10) << (*x1coordinates_)[i];
         (*log) << "   " << std::setw(17) << std::setprecision(10) << lwx1duxdy;
@@ -1842,7 +1842,7 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int step)
         double uwx1duxdy = uwx1u / dist;
         double uwx1p = (*x1sump_)(1, i) / numsamp_;
 
-        double uwx1T = (*x1sumT_)(1, i) / numsamp_;
+        double uwx1T = (*x1sum_t_)(1, i) / numsamp_;
 
         (*log) << " " << std::setw(17) << std::setprecision(10) << (*x1coordinates_)[i];
         (*log) << "   " << std::setw(17) << std::setprecision(10) << uwx1duxdy;
@@ -1886,7 +1886,7 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int step)
         double x2w = (*x2sumw_)(i, j) / numsamp_;
         double x2p = (*x2sump_)(i, j) / numsamp_;
 
-        double x2T = (*x2sumT_)(i, j) / numsamp_;
+        double x2T = (*x2sum_t_)(i, j) / numsamp_;
 
         double x2urms = 0.0;
         double x2vrms = 0.0;
@@ -1909,15 +1909,15 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int step)
         // hence, zero negative values should be excluded
         // as they produce nans
         double x2Trms = 0.0;
-        if (std::abs((*x2sumsqT_)(i, j) / numsamp_ - x2T * x2T) > 1e-9)
-          x2Trms = std::sqrt((*x2sumsqT_)(i, j) / numsamp_ - x2T * x2T);
+        if (std::abs((*x2sumsq_t_)(i, j) / numsamp_ - x2T * x2T) > 1e-9)
+          x2Trms = std::sqrt((*x2sumsq_t_)(i, j) / numsamp_ - x2T * x2T);
 
         double x2uv = (*x2sumuv_)(i, j) / numsamp_ - x2u * x2v;
         double x2uw = (*x2sumuw_)(i, j) / numsamp_ - x2u * x2w;
         double x2vw = (*x2sumvw_)(i, j) / numsamp_ - x2v * x2w;
 
-        double x2uT = (*x2sumuT_)(i, j) / numsamp_ - x2u * x2T;
-        double x2vT = (*x2sumvT_)(i, j) / numsamp_ - x2v * x2T;
+        double x2uT = (*x2sumu_t_)(i, j) / numsamp_ - x2u * x2T;
+        double x2vT = (*x2sumv_t_)(i, j) / numsamp_ - x2v * x2T;
 
 
         (*log) << " " << std::setw(17) << std::setprecision(10) << (*x2coordinates_)[j];

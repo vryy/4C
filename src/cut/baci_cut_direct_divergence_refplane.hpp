@@ -49,7 +49,7 @@ namespace CORE::GEO
       \brief Get the reference points that are used to define the reference plane. This is used in
       gmsh output of volume cells
        */
-      std::vector<Point*> GetReferencePointGmsh() { return refPtsGmsh_; }
+      std::vector<Point*> GetReferencePointGmsh() { return ref_pts_gmsh_; }
 
      private:
       /*!
@@ -96,7 +96,7 @@ namespace CORE::GEO
       Options& options_;
 
       //! Points that define the reference plane used for this volumecell
-      std::vector<Point*> refPtsGmsh_;
+      std::vector<Point*> ref_pts_gmsh_;
 
       //! Triangular diagonals in an hex8 element
       static const unsigned tri_diags_[24][3];

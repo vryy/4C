@@ -442,11 +442,11 @@ MAT::GrowthVolumetric::GrowthVolumetric()
       tr_mandel_e_(Teuchos::null),
       lambda_fib_e_(Teuchos::null),
       growthtrig_const_(0.0),
-      paramsVolumetric_(nullptr),
+      params_volumetric_(nullptr),
       refdir_(true),
       curdir_(Teuchos::null),
       curdir_for_update_(Teuchos::null),
-      F_g_hist_(Teuchos::null)
+      f_g_hist_(Teuchos::null)
 {
 }
 
@@ -456,11 +456,11 @@ MAT::GrowthVolumetric::GrowthVolumetric(MAT::PAR::Growth* params)
       tr_mandel_e_(Teuchos::null),
       lambda_fib_e_(Teuchos::null),
       growthtrig_const_(0.0),
-      paramsVolumetric_(params),
+      params_volumetric_(params),
       refdir_(true),
       curdir_(Teuchos::null),
       curdir_for_update_(Teuchos::null),
-      F_g_hist_(Teuchos::null)
+      f_g_hist_(Teuchos::null)
 {
 }
 
@@ -532,7 +532,7 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     CORE::LINALG::Matrix<3, 3> F_g(true);
 
     Parameter()->growthlaw_->CalcFg(
-        theta, ThetaOld()->at(gp), gp, defgrd, refdir_, curdir_, F_g_hist_, F_g);
+        theta, ThetaOld()->at(gp), gp, defgrd, refdir_, curdir_, f_g_hist_, F_g);
 
     // calculate F_g^(-1)
     CORE::LINALG::Matrix<3, 3> F_ginv(true);
@@ -618,7 +618,7 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     CORE::LINALG::Matrix<3, 3> F_g(true);
 
     Parameter()->growthlaw_->CalcFg(
-        theta, ThetaOldAtGp(gp), gp, defgrd, refdir_, curdir_, F_g_hist_, F_g);
+        theta, ThetaOldAtGp(gp), gp, defgrd, refdir_, curdir_, f_g_hist_, F_g);
 
     // calculate F_g^(-1)
     CORE::LINALG::Matrix<3, 3> F_ginv(true);
@@ -669,7 +669,7 @@ void MAT::GrowthVolumetric::EvaluateGrowth(double* theta, CORE::LINALG::Matrix<6
 
   MAT::Growth* matgrowth = this;
   Parameter()->growthlaw_->Evaluate(theta, thetaold, dthetadC, *matgrowth, defgrd, glstrain,
-      refdir_, curdir_, F_g_hist_, growthtrig_const_, params, gp, eleGID);
+      refdir_, curdir_, f_g_hist_, growthtrig_const_, params, gp, eleGID);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -691,7 +691,7 @@ void MAT::GrowthVolumetric::EvaluateNonLinMass(const CORE::LINALG::Matrix<3, 3>*
 
     MAT::Growth* matgrowth = this;
     Parameter()->growthlaw_->Evaluate(&theta, thetaold, linmass_disp, *matgrowth, defgrd, glstrain,
-        refdir_, curdir_, F_g_hist_, growthtrig_const_, params, gp, eleGID);
+        refdir_, curdir_, f_g_hist_, growthtrig_const_, params, gp, eleGID);
 
     const double density_deriv_scale = Parameter()->growthlaw_->DensityDerivScale(theta);
     linmass_disp->Scale(density_deriv_scale * Matelastic()->Density());
@@ -720,7 +720,7 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta,
   // calculate growth part F_g of the deformation gradient F
   CORE::LINALG::Matrix<3, 3> F_g(true);
   Parameter()->growthlaw_->CalcFg(
-      theta, ThetaOldAtGp(gp), gp, defgrd, refdir_, curdir_, F_g_hist_, F_g);
+      theta, ThetaOldAtGp(gp), gp, defgrd, refdir_, curdir_, f_g_hist_, F_g);
 
   // calculate F_g^(-1)
   CORE::LINALG::Matrix<3, 3> F_ginv(true);
@@ -828,7 +828,7 @@ void MAT::GrowthVolumetric::Pack(CORE::COMM::PackBuffer& data) const
 
   for (int gp = 0; gp < numgp; gp++)
   {
-    CORE::LINALG::Matrix<3, 3> F_g_hist = F_g_hist_.at(gp);
+    CORE::LINALG::Matrix<3, 3> F_g_hist = f_g_hist_.at(gp);
     CORE::LINALG::Matrix<3, 1> curdir = curdir_.at(gp);
     CORE::LINALG::Matrix<3, 1> curdir_for_update = curdir_for_update_.at(gp);
 
@@ -859,7 +859,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
 
-  paramsVolumetric_ = nullptr;
+  params_volumetric_ = nullptr;
   if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
   {
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
@@ -868,7 +868,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        paramsVolumetric_ = dynamic_cast<MAT::PAR::Growth*>(mat);
+        params_volumetric_ = dynamic_cast<MAT::PAR::Growth*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -919,7 +919,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, numgp);
   if (numgp != 0)
   {
-    F_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, CORE::LINALG::Matrix<3, 3>(true));
+    f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, CORE::LINALG::Matrix<3, 3>(true));
     curdir_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, CORE::LINALG::Matrix<3, 1>(true));
     curdir_for_update_ =
         std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, CORE::LINALG::Matrix<3, 1>(true));
@@ -946,7 +946,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
         ExtractfromPack(position, data, curdir_for_update_i);
         curdir_for_update(i, 0) = curdir_for_update_i;
       }
-      F_g_hist_.at(gp) = F_g_hist;
+      f_g_hist_.at(gp) = F_g_hist;
       curdir_.at(gp) = curdir;
       curdir_for_update_.at(gp) = curdir_for_update;
     }
@@ -992,7 +992,7 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
 
       CORE::LINALG::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-      F_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
+      f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
     }
     break;
     case INPAR::MAT::m_growth_aniso_strain:
@@ -1010,7 +1010,7 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
       curdir_for_update_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
       CORE::LINALG::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-      F_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
+      f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
     }
     break;
     case INPAR::MAT::m_growth_aniso_strain_const_trig:
@@ -1032,7 +1032,7 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
       curdir_for_update_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
       CORE::LINALG::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-      F_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
+      f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
     }
     break;
     default:
@@ -1043,7 +1043,7 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
       curdir_for_update_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
       CORE::LINALG::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-      F_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
+      f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
     }
     break;
   }
@@ -1072,9 +1072,9 @@ void MAT::GrowthVolumetric::Update()
         CORE::LINALG::Matrix<3, 3> F_g_hist_new(true);
 
         Parameter()->growthlaw_->CalcFg(theta_->at(gp), ThetaOld()->at(gp), gp, &dummydefgrad,
-            refdir_, curdir_, F_g_hist_, F_g_hist_new);
+            refdir_, curdir_, f_g_hist_, F_g_hist_new);
 
-        F_g_hist_.at(gp) = F_g_hist_new;
+        f_g_hist_.at(gp) = F_g_hist_new;
 
         curdir_.at(gp) = curdir_for_update_.at(gp);
       }

@@ -141,10 +141,10 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> x2coordinates_;
 
     //! coordinates of locations in x1- and x2-direction for statistical evaluation
-    CORE::LINALG::SerialDenseMatrix x1statlocations;
+    CORE::LINALG::SerialDenseMatrix x1statlocations_;
 
     //! matrix for r-coordinates (columns are evaluation planes
-    CORE::LINALG::SerialDenseMatrix x2statlocations;
+    CORE::LINALG::SerialDenseMatrix x2statlocations_;
 
     //! set coordinates of locations in x1-direction for statistical evaluation
     Teuchos::RCP<std::vector<double>> x1setstatlocations_;

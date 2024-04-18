@@ -30,7 +30,7 @@ class LineIntegration
  public:
   LineIntegration(
       CORE::LINALG::Matrix<2, 2> endPts, int inte_num, std::vector<double> alpha, bool bcellInt)
-      : end_pts_(endPts), inte_num_(inte_num), alpha_(alpha), bcellInt_(bcellInt)
+      : end_pts_(endPts), inte_num_(inte_num), alpha_(alpha), bcell_int_(bcellInt)
   {
   }
 
@@ -42,7 +42,7 @@ class LineIntegration
   /*!
   \brief Choose the base function to be integrated
   */
-  void set_integ_type(CORE::GEO::CUT::ProjectionDirection inttype) { intType_ = inttype; }
+  void set_integ_type(CORE::GEO::CUT::ProjectionDirection inttype) { int_type_ = inttype; }
 
   /*!
   \brief Transform the Gauss integration point available in the limit (-1,1) to the actual line
@@ -68,11 +68,11 @@ class LineIntegration
   std::vector<double> alpha_;
 
   //! whether this is a boundary cell integration or called for volumecell integration
-  bool bcellInt_;
+  bool bcell_int_;
 
   //! over which plane (x, y or z) boundarycell has to be projected when performing boundarycell
   //! integration
-  CORE::GEO::CUT::ProjectionDirection intType_;
+  CORE::GEO::CUT::ProjectionDirection int_type_;
 };
 
 FOUR_C_NAMESPACE_CLOSE

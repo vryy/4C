@@ -32,8 +32,8 @@ IO::Pstream::Pstream()
       writetoscreen_(false),
       writetofile_(false),
       outfile_(nullptr),
-      prefixgroupID_(false),
-      groupID_(-2),
+      prefixgroup_id_(false),
+      group_id_(-2),
       buffer_(std::string()),
       requestedoutputlevel_(undef),
       level_(new Level(this))
@@ -74,8 +74,8 @@ void IO::Pstream::setup(const bool writetoscreen, const bool writetofile, const 
   writetoscreen_ = writetoscreen;
   writetofile_ = writetofile;
   outfile_ = nullptr;
-  prefixgroupID_ = prefixgroupID;
-  groupID_ = groupID;
+  prefixgroup_id_ = prefixgroupID;
+  group_id_ = groupID;
 
   // make sure the target processor exists
   if (targetpid_ >= comm_->NumProc()) FOUR_C_THROW("Chosen target processor does not exist.");
@@ -90,7 +90,7 @@ void IO::Pstream::setup(const bool writetoscreen, const bool writetofile, const 
   }
 
   // prepare the very first line of output
-  if (OnPid() and prefixgroupID_) buffer_ << groupID_ << ": ";
+  if (OnPid() and prefixgroup_id_) buffer_ << group_id_ << ": ";
 
   // setup mystream
   blackholestream_ = new Teuchos::oblackholestream;
@@ -109,7 +109,7 @@ std::ostream& IO::Pstream::os(const Verbositylevel level) const
 
   if (level <= RequestedOutputLevel())
   {
-    if (prefixgroupID_) *mystream_ << prefixgroupID_ << ": ";
+    if (prefixgroup_id_) *mystream_ << prefixgroup_id_ << ": ";
     return *mystream_;
   }
   else
@@ -144,8 +144,8 @@ void IO::Pstream::close()
     blackholestream_ = nullptr;
   }
 
-  prefixgroupID_ = false;
-  groupID_ = -2;
+  prefixgroup_id_ = false;
+  group_id_ = -2;
 
   // flush the buffer
   if (writetoscreen_ and OnPid() and buffer_.str().size() > 0)

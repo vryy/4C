@@ -243,19 +243,19 @@ namespace MAT
      * Fibers of the element. The first index is for the Gauss points, the second index is for the
      * fiber id
      */
-    std::vector<CORE::LINALG::Matrix<3, 1>> elementFibers_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> element_fibers_;
 
     /**
      * Fibers of the element. The first index is for the Gauss points, the second index is for the
      * fiber id
      */
-    std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>> gpFibers_;
+    std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>> gp_fibers_;
 
     /// Cylinder coordinate system manager on element level
-    std::optional<CylinderCoordinateSystemManager> elementCylinderCoordinateSystemManager_;
+    std::optional<CylinderCoordinateSystemManager> element_cylinder_coordinate_system_manager_;
 
     /// Cylinder coordinate system manager on gp level
-    std::vector<CylinderCoordinateSystemManager> gpCylinderCoordinateSystemManagers_;
+    std::vector<CylinderCoordinateSystemManager> gp_cylinder_coordinate_system_managers_;
 
     /// Anisotropy to extend the functionality
     std::vector<Teuchos::RCP<BaseAnisotropyExtension>> extensions_;

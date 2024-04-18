@@ -48,7 +48,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::ParameterList& solverlist_;
 
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<Epetra_RowMatrix> Pmatrix_;
+    Teuchos::RCP<Epetra_RowMatrix> pmatrix_;
 
     //! preconditioner
     Teuchos::RCP<Ifpack_Preconditioner> prec_;

@@ -202,10 +202,10 @@ namespace MAT
       template <typename T>
       inline void GetDerivativeAnisoActive(T& dPIact) const
       {
-        dPIact = dPIact_;
+        dPIact = d_p_iact_;
       };
 
-      double GetDerivativeAnisoActive() const override { return dPIact_; };
+      double GetDerivativeAnisoActive() const override { return d_p_iact_; };
 
       //@}
 
@@ -239,7 +239,7 @@ namespace MAT
        */
       FiberAnisotropyExtension<1>& GetFiberAnisotropyExtension() override
       {
-        return anisotropyExtension_;
+        return anisotropy_extension_;
       }
 
      private:
@@ -250,13 +250,13 @@ namespace MAT
       MAT::ELASTIC::PAR::CoupAnisoExpoActive* params_;
 
       /// first derivative of active fiber potential w.r.t. the active fiber stretch
-      double dPIact_;
+      double d_p_iact_;
 
       /// active fiber stretch for a given muscle tone
       double lambdaact_;
 
       /// Anisotropy extension that manages fibers and structural tensors
-      DefaultAnisotropyExtension<1> anisotropyExtension_;
+      DefaultAnisotropyExtension<1> anisotropy_extension_;
     };  // namespace PAR
 
   }  // namespace ELASTIC
