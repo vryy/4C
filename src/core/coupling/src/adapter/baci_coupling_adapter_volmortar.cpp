@@ -15,7 +15,6 @@
 
 #include "baci_coupling_volmortar.hpp"
 #include "baci_coupling_volmortar_utils.hpp"
-#include "baci_inpar_volmortar.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
 #include "baci_linalg_multiply.hpp"

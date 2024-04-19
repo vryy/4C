@@ -9,7 +9,6 @@
 #include "baci_linear_solver_method_linalg.hpp"
 
 #include "baci_global_data.hpp"  // access global problem. can we avoid this?
-#include "baci_inpar_solver.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linear_solver_method_direct.hpp"

@@ -22,7 +22,6 @@
 #include "baci_cut_volumecell.hpp"
 #include "baci_discretization_geometry_searchtree.hpp"
 #include "baci_discretization_geometry_searchtree_service.hpp"
-#include "baci_inpar_volmortar.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_dofset_predefineddofnumber.hpp"
 #include "baci_linalg_mapextractor.hpp"
