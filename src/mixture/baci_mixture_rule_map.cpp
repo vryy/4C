@@ -51,8 +51,7 @@ namespace
     const std::vector<double> massfracs = it->second;
 
     // check, whether the mass frac sums up to 1
-    double sum = 0.0;
-    for (double massfrac : massfracs) sum += massfrac;
+    const double sum = std::accumulate(massfracs.begin(), massfracs.end(), 0.0);
     if (std::abs(1.0 - sum) > 1e-8)
       dserror(
           "Mass fractions for element id %d don't sum up to 1, which is unphysical.", ele_id_key);
@@ -95,8 +94,8 @@ void MIXTURE::MapMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
     const int eleGID)
 {
   // define temporary matrices
-  static CORE::LINALG::Matrix<6, 1> cstress;
-  static CORE::LINALG::Matrix<6, 6> ccmat;
+  CORE::LINALG::Matrix<6, 1> cstress;
+  CORE::LINALG::Matrix<6, 6> ccmat;
 
   // evaluate the mass fractions at the given element id (one based entires in the csv file)
   auto massfracs =

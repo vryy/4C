@@ -132,8 +132,8 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3
   }
 
   // define temporary matrices
-  static CORE::LINALG::Matrix<6, 1> cstress;
-  static CORE::LINALG::Matrix<6, 6> ccmat;
+  CORE::LINALG::Matrix<6, 1> cstress;
+  CORE::LINALG::Matrix<6, 6> ccmat;
 
   // Iterate over all constituents and apply their contributions to the stress and linearization
   for (std::size_t i = 0; i < Constituents().size(); ++i)
